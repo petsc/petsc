@@ -18,24 +18,24 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm,"","Options for subspace test","none");CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "The spatial dimension","ex5.c",dim,&dim,NULL,1,3);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "Test simplex element","ex5.c",simplex,&simplex,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-num_comp", "Number of components in space","ex5.c",Nc,&Nc,NULL,1);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsRangeInt("-dim", "The spatial dimension","ex5.c",dim,&dim,NULL,1,3));
+  CHKERRQ(PetscOptionsBool("-simplex", "Test simplex element","ex5.c",simplex,&simplex,NULL));
+  CHKERRQ(PetscOptionsBoundedInt("-num_comp", "Number of components in space","ex5.c",Nc,&Nc,NULL,1));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = DMShellCreate(comm,&dm);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm,dim,Nc,simplex,NULL,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFESetName(fe, "solution");CHKERRQ(ierr);
-  ierr = PetscFEGetBasisSpace(fe,&space);CHKERRQ(ierr);
-  ierr = PetscSpaceGetNumComponents(space,&Nc);CHKERRQ(ierr);
-  ierr = PetscFEGetDualSpace(fe,&dualspace);CHKERRQ(ierr);
-  ierr = PetscDualSpaceGetHeightSubspace(dualspace,1,&dualsubspace);CHKERRQ(ierr);
-  ierr = PetscDualSpaceGetDM(dualspace,&dm);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
+  CHKERRQ(DMShellCreate(comm,&dm));
+  CHKERRQ(PetscFECreateDefault(comm,dim,Nc,simplex,NULL,PETSC_DEFAULT,&fe));
+  CHKERRQ(DMDestroy(&dm));
+  CHKERRQ(PetscFESetName(fe, "solution"));
+  CHKERRQ(PetscFEGetBasisSpace(fe,&space));
+  CHKERRQ(PetscSpaceGetNumComponents(space,&Nc));
+  CHKERRQ(PetscFEGetDualSpace(fe,&dualspace));
+  CHKERRQ(PetscDualSpaceGetHeightSubspace(dualspace,1,&dualsubspace));
+  CHKERRQ(PetscDualSpaceGetDM(dualspace,&dm));
+  CHKERRQ(DMPlexGetHeightStratum(dm,0,&cStart,&cEnd));
   if (cEnd > cStart) {
     PetscInt coneSize;
 
-    ierr = DMPlexGetConeSize(dm,cStart,&coneSize);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetConeSize(dm,cStart,&coneSize));
     if (coneSize) {
       PetscFE traceFE;
       const PetscInt *cone;
@@ -52,50 +52,50 @@ int main(int argc, char **argv)
       PetscReal       err;
       PetscRandom     rand;
 
-      ierr = DMPlexGetCone(dm,cStart,&cone);CHKERRQ(ierr);
+      CHKERRQ(DMPlexGetCone(dm,cStart,&cone));
       point = cone[0];
-      ierr = PetscFECreatePointTrace(fe,point,&traceFE);CHKERRQ(ierr);
-      ierr = PetscFESetUp(traceFE);CHKERRQ(ierr);
-      ierr = PetscFEViewFromOptions(traceFE,NULL,"-trace_fe_view");CHKERRQ(ierr);
-      ierr = PetscMalloc4(dim - 1,&testSub,dim,&testFull,Nc,&outSub,Nc,&outFull);CHKERRQ(ierr);
-      ierr = PetscRandomCreate(PETSC_COMM_SELF,&rand);CHKERRQ(ierr);
-      ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
-      ierr = PetscRandomSetInterval(rand,-1.,1.);CHKERRQ(ierr);
+      CHKERRQ(PetscFECreatePointTrace(fe,point,&traceFE));
+      CHKERRQ(PetscFESetUp(traceFE));
+      CHKERRQ(PetscFEViewFromOptions(traceFE,NULL,"-trace_fe_view"));
+      CHKERRQ(PetscMalloc4(dim - 1,&testSub,dim,&testFull,Nc,&outSub,Nc,&outFull));
+      CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF,&rand));
+      CHKERRQ(PetscRandomSetFromOptions(rand));
+      CHKERRQ(PetscRandomSetInterval(rand,-1.,1.));
       /* create a random point in the trace domain */
       for (i = 0; i < dim - 1; i++) {
-        ierr = PetscRandomGetValueReal(rand,&testSub[i]);CHKERRQ(ierr);
+        CHKERRQ(PetscRandomGetValueReal(rand,&testSub[i]));
       }
-      ierr = DMPlexComputeCellGeometryFEM(dm,point,NULL,testFull,J,NULL,&detJ);CHKERRQ(ierr);
+      CHKERRQ(DMPlexComputeCellGeometryFEM(dm,point,NULL,testFull,J,NULL,&detJ));
       /* project it into the full domain */
       for (i = 0; i < dim; i++) {
         for (j = 0; j < dim - 1; j++) testFull[i] += J[i * dim + j] * (testSub[j] - xi0[j]);
       }
       /* create a random vector in the full domain */
-      ierr = PetscFEGetDimension(fe,&nFull);CHKERRQ(ierr);
-      ierr = VecCreateSeq(PETSC_COMM_SELF,nFull,&vecFull);CHKERRQ(ierr);
-      ierr = VecGetArray(vecFull,&arrayFull);CHKERRQ(ierr);
+      CHKERRQ(PetscFEGetDimension(fe,&nFull));
+      CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,nFull,&vecFull));
+      CHKERRQ(VecGetArray(vecFull,&arrayFull));
       for (i = 0; i < nFull; i++) {
-        ierr = PetscRandomGetValue(rand,&arrayFull[i]);CHKERRQ(ierr);
+        CHKERRQ(PetscRandomGetValue(rand,&arrayFull[i]));
       }
-      ierr = VecRestoreArray(vecFull,&arrayFull);CHKERRQ(ierr);
+      CHKERRQ(VecRestoreArray(vecFull,&arrayFull));
       /* create a vector on the trace domain */
-      ierr = PetscFEGetDimension(traceFE,&nSub);CHKERRQ(ierr);
+      CHKERRQ(PetscFEGetDimension(traceFE,&nSub));
       /* get the subset of the original finite element space that is supported on the trace space */
-      ierr = PetscDualSpaceGetSection(dualspace,&sectionFull);CHKERRQ(ierr);
-      ierr = PetscSectionSetUp(sectionFull);CHKERRQ(ierr);
+      CHKERRQ(PetscDualSpaceGetSection(dualspace,&sectionFull));
+      CHKERRQ(PetscSectionSetUp(sectionFull));
       /* get the trace degrees of freedom */
-      ierr = PetscMalloc1(nSub,&arraySub);CHKERRQ(ierr);
-      ierr = DMPlexVecGetClosure(dm,sectionFull,vecFull,point,&nSub,&arraySub);CHKERRQ(ierr);
+      CHKERRQ(PetscMalloc1(nSub,&arraySub));
+      CHKERRQ(DMPlexVecGetClosure(dm,sectionFull,vecFull,point,&nSub,&arraySub));
       /* get the tabulations */
-      ierr = PetscFECreateTabulation(traceFE,1,1,testSub,0,&Tsub);CHKERRQ(ierr);
-      ierr = PetscFECreateTabulation(fe,1,1,testFull,0,&Tfull);CHKERRQ(ierr);
+      CHKERRQ(PetscFECreateTabulation(traceFE,1,1,testSub,0,&Tsub));
+      CHKERRQ(PetscFECreateTabulation(fe,1,1,testFull,0,&Tfull));
       for (i = 0; i < Nc; i++) {
         outSub[i] = 0.0;
         for (j = 0; j < nSub; j++) {
           outSub[i] += Tsub->T[0][j * Nc + i] * arraySub[j];
         }
       }
-      ierr = VecGetArray(vecFull,&arrayFull);CHKERRQ(ierr);
+      CHKERRQ(VecGetArray(vecFull,&arrayFull));
       err = 0.0;
       for (i = 0; i < Nc; i++) {
         PetscScalar diff;
@@ -111,18 +111,18 @@ int main(int argc, char **argv)
       if (err > PETSC_SMALL) {
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Trace FE error %g",err);
       }
-      ierr = VecRestoreArray(vecFull,&arrayFull);CHKERRQ(ierr);
-      ierr = PetscTabulationDestroy(&Tfull);CHKERRQ(ierr);
-      ierr = PetscTabulationDestroy(&Tsub);CHKERRQ(ierr);
+      CHKERRQ(VecRestoreArray(vecFull,&arrayFull));
+      CHKERRQ(PetscTabulationDestroy(&Tfull));
+      CHKERRQ(PetscTabulationDestroy(&Tsub));
       /* clean up */
-      ierr = PetscFree(arraySub);CHKERRQ(ierr);
-      ierr = VecDestroy(&vecFull);CHKERRQ(ierr);
-      ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
-      ierr = PetscFree4(testSub,testFull,outSub,outFull);CHKERRQ(ierr);
-      ierr = PetscFEDestroy(&traceFE);CHKERRQ(ierr);
+      CHKERRQ(PetscFree(arraySub));
+      CHKERRQ(VecDestroy(&vecFull));
+      CHKERRQ(PetscRandomDestroy(&rand));
+      CHKERRQ(PetscFree4(testSub,testFull,outSub,outFull));
+      CHKERRQ(PetscFEDestroy(&traceFE));
     }
   }
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  CHKERRQ(PetscFEDestroy(&fe));
   ierr = PetscFinalize();
   return ierr;
 }

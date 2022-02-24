@@ -22,99 +22,99 @@ int main(int argc,char **argv)
   PetscBool              gather_add = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-gather_add",&gather_add,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-gather_add",&gather_add,NULL));
 
-  ierr = DMCompositeCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
+  CHKERRQ(DMCompositeCreate(PETSC_COMM_WORLD,&packer));
 
-  ierr = DMRedundantCreate(PETSC_COMM_WORLD,0,nredundant1,&dmred1);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(dmred1,&redundant1);CHKERRQ(ierr);
-  ierr = DMCompositeAddDM(packer,dmred1);CHKERRQ(ierr);
+  CHKERRQ(DMRedundantCreate(PETSC_COMM_WORLD,0,nredundant1,&dmred1));
+  CHKERRQ(DMCreateLocalVector(dmred1,&redundant1));
+  CHKERRQ(DMCompositeAddDM(packer,dmred1));
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,8,1,1,NULL,&da1);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da1);CHKERRQ(ierr);
-  ierr = DMSetUp(da1);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(da1,&local1);CHKERRQ(ierr);
-  ierr = DMCompositeAddDM(packer,da1);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,8,1,1,NULL,&da1));
+  CHKERRQ(DMSetFromOptions(da1));
+  CHKERRQ(DMSetUp(da1));
+  CHKERRQ(DMCreateLocalVector(da1,&local1));
+  CHKERRQ(DMCompositeAddDM(packer,da1));
 
-  ierr = DMRedundantCreate(PETSC_COMM_WORLD,1%size,nredundant2,&dmred2);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(dmred2,&redundant2);CHKERRQ(ierr);
-  ierr = DMCompositeAddDM(packer,dmred2);CHKERRQ(ierr);
+  CHKERRQ(DMRedundantCreate(PETSC_COMM_WORLD,1%size,nredundant2,&dmred2));
+  CHKERRQ(DMCreateLocalVector(dmred2,&redundant2));
+  CHKERRQ(DMCompositeAddDM(packer,dmred2));
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,6,1,1,NULL,&da2);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da2);CHKERRQ(ierr);
-  ierr = DMSetUp(da2);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(da2,&local2);CHKERRQ(ierr);
-  ierr = DMCompositeAddDM(packer,da2);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,6,1,1,NULL,&da2));
+  CHKERRQ(DMSetFromOptions(da2));
+  CHKERRQ(DMSetUp(da2));
+  CHKERRQ(DMCreateLocalVector(da2,&local2));
+  CHKERRQ(DMCompositeAddDM(packer,da2));
 
-  ierr = DMCreateGlobalVector(packer,&global);CHKERRQ(ierr);
-  ierr = PFCreate(PETSC_COMM_WORLD,1,1,&pf);CHKERRQ(ierr);
-  ierr = PFSetType(pf,PFIDENTITY,NULL);CHKERRQ(ierr);
-  ierr = PFApplyVec(pf,NULL,global);CHKERRQ(ierr);
-  ierr = PFDestroy(&pf);CHKERRQ(ierr);
-  ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(packer,&global));
+  CHKERRQ(PFCreate(PETSC_COMM_WORLD,1,1,&pf));
+  CHKERRQ(PFSetType(pf,PFIDENTITY,NULL));
+  CHKERRQ(PFApplyVec(pf,NULL,global));
+  CHKERRQ(PFDestroy(&pf));
+  CHKERRQ(VecView(global,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = DMCompositeScatter(packer,global,redundant1,local1,redundant2,local2);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] My part of redundant1 vector\n",rank);CHKERRQ(ierr);
-  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-  ierr = VecView(redundant1,sviewer);CHKERRQ(ierr);
-  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] My part of da1 vector\n",rank);CHKERRQ(ierr);
-  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-  ierr = VecView(local1,sviewer);CHKERRQ(ierr);
-  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] My part of redundant2 vector\n",rank);CHKERRQ(ierr);
-  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-  ierr = VecView(redundant2,sviewer);CHKERRQ(ierr);
-  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] My part of da2 vector\n",rank);CHKERRQ(ierr);
-  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-  ierr = VecView(local2,sviewer);CHKERRQ(ierr);
-  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(DMCompositeScatter(packer,global,redundant1,local1,redundant2,local2));
+  CHKERRQ(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] My part of redundant1 vector\n",rank));
+  CHKERRQ(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+  CHKERRQ(VecView(redundant1,sviewer));
+  CHKERRQ(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+  CHKERRQ(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] My part of da1 vector\n",rank));
+  CHKERRQ(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+  CHKERRQ(VecView(local1,sviewer));
+  CHKERRQ(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+  CHKERRQ(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] My part of redundant2 vector\n",rank));
+  CHKERRQ(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+  CHKERRQ(VecView(redundant2,sviewer));
+  CHKERRQ(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+  CHKERRQ(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] My part of da2 vector\n",rank));
+  CHKERRQ(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+  CHKERRQ(VecView(local2,sviewer));
+  CHKERRQ(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+  CHKERRQ(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = VecGetArray(redundant1,&redundant1a);CHKERRQ(ierr);
-  ierr = VecGetArray(redundant2,&redundant2a);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(redundant1,&redundant1a));
+  CHKERRQ(VecGetArray(redundant2,&redundant2a));
   for (i=0; i<nredundant1; i++) redundant1a[i] = (rank+2)*i;
   for (i=0; i<nredundant2; i++) redundant2a[i] = (rank+10)*i;
-  ierr = VecRestoreArray(redundant1,&redundant1a);CHKERRQ(ierr);
-  ierr = VecRestoreArray(redundant2,&redundant2a);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(redundant1,&redundant1a));
+  CHKERRQ(VecRestoreArray(redundant2,&redundant2a));
 
-  ierr = DMCompositeGather(packer,gather_add ? ADD_VALUES : INSERT_VALUES,global,redundant1,local1,redundant2,local2);CHKERRQ(ierr);
-  ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(DMCompositeGather(packer,gather_add ? ADD_VALUES : INSERT_VALUES,global,redundant1,local1,redundant2,local2));
+  CHKERRQ(VecView(global,PETSC_VIEWER_STDOUT_WORLD));
 
   /* get the global numbering for each subvector element */
-  ierr = DMCompositeGetISLocalToGlobalMappings(packer,&ltog);CHKERRQ(ierr);
+  CHKERRQ(DMCompositeGetISLocalToGlobalMappings(packer,&ltog));
 
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of redundant1 vector\n");CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingView(ltog[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of local1 vector\n");CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingView(ltog[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of redundant2 vector\n");CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingView(ltog[2],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of local2 vector\n");CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingView(ltog[3],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of redundant1 vector\n"));
+  CHKERRQ(ISLocalToGlobalMappingView(ltog[0],PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of local1 vector\n"));
+  CHKERRQ(ISLocalToGlobalMappingView(ltog[1],PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of redundant2 vector\n"));
+  CHKERRQ(ISLocalToGlobalMappingView(ltog[2],PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of local2 vector\n"));
+  CHKERRQ(ISLocalToGlobalMappingView(ltog[3],PETSC_VIEWER_STDOUT_WORLD));
 
-  for (i=0; i<4; i++) {ierr = ISLocalToGlobalMappingDestroy(&ltog[i]);CHKERRQ(ierr);}
-  ierr = PetscFree(ltog);CHKERRQ(ierr);
+  for (i=0; i<4; i++) CHKERRQ(ISLocalToGlobalMappingDestroy(&ltog[i]));
+  CHKERRQ(PetscFree(ltog));
 
-  ierr = DMDestroy(&da1);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmred1);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmred2);CHKERRQ(ierr);
-  ierr = DMDestroy(&da2);CHKERRQ(ierr);
-  ierr = VecDestroy(&redundant1);CHKERRQ(ierr);
-  ierr = VecDestroy(&redundant2);CHKERRQ(ierr);
-  ierr = VecDestroy(&local1);CHKERRQ(ierr);
-  ierr = VecDestroy(&local2);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
-  ierr = DMDestroy(&packer);CHKERRQ(ierr);
+  CHKERRQ(DMDestroy(&da1));
+  CHKERRQ(DMDestroy(&dmred1));
+  CHKERRQ(DMDestroy(&dmred2));
+  CHKERRQ(DMDestroy(&da2));
+  CHKERRQ(VecDestroy(&redundant1));
+  CHKERRQ(VecDestroy(&redundant2));
+  CHKERRQ(VecDestroy(&local1));
+  CHKERRQ(VecDestroy(&local2));
+  CHKERRQ(VecDestroy(&global));
+  CHKERRQ(DMDestroy(&packer));
   ierr = PetscFinalize();
   return ierr;
 }

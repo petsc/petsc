@@ -45,34 +45,32 @@ const char *const *const SNESFunctionTypes = SNESFunctionTypes_Shifted + 1;
 @*/
 PetscErrorCode  SNESRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (SNESRegisterAllCalled) PetscFunctionReturn(0);
   SNESRegisterAllCalled = PETSC_TRUE;
 
-  ierr = SNESRegister(SNESNEWTONLS,         SNESCreate_NEWTONLS);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESNEWTONTR,         SNESCreate_NEWTONTR);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESNEWTONTRDC,       SNESCreate_NEWTONTRDC);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESNRICHARDSON,      SNESCreate_NRichardson);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESKSPONLY,          SNESCreate_KSPONLY);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESKSPTRANSPOSEONLY, SNESCreate_KSPTRANSPOSEONLY);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESVINEWTONRSLS,     SNESCreate_VINEWTONRSLS);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESVINEWTONSSLS,     SNESCreate_VINEWTONSSLS);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESNGMRES,           SNESCreate_NGMRES);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESQN,               SNESCreate_QN);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESSHELL,            SNESCreate_Shell);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESNGS,              SNESCreate_NGS);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESNCG,              SNESCreate_NCG);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESFAS,              SNESCreate_FAS);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESMS,               SNESCreate_MS);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESNASM,             SNESCreate_NASM);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESANDERSON,         SNESCreate_Anderson);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESASPIN,            SNESCreate_ASPIN);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESCOMPOSITE,        SNESCreate_Composite);CHKERRQ(ierr);
-  ierr = SNESRegister(SNESPATCH,            SNESCreate_Patch);CHKERRQ(ierr);
+  CHKERRQ(SNESRegister(SNESNEWTONLS,         SNESCreate_NEWTONLS));
+  CHKERRQ(SNESRegister(SNESNEWTONTR,         SNESCreate_NEWTONTR));
+  CHKERRQ(SNESRegister(SNESNEWTONTRDC,       SNESCreate_NEWTONTRDC));
+  CHKERRQ(SNESRegister(SNESNRICHARDSON,      SNESCreate_NRichardson));
+  CHKERRQ(SNESRegister(SNESKSPONLY,          SNESCreate_KSPONLY));
+  CHKERRQ(SNESRegister(SNESKSPTRANSPOSEONLY, SNESCreate_KSPTRANSPOSEONLY));
+  CHKERRQ(SNESRegister(SNESVINEWTONRSLS,     SNESCreate_VINEWTONRSLS));
+  CHKERRQ(SNESRegister(SNESVINEWTONSSLS,     SNESCreate_VINEWTONSSLS));
+  CHKERRQ(SNESRegister(SNESNGMRES,           SNESCreate_NGMRES));
+  CHKERRQ(SNESRegister(SNESQN,               SNESCreate_QN));
+  CHKERRQ(SNESRegister(SNESSHELL,            SNESCreate_Shell));
+  CHKERRQ(SNESRegister(SNESNGS,              SNESCreate_NGS));
+  CHKERRQ(SNESRegister(SNESNCG,              SNESCreate_NCG));
+  CHKERRQ(SNESRegister(SNESFAS,              SNESCreate_FAS));
+  CHKERRQ(SNESRegister(SNESMS,               SNESCreate_MS));
+  CHKERRQ(SNESRegister(SNESNASM,             SNESCreate_NASM));
+  CHKERRQ(SNESRegister(SNESANDERSON,         SNESCreate_Anderson));
+  CHKERRQ(SNESRegister(SNESASPIN,            SNESCreate_ASPIN));
+  CHKERRQ(SNESRegister(SNESCOMPOSITE,        SNESCreate_Composite));
+  CHKERRQ(SNESRegister(SNESPATCH,            SNESCreate_Patch));
 
-  ierr = KSPMonitorRegister("snes_preconditioned_residual", PETSCVIEWERASCII, PETSC_VIEWER_DEFAULT, KSPMonitorSNESResidual,       NULL, NULL);CHKERRQ(ierr);
-  ierr = KSPMonitorRegister("snes_preconditioned_residual", PETSCVIEWERDRAW,  PETSC_VIEWER_DRAW_LG, KSPMonitorSNESResidualDrawLG, KSPMonitorSNESResidualDrawLGCreate, NULL);CHKERRQ(ierr);
+  CHKERRQ(KSPMonitorRegister("snes_preconditioned_residual", PETSCVIEWERASCII, PETSC_VIEWER_DEFAULT, KSPMonitorSNESResidual,       NULL, NULL));
+  CHKERRQ(KSPMonitorRegister("snes_preconditioned_residual", PETSCVIEWERDRAW,  PETSC_VIEWER_DRAW_LG, KSPMonitorSNESResidualDrawLG, KSPMonitorSNESResidualDrawLGCreate, NULL));
   PetscFunctionReturn(0);
 }

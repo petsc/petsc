@@ -11,8 +11,8 @@ int main(int argc,char **argv)
   PetscScalar    ****xx;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = VecCreateSeq(PETSC_COMM_WORLD,m*n*p*q,&x);CHKERRQ(ierr);
-  ierr = VecGetArray4d(x,m,n,p,q,0,0,0,0,&xx);CHKERRQ(ierr);
+  CHKERRQ(VecCreateSeq(PETSC_COMM_WORLD,m*n*p*q,&x));
+  CHKERRQ(VecGetArray4d(x,m,n,p,q,0,0,0,0,&xx));
   cnt  = 0;
   for (i=0; i<m; i++)
     for (j=0; j<n; j++)
@@ -20,9 +20,9 @@ int main(int argc,char **argv)
         for (l=0; l<q; l++)
           xx[i][j][k][l] = cnt++;
 
-  ierr = VecRestoreArray4d(x,m,n,p,q,0,0,0,0,&xx);CHKERRQ(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray4d(x,m,n,p,q,0,0,0,0,&xx));
+  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(VecDestroy(&x));
   ierr = PetscFinalize();
   return ierr;
 }

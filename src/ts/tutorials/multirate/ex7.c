@@ -67,10 +67,8 @@ typedef struct {
 /* --------------------------------- Physics ----------------------------------- */
 static PetscErrorCode PhysicsDestroy_SimpleFree(void *vctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = PetscFree(vctx);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(vctx));
   PetscFunctionReturn(0);
 }
 
@@ -122,17 +120,17 @@ static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
   AdvectCtx      *user;
 
   PetscFunctionBeginUser;
-  ierr = PetscNew(&user);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(&user));
   ctx->physics.sample         = PhysicsSample_Advect;
   ctx->physics.flux           = PhysicsFlux_Advect;
   ctx->physics.destroy        = PhysicsDestroy_SimpleFree;
   ctx->physics.user           = user;
   ctx->physics.dof            = 1;
-  ierr = PetscStrallocpy("u",&ctx->physics.fieldname[0]);CHKERRQ(ierr);
+  CHKERRQ(PetscStrallocpy("u",&ctx->physics.fieldname[0]));
   user->a = 1;
   ierr = PetscOptionsBegin(ctx->comm,ctx->prefix,"Options for advection","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsReal("-physics_advect_a","Speed","",user->a,&user->a,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsReal("-physics_advect_a","Speed","",user->a,&user->a,NULL));
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -143,7 +141,6 @@ static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
 static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
 {
   FVCtx          *ctx = (FVCtx*)vctx;
-  PetscErrorCode ierr;
   PetscInt       i,j,Mx,dof,xs,xm,sf = ctx->sf,fs = ctx->fs;
   PetscReal      hf,hs,cfl_idt = 0;
   PetscScalar    *x,*f,*r,*min,*alpha,*gamma;
@@ -151,18 +148,18 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);                          /* Xloc contains ghost points                                     */
-  ierr = DMDAGetInfo(da,0,&Mx,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);   /* Mx is the number of center points                              */
+  CHKERRQ(TSGetDM(ts,&da));
+  CHKERRQ(DMGetLocalVector(da,&Xloc));                          /* Xloc contains ghost points                                     */
+  CHKERRQ(DMDAGetInfo(da,0,&Mx,0,0,0,0,0,&dof,0,0,0,0,0));   /* Mx is the number of center points                              */
   hs   = (ctx->xmax-ctx->xmin)/2.0*(ctx->hratio+1.0)/Mx;
   hf   = (ctx->xmax-ctx->xmin)/2.0*(1.0+1.0/ctx->hratio)/Mx;
-  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);       /* X is solution vector which does not contain ghost points       */
-  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-  ierr = VecZeroEntries(F);CHKERRQ(ierr);                                   /* F is the right hand side function corresponds to center points */
-  ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-  ierr = PetscMalloc4(dof,&r,dof,&min,dof,&alpha,dof,&gamma);CHKERRQ(ierr);
+  CHKERRQ(DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc));       /* X is solution vector which does not contain ghost points       */
+  CHKERRQ(DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc));
+  CHKERRQ(VecZeroEntries(F));                                   /* F is the right hand side function corresponds to center points */
+  CHKERRQ(DMDAVecGetArray(da,Xloc,&x));
+  CHKERRQ(DMDAVecGetArray(da,F,&f));
+  CHKERRQ(DMDAGetCorners(da,&xs,0,0,&xm,0,0));
+  CHKERRQ(PetscMalloc4(dof,&r,dof,&min,dof,&alpha,dof,&gamma));
 
   if (ctx->bctype == FVBC_OUTFLOW) {
     for (i=xs-2; i<0; i++) {
@@ -185,7 +182,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
         min[j] = PetscMin(r[j],2.0);
         u[j] = x[(i-1)*dof+j]+PetscMax(0,PetscMin(min[j],alpha[0]+gamma[0]*r[j]))*(x[(i-1)*dof+j]-x[(i-2)*dof+j]);
       }
-      ierr =  (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      CHKERRQ((*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed));
       cfl_idt = PetscMax(cfl_idt,PetscAbsScalar(maxspeed/hs));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hs;
@@ -202,7 +199,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
         min[j] = PetscMin(r[j],2.0);
         u[j] = x[(i-1)*dof+j]+PetscMax(0,PetscMin(min[j],alpha[0]+gamma[0]*r[j]))*(x[(i-1)*dof+j]-x[(i-2)*dof+j]);
       }
-      ierr = (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      CHKERRQ((*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hs;
       }
@@ -218,7 +215,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
         min[j] = PetscMin(r[j],2.0);
         u[j] = x[(i-1)*dof+j]+PetscMax(0,PetscMin(min[j],alpha[0]+gamma[0]*r[j]))*(x[(i-1)*dof+j]-x[(i-2)*dof+j]);
       }
-      ierr =  (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      CHKERRQ((*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hf;
       }
@@ -234,7 +231,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
         min[j] = PetscMin(r[j],2.0);
         u[j] = x[(i-1)*dof+j]+PetscMax(0,PetscMin(min[j],alpha[0]+gamma[0]*r[j]))*(x[(i-1)*dof+j]-x[(i-2)*dof+j]);
       }
-      ierr = (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      CHKERRQ((*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hf;
       }
@@ -250,7 +247,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
         min[j] = PetscMin(r[j],2.0);
         u[j] = x[(i-1)*dof+j]+PetscMax(0,PetscMin(min[j],alpha[0]+gamma[0]*r[j]))*(x[(i-1)*dof+j]-x[(i-2)*dof+j]);
       }
-      ierr = (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      CHKERRQ((*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hf;
       }
@@ -266,7 +263,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
         min[j] = PetscMin(r[j],2.0);
         u[j] = x[(i-1)*dof+j]+PetscMax(0,PetscMin(min[j],alpha[0]+gamma[0]*r[j]))*(x[(i-1)*dof+j]-x[(i-2)*dof+j]);
       }
-      ierr = (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      CHKERRQ((*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(i-1)*dof+j] -= ctx->flux[j]/hs;
       }
@@ -275,27 +272,26 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
       }
     }
   }
-  ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&cfl_idt,&ctx->cfl_idt,1,MPIU_SCALAR,MPIU_MAX,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
+  CHKERRQ(DMDAVecRestoreArray(da,Xloc,&x));
+  CHKERRQ(DMDAVecRestoreArray(da,F,&f));
+  CHKERRQ(DMRestoreLocalVector(da,&Xloc));
+  CHKERRMPI(MPI_Allreduce(&cfl_idt,&ctx->cfl_idt,1,MPIU_SCALAR,MPIU_MAX,PetscObjectComm((PetscObject)da)));
   if (0) {
     /* We need a way to inform the TS of a CFL constraint, this is a debugging fragment */
     PetscReal dt,tnow;
-    ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-    ierr = TSGetTime(ts,&tnow);CHKERRQ(ierr);
+    CHKERRQ(TSGetTimeStep(ts,&dt));
+    CHKERRQ(TSGetTime(ts,&tnow));
     if (dt > 0.5/ctx->cfl_idt) {
-      ierr = PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)(0.5/ctx->cfl_idt));CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(ctx->comm,"Stability constraint exceeded at t=%g, dt %g > %g\n",(double)tnow,(double)dt,(double)(0.5/ctx->cfl_idt)));
     }
   }
-  ierr = PetscFree4(r,min,alpha,gamma);CHKERRQ(ierr);
+  CHKERRQ(PetscFree4(r,min,alpha,gamma));
   PetscFunctionReturn(0);
  }
 
 static PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
 {
   FVCtx             *ctx = (FVCtx*)vctx;
-  PetscErrorCode    ierr;
   PetscInt          i,j,Mx,dof,xs,xm,islow = 0,sf = ctx->sf,fs = ctx->fs;
   PetscReal         hf,hs;
   PetscScalar       *x,*f,*r,*min,*alpha,*gamma;
@@ -303,18 +299,18 @@ static PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *v
   DM                da;
 
   PetscFunctionBeginUser;
-  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);                          /* Xloc contains ghost points                                     */
-  ierr = DMDAGetInfo(da,0,&Mx,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);   /* Mx is the number of center points                              */
+  CHKERRQ(TSGetDM(ts,&da));
+  CHKERRQ(DMGetLocalVector(da,&Xloc));                          /* Xloc contains ghost points                                     */
+  CHKERRQ(DMDAGetInfo(da,0,&Mx,0,0,0,0,0,&dof,0,0,0,0,0));   /* Mx is the number of center points                              */
   hs   = (ctx->xmax-ctx->xmin)/2.0*(ctx->hratio+1.0)/Mx;
   hf   = (ctx->xmax-ctx->xmin)/2.0*(1.0+1.0/ctx->hratio)/Mx;
-  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);       /* X is solution vector which does not contain ghost points       */
-  ierr = DMGlobalToLocalEnd  (da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-  ierr = VecZeroEntries(F);CHKERRQ(ierr);                                   /* F is the right hand side function corresponds to center points */
-  ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-  ierr = PetscMalloc4(dof,&r,dof,&min,dof,&alpha,dof,&gamma);CHKERRQ(ierr);
+  CHKERRQ(DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc));       /* X is solution vector which does not contain ghost points       */
+  CHKERRQ(DMGlobalToLocalEnd  (da,X,INSERT_VALUES,Xloc));
+  CHKERRQ(VecZeroEntries(F));                                   /* F is the right hand side function corresponds to center points */
+  CHKERRQ(DMDAVecGetArray(da,Xloc,&x));
+  CHKERRQ(VecGetArray(F,&f));
+  CHKERRQ(DMDAGetCorners(da,&xs,0,0,&xm,0,0));
+  CHKERRQ(PetscMalloc4(dof,&r,dof,&min,dof,&alpha,dof,&gamma));
 
   if (ctx->bctype == FVBC_OUTFLOW) {
     for (i=xs-2; i<0; i++) {
@@ -337,7 +333,7 @@ static PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *v
         min[j] = PetscMin(r[j],2.0);
         u[j] = x[(i-1)*dof+j]+PetscMax(0,PetscMin(min[j],alpha[0]+gamma[0]*r[j]))*(x[(i-1)*dof+j]-x[(i-2)*dof+j]);
       }
-      ierr = (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      CHKERRQ((*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hs;
       }
@@ -354,7 +350,7 @@ static PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *v
         min[j] = PetscMin(r[j],2.0);
         u[j] = x[(i-1)*dof+j]+PetscMax(0,PetscMin(min[j],alpha[0]+gamma[0]*r[j]))*(x[(i-1)*dof+j]-x[(i-2)*dof+j]);
       }
-      ierr = (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      CHKERRQ((*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hs;
       }
@@ -367,7 +363,7 @@ static PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *v
         min[j] = PetscMin(r[j],2.0);
         u[j] = x[(i-1)*dof+j]+PetscMax(0,PetscMin(min[j],alpha[0]+gamma[0]*r[j]))*(x[(i-1)*dof+j]-x[(i-2)*dof+j]);
       }
-      ierr = (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      CHKERRQ((*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed));
       if (i < xs+xm) {
         for (j=0; j<dof; j++)  f[islow*dof+j] += ctx->flux[j]/hs;
         islow++;
@@ -381,7 +377,7 @@ static PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *v
         min[j] = PetscMin(r[j],2.0);
         u[j] = x[(i-1)*dof+j]+PetscMax(0,PetscMin(min[j],alpha[0]+gamma[0]*r[j]))*(x[(i-1)*dof+j]-x[(i-2)*dof+j]);
       }
-      ierr = (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      CHKERRQ((*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hs;
       }
@@ -398,7 +394,7 @@ static PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *v
         min[j] = PetscMin(r[j],2.0);
         u[j] = x[(i-1)*dof+j]+PetscMax(0,PetscMin(min[j],alpha[0]+gamma[0]*r[j]))*(x[(i-1)*dof+j]-x[(i-2)*dof+j]);
       }
-      ierr = (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      CHKERRQ((*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(islow-1)*dof+j] -= ctx->flux[j]/hs;
       }
@@ -408,17 +404,16 @@ static PetscErrorCode FVRHSFunctionslow(TS ts,PetscReal time,Vec X,Vec F,void *v
       }
     }
   }
-  ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
-  ierr = PetscFree4(r,min,alpha,gamma);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArray(da,Xloc,&x));
+  CHKERRQ(VecRestoreArray(F,&f));
+  CHKERRQ(DMRestoreLocalVector(da,&Xloc));
+  CHKERRQ(PetscFree4(r,min,alpha,gamma));
   PetscFunctionReturn(0);
  }
 
 static PetscErrorCode FVRHSFunctionfast(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
 {
   FVCtx          *ctx = (FVCtx*)vctx;
-  PetscErrorCode ierr;
   PetscInt       i,j,Mx,dof,xs,xm,ifast = 0,sf = ctx->sf,fs = ctx->fs;
   PetscReal      hf,hs;
   PetscScalar    *x,*f,*r,*min,*alpha,*gamma;
@@ -426,18 +421,18 @@ static PetscErrorCode FVRHSFunctionfast(TS ts,PetscReal time,Vec X,Vec F,void *v
   DM             da;
 
   PetscFunctionBeginUser;
-  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);                          /* Xloc contains ghost points                                     */
-  ierr = DMDAGetInfo(da,0,&Mx,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);   /* Mx is the number of center points                              */
+  CHKERRQ(TSGetDM(ts,&da));
+  CHKERRQ(DMGetLocalVector(da,&Xloc));                          /* Xloc contains ghost points                                     */
+  CHKERRQ(DMDAGetInfo(da,0,&Mx,0,0,0,0,0,&dof,0,0,0,0,0));   /* Mx is the number of center points                              */
   hs   = (ctx->xmax-ctx->xmin)/2.0*(ctx->hratio+1.0)/Mx;
   hf   = (ctx->xmax-ctx->xmin)/2.0*(1.0+1.0/ctx->hratio)/Mx;
-  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);       /* X is solution vector which does not contain ghost points       */
-  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-  ierr = VecZeroEntries(F);CHKERRQ(ierr);                                   /* F is the right hand side function corresponds to center points */
-  ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-  ierr = PetscMalloc4(dof,&r,dof,&min,dof,&alpha,dof,&gamma);CHKERRQ(ierr);
+  CHKERRQ(DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc));       /* X is solution vector which does not contain ghost points       */
+  CHKERRQ(DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc));
+  CHKERRQ(VecZeroEntries(F));                                   /* F is the right hand side function corresponds to center points */
+  CHKERRQ(DMDAVecGetArray(da,Xloc,&x));
+  CHKERRQ(VecGetArray(F,&f));
+  CHKERRQ(DMDAGetCorners(da,&xs,0,0,&xm,0,0));
+  CHKERRQ(PetscMalloc4(dof,&r,dof,&min,dof,&alpha,dof,&gamma));
 
   if (ctx->bctype == FVBC_OUTFLOW) {
     for (i=xs-2; i<0; i++) {
@@ -460,7 +455,7 @@ static PetscErrorCode FVRHSFunctionfast(TS ts,PetscReal time,Vec X,Vec F,void *v
         min[j] = PetscMin(r[j],2.0);
         u[j] = x[(i-1)*dof+j]+PetscMax(0,PetscMin(min[j],alpha[0]+gamma[0]*r[j]))*(x[(i-1)*dof+j]-x[(i-2)*dof+j]);
       }
-      ierr = (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      CHKERRQ((*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed));
       if (i < xs+xm) {
         for (j=0; j<dof; j++) f[ifast*dof+j] += ctx->flux[j]/hf;
         ifast++;
@@ -474,7 +469,7 @@ static PetscErrorCode FVRHSFunctionfast(TS ts,PetscReal time,Vec X,Vec F,void *v
         min[j] = PetscMin(r[j],2.0);
         u[j] = x[(i-1)*dof+j]+PetscMax(0,PetscMin(min[j],alpha[0]+gamma[0]*r[j]))*(x[(i-1)*dof+j]-x[(i-2)*dof+j]);
       }
-      ierr = (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      CHKERRQ((*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(ifast-1)*dof+j] -= ctx->flux[j]/hf;
       }
@@ -491,7 +486,7 @@ static PetscErrorCode FVRHSFunctionfast(TS ts,PetscReal time,Vec X,Vec F,void *v
         min[j] = PetscMin(r[j],2.0);
         u[j] = x[(i-1)*dof+j]+PetscMax(0,PetscMin(min[j],alpha[0]+gamma[0]*r[j]))*(x[(i-1)*dof+j]-x[(i-2)*dof+j]);
       }
-      ierr = (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      CHKERRQ((*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(ifast-1)*dof+j] -= ctx->flux[j]/hf;
       }
@@ -508,16 +503,16 @@ static PetscErrorCode FVRHSFunctionfast(TS ts,PetscReal time,Vec X,Vec F,void *v
         min[j] = PetscMin(r[j],2.0);
         u[j] = x[(i-1)*dof+j]+PetscMax(0,PetscMin(min[j],alpha[0]+gamma[0]*r[j]))*(x[(i-1)*dof+j]-x[(i-2)*dof+j]);
       }
-      ierr =  (*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed);CHKERRQ(ierr);
+      CHKERRQ((*ctx->physics.flux)(ctx->physics.user,u,ctx->flux,&maxspeed));
       if (i > xs) {
         for (j=0; j<dof; j++) f[(ifast-1)*dof+j] -= ctx->flux[j]/hf;
       }
     }
   }
-  ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
-  ierr = PetscFree4(r,min,alpha,gamma);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArray(da,Xloc,&x));
+  CHKERRQ(VecRestoreArray(F,&f));
+  CHKERRQ(DMRestoreLocalVector(da,&Xloc));
+  CHKERRQ(PetscFree4(r,min,alpha,gamma));
   PetscFunctionReturn(0);
  }
 
@@ -525,17 +520,16 @@ static PetscErrorCode FVRHSFunctionfast(TS ts,PetscReal time,Vec X,Vec F,void *v
 
 PetscErrorCode FVSample(FVCtx *ctx,DM da,PetscReal time,Vec U)
 {
-  PetscErrorCode ierr;
   PetscScalar    *u,*uj,xj,xi;
   PetscInt       i,j,k,dof,xs,xm,Mx,count_slow,count_fast;
   const PetscInt N=200;
 
   PetscFunctionBeginUser;
   PetscCheck(ctx->physics.sample,PETSC_COMM_SELF,PETSC_ERR_SUP,"Physics has not provided a sampling function");
-  ierr = DMDAGetInfo(da,0,&Mx,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
-  ierr = PetscMalloc1(dof,&uj);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetInfo(da,0,&Mx,0,0,0,0,0,&dof,0,0,0,0,0));
+  CHKERRQ(DMDAGetCorners(da,&xs,0,0,&xm,0,0));
+  CHKERRQ(DMDAVecGetArray(da,U,&u));
+  CHKERRQ(PetscMalloc1(dof,&uj));
   const PetscReal hs = (ctx->xmax-ctx->xmin)/2.0*(ctx->hratio+1.0)/Mx;
   const PetscReal hf = (ctx->xmax-ctx->xmin)/2.0*(1.0+1.0/ctx->hratio)/Mx;
   count_slow = Mx/(1+ctx->hratio);
@@ -547,7 +541,7 @@ PetscErrorCode FVSample(FVCtx *ctx,DM da,PetscReal time,Vec U)
       for (k=0; k<dof; k++) u[i*dof+k] = 0;
       for (j=0; j<N+1; j++) {
         xj = xi+hs*(j-N/2)/(PetscReal)N;
-        ierr = (*ctx->physics.sample)(ctx->physics.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj);CHKERRQ(ierr);
+        CHKERRQ((*ctx->physics.sample)(ctx->physics.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj));
         for (k=0; k<dof; k++) u[i*dof+k] += ((j==0 || j==N) ? 0.5 : 1.0)*uj[k]/N;
       }
     } else if ((ctx->xmax-ctx->xmin)*0.25+(i-count_slow/2)*hf+0.5*hf<(ctx->xmax-ctx->xmin)*0.75) {
@@ -556,7 +550,7 @@ PetscErrorCode FVSample(FVCtx *ctx,DM da,PetscReal time,Vec U)
       for (k=0; k<dof; k++) u[i*dof+k] = 0;
       for (j=0; j<N+1; j++) {
         xj = xi+hf*(j-N/2)/(PetscReal)N;
-        ierr = (*ctx->physics.sample)(ctx->physics.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj);CHKERRQ(ierr);
+        CHKERRQ((*ctx->physics.sample)(ctx->physics.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj));
         for (k=0; k<dof; k++) u[i*dof+k] += ((j==0 || j==N) ? 0.5 : 1.0)*uj[k]/N;
       }
     } else {
@@ -565,19 +559,18 @@ PetscErrorCode FVSample(FVCtx *ctx,DM da,PetscReal time,Vec U)
       for (k=0; k<dof; k++) u[i*dof+k] = 0;
       for (j=0; j<N+1; j++) {
         xj = xi+hs*(j-N/2)/(PetscReal)N;
-        ierr = (*ctx->physics.sample)(ctx->physics.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj);CHKERRQ(ierr);
+        CHKERRQ((*ctx->physics.sample)(ctx->physics.user,ctx->initial,ctx->bctype,ctx->xmin,ctx->xmax,time,xj,uj));
         for (k=0; k<dof; k++) u[i*dof+k] += ((j==0 || j==N) ? 0.5 : 1.0)*uj[k]/N;
       }
     }
   }
-  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
-  ierr = PetscFree(uj);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArray(da,U,&u));
+  CHKERRQ(PetscFree(uj));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
 {
-  PetscErrorCode    ierr;
   PetscReal         xmin,xmax;
   PetscScalar       sum,tvsum,tvgsum;
   const PetscScalar *x;
@@ -586,55 +579,54 @@ static PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
   PetscBool         iascii;
 
   PetscFunctionBeginUser;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     /* PETSc lacks a function to compute total variation norm (difficult in multiple dimensions), we do it here */
-    ierr  = DMGetLocalVector(da,&Xloc);CHKERRQ(ierr);
-    ierr  = DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-    ierr  = DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
-    ierr  = DMDAVecGetArrayRead(da,Xloc,(void*)&x);CHKERRQ(ierr);
-    ierr  = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-    ierr  = DMDAGetInfo(da,0,&Mx,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
+    CHKERRQ(DMGetLocalVector(da,&Xloc));
+    CHKERRQ(DMGlobalToLocalBegin(da,X,INSERT_VALUES,Xloc));
+    CHKERRQ(DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc));
+    CHKERRQ(DMDAVecGetArrayRead(da,Xloc,(void*)&x));
+    CHKERRQ(DMDAGetCorners(da,&xs,0,0,&xm,0,0));
+    CHKERRQ(DMDAGetInfo(da,0,&Mx,0,0,0,0,0,&dof,0,0,0,0,0));
     tvsum = 0;
     for (i=xs; i<xs+xm; i++) {
       for (j=0; j<dof; j++) tvsum += PetscAbsScalar(x[i*dof+j]-x[(i-1)*dof+j]);
     }
-    ierr = MPI_Allreduce(&tvsum,&tvgsum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
-    ierr = DMDAVecRestoreArrayRead(da,Xloc,(void*)&x);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
+    CHKERRMPI(MPI_Allreduce(&tvsum,&tvgsum,1,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)da)));
+    CHKERRQ(DMDAVecRestoreArrayRead(da,Xloc,(void*)&x));
+    CHKERRQ(DMRestoreLocalVector(da,&Xloc));
 
-    ierr = VecMin(X,&imin,&xmin);CHKERRQ(ierr);
-    ierr = VecMax(X,&imax,&xmax);CHKERRQ(ierr);
-    ierr = VecSum(X,&sum);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Solution range [%g,%g] with minimum at %D, mean %g, ||x||_TV %g\n",(double)xmin,(double)xmax,imin,(double)(sum/Mx),(double)(tvgsum/Mx));CHKERRQ(ierr);
+    CHKERRQ(VecMin(X,&imin,&xmin));
+    CHKERRQ(VecMax(X,&imax,&xmax));
+    CHKERRQ(VecSum(X,&sum));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Solution range [%g,%g] with minimum at %D, mean %g, ||x||_TV %g\n",(double)xmin,(double)xmax,imin,(double)(sum/Mx),(double)(tvgsum/Mx)));
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type not supported");
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SolutionErrorNorms(FVCtx *ctx,DM da,PetscReal t,Vec X,PetscReal *nrm1)
 {
-  PetscErrorCode    ierr;
   Vec               Y;
   PetscInt          i,Mx,count_slow=0,count_fast=0;
   const PetscScalar *ptr_X,*ptr_Y;
 
   PetscFunctionBeginUser;
-  ierr = VecGetSize(X,&Mx);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
-  ierr = FVSample(ctx,da,t,Y);CHKERRQ(ierr);
+  CHKERRQ(VecGetSize(X,&Mx));
+  CHKERRQ(VecDuplicate(X,&Y));
+  CHKERRQ(FVSample(ctx,da,t,Y));
   const PetscReal hs = (ctx->xmax-ctx->xmin)/2.0*(ctx->hratio+1.0)/Mx;
   const PetscReal hf = (ctx->xmax-ctx->xmin)/2.0*(1.0+1.0/ctx->hratio)/Mx;
   count_slow = (PetscReal)Mx/(1.0+ctx->hratio);
   count_fast = Mx-count_slow;
-  ierr = VecGetArrayRead(X,&ptr_X);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Y,&ptr_Y);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(X,&ptr_X));
+  CHKERRQ(VecGetArrayRead(Y,&ptr_Y));
   for (i=0; i<Mx; i++) {
     if (i < count_slow/2 || i > count_slow/2+count_fast-1) *nrm1 +=  hs*PetscAbs(ptr_X[i]-ptr_Y[i]);
     else *nrm1 += hf*PetscAbs(ptr_X[i]-ptr_Y[i]);
   }
-  ierr = VecRestoreArrayRead(X,&ptr_X);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Y,&ptr_Y);CHKERRQ(ierr);
-  ierr = VecDestroy(&Y);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(X,&ptr_X));
+  CHKERRQ(VecRestoreArrayRead(Y,&ptr_Y));
+  CHKERRQ(VecDestroy(&Y));
   PetscFunctionReturn(0);
 }
 
@@ -654,10 +646,10 @@ int main(int argc,char *argv[])
 
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = PetscMemzero(&ctx,sizeof(ctx));CHKERRQ(ierr);
+  CHKERRQ(PetscMemzero(&ctx,sizeof(ctx)));
 
   /* Register physical models to be available on the command line */
-  ierr = PetscFunctionListAdd(&physics,"advect",PhysicsCreate_Advect);CHKERRQ(ierr);
+  CHKERRQ(PetscFunctionListAdd(&physics,"advect",PhysicsCreate_Advect));
 
   ctx.comm = comm;
   ctx.cfl  = 0.9;
@@ -665,49 +657,49 @@ int main(int argc,char *argv[])
   ctx.xmin = -1.0;
   ctx.xmax = 1.0;
   ierr = PetscOptionsBegin(comm,NULL,"Finite Volume solver options","");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-xmin","X min","",ctx.xmin,&ctx.xmin,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-xmax","X max","",ctx.xmax,&ctx.xmax,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-draw","Draw solution vector, bitwise OR of (1=initial,2=final,4=final error)","",draw,&draw,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-view_final","Write final solution in ASCII MATLAB format to given file name","",final_fname,final_fname,sizeof(final_fname),&view_final);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-initial","Initial condition (depends on the physics)","",ctx.initial,&ctx.initial,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-exact","Compare errors with exact solution","",ctx.exact,&ctx.exact,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simulation","Compare errors with reference solution","",ctx.simulation,&ctx.simulation,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-cfl","CFL number to time step at","",ctx.cfl,&ctx.cfl,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-bc_type","Boundary condition","",FVBCTypes,(PetscEnum)ctx.bctype,(PetscEnum*)&ctx.bctype,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-hratio","Spacing ratio","",ctx.hratio,&ctx.hratio,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsReal("-xmin","X min","",ctx.xmin,&ctx.xmin,NULL));
+  CHKERRQ(PetscOptionsReal("-xmax","X max","",ctx.xmax,&ctx.xmax,NULL));
+  CHKERRQ(PetscOptionsInt("-draw","Draw solution vector, bitwise OR of (1=initial,2=final,4=final error)","",draw,&draw,NULL));
+  CHKERRQ(PetscOptionsString("-view_final","Write final solution in ASCII MATLAB format to given file name","",final_fname,final_fname,sizeof(final_fname),&view_final));
+  CHKERRQ(PetscOptionsInt("-initial","Initial condition (depends on the physics)","",ctx.initial,&ctx.initial,NULL));
+  CHKERRQ(PetscOptionsBool("-exact","Compare errors with exact solution","",ctx.exact,&ctx.exact,NULL));
+  CHKERRQ(PetscOptionsBool("-simulation","Compare errors with reference solution","",ctx.simulation,&ctx.simulation,NULL));
+  CHKERRQ(PetscOptionsReal("-cfl","CFL number to time step at","",ctx.cfl,&ctx.cfl,NULL));
+  CHKERRQ(PetscOptionsEnum("-bc_type","Boundary condition","",FVBCTypes,(PetscEnum)ctx.bctype,(PetscEnum*)&ctx.bctype,NULL));
+  CHKERRQ(PetscOptionsInt("-hratio","Spacing ratio","",ctx.hratio,&ctx.hratio,NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* Choose the physics from the list of registered models */
   {
     PetscErrorCode (*r)(FVCtx*);
-    ierr = PetscFunctionListFind(physics,physname,&r);CHKERRQ(ierr);
+    CHKERRQ(PetscFunctionListFind(physics,physname,&r));
     PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Physics '%s' not found",physname);
     /* Create the physics, will set the number of fields and their names */
-    ierr = (*r)(&ctx);CHKERRQ(ierr);
+    CHKERRQ((*r)(&ctx));
   }
 
   /* Create a DMDA to manage the parallel grid */
-  ierr = DMDACreate1d(comm,DM_BOUNDARY_PERIODIC,50,ctx.physics.dof,2,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate1d(comm,DM_BOUNDARY_PERIODIC,50,ctx.physics.dof,2,NULL,&da));
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
   /* Inform the DMDA of the field names provided by the physics. */
   /* The names will be shown in the title bars when run with -ts_monitor_draw_solution */
   for (i=0; i<ctx.physics.dof; i++) {
-    ierr = DMDASetFieldName(da,i,ctx.physics.fieldname[i]);CHKERRQ(ierr);
+    CHKERRQ(DMDASetFieldName(da,i,ctx.physics.fieldname[i]));
   }
-  ierr = DMDAGetInfo(da,0,&Mx,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetInfo(da,0,&Mx,0,0,0,0,0,&dof,0,0,0,0,0));
+  CHKERRQ(DMDAGetCorners(da,&xs,0,0,&xm,0,0));
 
   /* Set coordinates of cell centers */
-  ierr = DMDASetUniformCoordinates(da,ctx.xmin+0.5*(ctx.xmax-ctx.xmin)/Mx,ctx.xmax+0.5*(ctx.xmax-ctx.xmin)/Mx,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(DMDASetUniformCoordinates(da,ctx.xmin+0.5*(ctx.xmax-ctx.xmin)/Mx,ctx.xmax+0.5*(ctx.xmax-ctx.xmin)/Mx,0,0,0,0));
 
   /* Allocate work space for the Finite Volume solver (so it doesn't have to be reallocated on each function evaluation) */
-  ierr = PetscMalloc3(dof,&ctx.u,dof,&ctx.flux,dof,&ctx.speeds);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc3(dof,&ctx.u,dof,&ctx.flux,dof,&ctx.speeds));
 
   /* Create a vector to store the solution and to save the initial state */
-  ierr = DMCreateGlobalVector(da,&X);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&X0);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&R);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(da,&X));
+  CHKERRQ(VecDuplicate(X,&X0));
+  CHKERRQ(VecDuplicate(X,&R));
 
   /* create index for slow parts and fast parts*/
   count_slow = Mx/(1+ctx.hratio);
@@ -715,51 +707,51 @@ int main(int argc,char *argv[])
   count_fast = Mx-count_slow;
   ctx.sf = count_slow/2;
   ctx.fs = ctx.sf + count_fast;
-  ierr = PetscMalloc1(xm*dof,&index_slow);CHKERRQ(ierr);
-  ierr = PetscMalloc1(xm*dof,&index_fast);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(xm*dof,&index_slow));
+  CHKERRQ(PetscMalloc1(xm*dof,&index_fast));
   for (i=xs; i<xs+xm; i++) {
     if (i < count_slow/2 || i > count_slow/2+count_fast-1)
       for (k=0; k<dof; k++) index_slow[islow++] = i*dof+k;
     else
       for (k=0; k<dof; k++) index_fast[ifast++] = i*dof+k;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,islow,index_slow,PETSC_COPY_VALUES,&ctx.iss);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,ifast,index_fast,PETSC_COPY_VALUES,&ctx.isf);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(PETSC_COMM_WORLD,islow,index_slow,PETSC_COPY_VALUES,&ctx.iss));
+  CHKERRQ(ISCreateGeneral(PETSC_COMM_WORLD,ifast,index_fast,PETSC_COPY_VALUES,&ctx.isf));
 
   /* Create a time-stepping object */
-  ierr = TSCreate(comm,&ts);CHKERRQ(ierr);
-  ierr = TSSetDM(ts,da);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,R,FVRHSFunction,&ctx);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetIS(ts,"slow",ctx.iss);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetIS(ts,"fast",ctx.isf);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetRHSFunction(ts,"slow",NULL,FVRHSFunctionslow,&ctx);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetRHSFunction(ts,"fast",NULL,FVRHSFunctionfast,&ctx);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(comm,&ts));
+  CHKERRQ(TSSetDM(ts,da));
+  CHKERRQ(TSSetRHSFunction(ts,R,FVRHSFunction,&ctx));
+  CHKERRQ(TSRHSSplitSetIS(ts,"slow",ctx.iss));
+  CHKERRQ(TSRHSSplitSetIS(ts,"fast",ctx.isf));
+  CHKERRQ(TSRHSSplitSetRHSFunction(ts,"slow",NULL,FVRHSFunctionslow,&ctx));
+  CHKERRQ(TSRHSSplitSetRHSFunction(ts,"fast",NULL,FVRHSFunctionfast,&ctx));
 
-  ierr = TSSetType(ts,TSMPRK);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts,10);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  CHKERRQ(TSSetType(ts,TSMPRK));
+  CHKERRQ(TSSetMaxTime(ts,10));
+  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
 
   /* Compute initial conditions and starting time step */
-  ierr = FVSample(&ctx,da,0,X0);CHKERRQ(ierr);
-  ierr = FVRHSFunction(ts,0,X0,X,(void*)&ctx);CHKERRQ(ierr); /* Initial function evaluation, only used to determine max speed */
-  ierr = VecCopy(X0,X);CHKERRQ(ierr);                        /* The function value was not used so we set X=X0 again */
-  ierr = TSSetTimeStep(ts,ctx.cfl/ctx.cfl_idt);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr); /* Take runtime options */
-  ierr = SolutionStatsView(da,X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(FVSample(&ctx,da,0,X0));
+  CHKERRQ(FVRHSFunction(ts,0,X0,X,(void*)&ctx)); /* Initial function evaluation, only used to determine max speed */
+  CHKERRQ(VecCopy(X0,X));                        /* The function value was not used so we set X=X0 again */
+  CHKERRQ(TSSetTimeStep(ts,ctx.cfl/ctx.cfl_idt));
+  CHKERRQ(TSSetFromOptions(ts)); /* Take runtime options */
+  CHKERRQ(SolutionStatsView(da,X,PETSC_VIEWER_STDOUT_WORLD));
   {
     PetscInt          steps;
     PetscScalar       mass_initial,mass_final,mass_difference,mass_differenceg;
     const PetscScalar *ptr_X,*ptr_X0;
     const PetscReal   hs  = (ctx.xmax-ctx.xmin)/2.0/count_slow;
     const PetscReal   hf  = (ctx.xmax-ctx.xmin)/2.0/count_fast;
-    ierr = TSSolve(ts,X);CHKERRQ(ierr);
-    ierr = TSGetSolveTime(ts,&ptime);CHKERRQ(ierr);
-    ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
+    CHKERRQ(TSSolve(ts,X));
+    CHKERRQ(TSGetSolveTime(ts,&ptime));
+    CHKERRQ(TSGetStepNumber(ts,&steps));
     /* calculate the total mass at initial time and final time */
     mass_initial = 0.0;
     mass_final   = 0.0;
-    ierr = DMDAVecGetArrayRead(da,X0,(void*)&ptr_X0);CHKERRQ(ierr);
-    ierr = DMDAVecGetArrayRead(da,X,(void*)&ptr_X);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecGetArrayRead(da,X0,(void*)&ptr_X0));
+    CHKERRQ(DMDAVecGetArrayRead(da,X,(void*)&ptr_X));
     for (i=xs; i<xs+xm; i++) {
       if (i < ctx.sf || i > ctx.fs-1) {
         for (k=0; k<dof; k++) {
@@ -773,16 +765,16 @@ int main(int argc,char *argv[])
         }
       }
     }
-    ierr = DMDAVecRestoreArrayRead(da,X0,(void*)&ptr_X0);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArrayRead(da,X,(void*)&ptr_X);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecRestoreArrayRead(da,X0,(void*)&ptr_X0));
+    CHKERRQ(DMDAVecRestoreArrayRead(da,X,(void*)&ptr_X));
     mass_difference = mass_final-mass_initial;
-    ierr = MPI_Allreduce(&mass_difference,&mass_differenceg,1,MPIU_SCALAR,MPIU_SUM,comm);CHKERRMPI(ierr);
-    ierr = PetscPrintf(comm,"Mass difference %g\n",(double)mass_differenceg);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"Final time %g, steps %D\n",(double)ptime,steps);CHKERRQ(ierr);
+    CHKERRMPI(MPI_Allreduce(&mass_difference,&mass_differenceg,1,MPIU_SCALAR,MPIU_SUM,comm));
+    CHKERRQ(PetscPrintf(comm,"Mass difference %g\n",(double)mass_differenceg));
+    CHKERRQ(PetscPrintf(comm,"Final time %g, steps %D\n",(double)ptime,steps));
     if (ctx.exact) {
       PetscReal nrm1 = 0;
-      ierr = SolutionErrorNorms(&ctx,da,ptime,X,&nrm1);CHKERRQ(ierr);
-      ierr = PetscPrintf(comm,"Error ||x-x_e||_1 %g\n",(double)nrm1);CHKERRQ(ierr);
+      CHKERRQ(SolutionErrorNorms(&ctx,da,ptime,X,&nrm1));
+      CHKERRQ(PetscPrintf(comm,"Error ||x-x_e||_1 %g\n",(double)nrm1));
     }
     if (ctx.simulation) {
       PetscReal         nrm1 = 0;
@@ -791,60 +783,60 @@ int main(int argc,char *argv[])
       Vec               XR;
       PetscBool         flg;
       const PetscScalar *ptr_XR;
-      ierr = PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg);CHKERRQ(ierr);
+      CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg));
       PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
-      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-      ierr = VecDuplicate(X0,&XR);CHKERRQ(ierr);
-      ierr = VecLoad(XR,fd);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-      ierr = VecGetArrayRead(X,&ptr_X);CHKERRQ(ierr);
-      ierr = VecGetArrayRead(XR,&ptr_XR);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&fd));
+      CHKERRQ(VecDuplicate(X0,&XR));
+      CHKERRQ(VecLoad(XR,fd));
+      CHKERRQ(PetscViewerDestroy(&fd));
+      CHKERRQ(VecGetArrayRead(X,&ptr_X));
+      CHKERRQ(VecGetArrayRead(XR,&ptr_XR));
       for (i=0; i<Mx; i++) {
         if (i < count_slow/2 || i > count_slow/2+count_fast-1) nrm1 = nrm1 + hs*PetscAbs(ptr_X[i]-ptr_XR[i]);
         else nrm1 = nrm1 + hf*PetscAbs(ptr_X[i]-ptr_XR[i]);
       }
-      ierr = VecRestoreArrayRead(X,&ptr_X);CHKERRQ(ierr);
-      ierr = VecRestoreArrayRead(XR,&ptr_XR);CHKERRQ(ierr);
-      ierr = PetscPrintf(comm,"Error ||x-x_e||_1 %g\n",(double)nrm1);CHKERRQ(ierr);
-      ierr = VecDestroy(&XR);CHKERRQ(ierr);
+      CHKERRQ(VecRestoreArrayRead(X,&ptr_X));
+      CHKERRQ(VecRestoreArrayRead(XR,&ptr_XR));
+      CHKERRQ(PetscPrintf(comm,"Error ||x-x_e||_1 %g\n",(double)nrm1));
+      CHKERRQ(VecDestroy(&XR));
     }
   }
 
-  ierr = SolutionStatsView(da,X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  if (draw & 0x1) { ierr = VecView(X0,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr); }
-  if (draw & 0x2) { ierr = VecView(X,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr); }
+  CHKERRQ(SolutionStatsView(da,X,PETSC_VIEWER_STDOUT_WORLD));
+  if (draw & 0x1) CHKERRQ(VecView(X0,PETSC_VIEWER_DRAW_WORLD));
+  if (draw & 0x2) CHKERRQ(VecView(X,PETSC_VIEWER_DRAW_WORLD));
   if (draw & 0x4) {
     Vec Y;
-    ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
-    ierr = FVSample(&ctx,da,ptime,Y);CHKERRQ(ierr);
-    ierr = VecAYPX(Y,-1,X);CHKERRQ(ierr);
-    ierr = VecView(Y,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
-    ierr = VecDestroy(&Y);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(X,&Y));
+    CHKERRQ(FVSample(&ctx,da,ptime,Y));
+    CHKERRQ(VecAYPX(Y,-1,X));
+    CHKERRQ(VecView(Y,PETSC_VIEWER_DRAW_WORLD));
+    CHKERRQ(VecDestroy(&Y));
   }
 
   if (view_final) {
     PetscViewer viewer;
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,final_fname,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = VecView(X,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIOpen(PETSC_COMM_WORLD,final_fname,&viewer));
+    CHKERRQ(PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB));
+    CHKERRQ(VecView(X,viewer));
+    CHKERRQ(PetscViewerPopFormat(viewer));
+    CHKERRQ(PetscViewerDestroy(&viewer));
   }
 
   /* Clean up */
-  ierr = (*ctx.physics.destroy)(ctx.physics.user);CHKERRQ(ierr);
-  for (i=0; i<ctx.physics.dof; i++) {ierr = PetscFree(ctx.physics.fieldname[i]);CHKERRQ(ierr);}
-  ierr = PetscFree3(ctx.u,ctx.flux,ctx.speeds);CHKERRQ(ierr);
-  ierr = ISDestroy(&ctx.iss);CHKERRQ(ierr);
-  ierr = ISDestroy(&ctx.isf);CHKERRQ(ierr);
-  ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&X0);CHKERRQ(ierr);
-  ierr = VecDestroy(&R);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = PetscFree(index_slow);CHKERRQ(ierr);
-  ierr = PetscFree(index_fast);CHKERRQ(ierr);
-  ierr = PetscFunctionListDestroy(&physics);CHKERRQ(ierr);
+  CHKERRQ((*ctx.physics.destroy)(ctx.physics.user));
+  for (i=0; i<ctx.physics.dof; i++) CHKERRQ(PetscFree(ctx.physics.fieldname[i]));
+  CHKERRQ(PetscFree3(ctx.u,ctx.flux,ctx.speeds));
+  CHKERRQ(ISDestroy(&ctx.iss));
+  CHKERRQ(ISDestroy(&ctx.isf));
+  CHKERRQ(VecDestroy(&X));
+  CHKERRQ(VecDestroy(&X0));
+  CHKERRQ(VecDestroy(&R));
+  CHKERRQ(DMDestroy(&da));
+  CHKERRQ(TSDestroy(&ts));
+  CHKERRQ(PetscFree(index_slow));
+  CHKERRQ(PetscFree(index_fast));
+  CHKERRQ(PetscFunctionListDestroy(&physics));
   ierr = PetscFinalize();
   return ierr;
 }

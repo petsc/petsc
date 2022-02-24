@@ -12,17 +12,16 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* server indicates we WAIT for someone to connect to our socket */
-  ierr = PetscViewerSocketOpen(PETSC_COMM_WORLD,"server",PETSC_DEFAULT,&fd);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerSocketOpen(PETSC_COMM_WORLD,"server",PETSC_DEFAULT,&fd));
 
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,10000,PETSC_DECIDE,&b);CHKERRQ(ierr);
+  CHKERRQ(VecCreateMPI(PETSC_COMM_WORLD,10000,PETSC_DECIDE,&b));
   for (i=0; i<1000; i++) {
-    ierr = VecView(b,fd);CHKERRQ(ierr);
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
-    ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-    ierr = VecLoad(b,fd);CHKERRQ(ierr);
+    CHKERRQ(VecView(b,fd));
+    CHKERRQ(VecDestroy(&b));
+    CHKERRQ(VecCreate(PETSC_COMM_WORLD,&b));
+    CHKERRQ(VecLoad(b,fd));
   }
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&b));
   ierr = PetscFinalize();
   return ierr;
 }
-

@@ -27,7 +27,7 @@ int main(int argc,char **argv)
     fprintf(stdout,"%-15s : %e sec\n","PetscTime",(y-x)/10.0);
   }
   PetscTime(&x);
-  ierr = PetscSleep(10);CHKERRQ(ierr);
+  CHKERRQ(PetscSleep(10));
   PetscTime(&y);
   fprintf(stdout,"%-15s : %e sec - Slept for 10 sec \n","PetscTime",(y-x));
   ierr = PetscFinalize();

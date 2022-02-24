@@ -19,51 +19,51 @@ int main(int argc,char **args)
   PetscScalar    one=1.0;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),NULL);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),NULL));
 
   /* Load matrix A */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetType(A,MATAIJ));
+  CHKERRQ(MatLoad(A,fd));
+  CHKERRQ(PetscViewerDestroy(&fd));
 
   /* Create identity matrix B */
-  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,m,m,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(B);CHKERRQ(ierr);
-  ierr = MatSetUp(B);CHKERRQ(ierr);
+  CHKERRQ(MatGetLocalSize(A,&m,&n));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&B));
+  CHKERRQ(MatSetSizes(B,m,m,PETSC_DECIDE,PETSC_DECIDE));
+  CHKERRQ(MatSetType(B,MATAIJ));
+  CHKERRQ(MatSetFromOptions(B));
+  CHKERRQ(MatSetUp(B));
 
-  ierr = MatGetOwnershipRange(B,&rstart,&rend);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(B,&rstart,&rend));
   for (i=rstart; i<rend; i++) {
-    ierr = MatSetValues(B,1,&i,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(B,1,&i,1,&i,&one,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
 
   /* Compute AtA = A^T*B*A, B = identity matrix */
-  ierr = MatPtAP(B,A,MAT_INITIAL_MATRIX,fill,&AtA);CHKERRQ(ierr);
-  ierr = MatPtAP(B,A,MAT_REUSE_MATRIX,fill,&AtA);CHKERRQ(ierr);
+  CHKERRQ(MatPtAP(B,A,MAT_INITIAL_MATRIX,fill,&AtA));
+  CHKERRQ(MatPtAP(B,A,MAT_REUSE_MATRIX,fill,&AtA));
   if (rank == 0) printf("C = A^T*B*A is done...\n");
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&B));
 
   /* Compute C = A^T*A */
-  ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+  CHKERRQ(MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,fill,&C));
   if (rank == 0) printf("C = A^T*A is done...\n");
-  ierr = MatTransposeMatMult(A,A,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
+  CHKERRQ(MatTransposeMatMult(A,A,MAT_REUSE_MATRIX,fill,&C));
   if (rank == 0) printf("REUSE C = A^T*A is done...\n");
 
   /* Compare C and AtA */
-  ierr = MatMultEqual(C,AtA,20,&equal);CHKERRQ(ierr);
+  CHKERRQ(MatMultEqual(C,AtA,20,&equal));
   PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A^T*A != At*A");
-  ierr = MatDestroy(&AtA);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&AtA));
 
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&C));
+  CHKERRQ(MatDestroy(&A));
   ierr = PetscFinalize();
   return ierr;
 }

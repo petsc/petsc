@@ -3,13 +3,11 @@
 
 static PetscErrorCode OutputBIN(MPI_Comm comm,const char *filename,PetscViewer *viewer)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscViewerCreate(comm,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(*viewer,filename);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerCreate(comm,viewer));
+  CHKERRQ(PetscViewerSetType(*viewer,PETSCVIEWERBINARY));
+  CHKERRQ(PetscViewerFileSetMode(*viewer,FILE_MODE_WRITE));
+  CHKERRQ(PetscViewerFileSetName(*viewer,filename));
   PetscFunctionReturn(0);
 }
 
@@ -18,54 +16,53 @@ static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj,TS ts,PetscI
   PetscViewer    viewer;
   char           filename[PETSC_MAX_PATH_LEN];
   PetscReal      tprev;
-  PetscErrorCode ierr;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)ts,&comm));
   if (stepnum == 0) {
     PetscMPIInt rank;
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Comm_rank(comm,&rank));
     if (rank == 0) {
-      ierr = PetscRMTree("Visualization-data");CHKERRQ(ierr);
-      ierr = PetscMkdir("Visualization-data");CHKERRQ(ierr);
+      CHKERRQ(PetscRMTree("Visualization-data"));
+      CHKERRQ(PetscMkdir("Visualization-data"));
     }
     if (tj->names) {
       PetscViewer bnames;
-      ierr = PetscViewerBinaryOpen(comm,"Visualization-data/variablenames",FILE_MODE_WRITE,&bnames);CHKERRQ(ierr);
-      ierr = PetscViewerBinaryWriteStringArray(bnames,(const char *const *)tj->names);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(&bnames);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerBinaryOpen(comm,"Visualization-data/variablenames",FILE_MODE_WRITE,&bnames));
+      CHKERRQ(PetscViewerBinaryWriteStringArray(bnames,(const char *const *)tj->names));
+      CHKERRQ(PetscViewerDestroy(&bnames));
     }
-    ierr = PetscSNPrintf(filename,sizeof(filename),"Visualization-data/SA-%06d.bin",stepnum);CHKERRQ(ierr);
-    ierr = OutputBIN(comm,filename,&viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscSNPrintf(filename,sizeof(filename),"Visualization-data/SA-%06d.bin",stepnum));
+    CHKERRQ(OutputBIN(comm,filename,&viewer));
     if (!tj->transform) {
-      ierr = VecView(X,viewer);CHKERRQ(ierr);
+      CHKERRQ(VecView(X,viewer));
     } else {
       Vec XX;
-      ierr = (*tj->transform)(tj->transformctx,X,&XX);CHKERRQ(ierr);
-      ierr = VecView(XX,viewer);CHKERRQ(ierr);
-      ierr = VecDestroy(&XX);CHKERRQ(ierr);
+      CHKERRQ((*tj->transform)(tj->transformctx,X,&XX));
+      CHKERRQ(VecView(XX,viewer));
+      CHKERRQ(VecDestroy(&XX));
     }
-    ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL));
+    CHKERRQ(PetscViewerDestroy(&viewer));
     PetscFunctionReturn(0);
   }
-  ierr = PetscSNPrintf(filename,sizeof(filename),"Visualization-data/SA-%06d.bin",stepnum);CHKERRQ(ierr);
-  ierr = OutputBIN(comm,filename,&viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscSNPrintf(filename,sizeof(filename),"Visualization-data/SA-%06d.bin",stepnum));
+  CHKERRQ(OutputBIN(comm,filename,&viewer));
   if (!tj->transform) {
-    ierr = VecView(X,viewer);CHKERRQ(ierr);
+    CHKERRQ(VecView(X,viewer));
   } else {
     Vec XX;
-    ierr = (*tj->transform)(tj->transformctx,X,&XX);CHKERRQ(ierr);
-    ierr = VecView(XX,viewer);CHKERRQ(ierr);
-    ierr = VecDestroy(&XX);CHKERRQ(ierr);
+    CHKERRQ((*tj->transform)(tj->transformctx,X,&XX));
+    CHKERRQ(VecView(XX,viewer));
+    CHKERRQ(VecDestroy(&XX));
   }
-  ierr = PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryWrite(viewer,&time,1,PETSC_REAL));
 
-  ierr = TSGetPrevTime(ts,&tprev);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryWrite(viewer,&tprev,1,PETSC_REAL);CHKERRQ(ierr);
+  CHKERRQ(TSGetPrevTime(ts,&tprev));
+  CHKERRQ(PetscViewerBinaryWrite(viewer,&tprev,1,PETSC_REAL));
 
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDestroy(&viewer));
   PetscFunctionReturn(0);
 }
 

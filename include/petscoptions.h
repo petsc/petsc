@@ -107,6 +107,11 @@ typedef struct _p_PetscOptionItems {
   PetscOptions     options;
 } PetscOptionItems;
 
+#if defined(PETSC_CLANG_STATIC_ANALYZER)
+PetscErrorCode PetscOptionsBegin(MPI_Comm,const char*,const char*,const char*);
+PetscErrorCode PetscObjectOptionsBegin(PetscObject);
+PetscErrorCode PetscOptionsEnd(void);
+#else
 /*MC
     PetscOptionsBegin - Begins a set of queries on the options database that are related and should be
      displayed on the same window of a GUI that allows the user to set the options interactively. Often one should
@@ -157,9 +162,9 @@ M*/
 #define    PetscOptionsBegin(comm,prefix,mess,sec) 0; do {\
              PetscOptionItems PetscOptionsObjectBase;\
              PetscOptionItems *PetscOptionsObject = &PetscOptionsObjectBase; \
-             PetscMemzero(PetscOptionsObject,sizeof(PetscOptionItems)); \
+             PetscMemzero(PetscOptionsObject,sizeof(*PetscOptionsObject)); \
              for (PetscOptionsObject->count=(PetscOptionsPublish?-1:1); PetscOptionsObject->count<2; PetscOptionsObject->count++) {\
-             PetscErrorCode _5_ierr = PetscOptionsBegin_Private(PetscOptionsObject,comm,prefix,mess,sec);CHKERRQ(_5_ierr)
+             CHKERRQ(PetscOptionsBegin_Private(PetscOptionsObject,comm,prefix,mess,sec))
 
 /*MC
     PetscObjectOptionsBegin - Begins a set of queries on the options database that are related and should be
@@ -194,7 +199,7 @@ M*/
              PetscOptionItems *PetscOptionsObject = &PetscOptionsObjectBase; \
              PetscOptionsObject->options = ((PetscObject)obj)->options; \
              for (PetscOptionsObject->count=(PetscOptionsPublish?-1:1); PetscOptionsObject->count<2; PetscOptionsObject->count++) {\
-             PetscErrorCode _5_ierr = PetscObjectOptionsBegin_Private(PetscOptionsObject,obj);CHKERRQ(_5_ierr)
+             CHKERRQ(PetscObjectOptionsBegin_Private(PetscOptionsObject,obj))
 
 /*MC
     PetscOptionsEnd - Ends a set of queries on the options database that are related and should be
@@ -220,13 +225,39 @@ M*/
           PetscOptionsFList(), PetscOptionsEList(), PetscObjectOptionsBegin()
 
 M*/
-#define    PetscOptionsEnd() _5_ierr = PetscOptionsEnd_Private(PetscOptionsObject);CHKERRQ(_5_ierr);}} while (0)
+#define    PetscOptionsEnd() 0;CHKERRQ(PetscOptionsEnd_Private(PetscOptionsObject));}} while (0)
+#endif /* PETSC_CLANG_STATIC_ANALYZER */
 
 PETSC_EXTERN PetscErrorCode PetscOptionsBegin_Private(PetscOptionItems *,MPI_Comm,const char[],const char[],const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectOptionsBegin_Private(PetscOptionItems *,PetscObject);
 PETSC_EXTERN PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *);
 PETSC_EXTERN PetscErrorCode PetscOptionsHead(PetscOptionItems *,const char[]);
 
+#if defined(PETSC_CLANG_STATIC_ANALYZER)
+PetscErrorCode PetscOptionsTail(void);
+template <typename... T> PetscErrorCode PetscOptionsEnum(T...);
+template <typename... T> PetscErrorCode PetscOptionsInt(T...);
+template <typename... T> PetscErrorCode PetscOptionsBoundedInt(T...);
+template <typename... T> PetscErrorCode PetscOptionsRangeInt(T...);
+template <typename... T> PetscErrorCode PetscOptionsReal(T...);
+template <typename... T> PetscErrorCode PetscOptionsScalar(T...);
+template <typename... T> PetscErrorCode PetscOptionsName(T...);
+template <typename... T> PetscErrorCode PetscOptionsString(T...);
+template <typename... T> PetscErrorCode PetscOptionsBool(T...);
+template <typename... T> PetscErrorCode PetscOptionsBoolGroupBegin(T...);
+template <typename... T> PetscErrorCode PetscOptionsBoolGroup(T...);
+template <typename... T> PetscErrorCode PetscOptionsBoolGroupEnd(T...);
+template <typename... T> PetscErrorCode PetscOptionsFList(T...);
+template <typename... T> PetscErrorCode PetscOptionsEList(T...);
+template <typename... T> PetscErrorCode PetscOptionsRealArray(T...);
+template <typename... T> PetscErrorCode PetscOptionsScalarArray(T...);
+template <typename... T> PetscErrorCode PetscOptionsIntArray(T...);
+template <typename... T> PetscErrorCode PetscOptionsStringArray(T...);
+template <typename... T> PetscErrorCode PetscOptionsBoolArray(T...);
+template <typename... T> PetscErrorCode PetscOptionsEnumArray(T...);
+template <typename... T> PetscErrorCode PetscOptionsDeprecated(T...);
+template <typename... T> PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
+#else
 /*MC
      PetscOptionsTail - Ends a section of options begun with PetscOptionsHead()
             See, for example, KSPSetFromOptions_GMRES().
@@ -281,6 +312,7 @@ M*/
 #define PetscOptionsEnumArray(a,b,c,d,e,f,g) PetscOptionsEnumArray_Private(PetscOptionsObject,a,b,c,d,e,f,g)
 #define PetscOptionsDeprecated(a,b,c,d) PetscOptionsDeprecated_Private(PetscOptionsObject,a,b,c,d)
 #define PetscOptionsDeprecatedNoObject(a,b,c,d) PetscOptionsDeprecated_Private(NULL,a,b,c,d)
+#endif /* PETSC_CLANG_STATIC_ANALYZER */
 
 PETSC_EXTERN PetscErrorCode PetscOptionsEnum_Private(PetscOptionItems*,const char[],const char[],const char[],const char *const*,PetscEnum,PetscEnum*,PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscOptionsInt_Private(PetscOptionItems*,const char[],const char[],const char[],PetscInt,PetscInt*,PetscBool*,PetscInt,PetscInt);

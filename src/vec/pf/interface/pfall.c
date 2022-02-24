@@ -21,19 +21,16 @@ PETSC_EXTERN PetscErrorCode PFCreate_Matlab(PF,void*);
 @*/
 PetscErrorCode  PFRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (PFRegisterAllCalled) PetscFunctionReturn(0);
   PFRegisterAllCalled = PETSC_TRUE;
 
-  ierr = PFRegister(PFCONSTANT,         PFCreate_Constant);CHKERRQ(ierr);
-  ierr = PFRegister(PFSTRING,           PFCreate_String);CHKERRQ(ierr);
-  ierr = PFRegister(PFQUICK,            PFCreate_Quick);CHKERRQ(ierr);
-  ierr = PFRegister(PFIDENTITY,         PFCreate_Identity);CHKERRQ(ierr);
+  CHKERRQ(PFRegister(PFCONSTANT,         PFCreate_Constant));
+  CHKERRQ(PFRegister(PFSTRING,           PFCreate_String));
+  CHKERRQ(PFRegister(PFQUICK,            PFCreate_Quick));
+  CHKERRQ(PFRegister(PFIDENTITY,         PFCreate_Identity));
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  ierr = PFRegister(PFMATLAB,           PFCreate_Matlab);CHKERRQ(ierr);
+  CHKERRQ(PFRegister(PFMATLAB,           PFCreate_Matlab));
 #endif
   PetscFunctionReturn(0);
 }
-

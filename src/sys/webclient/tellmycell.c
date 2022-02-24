@@ -41,11 +41,11 @@ PetscErrorCode PetscTellMyCell(MPI_Comm comm,const char number[],const char mess
   char           Username[64],Password[64];
 
   PetscFunctionBegin;
-  ierr = PetscStrlen(number,&nlen);CHKERRQ(ierr);
+  CHKERRQ(PetscStrlen(number,&nlen));
   PetscCheckFalse(nlen != 10,comm,PETSC_ERR_ARG_WRONG,"Number %s is not ten digits",number);
-  ierr = PetscStrlen(message,&mlen);CHKERRQ(ierr);
+  CHKERRQ(PetscStrlen(message,&mlen));
   PetscCheckFalse(mlen > 100,comm,PETSC_ERR_ARG_WRONG,"Message  %s is too long",message);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     int       sock;
     char      buff[1000],*body;
@@ -54,33 +54,33 @@ PetscErrorCode PetscTellMyCell(MPI_Comm comm,const char number[],const char mess
     SSL       *ssl;
     PetscBool set;
 
-    ierr = PetscOptionsGetString(NULL,NULL,"-tellmycell_user",Username,sizeof(Username),&set);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsGetString(NULL,NULL,"-tellmycell_user",Username,sizeof(Username),&set));
     PetscCheckFalse(!set,PETSC_COMM_SELF,PETSC_ERR_USER,"You must pass in a tellmycell user name with -tellmycell_user <Username>");
-    ierr = PetscOptionsGetString(NULL,NULL,"-tellmycell_password",Password,sizeof(Password),&set);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsGetString(NULL,NULL,"-tellmycell_password",Password,sizeof(Password),&set));
     PetscCheckFalse(!set,PETSC_COMM_SELF,PETSC_ERR_USER,"You must pass in a tellmycell password with -tellmycell_password <Password>");
-    ierr = PetscMalloc1(mlen+nlen+100,&body);CHKERRQ(ierr);
-    ierr = PetscStrcpy(body,"User=");CHKERRQ(ierr);
-    ierr = PetscStrcat(body,Username);CHKERRQ(ierr);
-    ierr = PetscStrcat(body,"&Password=");CHKERRQ(ierr);
-    ierr = PetscStrcat(body,Password);CHKERRQ(ierr);
-    ierr = PetscStrcat(body,"&PhoneNumbers[]=");CHKERRQ(ierr);
-    ierr = PetscStrcat(body,number);CHKERRQ(ierr);
-    ierr = PetscStrcat(body,"&");CHKERRQ(ierr);
-    ierr = PetscStrcat(body,"Message=");CHKERRQ(ierr);
-    ierr = PetscStrcat(body,message);CHKERRQ(ierr);
-    ierr = PetscStrlen(body,&blen);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(mlen+nlen+100,&body));
+    CHKERRQ(PetscStrcpy(body,"User="));
+    CHKERRQ(PetscStrcat(body,Username));
+    CHKERRQ(PetscStrcat(body,"&Password="));
+    CHKERRQ(PetscStrcat(body,Password));
+    CHKERRQ(PetscStrcat(body,"&PhoneNumbers[]="));
+    CHKERRQ(PetscStrcat(body,number));
+    CHKERRQ(PetscStrcat(body,"&"));
+    CHKERRQ(PetscStrcat(body,"Message="));
+    CHKERRQ(PetscStrcat(body,message));
+    CHKERRQ(PetscStrlen(body,&blen));
     for (i=0; i<(int)blen; i++) {
       if (body[i] == ' ') body[i] = '+';
     }
-    ierr = PetscSSLInitializeContext(&ctx);CHKERRQ(ierr);
-    ierr = PetscHTTPSConnect("app.tellmycell.com",443,ctx,&sock,&ssl);CHKERRQ(ierr);
-    ierr = PetscHTTPSRequest("POST","app.tellmycell.com/sending/messages?format=json",NULL,"application/x-www-form-urlencoded",body,ssl,buff,sizeof(buff));CHKERRQ(ierr);
-    ierr = PetscSSLDestroyContext(ctx);CHKERRQ(ierr);
+    CHKERRQ(PetscSSLInitializeContext(&ctx));
+    CHKERRQ(PetscHTTPSConnect("app.tellmycell.com",443,ctx,&sock,&ssl));
+    CHKERRQ(PetscHTTPSRequest("POST","app.tellmycell.com/sending/messages?format=json",NULL,"application/x-www-form-urlencoded",body,ssl,buff,sizeof(buff)));
+    CHKERRQ(PetscSSLDestroyContext(ctx));
     close(sock);
-    ierr = PetscFree(body);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(body));
     if (flg) {
       char *found;
-      ierr = PetscStrstr(buff,"\"success\":tr",&found);CHKERRQ(ierr);
+      CHKERRQ(PetscStrstr(buff,"\"success\":tr",&found));
       *flg = found ? PETSC_TRUE : PETSC_FALSE;
     }
   }

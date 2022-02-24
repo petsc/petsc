@@ -26,17 +26,15 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring);
  @*/
 PetscErrorCode  MatColoringRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (MatColoringRegisterAllCalled) PetscFunctionReturn(0);
   MatColoringRegisterAllCalled = PETSC_TRUE;
-  ierr = MatColoringRegister(MATCOLORINGJP,MatColoringCreate_JP);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORINGGREEDY,MatColoringCreate_Greedy);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORINGPOWER,MatColoringCreate_Power);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORINGNATURAL,MatColoringCreate_Natural);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORINGSL,MatColoringCreate_SL);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORINGID,MatColoringCreate_ID);CHKERRQ(ierr);
-  ierr = MatColoringRegister(MATCOLORINGLF,MatColoringCreate_LF);CHKERRQ(ierr);
+  CHKERRQ(MatColoringRegister(MATCOLORINGJP,MatColoringCreate_JP));
+  CHKERRQ(MatColoringRegister(MATCOLORINGGREEDY,MatColoringCreate_Greedy));
+  CHKERRQ(MatColoringRegister(MATCOLORINGPOWER,MatColoringCreate_Power));
+  CHKERRQ(MatColoringRegister(MATCOLORINGNATURAL,MatColoringCreate_Natural));
+  CHKERRQ(MatColoringRegister(MATCOLORINGSL,MatColoringCreate_SL));
+  CHKERRQ(MatColoringRegister(MATCOLORINGID,MatColoringCreate_ID));
+  CHKERRQ(MatColoringRegister(MATCOLORINGLF,MatColoringCreate_LF));
   PetscFunctionReturn(0);
 }

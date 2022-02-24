@@ -39,33 +39,33 @@ PetscErrorCode PetscTextBelt(MPI_Comm comm,const char number[],const char messag
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  ierr = PetscStrlen(number,&nlen);CHKERRQ(ierr);
+  CHKERRQ(PetscStrlen(number,&nlen));
   PetscCheckFalse(nlen != 10,comm,PETSC_ERR_ARG_WRONG,"Number %s is not ten digits",number);
-  ierr = PetscStrlen(message,&mlen);CHKERRQ(ierr);
+  CHKERRQ(PetscStrlen(message,&mlen));
   PetscCheckFalse(mlen > 100,comm,PETSC_ERR_ARG_WRONG,"Message  %s is too long",message);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     int       sock;
     char      buff[474],*body;
     PetscInt  i;
 
-    ierr = PetscMalloc1(mlen+nlen+100,&body);CHKERRQ(ierr);
-    ierr = PetscStrcpy(body,"number=");CHKERRQ(ierr);
-    ierr = PetscStrcat(body,number);CHKERRQ(ierr);
-    ierr = PetscStrcat(body,"&");CHKERRQ(ierr);
-    ierr = PetscStrcat(body,"message=");CHKERRQ(ierr);
-    ierr = PetscStrcat(body,message);CHKERRQ(ierr);
-    ierr = PetscStrlen(body,&blen);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(mlen+nlen+100,&body));
+    CHKERRQ(PetscStrcpy(body,"number="));
+    CHKERRQ(PetscStrcat(body,number));
+    CHKERRQ(PetscStrcat(body,"&"));
+    CHKERRQ(PetscStrcat(body,"message="));
+    CHKERRQ(PetscStrcat(body,message));
+    CHKERRQ(PetscStrlen(body,&blen));
     for (i=0; i<(int)blen; i++) {
       if (body[i] == ' ') body[i] = '+';
     }
-    ierr = PetscOpenSocket("textbelt.com",80,&sock);CHKERRQ(ierr);
-    ierr = PetscHTTPRequest("POST","textbelt.com/text",NULL,"application/x-www-form-urlencoded",body,sock,buff,sizeof(buff));CHKERRQ(ierr);
+    CHKERRQ(PetscOpenSocket("textbelt.com",80,&sock));
+    CHKERRQ(PetscHTTPRequest("POST","textbelt.com/text",NULL,"application/x-www-form-urlencoded",body,sock,buff,sizeof(buff)));
     close(sock);
-    ierr = PetscFree(body);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(body));
     if (flg) {
       char *found;
-      ierr = PetscStrstr(buff,"\"success\":tr",&found);CHKERRQ(ierr);
+      CHKERRQ(PetscStrstr(buff,"\"success\":tr",&found));
       *flg = found ? PETSC_TRUE : PETSC_FALSE;
     }
   }

@@ -24,15 +24,14 @@ struct _n_PetscViewers {
 PetscErrorCode  PetscViewersDestroy(PetscViewers *v)
 {
   int            i;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!*v) PetscFunctionReturn(0);
   for (i=0; i<(*v)->n; i++) {
-    ierr = PetscViewerDestroy(&(*v)->viewer[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerDestroy(&(*v)->viewer[i]));
   }
-  ierr = PetscFree((*v)->viewer);CHKERRQ(ierr);
-  ierr = PetscFree(*v);CHKERRQ(ierr);
+  CHKERRQ(PetscFree((*v)->viewer));
+  CHKERRQ(PetscFree(*v));
   PetscFunctionReturn(0);
 }
 
@@ -54,15 +53,13 @@ PetscErrorCode  PetscViewersDestroy(PetscViewers *v)
 @*/
 PetscErrorCode  PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidPointer(v,2);
-  ierr       = PetscNew(v);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(v));
   (*v)->n    = 64;
   (*v)->comm = comm;
 
-  ierr = PetscCalloc1(64,&(*v)->viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc1(64,&(*v)->viewer));
   PetscFunctionReturn(0);
 }
 
@@ -85,8 +82,6 @@ PetscErrorCode  PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
 @*/
 PetscErrorCode  PetscViewersGetViewer(PetscViewers viewers,PetscInt n,PetscViewer *viewer)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidPointer(viewers,1);
   PetscValidPointer(viewer,3);
@@ -95,14 +90,14 @@ PetscErrorCode  PetscViewersGetViewer(PetscViewers viewers,PetscInt n,PetscViewe
     PetscViewer *v;
     int         newn = n + 64; /* add 64 new ones at a time */
 
-    ierr = PetscCalloc1(newn,&v);CHKERRQ(ierr);
-    ierr = PetscArraycpy(v,viewers->viewer,viewers->n);CHKERRQ(ierr);
-    ierr = PetscFree(viewers->viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc1(newn,&v));
+    CHKERRQ(PetscArraycpy(v,viewers->viewer,viewers->n));
+    CHKERRQ(PetscFree(viewers->viewer));
 
     viewers->viewer = v;
   }
   if (!viewers->viewer[n]) {
-    ierr = PetscViewerCreate(viewers->comm,&viewers->viewer[n]);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerCreate(viewers->comm,&viewers->viewer[n]));
   }
   *viewer = viewers->viewer[n];
   PetscFunctionReturn(0);
@@ -141,8 +136,7 @@ PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void), void *nmctx, Pe
     }
     if (*identical) {
       if (mdestroy) {
-        PetscErrorCode ierr;
-        ierr = (*mdestroy)(&nmctx);CHKERRQ(ierr);
+        CHKERRQ((*mdestroy)(&nmctx));
       }
     }
   }

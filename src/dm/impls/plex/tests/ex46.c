@@ -39,21 +39,19 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionBeginUser;
   options->Nr = 1;
   ierr = PetscOptionsBegin(comm, "", "1D Refinement Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-num_refine", "Refine cycles", "ex46.c", options->Nr, &options->Nr, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsInt("-num_refine", "Refine cycles", "ex46.c", options->Nr, &options->Nr, NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(*dm, user);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreate(comm, dm));
+  CHKERRQ(DMSetType(*dm, DMPLEX));
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(DMSetApplicationContext(*dm, user));
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -63,20 +61,19 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFE        fe;
   PetscSpace     sp;
   PetscInt       dim, deg;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, -1, &fe);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe, "scalar");CHKERRQ(ierr);
-  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = DMCreateDS(dm);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, -1, &fe));
+  CHKERRQ(PetscObjectSetName((PetscObject) fe, "scalar"));
+  CHKERRQ(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  CHKERRQ(DMCreateDS(dm));
   while (cdm) {
-    ierr = DMCopyDisc(dm,cdm);CHKERRQ(ierr);
-    ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+    CHKERRQ(DMCopyDisc(dm,cdm));
+    CHKERRQ(DMGetCoarseDM(cdm, &cdm));
   }
-  ierr = PetscFEGetBasisSpace(fe, &sp);CHKERRQ(ierr);
-  ierr = PetscSpaceGetDegree(sp, &deg, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscFEGetBasisSpace(fe, &sp));
+  CHKERRQ(PetscSpaceGetDegree(sp, &deg, NULL));
   switch (deg) {
   case 0: user->funcs[0] = constant;break;
   case 1: user->funcs[0] = linear;break;
@@ -84,7 +81,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   case 3: user->funcs[0] = cubic;break;
   default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Could not determine function to test for degree %D", deg);
   }
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  CHKERRQ(PetscFEDestroy(&fe));
   PetscFunctionReturn(0);
 }
 
@@ -92,13 +89,12 @@ static PetscErrorCode CheckError(DM dm, Vec u, PetscSimplePointFunc funcs[])
 {
   PetscReal      error, tol = PETSC_SMALL;
   MPI_Comm       comm;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMComputeL2Diff(dm, 0.0, funcs, NULL, u, &error);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  if (error > tol) {ierr = PetscPrintf(comm, "Function tests FAIL at tolerance %g error %g\n", (double)tol,(double) error);CHKERRQ(ierr);}
-  else             {ierr = PetscPrintf(comm, "Function tests pass at tolerance %g\n", (double)tol);CHKERRQ(ierr);}
+  CHKERRQ(DMComputeL2Diff(dm, 0.0, funcs, NULL, u, &error));
+  CHKERRQ(PetscObjectGetComm((PetscObject) dm, &comm));
+  if (error > tol) CHKERRQ(PetscPrintf(comm, "Function tests FAIL at tolerance %g error %g\n", (double)tol,(double) error));
+  else             CHKERRQ(PetscPrintf(comm, "Function tests pass at tolerance %g\n", (double)tol));
   PetscFunctionReturn(0);
 }
 
@@ -111,41 +107,41 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = SetupDiscretization(dm, &user);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = DMProjectFunction(dm, 0.0, user.funcs, NULL, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
-  ierr = CheckError(dm, u, user.funcs);CHKERRQ(ierr);
+  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  CHKERRQ(SetupDiscretization(dm, &user));
+  CHKERRQ(DMGetGlobalVector(dm, &u));
+  CHKERRQ(DMProjectFunction(dm, 0.0, user.funcs, NULL, INSERT_ALL_VALUES, u));
+  CHKERRQ(CheckError(dm, u, user.funcs));
   for (r = 0; r < user.Nr; ++r) {
     DM      adm;
     DMLabel adapt;
     Vec     au;
     Mat     Interp;
 
-    ierr = DMLabelCreate(PETSC_COMM_SELF, "adapt", &adapt);CHKERRQ(ierr);
-    ierr = DMLabelSetDefaultValue(adapt, DM_ADAPT_COARSEN);CHKERRQ(ierr);
-    ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    CHKERRQ(DMLabelCreate(PETSC_COMM_SELF, "adapt", &adapt));
+    CHKERRQ(DMLabelSetDefaultValue(adapt, DM_ADAPT_COARSEN));
+    CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
     for (c = cStart; c < cEnd; ++c) {
-      if (c % 2) {ierr = DMLabelSetValue(adapt, c, DM_ADAPT_REFINE);CHKERRQ(ierr);}
+      if (c % 2) CHKERRQ(DMLabelSetValue(adapt, c, DM_ADAPT_REFINE));
     }
-    ierr = DMAdaptLabel(dm, adapt, &adm);CHKERRQ(ierr);
-    ierr = DMLabelDestroy(&adapt);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) adm, "Adapted Mesh");CHKERRQ(ierr);
-    ierr = DMViewFromOptions(adm, NULL, "-dm_view");CHKERRQ(ierr);
+    CHKERRQ(DMAdaptLabel(dm, adapt, &adm));
+    CHKERRQ(DMLabelDestroy(&adapt));
+    CHKERRQ(PetscObjectSetName((PetscObject) adm, "Adapted Mesh"));
+    CHKERRQ(DMViewFromOptions(adm, NULL, "-dm_view"));
 
-    ierr = DMCreateInterpolation(dm, adm, &Interp, NULL);CHKERRQ(ierr);
-    ierr = DMGetGlobalVector(adm, &au);CHKERRQ(ierr);
-    ierr = MatInterpolate(Interp, u, au);CHKERRQ(ierr);
-    ierr = CheckError(adm, au, user.funcs);CHKERRQ(ierr);
-    ierr = MatDestroy(&Interp);CHKERRQ(ierr);
-    ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
-    ierr = DMDestroy(&dm);CHKERRQ(ierr);
+    CHKERRQ(DMCreateInterpolation(dm, adm, &Interp, NULL));
+    CHKERRQ(DMGetGlobalVector(adm, &au));
+    CHKERRQ(MatInterpolate(Interp, u, au));
+    CHKERRQ(CheckError(adm, au, user.funcs));
+    CHKERRQ(MatDestroy(&Interp));
+    CHKERRQ(DMRestoreGlobalVector(dm, &u));
+    CHKERRQ(DMDestroy(&dm));
     dm   = adm;
     u    = au;
   }
-  ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(DMRestoreGlobalVector(dm, &u));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

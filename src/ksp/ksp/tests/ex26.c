@@ -56,90 +56,90 @@ int main(int argc,char **argv)
   /* set up discretization matrix for fine grid */
   fine_ctx.mx = 9;
   fine_ctx.my = 9;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&fine_ctx.mx,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-my",&fine_ctx.my,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-rand",&Brand,NULL);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",fine_ctx.mx,fine_ctx.my);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mx",&fine_ctx.mx,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-my",&fine_ctx.my,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-Nx",&Nx,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-Ny",&Ny,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-rand",&Brand,NULL));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",fine_ctx.mx,fine_ctx.my));
 
   /* Set up distributed array for fine grid */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,fine_ctx.mx,fine_ctx.my,Nx,Ny,1,1,NULL,NULL,&fine_ctx.da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(fine_ctx.da);CHKERRQ(ierr);
-  ierr = DMSetUp(fine_ctx.da);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(fine_ctx.da,&fine_ctx.x);CHKERRQ(ierr);
-  ierr = VecDuplicate(fine_ctx.x,&fine_ctx.b);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(fine_ctx.x,&nlocal);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(fine_ctx.da,&fine_ctx.localX);CHKERRQ(ierr);
-  ierr = VecDuplicate(fine_ctx.localX,&fine_ctx.localF);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(fine_ctx.da,&A);CHKERRQ(ierr);
-  ierr = FormJacobian_Grid(&fine_ctx,A);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,fine_ctx.mx,fine_ctx.my,Nx,Ny,1,1,NULL,NULL,&fine_ctx.da));
+  CHKERRQ(DMSetFromOptions(fine_ctx.da));
+  CHKERRQ(DMSetUp(fine_ctx.da));
+  CHKERRQ(DMCreateGlobalVector(fine_ctx.da,&fine_ctx.x));
+  CHKERRQ(VecDuplicate(fine_ctx.x,&fine_ctx.b));
+  CHKERRQ(VecGetLocalSize(fine_ctx.x,&nlocal));
+  CHKERRQ(DMCreateLocalVector(fine_ctx.da,&fine_ctx.localX));
+  CHKERRQ(VecDuplicate(fine_ctx.localX,&fine_ctx.localF));
+  CHKERRQ(DMCreateMatrix(fine_ctx.da,&A));
+  CHKERRQ(FormJacobian_Grid(&fine_ctx,A));
 
   /* create linear solver */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetDM(ksp,fine_ctx.da);CHKERRQ(ierr);
-  ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPSetDM(ksp,fine_ctx.da));
+  CHKERRQ(KSPSetDMActive(ksp,PETSC_FALSE));
 
   /* set values for rhs vector */
-  ierr = VecSet(fine_ctx.b,one);CHKERRQ(ierr);
+  CHKERRQ(VecSet(fine_ctx.b,one));
 
   /* set options, then solve system */
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr); /* calls PCSetFromOptions_ML if 'pc_type=ml' */
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,fine_ctx.b,fine_ctx.x);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(fine_ctx.x,NULL,"-debug");CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %D\n",its);CHKERRQ(ierr);
+  CHKERRQ(KSPSetFromOptions(ksp)); /* calls PCSetFromOptions_ML if 'pc_type=ml' */
+  CHKERRQ(KSPSetOperators(ksp,A,A));
+  CHKERRQ(KSPSolve(ksp,fine_ctx.b,fine_ctx.x));
+  CHKERRQ(VecViewFromOptions(fine_ctx.x,NULL,"-debug"));
+  CHKERRQ(KSPGetIterationNumber(ksp,&its));
+  CHKERRQ(KSPGetIterationNumber(ksp,&its));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %D\n",its));
 
   /* test multiple right-hand side */
-  ierr = MatCreateDense(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,fine_ctx.mx*fine_ctx.my,nrhs,NULL,&B);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(B,"rhs_");CHKERRQ(ierr);
-  ierr = MatSetFromOptions(B);CHKERRQ(ierr);
-  ierr = MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&X);CHKERRQ(ierr);
+  CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,fine_ctx.mx*fine_ctx.my,nrhs,NULL,&B));
+  CHKERRQ(MatSetOptionsPrefix(B,"rhs_"));
+  CHKERRQ(MatSetFromOptions(B));
+  CHKERRQ(MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&X));
   if (Brand) {
-    ierr = MatSetRandom(B,NULL);CHKERRQ(ierr);
+    CHKERRQ(MatSetRandom(B,NULL));
   } else {
     PetscScalar *b;
 
-    ierr = MatDenseGetArrayWrite(B,&b);CHKERRQ(ierr);
+    CHKERRQ(MatDenseGetArrayWrite(B,&b));
     for (i=0;i<nlocal*nrhs;i++) b[i] = 1.0;
-    ierr = MatDenseRestoreArrayWrite(B,&b);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatDenseRestoreArrayWrite(B,&b));
+    CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   }
-  ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(X,NULL,"-debug");CHKERRQ(ierr);
+  CHKERRQ(KSPMatSolve(ksp,B,X));
+  CHKERRQ(MatViewFromOptions(X,NULL,"-debug"));
 
-  ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg));
   if ((flg || nrhs == 1) && !Brand) {
     PetscInt          n;
     const PetscScalar *xx,*XX;
 
-    ierr = VecGetArrayRead(fine_ctx.x,&xx);CHKERRQ(ierr);
-    ierr = MatDenseGetArrayRead(X,&XX);CHKERRQ(ierr);
+    CHKERRQ(VecGetArrayRead(fine_ctx.x,&xx));
+    CHKERRQ(MatDenseGetArrayRead(X,&XX));
     for (n=0;n<nrhs;n++) {
       for (i=0;i<nlocal;i++) {
         if (PetscAbsScalar(xx[i] - XX[nlocal*n + i]) > PETSC_SMALL) {
-          ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Error local solve %D, entry %D -> %g + i %g != %g + i %g\n",PetscGlobalRank,n,i,(double)PetscRealPart(xx[i]),(double)PetscImaginaryPart(xx[i]),(double)PetscRealPart(XX[i]),(double)PetscImaginaryPart(XX[i]));CHKERRQ(ierr);
+          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"[%d] Error local solve %D, entry %D -> %g + i %g != %g + i %g\n",PetscGlobalRank,n,i,(double)PetscRealPart(xx[i]),(double)PetscImaginaryPart(xx[i]),(double)PetscRealPart(XX[i]),(double)PetscImaginaryPart(XX[i])));
         }
       }
     }
-    ierr = MatDenseRestoreArrayRead(X,&XX);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(fine_ctx.x,&xx);CHKERRQ(ierr);
+    CHKERRQ(MatDenseRestoreArrayRead(X,&XX));
+    CHKERRQ(VecRestoreArrayRead(fine_ctx.x,&xx));
   }
 
   /* free data structures */
-  ierr = VecDestroy(&fine_ctx.x);CHKERRQ(ierr);
-  ierr = VecDestroy(&fine_ctx.b);CHKERRQ(ierr);
-  ierr = DMDestroy(&fine_ctx.da);CHKERRQ(ierr);
-  ierr = VecDestroy(&fine_ctx.localX);CHKERRQ(ierr);
-  ierr = VecDestroy(&fine_ctx.localF);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&X);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&fine_ctx.x));
+  CHKERRQ(VecDestroy(&fine_ctx.b));
+  CHKERRQ(DMDestroy(&fine_ctx.da));
+  CHKERRQ(VecDestroy(&fine_ctx.localX));
+  CHKERRQ(VecDestroy(&fine_ctx.localF));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&B));
+  CHKERRQ(MatDestroy(&X));
+  CHKERRQ(KSPDestroy(&ksp));
 
   ierr = PetscFinalize();
   return ierr;
@@ -147,7 +147,6 @@ int main(int argc,char **argv)
 
 PetscErrorCode FormJacobian_Grid(GridCtx *grid,Mat jac)
 {
-  PetscErrorCode         ierr;
   PetscInt               i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
   PetscInt               grow;
   const PetscInt         *ltog;
@@ -160,10 +159,10 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid,Mat jac)
   hxdhy = hx/hy;            hydhx = hy/hx;
 
   /* Get ghost points */
-  ierr = DMDAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(grid->da,&ltogm);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetIndices(ltogm,&ltog);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0));
+  CHKERRQ(DMDAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0));
+  CHKERRQ(DMGetLocalToGlobalMapping(grid->da,&ltogm));
+  CHKERRQ(ISLocalToGlobalMappingGetIndices(ltogm,&ltog));
 
   /* Evaluate Jacobian of function */
   for (j=ys; j<ys+ym; j++) {
@@ -177,19 +176,19 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid,Mat jac)
         v[2] = two*(hydhx + hxdhy); col[2] = grow;
         v[3] = -hydhx; col[3] = ltog[row + 1];
         v[4] = -hxdhy; col[4] = ltog[row + Xm];
-        ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES));
       } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)) {
         value = .5*two*(hydhx + hxdhy);
-        ierr  = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES));
       } else {
         value = .25*two*(hydhx + hxdhy);
-        ierr  = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES));
       }
     }
   }
-  ierr = ISLocalToGlobalMappingRestoreIndices(ltogm,&ltog);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(ISLocalToGlobalMappingRestoreIndices(ltogm,&ltog));
+  CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 

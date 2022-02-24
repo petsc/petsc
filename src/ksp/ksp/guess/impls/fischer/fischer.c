@@ -23,34 +23,33 @@ static PetscErrorCode KSPGuessReset_Fischer(KSPGuess guess)
   KSPGuessFischer *itg = (KSPGuessFischer*)guess->data;
   PetscLayout     Alay = NULL,vlay = NULL;
   PetscBool       cong;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   itg->curl = 0;
   /* destroy vectors if the size of the linear system has changed */
   if (guess->A) {
-    ierr = MatGetLayouts(guess->A,&Alay,NULL);CHKERRQ(ierr);
+    CHKERRQ(MatGetLayouts(guess->A,&Alay,NULL));
   }
   if (itg->xtilde) {
-    ierr = VecGetLayout(itg->xtilde[0],&vlay);CHKERRQ(ierr);
+    CHKERRQ(VecGetLayout(itg->xtilde[0],&vlay));
   }
   cong = PETSC_FALSE;
   if (vlay && Alay) {
-    ierr = PetscLayoutCompare(Alay,vlay,&cong);CHKERRQ(ierr);
+    CHKERRQ(PetscLayoutCompare(Alay,vlay,&cong));
   }
   if (!cong) {
-    ierr = VecDestroyVecs(itg->maxl,&itg->btilde);CHKERRQ(ierr);
-    ierr = VecDestroyVecs(itg->maxl,&itg->xtilde);CHKERRQ(ierr);
-    ierr = VecDestroy(&itg->guess);CHKERRQ(ierr);
-    ierr = VecDestroy(&itg->Ax);CHKERRQ(ierr);
+    CHKERRQ(VecDestroyVecs(itg->maxl,&itg->btilde));
+    CHKERRQ(VecDestroyVecs(itg->maxl,&itg->xtilde));
+    CHKERRQ(VecDestroy(&itg->guess));
+    CHKERRQ(VecDestroy(&itg->Ax));
   }
   if (itg->corr) {
-    ierr = PetscMemzero(itg->corr,sizeof(*itg->corr)*itg->maxl*itg->maxl);CHKERRQ(ierr);
+    CHKERRQ(PetscMemzero(itg->corr,sizeof(*itg->corr)*itg->maxl*itg->maxl));
   }
   itg->last_b = NULL;
   itg->last_b_state = 0;
   if (itg->last_b_coefs) {
-    ierr = PetscMemzero(itg->last_b_coefs,sizeof(*itg->last_b_coefs)*itg->maxl);CHKERRQ(ierr);
+    CHKERRQ(PetscMemzero(itg->last_b_coefs,sizeof(*itg->last_b_coefs)*itg->maxl));
   }
   PetscFunctionReturn(0);
 }
@@ -58,36 +57,35 @@ static PetscErrorCode KSPGuessReset_Fischer(KSPGuess guess)
 static PetscErrorCode KSPGuessSetUp_Fischer(KSPGuess guess)
 {
   KSPGuessFischer *itg = (KSPGuessFischer*)guess->data;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (!itg->alpha) {
-    ierr = PetscMalloc1(itg->maxl,&itg->alpha);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)guess,itg->maxl*sizeof(PetscScalar));CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(itg->maxl,&itg->alpha));
+    CHKERRQ(PetscLogObjectMemory((PetscObject)guess,itg->maxl*sizeof(PetscScalar)));
   }
   if (!itg->xtilde) {
-    ierr = KSPCreateVecs(guess->ksp,itg->maxl,&itg->xtilde,0,NULL);CHKERRQ(ierr);
-    ierr = PetscLogObjectParents(guess,itg->maxl,itg->xtilde);CHKERRQ(ierr);
+    CHKERRQ(KSPCreateVecs(guess->ksp,itg->maxl,&itg->xtilde,0,NULL));
+    CHKERRQ(PetscLogObjectParents(guess,itg->maxl,itg->xtilde));
   }
   if (!itg->btilde && (itg->method == 1 || itg->method == 3)) {
-    ierr = KSPCreateVecs(guess->ksp,itg->maxl,&itg->btilde,0,NULL);CHKERRQ(ierr);
-    ierr = PetscLogObjectParents(guess,itg->maxl,itg->btilde);CHKERRQ(ierr);
+    CHKERRQ(KSPCreateVecs(guess->ksp,itg->maxl,&itg->btilde,0,NULL));
+    CHKERRQ(PetscLogObjectParents(guess,itg->maxl,itg->btilde));
   }
   if (!itg->Ax && itg->method == 2) {
-    ierr = VecDuplicate(itg->xtilde[0],&itg->Ax);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)guess,(PetscObject)itg->Ax);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(itg->xtilde[0],&itg->Ax));
+    CHKERRQ(PetscLogObjectParent((PetscObject)guess,(PetscObject)itg->Ax));
   }
   if (!itg->guess && (itg->method == 1 || itg->method == 2)) {
-    ierr = VecDuplicate(itg->xtilde[0],&itg->guess);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)guess,(PetscObject)itg->guess);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(itg->xtilde[0],&itg->guess));
+    CHKERRQ(PetscLogObjectParent((PetscObject)guess,(PetscObject)itg->guess));
   }
   if (!itg->corr && itg->method == 3) {
-    ierr = PetscCalloc1(itg->maxl*itg->maxl,&itg->corr);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)guess,itg->maxl*itg->maxl*sizeof(PetscScalar));CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc1(itg->maxl*itg->maxl,&itg->corr));
+    CHKERRQ(PetscLogObjectMemory((PetscObject)guess,itg->maxl*itg->maxl*sizeof(PetscScalar)));
   }
   if (!itg->last_b_coefs && itg->method == 3) {
-    ierr = PetscCalloc1(itg->maxl,&itg->last_b_coefs);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)guess,itg->maxl*sizeof(PetscScalar));CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc1(itg->maxl,&itg->last_b_coefs));
+    CHKERRQ(PetscLogObjectMemory((PetscObject)guess,itg->maxl*sizeof(PetscScalar)));
   }
   PetscFunctionReturn(0);
 }
@@ -95,18 +93,17 @@ static PetscErrorCode KSPGuessSetUp_Fischer(KSPGuess guess)
 static PetscErrorCode KSPGuessDestroy_Fischer(KSPGuess guess)
 {
   KSPGuessFischer *itg = (KSPGuessFischer*)guess->data;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(itg->alpha);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(itg->maxl,&itg->btilde);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(itg->maxl,&itg->xtilde);CHKERRQ(ierr);
-  ierr = VecDestroy(&itg->guess);CHKERRQ(ierr);
-  ierr = VecDestroy(&itg->Ax);CHKERRQ(ierr);
-  ierr = PetscFree(itg->corr);CHKERRQ(ierr);
-  ierr = PetscFree(itg->last_b_coefs);CHKERRQ(ierr);
-  ierr = PetscFree(itg);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)guess,"KSPGuessFischerSetModel_C",NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(itg->alpha));
+  CHKERRQ(VecDestroyVecs(itg->maxl,&itg->btilde));
+  CHKERRQ(VecDestroyVecs(itg->maxl,&itg->xtilde));
+  CHKERRQ(VecDestroy(&itg->guess));
+  CHKERRQ(VecDestroy(&itg->Ax));
+  CHKERRQ(PetscFree(itg->corr));
+  CHKERRQ(PetscFree(itg->last_b_coefs));
+  CHKERRQ(PetscFree(itg));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)guess,"KSPGuessFischerSetModel_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -114,21 +111,20 @@ static PetscErrorCode KSPGuessDestroy_Fischer(KSPGuess guess)
 static PetscErrorCode KSPGuessFormGuess_Fischer_1(KSPGuess guess,Vec b,Vec x)
 {
   KSPGuessFischer *itg = (KSPGuessFischer*)guess->data;
-  PetscErrorCode  ierr;
   PetscInt        i;
 
   PetscFunctionBegin;
-  ierr = VecSet(x,0.0);CHKERRQ(ierr);
-  ierr = VecMDot(b,itg->curl,itg->btilde,itg->alpha);CHKERRQ(ierr);
+  CHKERRQ(VecSet(x,0.0));
+  CHKERRQ(VecMDot(b,itg->curl,itg->btilde,itg->alpha));
   if (itg->monitor) {
-    ierr = PetscPrintf(((PetscObject)guess)->comm,"KSPFischerGuess alphas =");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(((PetscObject)guess)->comm,"KSPFischerGuess alphas ="));
     for (i=0; i<itg->curl; i++) {
-      ierr = PetscPrintf(((PetscObject)guess)->comm," %g",(double)PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(((PetscObject)guess)->comm," %g",(double)PetscAbsScalar(itg->alpha[i])));
     }
-    ierr = PetscPrintf(((PetscObject)guess)->comm,"\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(((PetscObject)guess)->comm,"\n"));
   }
-  ierr = VecMAXPY(x,itg->curl,itg->alpha,itg->xtilde);CHKERRQ(ierr);
-  ierr = VecCopy(x,itg->guess);CHKERRQ(ierr);
+  CHKERRQ(VecMAXPY(x,itg->curl,itg->alpha,itg->xtilde));
+  CHKERRQ(VecCopy(x,itg->guess));
   PetscFunctionReturn(0);
 }
 
@@ -136,34 +132,33 @@ static PetscErrorCode KSPGuessUpdate_Fischer_1(KSPGuess guess, Vec b, Vec x)
 {
   KSPGuessFischer *itg = (KSPGuessFischer*)guess->data;
   PetscReal       norm;
-  PetscErrorCode  ierr;
   int             curl = itg->curl,i;
 
   PetscFunctionBegin;
   if (curl == itg->maxl) {
-    ierr = KSP_MatMult(guess->ksp,guess->A,x,itg->btilde[0]);CHKERRQ(ierr);
-    /* ierr = VecCopy(b,itg->btilde[0]);CHKERRQ(ierr); */
-    ierr = VecNormalize(itg->btilde[0],&norm);CHKERRQ(ierr);
-    ierr = VecCopy(x,itg->xtilde[0]);CHKERRQ(ierr);
-    ierr = VecScale(itg->xtilde[0],1.0/norm);CHKERRQ(ierr);
+    CHKERRQ(KSP_MatMult(guess->ksp,guess->A,x,itg->btilde[0]));
+    /* CHKERRQ(VecCopy(b,itg->btilde[0])); */
+    CHKERRQ(VecNormalize(itg->btilde[0],&norm));
+    CHKERRQ(VecCopy(x,itg->xtilde[0]));
+    CHKERRQ(VecScale(itg->xtilde[0],1.0/norm));
     itg->curl = 1;
   } else {
     if (!curl) {
-      ierr = VecCopy(x,itg->xtilde[curl]);CHKERRQ(ierr);
+      CHKERRQ(VecCopy(x,itg->xtilde[curl]));
     } else {
-      ierr = VecWAXPY(itg->xtilde[curl],-1.0,itg->guess,x);CHKERRQ(ierr);
+      CHKERRQ(VecWAXPY(itg->xtilde[curl],-1.0,itg->guess,x));
     }
-    ierr = KSP_MatMult(guess->ksp,guess->A,itg->xtilde[curl],itg->btilde[curl]);CHKERRQ(ierr);
-    ierr = VecMDot(itg->btilde[curl],curl,itg->btilde,itg->alpha);CHKERRQ(ierr);
+    CHKERRQ(KSP_MatMult(guess->ksp,guess->A,itg->xtilde[curl],itg->btilde[curl]));
+    CHKERRQ(VecMDot(itg->btilde[curl],curl,itg->btilde,itg->alpha));
     for (i=0; i<curl; i++) itg->alpha[i] = -itg->alpha[i];
-    ierr = VecMAXPY(itg->btilde[curl],curl,itg->alpha,itg->btilde);CHKERRQ(ierr);
-    ierr = VecMAXPY(itg->xtilde[curl],curl,itg->alpha,itg->xtilde);CHKERRQ(ierr);
-    ierr = VecNormalize(itg->btilde[curl],&norm);CHKERRQ(ierr);
+    CHKERRQ(VecMAXPY(itg->btilde[curl],curl,itg->alpha,itg->btilde));
+    CHKERRQ(VecMAXPY(itg->xtilde[curl],curl,itg->alpha,itg->xtilde));
+    CHKERRQ(VecNormalize(itg->btilde[curl],&norm));
     if (norm) {
-      ierr = VecScale(itg->xtilde[curl],1.0/norm);CHKERRQ(ierr);
+      CHKERRQ(VecScale(itg->xtilde[curl],1.0/norm));
       itg->curl++;
     } else {
-      ierr = PetscInfo(guess->ksp,"Not increasing dimension of Fischer space because new direction is identical to previous\n");CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(guess->ksp,"Not increasing dimension of Fischer space because new direction is identical to previous\n"));
     }
   }
   PetscFunctionReturn(0);
@@ -177,21 +172,20 @@ static PetscErrorCode KSPGuessUpdate_Fischer_1(KSPGuess guess, Vec b, Vec x)
 static PetscErrorCode KSPGuessFormGuess_Fischer_2(KSPGuess guess, Vec b, Vec x)
 {
   KSPGuessFischer *itg = (KSPGuessFischer*)guess->data;
-  PetscErrorCode  ierr;
   PetscInt        i;
 
   PetscFunctionBegin;
-  ierr = VecSet(x,0.0);CHKERRQ(ierr);
-  ierr = VecMDot(b,itg->curl,itg->xtilde,itg->alpha);CHKERRQ(ierr);
+  CHKERRQ(VecSet(x,0.0));
+  CHKERRQ(VecMDot(b,itg->curl,itg->xtilde,itg->alpha));
   if (itg->monitor) {
-    ierr = PetscPrintf(((PetscObject)guess)->comm,"KSPFischerGuess alphas =");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(((PetscObject)guess)->comm,"KSPFischerGuess alphas ="));
     for (i=0; i<itg->curl; i++) {
-      ierr = PetscPrintf(((PetscObject)guess)->comm," %g",(double)PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(((PetscObject)guess)->comm," %g",(double)PetscAbsScalar(itg->alpha[i])));
     }
-    ierr = PetscPrintf(((PetscObject)guess)->comm,"\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(((PetscObject)guess)->comm,"\n"));
   }
-  ierr = VecMAXPY(x,itg->curl,itg->alpha,itg->xtilde);CHKERRQ(ierr);
-  ierr = VecCopy(x,itg->guess);CHKERRQ(ierr);
+  CHKERRQ(VecMAXPY(x,itg->curl,itg->alpha,itg->xtilde));
+  CHKERRQ(VecCopy(x,itg->guess));
   PetscFunctionReturn(0);
 }
 
@@ -199,34 +193,33 @@ static PetscErrorCode KSPGuessUpdate_Fischer_2(KSPGuess guess, Vec b, Vec x)
 {
   KSPGuessFischer *itg = (KSPGuessFischer*)guess->data;
   PetscScalar     norm;
-  PetscErrorCode  ierr;
   int             curl = itg->curl,i;
 
   PetscFunctionBegin;
   if (curl == itg->maxl) {
-    ierr = KSP_MatMult(guess->ksp,guess->A,x,itg->Ax);CHKERRQ(ierr); /* norm = sqrt(x'Ax) */
-    ierr = VecDot(x,itg->Ax,&norm);CHKERRQ(ierr);
-    ierr = VecCopy(x,itg->xtilde[0]);CHKERRQ(ierr);
-    ierr = VecScale(itg->xtilde[0],1.0/PetscSqrtScalar(norm));CHKERRQ(ierr);
+    CHKERRQ(KSP_MatMult(guess->ksp,guess->A,x,itg->Ax)); /* norm = sqrt(x'Ax) */
+    CHKERRQ(VecDot(x,itg->Ax,&norm));
+    CHKERRQ(VecCopy(x,itg->xtilde[0]));
+    CHKERRQ(VecScale(itg->xtilde[0],1.0/PetscSqrtScalar(norm)));
     itg->curl = 1;
   } else {
     if (!curl) {
-      ierr = VecCopy(x,itg->xtilde[curl]);CHKERRQ(ierr);
+      CHKERRQ(VecCopy(x,itg->xtilde[curl]));
     } else {
-      ierr = VecWAXPY(itg->xtilde[curl],-1.0,itg->guess,x);CHKERRQ(ierr);
+      CHKERRQ(VecWAXPY(itg->xtilde[curl],-1.0,itg->guess,x));
     }
-    ierr = KSP_MatMult(guess->ksp,guess->A,itg->xtilde[curl],itg->Ax);CHKERRQ(ierr);
-    ierr = VecMDot(itg->Ax,curl,itg->xtilde,itg->alpha);CHKERRQ(ierr);
+    CHKERRQ(KSP_MatMult(guess->ksp,guess->A,itg->xtilde[curl],itg->Ax));
+    CHKERRQ(VecMDot(itg->Ax,curl,itg->xtilde,itg->alpha));
     for (i=0; i<curl; i++) itg->alpha[i] = -itg->alpha[i];
-    ierr = VecMAXPY(itg->xtilde[curl],curl,itg->alpha,itg->xtilde);CHKERRQ(ierr);
+    CHKERRQ(VecMAXPY(itg->xtilde[curl],curl,itg->alpha,itg->xtilde));
 
-    ierr = KSP_MatMult(guess->ksp,guess->A,itg->xtilde[curl],itg->Ax);CHKERRQ(ierr); /* norm = sqrt(xtilde[curl]'Axtilde[curl]) */
-    ierr = VecDot(itg->xtilde[curl],itg->Ax,&norm);CHKERRQ(ierr);
+    CHKERRQ(KSP_MatMult(guess->ksp,guess->A,itg->xtilde[curl],itg->Ax)); /* norm = sqrt(xtilde[curl]'Axtilde[curl]) */
+    CHKERRQ(VecDot(itg->xtilde[curl],itg->Ax,&norm));
     if (PetscAbsScalar(norm) != 0.0) {
-      ierr = VecScale(itg->xtilde[curl],1.0/PetscSqrtScalar(norm));CHKERRQ(ierr);
+      CHKERRQ(VecScale(itg->xtilde[curl],1.0/PetscSqrtScalar(norm)));
       itg->curl++;
     } else {
-      ierr = PetscInfo(guess->ksp,"Not increasing dimension of Fischer space because new direction is identical to previous\n");CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(guess->ksp,"Not increasing dimension of Fischer space because new direction is identical to previous\n"));
     }
   }
   PetscFunctionReturn(0);
@@ -238,7 +231,6 @@ static PetscErrorCode KSPGuessUpdate_Fischer_2(KSPGuess guess, Vec b, Vec x)
 static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x)
 {
   KSPGuessFischer *itg = (KSPGuessFischer*)guess->data;
-  PetscErrorCode  ierr;
   PetscInt        i,j,m;
   PetscReal       *s_values;
   PetscScalar     *corr,*work,*scratch_vec,zero=0.0,one=1.0;
@@ -249,25 +241,25 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x)
 
   /* project provided b onto space of stored btildes */
   PetscFunctionBegin;
-  ierr = VecSet(x,0.0);CHKERRQ(ierr);
+  CHKERRQ(VecSet(x,0.0));
   m = itg->curl;
   itg->last_b = b;
-  ierr = PetscObjectStateGet((PetscObject)b,&itg->last_b_state);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectStateGet((PetscObject)b,&itg->last_b_state));
   if (m > 0) {
-    ierr = PetscBLASIntCast(m,&blas_m);CHKERRQ(ierr);
+    CHKERRQ(PetscBLASIntCast(m,&blas_m));
     blas_lwork = (/* assume a block size of m */blas_m+2)*blas_m;
 #if defined(PETSC_USE_COMPLEX)
-    ierr = PetscCalloc5(m*m,&corr,m,&s_values,blas_lwork,&work,3*m-2,&rwork,m,&scratch_vec);CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc5(m*m,&corr,m,&s_values,blas_lwork,&work,3*m-2,&rwork,m,&scratch_vec));
 #else
-    ierr = PetscCalloc4(m*m,&corr,m,&s_values,blas_lwork,&work,m,&scratch_vec);CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc4(m*m,&corr,m,&s_values,blas_lwork,&work,m,&scratch_vec));
 #endif
-    ierr = VecMDot(b,itg->curl,itg->btilde,itg->last_b_coefs);CHKERRQ(ierr);
+    CHKERRQ(VecMDot(b,itg->curl,itg->btilde,itg->last_b_coefs));
     for (j=0;j<m;++j) {
       for (i=0;i<m;++i) {
         corr[m*j+i] = itg->corr[(itg->maxl)*j+i];
       }
     }
-    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+    CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscReal max_s_value = 0.0;
 #if defined(PETSC_USE_COMPLEX)
     PetscStackCallBLAS("LAPACKheev", LAPACKheev_("V", "L", &blas_m, corr, &blas_m, s_values, work, &blas_lwork, rwork, &blas_info));
@@ -301,31 +293,31 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x)
       PetscStackCallBLAS("BLASgemv", BLASgemv_("N", &blas_m, &blas_m, &one, corr, &blas_m, scratch_vec, &blas_one, &zero, itg->alpha, &blas_one));
 
     } else {
-      ierr = PetscInfo(guess, "Warning eigenvalue solver failed with error code %d - setting initial guess to zero\n", (int)blas_info);CHKERRQ(ierr);
-      ierr = PetscMemzero(itg->alpha,sizeof(*itg->alpha)*itg->maxl);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(guess, "Warning eigenvalue solver failed with error code %d - setting initial guess to zero\n", (int)blas_info));
+      CHKERRQ(PetscMemzero(itg->alpha,sizeof(*itg->alpha)*itg->maxl));
     }
-    ierr = PetscFPTrapPop();CHKERRQ(ierr);
+    CHKERRQ(PetscFPTrapPop());
 
     if (itg->monitor && blas_info == 0) {
-      ierr = PetscPrintf(((PetscObject)guess)->comm,"KSPFischerGuess correlation rank = %d\n",(int)blas_rank);CHKERRQ(ierr);
-      ierr = PetscPrintf(((PetscObject)guess)->comm,"KSPFischerGuess singular values = ");CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(((PetscObject)guess)->comm,"KSPFischerGuess correlation rank = %d\n",(int)blas_rank));
+      CHKERRQ(PetscPrintf(((PetscObject)guess)->comm,"KSPFischerGuess singular values = "));
       for (i=0; i<itg->curl; i++) {
-        ierr = PetscPrintf(((PetscObject)guess)->comm," %g",(double)s_values[i]);CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(((PetscObject)guess)->comm," %g",(double)s_values[i]));
       }
-      ierr = PetscPrintf(((PetscObject)guess)->comm,"\n");CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(((PetscObject)guess)->comm,"\n"));
 
-      ierr = PetscPrintf(((PetscObject)guess)->comm,"KSPFischerGuess alphas =");CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(((PetscObject)guess)->comm,"KSPFischerGuess alphas ="));
       for (i=0; i<itg->curl; i++) {
-        ierr = PetscPrintf(((PetscObject)guess)->comm," %g",(double)PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(((PetscObject)guess)->comm," %g",(double)PetscAbsScalar(itg->alpha[i])));
       }
-      ierr = PetscPrintf(((PetscObject)guess)->comm,"\n");CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(((PetscObject)guess)->comm,"\n"));
     }
     /* Form the initial guess by using b's projection coefficients with the xs */
-    ierr = VecMAXPY(x,itg->curl,itg->alpha,itg->xtilde);CHKERRQ(ierr);
+    CHKERRQ(VecMAXPY(x,itg->curl,itg->alpha,itg->xtilde));
 #if defined(PETSC_USE_COMPLEX)
-    ierr = PetscFree5(corr, s_values, work, rwork, scratch_vec);CHKERRQ(ierr);
+    CHKERRQ(PetscFree5(corr, s_values, work, rwork, scratch_vec));
 #else
-    ierr = PetscFree4(corr, s_values, work, scratch_vec);CHKERRQ(ierr);
+    CHKERRQ(PetscFree4(corr, s_values, work, scratch_vec));
 #endif
   }
   PetscFunctionReturn(0);
@@ -335,7 +327,6 @@ static PetscErrorCode KSPGuessUpdate_Fischer_3(KSPGuess guess, Vec b, Vec x)
 {
   KSPGuessFischer  *itg = (KSPGuessFischer*)guess->data;
   PetscBool        rotate = itg->curl == itg->maxl ? PETSC_TRUE : PETSC_FALSE;
-  PetscErrorCode   ierr;
   PetscInt         i,j;
   PetscObjectState b_state;
   PetscScalar      *last_column;
@@ -349,14 +340,14 @@ static PetscErrorCode KSPGuessUpdate_Fischer_3(KSPGuess guess, Vec b, Vec x)
       itg->xtilde[i-1] = itg->xtilde[i];
     }
     itg->xtilde[itg->curl-1] = oldest;
-    ierr = VecCopy(x,itg->xtilde[itg->curl-1]);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(x,itg->xtilde[itg->curl-1]));
 
     oldest = itg->btilde[0];
     for (i=1;i<itg->curl;++i) {
       itg->btilde[i-1] = itg->btilde[i];
     }
     itg->btilde[itg->curl-1] = oldest;
-    ierr = VecCopy(b,itg->btilde[itg->curl-1]);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(b,itg->btilde[itg->curl-1]));
     /* shift correlation matrix up and left */
     for (j=1; j<itg->maxl; ++j) {
       for (i=1; i<itg->maxl; ++i) {
@@ -365,8 +356,8 @@ static PetscErrorCode KSPGuessUpdate_Fischer_3(KSPGuess guess, Vec b, Vec x)
     }
   } else {
     /* append new vectors */
-    ierr = VecCopy(x,itg->xtilde[itg->curl]);CHKERRQ(ierr);
-    ierr = VecCopy(b,itg->btilde[itg->curl]);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(x,itg->xtilde[itg->curl]));
+    CHKERRQ(VecCopy(b,itg->btilde[itg->curl]));
     itg->curl++;
   }
 
@@ -377,17 +368,17 @@ static PetscErrorCode KSPGuessUpdate_Fischer_3(KSPGuess guess, Vec b, Vec x)
       If possible reuse the dot products from FormGuess
   */
   last_column = itg->corr+(itg->curl-1)*itg->maxl;
-  ierr = PetscObjectStateGet((PetscObject)b,&b_state);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectStateGet((PetscObject)b,&b_state));
   if (b_state == itg->last_b_state && b == itg->last_b) {
     if (rotate) {
       for (i=1; i<itg->maxl; ++i) {
         itg->last_b_coefs[i-1] = itg->last_b_coefs[i];
       }
     }
-    ierr = VecDot(b,b,&itg->last_b_coefs[itg->curl-1]);CHKERRQ(ierr);
-    ierr = PetscArraycpy(last_column,itg->last_b_coefs,itg->curl);CHKERRQ(ierr);
+    CHKERRQ(VecDot(b,b,&itg->last_b_coefs[itg->curl-1]));
+    CHKERRQ(PetscArraycpy(last_column,itg->last_b_coefs,itg->curl));
   } else {
-    ierr = VecMDot(b,itg->curl,itg->btilde,last_column);CHKERRQ(ierr);
+    CHKERRQ(VecMDot(b,itg->curl,itg->btilde,last_column));
   }
   for (i=0;i<itg->curl;++i) {
     itg->corr[i*itg->maxl+itg->curl-1] = last_column[i];
@@ -406,12 +397,12 @@ static PetscErrorCode KSPGuessSetFromOptions_Fischer(KSPGuess guess)
   model[0] = ITG->method;
   model[1] = ITG->maxl;
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)guess),((PetscObject)guess)->prefix,"Fischer guess options","KSPGuess");CHKERRQ(ierr);
-  ierr = PetscOptionsIntArray("-ksp_guess_fischer_model","Model type and dimension of basis","KSPGuessFischerSetModel",model,&nmax,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsIntArray("-ksp_guess_fischer_model","Model type and dimension of basis","KSPGuessFischerSetModel",model,&nmax,&flg));
   if (flg) {
-    ierr = KSPGuessFischerSetModel(guess,model[0],model[1]);CHKERRQ(ierr);
+    CHKERRQ(KSPGuessFischerSetModel(guess,model[0],model[1]));
   }
-  ierr = PetscOptionsReal("-ksp_guess_fischer_tol","Tolerance to determine rank via ratio of singular values","KSPGuessSetTolerance",ITG->tol,&ITG->tol,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ksp_guess_fischer_monitor","Monitor the guess",NULL,ITG->monitor,&ITG->monitor,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsReal("-ksp_guess_fischer_tol","Tolerance to determine rank via ratio of singular values","KSPGuessSetTolerance",ITG->tol,&ITG->tol,NULL));
+  CHKERRQ(PetscOptionsBool("-ksp_guess_fischer_monitor","Monitor the guess",NULL,ITG->monitor,&ITG->monitor,NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -429,12 +420,11 @@ static PetscErrorCode KSPGuessView_Fischer(KSPGuess guess,PetscViewer viewer)
 {
   KSPGuessFischer *itg = (KSPGuessFischer*)guess->data;
   PetscBool       isascii;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
   if (isascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Model %D, size %D\n",itg->method,itg->maxl);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Model %D, size %D\n",itg->method,itg->maxl));
   }
   PetscFunctionReturn(0);
 }
@@ -458,19 +448,16 @@ static PetscErrorCode KSPGuessView_Fischer(KSPGuess guess,PetscViewer viewer)
 @*/
 PetscErrorCode  KSPGuessFischerSetModel(KSPGuess guess,PetscInt model,PetscInt size)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,1);
   PetscValidLogicalCollectiveInt(guess,model,2);
-  ierr = PetscTryMethod(guess,"KSPGuessFischerSetModel_C",(KSPGuess,PetscInt,PetscInt),(guess,model,size));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(guess,"KSPGuessFischerSetModel_C",(KSPGuess,PetscInt,PetscInt),(guess,model,size)));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode KSPGuessFischerSetModel_Fischer(KSPGuess guess,PetscInt model,PetscInt size)
 {
   KSPGuessFischer *itg = (KSPGuessFischer*)guess->data;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (model == 1) {
@@ -489,11 +476,11 @@ static PetscErrorCode KSPGuessFischerSetModel_Fischer(KSPGuess guess,PetscInt mo
     PetscFunctionReturn(0);
   }
   if (size != itg->maxl) {
-    ierr = PetscFree(itg->alpha);CHKERRQ(ierr);
-    ierr = VecDestroyVecs(itg->maxl,&itg->btilde);CHKERRQ(ierr);
-    ierr = VecDestroyVecs(itg->maxl,&itg->xtilde);CHKERRQ(ierr);
-    ierr = VecDestroy(&itg->guess);CHKERRQ(ierr);
-    ierr = VecDestroy(&itg->Ax);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(itg->alpha));
+    CHKERRQ(VecDestroyVecs(itg->maxl,&itg->btilde));
+    CHKERRQ(VecDestroyVecs(itg->maxl,&itg->xtilde));
+    CHKERRQ(VecDestroy(&itg->guess));
+    CHKERRQ(VecDestroy(&itg->Ax));
   }
   itg->method = model;
   itg->maxl   = size;
@@ -540,10 +527,9 @@ static PetscErrorCode KSPGuessFischerSetModel_Fischer(KSPGuess guess,PetscInt mo
 PetscErrorCode KSPGuessCreate_Fischer(KSPGuess guess)
 {
   KSPGuessFischer *fischer;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(guess,&fischer);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(guess,&fischer));
   fischer->method = 1;  /* defaults to method 1 */
   fischer->maxl   = 10;
   fischer->tol    = 32.0*PETSC_MACHINE_EPSILON;
@@ -558,6 +544,6 @@ PetscErrorCode KSPGuessCreate_Fischer(KSPGuess guess)
   guess->ops->update         = KSPGuessUpdate_Fischer_1;
   guess->ops->formguess      = KSPGuessFormGuess_Fischer_1;
 
-  ierr = PetscObjectComposeFunction((PetscObject)guess,"KSPGuessFischerSetModel_C",KSPGuessFischerSetModel_Fischer);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)guess,"KSPGuessFischerSetModel_C",KSPGuessFischerSetModel_Fischer));
   PetscFunctionReturn(0);
 }

@@ -25,9 +25,9 @@ int main(int argc,char **argv)
                  additional help messages in this printout.
   */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscFileRetrieve(PETSC_COMM_WORLD,url,localname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
+  CHKERRQ(PetscFileRetrieve(PETSC_COMM_WORLD,url,localname,PETSC_MAX_PATH_LEN,&found));
   if (found) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Successfully download file %s\n",localname);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Successfully download file %s\n",localname));
   } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unable to download url %s",url);
 
   ierr = PetscFinalize();

@@ -13,28 +13,27 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
+  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,n));
+  CHKERRQ(VecSetFromOptions(x));
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = PetscMatlabEngineGetOutput(PETSC_MATLAB_ENGINE_WORLD,&output);CHKERRQ(ierr);
-  ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_WORLD,"MPI_Comm_rank");CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d]Processor rank is %s",rank,output);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRQ(PetscMatlabEngineGetOutput(PETSC_MATLAB_ENGINE_WORLD,&output));
+  CHKERRQ(PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_WORLD,"MPI_Comm_rank"));
+  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d]Processor rank is %s",rank,output));
+  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
-  ierr = PetscObjectSetName((PetscObject)x,"x");CHKERRQ(ierr);
-  ierr = PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_WORLD,(PetscObject)x);CHKERRQ(ierr);
-  ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_WORLD,"x = x + MPI_Comm_rank;\n");CHKERRQ(ierr);
-  ierr = PetscMatlabEngineGet(PETSC_MATLAB_ENGINE_WORLD,(PetscObject)x);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetName((PetscObject)x,"x"));
+  CHKERRQ(PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_WORLD,(PetscObject)x));
+  CHKERRQ(PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_WORLD,"x = x + MPI_Comm_rank;\n"));
+  CHKERRQ(PetscMatlabEngineGet(PETSC_MATLAB_ENGINE_WORLD,(PetscObject)x));
 
-  ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_WORLD,"whos\n");CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d]The result is %s",rank,output);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+  CHKERRQ(PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_WORLD,"whos\n"));
+  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d]The result is %s",rank,output));
+  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(VecDestroy(&x));
   ierr = PetscFinalize();
   return ierr;
 }
-

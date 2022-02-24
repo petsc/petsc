@@ -32,21 +32,21 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->simplex           = PETSC_FALSE;
   options->write_output      = PETSC_FALSE;
   options->input_file[0]     = '\0';
-  ierr = PetscStrcpy(options->output_file,"ex3.h5m");CHKERRQ(ierr);
+  CHKERRQ(PetscStrcpy(options->output_file,"ex3.h5m"));
 
   ierr = PetscOptionsBegin(comm, "", "Uniform Mesh Refinement Options", "DMMOAB");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-debug", "Enable debug messages", "ex2.cxx", options->debug, &options->debug, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex3.cxx", options->dim, &options->dim, NULL,0,3);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-n", "The number of elements in each dimension", "ex3.cxx", options->nele, &options->nele, NULL,1);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-levels", "Number of levels in the hierarchy", "ex3.cxx", options->nlevels, &options->nlevels, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-degree", "Number of degrees at each level of refinement", "ex3.cxx", options->degree, &options->degree, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-ghost", "Number of ghost layers in the mesh", "ex3.cxx", options->nghost, &options->nghost, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-simplex", "Create simplices instead of tensor product elements", "ex3.cxx", options->simplex, &options->simplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-input", "The input mesh file", "ex3.cxx", options->input_file, options->input_file, sizeof(options->input_file), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-io", "Write out the mesh and solution that is defined on it (Default H5M format)", "ex3.cxx", options->output_file, options->output_file, sizeof(options->output_file), &options->write_output);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-debug", "Enable debug messages", "ex2.cxx", options->debug, &options->debug, NULL));
+  CHKERRQ(PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex3.cxx", options->dim, &options->dim, NULL,0,3));
+  CHKERRQ(PetscOptionsBoundedInt("-n", "The number of elements in each dimension", "ex3.cxx", options->nele, &options->nele, NULL,1));
+  CHKERRQ(PetscOptionsBoundedInt("-levels", "Number of levels in the hierarchy", "ex3.cxx", options->nlevels, &options->nlevels, NULL,0));
+  CHKERRQ(PetscOptionsBoundedInt("-degree", "Number of degrees at each level of refinement", "ex3.cxx", options->degree, &options->degree, NULL,0));
+  CHKERRQ(PetscOptionsBoundedInt("-ghost", "Number of ghost layers in the mesh", "ex3.cxx", options->nghost, &options->nghost, NULL,0));
+  CHKERRQ(PetscOptionsBool("-simplex", "Create simplices instead of tensor product elements", "ex3.cxx", options->simplex, &options->simplex, NULL));
+  CHKERRQ(PetscOptionsString("-input", "The input mesh file", "ex3.cxx", options->input_file, options->input_file, sizeof(options->input_file), NULL));
+  CHKERRQ(PetscOptionsString("-io", "Write out the mesh and solution that is defined on it (Default H5M format)", "ex3.cxx", options->output_file, options->output_file, sizeof(options->output_file), &options->write_output));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent));
   PetscFunctionReturn(0);
 };
 
@@ -54,25 +54,20 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
 {
   size_t         len;
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = PetscStrlen(user->input_file, &len);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(user->createMeshEvent,0,0,0,0));
+  CHKERRMPI(MPI_Comm_rank(comm, &rank));
+  CHKERRQ(PetscStrlen(user->input_file, &len));
   if (len) {
-    if (user->debug) PetscPrintf(comm, "Loading mesh from file: %s and creating the coarse level DM object.\n",user->input_file);
-    ierr = DMMoabLoadFromFile(comm, user->dim, user->nghost, user->input_file, "", &user->dm);CHKERRQ(ierr);
+    if (user->debug) CHKERRQ(PetscPrintf(comm, "Loading mesh from file: %s and creating the coarse level DM object.\n",user->input_file));
+    CHKERRQ(DMMoabLoadFromFile(comm, user->dim, user->nghost, user->input_file, "", &user->dm));
+  } else {
+    if (user->debug) CHKERRQ(PetscPrintf(comm, "Creating a %D-dimensional structured %s mesh of %Dx%Dx%D in memory and creating a DM object.\n",user->dim,(user->simplex?"simplex":"regular"),user->nele,user->nele,user->nele));
+    CHKERRQ(DMMoabCreateBoxMesh(comm, user->dim, user->simplex, NULL, user->nele, user->nghost, &user->dm));
   }
-  else {
-    if (user->debug) {
-      PetscPrintf(comm, "Creating a %D-dimensional structured %s mesh of %Dx%Dx%D in memory and creating a DM object.\n",user->dim,(user->simplex?"simplex":"regular"),user->nele,user->nele,user->nele);
-    }
-    ierr = DMMoabCreateBoxMesh(comm, user->dim, user->simplex, NULL, user->nele, user->nghost, &user->dm);CHKERRQ(ierr);
-  }
-
-  ierr     = PetscObjectSetName((PetscObject)user->dm, "Coarse Mesh");CHKERRQ(ierr);
-  ierr     = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetName((PetscObject)user->dm, "Coarse Mesh"));
+  CHKERRQ(PetscLogEventEnd(user->createMeshEvent,0,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -91,14 +86,14 @@ int main(int argc, char **argv)
   comm = PETSC_COMM_WORLD;
   createR = PETSC_FALSE;
 
-  ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(comm, &user);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(user.dm);CHKERRQ(ierr);
+  CHKERRQ(ProcessOptions(comm, &user));
+  CHKERRQ(CreateMesh(comm, &user));
+  CHKERRQ(DMSetFromOptions(user.dm));
 
   /* SetUp the data structures for DMMOAB */
-  ierr = DMSetUp(user.dm);CHKERRQ(ierr);
+  CHKERRQ(DMSetUp(user.dm));
 
-  ierr = PetscMalloc(sizeof(DM)*(user.nlevels+1),&dmhierarchy);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc(sizeof(DM)*(user.nlevels+1),&dmhierarchy));
   for (i=0; i<=user.nlevels; i++) dmhierarchy[i] = NULL;
 
   // coarsest grid = 0
@@ -107,53 +102,43 @@ int main(int argc, char **argv)
   PetscObjectReference((PetscObject)user.dm);
 
   if (user.nlevels) {
-    ierr = PetscMalloc1(user.nlevels, &degrees);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(user.nlevels, &degrees));
     for (i=0; i < user.nlevels; i++) degrees[i] = user.degree;
-    if (user.debug) PetscPrintf(comm, "Generate the MOAB mesh hierarchy with %D levels.\n", user.nlevels);
-    ierr = DMMoabGenerateHierarchy(user.dm,user.nlevels,degrees);CHKERRQ(ierr);
+    if (user.debug) CHKERRQ(PetscPrintf(comm, "Generate the MOAB mesh hierarchy with %D levels.\n", user.nlevels));
+    CHKERRQ(DMMoabGenerateHierarchy(user.dm,user.nlevels,degrees));
 
     PetscBool usehierarchy=PETSC_FALSE;
-    if (usehierarchy) {
-      ierr = DMRefineHierarchy(user.dm,user.nlevels,&dmhierarchy[1]);CHKERRQ(ierr);
-    }
+    if (usehierarchy) CHKERRQ(DMRefineHierarchy(user.dm,user.nlevels,&dmhierarchy[1]));
     else {
       if (user.debug) {
-        PetscPrintf(PETSC_COMM_WORLD, "Level %D\n", 0);
-        ierr = DMView(user.dm, 0);CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Level %D\n", 0));
+        CHKERRQ(DMView(user.dm, 0));
       }
       for (i=1; i<=user.nlevels; i++) {
-        if (user.debug) PetscPrintf(PETSC_COMM_WORLD, "Level %D\n", i);
-        ierr = DMRefine(dmhierarchy[i-1],MPI_COMM_NULL,&dmhierarchy[i]);CHKERRQ(ierr);
-        if (createR) {
-          ierr = DMCreateInterpolation(dmhierarchy[i-1],dmhierarchy[i],&R,NULL);CHKERRQ(ierr);
-        }
+        if (user.debug) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Level %D\n", i));
+        CHKERRQ(DMRefine(dmhierarchy[i-1],MPI_COMM_NULL,&dmhierarchy[i]));
+        if (createR) CHKERRQ(DMCreateInterpolation(dmhierarchy[i-1],dmhierarchy[i],&R,NULL));
         if (user.debug) {
-          ierr = DMView(dmhierarchy[i], 0);CHKERRQ(ierr);
-          if (createR) {
-            ierr = MatView(R,0);CHKERRQ(ierr);
-          }
+          CHKERRQ(DMView(dmhierarchy[i], 0));
+          if (createR) CHKERRQ(MatView(R,0));
         }
         /* Solvers could now set operator "R" to the multigrid PC object for level i
             PCMGSetInterpolation(pc,i,R)
         */
-        if (createR) {
-          ierr = MatDestroy(&R);CHKERRQ(ierr);
-        }
+        if (createR) CHKERRQ(MatDestroy(&R));
       }
     }
   }
 
   if (user.write_output) {
-    if (user.debug) PetscPrintf(comm, "Output mesh hierarchy to file: %s.\n",user.output_file);
-    ierr = DMMoabOutput(dmhierarchy[user.nlevels],(const char*)user.output_file,"");CHKERRQ(ierr);
+    if (user.debug) CHKERRQ(PetscPrintf(comm, "Output mesh hierarchy to file: %s.\n",user.output_file));
+    CHKERRQ(DMMoabOutput(dmhierarchy[user.nlevels],(const char*)user.output_file,""));
   }
 
-  for (i=0; i<=user.nlevels; i++) {
-    ierr = DMDestroy(&dmhierarchy[i]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(degrees);CHKERRQ(ierr);
-  ierr = PetscFree(dmhierarchy);CHKERRQ(ierr);
-  ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
+  for (i=0; i<=user.nlevels; i++) CHKERRQ(DMDestroy(&dmhierarchy[i]));
+  CHKERRQ(PetscFree(degrees));
+  CHKERRQ(PetscFree(dmhierarchy));
+  CHKERRQ(DMDestroy(&user.dm));
   ierr = PetscFinalize();
   return 0;
 }

@@ -17,24 +17,23 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,booleantype
   TS             ts     = (TS) P_data;
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PC             pc;
-  PetscErrorCode ierr;
   Mat            J,P;
   Vec            yy  = cvode->w1,yydot = cvode->ydot;
   PetscReal      gm  = (PetscReal)_gamma;
   PetscScalar    *y_data;
 
   PetscFunctionBegin;
-  ierr   = TSGetIJacobian(ts,&J,&P,NULL,NULL);CHKERRQ(ierr);
+  CHKERRQ(TSGetIJacobian(ts,&J,&P,NULL,NULL));
   y_data = (PetscScalar*) N_VGetArrayPointer(y);
-  ierr   = VecPlaceArray(yy,y_data);CHKERRQ(ierr);
-  ierr   = VecZeroEntries(yydot);CHKERRQ(ierr); /* The Jacobian is independent of Ydot for ODE which is all that CVode works for */
+  CHKERRQ(VecPlaceArray(yy,y_data));
+  CHKERRQ(VecZeroEntries(yydot)); /* The Jacobian is independent of Ydot for ODE which is all that CVode works for */
   /* compute the shifted Jacobian   (1/gm)*I + Jrest */
-  ierr     = TSComputeIJacobian(ts,ts->ptime,yy,yydot,1/gm,J,P,PETSC_FALSE);CHKERRQ(ierr);
-  ierr     = VecResetArray(yy);CHKERRQ(ierr);
-  ierr     = MatScale(P,gm);CHKERRQ(ierr); /* turn into I-gm*Jrest, J is not used by Sundials  */
+  CHKERRQ(TSComputeIJacobian(ts,ts->ptime,yy,yydot,1/gm,J,P,PETSC_FALSE));
+  CHKERRQ(VecResetArray(yy));
+  CHKERRQ(MatScale(P,gm)); /* turn into I-gm*Jrest, J is not used by Sundials  */
   *jcurPtr = TRUE;
-  ierr     = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
-  ierr     = PCSetOperators(pc,J,P);CHKERRQ(ierr);
+  CHKERRQ(TSSundialsGetPC(ts,&pc));
+  CHKERRQ(PCSetOperators(pc,J,P));
   PetscFunctionReturn(0);
 }
 
@@ -48,21 +47,20 @@ PetscErrorCode TSPSolve_Sundials(realtype tn,N_Vector y,N_Vector fy,N_Vector r,N
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PC             pc;
   Vec            rr = cvode->w1,zz = cvode->w2;
-  PetscErrorCode ierr;
   PetscScalar    *r_data,*z_data;
 
   PetscFunctionBegin;
   /* Make the PETSc work vectors rr and zz point to the arrays in the SUNDIALS vectors r and z respectively*/
   r_data = (PetscScalar*) N_VGetArrayPointer(r);
   z_data = (PetscScalar*) N_VGetArrayPointer(z);
-  ierr   = VecPlaceArray(rr,r_data);CHKERRQ(ierr);
-  ierr   = VecPlaceArray(zz,z_data);CHKERRQ(ierr);
+  CHKERRQ(VecPlaceArray(rr,r_data));
+  CHKERRQ(VecPlaceArray(zz,z_data));
 
   /* Solve the Px=r and put the result in zz */
-  ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
-  ierr = PCApply(pc,rr,zz);CHKERRQ(ierr);
-  ierr = VecResetArray(rr);CHKERRQ(ierr);
-  ierr = VecResetArray(zz);CHKERRQ(ierr);
+  CHKERRQ(TSSundialsGetPC(ts,&pc));
+  CHKERRQ(PCApply(pc,rr,zz));
+  CHKERRQ(VecResetArray(rr));
+  CHKERRQ(VecResetArray(zz));
   PetscFunctionReturn(0);
 }
 
@@ -79,29 +77,28 @@ int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   Vec            yy     = cvode->w1,yyd = cvode->w2,yydot = cvode->ydot;
   PetscScalar    *y_data,*ydot_data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)ts,&comm));
   /* Make the PETSc work vectors yy and yyd point to the arrays in the SUNDIALS vectors y and ydot respectively*/
   y_data    = (PetscScalar*) N_VGetArrayPointer(y);
   ydot_data = (PetscScalar*) N_VGetArrayPointer(ydot);
-  ierr      = VecPlaceArray(yy,y_data);CHKERRABORT(comm,ierr);
-  ierr      = VecPlaceArray(yyd,ydot_data);CHKERRABORT(comm,ierr);
+  CHKERRABORT(comm,VecPlaceArray(yy,y_data));
+  CHKERRABORT(comm,VecPlaceArray(yyd,ydot_data));
 
   /* Now compute the right hand side function, via IFunction unless only the more efficient RHSFunction is set */
-  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = DMGetDMTS(dm,&tsdm);CHKERRQ(ierr);
-  ierr = DMTSGetIFunction(dm,&ifunction,NULL);CHKERRQ(ierr);
+  CHKERRQ(TSGetDM(ts,&dm));
+  CHKERRQ(DMGetDMTS(dm,&tsdm));
+  CHKERRQ(DMTSGetIFunction(dm,&ifunction,NULL));
   if (!ifunction) {
-    ierr = TSComputeRHSFunction(ts,t,yy,yyd);CHKERRQ(ierr);
+    CHKERRQ(TSComputeRHSFunction(ts,t,yy,yyd));
   } else {                      /* If rhsfunction is also set, this computes both parts and shifts them to the right */
-    ierr = VecZeroEntries(yydot);CHKERRQ(ierr);
-    ierr = TSComputeIFunction(ts,t,yy,yydot,yyd,PETSC_FALSE);CHKERRABORT(comm,ierr);
-    ierr = VecScale(yyd,-1.);CHKERRQ(ierr);
+    CHKERRQ(VecZeroEntries(yydot));
+    CHKERRABORT(comm,TSComputeIFunction(ts,t,yy,yydot,yyd,PETSC_FALSE));
+    CHKERRQ(VecScale(yyd,-1.));
   }
-  ierr = VecResetArray(yy);CHKERRABORT(comm,ierr);
-  ierr = VecResetArray(yyd);CHKERRABORT(comm,ierr);
+  CHKERRABORT(comm,VecResetArray(yy));
+  CHKERRABORT(comm,VecResetArray(yyd));
   PetscFunctionReturn(0);
 }
 
@@ -111,7 +108,6 @@ int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 PetscErrorCode TSStep_Sundials(TS ts)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
-  PetscErrorCode ierr;
   PetscInt       flag;
   long int       nits,lits,nsteps;
   realtype       t,tout;
@@ -121,9 +117,9 @@ PetscErrorCode TSStep_Sundials(TS ts)
   PetscFunctionBegin;
   mem  = cvode->mem;
   tout = ts->max_time;
-  ierr = VecGetArray(ts->vec_sol,&y_data);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(ts->vec_sol,&y_data));
   N_VSetArrayPointer((realtype*)y_data,cvode->y);
-  ierr = VecRestoreArray(ts->vec_sol,NULL);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(ts->vec_sol,NULL));
 
   /* We would like to TSPreStage() and TSPostStage()
    * before each stage solve but CVode does not appear to support this. */
@@ -142,8 +138,8 @@ PetscErrorCode TSStep_Sundials(TS ts)
         break;
       case CV_TOO_MUCH_WORK: {
         PetscReal tcur;
-        ierr = CVodeGetNumSteps(mem,&nsteps);CHKERRQ(ierr);
-        ierr = CVodeGetCurrentTime(mem,&tcur);CHKERRQ(ierr);
+        CHKERRQ(CVodeGetNumSteps(mem,&nsteps));
+        CHKERRQ(CVodeGetCurrentTime(mem,&tcur));
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_TOO_MUCH_WORK. At t=%g, nsteps %D exceeds maxstep %D. Increase '-ts_max_steps <>' or modify TSSetMaxSteps()",(double)tcur,nsteps,ts->max_steps);
       } break;
       case CV_TOO_MUCH_ACC:
@@ -185,20 +181,20 @@ PetscErrorCode TSStep_Sundials(TS ts)
   }
 
   /* log inner nonlinear and linear iterations */
-  ierr = CVodeGetNumNonlinSolvIters(mem,&nits);CHKERRQ(ierr);
-  ierr = CVSpilsGetNumLinIters(mem,&lits);CHKERRQ(ierr);
+  CHKERRQ(CVodeGetNumNonlinSolvIters(mem,&nits));
+  CHKERRQ(CVSpilsGetNumLinIters(mem,&lits));
   ts->snes_its += nits; ts->ksp_its = lits;
 
   /* copy the solution from cvode->y to cvode->update and sol */
-  ierr = VecPlaceArray(cvode->w1,y_data);CHKERRQ(ierr);
-  ierr = VecCopy(cvode->w1,cvode->update);CHKERRQ(ierr);
-  ierr = VecResetArray(cvode->w1);CHKERRQ(ierr);
-  ierr = VecCopy(cvode->update,ts->vec_sol);CHKERRQ(ierr);
+  CHKERRQ(VecPlaceArray(cvode->w1,y_data));
+  CHKERRQ(VecCopy(cvode->w1,cvode->update));
+  CHKERRQ(VecResetArray(cvode->w1));
+  CHKERRQ(VecCopy(cvode->update,ts->vec_sol));
 
   ts->time_step = t - ts->ptime;
   ts->ptime = t;
 
-  ierr = CVodeGetNumSteps(mem,&nsteps);CHKERRQ(ierr);
+  CHKERRQ(CVodeGetNumSteps(mem,&nsteps));
   if (!cvode->monitorstep) ts->steps += nsteps - 1; /* TSStep() increments the step counter by one */
   PetscFunctionReturn(0);
 }
@@ -207,21 +203,20 @@ static PetscErrorCode TSInterpolate_Sundials(TS ts,PetscReal t,Vec X)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   N_Vector       y;
-  PetscErrorCode ierr;
   PetscScalar    *x_data;
   PetscInt       glosize,locsize;
 
   PetscFunctionBegin;
   /* get the vector size */
-  ierr = VecGetSize(X,&glosize);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(X,&locsize);CHKERRQ(ierr);
-  ierr = VecGetArray(X,&x_data);CHKERRQ(ierr);
+  CHKERRQ(VecGetSize(X,&glosize));
+  CHKERRQ(VecGetLocalSize(X,&locsize));
+  CHKERRQ(VecGetArray(X,&x_data));
 
   /* Initialize N_Vec y with x_data */
   if (cvode->use_dense) {
     PetscMPIInt size;
 
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
     PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"TSSUNDIALS only supports a dense solve in the serial case");
     y = N_VMake_Serial(locsize,(realtype*)x_data);
   } else {
@@ -230,21 +225,20 @@ static PetscErrorCode TSInterpolate_Sundials(TS ts,PetscReal t,Vec X)
 
   PetscCheck(y,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Interpolated y is not allocated");
 
-  ierr = CVodeGetDky(cvode->mem,t,0,y);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x_data);CHKERRQ(ierr);
+  CHKERRQ(CVodeGetDky(cvode->mem,t,0,y));
+  CHKERRQ(VecRestoreArray(X,&x_data));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode TSReset_Sundials(TS ts)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(&cvode->update);CHKERRQ(ierr);
-  ierr = VecDestroy(&cvode->ydot);CHKERRQ(ierr);
-  ierr = VecDestroy(&cvode->w1);CHKERRQ(ierr);
-  ierr = VecDestroy(&cvode->w2);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&cvode->update));
+  CHKERRQ(VecDestroy(&cvode->ydot));
+  CHKERRQ(VecDestroy(&cvode->w1));
+  CHKERRQ(VecDestroy(&cvode->w2));
   if (cvode->mem) CVodeFree(&cvode->mem);
   PetscFunctionReturn(0);
 }
@@ -252,29 +246,27 @@ PetscErrorCode TSReset_Sundials(TS ts)
 PetscErrorCode TSDestroy_Sundials(TS ts)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSReset_Sundials(ts);CHKERRQ(ierr);
-  ierr = MPI_Comm_free(&(cvode->comm_sundials));CHKERRMPI(ierr);
-  ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetType_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMaxl_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetLinearTolerance_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetGramSchmidtType_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetTolerance_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMinTimeStep_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMaxTimeStep_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsGetPC_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsGetIterations_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsMonitorInternalSteps_C",NULL);CHKERRQ(ierr);
+  CHKERRQ(TSReset_Sundials(ts));
+  CHKERRMPI(MPI_Comm_free(&(cvode->comm_sundials)));
+  CHKERRQ(PetscFree(ts->data));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetType_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMaxl_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetLinearTolerance_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetGramSchmidtType_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetTolerance_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMinTimeStep_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMaxTimeStep_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsGetPC_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsGetIterations_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsMonitorInternalSteps_C",NULL));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode TSSetUp_Sundials(TS ts)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
-  PetscErrorCode ierr;
   PetscInt       glosize,locsize,i,flag;
   PetscScalar    *y_data,*parray;
   void           *mem;
@@ -286,14 +278,14 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   PetscCheckFalse(ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for exact final time option 'MATCHSTEP' when using Sundials");
 
   /* get the vector size */
-  ierr = VecGetSize(ts->vec_sol,&glosize);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(ts->vec_sol,&locsize);CHKERRQ(ierr);
+  CHKERRQ(VecGetSize(ts->vec_sol,&glosize));
+  CHKERRQ(VecGetLocalSize(ts->vec_sol,&locsize));
 
   /* allocate the memory for N_Vec y */
   if (cvode->use_dense) {
     PetscMPIInt size;
 
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
     PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"TSSUNDIALS only supports a dense solve in the serial case");
     cvode->y = N_VNew_Serial(locsize);
   } else {
@@ -302,25 +294,25 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   PetscCheck(cvode->y,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"cvode->y is not allocated");
 
   /* initialize N_Vec y: copy ts->vec_sol to cvode->y */
-  ierr   = VecGetArray(ts->vec_sol,&parray);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(ts->vec_sol,&parray));
   y_data = (PetscScalar*) N_VGetArrayPointer(cvode->y);
   for (i = 0; i < locsize; i++) y_data[i] = parray[i];
-  ierr = VecRestoreArray(ts->vec_sol,NULL);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(ts->vec_sol,NULL));
 
-  ierr = VecDuplicate(ts->vec_sol,&cvode->update);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&cvode->ydot);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)cvode->update);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)cvode->ydot);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(ts->vec_sol,&cvode->update));
+  CHKERRQ(VecDuplicate(ts->vec_sol,&cvode->ydot));
+  CHKERRQ(PetscLogObjectParent((PetscObject)ts,(PetscObject)cvode->update));
+  CHKERRQ(PetscLogObjectParent((PetscObject)ts,(PetscObject)cvode->ydot));
 
   /*
     Create work vectors for the TSPSolve_Sundials() routine. Note these are
     allocated with zero space arrays because the actual array space is provided
     by Sundials and set using VecPlaceArray().
   */
-  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)ts),1,locsize,PETSC_DECIDE,NULL,&cvode->w1);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)ts),1,locsize,PETSC_DECIDE,NULL,&cvode->w2);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)cvode->w1);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)ts,(PetscObject)cvode->w2);CHKERRQ(ierr);
+  CHKERRQ(VecCreateMPIWithArray(PetscObjectComm((PetscObject)ts),1,locsize,PETSC_DECIDE,NULL,&cvode->w1));
+  CHKERRQ(VecCreateMPIWithArray(PetscObjectComm((PetscObject)ts),1,locsize,PETSC_DECIDE,NULL,&cvode->w2));
+  CHKERRQ(PetscLogObjectParent((PetscObject)ts,(PetscObject)cvode->w1));
+  CHKERRQ(PetscLogObjectParent((PetscObject)ts,(PetscObject)cvode->w2));
 
   /* Call CVodeCreate to create the solver memory and the use of a Newton iteration */
   mem = CVodeCreate(cvode->cvode_type, CV_NEWTON);
@@ -371,16 +363,16 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
     /* call CVDense to use a dense linear solver. */
     PetscMPIInt size;
 
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
     PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"TSSUNDIALS only supports a dense solve in the serial case");
     flag = CVDense(mem,locsize);
     PetscCheckFalse(flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVDense() fails, flag %d",flag);
   } else {
     /* call CVSpgmr to use GMRES as the linear solver.        */
     /* setup the ode integrator with the given preconditioner */
-    ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
-    ierr = PCGetType(pc,&pctype);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)pc,PCNONE,&pcnone);CHKERRQ(ierr);
+    CHKERRQ(TSSundialsGetPC(ts,&pc));
+    CHKERRQ(PCGetType(pc,&pctype));
+    CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCNONE,&pcnone));
     if (pcnone) {
       flag = CVSpgmr(mem,PREC_NONE,0);
       PetscCheckFalse(flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpgmr() fails, flag %d",flag);
@@ -405,40 +397,38 @@ const char *const TSSundialsGramSchmidtTypes[] = {"","MODIFIED","CLASSICAL","TSS
 PetscErrorCode TSSetFromOptions_Sundials(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
-  PetscErrorCode ierr;
   int            indx;
   PetscBool      flag;
   PC             pc;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"SUNDIALS ODE solver options");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-ts_sundials_type","Scheme","TSSundialsSetType",TSSundialsLmmTypes,3,TSSundialsLmmTypes[cvode->cvode_type],&indx,&flag);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"SUNDIALS ODE solver options"));
+  CHKERRQ(PetscOptionsEList("-ts_sundials_type","Scheme","TSSundialsSetType",TSSundialsLmmTypes,3,TSSundialsLmmTypes[cvode->cvode_type],&indx,&flag));
   if (flag) {
-    ierr = TSSundialsSetType(ts,(TSSundialsLmmType)indx);CHKERRQ(ierr);
+    CHKERRQ(TSSundialsSetType(ts,(TSSundialsLmmType)indx));
   }
-  ierr = PetscOptionsEList("-ts_sundials_gramschmidt_type","Type of orthogonalization","TSSundialsSetGramSchmidtType",TSSundialsGramSchmidtTypes,3,TSSundialsGramSchmidtTypes[cvode->gtype],&indx,&flag);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsEList("-ts_sundials_gramschmidt_type","Type of orthogonalization","TSSundialsSetGramSchmidtType",TSSundialsGramSchmidtTypes,3,TSSundialsGramSchmidtTypes[cvode->gtype],&indx,&flag));
   if (flag) {
-    ierr = TSSundialsSetGramSchmidtType(ts,(TSSundialsGramSchmidtType)indx);CHKERRQ(ierr);
+    CHKERRQ(TSSundialsSetGramSchmidtType(ts,(TSSundialsGramSchmidtType)indx));
   }
-  ierr = PetscOptionsReal("-ts_sundials_atol","Absolute tolerance for convergence","TSSundialsSetTolerance",cvode->abstol,&cvode->abstol,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_sundials_rtol","Relative tolerance for convergence","TSSundialsSetTolerance",cvode->reltol,&cvode->reltol,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_sundials_mindt","Minimum step size","TSSundialsSetMinTimeStep",cvode->mindt,&cvode->mindt,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_sundials_maxdt","Maximum step size","TSSundialsSetMaxTimeStep",cvode->maxdt,&cvode->maxdt,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ts_sundials_linear_tolerance","Convergence tolerance for linear solve","TSSundialsSetLinearTolerance",cvode->linear_tol,&cvode->linear_tol,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-ts_sundials_maxord","Max Order for BDF/Adams method","TSSundialsSetMaxOrd",cvode->maxord,&cvode->maxord,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-ts_sundials_maxl","Max dimension of the Krylov subspace","TSSundialsSetMaxl",cvode->maxl,&cvode->maxl,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ts_sundials_monitor_steps","Monitor SUNDIALS internal steps","TSSundialsMonitorInternalSteps",cvode->monitorstep,&cvode->monitorstep,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ts_sundials_use_dense","Use dense internal solver in SUNDIALS (serial only)","TSSundialsSetUseDense",cvode->use_dense,&cvode->use_dense,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
-  ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
-  ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsReal("-ts_sundials_atol","Absolute tolerance for convergence","TSSundialsSetTolerance",cvode->abstol,&cvode->abstol,NULL));
+  CHKERRQ(PetscOptionsReal("-ts_sundials_rtol","Relative tolerance for convergence","TSSundialsSetTolerance",cvode->reltol,&cvode->reltol,NULL));
+  CHKERRQ(PetscOptionsReal("-ts_sundials_mindt","Minimum step size","TSSundialsSetMinTimeStep",cvode->mindt,&cvode->mindt,NULL));
+  CHKERRQ(PetscOptionsReal("-ts_sundials_maxdt","Maximum step size","TSSundialsSetMaxTimeStep",cvode->maxdt,&cvode->maxdt,NULL));
+  CHKERRQ(PetscOptionsReal("-ts_sundials_linear_tolerance","Convergence tolerance for linear solve","TSSundialsSetLinearTolerance",cvode->linear_tol,&cvode->linear_tol,NULL));
+  CHKERRQ(PetscOptionsInt("-ts_sundials_maxord","Max Order for BDF/Adams method","TSSundialsSetMaxOrd",cvode->maxord,&cvode->maxord,NULL));
+  CHKERRQ(PetscOptionsInt("-ts_sundials_maxl","Max dimension of the Krylov subspace","TSSundialsSetMaxl",cvode->maxl,&cvode->maxl,NULL));
+  CHKERRQ(PetscOptionsBool("-ts_sundials_monitor_steps","Monitor SUNDIALS internal steps","TSSundialsMonitorInternalSteps",cvode->monitorstep,&cvode->monitorstep,NULL));
+  CHKERRQ(PetscOptionsBool("-ts_sundials_use_dense","Use dense internal solver in SUNDIALS (serial only)","TSSundialsSetUseDense",cvode->use_dense,&cvode->use_dense,NULL));
+  CHKERRQ(PetscOptionsTail());
+  CHKERRQ(TSSundialsGetPC(ts,&pc));
+  CHKERRQ(PCSetFromOptions(pc));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
-  PetscErrorCode ierr;
   char           *type;
   char           atype[] = "Adams";
   char           btype[] = "BDF: backward differentiation formula";
@@ -452,60 +442,58 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
   if (cvode->cvode_type == SUNDIALS_ADAMS) type = atype;
   else                                     type = btype;
 
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Sundials integrator does not use SNES!\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Sundials integrator type %s\n",type);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Sundials maxord %D\n",cvode->maxord);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Sundials abs tol %g rel tol %g\n",(double)cvode->abstol,(double)cvode->reltol);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials integrator does not use SNES!\n"));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials integrator type %s\n",type));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials maxord %D\n",cvode->maxord));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials abs tol %g rel tol %g\n",(double)cvode->abstol,(double)cvode->reltol));
     if (cvode->use_dense) {
-      ierr = PetscViewerASCIIPrintf(viewer,"Sundials integrator using a dense linear solve\n");CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials integrator using a dense linear solve\n"));
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"Sundials linear solver tolerance factor %g\n",(double)cvode->linear_tol);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"Sundials max dimension of Krylov subspace %D\n",cvode->maxl);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials linear solver tolerance factor %g\n",(double)cvode->linear_tol));
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials max dimension of Krylov subspace %D\n",cvode->maxl));
       if (cvode->gtype == SUNDIALS_MODIFIED_GS) {
-        ierr = PetscViewerASCIIPrintf(viewer,"Sundials using modified Gram-Schmidt for orthogonalization in GMRES\n");CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials using modified Gram-Schmidt for orthogonalization in GMRES\n"));
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"Sundials using unmodified (classical) Gram-Schmidt for orthogonalization in GMRES\n");CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials using unmodified (classical) Gram-Schmidt for orthogonalization in GMRES\n"));
       }
     }
-    if (cvode->mindt > 0) {ierr = PetscViewerASCIIPrintf(viewer,"Sundials minimum time step %g\n",(double)cvode->mindt);CHKERRQ(ierr);}
-    if (cvode->maxdt > 0) {ierr = PetscViewerASCIIPrintf(viewer,"Sundials maximum time step %g\n",(double)cvode->maxdt);CHKERRQ(ierr);}
+    if (cvode->mindt > 0) CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials minimum time step %g\n",(double)cvode->mindt));
+    if (cvode->maxdt > 0) CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials maximum time step %g\n",(double)cvode->maxdt));
 
     /* Outputs from CVODE, CVSPILS */
-    ierr = CVodeGetTolScaleFactor(cvode->mem,&tolsfac);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Sundials suggested factor for tolerance scaling %g\n",tolsfac);CHKERRQ(ierr);
-    ierr = CVodeGetIntegratorStats(cvode->mem,&nsteps,&nfevals,
-                                   &nlinsetups,&nfails,&qlast,&qcur,
-                                   &hinused,&hlast,&hcur,&tcur);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Sundials cumulative number of internal steps %D\n",nsteps);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of calls to rhs function %D\n",nfevals);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of calls to linear solver setup function %D\n",nlinsetups);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of error test failures %D\n",nfails);CHKERRQ(ierr);
+    CHKERRQ(CVodeGetTolScaleFactor(cvode->mem,&tolsfac));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials suggested factor for tolerance scaling %g\n",tolsfac));
+    CHKERRQ(CVodeGetIntegratorStats(cvode->mem,&nsteps,&nfevals,&nlinsetups,&nfails,&qlast,&qcur,&hinused,&hlast,&hcur,&tcur));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials cumulative number of internal steps %D\n",nsteps));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials no. of calls to rhs function %D\n",nfevals));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials no. of calls to linear solver setup function %D\n",nlinsetups));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials no. of error test failures %D\n",nfails));
 
-    ierr = CVodeGetNonlinSolvStats(cvode->mem,&its,&nfails);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of nonlinear solver iterations %D\n",its);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of nonlinear convergence failure %D\n",nfails);CHKERRQ(ierr);
+    CHKERRQ(CVodeGetNonlinSolvStats(cvode->mem,&its,&nfails));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials no. of nonlinear solver iterations %D\n",its));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials no. of nonlinear convergence failure %D\n",nfails));
     if (!cvode->use_dense) {
-      ierr = CVSpilsGetNumLinIters(cvode->mem, &its);CHKERRQ(ierr); /* its = no. of calls to TSPrecond_Sundials() */
-      ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of linear iterations %D\n",its);CHKERRQ(ierr);
-      ierr = CVSpilsGetNumConvFails(cvode->mem,&itmp);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of linear convergence failures %D\n",itmp);CHKERRQ(ierr);
+      CHKERRQ(CVSpilsGetNumLinIters(cvode->mem, &its)); /* its = no. of calls to TSPrecond_Sundials() */
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials no. of linear iterations %D\n",its));
+      CHKERRQ(CVSpilsGetNumConvFails(cvode->mem,&itmp));
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials no. of linear convergence failures %D\n",itmp));
 
-      ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
-      ierr = PCView(pc,viewer);CHKERRQ(ierr);
-      ierr = CVSpilsGetNumPrecEvals(cvode->mem,&itmp);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of preconditioner evaluations %D\n",itmp);CHKERRQ(ierr);
-      ierr = CVSpilsGetNumPrecSolves(cvode->mem,&itmp);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of preconditioner solves %D\n",itmp);CHKERRQ(ierr);
+      CHKERRQ(TSSundialsGetPC(ts,&pc));
+      CHKERRQ(PCView(pc,viewer));
+      CHKERRQ(CVSpilsGetNumPrecEvals(cvode->mem,&itmp));
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials no. of preconditioner evaluations %D\n",itmp));
+      CHKERRQ(CVSpilsGetNumPrecSolves(cvode->mem,&itmp));
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials no. of preconditioner solves %D\n",itmp));
     }
-    ierr = CVSpilsGetNumJtimesEvals(cvode->mem,&itmp);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of Jacobian-vector product evaluations %D\n",itmp);CHKERRQ(ierr);
-    ierr = CVSpilsGetNumRhsEvals(cvode->mem,&itmp);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of rhs calls for finite diff. Jacobian-vector evals %D\n",itmp);CHKERRQ(ierr);
+    CHKERRQ(CVSpilsGetNumJtimesEvals(cvode->mem,&itmp));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials no. of Jacobian-vector product evaluations %D\n",itmp));
+    CHKERRQ(CVSpilsGetNumRhsEvals(cvode->mem,&itmp));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Sundials no. of rhs calls for finite diff. Jacobian-vector evals %D\n",itmp));
   } else if (isstring) {
-    ierr = PetscViewerStringSPrintf(viewer,"Sundials type %s",type);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerStringSPrintf(viewer,"Sundials type %s",type));
   }
   PetscFunctionReturn(0);
 }
@@ -588,12 +576,11 @@ PetscErrorCode  TSSundialsGetPC_Sundials(TS ts,PC *pc)
 {
   SNES           snes;
   KSP            ksp;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,pc);CHKERRQ(ierr);
+  CHKERRQ(TSGetSNES(ts,&snes));
+  CHKERRQ(SNESGetKSP(snes,&ksp));
+  CHKERRQ(KSPGetPC(ksp,pc));
   PetscFunctionReturn(0);
 }
 
@@ -640,10 +627,8 @@ PetscErrorCode  TSSundialsMonitorInternalSteps_Sundials(TS ts,PetscBool s)
 @*/
 PetscErrorCode  TSSundialsGetIterations(TS ts,int *nonlin,int *lin)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscUseMethod(ts,"TSSundialsGetIterations_C",(TS,int*,int*),(ts,nonlin,lin));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(ts,"TSSundialsGetIterations_C",(TS,int*,int*),(ts,nonlin,lin)));
   PetscFunctionReturn(0);
 }
 
@@ -666,10 +651,8 @@ PetscErrorCode  TSSundialsGetIterations(TS ts,int *nonlin,int *lin)
 @*/
 PetscErrorCode  TSSundialsSetType(TS ts,TSSundialsLmmType type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscTryMethod(ts,"TSSundialsSetType_C",(TS,TSSundialsLmmType),(ts,type));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ts,"TSSundialsSetType_C",(TS,TSSundialsLmmType),(ts,type)));
   PetscFunctionReturn(0);
 }
 
@@ -693,11 +676,9 @@ PetscErrorCode  TSSundialsSetType(TS ts,TSSundialsLmmType type)
 @*/
 PetscErrorCode  TSSundialsSetMaxord(TS ts,PetscInt maxord)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidLogicalCollectiveInt(ts,maxord,2);
-  ierr = PetscTryMethod(ts,"TSSundialsSetMaxOrd_C",(TS,PetscInt),(ts,maxord));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ts,"TSSundialsSetMaxOrd_C",(TS,PetscInt),(ts,maxord)));
   PetscFunctionReturn(0);
 }
 
@@ -723,11 +704,9 @@ PetscErrorCode  TSSundialsSetMaxord(TS ts,PetscInt maxord)
 @*/
 PetscErrorCode  TSSundialsSetMaxl(TS ts,PetscInt maxl)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidLogicalCollectiveInt(ts,maxl,2);
-  ierr = PetscTryMethod(ts,"TSSundialsSetMaxl_C",(TS,PetscInt),(ts,maxl));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ts,"TSSundialsSetMaxl_C",(TS,PetscInt),(ts,maxl)));
   PetscFunctionReturn(0);
 }
 
@@ -753,11 +732,9 @@ PetscErrorCode  TSSundialsSetMaxl(TS ts,PetscInt maxl)
 @*/
 PetscErrorCode  TSSundialsSetLinearTolerance(TS ts,PetscReal tol)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidLogicalCollectiveReal(ts,tol,2);
-  ierr = PetscTryMethod(ts,"TSSundialsSetLinearTolerance_C",(TS,PetscReal),(ts,tol));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ts,"TSSundialsSetLinearTolerance_C",(TS,PetscReal),(ts,tol)));
   PetscFunctionReturn(0);
 }
 
@@ -782,10 +759,8 @@ PetscErrorCode  TSSundialsSetLinearTolerance(TS ts,PetscReal tol)
 @*/
 PetscErrorCode  TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscTryMethod(ts,"TSSundialsSetGramSchmidtType_C",(TS,TSSundialsGramSchmidtType),(ts,type));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ts,"TSSundialsSetGramSchmidtType_C",(TS,TSSundialsGramSchmidtType),(ts,type)));
   PetscFunctionReturn(0);
 }
 
@@ -814,10 +789,8 @@ PetscErrorCode  TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType typ
 @*/
 PetscErrorCode  TSSundialsSetTolerance(TS ts,PetscReal aabs,PetscReal rel)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscTryMethod(ts,"TSSundialsSetTolerance_C",(TS,PetscReal,PetscReal),(ts,aabs,rel));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ts,"TSSundialsSetTolerance_C",(TS,PetscReal,PetscReal),(ts,aabs,rel)));
   PetscFunctionReturn(0);
 }
 
@@ -839,10 +812,8 @@ PetscErrorCode  TSSundialsSetTolerance(TS ts,PetscReal aabs,PetscReal rel)
 @*/
 PetscErrorCode  TSSundialsGetPC(TS ts,PC *pc)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscUseMethod(ts,"TSSundialsGetPC_C",(TS,PC*),(ts,pc));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(ts,"TSSundialsGetPC_C",(TS,PC*),(ts,pc)));
   PetscFunctionReturn(0);
 }
 
@@ -863,10 +834,8 @@ PetscErrorCode  TSSundialsGetPC(TS ts,PC *pc)
 @*/
 PetscErrorCode  TSSundialsSetMinTimeStep(TS ts,PetscReal mindt)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscTryMethod(ts,"TSSundialsSetMinTimeStep_C",(TS,PetscReal),(ts,mindt));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ts,"TSSundialsSetMinTimeStep_C",(TS,PetscReal),(ts,mindt)));
   PetscFunctionReturn(0);
 }
 
@@ -883,10 +852,8 @@ PetscErrorCode  TSSundialsSetMinTimeStep(TS ts,PetscReal mindt)
 @*/
 PetscErrorCode  TSSundialsSetMaxTimeStep(TS ts,PetscReal maxdt)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscTryMethod(ts,"TSSundialsSetMaxTimeStep_C",(TS,PetscReal),(ts,maxdt));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ts,"TSSundialsSetMaxTimeStep_C",(TS,PetscReal),(ts,maxdt)));
   PetscFunctionReturn(0);
 }
 
@@ -906,10 +873,8 @@ PetscErrorCode  TSSundialsSetMaxTimeStep(TS ts,PetscReal maxdt)
 @*/
 PetscErrorCode  TSSundialsMonitorInternalSteps(TS ts,PetscBool ft)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscTryMethod(ts,"TSSundialsMonitorInternalSteps_C",(TS,PetscBool),(ts,ft));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ts,"TSSundialsMonitorInternalSteps_C",(TS,PetscBool),(ts,ft)));
   PetscFunctionReturn(0);
 }
 
@@ -929,11 +894,9 @@ PetscErrorCode  TSSundialsMonitorInternalSteps(TS ts,PetscBool ft)
 @*/
 PetscErrorCode  TSSundialsSetUseDense(TS ts,PetscBool use_dense)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidLogicalCollectiveInt(ts,use_dense,2);
-  ierr = PetscTryMethod(ts,"TSSundialsSetUseDense_C",(TS,PetscBool),(ts,use_dense));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ts,"TSSundialsSetUseDense_C",(TS,PetscBool),(ts,use_dense)));
   PetscFunctionReturn(0);
 }
 
@@ -964,7 +927,6 @@ M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS ts)
 {
   TS_Sundials    *cvode;
-  PetscErrorCode ierr;
   PC             pc;
 
   PetscFunctionBegin;
@@ -977,7 +939,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_Sundials;
   ts->default_adapt_type  = TSADAPTNONE;
 
-  ierr = PetscNewLog(ts,&cvode);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(ts,&cvode));
 
   ts->usessnes = PETSC_TRUE;
 
@@ -990,7 +952,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS ts)
   cvode->monitorstep = PETSC_TRUE;
   cvode->use_dense   = PETSC_FALSE;
 
-  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)ts),&(cvode->comm_sundials));CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)ts),&(cvode->comm_sundials)));
 
   cvode->mindt = -1.;
   cvode->maxdt = -1.;
@@ -1000,19 +962,19 @@ PETSC_EXTERN PetscErrorCode TSCreate_Sundials(TS ts)
   cvode->abstol = 1e-6;
 
   /* set PCNONE as default pctype */
-  ierr = TSSundialsGetPC_Sundials(ts,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+  CHKERRQ(TSSundialsGetPC_Sundials(ts,&pc));
+  CHKERRQ(PCSetType(pc,PCNONE));
 
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetType_C",TSSundialsSetType_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMaxl_C",TSSundialsSetMaxl_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetLinearTolerance_C",TSSundialsSetLinearTolerance_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetGramSchmidtType_C",TSSundialsSetGramSchmidtType_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetTolerance_C",TSSundialsSetTolerance_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMinTimeStep_C",TSSundialsSetMinTimeStep_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMaxTimeStep_C",TSSundialsSetMaxTimeStep_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsGetPC_C",TSSundialsGetPC_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsGetIterations_C",TSSundialsGetIterations_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsMonitorInternalSteps_C",TSSundialsMonitorInternalSteps_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetUseDense_C",TSSundialsSetUseDense_Sundials);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetType_C",TSSundialsSetType_Sundials));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMaxl_C",TSSundialsSetMaxl_Sundials));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetLinearTolerance_C",TSSundialsSetLinearTolerance_Sundials));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetGramSchmidtType_C",TSSundialsSetGramSchmidtType_Sundials));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetTolerance_C",TSSundialsSetTolerance_Sundials));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMinTimeStep_C",TSSundialsSetMinTimeStep_Sundials));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetMaxTimeStep_C",TSSundialsSetMaxTimeStep_Sundials));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsGetPC_C",TSSundialsGetPC_Sundials));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsGetIterations_C",TSSundialsGetIterations_Sundials));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsMonitorInternalSteps_C",TSSundialsMonitorInternalSteps_Sundials));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSundialsSetUseDense_C",TSSundialsSetUseDense_Sundials));
   PetscFunctionReturn(0);
 }

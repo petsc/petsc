@@ -11,25 +11,25 @@ int main(int argc,char *argv[])
   ViennaclVector *x_vcl;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,NULL);if (ierr) return ierr;
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetType(x,VECVIENNACL);CHKERRQ(ierr);
-  ierr = VecSet(x,42.0);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
+  CHKERRQ(VecSetSizes(x,n,PETSC_DECIDE));
+  CHKERRQ(VecSetType(x,VECVIENNACL));
+  CHKERRQ(VecSet(x,42.0));
 
-  ierr = VecViennaCLGetArray(x,&x_vcl);CHKERRQ(ierr);
+  CHKERRQ(VecViennaCLGetArray(x,&x_vcl));
 
-  ierr = VecCreateSeqViennaCLWithArray(PETSC_COMM_WORLD,1,n,(const ViennaclVector *)x_vcl,&y);CHKERRQ(ierr);
+  CHKERRQ(VecCreateSeqViennaCLWithArray(PETSC_COMM_WORLD,1,n,(const ViennaclVector *)x_vcl,&y));
 
   // Operated on 'y', but 'x' would also be changed since both
   // 'x' and 'y' share the same viennacl vector.
-  ierr = VecScale(y,2.0);CHKERRQ(ierr);
+  CHKERRQ(VecScale(y,2.0));
 
-  ierr = VecViennaCLRestoreArray(x,&x_vcl);CHKERRQ(ierr);
+  CHKERRQ(VecViennaCLRestoreArray(x,&x_vcl));
 
   // Expected output: 'x' is a 5-vector with all entries as '84'.
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(VecDestroy(&y));
+  CHKERRQ(VecDestroy(&x));
 
   ierr = PetscFinalize();
   return ierr;

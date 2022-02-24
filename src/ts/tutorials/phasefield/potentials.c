@@ -18,55 +18,55 @@ int main(int argc,char **argv)
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
-  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800);CHKERRQ(ierr);
-  ierr = PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),0,&lg);CHKERRQ(ierr);
-  ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  ierr = PetscDrawViewPortsCreateRect(draw,1,2,&ports);CHKERRQ(ierr);
-  ierr = PetscDrawLGGetAxis(lg,&axis);CHKERRQ(ierr);
-  ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800));
+  CHKERRQ(PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),0,&lg));
+  CHKERRQ(PetscDrawLGGetDraw(lg,&draw));
+  CHKERRQ(PetscDrawCheckResizedWindow(draw));
+  CHKERRQ(PetscDrawViewPortsCreateRect(draw,1,2,&ports));
+  CHKERRQ(PetscDrawLGGetAxis(lg,&axis));
+  CHKERRQ(PetscDrawLGReset(lg));
 
   /*
       Plot the  energies
   */
-  ierr = PetscDrawLGSetDimension(lg,3);CHKERRQ(ierr);
-  ierr = PetscDrawViewPortsSet(ports,1);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawLGSetDimension(lg,3));
+  CHKERRQ(PetscDrawViewPortsSet(ports,1));
   x    = .9;
   for (i=0; i<Mx; i++) {
     xx[0] = xx[1] = xx[2] = x;
     yy[0] = (1.-x*x)*(1. - x*x);
     yy[1] = (1. - x*x);
     yy[2] = -(1.-x)*PetscLogReal(1.-x);
-    ierr  = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawLGAddPoint(lg,xx,yy));
     x    += hx;
   }
-  ierr = PetscDrawGetPause(draw,&pause);CHKERRQ(ierr);
-  ierr = PetscDrawSetPause(draw,0.0);CHKERRQ(ierr);
-  ierr = PetscDrawAxisSetLabels(axis,"Energy","","");CHKERRQ(ierr);
-  ierr = PetscDrawLGSetLegend(lg,legend);CHKERRQ(ierr);
-  ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawGetPause(draw,&pause));
+  CHKERRQ(PetscDrawSetPause(draw,0.0));
+  CHKERRQ(PetscDrawAxisSetLabels(axis,"Energy","",""));
+  CHKERRQ(PetscDrawLGSetLegend(lg,legend));
+  CHKERRQ(PetscDrawLGDraw(lg));
 
   /*
       Plot the  forces
   */
-  ierr = PetscDrawViewPortsSet(ports,0);CHKERRQ(ierr);
-  ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawViewPortsSet(ports,0));
+  CHKERRQ(PetscDrawLGReset(lg));
   x    = .9;
   for (i=0; i<Mx; i++) {
     xx[0] = xx[1] = xx[2] = x;
     yy[0] = x*x*x - x;
     yy[1] = -x;
     yy[2] = 1.0 + PetscLogReal(1. - x);
-    ierr  = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawLGAddPoint(lg,xx,yy));
     x    += hx;
   }
-  ierr = PetscDrawAxisSetLabels(axis,"Derivative","","");CHKERRQ(ierr);
-  ierr = PetscDrawLGSetLegend(lg,NULL);CHKERRQ(ierr);
-  ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawAxisSetLabels(axis,"Derivative","",""));
+  CHKERRQ(PetscDrawLGSetLegend(lg,NULL));
+  CHKERRQ(PetscDrawLGDraw(lg));
 
-  ierr = PetscDrawSetPause(draw,pause);CHKERRQ(ierr);
-  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
-  ierr = PetscDrawViewPortsDestroy(ports);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawSetPause(draw,pause));
+  CHKERRQ(PetscDrawPause(draw));
+  CHKERRQ(PetscDrawViewPortsDestroy(ports));
   ierr = PetscFinalize();
   return ierr;
 }

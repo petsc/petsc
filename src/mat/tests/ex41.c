@@ -21,73 +21,73 @@ int main(int argc,char **args)
   PetscScalar    rand;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-nd",&nd,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-ov",&ov,NULL);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nd",&nd,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-ov",&ov,NULL));
 
   /* Read matrix and RHS */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetType(A,MATMPIAIJ));
+  CHKERRQ(MatLoad(A,fd));
+  CHKERRQ(PetscViewerDestroy(&fd));
 
   /* Read the matrix again as a seq matrix */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_SELF,&B);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatLoad(B,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,file,FILE_MODE_READ,&fd));
+  CHKERRQ(MatCreate(PETSC_COMM_SELF,&B));
+  CHKERRQ(MatSetType(B,MATSEQAIJ));
+  CHKERRQ(MatLoad(B,fd));
+  CHKERRQ(PetscViewerDestroy(&fd));
 
   /* Create the Random no generator */
-  ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
+  CHKERRQ(MatGetSize(A,&m,&n));
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF,&r));
+  CHKERRQ(PetscRandomSetFromOptions(r));
 
   /* Create the IS corresponding to subdomains */
-  ierr = PetscMalloc1(nd,&is1);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nd,&is2);CHKERRQ(ierr);
-  ierr = PetscMalloc1(m ,&idx);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(nd,&is1));
+  CHKERRQ(PetscMalloc1(nd,&is2));
+  CHKERRQ(PetscMalloc1(m ,&idx));
 
   /* Create the random Index Sets */
   for (i=0; i<nd; i++) {
     for (j=0; j<rank; j++) {
-      ierr = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
+      CHKERRQ(PetscRandomGetValue(r,&rand));
     }
-    ierr  = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
+    CHKERRQ(PetscRandomGetValue(r,&rand));
     lsize = (PetscInt)(rand*m);
     for (j=0; j<lsize; j++) {
-      ierr   = PetscRandomGetValue(r,&rand);CHKERRQ(ierr);
+      CHKERRQ(PetscRandomGetValue(r,&rand));
       idx[j] = (PetscInt)(rand*m);
     }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,lsize,idx,PETSC_COPY_VALUES,is1+i);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,lsize,idx,PETSC_COPY_VALUES,is2+i);CHKERRQ(ierr);
+    CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,lsize,idx,PETSC_COPY_VALUES,is1+i));
+    CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,lsize,idx,PETSC_COPY_VALUES,is2+i));
   }
 
-  ierr = MatIncreaseOverlap(A,nd,is1,ov);CHKERRQ(ierr);
-  ierr = MatIncreaseOverlap(B,nd,is2,ov);CHKERRQ(ierr);
+  CHKERRQ(MatIncreaseOverlap(A,nd,is1,ov));
+  CHKERRQ(MatIncreaseOverlap(B,nd,is2,ov));
 
   /* Now see if the serial and parallel case have the same answers */
   for (i=0; i<nd; ++i) {
     PetscInt sz1,sz2;
-    ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
-    ierr = ISGetSize(is1[i],&sz1);CHKERRQ(ierr);
-    ierr = ISGetSize(is2[i],&sz2);CHKERRQ(ierr);
+    CHKERRQ(ISEqual(is1[i],is2[i],&flg));
+    CHKERRQ(ISGetSize(is1[i],&sz1));
+    CHKERRQ(ISGetSize(is2[i],&sz2));
     PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"proc:[%d], i=%" PetscInt_FMT ", flg =%d  sz1 = %" PetscInt_FMT " sz2 = %" PetscInt_FMT,rank,i,(int)flg,sz1,sz2);
   }
 
   /* Free Allocated Memory */
   for (i=0; i<nd; ++i) {
-    ierr = ISDestroy(&is1[i]);CHKERRQ(ierr);
-    ierr = ISDestroy(&is2[i]);CHKERRQ(ierr);
+    CHKERRQ(ISDestroy(&is1[i]));
+    CHKERRQ(ISDestroy(&is2[i]));
   }
-  ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
-  ierr = PetscFree(is1);CHKERRQ(ierr);
-  ierr = PetscFree(is2);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = PetscFree(idx);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomDestroy(&r));
+  CHKERRQ(PetscFree(is1));
+  CHKERRQ(PetscFree(is2));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&B));
+  CHKERRQ(PetscFree(idx));
   ierr = PetscFinalize();
   return ierr;
 }

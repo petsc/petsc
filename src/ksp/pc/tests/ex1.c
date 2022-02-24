@@ -11,17 +11,17 @@ int main(int argc,char **args)
   Mat            mat;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PCCreate(PETSC_COMM_WORLD,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+  CHKERRQ(PCCreate(PETSC_COMM_WORLD,&pc));
+  CHKERRQ(PCSetType(pc,PCNONE));
 
   /* Vector and matrix must be set before calling PCSetUp */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,&mat);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PCSetOperators(pc,mat,mat);CHKERRQ(ierr);
-  ierr = PCSetUp(pc);CHKERRQ(ierr);
-  ierr = MatDestroy(&mat);CHKERRQ(ierr);
-  ierr = PCDestroy(&pc);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,NULL,&mat));
+  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(PCSetOperators(pc,mat,mat));
+  CHKERRQ(PCSetUp(pc));
+  CHKERRQ(MatDestroy(&mat));
+  CHKERRQ(PCDestroy(&pc));
   ierr = PetscFinalize();
   return ierr;
 }

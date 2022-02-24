@@ -20,12 +20,10 @@
 @*/
 PetscErrorCode  PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,PetscReal x2,PetscReal y2,PetscReal x3,PetscReal y3,int c1,int c2,int c3)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscCheckFalse(!draw->ops->triangle,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing triangles",((PetscObject)draw)->type_name);
-  ierr = (*draw->ops->triangle)(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
+  CHKERRQ((*draw->ops->triangle)(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3));
   PetscFunctionReturn(0);
 }
 
@@ -52,39 +50,39 @@ PetscErrorCode  PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
   PetscBool      isnull;
   PetscReal      xl = 0.0,yl = 0.0,xr = 1.0,yr = 1.0;
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
   int            i;
   char           string[32];
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!popup) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(popup,PETSC_DRAW_CLASSID,1);
-  ierr = PetscDrawIsNull(popup,&isnull);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawIsNull(popup,&isnull));
   if (isnull) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)popup),&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)popup),&rank));
 
-  ierr = PetscDrawCheckResizedWindow(popup);CHKERRQ(ierr);
-  ierr = PetscDrawClear(popup);CHKERRQ(ierr);
-  ierr = PetscDrawSetTitle(popup,"Contour Scale");CHKERRQ(ierr);
-  ierr = PetscDrawSetCoordinates(popup,xl,yl,xr,yr);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawCheckResizedWindow(popup));
+  CHKERRQ(PetscDrawClear(popup));
+  CHKERRQ(PetscDrawSetTitle(popup,"Contour Scale"));
+  CHKERRQ(PetscDrawSetCoordinates(popup,xl,yl,xr,yr));
   ierr = PetscDrawCollectiveBegin(popup);CHKERRQ(ierr);
   if (rank == 0) {
     for (i=0; i<10; i++) {
       int c = PetscDrawRealToColor((PetscReal)i/9,0,1);
-      ierr = PetscDrawRectangle(popup,xl,yl,xr,yr,c,c,c,c);CHKERRQ(ierr);
+      CHKERRQ(PetscDrawRectangle(popup,xl,yl,xr,yr,c,c,c,c));
       yl += 0.1;
     }
     for (i=0; i<10; i++) {
       PetscReal value = min + i*(max-min)/9;
       /* look for a value that should be zero, but is not due to round-off */
       if (PetscAbsReal(value) < 1.e-10 && max-min > 1.e-6) value = 0.0;
-      ierr = PetscSNPrintf(string,sizeof(string),"%18.16e",(double)value);CHKERRQ(ierr);
-      ierr = PetscDrawString(popup,0.2,0.02+i/10.0,PETSC_DRAW_BLACK,string);CHKERRQ(ierr);
+      CHKERRQ(PetscSNPrintf(string,sizeof(string),"%18.16e",(double)value));
+      CHKERRQ(PetscDrawString(popup,0.2,0.02+i/10.0,PETSC_DRAW_BLACK,string));
     }
   }
   ierr = PetscDrawCollectiveEnd(popup);CHKERRQ(ierr);
-  ierr = PetscDrawFlush(popup);CHKERRQ(ierr);
-  ierr = PetscDrawSave(popup);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawFlush(popup));
+  CHKERRQ(PetscDrawSave(popup));
   PetscFunctionReturn(0);
 }
 
@@ -96,18 +94,17 @@ typedef struct {
 
 static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
 {
-  PetscErrorCode ierr;
   int            i;
   ZoomCtx        *ctx = (ZoomCtx*)dctx;
 
   PetscFunctionBegin;
-  ierr = PetscDrawTensorContourPatch(win,ctx->m,ctx->n,ctx->x,ctx->y,ctx->min,ctx->max,ctx->v);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawTensorContourPatch(win,ctx->m,ctx->n,ctx->x,ctx->y,ctx->min,ctx->max,ctx->v));
   if (ctx->showgrid) {
     for (i=0; i<ctx->m; i++) {
-      ierr = PetscDrawLine(win,ctx->x[i],ctx->y[0],ctx->x[i],ctx->y[ctx->n-1],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      CHKERRQ(PetscDrawLine(win,ctx->x[i],ctx->y[0],ctx->x[i],ctx->y[ctx->n-1],PETSC_DRAW_BLACK));
     }
     for (i=0; i<ctx->n; i++) {
-      ierr = PetscDrawLine(win,ctx->x[0],ctx->y[i],ctx->x[ctx->m-1],ctx->y[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      CHKERRQ(PetscDrawLine(win,ctx->x[0],ctx->y[i],ctx->x[ctx->m-1],ctx->y[i],PETSC_DRAW_BLACK));
     }
   }
   PetscFunctionReturn(0);
@@ -137,7 +134,6 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win,void *dctx)
 @*/
 PetscErrorCode  PetscDrawTensorContour(PetscDraw draw,int m,int n,const PetscReal xi[],const PetscReal yi[],PetscReal *v)
 {
-  PetscErrorCode ierr;
   int            N = m*n;
   PetscBool      isnull;
   PetscDraw      popup;
@@ -148,9 +144,9 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw draw,int m,int n,const PetscRea
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawIsNull(draw,&isnull));
   if (isnull) PetscFunctionReturn(0);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)draw),&size));
   PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"May only be used with single processor PetscDraw");
   PetscCheckFalse(N <= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n %d and m %d must be positive",m,n);
 
@@ -165,16 +161,16 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw draw,int m,int n,const PetscRea
   if (ctx.max - ctx.min < 1.e-7) {ctx.min -= 5.e-8; ctx.max += 5.e-8;}
 
   /* PetscDraw the scale window */
-  ierr = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
-  ierr = PetscDrawScalePopup(popup,ctx.min,ctx.max);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawGetPopup(draw,&popup));
+  CHKERRQ(PetscDrawScalePopup(popup,ctx.min,ctx.max));
 
   ctx.showgrid = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)draw)->options,NULL,"-draw_contour_grid",&ctx.showgrid,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(((PetscObject)draw)->options,NULL,"-draw_contour_grid",&ctx.showgrid,NULL));
 
   /* fill up x and y coordinates */
   if (!xi) {
     xin      = 0;
-    ierr     = PetscMalloc1(ctx.m,&ctx.x);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(ctx.m,&ctx.x));
     h        = 1.0/(ctx.m-1);
     ctx.x[0] = 0.0;
     for (i=1; i<ctx.m; i++) ctx.x[i] = ctx.x[i-1] + h;
@@ -182,16 +178,16 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw draw,int m,int n,const PetscRea
 
   if (!yi) {
     yin      = 0;
-    ierr     = PetscMalloc1(ctx.n,&ctx.y);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(ctx.n,&ctx.y));
     h        = 1.0/(ctx.n-1);
     ctx.y[0] = 0.0;
     for (i=1; i<ctx.n; i++) ctx.y[i] = ctx.y[i-1] + h;
   } else ctx.y = (PetscReal*)yi;
 
-  ierr = PetscDrawZoom(draw,PetscDrawTensorContour_Zoom,&ctx);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawZoom(draw,PetscDrawTensorContour_Zoom,&ctx));
 
-  if (!xin) {ierr = PetscFree(ctx.x);CHKERRQ(ierr);}
-  if (!yin) {ierr = PetscFree(ctx.y);CHKERRQ(ierr);}
+  if (!xin) CHKERRQ(PetscFree(ctx.x));
+  if (!yin) CHKERRQ(PetscFree(ctx.y));
   PetscFunctionReturn(0);
 }
 
@@ -222,7 +218,6 @@ PetscErrorCode  PetscDrawTensorContour(PetscDraw draw,int m,int n,const PetscRea
 @*/
 PetscErrorCode  PetscDrawTensorContourPatch(PetscDraw draw,int m,int n,PetscReal *x,PetscReal *y,PetscReal min,PetscReal max,PetscReal *v)
 {
-  PetscErrorCode ierr;
   int            c1,c2,c3,c4,i,j;
   PetscReal      x1,x2,x3,x4,y_1,y2,y3,y4;
 
@@ -236,8 +231,8 @@ PetscErrorCode  PetscDrawTensorContourPatch(PetscDraw draw,int m,int n,PetscReal
       x3 = x2;     y3 = y[j+1]; c3 = PetscDrawRealToColor(v[i+j*m+1+m],min,max);
       x4 = x1;     y4 = y3;     c4 = PetscDrawRealToColor(v[i+j*m+m],min,max);
 
-      ierr = PetscDrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
-      ierr = PetscDrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4);CHKERRQ(ierr);
+      CHKERRQ(PetscDrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3));
+      CHKERRQ(PetscDrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4));
     }
   }
   PetscFunctionReturn(0);

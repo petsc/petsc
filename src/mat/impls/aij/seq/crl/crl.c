@@ -13,17 +13,16 @@
 
 PetscErrorCode MatDestroy_SeqAIJCRL(Mat A)
 {
-  PetscErrorCode ierr;
   Mat_AIJCRL     *aijcrl = (Mat_AIJCRL*) A->spptr;
 
   PetscFunctionBegin;
   /* Free everything in the Mat_AIJCRL data structure. */
   if (aijcrl) {
-    ierr = PetscFree2(aijcrl->acols,aijcrl->icols);CHKERRQ(ierr);
+    CHKERRQ(PetscFree2(aijcrl->acols,aijcrl->icols));
   }
-  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)A, MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(A->spptr));
+  CHKERRQ(PetscObjectChangeTypeName((PetscObject)A, MATSEQAIJ));
+  CHKERRQ(MatDestroy_SeqAIJ(A));
   PetscFunctionReturn(0);
 }
 
@@ -41,15 +40,14 @@ PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A)
   PetscInt       i, j,rmax = a->rmax,*icols, *ilen = a->ilen;
   MatScalar      *aa = a->a;
   PetscScalar    *acols;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   aijcrl->nz   = a->nz;
   aijcrl->m    = A->rmap->n;
   aijcrl->rmax = rmax;
 
-  ierr  = PetscFree2(aijcrl->acols,aijcrl->icols);CHKERRQ(ierr);
-  ierr  = PetscMalloc2(rmax*m,&aijcrl->acols,rmax*m,&aijcrl->icols);CHKERRQ(ierr);
+  CHKERRQ(PetscFree2(aijcrl->acols,aijcrl->icols));
+  CHKERRQ(PetscMalloc2(rmax*m,&aijcrl->acols,rmax*m,&aijcrl->icols));
   acols = aijcrl->acols;
   icols = aijcrl->icols;
   for (i=0; i<m; i++) {
@@ -62,23 +60,22 @@ PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A)
       icols[j*m+i] = (j) ? icols[(j-1)*m+i] : 0;  /* handle case where row is EMPTY */
     }
   }
-  ierr = PetscInfo(A,"Percentage of 0's introduced for vectorized multiply %g. Rmax= %" PetscInt_FMT "\n",1.0-((double)a->nz)/((double)(rmax*m)),rmax);CHKERRQ(ierr);
+  CHKERRQ(PetscInfo(A,"Percentage of 0's introduced for vectorized multiply %g. Rmax= %" PetscInt_FMT "\n",1.0-((double)a->nz)/((double)(rmax*m)),rmax));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatAssemblyEnd_SeqAIJCRL(Mat A, MatAssemblyType mode)
 {
-  PetscErrorCode ierr;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;
   a->inode.use = PETSC_FALSE;
 
-  ierr = MatAssemblyEnd_SeqAIJ(A,mode);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyEnd_SeqAIJ(A,mode));
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
 
   /* Now calculate the permutation and grouping information. */
-  ierr = MatSeqAIJCRL_create_aijcrl(A);CHKERRQ(ierr);
+  CHKERRQ(MatSeqAIJCRL_create_aijcrl(A));
   PetscFunctionReturn(0);
 }
 
@@ -95,7 +92,6 @@ PetscErrorCode MatMult_AIJCRL(Mat A,Vec xx,Vec yy)
   PetscInt          m       = aijcrl->m; /* Number of rows in the matrix. */
   PetscInt          rmax    = aijcrl->rmax,*icols = aijcrl->icols;
   PetscScalar       *acols  = aijcrl->acols;
-  PetscErrorCode    ierr;
   PetscScalar       *y;
   const PetscScalar *x;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTCRL)
@@ -108,15 +104,15 @@ PetscErrorCode MatMult_AIJCRL(Mat A,Vec xx,Vec yy)
 
   PetscFunctionBegin;
   if (aijcrl->xscat) {
-    ierr = VecCopy(xx,aijcrl->xwork);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(xx,aijcrl->xwork));
     /* get remote values needed for local part of multiply */
-    ierr = VecScatterBegin(aijcrl->xscat,xx,aijcrl->fwork,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(aijcrl->xscat,xx,aijcrl->fwork,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    CHKERRQ(VecScatterBegin(aijcrl->xscat,xx,aijcrl->fwork,INSERT_VALUES,SCATTER_FORWARD));
+    CHKERRQ(VecScatterEnd(aijcrl->xscat,xx,aijcrl->fwork,INSERT_VALUES,SCATTER_FORWARD));
     xx   = aijcrl->xwork;
   }
 
-  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(xx,&x));
+  CHKERRQ(VecGetArray(yy,&y));
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTCRL)
   fortranmultcrl_(&m,&rmax,x,y,icols,acols);
@@ -141,9 +137,9 @@ PetscErrorCode MatMult_AIJCRL(Mat A,Vec xx,Vec yy)
 #endif
 
 #endif
-  ierr = PetscLogFlops(2.0*aijcrl->nz - m);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  CHKERRQ(PetscLogFlops(2.0*aijcrl->nz - m));
+  CHKERRQ(VecRestoreArrayRead(xx,&x));
+  CHKERRQ(VecRestoreArray(yy,&y));
   PetscFunctionReturn(0);
 }
 
@@ -153,19 +149,18 @@ PetscErrorCode MatMult_AIJCRL(Mat A,Vec xx,Vec yy)
  * into a SeqAIJCRL one. */
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
-  PetscErrorCode ierr;
   Mat            B = *newmat;
   Mat_AIJCRL     *aijcrl;
   PetscBool      sametype;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+    CHKERRQ(MatDuplicate(A,MAT_COPY_VALUES,&B));
   }
-  ierr = PetscObjectTypeCompare((PetscObject)A,type,&sametype);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)A,type,&sametype));
   if (sametype) PetscFunctionReturn(0);
 
-  ierr     = PetscNewLog(B,&aijcrl);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(B,&aijcrl));
   B->spptr = (void*) aijcrl;
 
   /* Set function pointers for methods that we inherit from AIJ but override. */
@@ -176,9 +171,9 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A,MatType type,MatRe
 
   /* If A has already been assembled, compute the permutation. */
   if (A->assembled) {
-    ierr = MatSeqAIJCRL_create_aijcrl(B);CHKERRQ(ierr);
+    CHKERRQ(MatSeqAIJCRL_create_aijcrl(B));
   }
-  ierr    = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCRL);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCRL));
   *newmat = B;
   PetscFunctionReturn(0);
 }
@@ -216,23 +211,18 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A,MatType type,MatRe
 @*/
 PetscErrorCode  MatCreateSeqAIJCRL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[],Mat *A)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatCreate(comm,A);CHKERRQ(ierr);
-  ierr = MatSetSizes(*A,m,n,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(*A,MATSEQAIJCRL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation_SeqAIJ(*A,nz,nnz);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(comm,A));
+  CHKERRQ(MatSetSizes(*A,m,n,m,n));
+  CHKERRQ(MatSetType(*A,MATSEQAIJCRL));
+  CHKERRQ(MatSeqAIJSetPreallocation_SeqAIJ(*A,nz,nnz));
   PetscFunctionReturn(0);
 }
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCRL(Mat A)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatConvert_SeqAIJ_SeqAIJCRL(A,MATSEQAIJCRL,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+  CHKERRQ(MatSetType(A,MATSEQAIJ));
+  CHKERRQ(MatConvert_SeqAIJ_SeqAIJCRL(A,MATSEQAIJCRL,MAT_INPLACE_MATRIX,&A));
   PetscFunctionReturn(0);
 }
-

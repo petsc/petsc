@@ -19,35 +19,35 @@ int main(int argc,char **args)
   PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsHasName(NULL,NULL,"-baij",&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-baij",&flg));
   if (flg) {
-    ierr = MatCreateSeqBAIJ(PETSC_COMM_WORLD,1,3,3,0,rowlens,&A);CHKERRQ(ierr);
-    ierr = MatSeqBAIJSetColumnIndices(A,cols);CHKERRQ(ierr);
+    CHKERRQ(MatCreateSeqBAIJ(PETSC_COMM_WORLD,1,3,3,0,rowlens,&A));
+    CHKERRQ(MatSeqBAIJSetColumnIndices(A,cols));
   } else {
-    ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,3,3,0,rowlens,&A);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetColumnIndices(A,cols);CHKERRQ(ierr);
+    CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_WORLD,3,3,0,rowlens,&A));
+    CHKERRQ(MatSeqAIJSetColumnIndices(A,cols));
   }
 
   i    = 0; j = 0; v = 1.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
   i    = 0; j = 2; v = 3.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
 
   i    = 1; j = 0; v = 1.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
   i    = 1; j = 1; v = 2.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
   i    = 1; j = 2; v = 3.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
 
   i    = 2; j = 2; v = 3.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
   ierr = PetscFinalize();
   return ierr;
 }

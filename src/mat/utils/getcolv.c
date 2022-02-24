@@ -28,7 +28,6 @@ PetscErrorCode  MatGetColumnVector(Mat A,Vec yy,PetscInt col)
 {
   PetscScalar       *y;
   const PetscScalar *v;
-  PetscErrorCode    ierr;
   PetscInt          i,j,nz,N,Rs,Re,rs,re;
   const PetscInt    *idx;
 
@@ -37,20 +36,20 @@ PetscErrorCode  MatGetColumnVector(Mat A,Vec yy,PetscInt col)
   PetscValidHeaderSpecific(yy,VEC_CLASSID,2);
   PetscValidLogicalCollectiveInt(A,col,3);
   PetscCheckFalse(col < 0,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_OUTOFRANGE,"Requested negative column: %" PetscInt_FMT,col);
-  ierr = MatGetSize(A,NULL,&N);CHKERRQ(ierr);
+  CHKERRQ(MatGetSize(A,NULL,&N));
   PetscCheckFalse(col >= N,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_OUTOFRANGE,"Requested column %" PetscInt_FMT " larger than number columns in matrix %" PetscInt_FMT,col,N);
-  ierr = MatGetOwnershipRange(A,&Rs,&Re);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(yy,&rs,&re);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(A,&Rs,&Re));
+  CHKERRQ(VecGetOwnershipRange(yy,&rs,&re));
   PetscCheckFalse(Rs != rs || Re != re,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Matrix %" PetscInt_FMT " %" PetscInt_FMT " does not have same ownership range (size) as vector %" PetscInt_FMT " %" PetscInt_FMT,Rs,Re,rs,re);
 
   if (A->ops->getcolumnvector) {
-    ierr = (*A->ops->getcolumnvector)(A,yy,col);CHKERRQ(ierr);
+    CHKERRQ((*A->ops->getcolumnvector)(A,yy,col));
   } else {
-    ierr = VecSet(yy,0.0);CHKERRQ(ierr);
-    ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+    CHKERRQ(VecSet(yy,0.0));
+    CHKERRQ(VecGetArray(yy,&y));
     /* TODO for general matrices */
     for (i=Rs; i<Re; i++) {
-      ierr = MatGetRow(A,i,&nz,&idx,&v);CHKERRQ(ierr);
+      CHKERRQ(MatGetRow(A,i,&nz,&idx,&v));
       if (nz && idx[0] <= col) {
         /*
           Should use faster search here
@@ -62,9 +61,9 @@ PetscErrorCode  MatGetColumnVector(Mat A,Vec yy,PetscInt col)
           }
         }
       }
-      ierr = MatRestoreRow(A,i,&nz,&idx,&v);CHKERRQ(ierr);
+      CHKERRQ(MatRestoreRow(A,i,&nz,&idx,&v));
     }
-    ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(yy,&y));
   }
   PetscFunctionReturn(0);
 }
@@ -93,11 +92,10 @@ PetscErrorCode MatGetColumnNorms(Mat A,NormType type,PetscReal norms[])
   /* NOTE: MatGetColumnNorms() could simply be a macro that calls MatGetColumnReductions().
    * I've kept this as a function because it allows slightly more in the way of error checking,
    * erroring out if MatGetColumnNorms() is not called with a valid NormType. */
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_1 || type == NORM_FROBENIUS || type == NORM_INFINITY || type == NORM_1_AND_2) {
-    ierr = MatGetColumnReductions(A,type,norms);CHKERRQ(ierr);
+    CHKERRQ(MatGetColumnReductions(A,type,norms));
   } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Unknown NormType");
   PetscFunctionReturn(0);
 }
@@ -122,10 +120,8 @@ PetscErrorCode MatGetColumnNorms(Mat A,NormType type,PetscReal norms[])
 @*/
 PetscErrorCode MatGetColumnSumsRealPart(Mat A,PetscReal sums[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatGetColumnReductions(A,REDUCTION_SUM_REALPART,sums);CHKERRQ(ierr);
+  CHKERRQ(MatGetColumnReductions(A,REDUCTION_SUM_REALPART,sums));
   PetscFunctionReturn(0);
 }
 
@@ -149,10 +145,8 @@ PetscErrorCode MatGetColumnSumsRealPart(Mat A,PetscReal sums[])
 @*/
 PetscErrorCode MatGetColumnSumsImaginaryPart(Mat A,PetscReal sums[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatGetColumnReductions(A,REDUCTION_SUM_IMAGINARYPART,sums);CHKERRQ(ierr);
+  CHKERRQ(MatGetColumnReductions(A,REDUCTION_SUM_IMAGINARYPART,sums));
   PetscFunctionReturn(0);
 }
 
@@ -176,7 +170,6 @@ PetscErrorCode MatGetColumnSumsImaginaryPart(Mat A,PetscReal sums[])
 @*/
 PetscErrorCode MatGetColumnSums(Mat A,PetscScalar sums[])
 {
-  PetscErrorCode ierr;
 #if defined(PETSC_USE_COMPLEX)
   PetscInt       i,n;
   PetscReal      *work;
@@ -185,16 +178,16 @@ PetscErrorCode MatGetColumnSums(Mat A,PetscScalar sums[])
   PetscFunctionBegin;
 
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = MatGetColumnSumsRealPart(A,sums);CHKERRQ(ierr);
+  CHKERRQ(MatGetColumnSumsRealPart(A,sums));
 #else
-  ierr = MatGetSize(A,NULL,&n);CHKERRQ(ierr);
-  ierr = PetscArrayzero(sums,n);CHKERRQ(ierr);
-  ierr = PetscCalloc1(n,&work);CHKERRQ(ierr);
-  ierr = MatGetColumnSumsRealPart(A,work);CHKERRQ(ierr);
+  CHKERRQ(MatGetSize(A,NULL,&n));
+  CHKERRQ(PetscArrayzero(sums,n));
+  CHKERRQ(PetscCalloc1(n,&work));
+  CHKERRQ(MatGetColumnSumsRealPart(A,work));
   for (i=0; i<n; i++) sums[i] = work[i];
-  ierr = MatGetColumnSumsImaginaryPart(A,work);CHKERRQ(ierr);
+  CHKERRQ(MatGetColumnSumsImaginaryPart(A,work));
   for (i=0; i<n; i++) sums[i] += work[i]*PETSC_i;
-  ierr = PetscFree(work);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(work));
 #endif
   PetscFunctionReturn(0);
 }
@@ -219,10 +212,8 @@ PetscErrorCode MatGetColumnSums(Mat A,PetscScalar sums[])
 @*/
 PetscErrorCode MatGetColumnMeansRealPart(Mat A,PetscReal means[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatGetColumnReductions(A,REDUCTION_MEAN_REALPART,means);CHKERRQ(ierr);
+  CHKERRQ(MatGetColumnReductions(A,REDUCTION_MEAN_REALPART,means));
   PetscFunctionReturn(0);
 }
 
@@ -246,10 +237,8 @@ PetscErrorCode MatGetColumnMeansRealPart(Mat A,PetscReal means[])
 @*/
 PetscErrorCode MatGetColumnMeansImaginaryPart(Mat A,PetscReal means[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatGetColumnReductions(A,REDUCTION_MEAN_IMAGINARYPART,means);CHKERRQ(ierr);
+  CHKERRQ(MatGetColumnReductions(A,REDUCTION_MEAN_IMAGINARYPART,means));
   PetscFunctionReturn(0);
 }
 
@@ -273,7 +262,6 @@ PetscErrorCode MatGetColumnMeansImaginaryPart(Mat A,PetscReal means[])
 @*/
 PetscErrorCode MatGetColumnMeans(Mat A,PetscScalar means[])
 {
-  PetscErrorCode ierr;
 #if defined(PETSC_USE_COMPLEX)
   PetscInt       i,n;
   PetscReal      *work;
@@ -282,16 +270,16 @@ PetscErrorCode MatGetColumnMeans(Mat A,PetscScalar means[])
   PetscFunctionBegin;
 
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = MatGetColumnMeansRealPart(A,means);CHKERRQ(ierr);
+  CHKERRQ(MatGetColumnMeansRealPart(A,means));
 #else
-  ierr = MatGetSize(A,NULL,&n);CHKERRQ(ierr);
-  ierr = PetscArrayzero(means,n);CHKERRQ(ierr);
-  ierr = PetscCalloc1(n,&work);CHKERRQ(ierr);
-  ierr = MatGetColumnMeansRealPart(A,work);CHKERRQ(ierr);
+  CHKERRQ(MatGetSize(A,NULL,&n));
+  CHKERRQ(PetscArrayzero(means,n));
+  CHKERRQ(PetscCalloc1(n,&work));
+  CHKERRQ(MatGetColumnMeansRealPart(A,work));
   for (i=0; i<n; i++) means[i] = work[i];
-  ierr = MatGetColumnMeansImaginaryPart(A,work);CHKERRQ(ierr);
+  CHKERRQ(MatGetColumnMeansImaginaryPart(A,work));
   for (i=0; i<n; i++) means[i] += work[i]*PETSC_i;
-  ierr = PetscFree(work);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(work));
 #endif
   PetscFunctionReturn(0);
 }
@@ -322,12 +310,10 @@ PetscErrorCode MatGetColumnMeans(Mat A,PetscScalar means[])
 @*/
 PetscErrorCode MatGetColumnReductions(Mat A,PetscInt type,PetscReal reductions[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   if (A->ops->getcolumnreductions) {
-    ierr = (*A->ops->getcolumnreductions)(A,type,reductions);CHKERRQ(ierr);
+    CHKERRQ((*A->ops->getcolumnreductions)(A,type,reductions));
   } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not coded for this matrix type");
   PetscFunctionReturn(0);
 }

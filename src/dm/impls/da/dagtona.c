@@ -28,7 +28,6 @@
 @*/
 PetscErrorCode  DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
 {
-  PetscErrorCode ierr;
   PetscInt       N;
   IS             from,to;
   Vec            tmplocal,global;
@@ -38,20 +37,20 @@ PetscErrorCode  DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(scatter,2);
-  ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetAO(da,&ao));
 
   /* create the scatter context */
-  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,dd->Nlocal,PETSC_DETERMINE,NULL,&global);CHKERRQ(ierr);
-  ierr = VecGetSize(global,&N);CHKERRQ(ierr);
-  ierr = ISCreateStride(PetscObjectComm((PetscObject)da),N,0,1,&to);CHKERRQ(ierr);
-  ierr = AOPetscToApplicationIS(ao,to);CHKERRQ(ierr);
-  ierr = ISCreateStride(PetscObjectComm((PetscObject)da),N,0,1,&from);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dd->w,N,NULL,&tmplocal);CHKERRQ(ierr);
-  ierr = VecScatterCreate(global,from,tmplocal,to,scatter);CHKERRQ(ierr);
-  ierr = VecDestroy(&tmplocal);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
-  ierr = ISDestroy(&from);CHKERRQ(ierr);
-  ierr = ISDestroy(&to);CHKERRQ(ierr);
+  CHKERRQ(VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,dd->Nlocal,PETSC_DETERMINE,NULL,&global));
+  CHKERRQ(VecGetSize(global,&N));
+  CHKERRQ(ISCreateStride(PetscObjectComm((PetscObject)da),N,0,1,&to));
+  CHKERRQ(AOPetscToApplicationIS(ao,to));
+  CHKERRQ(ISCreateStride(PetscObjectComm((PetscObject)da),N,0,1,&from));
+  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,dd->w,N,NULL,&tmplocal));
+  CHKERRQ(VecScatterCreate(global,from,tmplocal,to,scatter));
+  CHKERRQ(VecDestroy(&tmplocal));
+  CHKERRQ(VecDestroy(&global));
+  CHKERRQ(ISDestroy(&from));
+  CHKERRQ(ISDestroy(&to));
   PetscFunctionReturn(0);
 }
 
@@ -74,7 +73,6 @@ PetscErrorCode  DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
 @*/
 PetscErrorCode  DMDANaturalAllToGlobalCreate(DM da,VecScatter *scatter)
 {
-  PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
   PetscInt       M,m = dd->Nlocal,start;
   IS             from,to;
@@ -84,21 +82,20 @@ PetscErrorCode  DMDANaturalAllToGlobalCreate(DM da,VecScatter *scatter)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(scatter,2);
-  ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetAO(da,&ao));
 
   /* create the scatter context */
-  ierr = MPIU_Allreduce(&m,&M,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
-  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,m,PETSC_DETERMINE,NULL,&global);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(global,&start,NULL);CHKERRQ(ierr);
-  ierr = ISCreateStride(PetscObjectComm((PetscObject)da),m,start,1,&from);CHKERRQ(ierr);
-  ierr = AOPetscToApplicationIS(ao,from);CHKERRQ(ierr);
-  ierr = ISCreateStride(PetscObjectComm((PetscObject)da),m,start,1,&to);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dd->w,M,NULL,&tmplocal);CHKERRQ(ierr);
-  ierr = VecScatterCreate(tmplocal,from,global,to,scatter);CHKERRQ(ierr);
-  ierr = VecDestroy(&tmplocal);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
-  ierr = ISDestroy(&from);CHKERRQ(ierr);
-  ierr = ISDestroy(&to);CHKERRQ(ierr);
+  CHKERRMPI(MPIU_Allreduce(&m,&M,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)da)));
+  CHKERRQ(VecCreateMPIWithArray(PetscObjectComm((PetscObject)da),dd->w,m,PETSC_DETERMINE,NULL,&global));
+  CHKERRQ(VecGetOwnershipRange(global,&start,NULL));
+  CHKERRQ(ISCreateStride(PetscObjectComm((PetscObject)da),m,start,1,&from));
+  CHKERRQ(AOPetscToApplicationIS(ao,from));
+  CHKERRQ(ISCreateStride(PetscObjectComm((PetscObject)da),m,start,1,&to));
+  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,dd->w,M,NULL,&tmplocal));
+  CHKERRQ(VecScatterCreate(tmplocal,from,global,to,scatter));
+  CHKERRQ(VecDestroy(&tmplocal));
+  CHKERRQ(VecDestroy(&global));
+  CHKERRQ(ISDestroy(&from));
+  CHKERRQ(ISDestroy(&to));
   PetscFunctionReturn(0);
 }
-

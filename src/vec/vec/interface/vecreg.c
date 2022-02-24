@@ -31,66 +31,65 @@ PetscErrorCode VecSetType(Vec vec, VecType method)
   PetscErrorCode (*r)(Vec);
   PetscBool      match;
   PetscMPIInt    size;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject) vec, method, &match);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject) vec, method, &match));
   if (match) PetscFunctionReturn(0);
 
   /* Return if asked for VECSTANDARD and Vec is already VECSEQ on 1 process or VECMPI on more.
      Otherwise, we free the Vec array in the call to destroy below and never reallocate it,
      since the VecType will be the same and VecSetType(v,VECSEQ) will return when called from VecCreate_Standard */
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)vec),&size);CHKERRMPI(ierr);
-  ierr = PetscStrcmp(method,VECSTANDARD,&match);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)vec),&size));
+  CHKERRQ(PetscStrcmp(method,VECSTANDARD,&match));
   if (match) {
 
-    ierr = PetscObjectTypeCompare((PetscObject) vec, size > 1 ? VECMPI : VECSEQ, &match);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectTypeCompare((PetscObject) vec, size > 1 ? VECMPI : VECSEQ, &match));
     if (match) PetscFunctionReturn(0);
   }
   /* same reasons for VECCUDA and VECVIENNACL */
 #if defined(PETSC_HAVE_CUDA)
-  ierr = PetscStrcmp(method,VECCUDA,&match);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcmp(method,VECCUDA,&match));
   if (match) {
-    ierr = PetscObjectTypeCompare((PetscObject) vec, size > 1 ? VECMPICUDA : VECSEQCUDA, &match);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectTypeCompare((PetscObject) vec, size > 1 ? VECMPICUDA : VECSEQCUDA, &match));
     if (match) PetscFunctionReturn(0);
   }
 #endif
 #if defined(PETSC_HAVE_HIP)
-  ierr = PetscStrcmp(method,VECHIP,&match);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcmp(method,VECHIP,&match));
   if (match) {
-    ierr = PetscObjectTypeCompare((PetscObject) vec, size > 1 ? VECMPIHIP : VECSEQHIP, &match);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectTypeCompare((PetscObject) vec, size > 1 ? VECMPIHIP : VECSEQHIP, &match));
     if (match) PetscFunctionReturn(0);
   }
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
-  ierr = PetscStrcmp(method,VECVIENNACL,&match);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcmp(method,VECVIENNACL,&match));
   if (match) {
-    ierr = PetscObjectTypeCompare((PetscObject) vec, size > 1 ? VECMPIVIENNACL : VECSEQVIENNACL, &match);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectTypeCompare((PetscObject) vec, size > 1 ? VECMPIVIENNACL : VECSEQVIENNACL, &match));
     if (match) PetscFunctionReturn(0);
   }
 #endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
-  ierr = PetscStrcmp(method,VECKOKKOS,&match);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcmp(method,VECKOKKOS,&match));
   if (match) {
-    ierr = PetscObjectTypeCompare((PetscObject) vec, size > 1 ? VECMPIKOKKOS : VECSEQKOKKOS, &match);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectTypeCompare((PetscObject) vec, size > 1 ? VECMPIKOKKOS : VECSEQKOKKOS, &match));
     if (match) PetscFunctionReturn(0);
   }
 #endif
-  ierr = PetscFunctionListFind(VecList,method,&r);CHKERRQ(ierr);
+  CHKERRQ(PetscFunctionListFind(VecList,method,&r));
   PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown vector type: %s", method);
   if (vec->ops->destroy) {
-    ierr = (*vec->ops->destroy)(vec);CHKERRQ(ierr);
+    CHKERRQ((*vec->ops->destroy)(vec));
     vec->ops->destroy = NULL;
   }
-  ierr = PetscMemzero(vec->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
-  ierr = PetscFree(vec->defaultrandtype);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(PETSCRANDER48,&vec->defaultrandtype);CHKERRQ(ierr);
+  CHKERRQ(PetscMemzero(vec->ops,sizeof(struct _VecOps)));
+  CHKERRQ(PetscFree(vec->defaultrandtype));
+  CHKERRQ(PetscStrallocpy(PETSCRANDER48,&vec->defaultrandtype));
   if (vec->map->n < 0 && vec->map->N < 0) {
     vec->ops->create = r;
     vec->ops->load   = VecLoad_Default;
   } else {
-    ierr = (*r)(vec);CHKERRQ(ierr);
+    CHKERRQ((*r)(vec));
   }
   PetscFunctionReturn(0);
 }
@@ -112,28 +111,25 @@ PetscErrorCode VecSetType(Vec vec, VecType method)
 @*/
 PetscErrorCode VecGetType(Vec vec, VecType *type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID,1);
   PetscValidPointer(type,2);
-  ierr = VecRegisterAll();CHKERRQ(ierr);
+  CHKERRQ(VecRegisterAll());
   *type = ((PetscObject)vec)->type_name;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode VecGetRootType_Private(Vec vec, VecType *vtype)
 {
-  PetscErrorCode ierr;
   PetscBool      iscuda, iship, iskokkos, isvcl;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
   PetscValidPointer(vtype,2);
-  ierr = PetscObjectTypeCompareAny((PetscObject)vec,&iscuda,VECCUDA,VECMPICUDA,VECSEQCUDA,"");CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompareAny((PetscObject)vec,&iship,VECHIP,VECMPIHIP,VECSEQHIP,"");CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompareAny((PetscObject)vec,&iskokkos,VECKOKKOS,VECMPIKOKKOS,VECSEQKOKKOS,"");CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompareAny((PetscObject)vec,&isvcl,VECVIENNACL,VECMPIVIENNACL,VECSEQVIENNACL,"");CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)vec,&iscuda,VECCUDA,VECMPICUDA,VECSEQCUDA,""));
+  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)vec,&iship,VECHIP,VECMPIHIP,VECSEQHIP,""));
+  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)vec,&iskokkos,VECKOKKOS,VECMPIKOKKOS,VECSEQKOKKOS,""));
+  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)vec,&isvcl,VECVIENNACL,VECMPIVIENNACL,VECSEQVIENNACL,""));
   if (iscuda)        { *vtype = VECCUDA;     }
   else if (iship)    { *vtype = VECHIP;      }
   else if (iskokkos) { *vtype = VECKOKKOS;   }
@@ -177,10 +173,8 @@ PetscErrorCode VecGetRootType_Private(Vec vec, VecType *vtype)
 @*/
 PetscErrorCode VecRegister(const char sname[], PetscErrorCode (*function)(Vec))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecInitializePackage();CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&VecList,sname,function);CHKERRQ(ierr);
+  CHKERRQ(VecInitializePackage());
+  CHKERRQ(PetscFunctionListAdd(&VecList,sname,function));
   PetscFunctionReturn(0);
 }

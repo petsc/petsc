@@ -19,23 +19,22 @@ PetscErrorCode MatScaleHermitian_Normal(Mat inA,PetscScalar scale)
 PetscErrorCode MatDiagonalScaleHermitian_Normal(Mat inA,Vec left,Vec right)
 {
   Mat_Normal     *a = (Mat_Normal*)inA->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (left) {
     if (!a->left) {
-      ierr = VecDuplicate(left,&a->left);CHKERRQ(ierr);
-      ierr = VecCopy(left,a->left);CHKERRQ(ierr);
+      CHKERRQ(VecDuplicate(left,&a->left));
+      CHKERRQ(VecCopy(left,a->left));
     } else {
-      ierr = VecPointwiseMult(a->left,left,a->left);CHKERRQ(ierr);
+      CHKERRQ(VecPointwiseMult(a->left,left,a->left));
     }
   }
   if (right) {
     if (!a->right) {
-      ierr = VecDuplicate(right,&a->right);CHKERRQ(ierr);
-      ierr = VecCopy(right,a->right);CHKERRQ(ierr);
+      CHKERRQ(VecDuplicate(right,&a->right));
+      CHKERRQ(VecCopy(right,a->right));
     } else {
-      ierr = VecPointwiseMult(a->right,right,a->right);CHKERRQ(ierr);
+      CHKERRQ(VecPointwiseMult(a->right,right,a->right));
     }
   }
   PetscFunctionReturn(0);
@@ -44,50 +43,48 @@ PetscErrorCode MatDiagonalScaleHermitian_Normal(Mat inA,Vec left,Vec right)
 PetscErrorCode MatMultHermitian_Normal(Mat N,Vec x,Vec y)
 {
   Mat_Normal     *Na = (Mat_Normal*)N->data;
-  PetscErrorCode ierr;
   Vec            in;
 
   PetscFunctionBegin;
   in = x;
   if (Na->right) {
     if (!Na->rightwork) {
-      ierr = VecDuplicate(Na->right,&Na->rightwork);CHKERRQ(ierr);
+      CHKERRQ(VecDuplicate(Na->right,&Na->rightwork));
     }
-    ierr = VecPointwiseMult(Na->rightwork,Na->right,in);CHKERRQ(ierr);
+    CHKERRQ(VecPointwiseMult(Na->rightwork,Na->right,in));
     in   = Na->rightwork;
   }
-  ierr = MatMult(Na->A,in,Na->w);CHKERRQ(ierr);
-  ierr = MatMultHermitianTranspose(Na->A,Na->w,y);CHKERRQ(ierr);
+  CHKERRQ(MatMult(Na->A,in,Na->w));
+  CHKERRQ(MatMultHermitianTranspose(Na->A,Na->w,y));
   if (Na->left) {
-    ierr = VecPointwiseMult(y,Na->left,y);CHKERRQ(ierr);
+    CHKERRQ(VecPointwiseMult(y,Na->left,y));
   }
-  ierr = VecScale(y,Na->scale);CHKERRQ(ierr);
+  CHKERRQ(VecScale(y,Na->scale));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatMultHermitianAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
 {
   Mat_Normal     *Na = (Mat_Normal*)N->data;
-  PetscErrorCode ierr;
   Vec            in;
 
   PetscFunctionBegin;
   in = v1;
   if (Na->right) {
     if (!Na->rightwork) {
-      ierr = VecDuplicate(Na->right,&Na->rightwork);CHKERRQ(ierr);
+      CHKERRQ(VecDuplicate(Na->right,&Na->rightwork));
     }
-    ierr = VecPointwiseMult(Na->rightwork,Na->right,in);CHKERRQ(ierr);
+    CHKERRQ(VecPointwiseMult(Na->rightwork,Na->right,in));
     in   = Na->rightwork;
   }
-  ierr = MatMult(Na->A,in,Na->w);CHKERRQ(ierr);
-  ierr = VecScale(Na->w,Na->scale);CHKERRQ(ierr);
+  CHKERRQ(MatMult(Na->A,in,Na->w));
+  CHKERRQ(VecScale(Na->w,Na->scale));
   if (Na->left) {
-    ierr = MatMultHermitianTranspose(Na->A,Na->w,v3);CHKERRQ(ierr);
-    ierr = VecPointwiseMult(v3,Na->left,v3);CHKERRQ(ierr);
-    ierr = VecAXPY(v3,1.0,v2);CHKERRQ(ierr);
+    CHKERRQ(MatMultHermitianTranspose(Na->A,Na->w,v3));
+    CHKERRQ(VecPointwiseMult(v3,Na->left,v3));
+    CHKERRQ(VecAXPY(v3,1.0,v2));
   } else {
-    ierr = MatMultHermitianTransposeAdd(Na->A,Na->w,v2,v3);CHKERRQ(ierr);
+    CHKERRQ(MatMultHermitianTransposeAdd(Na->A,Na->w,v2,v3));
   }
   PetscFunctionReturn(0);
 }
@@ -95,50 +92,48 @@ PetscErrorCode MatMultHermitianAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
 PetscErrorCode MatMultHermitianTranspose_Normal(Mat N,Vec x,Vec y)
 {
   Mat_Normal     *Na = (Mat_Normal*)N->data;
-  PetscErrorCode ierr;
   Vec            in;
 
   PetscFunctionBegin;
   in = x;
   if (Na->left) {
     if (!Na->leftwork) {
-      ierr = VecDuplicate(Na->left,&Na->leftwork);CHKERRQ(ierr);
+      CHKERRQ(VecDuplicate(Na->left,&Na->leftwork));
     }
-    ierr = VecPointwiseMult(Na->leftwork,Na->left,in);CHKERRQ(ierr);
+    CHKERRQ(VecPointwiseMult(Na->leftwork,Na->left,in));
     in   = Na->leftwork;
   }
-  ierr = MatMult(Na->A,in,Na->w);CHKERRQ(ierr);
-  ierr = MatMultHermitianTranspose(Na->A,Na->w,y);CHKERRQ(ierr);
+  CHKERRQ(MatMult(Na->A,in,Na->w));
+  CHKERRQ(MatMultHermitianTranspose(Na->A,Na->w,y));
   if (Na->right) {
-    ierr = VecPointwiseMult(y,Na->right,y);CHKERRQ(ierr);
+    CHKERRQ(VecPointwiseMult(y,Na->right,y));
   }
-  ierr = VecScale(y,Na->scale);CHKERRQ(ierr);
+  CHKERRQ(VecScale(y,Na->scale));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatMultHermitianTransposeAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
 {
   Mat_Normal     *Na = (Mat_Normal*)N->data;
-  PetscErrorCode ierr;
   Vec            in;
 
   PetscFunctionBegin;
   in = v1;
   if (Na->left) {
     if (!Na->leftwork) {
-      ierr = VecDuplicate(Na->left,&Na->leftwork);CHKERRQ(ierr);
+      CHKERRQ(VecDuplicate(Na->left,&Na->leftwork));
     }
-    ierr = VecPointwiseMult(Na->leftwork,Na->left,in);CHKERRQ(ierr);
+    CHKERRQ(VecPointwiseMult(Na->leftwork,Na->left,in));
     in   = Na->leftwork;
   }
-  ierr = MatMult(Na->A,in,Na->w);CHKERRQ(ierr);
-  ierr = VecScale(Na->w,Na->scale);CHKERRQ(ierr);
+  CHKERRQ(MatMult(Na->A,in,Na->w));
+  CHKERRQ(VecScale(Na->w,Na->scale));
   if (Na->right) {
-    ierr = MatMultHermitianTranspose(Na->A,Na->w,v3);CHKERRQ(ierr);
-    ierr = VecPointwiseMult(v3,Na->right,v3);CHKERRQ(ierr);
-    ierr = VecAXPY(v3,1.0,v2);CHKERRQ(ierr);
+    CHKERRQ(MatMultHermitianTranspose(Na->A,Na->w,v3));
+    CHKERRQ(VecPointwiseMult(v3,Na->right,v3));
+    CHKERRQ(VecAXPY(v3,1.0,v2));
   } else {
-    ierr = MatMultHermitianTransposeAdd(Na->A,Na->w,v2,v3);CHKERRQ(ierr);
+    CHKERRQ(MatMultHermitianTransposeAdd(Na->A,Na->w,v2,v3));
   }
   PetscFunctionReturn(0);
 }
@@ -146,17 +141,16 @@ PetscErrorCode MatMultHermitianTransposeAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
 PetscErrorCode MatDestroyHermitian_Normal(Mat N)
 {
   Mat_Normal     *Na = (Mat_Normal*)N->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(&Na->A);CHKERRQ(ierr);
-  ierr = VecDestroy(&Na->w);CHKERRQ(ierr);
-  ierr = VecDestroy(&Na->left);CHKERRQ(ierr);
-  ierr = VecDestroy(&Na->right);CHKERRQ(ierr);
-  ierr = VecDestroy(&Na->leftwork);CHKERRQ(ierr);
-  ierr = VecDestroy(&Na->rightwork);CHKERRQ(ierr);
-  ierr = PetscFree(N->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)N,"MatNormalGetMatHermitian_C",NULL);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&Na->A));
+  CHKERRQ(VecDestroy(&Na->w));
+  CHKERRQ(VecDestroy(&Na->left));
+  CHKERRQ(VecDestroy(&Na->right));
+  CHKERRQ(VecDestroy(&Na->leftwork));
+  CHKERRQ(VecDestroy(&Na->rightwork));
+  CHKERRQ(PetscFree(N->data));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)N,"MatNormalGetMatHermitian_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -167,31 +161,30 @@ PetscErrorCode MatGetDiagonalHermitian_Normal(Mat N,Vec v)
 {
   Mat_Normal        *Na = (Mat_Normal*)N->data;
   Mat               A   = Na->A;
-  PetscErrorCode    ierr;
   PetscInt          i,j,rstart,rend,nnz;
   const PetscInt    *cols;
   PetscScalar       *diag,*work,*values;
   const PetscScalar *mvalues;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc2(A->cmap->N,&diag,A->cmap->N,&work);CHKERRQ(ierr);
-  ierr = PetscArrayzero(work,A->cmap->N);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc2(A->cmap->N,&diag,A->cmap->N,&work));
+  CHKERRQ(PetscArrayzero(work,A->cmap->N));
+  CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
   for (i=rstart; i<rend; i++) {
-    ierr = MatGetRow(A,i,&nnz,&cols,&mvalues);CHKERRQ(ierr);
+    CHKERRQ(MatGetRow(A,i,&nnz,&cols,&mvalues));
     for (j=0; j<nnz; j++) {
       work[cols[j]] += mvalues[j]*PetscConj(mvalues[j]);
     }
-    ierr = MatRestoreRow(A,i,&nnz,&cols,&mvalues);CHKERRQ(ierr);
+    CHKERRQ(MatRestoreRow(A,i,&nnz,&cols,&mvalues));
   }
-  ierr   = MPIU_Allreduce(work,diag,A->cmap->N,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)N));CHKERRMPI(ierr);
+  CHKERRMPI(MPIU_Allreduce(work,diag,A->cmap->N,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)N)));
   rstart = N->cmap->rstart;
   rend   = N->cmap->rend;
-  ierr   = VecGetArray(v,&values);CHKERRQ(ierr);
-  ierr   = PetscArraycpy(values,diag+rstart,rend-rstart);CHKERRQ(ierr);
-  ierr   = VecRestoreArray(v,&values);CHKERRQ(ierr);
-  ierr   = PetscFree2(diag,work);CHKERRQ(ierr);
-  ierr   = VecScale(v,Na->scale);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(v,&values));
+  CHKERRQ(PetscArraycpy(values,diag+rstart,rend-rstart));
+  CHKERRQ(VecRestoreArray(v,&values));
+  CHKERRQ(PetscFree2(diag,work));
+  CHKERRQ(VecScale(v,Na->scale));
   PetscFunctionReturn(0);
 }
 
@@ -222,13 +215,11 @@ PetscErrorCode MatNormalGetMatHermitian_Normal(Mat A,Mat *M)
 @*/
 PetscErrorCode MatNormalHermitianGetMat(Mat A,Mat *M)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   PetscValidPointer(M,2);
-  ierr = PetscUseMethod(A,"MatNormalGetMatHermitian_C",(Mat,Mat*),(A,M));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(A,"MatNormalGetMatHermitian_C",(Mat,Mat*),(A,M)));
   PetscFunctionReturn(0);
 }
 
@@ -252,26 +243,25 @@ PetscErrorCode MatNormalHermitianGetMat(Mat A,Mat *M)
 @*/
 PetscErrorCode  MatCreateNormalHermitian(Mat A,Mat *N)
 {
-  PetscErrorCode ierr;
   PetscInt       m,n;
   Mat_Normal     *Na;
   VecType        vtype;
 
   PetscFunctionBegin;
-  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),N);CHKERRQ(ierr);
-  ierr = MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)*N,MATNORMALHERMITIAN);CHKERRQ(ierr);
-  ierr = PetscLayoutReference(A->cmap,&(*N)->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutReference(A->cmap,&(*N)->cmap);CHKERRQ(ierr);
+  CHKERRQ(MatGetLocalSize(A,&m,&n));
+  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),N));
+  CHKERRQ(MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE));
+  CHKERRQ(PetscObjectChangeTypeName((PetscObject)*N,MATNORMALHERMITIAN));
+  CHKERRQ(PetscLayoutReference(A->cmap,&(*N)->rmap));
+  CHKERRQ(PetscLayoutReference(A->cmap,&(*N)->cmap));
 
-  ierr       = PetscNewLog(*N,&Na);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(*N,&Na));
   (*N)->data = (void*) Na;
-  ierr       = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectReference((PetscObject)A));
   Na->A      = A;
   Na->scale  = 1.0;
 
-  ierr = MatCreateVecs(A,NULL,&Na->w);CHKERRQ(ierr);
+  CHKERRQ(MatCreateVecs(A,NULL,&Na->w));
 
   (*N)->ops->destroy          = MatDestroyHermitian_Normal;
   (*N)->ops->mult             = MatMultHermitian_Normal;
@@ -284,13 +274,12 @@ PetscErrorCode  MatCreateNormalHermitian(Mat A,Mat *N)
   (*N)->assembled             = PETSC_TRUE;
   (*N)->preallocated          = PETSC_TRUE;
 
-  ierr = PetscObjectComposeFunction((PetscObject)(*N),"MatNormalGetMatHermitian_C",MatNormalGetMatHermitian_Normal);CHKERRQ(ierr);
-  ierr = MatSetOption(*N,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatGetVecType(A,&vtype);CHKERRQ(ierr);
-  ierr = MatSetVecType(*N,vtype);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)(*N),"MatNormalGetMatHermitian_C",MatNormalGetMatHermitian_Normal));
+  CHKERRQ(MatSetOption(*N,MAT_HERMITIAN,PETSC_TRUE));
+  CHKERRQ(MatGetVecType(A,&vtype));
+  CHKERRQ(MatSetVecType(*N,vtype));
 #if defined(PETSC_HAVE_DEVICE)
-  ierr = MatBindToCPU(*N,A->boundtocpu);CHKERRQ(ierr);
+  CHKERRQ(MatBindToCPU(*N,A->boundtocpu));
 #endif
   PetscFunctionReturn(0);
 }
-

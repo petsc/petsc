@@ -12,30 +12,30 @@ int main(int argc,char **argv)
   PetscScalar    xHost[5] = {0.,1.,2.,3.,4.};
 
   ierr = PetscInitialize(&argc, &argv, (char*)0, help); if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   if (size == 1) {
-    ierr = VecCreateSeqCUDAWithArrays(PETSC_COMM_WORLD,1,n,xHost,NULL,&x);CHKERRQ(ierr);
+    CHKERRQ(VecCreateSeqCUDAWithArrays(PETSC_COMM_WORLD,1,n,xHost,NULL,&x));
   } else {
-    ierr = VecCreateMPICUDAWithArrays(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,xHost,NULL,&x);CHKERRQ(ierr);
+    CHKERRQ(VecCreateMPICUDAWithArrays(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,xHost,NULL,&x));
   }
   /* print x should be equivalent too xHost */
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecSet(x,42.0);CHKERRQ(ierr);
+  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(VecSet(x,42.0));
   /* print x should be all 42 */
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
   if (size == 1) {
-    ierr = VecCreateSeqWithArray(PETSC_COMM_WORLD,1,n,xHost,&y);CHKERRQ(ierr);
+    CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_WORLD,1,n,xHost,&y));
   } else {
-    ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,xHost,&y);CHKERRQ(ierr);
+    CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,xHost,&y));
   }
 
   /* print y should be all 42 */
-  ierr = VecView(y, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecView(y, PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&y));
+  CHKERRQ(VecDestroy(&x));
   ierr = PetscFinalize();
   return ierr;
 }

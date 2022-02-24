@@ -30,8 +30,8 @@ int main(int argc,char **argv)
   Vec            x,xend;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /*
      Create a parallel vector.
@@ -39,20 +39,20 @@ int main(int argc,char **argv)
        The xend vector is a dummy vector to find the value of the
          elements at the endpoints for use in the trapezoid rule.
   */
-  ierr   = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr   = VecSetSizes(x,PETSC_DECIDE,numPoints);CHKERRQ(ierr);
-  ierr   = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr   = VecGetSize(x,&N);CHKERRQ(ierr);
-  ierr   = VecSet(x,result);CHKERRQ(ierr);
-  ierr   = VecDuplicate(x,&xend);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
+  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,numPoints));
+  CHKERRQ(VecSetFromOptions(x));
+  CHKERRQ(VecGetSize(x,&N));
+  CHKERRQ(VecSet(x,result));
+  CHKERRQ(VecDuplicate(x,&xend));
   result = 0.5;
   if (rank == 0) {
     i    = 0;
-    ierr = VecSetValues(xend,1,&i,&result,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(xend,1,&i,&result,INSERT_VALUES));
   }
   if (rank == size-1) {
     i    = N-1;
-    ierr = VecSetValues(xend,1,&i,&result,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(xend,1,&i,&result,INSERT_VALUES));
   }
   /*
      Assemble vector, using the 2-step process:
@@ -60,8 +60,8 @@ int main(int argc,char **argv)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = VecAssemblyBegin(xend);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(xend);CHKERRQ(ierr);
+  CHKERRQ(VecAssemblyBegin(xend));
+  CHKERRQ(VecAssemblyEnd(xend));
 
   /*
      Set the x vector elements.
@@ -69,15 +69,15 @@ int main(int argc,char **argv)
       The function evaluated (2x/(1+x^2)) is defined above.
       Each evaluation is put into the local array of the vector without message passing.
   */
-  ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
+  CHKERRQ(VecGetOwnershipRange(x,&rstart,&rend));
+  CHKERRQ(VecGetArray(x,&xarray));
   k    = 0;
   for (i=rstart; i<rend; i++) {
     xarray[k] = (PetscScalar)i*h;
     xarray[k] = func(xarray[k]);
     k++;
   }
-  ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(x,&xarray));
 
   /*
      Evaluates the integral.  First the sum of all the points is taken.
@@ -85,17 +85,17 @@ int main(int argc,char **argv)
      Then half the value at each endpoint is subtracted,
      this is part of the composite trapezoid rule.
   */
-  ierr   = VecSum(x,&result);CHKERRQ(ierr);
+  CHKERRQ(VecSum(x,&result));
   result = result*h;
-  ierr   = VecDot(x,xend,&dummy);CHKERRQ(ierr);
+  CHKERRQ(VecDot(x,xend,&dummy));
   result = result-h*dummy;
 
   /*
       Return the value of the integral.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"ln(2) is %g\n",(double)PetscRealPart(result));CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&xend);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"ln(2) is %g\n",(double)PetscRealPart(result)));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&xend));
 
   ierr = PetscFinalize();
   return ierr;

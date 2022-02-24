@@ -19,10 +19,9 @@ Test 2:
 PetscErrorCode ComputeFunctionLinear(SNES snes, Vec x, Vec f, void *ctx)
 {
   Mat            A = (Mat) ctx;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = MatMult(A, x, f);CHKERRQ(ierr);
+  CHKERRQ(MatMult(A, x, f));
   PetscFunctionReturn(0);
 }
 
@@ -35,18 +34,17 @@ PetscErrorCode ComputeJacobianLinear(SNES snes, Vec x, Mat A, Mat J, void *ctx)
 PetscErrorCode ConstructProblem1(Mat A, Vec b)
 {
   PetscInt       rStart, rEnd, row;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecSet(b, -3.0);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A, &rStart, &rEnd);CHKERRQ(ierr);
+  CHKERRQ(VecSet(b, -3.0));
+  CHKERRQ(MatGetOwnershipRange(A, &rStart, &rEnd));
   for (row = rStart; row < rEnd; ++row) {
     PetscScalar val = 1.0;
 
-    ierr = MatSetValues(A, 1, &row, 1, &row, &val, INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A, 1, &row, 1, &row, &val, INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -54,15 +52,14 @@ PetscErrorCode CheckProblem1(Mat A, Vec b, Vec u)
 {
   Vec            errorVec;
   PetscReal      norm, error;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecDuplicate(b, &errorVec);CHKERRQ(ierr);
-  ierr = VecWAXPY(errorVec, -1.0, b, u);CHKERRQ(ierr);
-  ierr = VecNorm(errorVec, NORM_2, &error);CHKERRQ(ierr);
-  ierr = VecNorm(b, NORM_2, &norm);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(b, &errorVec));
+  CHKERRQ(VecWAXPY(errorVec, -1.0, b, u));
+  CHKERRQ(VecNorm(errorVec, NORM_2, &error));
+  CHKERRQ(VecNorm(b, NORM_2, &norm));
   PetscCheckFalse(error/norm > 1000.*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", error/norm);
-  ierr = VecDestroy(&errorVec);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&errorVec));
   PetscFunctionReturn(0);
 }
 
@@ -70,30 +67,29 @@ PetscErrorCode ConstructProblem2(Mat A, Vec b)
 {
   PetscInt       N = 10, constraintSize = 4;
   PetscInt       row;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecSet(b, -3.0);CHKERRQ(ierr);
+  CHKERRQ(VecSet(b, -3.0));
   for (row = 0; row < constraintSize; ++row) {
     PetscScalar vals[2] = {1.0, 1.0};
     PetscInt    cols[2];
 
     cols[0] = row; cols[1] = row + N - constraintSize;
-    ierr    = MatSetValues(A, 1, &row, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A, 1, &row, 2, cols, vals, INSERT_VALUES));
   }
   for (row = constraintSize; row < N - constraintSize; ++row) {
     PetscScalar val = 1.0;
 
-    ierr = MatSetValues(A, 1, &row, 1, &row, &val, INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A, 1, &row, 1, &row, &val, INSERT_VALUES));
   }
   for (row = N - constraintSize; row < N; ++row) {
     PetscInt    col = row - (N - constraintSize);
     PetscScalar val = 1.0;
 
-    ierr = MatSetValues(A, 1, &row, 1, &col, &val, INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A, 1, &row, 1, &col, &val, INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -102,12 +98,11 @@ PetscErrorCode CheckProblem2(Mat A, Vec b, Vec u)
   PetscInt          N = 10, constraintSize = 4, r;
   PetscReal         norm, error;
   const PetscScalar *uArray, *bArray;
-  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  ierr  = VecNorm(b, NORM_2, &norm);CHKERRQ(ierr);
-  ierr  = VecGetArrayRead(u, &uArray);CHKERRQ(ierr);
-  ierr  = VecGetArrayRead(b, &bArray);CHKERRQ(ierr);
+  CHKERRQ(VecNorm(b, NORM_2, &norm));
+  CHKERRQ(VecGetArrayRead(u, &uArray));
+  CHKERRQ(VecGetArrayRead(b, &bArray));
   error = 0.0;
   for (r = 0; r < constraintSize; ++r) error += PetscRealPart(PetscSqr(uArray[r] - bArray[r + N-constraintSize]));
 
@@ -120,8 +115,8 @@ PetscErrorCode CheckProblem2(Mat A, Vec b, Vec u)
   for (r = N - constraintSize; r < N; ++r) error += PetscRealPart(PetscSqr(uArray[r] - (bArray[r - (N-constraintSize)] - bArray[r])));
 
   PetscCheckFalse(error/norm > 10000*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Relative error %g is too large", error/norm);
-  ierr = VecRestoreArrayRead(u, &uArray);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(b, &bArray);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(u, &uArray));
+  CHKERRQ(VecRestoreArrayRead(b, &bArray));
   PetscFunctionReturn(0);
 }
 
@@ -136,57 +131,57 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = PetscOptionsGetInt(NULL,NULL, "-problem", &problem, NULL);CHKERRQ(ierr);
-  ierr = VecCreate(comm, &u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u, PETSC_DETERMINE, N);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
-  ierr = VecDuplicate(u, &b);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-problem", &problem, NULL));
+  CHKERRQ(VecCreate(comm, &u));
+  CHKERRQ(VecSetSizes(u, PETSC_DETERMINE, N));
+  CHKERRQ(VecSetFromOptions(u));
+  CHKERRQ(VecDuplicate(u, &r));
+  CHKERRQ(VecDuplicate(u, &b));
 
-  ierr = MatCreate(comm, &A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A, PETSC_DETERMINE, PETSC_DETERMINE, N, N);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A, 5, NULL);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(comm, &A));
+  CHKERRQ(MatSetSizes(A, PETSC_DETERMINE, PETSC_DETERMINE, N, N));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatSeqAIJSetPreallocation(A, 5, NULL));
   J    = A;
 
   switch (problem) {
   case 1:
-    ierr = ConstructProblem1(A, b);CHKERRQ(ierr);
+    CHKERRQ(ConstructProblem1(A, b));
     break;
   case 2:
-    ierr = ConstructProblem2(A, b);CHKERRQ(ierr);
+    CHKERRQ(ConstructProblem2(A, b));
     break;
   default:
     SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid problem number %d", problem);
   }
 
-  ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes, A, J, ComputeJacobianLinear, NULL);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes, r, ComputeFunctionLinear, A);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  CHKERRQ(SNESCreate(PETSC_COMM_WORLD, &snes));
+  CHKERRQ(SNESSetJacobian(snes, A, J, ComputeJacobianLinear, NULL));
+  CHKERRQ(SNESSetFunction(snes, r, ComputeFunctionLinear, A));
+  CHKERRQ(SNESSetFromOptions(snes));
 
-  ierr = SNESSolve(snes, b, u);CHKERRQ(ierr);
-  ierr = VecView(u, NULL);CHKERRQ(ierr);
+  CHKERRQ(SNESSolve(snes, b, u));
+  CHKERRQ(VecView(u, NULL));
 
   switch (problem) {
   case 1:
-    ierr = CheckProblem1(A, b, u);CHKERRQ(ierr);
+    CHKERRQ(CheckProblem1(A, b, u));
     break;
   case 2:
-    ierr = CheckProblem2(A, b, u);CHKERRQ(ierr);
+    CHKERRQ(CheckProblem2(A, b, u));
     break;
   default:
     SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid problem number %d", problem);
   }
 
   if (A != J) {
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    CHKERRQ(MatDestroy(&A));
   }
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&J));
+  CHKERRQ(VecDestroy(&u));
+  CHKERRQ(VecDestroy(&r));
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(SNESDestroy(&snes));
   ierr = PetscFinalize();
   return ierr;
 }

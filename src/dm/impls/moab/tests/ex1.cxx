@@ -18,17 +18,17 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(options->filename, "");CHKERRQ(ierr);
-  ierr = PetscStrcpy(options->tagname, "petsc_tag");CHKERRQ(ierr);
+  CHKERRQ(PetscStrcpy(options->filename, ""));
+  CHKERRQ(PetscStrcpy(options->tagname, "petsc_tag"));
   options->dim = -1;
 
   ierr = PetscOptionsBegin(comm, "", "MOAB example options", "DMMOAB");CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex1.cxx", options->dim, &options->dim, NULL,PETSC_DECIDE,3);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The file containing the mesh", "ex1.cxx", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-tagname", "The tag name from which to create a vector", "ex1.cxx", options->tagname, options->tagname, sizeof(options->tagname), &flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex1.cxx", options->dim, &options->dim, NULL,PETSC_DECIDE,3));
+  CHKERRQ(PetscOptionsString("-filename", "The file containing the mesh", "ex1.cxx", options->filename, options->filename, sizeof(options->filename), NULL));
+  CHKERRQ(PetscOptionsString("-tagname", "The tag name from which to create a vector", "ex1.cxx", options->tagname, options->tagname, sizeof(options->tagname), &flg));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventRegister("CreateMesh",          DM_CLASSID,   &options->createMeshEvent));
   PetscFunctionReturn(0);
 }
 
@@ -40,13 +40,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   moab::Range range;
   PetscInt tagsize;
   moab::ErrorCode merr;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMMoabCreateMoab(comm, iface, &ltog_tag, &range, dm);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(user->createMeshEvent,0,0,0,0));
+  CHKERRQ(DMMoabCreateMoab(comm, iface, &ltog_tag, &range, dm));
   std::cout << "Created DMMoab using DMMoabCreateMoab." << std::endl;
-  ierr = DMMoabGetInterface(*dm, &iface);CHKERRQ(ierr);
+  CHKERRQ(DMMoabGetInterface(*dm, &iface));
 
     // load file and get entities of requested or max dimension
   if (strlen(user->filename) > 0) {
@@ -73,7 +72,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     user->dim = iface->dimension_from_handle(*tmp_range.rbegin());
   }
   merr = iface->get_entities_by_dimension(0, user->dim, range);MBERRNM(merr);
-  ierr = DMMoabSetLocalVertices(*dm, &range);CHKERRQ(ierr);
+  CHKERRQ(DMMoabSetLocalVertices(*dm, &range));
 
     // get the requested tag and create if necessary
   std::cout << "Creating tag with name: " << user->tagname << ";\n";
@@ -88,11 +87,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   }
   merr = iface->tag_get_length(tag, tagsize);MBERRNM(merr);
 
-  ierr = DMSetUp(*dm);CHKERRQ(ierr);
+  CHKERRQ(DMSetUp(*dm));
 
     // create the dmmoab and initialize its data
-  ierr = PetscObjectSetName((PetscObject) *dm, "MOAB mesh");CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetName((PetscObject) *dm, "MOAB mesh"));
+  CHKERRQ(PetscLogEventEnd(user->createMeshEvent,0,0,0,0));
   user->dm = *dm;
   PetscFunctionReturn(0);
 }
@@ -107,18 +106,18 @@ int main(int argc, char **argv)
   moab::Tag         datatag=NULL;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
+  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
 
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &user.dm);CHKERRQ(ierr); /* create the MOAB dm and the mesh */
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &user.dm)); /* create the MOAB dm and the mesh */
 
-  ierr = DMMoabGetInterface(user.dm, &mbImpl);CHKERRQ(ierr);
+  CHKERRQ(DMMoabGetInterface(user.dm, &mbImpl));
   merr = mbImpl->tag_get_handle(user.tagname, datatag);MBERRNM(merr);
-  ierr = DMMoabCreateVector(user.dm, datatag, NULL, PETSC_TRUE, PETSC_FALSE,&vec);CHKERRQ(ierr); /* create a vec from user-input tag */
+  CHKERRQ(DMMoabCreateVector(user.dm, datatag, NULL, PETSC_TRUE, PETSC_FALSE,&vec)); /* create a vec from user-input tag */
 
   std::cout << "Created VecMoab from existing tag." << std::endl;
-  ierr = VecDestroy(&vec);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&vec));
   std::cout << "Destroyed VecMoab." << std::endl;
-  ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
+  CHKERRQ(DMDestroy(&user.dm));
   std::cout << "Destroyed DMMoab." << std::endl;
   ierr = PetscFinalize();
   return ierr;

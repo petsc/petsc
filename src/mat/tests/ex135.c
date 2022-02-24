@@ -6,31 +6,30 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt n,MatType mtype)
 {
   Mat            A;
   PetscInt       first,last,i;
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
 
   PetscFunctionBegin;
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A, PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetSizes(A, PETSC_DECIDE,PETSC_DECIDE,n,n));
+  CHKERRQ(MatSetType(A,MATMPISBAIJ));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRMPI(MPI_Comm_size(comm,&size));
+  CHKERRMPI(MPI_Comm_rank(comm,&rank));
   if (rank < size-1) {
-    ierr = MatMPISBAIJSetPreallocation(A,1,1,NULL,1,NULL);CHKERRQ(ierr);
+    CHKERRQ(MatMPISBAIJSetPreallocation(A,1,1,NULL,1,NULL));
   } else {
-    ierr = MatMPISBAIJSetPreallocation(A,1,2,NULL,0,NULL);CHKERRQ(ierr);
+    CHKERRQ(MatMPISBAIJSetPreallocation(A,1,2,NULL,0,NULL));
   }
-  ierr = MatGetOwnershipRange(A,&first,&last);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(A,&first,&last));
+  CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
   last--;
   for (i=first; i<=last; i++) {
-    ierr = MatSetValue(A,i,i,2.,INSERT_VALUES);CHKERRQ(ierr);
-    if (i != n-1) {ierr = MatSetValue(A,i,n-1,-1.,INSERT_VALUES);CHKERRQ(ierr);}
+    CHKERRQ(MatSetValue(A,i,i,2.,INSERT_VALUES));
+    if (i != n-1) CHKERRQ(MatSetValue(A,i,n-1,-1.,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatDestroy(&A));
   PetscFunctionReturn(0);
 }
 
@@ -42,8 +41,8 @@ int main(int argc,char *argv[])
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = Assemble(comm,n,MATMPISBAIJ);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  CHKERRQ(Assemble(comm,n,MATMPISBAIJ));
   ierr = PetscFinalize();
   return ierr;
 }

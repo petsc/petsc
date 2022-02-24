@@ -12,18 +12,18 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /* create vector */
-  ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetType(x,"mpi");CHKERRQ(ierr);
-  ierr = VecSetType(x,"seq");CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
-  ierr = VecSetType(x,"mpi");CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_SELF,&x));
+  CHKERRQ(VecSetSizes(x,n,PETSC_DECIDE));
+  CHKERRQ(VecSetType(x,"mpi"));
+  CHKERRQ(VecSetType(x,"seq"));
+  CHKERRQ(VecDuplicate(x,&y));
+  CHKERRQ(VecSetType(x,"mpi"));
 
-  ierr = VecSet(x,one);CHKERRQ(ierr);
-  ierr = VecSet(y,two);CHKERRQ(ierr);
+  CHKERRQ(VecSet(x,one));
+  CHKERRQ(VecSet(y,two));
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
 
   ierr = PetscFinalize();
   return ierr;

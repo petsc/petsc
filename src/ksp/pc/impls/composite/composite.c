@@ -22,7 +22,6 @@ typedef struct {
 
 static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode   ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
   Mat              mat  = pc->pmat;
@@ -33,30 +32,30 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 
   /* Set the reuse flag on children PCs */
   while (next) {
-    ierr = PCSetReusePreconditioner(next->pc,pc->reusepreconditioner);CHKERRQ(ierr);
+    CHKERRQ(PCSetReusePreconditioner(next->pc,pc->reusepreconditioner));
     next = next->next;
   }
   next = jac->head;
 
   if (next->next && !jac->work2) { /* allocate second work vector */
-    ierr = VecDuplicate(jac->work1,&jac->work2);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(jac->work1,&jac->work2));
   }
   if (pc->useAmat) mat = pc->mat;
-  ierr = PCApply(next->pc,x,y);CHKERRQ(ierr);                      /* y <- B x */
+  CHKERRQ(PCApply(next->pc,x,y));                      /* y <- B x */
   while (next->next) {
     next = next->next;
-    ierr = MatMult(mat,y,jac->work1);CHKERRQ(ierr);                /* work1 <- A y */
-    ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);   /* work2 <- x - work1 */
-    ierr = PCApply(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);  /* work1 <- C work2 */
-    ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);                /* y <- y + work1 = B x + C (x - A B x) = (B + C (1 - A B)) x */
+    CHKERRQ(MatMult(mat,y,jac->work1));                /* work1 <- A y */
+    CHKERRQ(VecWAXPY(jac->work2,-1.0,jac->work1,x));   /* work2 <- x - work1 */
+    CHKERRQ(PCApply(next->pc,jac->work2,jac->work1));  /* work1 <- C work2 */
+    CHKERRQ(VecAXPY(y,1.0,jac->work1));                /* y <- y + work1 = B x + C (x - A B x) = (B + C (1 - A B)) x */
   }
   if (jac->type == PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE) {
     while (next->previous) {
       next = next->previous;
-      ierr = MatMult(mat,y,jac->work1);CHKERRQ(ierr);
-      ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);
-      ierr = PCApply(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);
-      ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
+      CHKERRQ(MatMult(mat,y,jac->work1));
+      CHKERRQ(VecWAXPY(jac->work2,-1.0,jac->work1,x));
+      CHKERRQ(PCApply(next->pc,jac->work2,jac->work1));
+      CHKERRQ(VecAXPY(y,1.0,jac->work1));
     }
   }
   PetscFunctionReturn(0);
@@ -64,7 +63,6 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
 
 static PetscErrorCode PCApplyTranspose_Composite_Multiplicative(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode   ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
   Mat              mat  = pc->pmat;
@@ -72,29 +70,29 @@ static PetscErrorCode PCApplyTranspose_Composite_Multiplicative(PC pc,Vec x,Vec 
   PetscFunctionBegin;
   PetscCheckFalse(!next,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPCType() or -pc_composite_pcs");
   if (next->next && !jac->work2) { /* allocate second work vector */
-    ierr = VecDuplicate(jac->work1,&jac->work2);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(jac->work1,&jac->work2));
   }
   if (pc->useAmat) mat = pc->mat;
   /* locate last PC */
   while (next->next) {
     next = next->next;
   }
-  ierr = PCApplyTranspose(next->pc,x,y);CHKERRQ(ierr);
+  CHKERRQ(PCApplyTranspose(next->pc,x,y));
   while (next->previous) {
     next = next->previous;
-    ierr = MatMultTranspose(mat,y,jac->work1);CHKERRQ(ierr);
-    ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);
-    ierr = PCApplyTranspose(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);
-    ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
+    CHKERRQ(MatMultTranspose(mat,y,jac->work1));
+    CHKERRQ(VecWAXPY(jac->work2,-1.0,jac->work1,x));
+    CHKERRQ(PCApplyTranspose(next->pc,jac->work2,jac->work1));
+    CHKERRQ(VecAXPY(y,1.0,jac->work1));
   }
   if (jac->type == PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE) {
     next = jac->head;
     while (next->next) {
       next = next->next;
-      ierr = MatMultTranspose(mat,y,jac->work1);CHKERRQ(ierr);
-      ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);
-      ierr = PCApplyTranspose(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);
-      ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
+      CHKERRQ(MatMultTranspose(mat,y,jac->work1));
+      CHKERRQ(VecWAXPY(jac->work2,-1.0,jac->work1,x));
+      CHKERRQ(PCApplyTranspose(next->pc,jac->work2,jac->work1));
+      CHKERRQ(VecAXPY(y,1.0,jac->work1));
     }
   }
   PetscFunctionReturn(0);
@@ -107,7 +105,6 @@ alpha I + R
 */
 static PetscErrorCode PCApply_Composite_Special(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode   ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
 
@@ -116,17 +113,16 @@ static PetscErrorCode PCApply_Composite_Special(PC pc,Vec x,Vec y)
   PetscCheckFalse(!next->next || next->next->next,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Special composite preconditioners requires exactly two PCs");
 
   /* Set the reuse flag on children PCs */
-  ierr = PCSetReusePreconditioner(next->pc,pc->reusepreconditioner);CHKERRQ(ierr);
-  ierr = PCSetReusePreconditioner(next->next->pc,pc->reusepreconditioner);CHKERRQ(ierr);
+  CHKERRQ(PCSetReusePreconditioner(next->pc,pc->reusepreconditioner));
+  CHKERRQ(PCSetReusePreconditioner(next->next->pc,pc->reusepreconditioner));
 
-  ierr = PCApply(next->pc,x,jac->work1);CHKERRQ(ierr);
-  ierr = PCApply(next->next->pc,jac->work1,y);CHKERRQ(ierr);
+  CHKERRQ(PCApply(next->pc,x,jac->work1));
+  CHKERRQ(PCApply(next->next->pc,jac->work1,y));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode   ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
 
@@ -135,55 +131,53 @@ static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
 
   /* Set the reuse flag on children PCs */
   while (next) {
-    ierr = PCSetReusePreconditioner(next->pc,pc->reusepreconditioner);CHKERRQ(ierr);
+    CHKERRQ(PCSetReusePreconditioner(next->pc,pc->reusepreconditioner));
     next = next->next;
   }
   next = jac->head;
 
-  ierr = PCApply(next->pc,x,y);CHKERRQ(ierr);
+  CHKERRQ(PCApply(next->pc,x,y));
   while (next->next) {
     next = next->next;
-    ierr = PCApply(next->pc,x,jac->work1);CHKERRQ(ierr);
-    ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
+    CHKERRQ(PCApply(next->pc,x,jac->work1));
+    CHKERRQ(VecAXPY(y,1.0,jac->work1));
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCApplyTranspose_Composite_Additive(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode   ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
 
   PetscFunctionBegin;
   PetscCheckFalse(!next,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPCType() or -pc_composite_pcs");
-  ierr = PCApplyTranspose(next->pc,x,y);CHKERRQ(ierr);
+  CHKERRQ(PCApplyTranspose(next->pc,x,y));
   while (next->next) {
     next = next->next;
-    ierr = PCApplyTranspose(next->pc,x,jac->work1);CHKERRQ(ierr);
-    ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
+    CHKERRQ(PCApplyTranspose(next->pc,x,jac->work1));
+    CHKERRQ(VecAXPY(y,1.0,jac->work1));
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCSetUp_Composite(PC pc)
 {
-  PetscErrorCode   ierr;
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PC_CompositeLink next = jac->head;
   DM               dm;
 
   PetscFunctionBegin;
   if (!jac->work1) {
-    ierr = MatCreateVecs(pc->pmat,&jac->work1,NULL);CHKERRQ(ierr);
+    CHKERRQ(MatCreateVecs(pc->pmat,&jac->work1,NULL));
   }
-  ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
+  CHKERRQ(PCGetDM(pc,&dm));
   while (next) {
     if (!next->pc->dm) {
-      ierr = PCSetDM(next->pc,dm);CHKERRQ(ierr);
+      CHKERRQ(PCSetDM(next->pc,dm));
     }
     if (!next->pc->mat) {
-      ierr = PCSetOperators(next->pc,pc->mat,pc->pmat);CHKERRQ(ierr);
+      CHKERRQ(PCSetOperators(next->pc,pc->mat,pc->pmat));
     }
     next = next->next;
   }
@@ -193,64 +187,61 @@ static PetscErrorCode PCSetUp_Composite(PC pc)
 static PetscErrorCode PCReset_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
-  PetscErrorCode   ierr;
   PC_CompositeLink next = jac->head;
 
   PetscFunctionBegin;
   while (next) {
-    ierr = PCReset(next->pc);CHKERRQ(ierr);
+    CHKERRQ(PCReset(next->pc));
     next = next->next;
   }
-  ierr = VecDestroy(&jac->work1);CHKERRQ(ierr);
-  ierr = VecDestroy(&jac->work2);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&jac->work1));
+  CHKERRQ(VecDestroy(&jac->work2));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCDestroy_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
-  PetscErrorCode   ierr;
   PC_CompositeLink next = jac->head,next_tmp;
 
   PetscFunctionBegin;
-  ierr = PCReset_Composite(pc);CHKERRQ(ierr);
+  CHKERRQ(PCReset_Composite(pc));
   while (next) {
-    ierr     = PCDestroy(&next->pc);CHKERRQ(ierr);
+    CHKERRQ(PCDestroy(&next->pc));
     next_tmp = next;
     next     = next->next;
-    ierr     = PetscFree(next_tmp);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(next_tmp));
   }
-  ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCSetFromOptions_Composite(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
-  PetscErrorCode   ierr;
   PetscInt         nmax = 8,i;
   PC_CompositeLink next;
   char             *pcs[8];
   PetscBool        flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"Composite preconditioner options");CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-pc_composite_type","Type of composition","PCCompositeSetType",PCCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&jac->type,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"Composite preconditioner options"));
+  CHKERRQ(PetscOptionsEnum("-pc_composite_type","Type of composition","PCCompositeSetType",PCCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&jac->type,&flg));
   if (flg) {
-    ierr = PCCompositeSetType(pc,jac->type);CHKERRQ(ierr);
+    CHKERRQ(PCCompositeSetType(pc,jac->type));
   }
-  ierr = PetscOptionsStringArray("-pc_composite_pcs","List of composite solvers","PCCompositeAddPCType",pcs,&nmax,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsStringArray("-pc_composite_pcs","List of composite solvers","PCCompositeAddPCType",pcs,&nmax,&flg));
   if (flg) {
     for (i=0; i<nmax; i++) {
-      ierr = PCCompositeAddPCType(pc,pcs[i]);CHKERRQ(ierr);
-      ierr = PetscFree(pcs[i]);CHKERRQ(ierr);   /* deallocate string pcs[i], which is allocated in PetscOptionsStringArray() */
+      CHKERRQ(PCCompositeAddPCType(pc,pcs[i]));
+      CHKERRQ(PetscFree(pcs[i]));   /* deallocate string pcs[i], which is allocated in PetscOptionsStringArray() */
     }
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsTail());
 
   next = jac->head;
   while (next) {
-    ierr = PCSetFromOptions(next->pc);CHKERRQ(ierr);
+    CHKERRQ(PCSetFromOptions(next->pc));
     next = next->next;
   }
   PetscFunctionReturn(0);
@@ -259,27 +250,26 @@ static PetscErrorCode PCSetFromOptions_Composite(PetscOptionItems *PetscOptionsO
 static PetscErrorCode PCView_Composite(PC pc,PetscViewer viewer)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
-  PetscErrorCode   ierr;
   PC_CompositeLink next = jac->head;
   PetscBool        iascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Composite PC type - %s\n",PCCompositeTypes[jac->type]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"PCs on composite preconditioner follow\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Composite PC type - %s\n",PCCompositeTypes[jac->type]));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"PCs on composite preconditioner follow\n"));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"---------------------------------\n"));
   }
   if (iascii) {
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPushTab(viewer));
   }
   while (next) {
-    ierr = PCView(next->pc,viewer);CHKERRQ(ierr);
+    CHKERRQ(PCView(next->pc,viewer));
     next = next->next;
   }
   if (iascii) {
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPopTab(viewer));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"---------------------------------\n"));
   }
   PetscFunctionReturn(0);
 }
@@ -330,10 +320,9 @@ static PetscErrorCode PCCompositeAddPC_Composite(PC pc, PC subpc)
   PetscInt         cnt = 0;
   const char      *prefix;
   char             newprefix[20];
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc, &ilink);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(pc, &ilink));
   ilink->next = NULL;
   ilink->pc   = subpc;
 
@@ -351,27 +340,26 @@ static PetscErrorCode PCCompositeAddPC_Composite(PC pc, PC subpc)
     next->next      = ilink;
     ilink->previous = next;
   }
-  ierr = PCGetOptionsPrefix(pc, &prefix);CHKERRQ(ierr);
-  ierr = PCSetOptionsPrefix(subpc, prefix);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(newprefix, 20, "sub_%d_", (int) cnt);CHKERRQ(ierr);
-  ierr = PCAppendOptionsPrefix(subpc, newprefix);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject) subpc);CHKERRQ(ierr);
+  CHKERRQ(PCGetOptionsPrefix(pc, &prefix));
+  CHKERRQ(PCSetOptionsPrefix(subpc, prefix));
+  CHKERRQ(PetscSNPrintf(newprefix, 20, "sub_%d_", (int) cnt));
+  CHKERRQ(PCAppendOptionsPrefix(subpc, newprefix));
+  CHKERRQ(PetscObjectReference((PetscObject) subpc));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCCompositeAddPCType_Composite(PC pc, PCType type)
 {
   PC             subpc;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCCreate(PetscObjectComm((PetscObject)pc), &subpc);CHKERRQ(ierr);
-  ierr = PetscObjectIncrementTabLevel((PetscObject) subpc, (PetscObject) pc, 1);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject) pc, (PetscObject) subpc);CHKERRQ(ierr);
-  ierr = PCCompositeAddPC_Composite(pc, subpc);CHKERRQ(ierr);
+  CHKERRQ(PCCreate(PetscObjectComm((PetscObject)pc), &subpc));
+  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject) subpc, (PetscObject) pc, 1));
+  CHKERRQ(PetscLogObjectParent((PetscObject) pc, (PetscObject) subpc));
+  CHKERRQ(PCCompositeAddPC_Composite(pc, subpc));
   /* type is set after prefix, because some methods may modify prefix, e.g. pcksp */
-  ierr = PCSetType(subpc, type);CHKERRQ(ierr);
-  ierr = PCDestroy(&subpc);CHKERRQ(ierr);
+  CHKERRQ(PCSetType(subpc, type));
+  CHKERRQ(PCDestroy(&subpc));
   PetscFunctionReturn(0);
 }
 
@@ -426,12 +414,10 @@ static PetscErrorCode  PCCompositeGetPC_Composite(PC pc,PetscInt n,PC *subpc)
 @*/
 PetscErrorCode  PCCompositeSetType(PC pc,PCCompositeType type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveEnum(pc,type,2);
-  ierr = PetscTryMethod(pc,"PCCompositeSetType_C",(PC,PCCompositeType),(pc,type));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(pc,"PCCompositeSetType_C",(PC,PCCompositeType),(pc,type)));
   PetscFunctionReturn(0);
 }
 
@@ -454,11 +440,9 @@ PetscErrorCode  PCCompositeSetType(PC pc,PCCompositeType type)
 @*/
 PetscErrorCode  PCCompositeGetType(PC pc,PCCompositeType *type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscUseMethod(pc,"PCCompositeGetType_C",(PC,PCCompositeType*),(pc,type));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(pc,"PCCompositeGetType_C",(PC,PCCompositeType*),(pc,type)));
   PetscFunctionReturn(0);
 }
 
@@ -477,12 +461,10 @@ PetscErrorCode  PCCompositeGetType(PC pc,PCCompositeType *type)
 @*/
 PetscErrorCode  PCCompositeSpecialSetAlpha(PC pc,PetscScalar alpha)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveScalar(pc,alpha,2);
-  ierr = PetscTryMethod(pc,"PCCompositeSpecialSetAlpha_C",(PC,PetscScalar),(pc,alpha));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(pc,"PCCompositeSpecialSetAlpha_C",(PC,PetscScalar),(pc,alpha)));
   PetscFunctionReturn(0);
 }
 
@@ -501,11 +483,9 @@ PetscErrorCode  PCCompositeSpecialSetAlpha(PC pc,PetscScalar alpha)
 @*/
 PetscErrorCode  PCCompositeAddPCType(PC pc,PCType type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCCompositeAddPCType_C",(PC,PCType),(pc,type));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(pc,"PCCompositeAddPCType_C",(PC,PCType),(pc,type)));
   PetscFunctionReturn(0);
 }
 
@@ -524,12 +504,10 @@ PetscErrorCode  PCCompositeAddPCType(PC pc,PCType type)
 @*/
 PetscErrorCode PCCompositeAddPC(PC pc, PC subpc)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(subpc,PC_CLASSID,2);
-  ierr = PetscTryMethod(pc,"PCCompositeAddPC_C",(PC,PC),(pc,subpc));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(pc,"PCCompositeAddPC_C",(PC,PC),(pc,subpc)));
   PetscFunctionReturn(0);
 }
 
@@ -550,12 +528,10 @@ PetscErrorCode PCCompositeAddPC(PC pc, PC subpc)
 @*/
 PetscErrorCode  PCCompositeGetNumberPC(PC pc,PetscInt *num)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidIntPointer(num,2);
-  ierr = PetscUseMethod(pc,"PCCompositeGetNumberPC_C",(PC,PetscInt*),(pc,num));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(pc,"PCCompositeGetNumberPC_C",(PC,PetscInt*),(pc,num)));
   PetscFunctionReturn(0);
 }
 
@@ -581,12 +557,10 @@ PetscErrorCode  PCCompositeGetNumberPC(PC pc,PetscInt *num)
 @*/
 PetscErrorCode PCCompositeGetPC(PC pc,PetscInt n,PC *subpc)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(subpc,3);
-  ierr = PetscUseMethod(pc,"PCCompositeGetPC_C",(PC,PetscInt,PC*),(pc,n,subpc));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(pc,"PCCompositeGetPC_C",(PC,PetscInt,PC*),(pc,n,subpc)));
   PetscFunctionReturn(0);
 }
 
@@ -618,11 +592,10 @@ M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Composite(PC pc)
 {
-  PetscErrorCode ierr;
   PC_Composite   *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(pc,&jac));
 
   pc->ops->apply           = PCApply_Composite_Additive;
   pc->ops->applytranspose  = PCApplyTranspose_Composite_Additive;
@@ -639,12 +612,12 @@ PETSC_EXTERN PetscErrorCode PCCreate_Composite(PC pc)
   jac->work2 = NULL;
   jac->head  = NULL;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSetType_C",PCCompositeSetType_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetType_C",PCCompositeGetType_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeAddPCType_C",PCCompositeAddPCType_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeAddPC_C",PCCompositeAddPC_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetNumberPC_C",PCCompositeGetNumberPC_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetPC_C",PCCompositeGetPC_Composite);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSpecialSetAlpha_C",PCCompositeSpecialSetAlpha_Composite);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSetType_C",PCCompositeSetType_Composite));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetType_C",PCCompositeGetType_Composite));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCCompositeAddPCType_C",PCCompositeAddPCType_Composite));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCCompositeAddPC_C",PCCompositeAddPC_Composite));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetNumberPC_C",PCCompositeGetNumberPC_Composite));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCCompositeGetPC_C",PCCompositeGetPC_Composite));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCCompositeSpecialSetAlpha_C",PCCompositeSpecialSetAlpha_Composite));
   PetscFunctionReturn(0);
 }

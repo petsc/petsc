@@ -16,23 +16,22 @@ int main(int argc,char **argv)
   PetscViewer    bviewer;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",FILE_MODE_READ,&bviewer);CHKERRQ(ierr);
-  ierr = DMCreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",FILE_MODE_READ,&bviewer));
+  CHKERRQ(DMCreate(PETSC_COMM_WORLD,&da));
 
-  ierr = DMLoad(da,bviewer);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = VecLoad(global,bviewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&bviewer);CHKERRQ(ierr);
+  CHKERRQ(DMLoad(da,bviewer));
+  CHKERRQ(DMCreateGlobalVector(da,&global));
+  CHKERRQ(VecLoad(global,bviewer));
+  CHKERRQ(PetscViewerDestroy(&bviewer));
 
-  ierr = VecView(global,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecView(global,PETSC_VIEWER_DRAW_WORLD));
 
   /* Free memory */
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&global));
+  CHKERRQ(DMDestroy(&da));
   ierr = PetscFinalize();
   return ierr;
 }
-

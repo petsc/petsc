@@ -13,49 +13,49 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   n      = 3*size;              /* Number of local indices, same on each process. */
   rstart = 3*(size+2)*rank;     /* start of local range */
   rend   = 3*(size+2)*(rank+1); /* end of local range */
   for (i=0; i<2; i++) {
-    ierr = ISCreate(PETSC_COMM_WORLD,&is[i]);CHKERRQ(ierr);
-    ierr = ISSetType(is[i],ISGENERAL);CHKERRQ(ierr);
+    CHKERRQ(ISCreate(PETSC_COMM_WORLD,&is[i]));
+    CHKERRQ(ISSetType(is[i],ISGENERAL));
   }
   {
     PetscBool *mask;
 
-    ierr = PetscCalloc1(rend-rstart,&mask);CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc1(rend-rstart,&mask));
     for (i=0; i<3; i++) {
       for (j=0; j<size; j++) {
         mask[i*(size+2)+j] = PETSC_TRUE;
       }
     }
-    ierr = ISGeneralSetIndicesFromMask(is[0],rstart,rend,mask);CHKERRQ(ierr);
-    ierr = PetscFree(mask);CHKERRQ(ierr);
+    CHKERRQ(ISGeneralSetIndicesFromMask(is[0],rstart,rend,mask));
+    CHKERRQ(PetscFree(mask));
   }
   {
     PetscInt *indices;
 
-    ierr = PetscMalloc1(n,&indices);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(n,&indices));
     for (i=0; i<3; i++) {
       for (j=0; j<size; j++) indices[cnt++] = rstart+i*(size+2)+j;
     }
     PetscCheckFalse(cnt != n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"inconsistent count");
-    ierr = ISGeneralSetIndices(is[1],n,indices,PETSC_COPY_VALUES);CHKERRQ(ierr);
-    ierr = PetscFree(indices);CHKERRQ(ierr);
+    CHKERRQ(ISGeneralSetIndices(is[1],n,indices,PETSC_COPY_VALUES));
+    CHKERRQ(PetscFree(indices));
   }
 
-  ierr = ISEqual(is[0],is[1],&flg);CHKERRQ(ierr);
+  CHKERRQ(ISEqual(is[0],is[1],&flg));
   PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"is[0] should be equal to is[1]");
 
-  ierr = ISComplement(is[0],rstart,rend,&isc);CHKERRQ(ierr);
-  ierr = ISView(is[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISView(isc,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(ISComplement(is[0],rstart,rend,&isc));
+  CHKERRQ(ISView(is[0],PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(ISView(isc,PETSC_VIEWER_STDOUT_WORLD));
 
-  for (i=0; i<2; i++) {ierr = ISDestroy(&is[i]);CHKERRQ(ierr);}
-  ierr = ISDestroy(&isc);CHKERRQ(ierr);
+  for (i=0; i<2; i++) CHKERRQ(ISDestroy(&is[i]));
+  CHKERRQ(ISDestroy(&isc));
   ierr = PetscFinalize();
   return ierr;
 }

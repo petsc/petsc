@@ -35,7 +35,7 @@ int main(int argc,char **args)
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
   */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
   PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
 
   /* -----------------------------------------------------------
@@ -59,26 +59,26 @@ int main(int argc,char **args)
      Open binary file.  Note that we use FILE_MODE_READ to indicate
      reading from this file.
   */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
 
   /*
      Load the matrix; then destroy the viewer.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetType(A,MATSEQAIJ));
+  CHKERRQ(MatLoad(A,fd));
+  CHKERRQ(PetscViewerDestroy(&fd));
 
-  ierr = MatGetOrdering(A,rtype,&isrow,&iscol);CHKERRQ(ierr);
-  ierr = ISView(isrow,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(MatGetOrdering(A,rtype,&isrow,&iscol));
+  CHKERRQ(ISView(isrow,PETSC_VIEWER_STDOUT_WORLD));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = ISDestroy(&isrow);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscol);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(ISDestroy(&isrow));
+  CHKERRQ(ISDestroy(&iscol));
 
   ierr = PetscFinalize();
   return ierr;

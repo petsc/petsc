@@ -20,78 +20,78 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
   VecScatter     Mvctx;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  ierr = ISGetLocalSize(iscol,&ncols);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)mat,&comm));
+  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  CHKERRQ(ISGetLocalSize(iscol,&ncols));
 
   /* (1) iscol is a sub-column vector of mat, pad it with '-1.' to form a full vector x */
-  ierr = MatCreateVecs(mat,&x,NULL);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&cmap);CHKERRQ(ierr);
-  ierr = VecSet(x,-1.0);CHKERRQ(ierr);
-  ierr = VecSet(cmap,-1.0);CHKERRQ(ierr);
+  CHKERRQ(MatCreateVecs(mat,&x,NULL));
+  CHKERRQ(VecDuplicate(x,&cmap));
+  CHKERRQ(VecSet(x,-1.0));
+  CHKERRQ(VecSet(cmap,-1.0));
 
-  ierr = VecDuplicate(lvec,&lcmap);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(lvec,&lcmap));
 
   /* Get start indices */
-  ierr = MPI_Scan(&ncols,&isstart,1,MPIU_INT,MPI_SUM,comm);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Scan(&ncols,&isstart,1,MPIU_INT,MPI_SUM,comm));
   isstart -= ncols;
-  ierr = MatGetOwnershipRangeColumn(mat,&cstart,&cend);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRangeColumn(mat,&cstart,&cend));
 
-  ierr = ISGetIndices(iscol,&is_idx);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
-  ierr = VecGetArray(cmap,&cmaparray);CHKERRQ(ierr);
-  ierr = PetscMalloc1(ncols,&idx);CHKERRQ(ierr);
+  CHKERRQ(ISGetIndices(iscol,&is_idx));
+  CHKERRQ(VecGetArray(x,&xarray));
+  CHKERRQ(VecGetArray(cmap,&cmaparray));
+  CHKERRQ(PetscMalloc1(ncols,&idx));
   for (i=0; i<ncols; i++) {
     xarray[is_idx[i]-cstart]    = (PetscScalar)is_idx[i];
     cmaparray[is_idx[i]-cstart] = (PetscScalar)(i + isstart);      /* global index of iscol[i] */
     idx[i]                      = is_idx[i]-cstart; /* local index of iscol[i]  */
   }
-  ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
-  ierr = VecRestoreArray(cmap,&cmaparray);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscol,&is_idx);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(x,&xarray));
+  CHKERRQ(VecRestoreArray(cmap,&cmaparray));
+  CHKERRQ(ISRestoreIndices(iscol,&is_idx));
 
   /* Get iscol_d */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,PETSC_OWN_POINTER,iscol_d);CHKERRQ(ierr);
-  ierr = ISGetBlockSize(iscol,&i);CHKERRQ(ierr);
-  ierr = ISSetBlockSize(*iscol_d,i);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,PETSC_OWN_POINTER,iscol_d));
+  CHKERRQ(ISGetBlockSize(iscol,&i));
+  CHKERRQ(ISSetBlockSize(*iscol_d,i));
 
   /* Get isrow_d */
-  ierr = ISGetLocalSize(isrow,&m);CHKERRQ(ierr);
+  CHKERRQ(ISGetLocalSize(isrow,&m));
   rstart = mat->rmap->rstart;
-  ierr = PetscMalloc1(m,&idx);CHKERRQ(ierr);
-  ierr = ISGetIndices(isrow,&is_idx);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(m,&idx));
+  CHKERRQ(ISGetIndices(isrow,&is_idx));
   for (i=0; i<m; i++) idx[i] = is_idx[i]-rstart;
-  ierr = ISRestoreIndices(isrow,&is_idx);CHKERRQ(ierr);
+  CHKERRQ(ISRestoreIndices(isrow,&is_idx));
 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,m,idx,PETSC_OWN_POINTER,isrow_d);CHKERRQ(ierr);
-  ierr = ISGetBlockSize(isrow,&i);CHKERRQ(ierr);
-  ierr = ISSetBlockSize(*isrow_d,i);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,m,idx,PETSC_OWN_POINTER,isrow_d));
+  CHKERRQ(ISGetBlockSize(isrow,&i));
+  CHKERRQ(ISSetBlockSize(*isrow_d,i));
 
   /* (2) Scatter x and cmap using aij->Mvctx to get their off-process portions (see MatMult_MPIAIJ) */
 #if 0
   if (!a->Mvctx_mpi1) {
     /* a->Mvctx causes random 'count' in o-build? See src/mat/tests/runex59_2 */
     a->Mvctx_mpi1_flg = PETSC_TRUE;
-    ierr = MatSetUpMultiply_MPIAIJ(mat);CHKERRQ(ierr);
+    CHKERRQ(MatSetUpMultiply_MPIAIJ(mat));
   }
   Mvctx = a->Mvctx_mpi1;
 #endif
   Mvctx = a->Mvctx;
-  ierr = VecScatterBegin(Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  CHKERRQ(VecScatterBegin(Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterEnd(Mvctx,x,lvec,INSERT_VALUES,SCATTER_FORWARD));
 
-  ierr = VecScatterBegin(Mvctx,cmap,lcmap,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(Mvctx,cmap,lcmap,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  CHKERRQ(VecScatterBegin(Mvctx,cmap,lcmap,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterEnd(Mvctx,cmap,lcmap,INSERT_VALUES,SCATTER_FORWARD));
 
   /* (3) create sequential iscol_o (a subset of iscol) and isgarray */
   /* off-process column indices */
   count = 0;
   PetscInt *cmap1;
-  ierr = PetscMalloc1(Bn,&idx);CHKERRQ(ierr);
-  ierr = PetscMalloc1(Bn,&cmap1);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(Bn,&idx));
+  CHKERRQ(PetscMalloc1(Bn,&cmap1));
 
-  ierr = VecGetArray(lvec,&xarray);CHKERRQ(ierr);
-  ierr = VecGetArray(lcmap,&cmaparray);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(lvec,&xarray));
+  CHKERRQ(VecGetArray(lcmap,&cmaparray));
   for (i=0; i<Bn; i++) {
     if (PetscRealPart(xarray[i]) > -1.0) {
       idx[count]   = i;                   /* local column index in off-diagonal part B */
@@ -100,27 +100,27 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat,IS isrow,IS iscol,IS *isro
     }
   }
   printf("[%d] Bn %d, count %d\n",rank,Bn,count);
-  ierr = VecRestoreArray(lvec,&xarray);CHKERRQ(ierr);
-  ierr = VecRestoreArray(lcmap,&cmaparray);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(lvec,&xarray));
+  CHKERRQ(VecRestoreArray(lcmap,&cmaparray));
   if (count != 6) {
     printf("[%d] count %d != 6 lvec:\n",rank,count);
-    ierr = VecView(lvec,0);CHKERRQ(ierr);
+    CHKERRQ(VecView(lvec,0));
 
     printf("[%d] count %d != 6 lcmap:\n",rank,count);
-    ierr = VecView(lcmap,0);CHKERRQ(ierr);
+    CHKERRQ(VecView(lcmap,0));
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"count %d != 6",count);
   }
 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,count,idx,PETSC_COPY_VALUES,iscol_o);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,count,idx,PETSC_COPY_VALUES,iscol_o));
   /* cannot ensure iscol_o has same blocksize as iscol! */
 
-  ierr = PetscFree(idx);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(idx));
 
   *garray = cmap1;
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&cmap);CHKERRQ(ierr);
-  ierr = VecDestroy(&lcmap);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&cmap));
+  CHKERRQ(VecDestroy(&lcmap));
   PetscFunctionReturn(0);
 }
 
@@ -134,56 +134,56 @@ int main(int argc,char **args)
   IS             isrow,iscol;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   n    = 2*size;
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
-  ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-  ierr = MatSetUp(C);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
+  CHKERRQ(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  CHKERRQ(MatSetFromOptions(C));
+  CHKERRQ(MatSetUp(C));
 
   /*
         This is JUST to generate a nice test matrix, all processors fill up
     the entire matrix. This is not something one would ever do in practice.
   */
-  ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(C,&rstart,&rend));
   for (i=rstart; i<rend; i++) {
     for (j=0; j<m*n; j++) {
       v    = i + j + 1;
-      ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES));
     }
   }
 
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   /*
      Generate a new matrix consisting of every second row and column of
    the original matrix
   */
-  ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(C,&rstart,&rend));
   /* Create parallel IS with the rows we want on THIS processor */
-  ierr = ISCreateStride(PETSC_COMM_WORLD,(rend-rstart)/2,rstart,2,&isrow);CHKERRQ(ierr);
+  CHKERRQ(ISCreateStride(PETSC_COMM_WORLD,(rend-rstart)/2,rstart,2,&isrow));
   /* Create parallel IS with the rows we want on THIS processor (same as rows for now) */
-  ierr = ISCreateStride(PETSC_COMM_WORLD,(rend-rstart)/2,rstart,2,&iscol);CHKERRQ(ierr);
+  CHKERRQ(ISCreateStride(PETSC_COMM_WORLD,(rend-rstart)/2,rstart,2,&iscol));
 
   IS             iscol_d,isrow_d,iscol_o;
   const PetscInt *garray;
-  ierr = ISGetSeqIS_SameColDist_Private(C,isrow,iscol,&isrow_d,&iscol_d,&iscol_o,&garray);CHKERRQ(ierr);
+  CHKERRQ(ISGetSeqIS_SameColDist_Private(C,isrow,iscol,&isrow_d,&iscol_d,&iscol_o,&garray));
 
-  ierr = ISDestroy(&isrow_d);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscol_d);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscol_o);CHKERRQ(ierr);
-  ierr = PetscFree(garray);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&isrow_d));
+  CHKERRQ(ISDestroy(&iscol_d));
+  CHKERRQ(ISDestroy(&iscol_o));
+  CHKERRQ(PetscFree(garray));
 
-  ierr = MatCreateSubMatrix(C,isrow,iscol,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
-  ierr = MatCreateSubMatrix(C,isrow,iscol,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSubMatrix(C,isrow,iscol,MAT_INITIAL_MATRIX,&A));
+  CHKERRQ(MatCreateSubMatrix(C,isrow,iscol,MAT_REUSE_MATRIX,&A));
 
-  ierr = ISDestroy(&isrow);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscol);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&isrow));
+  CHKERRQ(ISDestroy(&iscol));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&C));
   ierr = PetscFinalize();
   return ierr;
 }

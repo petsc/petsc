@@ -6,7 +6,6 @@
 
 static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm,DMStagStencilLocation loc,PetscInt c,DM *dmda)
 {
-  PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*) dm->data;
   PetscInt        dim,i,j,stencilWidth,dof,N[DMSTAG_MAX_DIM];
   DMDAStencilType stencilType;
@@ -14,11 +13,11 @@ static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm,DMStagStencilLocation loc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm,&dim));
 
   /* Create grid decomposition (to be adjusted later) */
   for (i=0; i<dim; ++i) {
-    ierr = PetscMalloc1(stag->nRanks[i],&l[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(stag->nRanks[i],&l[i]));
     for (j=0; j<stag->nRanks[i]; ++j) l[i][j] = stag->l[i][j];
     N[i] = stag->N[i];
   }
@@ -105,18 +104,18 @@ static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm,DMStagStencilLocation loc
   /* Create DMDA, using same boundary type */
   switch (dim) {
     case 1:
-      ierr = DMDACreate1d(PetscObjectComm((PetscObject)dm),stag->boundaryType[0],N[0],dof,stencilWidth,l[0],dmda);CHKERRQ(ierr);
+      CHKERRQ(DMDACreate1d(PetscObjectComm((PetscObject)dm),stag->boundaryType[0],N[0],dof,stencilWidth,l[0],dmda));
       break;
     case 2:
-      ierr = DMDACreate2d(PetscObjectComm((PetscObject)dm),stag->boundaryType[0],stag->boundaryType[1],stencilType,N[0],N[1],stag->nRanks[0],stag->nRanks[1],dof,stencilWidth,l[0],l[1],dmda);CHKERRQ(ierr);
+      CHKERRQ(DMDACreate2d(PetscObjectComm((PetscObject)dm),stag->boundaryType[0],stag->boundaryType[1],stencilType,N[0],N[1],stag->nRanks[0],stag->nRanks[1],dof,stencilWidth,l[0],l[1],dmda));
       break;
     case 3:
-      ierr = DMDACreate3d(PetscObjectComm((PetscObject)dm),stag->boundaryType[0],stag->boundaryType[1],stag->boundaryType[2],stencilType,N[0],N[1],N[2],stag->nRanks[0],stag->nRanks[1],stag->nRanks[2],dof,stencilWidth,l[0],l[1],l[2],dmda);CHKERRQ(ierr);
+      CHKERRQ(DMDACreate3d(PetscObjectComm((PetscObject)dm),stag->boundaryType[0],stag->boundaryType[1],stag->boundaryType[2],stencilType,N[0],N[1],N[2],stag->nRanks[0],stag->nRanks[1],stag->nRanks[2],dof,stencilWidth,l[0],l[1],l[2],dmda));
       break;
     default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"not implemented for dim %d",dim);
   }
   for (i=0; i<dim; ++i) {
-    ierr = PetscFree(l[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(l[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -126,14 +125,13 @@ Helper function to get the number of extra points in a DMDA representation for a
 */
 static PetscErrorCode DMStagDMDAGetExtraPoints(DM dm,DMStagStencilLocation locCanonical,PetscInt *extraPoint)
 {
-  PetscErrorCode ierr;
   PetscInt       dim,d,nExtra[DMSTAG_MAX_DIM];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm,&dim));
   PetscCheckFalse(dim > DMSTAG_MAX_DIM,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for %D dimensions",dim);
-  ierr = DMStagGetCorners(dm,NULL,NULL,NULL,NULL,NULL,NULL,&nExtra[0],&nExtra[1],&nExtra[2]);CHKERRQ(ierr);
+  CHKERRQ(DMStagGetCorners(dm,NULL,NULL,NULL,NULL,NULL,NULL,&nExtra[0],&nExtra[1],&nExtra[2]));
   for (d=0; d<dim; ++d) extraPoint[d] = 0;
   switch (locCanonical) {
     case DMSTAG_ELEMENT:
@@ -164,7 +162,6 @@ type of DMDA to migrate to.
 
 static PetscErrorCode DMStagMigrateVecDMDA(DM dm,Vec vec,DMStagStencilLocation loc,PetscInt c,DM dmTo,Vec vecTo)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j,k,d,dim,dof,dofToMax,start[DMSTAG_MAX_DIM],n[DMSTAG_MAX_DIM],extraPoint[DMSTAG_MAX_DIM];
   Vec            vecLocal;
 
@@ -173,25 +170,25 @@ static PetscErrorCode DMStagMigrateVecDMDA(DM dm,Vec vec,DMStagStencilLocation l
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
   PetscValidHeaderSpecificType(dmTo,DM_CLASSID,5,DMDA);
   PetscValidHeaderSpecific(vecTo,VEC_CLASSID,6);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  ierr = DMDAGetDof(dmTo,&dofToMax);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm,&dim));
+  CHKERRQ(DMDAGetDof(dmTo,&dofToMax));
   PetscCheckFalse(-c > dofToMax,PetscObjectComm((PetscObject)dmTo),PETSC_ERR_ARG_OUTOFRANGE,"Invalid negative component value. Must be >= -%D",dofToMax);
-  ierr = DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagDMDAGetExtraPoints(dm,loc,extraPoint);CHKERRQ(ierr);
-  ierr = DMStagGetLocationDOF(dm,loc,&dof);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm,&vecLocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(dm,vec,INSERT_VALUES,vecLocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dm,vec,INSERT_VALUES,vecLocal);CHKERRQ(ierr);
+  CHKERRQ(DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],NULL,NULL,NULL));
+  CHKERRQ(DMStagDMDAGetExtraPoints(dm,loc,extraPoint));
+  CHKERRQ(DMStagGetLocationDOF(dm,loc,&dof));
+  CHKERRQ(DMGetLocalVector(dm,&vecLocal));
+  CHKERRQ(DMGlobalToLocalBegin(dm,vec,INSERT_VALUES,vecLocal));
+  CHKERRQ(DMGlobalToLocalEnd(dm,vec,INSERT_VALUES,vecLocal));
   if (dim == 1) {
     PetscScalar **arrTo;
-    ierr = DMDAVecGetArrayDOF(dmTo,vecTo,&arrTo);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecGetArrayDOF(dmTo,vecTo,&arrTo));
     if (c < 0) {
       const PetscInt dofTo = -c;
       for (i=start[0]; i<start[0] + n[0] + extraPoint[0]; ++i) {
         for (d=0; d<PetscMin(dof,dofTo); ++d) {
           DMStagStencil pos;
           pos.i = i; pos.loc = loc; pos.c = d;
-          ierr = DMStagVecGetValuesStencil(dm,vecLocal,1,&pos,&arrTo[i][d]);CHKERRQ(ierr);
+          CHKERRQ(DMStagVecGetValuesStencil(dm,vecLocal,1,&pos,&arrTo[i][d]));
         }
         for (;d<dofTo; ++d) {
           arrTo[i][d] = 0.0; /* Pad extra dof with zeros */
@@ -201,13 +198,13 @@ static PetscErrorCode DMStagMigrateVecDMDA(DM dm,Vec vec,DMStagStencilLocation l
       for (i=start[0]; i<start[0] + n[0] + extraPoint[0]; ++i) {
         DMStagStencil pos;
         pos.i = i; pos.loc = loc; pos.c = c;
-        ierr = DMStagVecGetValuesStencil(dm,vecLocal,1,&pos,&arrTo[i][0]);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecGetValuesStencil(dm,vecLocal,1,&pos,&arrTo[i][0]));
       }
     }
-    ierr = DMDAVecRestoreArrayDOF(dmTo,vecTo,&arrTo);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecRestoreArrayDOF(dmTo,vecTo,&arrTo));
   } else if (dim == 2) {
     PetscScalar ***arrTo;
-    ierr = DMDAVecGetArrayDOF(dmTo,vecTo,&arrTo);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecGetArrayDOF(dmTo,vecTo,&arrTo));
     if (c < 0) {
       const PetscInt dofTo = -c;
       for (j=start[1]; j<start[1] + n[1] + extraPoint[1]; ++j) {
@@ -215,7 +212,7 @@ static PetscErrorCode DMStagMigrateVecDMDA(DM dm,Vec vec,DMStagStencilLocation l
           for (d=0; d<PetscMin(dof,dofTo); ++d) {
             DMStagStencil pos;
             pos.i = i; pos.j = j; pos.loc = loc; pos.c = d;
-            ierr = DMStagVecGetValuesStencil(dm,vecLocal,1,&pos,&arrTo[j][i][d]);CHKERRQ(ierr);
+            CHKERRQ(DMStagVecGetValuesStencil(dm,vecLocal,1,&pos,&arrTo[j][i][d]));
           }
           for (;d<dofTo; ++d) {
             arrTo[j][i][d] = 0.0; /* Pad extra dof with zeros */
@@ -227,14 +224,14 @@ static PetscErrorCode DMStagMigrateVecDMDA(DM dm,Vec vec,DMStagStencilLocation l
         for (i=start[0]; i<start[0] + n[0] + extraPoint[0]; ++i) {
           DMStagStencil pos;
           pos.i = i; pos.j = j; pos.loc = loc; pos.c = c;
-          ierr = DMStagVecGetValuesStencil(dm,vecLocal,1,&pos,&arrTo[j][i][0]);CHKERRQ(ierr);
+          CHKERRQ(DMStagVecGetValuesStencil(dm,vecLocal,1,&pos,&arrTo[j][i][0]));
         }
       }
     }
-    ierr = DMDAVecRestoreArrayDOF(dmTo,vecTo,&arrTo);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecRestoreArrayDOF(dmTo,vecTo,&arrTo));
   } else if (dim == 3) {
     PetscScalar ****arrTo;
-    ierr = DMDAVecGetArrayDOF(dmTo,vecTo,&arrTo);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecGetArrayDOF(dmTo,vecTo,&arrTo));
     if (c < 0) {
       const PetscInt dofTo = -c;
       for (k=start[2]; k<start[2] + n[2] + extraPoint[2]; ++k) {
@@ -243,7 +240,7 @@ static PetscErrorCode DMStagMigrateVecDMDA(DM dm,Vec vec,DMStagStencilLocation l
             for (d=0; d<PetscMin(dof,dofTo); ++d) {
               DMStagStencil pos;
               pos.i = i; pos.j = j; pos.k = k; pos.loc = loc; pos.c = d;
-              ierr = DMStagVecGetValuesStencil(dm,vecLocal,1,&pos,&arrTo[k][j][i][d]);CHKERRQ(ierr);
+              CHKERRQ(DMStagVecGetValuesStencil(dm,vecLocal,1,&pos,&arrTo[k][j][i][d]));
             }
             for (;d<dofTo; ++d) {
               arrTo[k][j][i][d] = 0.0; /* Pad extra dof with zeros */
@@ -257,21 +254,20 @@ static PetscErrorCode DMStagMigrateVecDMDA(DM dm,Vec vec,DMStagStencilLocation l
           for (i=start[0]; i<start[0] + n[0] + extraPoint[0]; ++i) {
             DMStagStencil pos;
             pos.i = i; pos.j = j; pos.k = k; pos.loc = loc; pos.c = c;
-            ierr = DMStagVecGetValuesStencil(dm,vecLocal,1,&pos,&arrTo[k][j][i][0]);CHKERRQ(ierr);
+            CHKERRQ(DMStagVecGetValuesStencil(dm,vecLocal,1,&pos,&arrTo[k][j][i][0]));
           }
         }
       }
     }
-    ierr = DMDAVecRestoreArrayDOF(dmTo,vecTo,&arrTo);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecRestoreArrayDOF(dmTo,vecTo,&arrTo));
   } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %d",dim);
-  ierr = DMRestoreLocalVector(dm,&vecLocal);CHKERRQ(ierr);
+  CHKERRQ(DMRestoreLocalVector(dm,&vecLocal));
   PetscFunctionReturn(0);
 }
 
 /* Transfer coordinates from a DMStag to a DMDA, specifying which location */
 static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLocation loc,DM dmda)
 {
-  PetscErrorCode ierr;
   PetscInt       dim,start[DMSTAG_MAX_DIM],n[DMSTAG_MAX_DIM],extraPoint[DMSTAG_MAX_DIM],d;
   DM             dmstagCoord,dmdaCoord;
   DMType         dmstagCoordType;
@@ -281,54 +277,54 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dmstag,DM_CLASSID,1,DMSTAG);
   PetscValidHeaderSpecificType(dmda,DM_CLASSID,3,DMDA);
-  ierr = DMGetDimension(dmstag,&dim);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(dmstag,&dmstagCoord);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dmstag,&stagCoord);CHKERRQ(ierr); /* Note local */
-  ierr = DMGetCoordinateDM(dmda,&dmdaCoord);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dmstag,&dim));
+  CHKERRQ(DMGetCoordinateDM(dmstag,&dmstagCoord));
+  CHKERRQ(DMGetCoordinatesLocal(dmstag,&stagCoord)); /* Note local */
+  CHKERRQ(DMGetCoordinateDM(dmda,&dmdaCoord));
   daCoord = NULL;
-  ierr = DMGetCoordinates(dmda,&daCoord);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoordinates(dmda,&daCoord));
   if (!daCoord) {
-    ierr = DMCreateGlobalVector(dmdaCoord,&daCoord);CHKERRQ(ierr);
-    ierr = DMSetCoordinates(dmda,daCoord);CHKERRQ(ierr);
-    ierr = VecDestroy(&daCoord);CHKERRQ(ierr);
-    ierr = DMGetCoordinates(dmda,&daCoord);CHKERRQ(ierr);
+    CHKERRQ(DMCreateGlobalVector(dmdaCoord,&daCoord));
+    CHKERRQ(DMSetCoordinates(dmda,daCoord));
+    CHKERRQ(VecDestroy(&daCoord));
+    CHKERRQ(DMGetCoordinates(dmda,&daCoord));
   }
-  ierr = DMGetType(dmstagCoord,&dmstagCoordType);CHKERRQ(ierr);
-  ierr = PetscStrcmp(dmstagCoordType,DMSTAG,&daCoordIsStag);CHKERRQ(ierr);
-  ierr = PetscStrcmp(dmstagCoordType,DMPRODUCT,&daCoordIsProduct);CHKERRQ(ierr);
-  ierr = DMStagGetCorners(dmstag,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagDMDAGetExtraPoints(dmstag,loc,extraPoint);CHKERRQ(ierr);
+  CHKERRQ(DMGetType(dmstagCoord,&dmstagCoordType));
+  CHKERRQ(PetscStrcmp(dmstagCoordType,DMSTAG,&daCoordIsStag));
+  CHKERRQ(PetscStrcmp(dmstagCoordType,DMPRODUCT,&daCoordIsProduct));
+  CHKERRQ(DMStagGetCorners(dmstag,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],NULL,NULL,NULL));
+  CHKERRQ(DMStagDMDAGetExtraPoints(dmstag,loc,extraPoint));
   if (dim == 1) {
     PetscInt ex;
     PetscScalar **cArrDa;
-    ierr = DMDAVecGetArrayDOF(dmdaCoord,daCoord,&cArrDa);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecGetArrayDOF(dmdaCoord,daCoord,&cArrDa));
     if (daCoordIsStag)  {
       PetscInt slot;
       PetscScalar **cArrStag;
-      ierr = DMStagGetLocationSlot(dmstagCoord,loc,0,&slot);CHKERRQ(ierr);
-      ierr = DMStagVecGetArrayRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
+      CHKERRQ(DMStagGetLocationSlot(dmstagCoord,loc,0,&slot));
+      CHKERRQ(DMStagVecGetArrayRead(dmstagCoord,stagCoord,&cArrStag));
       for (ex=start[0]; ex<start[0] + n[0] + extraPoint[0]; ++ex) {
         cArrDa[ex][0] = cArrStag[ex][slot];
       }
-      ierr = DMStagVecRestoreArrayRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
+      CHKERRQ(DMStagVecRestoreArrayRead(dmstagCoord,stagCoord,&cArrStag));
     } else if (daCoordIsProduct) {
       PetscScalar **cArrX;
-      ierr = DMStagGetProductCoordinateArraysRead(dmstag,&cArrX,NULL,NULL);CHKERRQ(ierr);
+      CHKERRQ(DMStagGetProductCoordinateArraysRead(dmstag,&cArrX,NULL,NULL));
       for (ex=start[0]; ex<start[0] + n[0] + extraPoint[0]; ++ex) {
         cArrDa[ex][0] = cArrX[ex][0];
       }
-      ierr = DMStagRestoreProductCoordinateArraysRead(dmstag,&cArrX,NULL,NULL);CHKERRQ(ierr);
+      CHKERRQ(DMStagRestoreProductCoordinateArraysRead(dmstag,&cArrX,NULL,NULL));
     } else SETERRQ(PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"Stag to DA coordinate transfer only supported for DMStag coordinate DM of type DMstag or DMProduct");
-    ierr = DMDAVecRestoreArrayDOF(dmdaCoord,daCoord,&cArrDa);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecRestoreArrayDOF(dmdaCoord,daCoord,&cArrDa));
   } else if (dim == 2) {
     PetscInt ex,ey;
     PetscScalar ***cArrDa;
-    ierr = DMDAVecGetArrayDOF(dmdaCoord,daCoord,&cArrDa);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecGetArrayDOF(dmdaCoord,daCoord,&cArrDa));
     if (daCoordIsStag)  {
       PetscInt slot;
       PetscScalar ***cArrStag;
-      ierr = DMStagGetLocationSlot(dmstagCoord,loc,0,&slot);CHKERRQ(ierr);
-      ierr = DMStagVecGetArrayRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
+      CHKERRQ(DMStagGetLocationSlot(dmstagCoord,loc,0,&slot));
+      CHKERRQ(DMStagVecGetArrayRead(dmstagCoord,stagCoord,&cArrStag));
       for (ey=start[1]; ey<start[1] + n[1] + extraPoint[1]; ++ey) {
         for (ex=start[0]; ex<start[0] + n[0] + extraPoint[0]; ++ex) {
           for (d=0; d<2; ++d) {
@@ -336,28 +332,28 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
           }
         }
       }
-      ierr = DMStagVecRestoreArrayRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
+      CHKERRQ(DMStagVecRestoreArrayRead(dmstagCoord,stagCoord,&cArrStag));
     } else if (daCoordIsProduct) {
       PetscScalar **cArrX,**cArrY;
-      ierr = DMStagGetProductCoordinateArraysRead(dmstag,&cArrX,&cArrY,NULL);CHKERRQ(ierr);
+      CHKERRQ(DMStagGetProductCoordinateArraysRead(dmstag,&cArrX,&cArrY,NULL));
       for (ey=start[1]; ey<start[1] + n[1] + extraPoint[1]; ++ey) {
         for (ex=start[0]; ex<start[0] + n[0] + extraPoint[0]; ++ex) {
           cArrDa[ey][ex][0] = cArrX[ex][0];
           cArrDa[ey][ex][1] = cArrY[ey][0];
         }
       }
-      ierr = DMStagRestoreProductCoordinateArraysRead(dmstag,&cArrX,&cArrY,NULL);CHKERRQ(ierr);
+      CHKERRQ(DMStagRestoreProductCoordinateArraysRead(dmstag,&cArrX,&cArrY,NULL));
     } else SETERRQ(PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"Stag to DA coordinate transfer only supported for DMStag coordinate DM of type DMstag or DMProduct");
-    ierr = DMDAVecRestoreArrayDOF(dmdaCoord,daCoord,&cArrDa);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecRestoreArrayDOF(dmdaCoord,daCoord,&cArrDa));
   }  else if (dim == 3) {
     PetscInt ex,ey,ez;
     PetscScalar ****cArrDa;
-    ierr = DMDAVecGetArrayDOF(dmdaCoord,daCoord,&cArrDa);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecGetArrayDOF(dmdaCoord,daCoord,&cArrDa));
     if (daCoordIsStag)  {
       PetscInt slot;
       PetscScalar ****cArrStag;
-      ierr = DMStagGetLocationSlot(dmstagCoord,loc,0,&slot);CHKERRQ(ierr);
-      ierr = DMStagVecGetArrayRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
+      CHKERRQ(DMStagGetLocationSlot(dmstagCoord,loc,0,&slot));
+      CHKERRQ(DMStagVecGetArrayRead(dmstagCoord,stagCoord,&cArrStag));
       for (ez=start[2]; ez<start[2] + n[2] + extraPoint[2]; ++ez) {
         for (ey=start[1]; ey<start[1] + n[1] + extraPoint[1]; ++ey) {
           for (ex=start[0]; ex<start[0] + n[0] + extraPoint[0]; ++ex) {
@@ -367,10 +363,10 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
           }
         }
       }
-      ierr = DMStagVecRestoreArrayRead(dmstagCoord,stagCoord,&cArrStag);CHKERRQ(ierr);
+      CHKERRQ(DMStagVecRestoreArrayRead(dmstagCoord,stagCoord,&cArrStag));
     } else if (daCoordIsProduct) {
       PetscScalar **cArrX,**cArrY,**cArrZ;
-      ierr = DMStagGetProductCoordinateArraysRead(dmstag,&cArrX,&cArrY,&cArrZ);CHKERRQ(ierr);
+      CHKERRQ(DMStagGetProductCoordinateArraysRead(dmstag,&cArrX,&cArrY,&cArrZ));
       for (ez=start[2]; ez<start[2] + n[2] + extraPoint[2]; ++ez) {
         for (ey=start[1]; ey<start[1] + n[1] + extraPoint[1]; ++ey) {
           for (ex=start[0]; ex<start[0] + n[0] + extraPoint[0]; ++ex) {
@@ -380,9 +376,9 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
           }
         }
       }
-      ierr = DMStagRestoreProductCoordinateArraysRead(dmstag,&cArrX,&cArrY,&cArrZ);CHKERRQ(ierr);
+      CHKERRQ(DMStagRestoreProductCoordinateArraysRead(dmstag,&cArrX,&cArrY,&cArrZ));
     } else SETERRQ(PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"Stag to DA coordinate transfer only supported for DMStag coordinate DM of type DMstag or DMProduct");
-    ierr = DMDAVecRestoreArrayDOF(dmdaCoord,daCoord,&cArrDa);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecRestoreArrayDOF(dmdaCoord,daCoord,&cArrDa));
   } else SETERRQ(PetscObjectComm((PetscObject)dmstag),PETSC_ERR_SUP,"Unsupported dimension %d",dim);
   PetscFunctionReturn(0);
 }
@@ -418,7 +414,6 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag,DMStagStencilLoc
 @*/
 PetscErrorCode DMStagVecSplitToDMDA(DM dm,Vec vec,DMStagStencilLocation loc,PetscInt c,DM *pda,Vec *pdavec)
 {
-  PetscErrorCode  ierr;
   PetscInt        dim,locdof;
   DM              da,coordDM;
   Vec             davec;
@@ -427,19 +422,19 @@ PetscErrorCode DMStagVecSplitToDMDA(DM dm,Vec vec,DMStagStencilLocation loc,Pets
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  ierr = DMStagGetLocationDOF(dm,loc,&locdof);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm,&dim));
+  CHKERRQ(DMStagGetLocationDOF(dm,loc,&locdof));
   PetscCheckFalse(c >= locdof,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Location %s has %D dof, but component %D requested",DMStagStencilLocations[loc],locdof,c);
-  ierr = DMStagStencilLocationCanonicalize(loc,&locCanonical);CHKERRQ(ierr);
-  ierr = DMStagCreateCompatibleDMDA(dm,locCanonical,c,pda);CHKERRQ(ierr);
+  CHKERRQ(DMStagStencilLocationCanonicalize(loc,&locCanonical));
+  CHKERRQ(DMStagCreateCompatibleDMDA(dm,locCanonical,c,pda));
   da = *pda;
-  ierr = DMSetUp(*pda);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(dm,&coordDM);CHKERRQ(ierr);
+  CHKERRQ(DMSetUp(*pda));
+  CHKERRQ(DMGetCoordinateDM(dm,&coordDM));
   if (coordDM) {
-    ierr = DMStagTransferCoordinatesToDMDA(dm,locCanonical,da);CHKERRQ(ierr);
+    CHKERRQ(DMStagTransferCoordinatesToDMDA(dm,locCanonical,da));
   }
-  ierr = DMCreateGlobalVector(da,pdavec);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(da,pdavec));
   davec = *pdavec;
-  ierr = DMStagMigrateVecDMDA(dm,vec,locCanonical,c,da,davec);CHKERRQ(ierr);
+  CHKERRQ(DMStagMigrateVecDMDA(dm,vec,locCanonical,c,da,davec));
   PetscFunctionReturn(0);
 }

@@ -14,113 +14,113 @@ int main(int argc,char **args)
   PetscInt       dim,Ii,J,n = 3,rstart,rend;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-sigma1",&sigma1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sigma1",&sigma1,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   dim  = n*n;
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,dim,dim);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,dim,dim));
+  CHKERRQ(MatSetType(A,MATAIJ));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatSetUp(A));
 
   sigma2 = 10.0*PETSC_i;
   h2 = 1.0/((n+1)*(n+1));
 
-  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
   for (Ii=rstart; Ii<rend; Ii++) {
     v = -1.0; i = Ii/n; j = Ii - i*n;
     if (i>0) {
-      J = Ii-n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
+      J = Ii-n; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));
     }
     if (i<n-1) {
-      J = Ii+n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
+      J = Ii+n; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));
     }
     if (j>0) {
-      J = Ii-1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
+      J = Ii-1; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));
     }
     if (j<n-1) {
-      J = Ii+1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
+      J = Ii+1; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));
     }
     v    = 4.0 - sigma1*h2;
-    ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&Ii,1,&Ii,&v,ADD_VALUES));
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /* Check whether A is symmetric */
-  ierr = PetscOptionsHasName(NULL,NULL, "-check_symmetric", &flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHasName(NULL,NULL, "-check_symmetric", &flg));
   if (flg) {
-    ierr = MatIsSymmetric(A,0.0,&flg);CHKERRQ(ierr);
+    CHKERRQ(MatIsSymmetric(A,0.0,&flg));
     PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_USER,"A is not symmetric");
   }
-  ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
 
   /* make A complex Hermitian */
   Ii = 0; J = dim-1;
   if (Ii >= rstart && Ii < rend) {
     v    = sigma2*h2; /* RealPart(v) = 0.0 */
-    ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));
     v    = -sigma2*h2;
-    ierr = MatSetValues(A,1,&J,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&J,1,&Ii,&v,ADD_VALUES));
   }
 
   Ii = dim-2; J = dim-1;
   if (Ii >= rstart && Ii < rend) {
     v    = sigma2*h2; /* RealPart(v) = 0.0 */
-    ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES));
     v    = -sigma2*h2;
-    ierr = MatSetValues(A,1,&J,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&J,1,&Ii,&v,ADD_VALUES));
   }
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(A,NULL,"-disp_mat");CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatViewFromOptions(A,NULL,"-disp_mat"));
 
   /* Check whether A is Hermitian, then set A->hermitian flag */
-  ierr = PetscOptionsHasName(NULL,NULL, "-check_Hermitian", &flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHasName(NULL,NULL, "-check_Hermitian", &flg));
   if (flg && size == 1) {
-    ierr = MatIsHermitian(A,0.0,&flg);CHKERRQ(ierr);
+    CHKERRQ(MatIsHermitian(A,0.0,&flg));
     PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_USER,"A is not Hermitian");
   }
-  ierr = MatSetOption(A,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(MatSetOption(A,MAT_HERMITIAN,PETSC_TRUE));
 
 #if defined(PETSC_HAVE_SUPERLU_DIST)
   /* Test Cholesky factorization */
-  ierr = PetscOptionsHasName(NULL,NULL, "-test_choleskyfactor", &flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHasName(NULL,NULL, "-test_choleskyfactor", &flg));
   if (flg) {
     Mat      F;
     IS       perm,iperm;
     MatFactorInfo info;
     PetscInt nneg,nzero,npos;
 
-    ierr = MatGetFactor(A,MATSOLVERSUPERLU_DIST,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
-    ierr = MatGetOrdering(A,MATORDERINGND,&perm,&iperm);CHKERRQ(ierr);
-    ierr = MatCholeskyFactorSymbolic(F,A,perm,&info);CHKERRQ(ierr);
-    ierr = MatCholeskyFactorNumeric(F,A,&info);CHKERRQ(ierr);
+    CHKERRQ(MatGetFactor(A,MATSOLVERSUPERLU_DIST,MAT_FACTOR_CHOLESKY,&F));
+    CHKERRQ(MatGetOrdering(A,MATORDERINGND,&perm,&iperm));
+    CHKERRQ(MatCholeskyFactorSymbolic(F,A,perm,&info));
+    CHKERRQ(MatCholeskyFactorNumeric(F,A,&info));
 
-    ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD," MatInertia: nneg: %" PetscInt_FMT ", nzero: %" PetscInt_FMT ", npos: %" PetscInt_FMT "\n",nneg,nzero,npos);CHKERRQ(ierr);
-    ierr = MatDestroy(&F);CHKERRQ(ierr);
-    ierr = ISDestroy(&perm);CHKERRQ(ierr);
-    ierr = ISDestroy(&iperm);CHKERRQ(ierr);
+    CHKERRQ(MatGetInertia(F,&nneg,&nzero,&npos));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," MatInertia: nneg: %" PetscInt_FMT ", nzero: %" PetscInt_FMT ", npos: %" PetscInt_FMT "\n",nneg,nzero,npos));
+    CHKERRQ(MatDestroy(&F));
+    CHKERRQ(ISDestroy(&perm));
+    CHKERRQ(ISDestroy(&iperm));
   }
 #endif
 
   /* Create a Hermitian matrix As in sbaij format */
-  ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&As);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(As,NULL,"-disp_mat");CHKERRQ(ierr);
+  CHKERRQ(MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&As));
+  CHKERRQ(MatViewFromOptions(As,NULL,"-disp_mat"));
 
   /* Test MatMult */
-  ierr = MatMultEqual(A,As,10,&flg);CHKERRQ(ierr);
+  CHKERRQ(MatMultEqual(A,As,10,&flg));
   PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"MatMult not equal");
-  ierr = MatMultAddEqual(A,As,10,&flg);CHKERRQ(ierr);
+  CHKERRQ(MatMultAddEqual(A,As,10,&flg));
   PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"MatMultAdd not equal");
 
   /* Free spaces */
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&As);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&As));
   ierr = PetscFinalize();
   return ierr;
 }

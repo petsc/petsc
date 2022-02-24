@@ -3,25 +3,24 @@
 PetscErrorCode TaoSetUp_SSFLS(Tao tao)
 {
   TAO_SSLS       *ssls = (TAO_SSLS *)tao->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(tao->solution,&tao->gradient);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&tao->stepdirection);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&ssls->w);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&ssls->ff);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&ssls->dpsi);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&ssls->da);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&ssls->db);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&ssls->t1);CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&ssls->t2);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(tao->solution,&tao->gradient));
+  CHKERRQ(VecDuplicate(tao->solution,&tao->stepdirection));
+  CHKERRQ(VecDuplicate(tao->solution,&ssls->w));
+  CHKERRQ(VecDuplicate(tao->solution,&ssls->ff));
+  CHKERRQ(VecDuplicate(tao->solution,&ssls->dpsi));
+  CHKERRQ(VecDuplicate(tao->solution,&ssls->da));
+  CHKERRQ(VecDuplicate(tao->solution,&ssls->db));
+  CHKERRQ(VecDuplicate(tao->solution,&ssls->t1));
+  CHKERRQ(VecDuplicate(tao->solution,&ssls->t2));
   if (!tao->XL) {
-    ierr = VecDuplicate(tao->solution,&tao->XL);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(tao->solution,&tao->XL));
   }
   if (!tao->XU) {
-    ierr = VecDuplicate(tao->solution,&tao->XU);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(tao->solution,&tao->XU));
   }
-  ierr = TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU);CHKERRQ(ierr);
+  CHKERRQ(TaoLineSearchSetVariableBounds(tao->linesearch,tao->XL,tao->XU));
   PetscFunctionReturn(0);
 }
 
@@ -31,7 +30,6 @@ static PetscErrorCode TaoSolve_SSFLS(Tao tao)
   PetscReal                    psi, ndpsi, normd, innerd, t=0;
   PetscReal                    delta, rho;
   TaoLineSearchConvergedReason ls_reason;
-  PetscErrorCode               ierr;
 
   PetscFunctionBegin;
   /* Assume that Setup has been called!
@@ -39,59 +37,59 @@ static PetscErrorCode TaoSolve_SSFLS(Tao tao)
   delta = ssls->delta;
   rho = ssls->rho;
 
-  ierr = TaoComputeVariableBounds(tao);CHKERRQ(ierr);
+  CHKERRQ(TaoComputeVariableBounds(tao));
   /* Project solution inside bounds */
-  ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch,Tao_SSLS_FunctionGradient,tao);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetObjectiveRoutine(tao->linesearch,Tao_SSLS_Function,tao);CHKERRQ(ierr);
+  CHKERRQ(VecMedian(tao->XL,tao->solution,tao->XU,tao->solution));
+  CHKERRQ(TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch,Tao_SSLS_FunctionGradient,tao));
+  CHKERRQ(TaoLineSearchSetObjectiveRoutine(tao->linesearch,Tao_SSLS_Function,tao));
 
   /* Calculate the function value and fischer function value at the
      current iterate */
-  ierr = TaoLineSearchComputeObjectiveAndGradient(tao->linesearch,tao->solution,&psi,ssls->dpsi);CHKERRQ(ierr);
-  ierr = VecNorm(ssls->dpsi,NORM_2,&ndpsi);CHKERRQ(ierr);
+  CHKERRQ(TaoLineSearchComputeObjectiveAndGradient(tao->linesearch,tao->solution,&psi,ssls->dpsi));
+  CHKERRQ(VecNorm(ssls->dpsi,NORM_2,&ndpsi));
 
   tao->reason = TAO_CONTINUE_ITERATING;
   while (PETSC_TRUE) {
-    ierr = PetscInfo(tao, "iter: %D, merit: %g, ndpsi: %g\n",tao->niter, (double)ssls->merit, (double)ndpsi);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(tao, "iter: %D, merit: %g, ndpsi: %g\n",tao->niter, (double)ssls->merit, (double)ndpsi));
     /* Check the termination criteria */
-    ierr = TaoLogConvergenceHistory(tao,ssls->merit,ndpsi,0.0,tao->ksp_its);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao,tao->niter,ssls->merit,ndpsi,0.0,t);CHKERRQ(ierr);
-    ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
+    CHKERRQ(TaoLogConvergenceHistory(tao,ssls->merit,ndpsi,0.0,tao->ksp_its));
+    CHKERRQ(TaoMonitor(tao,tao->niter,ssls->merit,ndpsi,0.0,t));
+    CHKERRQ((*tao->ops->convergencetest)(tao,tao->cnvP));
     if (tao->reason!=TAO_CONTINUE_ITERATING) break;
 
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
+      CHKERRQ((*tao->ops->update)(tao, tao->niter, tao->user_update));
     }
     tao->niter++;
 
     /* Calculate direction.  (Really negative of newton direction.  Therefore,
        rest of the code uses -d.) */
-    ierr = KSPSetOperators(tao->ksp,tao->jacobian,tao->jacobian_pre);CHKERRQ(ierr);
-    ierr = KSPSolve(tao->ksp,ssls->ff,tao->stepdirection);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(tao->ksp,&tao->ksp_its);CHKERRQ(ierr);
+    CHKERRQ(KSPSetOperators(tao->ksp,tao->jacobian,tao->jacobian_pre));
+    CHKERRQ(KSPSolve(tao->ksp,ssls->ff,tao->stepdirection));
+    CHKERRQ(KSPGetIterationNumber(tao->ksp,&tao->ksp_its));
     tao->ksp_tot_its+=tao->ksp_its;
 
-    ierr = VecCopy(tao->stepdirection,ssls->w);CHKERRQ(ierr);
-    ierr = VecScale(ssls->w,-1.0);CHKERRQ(ierr);
-    ierr = VecBoundGradientProjection(ssls->w,tao->solution,tao->XL,tao->XU,ssls->w);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(tao->stepdirection,ssls->w));
+    CHKERRQ(VecScale(ssls->w,-1.0));
+    CHKERRQ(VecBoundGradientProjection(ssls->w,tao->solution,tao->XL,tao->XU,ssls->w));
 
-    ierr = VecNorm(ssls->w,NORM_2,&normd);CHKERRQ(ierr);
-    ierr = VecDot(ssls->w,ssls->dpsi,&innerd);CHKERRQ(ierr);
+    CHKERRQ(VecNorm(ssls->w,NORM_2,&normd));
+    CHKERRQ(VecDot(ssls->w,ssls->dpsi,&innerd));
 
     /* Make sure that we have a descent direction */
     if (innerd >= -delta*PetscPowReal(normd, rho)) {
-      ierr = PetscInfo(tao, "newton direction not descent\n");CHKERRQ(ierr);
-      ierr = VecCopy(ssls->dpsi,tao->stepdirection);CHKERRQ(ierr);
-      ierr = VecDot(ssls->w,ssls->dpsi,&innerd);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(tao, "newton direction not descent\n"));
+      CHKERRQ(VecCopy(ssls->dpsi,tao->stepdirection));
+      CHKERRQ(VecDot(ssls->w,ssls->dpsi,&innerd));
     }
 
-    ierr = VecScale(tao->stepdirection, -1.0);CHKERRQ(ierr);
+    CHKERRQ(VecScale(tao->stepdirection, -1.0));
     innerd = -innerd;
 
-    ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);CHKERRQ(ierr);
-    ierr = TaoLineSearchApply(tao->linesearch,tao->solution,&psi,ssls->dpsi,tao->stepdirection,&t,&ls_reason);CHKERRQ(ierr);
-    ierr = VecNorm(ssls->dpsi,NORM_2,&ndpsi);CHKERRQ(ierr);
+    CHKERRQ(TaoLineSearchSetInitialStepLength(tao->linesearch,1.0));
+    CHKERRQ(TaoLineSearchApply(tao->linesearch,tao->solution,&psi,ssls->dpsi,tao->stepdirection,&t,&ls_reason));
+    CHKERRQ(VecNorm(ssls->dpsi,NORM_2,&ndpsi));
   }
   PetscFunctionReturn(0);
 }
@@ -99,17 +97,16 @@ static PetscErrorCode TaoSolve_SSFLS(Tao tao)
 PetscErrorCode TaoDestroy_SSFLS(Tao tao)
 {
   TAO_SSLS       *ssls = (TAO_SSLS *)tao->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(&ssls->ff);CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->w);CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->dpsi);CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->da);CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->db);CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->t1);CHKERRQ(ierr);
-  ierr = VecDestroy(&ssls->t2);CHKERRQ(ierr);
-  ierr = PetscFree(tao->data);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&ssls->ff));
+  CHKERRQ(VecDestroy(&ssls->w));
+  CHKERRQ(VecDestroy(&ssls->dpsi));
+  CHKERRQ(VecDestroy(&ssls->da));
+  CHKERRQ(VecDestroy(&ssls->db));
+  CHKERRQ(VecDestroy(&ssls->t1));
+  CHKERRQ(VecDestroy(&ssls->t2));
+  CHKERRQ(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }
 
@@ -128,11 +125,10 @@ M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_SSFLS(Tao tao)
 {
   TAO_SSLS       *ssls;
-  PetscErrorCode ierr;
   const char     *armijo_type = TAOLINESEARCHARMIJO;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(tao,&ssls);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(tao,&ssls));
   tao->data = (void*)ssls;
   tao->ops->solve=TaoSolve_SSFLS;
   tao->ops->setup=TaoSetUp_SSFLS;
@@ -143,15 +139,15 @@ PETSC_EXTERN PetscErrorCode TaoCreate_SSFLS(Tao tao)
   ssls->delta = 1e-10;
   ssls->rho = 2.1;
 
-  ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
-  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetType(tao->linesearch,armijo_type);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
+  CHKERRQ(TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch));
+  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1));
+  CHKERRQ(TaoLineSearchSetType(tao->linesearch,armijo_type));
+  CHKERRQ(TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix));
+  CHKERRQ(TaoLineSearchSetFromOptions(tao->linesearch));
   /* Linesearch objective and objectivegradient routines are  set in solve routine */
-  ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
-  ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(((PetscObject)tao)->comm,&tao->ksp));
+  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1));
+  CHKERRQ(KSPSetOptionsPrefix(tao->ksp,tao->hdr.prefix));
 
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 2000;

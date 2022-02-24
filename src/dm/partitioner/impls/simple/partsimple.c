@@ -10,10 +10,8 @@ typedef struct {
 
 static PetscErrorCode PetscPartitionerDestroy_Simple(PetscPartitioner part)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFree(part->data);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(part->data));
   PetscFunctionReturn(0);
 }
 
@@ -26,13 +24,12 @@ static PetscErrorCode PetscPartitionerView_Simple_ASCII(PetscPartitioner part, P
 static PetscErrorCode PetscPartitionerView_Simple(PetscPartitioner part, PetscViewer viewer)
 {
   PetscBool      iascii;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
-  if (iascii) {ierr = PetscPartitionerView_Simple_ASCII(part, viewer);CHKERRQ(ierr);}
+  CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
+  if (iascii) CHKERRQ(PetscPartitionerView_Simple_ASCII(part, viewer));
   PetscFunctionReturn(0);
 }
 
@@ -41,22 +38,21 @@ static PetscErrorCode PetscPartitionerSetFromOptions_Simple(PetscOptionItems *Pe
   PetscPartitioner_Simple *p = (PetscPartitioner_Simple *) part->data;
   PetscInt                 num, i;
   PetscBool                flg;
-  PetscErrorCode           ierr;
 
   PetscFunctionBegin;
   for (i = 0; i < 3; ++i) p->processGrid[i] = p->nodeGrid[i] = 1;
-  ierr = PetscOptionsHead(PetscOptionsObject, "PetscPartitioner Simple Options");CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHead(PetscOptionsObject, "PetscPartitioner Simple Options"));
   num  = 3;
-  ierr = PetscOptionsIntArray("-petscpartitioner_simple_node_grid", "Number of nodes in each dimension", "", p->nodeGrid, &num, &flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsIntArray("-petscpartitioner_simple_node_grid", "Number of nodes in each dimension", "", p->nodeGrid, &num, &flg));
   if (flg) {p->useGrid = PETSC_TRUE; p->gridDim = num;}
   num  = 3;
-  ierr = PetscOptionsIntArray("-petscpartitioner_simple_process_grid", "Number of local processes in each dimension for a given node", "", p->processGrid, &num, &flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsIntArray("-petscpartitioner_simple_process_grid", "Number of local processes in each dimension for a given node", "", p->processGrid, &num, &flg));
   if (flg) {
     p->useGrid = PETSC_TRUE;
     if (p->gridDim < 0) p->gridDim = num;
     else PetscCheckFalse(p->gridDim != num,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_INCOMP, "Process grid dimension %D != %D node grid dimension", num, p->gridDim);
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -69,13 +65,12 @@ static PetscErrorCode PetscPartitionerPartition_Simple_Grid(PetscPartitioner par
   PetscInt                 Np    = 1, Nr, np, nk, nj, ni, pk, pj, pi, ck, cj, ci, i;
   MPI_Comm                 comm;
   PetscMPIInt              size;
-  PetscErrorCode           ierr;
 
   PetscFunctionBegin;
-  if (vertSection)   {ierr = PetscInfo(part, "PETSCPARTITIONERSIMPLE ignores vertex weights when using grid partition\n");CHKERRQ(ierr);}
-  if (targetSection) {ierr = PetscInfo(part, "PETSCPARTITIONERSIMPLE ignores partition weights when using grid partition\n");CHKERRQ(ierr);}
-  ierr = PetscObjectGetComm((PetscObject) part, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  if (vertSection)   CHKERRQ(PetscInfo(part, "PETSCPARTITIONERSIMPLE ignores vertex weights when using grid partition\n"));
+  if (targetSection) CHKERRQ(PetscInfo(part, "PETSCPARTITIONERSIMPLE ignores partition weights when using grid partition\n"));
+  CHKERRQ(PetscObjectGetComm((PetscObject) part, &comm));
+  CHKERRMPI(MPI_Comm_size(comm, &size));
   /* Check grid */
   for (i = 0; i < 3; ++i) Np *= nodes[i]*procs[i];
   PetscCheckFalse(nparts != Np,comm, PETSC_ERR_ARG_INCOMP, "Number of partitions %D != %D grid size", nparts, Np);
@@ -95,13 +90,13 @@ static PetscErrorCode PetscPartitionerPartition_Simple_Grid(PetscPartitioner par
     pcells[i] = cells[i] / (nodes[i]*procs[i]);
   }
   /* Compute sizes */
-  for (np = 0; np < nparts; ++np) {ierr = PetscSectionSetDof(partSection, np, numVertices/nparts);CHKERRQ(ierr);}
-  ierr = PetscSectionSetUp(partSection);CHKERRQ(ierr);
-  ierr = PetscCalloc1(nparts, &offsets);CHKERRQ(ierr);
-  for (np = 0; np < nparts; ++np) {ierr = PetscSectionGetOffset(partSection, np, &offsets[np]);CHKERRQ(ierr);}
+  for (np = 0; np < nparts; ++np) CHKERRQ(PetscSectionSetDof(partSection, np, numVertices/nparts));
+  CHKERRQ(PetscSectionSetUp(partSection));
+  CHKERRQ(PetscCalloc1(nparts, &offsets));
+  for (np = 0; np < nparts; ++np) CHKERRQ(PetscSectionGetOffset(partSection, np, &offsets[np]));
   if (!numVertices) pcells[0] = pcells[1] = pcells[2] = 0;
   /* Compute partition */
-  ierr = PetscMalloc1(numVertices, &cellproc);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(numVertices, &cellproc));
   for (nk = 0; nk < nodes[2]; ++nk) {
     for (nj = 0; nj < nodes[1]; ++nj) {
       for (ni = 0; ni < nodes[0]; ++ni) {
@@ -129,8 +124,8 @@ static PetscErrorCode PetscPartitionerPartition_Simple_Grid(PetscPartitioner par
     }
   }
   for (np = 1; np < nparts; ++np) PetscCheckFalse(offsets[np] - offsets[np-1] != numVertices/nparts,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Offset %D != %D partition size", offsets[np], numVertices/nparts);
-  ierr = PetscFree(offsets);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, numVertices, cellproc, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(offsets));
+  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF, numVertices, cellproc, PETSC_OWN_POINTER, partition));
   PetscFunctionReturn(0);
 }
 
@@ -140,21 +135,20 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
   MPI_Comm       comm;
   PetscInt       np, *tpwgts = NULL, sumw = 0, numVerticesGlobal  = 0;
   PetscMPIInt    size;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (p->useGrid) {
-    ierr = PetscPartitionerPartition_Simple_Grid(part, nparts, numVertices, start, adjacency, vertSection, targetSection, partSection, partition);CHKERRQ(ierr);
+    CHKERRQ(PetscPartitionerPartition_Simple_Grid(part, nparts, numVertices, start, adjacency, vertSection, targetSection, partSection, partition));
     PetscFunctionReturn(0);
   }
-  if (vertSection) {ierr = PetscInfo(part,"PETSCPARTITIONERSIMPLE ignores vertex weights\n");CHKERRQ(ierr);}
-  ierr = PetscObjectGetComm((PetscObject) part, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  if (vertSection) CHKERRQ(PetscInfo(part,"PETSCPARTITIONERSIMPLE ignores vertex weights\n"));
+  CHKERRQ(PetscObjectGetComm((PetscObject) part, &comm));
+  CHKERRMPI(MPI_Comm_size(comm, &size));
   if (targetSection) {
-    ierr = MPIU_Allreduce(&numVertices, &numVerticesGlobal, 1, MPIU_INT, MPI_SUM, comm);CHKERRMPI(ierr);
-    ierr = PetscCalloc1(nparts,&tpwgts);CHKERRQ(ierr);
+    CHKERRMPI(MPIU_Allreduce(&numVertices, &numVerticesGlobal, 1, MPIU_INT, MPI_SUM, comm));
+    CHKERRQ(PetscCalloc1(nparts,&tpwgts));
     for (np = 0; np < nparts; ++np) {
-      ierr = PetscSectionGetDof(targetSection,np,&tpwgts[np]);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionGetDof(targetSection,np,&tpwgts[np]));
       sumw += tpwgts[np];
     }
     if (sumw) {
@@ -166,18 +160,18 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
       }
       if (sumw != numVerticesGlobal) tpwgts[mp] += numVerticesGlobal - sumw;
     }
-    if (!sumw) {ierr = PetscFree(tpwgts);CHKERRQ(ierr);}
+    if (!sumw) CHKERRQ(PetscFree(tpwgts));
   }
 
-  ierr = ISCreateStride(PETSC_COMM_SELF, numVertices, 0, 1, partition);CHKERRQ(ierr);
+  CHKERRQ(ISCreateStride(PETSC_COMM_SELF, numVertices, 0, 1, partition));
   if (size == 1) {
     if (tpwgts) {
       for (np = 0; np < nparts; ++np) {
-        ierr = PetscSectionSetDof(partSection, np, tpwgts[np]);CHKERRQ(ierr);
+        CHKERRQ(PetscSectionSetDof(partSection, np, tpwgts[np]));
       }
     } else {
       for (np = 0; np < nparts; ++np) {
-        ierr = PetscSectionSetDof(partSection, np, numVertices/nparts + ((numVertices % nparts) > np));CHKERRQ(ierr);
+        CHKERRQ(PetscSectionSetDof(partSection, np, numVertices/nparts + ((numVertices % nparts) > np)));
       }
     }
   } else {
@@ -187,41 +181,41 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
       PetscInt    st,j;
       PetscMPIInt rank;
 
-      ierr = VecCreate(comm,&v);CHKERRQ(ierr);
-      ierr = VecSetSizes(v,numVertices,numVerticesGlobal);CHKERRQ(ierr);
-      ierr = VecSetType(v,VECSTANDARD);CHKERRQ(ierr);
-      ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+      CHKERRQ(VecCreate(comm,&v));
+      CHKERRQ(VecSetSizes(v,numVertices,numVerticesGlobal));
+      CHKERRQ(VecSetType(v,VECSTANDARD));
+      CHKERRMPI(MPI_Comm_rank(comm,&rank));
       for (np = 0,st = 0; np < nparts; ++np) {
         if (rank == np || (rank == size-1 && size < nparts && np >= size)) {
           for (j = 0; j < tpwgts[np]; j++) {
-            ierr = VecSetValue(v,st+j,np,INSERT_VALUES);CHKERRQ(ierr);
+            CHKERRQ(VecSetValue(v,st+j,np,INSERT_VALUES));
           }
         }
         st += tpwgts[np];
       }
-      ierr = VecAssemblyBegin(v);CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(v);CHKERRQ(ierr);
-      ierr = VecGetArray(v,&array);CHKERRQ(ierr);
+      CHKERRQ(VecAssemblyBegin(v));
+      CHKERRQ(VecAssemblyEnd(v));
+      CHKERRQ(VecGetArray(v,&array));
       for (j = 0; j < numVertices; ++j) {
-        ierr = PetscSectionAddDof(partSection,PetscRealPart(array[j]),1);CHKERRQ(ierr);
+        CHKERRQ(PetscSectionAddDof(partSection,PetscRealPart(array[j]),1));
       }
-      ierr = VecRestoreArray(v,&array);CHKERRQ(ierr);
-      ierr = VecDestroy(&v);CHKERRQ(ierr);
+      CHKERRQ(VecRestoreArray(v,&array));
+      CHKERRQ(VecDestroy(&v));
     } else {
       PetscMPIInt rank;
       PetscInt nvGlobal, *offsets, myFirst, myLast;
 
-      ierr = PetscMalloc1(size+1,&offsets);CHKERRQ(ierr);
+      CHKERRQ(PetscMalloc1(size+1,&offsets));
       offsets[0] = 0;
-      ierr = MPI_Allgather(&numVertices,1,MPIU_INT,&offsets[1],1,MPIU_INT,comm);CHKERRMPI(ierr);
+      CHKERRMPI(MPI_Allgather(&numVertices,1,MPIU_INT,&offsets[1],1,MPIU_INT,comm));
       for (np = 2; np <= size; np++) {
         offsets[np] += offsets[np-1];
       }
       nvGlobal = offsets[size];
-      ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+      CHKERRMPI(MPI_Comm_rank(comm,&rank));
       myFirst = offsets[rank];
       myLast  = offsets[rank + 1] - 1;
-      ierr = PetscFree(offsets);CHKERRQ(ierr);
+      CHKERRQ(PetscFree(offsets));
       if (numVertices) {
         PetscInt firstPart = 0, firstLargePart = 0;
         PetscInt lastPart = 0, lastLargePart = 0;
@@ -254,12 +248,12 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
 
           PartStart = PetscMax(PartStart,myFirst);
           PartEnd   = PetscMin(PartEnd,myLast+1);
-          ierr = PetscSectionSetDof(partSection,np,PartEnd-PartStart);CHKERRQ(ierr);
+          CHKERRQ(PetscSectionSetDof(partSection,np,PartEnd-PartStart));
         }
       }
     }
   }
-  ierr = PetscFree(tpwgts);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(tpwgts));
   PetscFunctionReturn(0);
 }
 
@@ -285,14 +279,13 @@ M*/
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Simple(PetscPartitioner part)
 {
   PetscPartitioner_Simple *p;
-  PetscErrorCode           ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  ierr       = PetscNewLog(part, &p);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(part, &p));
   p->gridDim = -1;
   part->data = p;
 
-  ierr = PetscPartitionerInitialize_Simple(part);CHKERRQ(ierr);
+  CHKERRQ(PetscPartitionerInitialize_Simple(part));
   PetscFunctionReturn(0);
 }

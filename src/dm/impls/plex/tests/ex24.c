@@ -28,18 +28,18 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->compare_dm = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-compare_is", "Compare ISs and PetscSections?", FILENAME, options->compare_is, &options->compare_is, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-compare_dm", "Compare DMs?", FILENAME, options->compare_dm, &options->compare_dm, NULL);CHKERRQ(ierr);
-  ierr = PetscStrncpy(options->partitioning,MATPARTITIONINGPARMETIS,sizeof(options->partitioning));CHKERRQ(ierr);
-  ierr = PetscOptionsString("-partitioning","The mat partitioning type to test","None",options->partitioning, options->partitioning,sizeof(options->partitioning),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-repartition", "Partition again after the first partition?", FILENAME, repartition, &repartition, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-compare_is", "Compare ISs and PetscSections?", FILENAME, options->compare_is, &options->compare_is, NULL));
+  CHKERRQ(PetscOptionsBool("-compare_dm", "Compare DMs?", FILENAME, options->compare_dm, &options->compare_dm, NULL));
+  CHKERRQ(PetscStrncpy(options->partitioning,MATPARTITIONINGPARMETIS,sizeof(options->partitioning)));
+  CHKERRQ(PetscOptionsString("-partitioning","The mat partitioning type to test","None",options->partitioning, options->partitioning,sizeof(options->partitioning),NULL));
+  CHKERRQ(PetscOptionsBool("-repartition", "Partition again after the first partition?", FILENAME, repartition, &repartition, NULL));
   if (repartition) {
-    ierr = PetscStrncpy(options->repartitioning,MATPARTITIONINGPARMETIS,64);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-repartitioning","The mat partitioning type to test (second partitioning)","None", options->repartitioning, options->repartitioning,sizeof(options->repartitioning),NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscStrncpy(options->repartitioning,MATPARTITIONINGPARMETIS,64));
+    CHKERRQ(PetscOptionsString("-repartitioning","The mat partitioning type to test (second partitioning)","None", options->repartitioning, options->repartitioning,sizeof(options->repartitioning),NULL));
   } else {
     options->repartitioning[0] = '\0';
   }
-  ierr = PetscOptionsBool("-tpweight", "Use target partition weights", FILENAME, options->tpw, &options->tpw, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-tpweight", "Use target partition weights", FILENAME, options->tpw, &options->tpw, NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -55,14 +55,12 @@ static PetscErrorCode ScotchResetRandomSeed()
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexDistributeSetDefault(*dm, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreate(comm, dm));
+  CHKERRQ(DMSetType(*dm, DMPLEX));
+  CHKERRQ(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -84,167 +82,167 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(comm, &user, &dm1);CHKERRQ(ierr);
-  ierr = CreateMesh(comm, &user, &dm2);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_size(comm,&size));
+  CHKERRQ(ProcessOptions(comm, &user));
+  CHKERRQ(CreateMesh(comm, &user, &dm1));
+  CHKERRQ(CreateMesh(comm, &user, &dm2));
 
   if (user.tpw) {
-    ierr = PetscSectionCreate(comm, &tpws);CHKERRQ(ierr);
-    ierr = PetscSectionSetChart(tpws, 0, size);CHKERRQ(ierr);
+    CHKERRQ(PetscSectionCreate(comm, &tpws));
+    CHKERRQ(PetscSectionSetChart(tpws, 0, size));
     for (i=0;i<size;i++) {
       PetscInt tdof = i%2 ? 2*i -1 : i+2;
-      ierr = PetscSectionSetDof(tpws, i, tdof);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionSetDof(tpws, i, tdof));
     }
     if (size > 1) { /* test zero tpw entry */
-      ierr = PetscSectionSetDof(tpws, 0, 0);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionSetDof(tpws, 0, 0));
     }
-    ierr = PetscSectionSetUp(tpws);CHKERRQ(ierr);
+    CHKERRQ(PetscSectionSetUp(tpws));
   }
 
   /* partition dm1 using PETSCPARTITIONERPARMETIS */
-  ierr = ScotchResetRandomSeed();CHKERRQ(ierr);
-  ierr = DMPlexGetPartitioner(dm1, &part1);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)part1,"p1_");CHKERRQ(ierr);
-  ierr = PetscPartitionerSetType(part1, user.partitioning);CHKERRQ(ierr);
-  ierr = PetscPartitionerSetFromOptions(part1);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(comm, &s1);CHKERRQ(ierr);
-  ierr = PetscPartitionerDMPlexPartition(part1, dm1, tpws, s1, &is1);CHKERRQ(ierr);
+  CHKERRQ(ScotchResetRandomSeed());
+  CHKERRQ(DMPlexGetPartitioner(dm1, &part1));
+  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)part1,"p1_"));
+  CHKERRQ(PetscPartitionerSetType(part1, user.partitioning));
+  CHKERRQ(PetscPartitionerSetFromOptions(part1));
+  CHKERRQ(PetscSectionCreate(comm, &s1));
+  CHKERRQ(PetscPartitionerDMPlexPartition(part1, dm1, tpws, s1, &is1));
 
   /* partition dm2 using PETSCPARTITIONERMATPARTITIONING with MATPARTITIONINGPARMETIS */
-  ierr = ScotchResetRandomSeed();CHKERRQ(ierr);
-  ierr = DMPlexGetPartitioner(dm2, &part2);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)part2,"p2_");CHKERRQ(ierr);
-  ierr = PetscPartitionerSetType(part2, PETSCPARTITIONERMATPARTITIONING);CHKERRQ(ierr);
-  ierr = PetscPartitionerMatPartitioningGetMatPartitioning(part2, &mp);CHKERRQ(ierr);
-  ierr = MatPartitioningSetType(mp, user.partitioning);CHKERRQ(ierr);
-  ierr = PetscPartitionerSetFromOptions(part2);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(comm, &s2);CHKERRQ(ierr);
-  ierr = PetscPartitionerDMPlexPartition(part2, dm2, tpws, s2, &is2);CHKERRQ(ierr);
+  CHKERRQ(ScotchResetRandomSeed());
+  CHKERRQ(DMPlexGetPartitioner(dm2, &part2));
+  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)part2,"p2_"));
+  CHKERRQ(PetscPartitionerSetType(part2, PETSCPARTITIONERMATPARTITIONING));
+  CHKERRQ(PetscPartitionerMatPartitioningGetMatPartitioning(part2, &mp));
+  CHKERRQ(MatPartitioningSetType(mp, user.partitioning));
+  CHKERRQ(PetscPartitionerSetFromOptions(part2));
+  CHKERRQ(PetscSectionCreate(comm, &s2));
+  CHKERRQ(PetscPartitionerDMPlexPartition(part2, dm2, tpws, s2, &is2));
 
-  ierr = ISOnComm(is1, comm, PETSC_USE_POINTER, &is1g);CHKERRQ(ierr);
-  ierr = ISOnComm(is2, comm, PETSC_USE_POINTER, &is2g);CHKERRQ(ierr);
-  ierr = ISViewFromOptions(is1g, NULL, "-seq_is1_view");CHKERRQ(ierr);
-  ierr = ISViewFromOptions(is2g, NULL, "-seq_is2_view");CHKERRQ(ierr);
+  CHKERRQ(ISOnComm(is1, comm, PETSC_USE_POINTER, &is1g));
+  CHKERRQ(ISOnComm(is2, comm, PETSC_USE_POINTER, &is2g));
+  CHKERRQ(ISViewFromOptions(is1g, NULL, "-seq_is1_view"));
+  CHKERRQ(ISViewFromOptions(is2g, NULL, "-seq_is2_view"));
   /* compare the two ISs */
   if (user.compare_is) {
-    ierr = ISEqualUnsorted(is1g, is2g, &flg);CHKERRQ(ierr);
-    if (!flg) {ierr = PetscPrintf(comm, "ISs are not equal with type %s with size %d.\n",user.partitioning,size);CHKERRQ(ierr);}
+    CHKERRQ(ISEqualUnsorted(is1g, is2g, &flg));
+    if (!flg) CHKERRQ(PetscPrintf(comm, "ISs are not equal with type %s with size %d.\n",user.partitioning,size));
   }
-  ierr = ISDestroy(&is1g);CHKERRQ(ierr);
-  ierr = ISDestroy(&is2g);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&is1g));
+  CHKERRQ(ISDestroy(&is2g));
 
   /* compare the two PetscSections */
-  ierr = PetscSectionViewFromOptions(s1, NULL, "-seq_s1_view");CHKERRQ(ierr);
-  ierr = PetscSectionViewFromOptions(s2, NULL, "-seq_s2_view");CHKERRQ(ierr);
+  CHKERRQ(PetscSectionViewFromOptions(s1, NULL, "-seq_s1_view"));
+  CHKERRQ(PetscSectionViewFromOptions(s2, NULL, "-seq_s2_view"));
   if (user.compare_is) {
-    ierr = PetscSectionCompare(s1, s2, &flg);CHKERRQ(ierr);
-    if (!flg) {ierr = PetscPrintf(comm, "PetscSections are not equal with %s with size %d.\n",user.partitioning,size);CHKERRQ(ierr);}
+    CHKERRQ(PetscSectionCompare(s1, s2, &flg));
+    if (!flg) CHKERRQ(PetscPrintf(comm, "PetscSections are not equal with %s with size %d.\n",user.partitioning,size));
   }
 
   /* distribute both DMs */
-  ierr = ScotchResetRandomSeed();CHKERRQ(ierr);
-  ierr = DMPlexDistribute(dm1, 0, NULL, &dmdist1);CHKERRQ(ierr);
-  ierr = ScotchResetRandomSeed();CHKERRQ(ierr);
-  ierr = DMPlexDistribute(dm2, 0, NULL, &dmdist2);CHKERRQ(ierr);
+  CHKERRQ(ScotchResetRandomSeed());
+  CHKERRQ(DMPlexDistribute(dm1, 0, NULL, &dmdist1));
+  CHKERRQ(ScotchResetRandomSeed());
+  CHKERRQ(DMPlexDistribute(dm2, 0, NULL, &dmdist2));
 
   /* cleanup */
-  ierr = PetscSectionDestroy(&tpws);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&s1);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&s2);CHKERRQ(ierr);
-  ierr = ISDestroy(&is1);CHKERRQ(ierr);
-  ierr = ISDestroy(&is2);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm1);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm2);CHKERRQ(ierr);
+  CHKERRQ(PetscSectionDestroy(&tpws));
+  CHKERRQ(PetscSectionDestroy(&s1));
+  CHKERRQ(PetscSectionDestroy(&s2));
+  CHKERRQ(ISDestroy(&is1));
+  CHKERRQ(ISDestroy(&is2));
+  CHKERRQ(DMDestroy(&dm1));
+  CHKERRQ(DMDestroy(&dm2));
 
   /* if distributed DMs are NULL (sequential case), then quit */
   if (!dmdist1 && !dmdist2) return ierr;
 
-  ierr = DMViewFromOptions(dmdist1, NULL, "-dm_dist1_view");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dmdist2, NULL, "-dm_dist2_view");CHKERRQ(ierr);
+  CHKERRQ(DMViewFromOptions(dmdist1, NULL, "-dm_dist1_view"));
+  CHKERRQ(DMViewFromOptions(dmdist2, NULL, "-dm_dist2_view"));
 
   /* compare the two distributed DMs */
   if (user.compare_dm) {
-    ierr = DMPlexEqual(dmdist1, dmdist2, &flg);CHKERRQ(ierr);
-    if (!flg) {ierr = PetscPrintf(comm, "Distributed DMs are not equal %s with size %d.\n",user.partitioning,size);CHKERRQ(ierr);}
+    CHKERRQ(DMPlexEqual(dmdist1, dmdist2, &flg));
+    if (!flg) CHKERRQ(PetscPrintf(comm, "Distributed DMs are not equal %s with size %d.\n",user.partitioning,size));
   }
 
   /* if repartitioning is disabled, then quit */
   if (user.repartitioning[0] == '\0') return ierr;
 
   if (user.tpw) {
-    ierr = PetscSectionCreate(comm, &tpws);CHKERRQ(ierr);
-    ierr = PetscSectionSetChart(tpws, 0, size);CHKERRQ(ierr);
+    CHKERRQ(PetscSectionCreate(comm, &tpws));
+    CHKERRQ(PetscSectionSetChart(tpws, 0, size));
     for (i=0;i<size;i++) {
       PetscInt tdof = i%2 ? i+1 : size - i;
-      ierr = PetscSectionSetDof(tpws, i, tdof);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionSetDof(tpws, i, tdof));
     }
-    ierr = PetscSectionSetUp(tpws);CHKERRQ(ierr);
+    CHKERRQ(PetscSectionSetUp(tpws));
   }
 
   /* repartition distributed DM dmdist1 */
-  ierr = ScotchResetRandomSeed();CHKERRQ(ierr);
-  ierr = DMPlexGetPartitioner(dmdist1, &part1);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)part1,"dp1_");CHKERRQ(ierr);
-  ierr = PetscPartitionerSetType(part1, user.repartitioning);CHKERRQ(ierr);
-  ierr = PetscPartitionerSetFromOptions(part1);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(comm, &s1);CHKERRQ(ierr);
-  ierr = PetscPartitionerDMPlexPartition(part1, dmdist1, tpws, s1, &is1);CHKERRQ(ierr);
+  CHKERRQ(ScotchResetRandomSeed());
+  CHKERRQ(DMPlexGetPartitioner(dmdist1, &part1));
+  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)part1,"dp1_"));
+  CHKERRQ(PetscPartitionerSetType(part1, user.repartitioning));
+  CHKERRQ(PetscPartitionerSetFromOptions(part1));
+  CHKERRQ(PetscSectionCreate(comm, &s1));
+  CHKERRQ(PetscPartitionerDMPlexPartition(part1, dmdist1, tpws, s1, &is1));
 
   /* repartition distributed DM dmdist2 */
-  ierr = ScotchResetRandomSeed();CHKERRQ(ierr);
-  ierr = DMPlexGetPartitioner(dmdist2, &part2);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)part2,"dp2_");CHKERRQ(ierr);
-  ierr = PetscPartitionerSetType(part2, PETSCPARTITIONERMATPARTITIONING);CHKERRQ(ierr);
-  ierr = PetscPartitionerMatPartitioningGetMatPartitioning(part2, &mp);CHKERRQ(ierr);
-  ierr = MatPartitioningSetType(mp, user.repartitioning);CHKERRQ(ierr);
-  ierr = PetscPartitionerSetFromOptions(part2);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(comm, &s2);CHKERRQ(ierr);
-  ierr = PetscPartitionerDMPlexPartition(part2, dmdist2, tpws, s2, &is2);CHKERRQ(ierr);
+  CHKERRQ(ScotchResetRandomSeed());
+  CHKERRQ(DMPlexGetPartitioner(dmdist2, &part2));
+  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)part2,"dp2_"));
+  CHKERRQ(PetscPartitionerSetType(part2, PETSCPARTITIONERMATPARTITIONING));
+  CHKERRQ(PetscPartitionerMatPartitioningGetMatPartitioning(part2, &mp));
+  CHKERRQ(MatPartitioningSetType(mp, user.repartitioning));
+  CHKERRQ(PetscPartitionerSetFromOptions(part2));
+  CHKERRQ(PetscSectionCreate(comm, &s2));
+  CHKERRQ(PetscPartitionerDMPlexPartition(part2, dmdist2, tpws, s2, &is2));
 
   /* compare the two ISs */
-  ierr = ISOnComm(is1, comm, PETSC_USE_POINTER, &is1g);CHKERRQ(ierr);
-  ierr = ISOnComm(is2, comm, PETSC_USE_POINTER, &is2g);CHKERRQ(ierr);
-  ierr = ISViewFromOptions(is1g, NULL, "-dist_is1_view");CHKERRQ(ierr);
-  ierr = ISViewFromOptions(is2g, NULL, "-dist_is2_view");CHKERRQ(ierr);
+  CHKERRQ(ISOnComm(is1, comm, PETSC_USE_POINTER, &is1g));
+  CHKERRQ(ISOnComm(is2, comm, PETSC_USE_POINTER, &is2g));
+  CHKERRQ(ISViewFromOptions(is1g, NULL, "-dist_is1_view"));
+  CHKERRQ(ISViewFromOptions(is2g, NULL, "-dist_is2_view"));
   if (user.compare_is) {
-    ierr = ISEqualUnsorted(is1g, is2g, &flg);CHKERRQ(ierr);
-    if (!flg) {ierr = PetscPrintf(comm, "Distributed ISs are not equal, with %s with size %d.\n",user.repartitioning,size);CHKERRQ(ierr);}
+    CHKERRQ(ISEqualUnsorted(is1g, is2g, &flg));
+    if (!flg) CHKERRQ(PetscPrintf(comm, "Distributed ISs are not equal, with %s with size %d.\n",user.repartitioning,size));
   }
-  ierr = ISDestroy(&is1g);CHKERRQ(ierr);
-  ierr = ISDestroy(&is2g);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&is1g));
+  CHKERRQ(ISDestroy(&is2g));
 
   /* compare the two PetscSections */
-  ierr = PetscSectionViewFromOptions(s1, NULL, "-dist_s1_view");CHKERRQ(ierr);
-  ierr = PetscSectionViewFromOptions(s2, NULL, "-dist_s2_view");CHKERRQ(ierr);
+  CHKERRQ(PetscSectionViewFromOptions(s1, NULL, "-dist_s1_view"));
+  CHKERRQ(PetscSectionViewFromOptions(s2, NULL, "-dist_s2_view"));
   if (user.compare_is) {
-    ierr = PetscSectionCompare(s1, s2, &flg);CHKERRQ(ierr);
-    if (!flg) {ierr = PetscPrintf(comm, "Distributed PetscSections are not equal, with %s with size %d.\n",user.repartitioning,size);CHKERRQ(ierr);}
+    CHKERRQ(PetscSectionCompare(s1, s2, &flg));
+    if (!flg) CHKERRQ(PetscPrintf(comm, "Distributed PetscSections are not equal, with %s with size %d.\n",user.repartitioning,size));
   }
 
   /* redistribute both distributed DMs */
-  ierr = ScotchResetRandomSeed();CHKERRQ(ierr);
-  ierr = DMPlexDistribute(dmdist1, 0, NULL, &dm1);CHKERRQ(ierr);
-  ierr = ScotchResetRandomSeed();CHKERRQ(ierr);
-  ierr = DMPlexDistribute(dmdist2, 0, NULL, &dm2);CHKERRQ(ierr);
+  CHKERRQ(ScotchResetRandomSeed());
+  CHKERRQ(DMPlexDistribute(dmdist1, 0, NULL, &dm1));
+  CHKERRQ(ScotchResetRandomSeed());
+  CHKERRQ(DMPlexDistribute(dmdist2, 0, NULL, &dm2));
 
   /* compare the two distributed DMs */
-  ierr = DMPlexIsInterpolated(dm1, &interp);CHKERRQ(ierr);
+  CHKERRQ(DMPlexIsInterpolated(dm1, &interp));
   if (interp == DMPLEX_INTERPOLATED_NONE) {
-    ierr = DMPlexEqual(dm1, dm2, &flg);CHKERRQ(ierr);
-    if (!flg) {ierr = PetscPrintf(comm, "Redistributed DMs are not equal, with %s with size %d.\n",user.repartitioning,size);CHKERRQ(ierr);}
+    CHKERRQ(DMPlexEqual(dm1, dm2, &flg));
+    if (!flg) CHKERRQ(PetscPrintf(comm, "Redistributed DMs are not equal, with %s with size %d.\n",user.repartitioning,size));
   }
 
   /* cleanup */
-  ierr = PetscSectionDestroy(&tpws);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&s1);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&s2);CHKERRQ(ierr);
-  ierr = ISDestroy(&is1);CHKERRQ(ierr);
-  ierr = ISDestroy(&is2);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm1);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm2);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmdist1);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmdist2);CHKERRQ(ierr);
+  CHKERRQ(PetscSectionDestroy(&tpws));
+  CHKERRQ(PetscSectionDestroy(&s1));
+  CHKERRQ(PetscSectionDestroy(&s2));
+  CHKERRQ(ISDestroy(&is1));
+  CHKERRQ(ISDestroy(&is2));
+  CHKERRQ(DMDestroy(&dm1));
+  CHKERRQ(DMDestroy(&dm2));
+  CHKERRQ(DMDestroy(&dmdist1));
+  CHKERRQ(DMDestroy(&dmdist2));
   ierr = PetscFinalize();
   return ierr;
 }

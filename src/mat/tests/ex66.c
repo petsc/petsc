@@ -48,28 +48,28 @@ int main(int argc,char **argv)
   PETSC_MPI_THREAD_REQUIRED = MPI_THREAD_MULTIPLE;
 #endif
   ierr = PetscInitialize(&argc,&argv,(char*) 0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-ng",&N,&flgglob);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-lda",&lda,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-ldc",&ldc,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-nlr",&nlr,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-ldu",&ldu,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-matmattrials",&ntrials,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-randommat",&randommat,NULL);CHKERRQ(ierr);
-  if (!flgglob) { ierr = PetscOptionsGetBool(NULL,NULL,"-testlayout",&testlayout,NULL);CHKERRQ(ierr); }
-  ierr = PetscOptionsGetBool(NULL,NULL,"-Asymm",&Asymm,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-symm",&symm,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-kernel",&kernel,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-checkexpl",&checkexpl,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-agpu",&agpu,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-bgpu",&bgpu,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-cgpu",&cgpu,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,NULL,"-scale",&scale,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-ng",&N,&flgglob));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-lda",&lda,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-ldc",&ldc,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nlr",&nlr,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-ldu",&ldu,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-matmattrials",&ntrials,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-randommat",&randommat,NULL));
+  if (!flgglob) CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-testlayout",&testlayout,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-Asymm",&Asymm,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-symm",&symm,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-kernel",&kernel,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-checkexpl",&checkexpl,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-agpu",&agpu,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-bgpu",&bgpu,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-cgpu",&cgpu,NULL));
+  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-scale",&scale,NULL));
   if (!Asymm) symm = PETSC_FALSE;
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* Disable tests for unimplemented variants */
   testtrans = (PetscBool)(size == 1 || symm);
@@ -78,249 +78,249 @@ int main(int argc,char **argv)
   testcompress = (PetscBool)(size == 1 || symm);
   testhlru = (PetscBool)(size == 1);
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = PetscLayoutCreate(PETSC_COMM_WORLD,&map);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRQ(PetscLayoutCreate(PETSC_COMM_WORLD,&map));
   if (testlayout) {
     if (rank%2) n = PetscMax(2*n-5*rank,0);
     else n = 2*n+rank;
   }
   if (!flgglob) {
-    ierr = PetscLayoutSetLocalSize(map,n);CHKERRQ(ierr);
-    ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
-    ierr = PetscLayoutGetSize(map,&N);CHKERRQ(ierr);
+    CHKERRQ(PetscLayoutSetLocalSize(map,n));
+    CHKERRQ(PetscLayoutSetUp(map));
+    CHKERRQ(PetscLayoutGetSize(map,&N));
   } else {
-    ierr = PetscLayoutSetSize(map,N);CHKERRQ(ierr);
-    ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
-    ierr = PetscLayoutGetLocalSize(map,&n);CHKERRQ(ierr);
+    CHKERRQ(PetscLayoutSetSize(map,N));
+    CHKERRQ(PetscLayoutSetUp(map));
+    CHKERRQ(PetscLayoutGetLocalSize(map,&n));
   }
-  ierr = PetscLayoutDestroy(&map);CHKERRQ(ierr);
+  CHKERRQ(PetscLayoutDestroy(&map));
 
   if (lda) {
-    ierr = PetscMalloc1(N*(n+lda),&Adata);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(N*(n+lda),&Adata));
   }
-  ierr = MatCreateDense(PETSC_COMM_WORLD,n,n,N,N,Adata,&A);CHKERRQ(ierr);
-  ierr = MatDenseSetLDA(A,n+lda);CHKERRQ(ierr);
+  CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,n,n,N,N,Adata,&A));
+  CHKERRQ(MatDenseSetLDA(A,n+lda));
 
   /* Create random points; these are replicated in order to populate a dense matrix and to compare sequential and dense runs
      The constructor for MATH2OPUS can take as input the distributed coordinates and replicates them internally in case
      a kernel construction is requested */
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&r);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
-  ierr = PetscRandomSetSeed(r,123456);CHKERRQ(ierr);
-  ierr = PetscRandomSeed(r);CHKERRQ(ierr);
-  ierr = PetscMalloc1(N*dim,&coords);CHKERRQ(ierr);
-  ierr = PetscRandomGetValuesReal(r,N*dim,coords);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&r));
+  CHKERRQ(PetscRandomSetFromOptions(r));
+  CHKERRQ(PetscRandomSetSeed(r,123456));
+  CHKERRQ(PetscRandomSeed(r));
+  CHKERRQ(PetscMalloc1(N*dim,&coords));
+  CHKERRQ(PetscRandomGetValuesReal(r,N*dim,coords));
+  CHKERRQ(PetscRandomDestroy(&r));
 
   if (kernel || !randommat) {
     MatH2OpusKernel k = Asymm ? GenEntry_Symm : GenEntry_Unsymm;
     PetscInt        ist,ien;
 
-    ierr = MatGetOwnershipRange(A,&ist,&ien);CHKERRQ(ierr);
+    CHKERRQ(MatGetOwnershipRange(A,&ist,&ien));
     for (i = ist; i < ien; i++) {
       for (j = 0; j < N; j++) {
-        ierr = MatSetValue(A,i,j,(*k)(dim,coords + i*dim,coords + j*dim,NULL),INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValue(A,i,j,(*k)(dim,coords + i*dim,coords + j*dim,NULL),INSERT_VALUES));
       }
     }
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
     if (kernel) {
-      ierr = MatCreateH2OpusFromKernel(PETSC_COMM_WORLD,n,n,N,N,dim,coords + ist*dim,PETSC_TRUE,k,NULL,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,&B);CHKERRQ(ierr);
+      CHKERRQ(MatCreateH2OpusFromKernel(PETSC_COMM_WORLD,n,n,N,N,dim,coords + ist*dim,PETSC_TRUE,k,NULL,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,&B));
     } else {
-      ierr = MatCreateH2OpusFromMat(A,dim,coords + ist*dim,PETSC_TRUE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,&B);CHKERRQ(ierr);
+      CHKERRQ(MatCreateH2OpusFromMat(A,dim,coords + ist*dim,PETSC_TRUE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,&B));
     }
   } else {
     PetscInt ist;
 
-    ierr = MatGetOwnershipRange(A,&ist,NULL);CHKERRQ(ierr);
-    ierr = MatSetRandom(A,NULL);CHKERRQ(ierr);
+    CHKERRQ(MatGetOwnershipRange(A,&ist,NULL));
+    CHKERRQ(MatSetRandom(A,NULL));
     if (Asymm) {
-      ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-      ierr = MatAXPY(A,1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatDestroy(&B);CHKERRQ(ierr);
-      ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+      CHKERRQ(MatTranspose(A,MAT_INITIAL_MATRIX,&B));
+      CHKERRQ(MatAXPY(A,1.0,B,SAME_NONZERO_PATTERN));
+      CHKERRQ(MatDestroy(&B));
+      CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
     }
-    ierr = MatCreateH2OpusFromMat(A,dim,coords + ist*dim,PETSC_TRUE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,&B);CHKERRQ(ierr);
+    CHKERRQ(MatCreateH2OpusFromMat(A,dim,coords + ist*dim,PETSC_TRUE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,&B));
   }
-  ierr = PetscFree(coords);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(coords));
   if (agpu) {
-    ierr = MatConvert(A,MATDENSECUDA,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+    CHKERRQ(MatConvert(A,MATDENSECUDA,MAT_INPLACE_MATRIX,&A));
   }
-  ierr = MatViewFromOptions(A,NULL,"-A_view");CHKERRQ(ierr);
+  CHKERRQ(MatViewFromOptions(A,NULL,"-A_view"));
 
-  ierr = MatSetOption(B,MAT_SYMMETRIC,symm);CHKERRQ(ierr);
+  CHKERRQ(MatSetOption(B,MAT_SYMMETRIC,symm));
 
   /* assemble the H-matrix */
-  ierr = MatBindToCPU(B,(PetscBool)!bgpu);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(B);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(B,NULL,"-B_view");CHKERRQ(ierr);
+  CHKERRQ(MatBindToCPU(B,(PetscBool)!bgpu));
+  CHKERRQ(MatSetFromOptions(B));
+  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatViewFromOptions(B,NULL,"-B_view"));
 
   /* Test MatScale */
-  ierr = MatScale(A,scale);CHKERRQ(ierr);
-  ierr = MatScale(B,scale);CHKERRQ(ierr);
+  CHKERRQ(MatScale(A,scale));
+  CHKERRQ(MatScale(B,scale));
 
   /* Test MatMult */
-  ierr = MatCreateVecs(A,&Ax,&Ay);CHKERRQ(ierr);
-  ierr = MatCreateVecs(B,&Bx,&By);CHKERRQ(ierr);
-  ierr = VecSetRandom(Ax,NULL);CHKERRQ(ierr);
-  ierr = VecCopy(Ax,Bx);CHKERRQ(ierr);
-  ierr = MatMult(A,Ax,Ay);CHKERRQ(ierr);
-  ierr = MatMult(B,Bx,By);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(Ay,NULL,"-mult_vec_view");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(By,NULL,"-mult_vec_view");CHKERRQ(ierr);
-  ierr = VecNorm(Ay,NORM_INFINITY,&nX);CHKERRQ(ierr);
-  ierr = VecAXPY(Ay,-1.0,By);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(Ay,NULL,"-mult_vec_view");CHKERRQ(ierr);
-  ierr = VecNorm(Ay,NORM_INFINITY,&err);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMult err %g\n",err/nX);CHKERRQ(ierr);
-  ierr = VecScale(By,-1.0);CHKERRQ(ierr);
-  ierr = MatMultAdd(B,Bx,By,By);CHKERRQ(ierr);
-  ierr = VecNorm(By,NORM_INFINITY,&err);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(By,NULL,"-mult_vec_view");CHKERRQ(ierr);
+  CHKERRQ(MatCreateVecs(A,&Ax,&Ay));
+  CHKERRQ(MatCreateVecs(B,&Bx,&By));
+  CHKERRQ(VecSetRandom(Ax,NULL));
+  CHKERRQ(VecCopy(Ax,Bx));
+  CHKERRQ(MatMult(A,Ax,Ay));
+  CHKERRQ(MatMult(B,Bx,By));
+  CHKERRQ(VecViewFromOptions(Ay,NULL,"-mult_vec_view"));
+  CHKERRQ(VecViewFromOptions(By,NULL,"-mult_vec_view"));
+  CHKERRQ(VecNorm(Ay,NORM_INFINITY,&nX));
+  CHKERRQ(VecAXPY(Ay,-1.0,By));
+  CHKERRQ(VecViewFromOptions(Ay,NULL,"-mult_vec_view"));
+  CHKERRQ(VecNorm(Ay,NORM_INFINITY,&err));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"MatMult err %g\n",err/nX));
+  CHKERRQ(VecScale(By,-1.0));
+  CHKERRQ(MatMultAdd(B,Bx,By,By));
+  CHKERRQ(VecNorm(By,NORM_INFINITY,&err));
+  CHKERRQ(VecViewFromOptions(By,NULL,"-mult_vec_view"));
   if (err > 10.*PETSC_SMALL) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMultAdd err %g\n",err);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"MatMultAdd err %g\n",err));
   }
 
   /* Test MatNorm */
-  ierr = MatNorm(A,NORM_INFINITY,&norms[0]);CHKERRQ(ierr);
-  ierr = MatNorm(A,NORM_1,&norms[1]);CHKERRQ(ierr);
+  CHKERRQ(MatNorm(A,NORM_INFINITY,&norms[0]));
+  CHKERRQ(MatNorm(A,NORM_1,&norms[1]));
   norms[2] = -1.; /* NORM_2 not supported */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"A Matrix norms:        infty=%g, norm_1=%g, norm_2=%g\n",(double)norms[0],(double)norms[1],(double)norms[2]);CHKERRQ(ierr);
-  ierr = MatGetOperation(A,MATOP_NORM,&Anormfunc);CHKERRQ(ierr);
-  ierr = MatGetOperation(B,MATOP_NORM,&approxnormfunc);CHKERRQ(ierr);
-  ierr = MatSetOperation(A,MATOP_NORM,approxnormfunc);CHKERRQ(ierr);
-  ierr = MatNorm(A,NORM_INFINITY,&norms[0]);CHKERRQ(ierr);
-  ierr = MatNorm(A,NORM_1,&norms[1]);CHKERRQ(ierr);
-  ierr = MatNorm(A,NORM_2,&norms[2]);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"A Approx Matrix norms: infty=%g, norm_1=%g, norm_2=%g\n",(double)norms[0],(double)norms[1],(double)norms[2]);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"A Matrix norms:        infty=%g, norm_1=%g, norm_2=%g\n",(double)norms[0],(double)norms[1],(double)norms[2]));
+  CHKERRQ(MatGetOperation(A,MATOP_NORM,&Anormfunc));
+  CHKERRQ(MatGetOperation(B,MATOP_NORM,&approxnormfunc));
+  CHKERRQ(MatSetOperation(A,MATOP_NORM,approxnormfunc));
+  CHKERRQ(MatNorm(A,NORM_INFINITY,&norms[0]));
+  CHKERRQ(MatNorm(A,NORM_1,&norms[1]));
+  CHKERRQ(MatNorm(A,NORM_2,&norms[2]));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"A Approx Matrix norms: infty=%g, norm_1=%g, norm_2=%g\n",(double)norms[0],(double)norms[1],(double)norms[2]));
   if (testnorm) {
-    ierr = MatNorm(B,NORM_INFINITY,&norms[0]);CHKERRQ(ierr);
-    ierr = MatNorm(B,NORM_1,&norms[1]);CHKERRQ(ierr);
-    ierr = MatNorm(B,NORM_2,&norms[2]);CHKERRQ(ierr);
+    CHKERRQ(MatNorm(B,NORM_INFINITY,&norms[0]));
+    CHKERRQ(MatNorm(B,NORM_1,&norms[1]));
+    CHKERRQ(MatNorm(B,NORM_2,&norms[2]));
   } else {
     norms[0] = -1.;
     norms[1] = -1.;
     norms[2] = -1.;
   }
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"B Approx Matrix norms: infty=%g, norm_1=%g, norm_2=%g\n",(double)norms[0],(double)norms[1],(double)norms[2]);CHKERRQ(ierr);
-  ierr = MatSetOperation(A,MATOP_NORM,Anormfunc);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"B Approx Matrix norms: infty=%g, norm_1=%g, norm_2=%g\n",(double)norms[0],(double)norms[1],(double)norms[2]));
+  CHKERRQ(MatSetOperation(A,MATOP_NORM,Anormfunc));
 
   /* Test MatDuplicate */
-  ierr = MatDuplicate(B,MAT_COPY_VALUES,&D);CHKERRQ(ierr);
-  ierr = MatSetOption(D,MAT_SYMMETRIC,symm);CHKERRQ(ierr);
-  ierr = MatMultEqual(B,D,10,&flg);CHKERRQ(ierr);
+  CHKERRQ(MatDuplicate(B,MAT_COPY_VALUES,&D));
+  CHKERRQ(MatSetOption(D,MAT_SYMMETRIC,symm));
+  CHKERRQ(MatMultEqual(B,D,10,&flg));
   if (!flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMult error after MatDuplicate\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"MatMult error after MatDuplicate\n"));
   }
   if (testtrans) {
-    ierr = MatMultTransposeEqual(B,D,10,&flg);CHKERRQ(ierr);
+    CHKERRQ(MatMultTransposeEqual(B,D,10,&flg));
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMultTranspose error after MatDuplicate\n");CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"MatMultTranspose error after MatDuplicate\n"));
     }
   }
-  ierr = MatDestroy(&D);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&D));
 
   if (testtrans) { /* MatMultTranspose for nonsymmetric matrices not implemented */
-    ierr = VecSetRandom(Ay,NULL);CHKERRQ(ierr);
-    ierr = VecCopy(Ay,By);CHKERRQ(ierr);
-    ierr = MatMultTranspose(A,Ay,Ax);CHKERRQ(ierr);
-    ierr = MatMultTranspose(B,By,Bx);CHKERRQ(ierr);
-    ierr = VecViewFromOptions(Ax,NULL,"-multtrans_vec_view");CHKERRQ(ierr);
-    ierr = VecViewFromOptions(Bx,NULL,"-multtrans_vec_view");CHKERRQ(ierr);
-    ierr = VecNorm(Ax,NORM_INFINITY,&nX);CHKERRQ(ierr);
-    ierr = VecAXPY(Ax,-1.0,Bx);CHKERRQ(ierr);
-    ierr = VecViewFromOptions(Ax,NULL,"-multtrans_vec_view");CHKERRQ(ierr);
-    ierr = VecNorm(Ax,NORM_INFINITY,&err);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMultTranspose err %g\n",err/nX);CHKERRQ(ierr);
-    ierr = VecScale(Bx,-1.0);CHKERRQ(ierr);
-    ierr = MatMultTransposeAdd(B,By,Bx,Bx);CHKERRQ(ierr);
-    ierr = VecNorm(Bx,NORM_INFINITY,&err);CHKERRQ(ierr);
+    CHKERRQ(VecSetRandom(Ay,NULL));
+    CHKERRQ(VecCopy(Ay,By));
+    CHKERRQ(MatMultTranspose(A,Ay,Ax));
+    CHKERRQ(MatMultTranspose(B,By,Bx));
+    CHKERRQ(VecViewFromOptions(Ax,NULL,"-multtrans_vec_view"));
+    CHKERRQ(VecViewFromOptions(Bx,NULL,"-multtrans_vec_view"));
+    CHKERRQ(VecNorm(Ax,NORM_INFINITY,&nX));
+    CHKERRQ(VecAXPY(Ax,-1.0,Bx));
+    CHKERRQ(VecViewFromOptions(Ax,NULL,"-multtrans_vec_view"));
+    CHKERRQ(VecNorm(Ax,NORM_INFINITY,&err));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"MatMultTranspose err %g\n",err/nX));
+    CHKERRQ(VecScale(Bx,-1.0));
+    CHKERRQ(MatMultTransposeAdd(B,By,Bx,Bx));
+    CHKERRQ(VecNorm(Bx,NORM_INFINITY,&err));
     if (err > 10.*PETSC_SMALL) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMultTransposeAdd err %g\n",err);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"MatMultTransposeAdd err %g\n",err));
     }
   }
-  ierr = VecDestroy(&Ax);CHKERRQ(ierr);
-  ierr = VecDestroy(&Ay);CHKERRQ(ierr);
-  ierr = VecDestroy(&Bx);CHKERRQ(ierr);
-  ierr = VecDestroy(&By);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&Ax));
+  CHKERRQ(VecDestroy(&Ay));
+  CHKERRQ(VecDestroy(&Bx));
+  CHKERRQ(VecDestroy(&By));
 
   /* Test MatMatMult */
   if (ldc) {
-    ierr = PetscMalloc1(nrhs*(n+ldc),&Cdata);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(nrhs*(n+ldc),&Cdata));
   }
-  ierr = MatCreateDense(PETSC_COMM_WORLD,n,PETSC_DECIDE,N,nrhs,Cdata,&C);CHKERRQ(ierr);
-  ierr = MatDenseSetLDA(C,n+ldc);CHKERRQ(ierr);
-  ierr = MatSetRandom(C,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,n,PETSC_DECIDE,N,nrhs,Cdata,&C));
+  CHKERRQ(MatDenseSetLDA(C,n+ldc));
+  CHKERRQ(MatSetRandom(C,NULL));
   if (cgpu) {
-    ierr = MatConvert(C,MATDENSECUDA,MAT_INPLACE_MATRIX,&C);CHKERRQ(ierr);
+    CHKERRQ(MatConvert(C,MATDENSECUDA,MAT_INPLACE_MATRIX,&C));
   }
   for (nt = 0; nt < ntrials; nt++) {
-    ierr = MatMatMult(B,C,nt ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX,PETSC_DEFAULT,&D);CHKERRQ(ierr);
-    ierr = MatViewFromOptions(D,NULL,"-bc_view");CHKERRQ(ierr);
-    ierr = PetscObjectBaseTypeCompareAny((PetscObject)D,&flg,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
+    CHKERRQ(MatMatMult(B,C,nt ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX,PETSC_DEFAULT,&D));
+    CHKERRQ(MatViewFromOptions(D,NULL,"-bc_view"));
+    CHKERRQ(PetscObjectBaseTypeCompareAny((PetscObject)D,&flg,MATSEQDENSE,MATMPIDENSE,""));
     if (flg) {
-      ierr = MatCreateVecs(B,&x,&y);CHKERRQ(ierr);
-      ierr = MatCreateVecs(D,NULL,&v);CHKERRQ(ierr);
+      CHKERRQ(MatCreateVecs(B,&x,&y));
+      CHKERRQ(MatCreateVecs(D,NULL,&v));
       for (i = 0; i < nrhs; i++) {
-        ierr = MatGetColumnVector(D,v,i);CHKERRQ(ierr);
-        ierr = MatGetColumnVector(C,x,i);CHKERRQ(ierr);
-        ierr = MatMult(B,x,y);CHKERRQ(ierr);
-        ierr = VecAXPY(y,-1.0,v);CHKERRQ(ierr);
-        ierr = VecNorm(y,NORM_INFINITY,&err);CHKERRQ(ierr);
-        if (err > 10.*PETSC_SMALL) { ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMat err %" PetscInt_FMT " %g\n",i,err);CHKERRQ(ierr); }
+        CHKERRQ(MatGetColumnVector(D,v,i));
+        CHKERRQ(MatGetColumnVector(C,x,i));
+        CHKERRQ(MatMult(B,x,y));
+        CHKERRQ(VecAXPY(y,-1.0,v));
+        CHKERRQ(VecNorm(y,NORM_INFINITY,&err));
+        if (err > 10.*PETSC_SMALL) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"MatMat err %" PetscInt_FMT " %g\n",i,err));
       }
-      ierr = VecDestroy(&y);CHKERRQ(ierr);
-      ierr = VecDestroy(&x);CHKERRQ(ierr);
-      ierr = VecDestroy(&v);CHKERRQ(ierr);
+      CHKERRQ(VecDestroy(&y));
+      CHKERRQ(VecDestroy(&x));
+      CHKERRQ(VecDestroy(&v));
     }
   }
-  ierr = MatDestroy(&D);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&D));
 
   /* Test MatTransposeMatMult */
   if (testtrans) { /* MatMultTranspose for nonsymmetric matrices not implemented */
     for (nt = 0; nt < ntrials; nt++) {
-      ierr = MatTransposeMatMult(B,C,nt ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX,PETSC_DEFAULT,&D);CHKERRQ(ierr);
-      ierr = MatViewFromOptions(D,NULL,"-btc_view");CHKERRQ(ierr);
-      ierr = PetscObjectBaseTypeCompareAny((PetscObject)D,&flg,MATSEQDENSE,MATMPIDENSE,"");CHKERRQ(ierr);
+      CHKERRQ(MatTransposeMatMult(B,C,nt ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX,PETSC_DEFAULT,&D));
+      CHKERRQ(MatViewFromOptions(D,NULL,"-btc_view"));
+      CHKERRQ(PetscObjectBaseTypeCompareAny((PetscObject)D,&flg,MATSEQDENSE,MATMPIDENSE,""));
       if (flg) {
-        ierr = MatCreateVecs(B,&y,&x);CHKERRQ(ierr);
-        ierr = MatCreateVecs(D,NULL,&v);CHKERRQ(ierr);
+        CHKERRQ(MatCreateVecs(B,&y,&x));
+        CHKERRQ(MatCreateVecs(D,NULL,&v));
         for (i = 0; i < nrhs; i++) {
-          ierr = MatGetColumnVector(D,v,i);CHKERRQ(ierr);
-          ierr = MatGetColumnVector(C,x,i);CHKERRQ(ierr);
-          ierr = MatMultTranspose(B,x,y);CHKERRQ(ierr);
-          ierr = VecAXPY(y,-1.0,v);CHKERRQ(ierr);
-          ierr = VecNorm(y,NORM_INFINITY,&err);CHKERRQ(ierr);
-          if (err > 10.*PETSC_SMALL) { ierr = PetscPrintf(PETSC_COMM_WORLD,"MatTransMat err %" PetscInt_FMT " %g\n",i,err);CHKERRQ(ierr); }
+          CHKERRQ(MatGetColumnVector(D,v,i));
+          CHKERRQ(MatGetColumnVector(C,x,i));
+          CHKERRQ(MatMultTranspose(B,x,y));
+          CHKERRQ(VecAXPY(y,-1.0,v));
+          CHKERRQ(VecNorm(y,NORM_INFINITY,&err));
+          if (err > 10.*PETSC_SMALL) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"MatTransMat err %" PetscInt_FMT " %g\n",i,err));
         }
-        ierr = VecDestroy(&y);CHKERRQ(ierr);
-        ierr = VecDestroy(&x);CHKERRQ(ierr);
-        ierr = VecDestroy(&v);CHKERRQ(ierr);
+        CHKERRQ(VecDestroy(&y));
+        CHKERRQ(VecDestroy(&x));
+        CHKERRQ(VecDestroy(&v));
       }
     }
-    ierr = MatDestroy(&D);CHKERRQ(ierr);
+    CHKERRQ(MatDestroy(&D));
   }
 
   /* Test basis orthogonalization */
   if (testorthog) {
-    ierr = MatDuplicate(B,MAT_COPY_VALUES,&D);CHKERRQ(ierr);
-    ierr = MatSetOption(D,MAT_SYMMETRIC,symm);CHKERRQ(ierr);
-    ierr = MatH2OpusOrthogonalize(D);CHKERRQ(ierr);
-    ierr = MatMultEqual(B,D,10,&flg);CHKERRQ(ierr);
+    CHKERRQ(MatDuplicate(B,MAT_COPY_VALUES,&D));
+    CHKERRQ(MatSetOption(D,MAT_SYMMETRIC,symm));
+    CHKERRQ(MatH2OpusOrthogonalize(D));
+    CHKERRQ(MatMultEqual(B,D,10,&flg));
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMult error after basis ortogonalization\n");CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"MatMult error after basis ortogonalization\n"));
     }
-    ierr = MatDestroy(&D);CHKERRQ(ierr);
+    CHKERRQ(MatDestroy(&D));
   }
 
   /* Test matrix compression */
   if (testcompress) {
-    ierr = MatDuplicate(B,MAT_COPY_VALUES,&D);CHKERRQ(ierr);
-    ierr = MatSetOption(D,MAT_SYMMETRIC,symm);CHKERRQ(ierr);
-    ierr = MatH2OpusCompress(D,PETSC_SMALL);CHKERRQ(ierr);
-    ierr = MatDestroy(&D);CHKERRQ(ierr);
+    CHKERRQ(MatDuplicate(B,MAT_COPY_VALUES,&D));
+    CHKERRQ(MatSetOption(D,MAT_SYMMETRIC,symm));
+    CHKERRQ(MatH2OpusCompress(D,PETSC_SMALL));
+    CHKERRQ(MatDestroy(&D));
   }
 
   /* Test low-rank update */
@@ -329,71 +329,71 @@ int main(int argc,char **argv)
     PetscScalar *Udata = NULL, *Vdata = NULL;
 
     if (ldu) {
-      ierr = PetscMalloc1(nlr*(n+ldu),&Udata);CHKERRQ(ierr);
-      ierr = PetscMalloc1(nlr*(n+ldu+2),&Vdata);CHKERRQ(ierr);
+      CHKERRQ(PetscMalloc1(nlr*(n+ldu),&Udata));
+      CHKERRQ(PetscMalloc1(nlr*(n+ldu+2),&Vdata));
     }
-    ierr = MatDuplicate(B,MAT_COPY_VALUES,&D);CHKERRQ(ierr);
-    ierr = MatCreateDense(PetscObjectComm((PetscObject)D),n,PETSC_DECIDE,N,nlr,Udata,&U);CHKERRQ(ierr);
-    ierr = MatDenseSetLDA(U,n+ldu);CHKERRQ(ierr);
-    ierr = MatCreateDense(PetscObjectComm((PetscObject)D),n,PETSC_DECIDE,N,nlr,Vdata,&V);CHKERRQ(ierr);
-    if (ldu) { ierr = MatDenseSetLDA(V,n+ldu+2);CHKERRQ(ierr); }
-    ierr = MatSetRandom(U,NULL);CHKERRQ(ierr);
-    ierr = MatSetRandom(V,NULL);CHKERRQ(ierr);
-    ierr = MatH2OpusLowRankUpdate(D,U,V,0.5);CHKERRQ(ierr);
-    ierr = MatH2OpusLowRankUpdate(D,U,V,-0.5);CHKERRQ(ierr);
-    ierr = MatMultEqual(B,D,10,&flg);CHKERRQ(ierr);
+    CHKERRQ(MatDuplicate(B,MAT_COPY_VALUES,&D));
+    CHKERRQ(MatCreateDense(PetscObjectComm((PetscObject)D),n,PETSC_DECIDE,N,nlr,Udata,&U));
+    CHKERRQ(MatDenseSetLDA(U,n+ldu));
+    CHKERRQ(MatCreateDense(PetscObjectComm((PetscObject)D),n,PETSC_DECIDE,N,nlr,Vdata,&V));
+    if (ldu) CHKERRQ(MatDenseSetLDA(V,n+ldu+2));
+    CHKERRQ(MatSetRandom(U,NULL));
+    CHKERRQ(MatSetRandom(V,NULL));
+    CHKERRQ(MatH2OpusLowRankUpdate(D,U,V,0.5));
+    CHKERRQ(MatH2OpusLowRankUpdate(D,U,V,-0.5));
+    CHKERRQ(MatMultEqual(B,D,10,&flg));
     if (!flg) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMult error after low-rank update\n");CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"MatMult error after low-rank update\n"));
     }
-    ierr = MatDestroy(&D);CHKERRQ(ierr);
-    ierr = MatDestroy(&U);CHKERRQ(ierr);
-    ierr = PetscFree(Udata);CHKERRQ(ierr);
-    ierr = MatDestroy(&V);CHKERRQ(ierr);
-    ierr = PetscFree(Vdata);CHKERRQ(ierr);
+    CHKERRQ(MatDestroy(&D));
+    CHKERRQ(MatDestroy(&U));
+    CHKERRQ(PetscFree(Udata));
+    CHKERRQ(MatDestroy(&V));
+    CHKERRQ(PetscFree(Vdata));
   }
 
   /* check explicit operator */
   if (checkexpl) {
     Mat Be, Bet;
 
-    ierr = MatComputeOperator(B,MATDENSE,&D);CHKERRQ(ierr);
-    ierr = MatDuplicate(D,MAT_COPY_VALUES,&Be);CHKERRQ(ierr);
-    ierr = MatNorm(D,NORM_FROBENIUS,&nB);CHKERRQ(ierr);
-    ierr = MatViewFromOptions(D,NULL,"-expl_view");CHKERRQ(ierr);
-    ierr = MatAXPY(D,-1.0,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatViewFromOptions(D,NULL,"-diff_view");CHKERRQ(ierr);
-    ierr = MatNorm(D,NORM_FROBENIUS,&nD);CHKERRQ(ierr);
-    ierr = MatNorm(A,NORM_FROBENIUS,&nA);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Approximation error %g (%g / %g, %g)\n",nD/nA,nD,nA,nB);CHKERRQ(ierr);
-    ierr = MatDestroy(&D);CHKERRQ(ierr);
+    CHKERRQ(MatComputeOperator(B,MATDENSE,&D));
+    CHKERRQ(MatDuplicate(D,MAT_COPY_VALUES,&Be));
+    CHKERRQ(MatNorm(D,NORM_FROBENIUS,&nB));
+    CHKERRQ(MatViewFromOptions(D,NULL,"-expl_view"));
+    CHKERRQ(MatAXPY(D,-1.0,A,SAME_NONZERO_PATTERN));
+    CHKERRQ(MatViewFromOptions(D,NULL,"-diff_view"));
+    CHKERRQ(MatNorm(D,NORM_FROBENIUS,&nD));
+    CHKERRQ(MatNorm(A,NORM_FROBENIUS,&nA));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Approximation error %g (%g / %g, %g)\n",nD/nA,nD,nA,nB));
+    CHKERRQ(MatDestroy(&D));
 
     if (testtrans) { /* MatMultTranspose for nonsymmetric matrices not implemented */
-      ierr = MatTranspose(A,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
-      ierr = MatComputeOperatorTranspose(B,MATDENSE,&D);CHKERRQ(ierr);
-      ierr = MatDuplicate(D,MAT_COPY_VALUES,&Bet);CHKERRQ(ierr);
-      ierr = MatNorm(D,NORM_FROBENIUS,&nB);CHKERRQ(ierr);
-      ierr = MatViewFromOptions(D,NULL,"-expl_trans_view");CHKERRQ(ierr);
-      ierr = MatAXPY(D,-1.0,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatViewFromOptions(D,NULL,"-diff_trans_view");CHKERRQ(ierr);
-      ierr = MatNorm(D,NORM_FROBENIUS,&nD);CHKERRQ(ierr);
-      ierr = MatNorm(A,NORM_FROBENIUS,&nA);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Approximation error transpose %g (%g / %g, %g)\n",nD/nA,nD,nA,nB);CHKERRQ(ierr);
-      ierr = MatDestroy(&D);CHKERRQ(ierr);
+      CHKERRQ(MatTranspose(A,MAT_INPLACE_MATRIX,&A));
+      CHKERRQ(MatComputeOperatorTranspose(B,MATDENSE,&D));
+      CHKERRQ(MatDuplicate(D,MAT_COPY_VALUES,&Bet));
+      CHKERRQ(MatNorm(D,NORM_FROBENIUS,&nB));
+      CHKERRQ(MatViewFromOptions(D,NULL,"-expl_trans_view"));
+      CHKERRQ(MatAXPY(D,-1.0,A,SAME_NONZERO_PATTERN));
+      CHKERRQ(MatViewFromOptions(D,NULL,"-diff_trans_view"));
+      CHKERRQ(MatNorm(D,NORM_FROBENIUS,&nD));
+      CHKERRQ(MatNorm(A,NORM_FROBENIUS,&nA));
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Approximation error transpose %g (%g / %g, %g)\n",nD/nA,nD,nA,nB));
+      CHKERRQ(MatDestroy(&D));
 
-      ierr = MatTranspose(Bet,MAT_INPLACE_MATRIX,&Bet);CHKERRQ(ierr);
-      ierr = MatAXPY(Be,-1.0,Bet,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatViewFromOptions(Be,NULL,"-diff_expl_view");CHKERRQ(ierr);
-      ierr = MatNorm(Be,NORM_FROBENIUS,&nB);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Approximation error B - (B^T)^T %g\n",nB);CHKERRQ(ierr);
-      ierr = MatDestroy(&Be);CHKERRQ(ierr);
-      ierr = MatDestroy(&Bet);CHKERRQ(ierr);
+      CHKERRQ(MatTranspose(Bet,MAT_INPLACE_MATRIX,&Bet));
+      CHKERRQ(MatAXPY(Be,-1.0,Bet,SAME_NONZERO_PATTERN));
+      CHKERRQ(MatViewFromOptions(Be,NULL,"-diff_expl_view"));
+      CHKERRQ(MatNorm(Be,NORM_FROBENIUS,&nB));
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Approximation error B - (B^T)^T %g\n",nB));
+      CHKERRQ(MatDestroy(&Be));
+      CHKERRQ(MatDestroy(&Bet));
     }
   }
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = PetscFree(Cdata);CHKERRQ(ierr);
-  ierr = PetscFree(Adata);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&B));
+  CHKERRQ(MatDestroy(&C));
+  CHKERRQ(PetscFree(Cdata));
+  CHKERRQ(PetscFree(Adata));
   ierr = PetscFinalize();
   return ierr;
 }

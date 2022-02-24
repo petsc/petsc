@@ -14,8 +14,8 @@ and ported into PETSc by D. K. Kaushik, ODU and ICASE.\n\n";
 #endif
 #endif
 
-#define ICALLOC(size,y) ierr = PetscMalloc1(PetscMax(size,1),y);CHKERRQ(ierr);
-#define FCALLOC(size,y) ierr = PetscMalloc1(PetscMax(size,1),y);CHKERRQ(ierr);
+#define ICALLOC(size,y) CHKERRQ(PetscMalloc1(PetscMax(size,1),y));
+#define FCALLOC(size,y) CHKERRQ(PetscMalloc1(PetscMax(size,1),y));
 
 typedef struct {
   Vec    qnew,qold,func;
@@ -88,18 +88,18 @@ int main(int argc,char **args)
   char        pvtu_fname[PETSC_MAX_PATH_LEN] = "incomp";
 
   ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
-  ierr = PetscInitializeFortran();CHKERRQ(ierr);
-  ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,"petsc.opt",PETSC_FALSE);CHKERRQ(ierr);
+  CHKERRQ(PetscInitializeFortran());
+  CHKERRQ(PetscOptionsInsertFile(PETSC_COMM_WORLD,"petsc.opt",PETSC_FALSE));
 
   comm = PETSC_COMM_WORLD;
   f77FORLINK();                               /* Link FORTRAN and C COMMONS */
 
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  CHKERRMPI(MPI_Comm_size(comm,&size));
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-mem_use",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {ierr = PetscMemorySetGetMaximumUsage();CHKERRQ(ierr);}
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-mem_use",&flg,NULL));
+  if (flg) CHKERRQ(PetscMemorySetGetMaximumUsage());
 
   /*======================================================================*/
   /* Initilize stuff related to time stepping */
@@ -108,15 +108,15 @@ int main(int argc,char **args)
   tsCtx.max_steps         = 50;   tsCtx.max_time    = 1.0e+12; tsCtx.iramp   = -50;
   tsCtx.dt                = -5.0; tsCtx.fnorm_ratio = 1.0e+10;
   tsCtx.LocalTimeStepping = 1;
-  ierr                    = PetscOptionsGetInt(NULL,NULL,"-max_st",&tsCtx.max_steps,NULL);CHKERRQ(ierr);
-  ierr                    = PetscOptionsGetReal(NULL,"-ts_rtol",&tsCtx.fnorm_ratio,NULL);CHKERRQ(ierr);
-  ierr                    = PetscOptionsGetReal(NULL,"-cfl_ini",&tsCtx.cfl_ini,NULL);CHKERRQ(ierr);
-  ierr                    = PetscOptionsGetReal(NULL,"-cfl_max",&tsCtx.cfl_max,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-max_st",&tsCtx.max_steps,NULL));
+  CHKERRQ(PetscOptionsGetReal(NULL,"-ts_rtol",&tsCtx.fnorm_ratio,NULL));
+  CHKERRQ(PetscOptionsGetReal(NULL,"-cfl_ini",&tsCtx.cfl_ini,NULL));
+  CHKERRQ(PetscOptionsGetReal(NULL,"-cfl_max",&tsCtx.cfl_max,NULL));
   tsCtx.print_freq        = tsCtx.max_steps;
-  ierr                    = PetscOptionsGetInt(NULL,NULL,"-print_freq",&tsCtx.print_freq,&flg);CHKERRQ(ierr);
-  ierr                    = PetscOptionsGetString(NULL,NULL,"-pvtu",pvtu_fname,sizeof(pvtu_fname),&write_pvtu);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-print_freq",&tsCtx.print_freq,&flg));
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-pvtu",pvtu_fname,sizeof(pvtu_fname),&write_pvtu));
   pvtu_base64             = PETSC_FALSE;
-  ierr                    = PetscOptionsGetBool(NULL,NULL,"-pvtu_base64",&pvtu_base64,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-pvtu_base64",&pvtu_base64,NULL));
 
   c_info->alpha = 3.0;
   c_info->beta  = 15.0;
@@ -127,26 +127,26 @@ int main(int argc,char **args)
 
   c_runge->nitfo = 0;
 
-  ierr          = PetscMemzero(&f_pntr,sizeof(f_pntr));CHKERRQ(ierr);
+  CHKERRQ(PetscMemzero(&f_pntr,sizeof(f_pntr)));
   f_pntr.jvisc  = c_info->ivisc;
   f_pntr.ileast = 4;
-  ierr          = PetscOptionsGetReal(NULL,"-alpha",&c_info->alpha,NULL);CHKERRQ(ierr);
-  ierr          = PetscOptionsGetReal(NULL,"-beta",&c_info->beta,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetReal(NULL,"-alpha",&c_info->alpha,NULL));
+  CHKERRQ(PetscOptionsGetReal(NULL,"-beta",&c_info->beta,NULL));
 
   /*======================================================================*/
 
   /*Set the maximum number of threads for OpenMP */
 #if defined(_OPENMP)
-  ierr = PetscOptionsGetInt(NULL,NULL,"-max_threads",&max_threads,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-max_threads",&max_threads,&flg));
   omp_set_num_threads(max_threads);
-  ierr = PetscPrintf(comm,"Using %d threads for each MPI process\n",max_threads);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(comm,"Using %d threads for each MPI process\n",max_threads));
 #endif
 
   /* Get the grid information into local ordering */
-  ierr = GetLocalOrdering(&f_pntr);CHKERRQ(ierr);
+  CHKERRQ(GetLocalOrdering(&f_pntr));
 
   /* Allocate Memory for Some Other Grid Arrays */
-  ierr = set_up_grid(&f_pntr);CHKERRQ(ierr);
+  CHKERRQ(set_up_grid(&f_pntr));
 
   /* If using least squares for the gradients,calculate the r's */
   if (f_pntr.ileast == 4) f77SUMGS(&f_pntr.nnodesLoc,&f_pntr.nedgeLoc,f_pntr.eptr,f_pntr.xyz,f_pntr.rxy,&rank,&f_pntr.nvertices);
@@ -165,34 +165,34 @@ int main(int argc,char **args)
   user.PreLoading = PetscPreLoading;
 
   /* Create nonlinear solver */
-  ierr = SetPetscDS(&f_pntr,&tsCtx);CHKERRQ(ierr);
-  ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
-  ierr = SNESSetType(snes,"newtonls");CHKERRQ(ierr);
+  CHKERRQ(SetPetscDS(&f_pntr,&tsCtx));
+  CHKERRQ(SNESCreate(comm,&snes));
+  CHKERRQ(SNESSetType(snes,"newtonls"));
 
   /* Set various routines and options */
-  ierr = SNESSetFunction(snes,user.grid->res,FormFunction,&user);CHKERRQ(ierr);
+  CHKERRQ(SNESSetFunction(snes,user.grid->res,FormFunction,&user));
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-matrix_free",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-matrix_free",&flg,NULL));
   if (flg) {
     /* Use matrix-free to define Newton system; use explicit (approx) Jacobian for preconditioner */
-    ierr = MatCreateSNESMF(snes,&Jpc);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,Jpc,user.grid->A,FormJacobian,&user);CHKERRQ(ierr);
+    CHKERRQ(MatCreateSNESMF(snes,&Jpc));
+    CHKERRQ(SNESSetJacobian(snes,Jpc,user.grid->A,FormJacobian,&user));
   } else {
     /* Use explicit (approx) Jacobian to define Newton system and preconditioner */
-    ierr = SNESSetJacobian(snes,user.grid->A,user.grid->A,FormJacobian,&user);CHKERRQ(ierr);
+    CHKERRQ(SNESSetJacobian(snes,user.grid->A,user.grid->A,FormJacobian,&user));
   }
 
-  ierr = SNESSetMaxLinearSolveFailures(snes,maxfails);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  CHKERRQ(SNESSetMaxLinearSolveFailures(snes,maxfails));
+  CHKERRQ(SNESSetFromOptions(snes));
 
   /* Initialize the flowfield */
-  ierr = FormInitialGuess(snes,user.grid);CHKERRQ(ierr);
+  CHKERRQ(FormInitialGuess(snes,user.grid));
 
   /* Solve nonlinear system */
-  ierr = Update(snes,&user);CHKERRQ(ierr);
+  CHKERRQ(Update(snes,&user));
 
   /* Write restart file */
-  ierr = VecGetArray(user.grid->qnode,&qnode);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(user.grid->qnode,&qnode));
   /*f77WREST(&user.grid->nnodes,qnode,user.grid->turbre,user.grid->amut);*/
 
   /* Write Tecplot solution file */
@@ -211,102 +211,102 @@ int main(int argc,char **args)
               user.grid->isnode,  user.grid->ivnode,  user.grid->ifnode,
               &rank);
 #endif
-  if (write_pvtu) {ierr = WritePVTU(&user,pvtu_fname,pvtu_base64);CHKERRQ(ierr);}
+  if (write_pvtu) CHKERRQ(WritePVTU(&user,pvtu_fname,pvtu_base64));
 
   /* Write residual,lift,drag,and moment history file */
   /*
     if (rank == 0) f77PLLAN(&user.grid->nnodes,&rank);
   */
 
-  ierr = VecRestoreArray(user.grid->qnode,&qnode);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(user.grid->qnode,&qnode));
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-mem_use",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-mem_use",&flg,NULL));
   if (flg) {
-    ierr = PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD,"Memory usage before destroying\n");CHKERRQ(ierr);
+    CHKERRQ(PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD,"Memory usage before destroying\n"));
   }
 
-  ierr = VecDestroy(&user.grid->qnode);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.grid->qnodeLoc);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.tsCtx->qold);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.tsCtx->func);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.grid->res);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.grid->grad);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.grid->gradLoc);CHKERRQ(ierr);
-  ierr = MatDestroy(&user.grid->A);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&user.grid->qnode));
+  CHKERRQ(VecDestroy(&user.grid->qnodeLoc));
+  CHKERRQ(VecDestroy(&user.tsCtx->qold));
+  CHKERRQ(VecDestroy(&user.tsCtx->func));
+  CHKERRQ(VecDestroy(&user.grid->res));
+  CHKERRQ(VecDestroy(&user.grid->grad));
+  CHKERRQ(VecDestroy(&user.grid->gradLoc));
+  CHKERRQ(MatDestroy(&user.grid->A));
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-matrix_free",&flg,NULL);CHKERRQ(ierr);
-  if (flg) { ierr = MatDestroy(&Jpc);CHKERRQ(ierr);}
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&user.grid->scatter);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&user.grid->gradScatter);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-matrix_free",&flg,NULL));
+  if (flg) CHKERRQ(MatDestroy(&Jpc));
+  CHKERRQ(SNESDestroy(&snes));
+  CHKERRQ(VecScatterDestroy(&user.grid->scatter));
+  CHKERRQ(VecScatterDestroy(&user.grid->gradScatter));
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-mem_use",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-mem_use",&flg,NULL));
   if (flg) {
-    ierr = PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after destroying\n");CHKERRQ(ierr);
+    CHKERRQ(PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after destroying\n"));
   }
   PetscPreLoadEnd();
 
   /* allocated in set_up_grid() */
-  ierr = PetscFree(user.grid->isface);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->ivface);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->ifface);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->us);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->vs);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->as);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(user.grid->isface));
+  CHKERRQ(PetscFree(user.grid->ivface));
+  CHKERRQ(PetscFree(user.grid->ifface));
+  CHKERRQ(PetscFree(user.grid->us));
+  CHKERRQ(PetscFree(user.grid->vs));
+  CHKERRQ(PetscFree(user.grid->as));
 
   /* Allocated in GetLocalOrdering() */
-  ierr = PetscFree(user.grid->eptr);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->ia);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->ja);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->loc2glo);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->loc2pet);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->xyzn);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(user.grid->eptr));
+  CHKERRQ(PetscFree(user.grid->ia));
+  CHKERRQ(PetscFree(user.grid->ja));
+  CHKERRQ(PetscFree(user.grid->loc2glo));
+  CHKERRQ(PetscFree(user.grid->loc2pet));
+  CHKERRQ(PetscFree(user.grid->xyzn));
 #if defined(_OPENMP)
 #  if defined(HAVE_REDUNDANT_WORK)
-  ierr = PetscFree(user.grid->resd);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(user.grid->resd));
 #  else
-  ierr = PetscFree(user.grid->part_thr);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->nedge_thr);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->edge_thr);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->xyzn_thr);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(user.grid->part_thr));
+  CHKERRQ(PetscFree(user.grid->nedge_thr));
+  CHKERRQ(PetscFree(user.grid->edge_thr));
+  CHKERRQ(PetscFree(user.grid->xyzn_thr));
 #  endif
 #endif
-  ierr = PetscFree(user.grid->xyz);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->area);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(user.grid->xyz));
+  CHKERRQ(PetscFree(user.grid->area));
 
-  ierr = PetscFree(user.grid->nntet);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->nnpts);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->f2ntn);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->isnode);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->sxn);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->syn);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->szn);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->sa);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->sface_bit);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(user.grid->nntet));
+  CHKERRQ(PetscFree(user.grid->nnpts));
+  CHKERRQ(PetscFree(user.grid->f2ntn));
+  CHKERRQ(PetscFree(user.grid->isnode));
+  CHKERRQ(PetscFree(user.grid->sxn));
+  CHKERRQ(PetscFree(user.grid->syn));
+  CHKERRQ(PetscFree(user.grid->szn));
+  CHKERRQ(PetscFree(user.grid->sa));
+  CHKERRQ(PetscFree(user.grid->sface_bit));
 
-  ierr = PetscFree(user.grid->nvtet);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->nvpts);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->f2ntv);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->ivnode);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->vxn);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->vyn);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->vzn);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->va);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->vface_bit);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(user.grid->nvtet));
+  CHKERRQ(PetscFree(user.grid->nvpts));
+  CHKERRQ(PetscFree(user.grid->f2ntv));
+  CHKERRQ(PetscFree(user.grid->ivnode));
+  CHKERRQ(PetscFree(user.grid->vxn));
+  CHKERRQ(PetscFree(user.grid->vyn));
+  CHKERRQ(PetscFree(user.grid->vzn));
+  CHKERRQ(PetscFree(user.grid->va));
+  CHKERRQ(PetscFree(user.grid->vface_bit));
 
-  ierr = PetscFree(user.grid->nftet);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->nfpts);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->f2ntf);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->ifnode);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->fxn);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->fyn);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->fzn);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->fa);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->cdt);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->phi);CHKERRQ(ierr);
-  ierr = PetscFree(user.grid->rxy);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(user.grid->nftet));
+  CHKERRQ(PetscFree(user.grid->nfpts));
+  CHKERRQ(PetscFree(user.grid->f2ntf));
+  CHKERRQ(PetscFree(user.grid->ifnode));
+  CHKERRQ(PetscFree(user.grid->fxn));
+  CHKERRQ(PetscFree(user.grid->fyn));
+  CHKERRQ(PetscFree(user.grid->fzn));
+  CHKERRQ(PetscFree(user.grid->fa));
+  CHKERRQ(PetscFree(user.grid->cdt));
+  CHKERRQ(PetscFree(user.grid->phi));
+  CHKERRQ(PetscFree(user.grid->rxy));
 
-  ierr = PetscPrintf(comm,"Time taken in gradient calculation %g sec.\n",grad_time);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(comm,"Time taken in gradient calculation %g sec.\n",grad_time));
 
   ierr = PetscFinalize();
   return ierr;
@@ -321,9 +321,9 @@ int FormInitialGuess(SNES snes,GRID *grid)
   PetscScalar *qnode;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(grid->qnode,&qnode);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(grid->qnode,&qnode));
   f77INIT(&grid->nnodesLoc,qnode,grid->turbre,grid->amut,&grid->nvnodeLoc,grid->ivnode,&rank);
-  ierr = VecRestoreArray(grid->qnode,&qnode);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(grid->qnode,&qnode));
   PetscFunctionReturn(0);
 }
 
@@ -348,27 +348,27 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 
   PetscFunctionBegin;
   /* Get X into the local work vector */
-  ierr = VecScatterBegin(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  CHKERRQ(VecScatterBegin(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterEnd(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD));
   /* VecCopy(x,localX); */
   /* access the local work f,grad,and input */
-  ierr = VecGetArray(f,&res);CHKERRQ(ierr);
-  ierr = VecGetArray(grid->grad,&grad);CHKERRQ(ierr);
-  ierr = VecGetArray(localX,&qnode);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(f,&res));
+  CHKERRQ(VecGetArray(grid->grad,&grad));
+  CHKERRQ(VecGetArray(localX,&qnode));
   ires = tsCtx->ires;
 
-  ierr = PetscTime(&time_ini);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&time_ini));
   f77LSTGS(&grid->nnodesLoc,&grid->nedgeLoc,grid->eptr,qnode,grad,grid->xyz,grid->rxy,
            &rank,&grid->nvertices);
-  ierr       = PetscTime(&time_fin);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&time_fin));
   grad_time += time_fin - time_ini;
-  ierr       = VecRestoreArray(grid->grad,&grad);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(grid->grad,&grad));
 
-  ierr = VecScatterBegin(gradScatter,grid->grad,localGrad,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(gradScatter,grid->grad,localGrad,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  CHKERRQ(VecScatterBegin(gradScatter,grid->grad,localGrad,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterEnd(gradScatter,grid->grad,localGrad,INSERT_VALUES,SCATTER_FORWARD));
   /*VecCopy(grid->grad,localGrad);*/
 
-  ierr   = VecGetArray(localGrad,&grad);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(localGrad,&grad));
   nbface = grid->nsface + grid->nvface + grid->nfface;
   f77GETRES(&grid->nnodesLoc,&grid->ncell,  &grid->nedgeLoc,  &grid->nsface,
             &grid->nvface,&grid->nfface, &nbface,
@@ -407,7 +407,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 
 /* Add the contribution due to time stepping */
   if (ires == 1) {
-    ierr = VecGetArray(tsCtx->qold,&qold);CHKERRQ(ierr);
+    CHKERRQ(VecGetArray(tsCtx->qold,&qold));
 #if defined(INTERLACING)
     for (i = 0; i < grid->nnodesLoc; i++) {
       temp = grid->area[i]/(tsCtx->cfl*grid->cdt[i]);
@@ -425,11 +425,11 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
       }
     }
 #endif
-    ierr = VecRestoreArray(tsCtx->qold,&qold);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(tsCtx->qold,&qold));
   }
-  ierr = VecRestoreArray(localX,&qnode);CHKERRQ(ierr);
-  ierr = VecRestoreArray(f,&res);CHKERRQ(ierr);
-  ierr = VecRestoreArray(localGrad,&grad);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(localX,&qnode));
+  CHKERRQ(VecRestoreArray(f,&res));
+  CHKERRQ(VecRestoreArray(localGrad,&grad));
   PetscFunctionReturn(0);
 }
 
@@ -447,12 +447,12 @@ int FormJacobian(SNES snes,Vec x,Mat Jac,Mat pc_mat,void *dummy)
   int         ierr;
 
   PetscFunctionBegin;
-  /*  ierr = VecScatterBegin(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); */
+  /*  CHKERRQ(VecScatterBegin(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD));
+      CHKERRQ(VecScatterEnd(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD)); */
   /* VecCopy(x,localX); */
-  ierr = MatSetUnfactored(pc_mat);CHKERRQ(ierr);
+  CHKERRQ(MatSetUnfactored(pc_mat));
 
-  ierr = VecGetArray(localX,&qnode);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(localX,&qnode));
   f77FILLA(&grid->nnodesLoc,&grid->nedgeLoc,grid->eptr,
            &grid->nsface,
             grid->isface,grid->fxn,grid->fyn,grid->fzn,
@@ -461,16 +461,16 @@ int FormJacobian(SNES snes,Vec x,Mat Jac,Mat pc_mat,void *dummy)
             grid->ivnode,grid->ifnode,qnode,&pc_mat,grid->cdt,
             grid->area,grid->xyzn,&tsCtx->cfl,
            &rank,&grid->nvertices);
-  ierr  = VecRestoreArray(localX,&qnode);CHKERRQ(ierr);
-  ierr  = MatAssemblyBegin(Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr  = MatAssemblyEnd(Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(localX,&qnode));
+  CHKERRQ(MatAssemblyBegin(Jac,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(Jac,MAT_FINAL_ASSEMBLY));
 #if defined(MATRIX_VIEW)
   if ((tsCtx->itstep != 0) &&(tsCtx->itstep % tsCtx->print_freq) == 0) {
     PetscViewer viewer;
     char mat_file[PETSC_MAX_PATH_LEN];
     sprintf(mat_file,"mat_bin.%d",tsCtx->itstep);
     ierr = PetscViewerBinaryOpen(MPI_COMM_WORLD,mat_file,FILE_MODE_WRITE,&viewer);
-    ierr = MatView(pc_mat,viewer);CHKERRQ(ierr);
+    CHKERRQ(MatView(pc_mat,viewer));
     ierr = PetscViewerDestroy(&viewer);
   }
 #endif
@@ -501,23 +501,23 @@ int Update(SNES snes,void *ctx)
   long long      counter0,counter1;*/
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-print",&print_flag,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-print",&print_flag,NULL));
   if (print_flag) {
-    ierr = PetscFOpen(PETSC_COMM_WORLD,"history.out","w",&fptr);CHKERRQ(ierr);
-    ierr = PetscFPrintf(PETSC_COMM_WORLD,fptr,"VARIABLES = iter,cfl,fnorm,clift,cdrag,cmom,cpu\n");CHKERRQ(ierr);
+    CHKERRQ(PetscFOpen(PETSC_COMM_WORLD,"history.out","w",&fptr));
+    CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD,fptr,"VARIABLES = iter,cfl,fnorm,clift,cdrag,cmom,cpu\n"));
   }
   if (user->PreLoading) max_steps = 1;
   else max_steps = tsCtx->max_steps;
   fratio = 1.0;
   /*tsCtx->ptime = 0.0;*/
-  ierr = VecCopy(grid->qnode,tsCtx->qold);CHKERRQ(ierr);
-  ierr = PetscTime(&time1);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(grid->qnode,tsCtx->qold));
+  CHKERRQ(PetscTime(&time1));
 #if defined(PARCH_IRIX64) && defined(USE_HW_COUNTERS)
   /* if (!user->PreLoading) {
     PetscBool  flg = PETSC_FALSE;
-    ierr = PetscOptionsGetInt(NULL,NULL,"-e0",&event0,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(NULL,NULL,"-e1",&event1,&flg);CHKERRQ(ierr);
-    ierr = PetscTime(&time_start_counters);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-e0",&event0,&flg));
+    CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-e1",&event1,&flg));
+    CHKERRQ(PetscTime(&time_start_counters));
     if ((gen_start = start_counters(event0,event1)) < 0)
     SETERRQ(PETSC_COMM_SELF,1,>"Error in start_counters");
   }*/
@@ -525,34 +525,34 @@ int Update(SNES snes,void *ctx)
   /*cpu_ini = PetscGetCPUTime();*/
   for (tsCtx->itstep = 0; (tsCtx->itstep < max_steps) &&
         (fratio <= tsCtx->fnorm_ratio); tsCtx->itstep++) {
-    ierr = ComputeTimeStep(snes,tsCtx->itstep,user);CHKERRQ(ierr);
+    CHKERRQ(ComputeTimeStep(snes,tsCtx->itstep,user));
     /*tsCtx->ptime +=  tsCtx->dt;*/
 
-    ierr = SNESSolve(snes,NULL,grid->qnode);CHKERRQ(ierr);
-    ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+    CHKERRQ(SNESSolve(snes,NULL,grid->qnode));
+    CHKERRQ(SNESGetIterationNumber(snes,&its));
 
-    ierr       = SNESGetNonlinearStepFailures(snes,&nfails);CHKERRQ(ierr);
+    CHKERRQ(SNESGetNonlinearStepFailures(snes,&nfails));
     nfailsCum += nfails; nfails = 0;
     PetscCheckFalse(nfailsCum >= 2,PETSC_COMM_SELF,1,"Unable to find a Newton Step");
     if (print_flag) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"At Time Step %d cfl = %g and fnorm = %g\n",
                          tsCtx->itstep,tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
     }
-    ierr = VecCopy(grid->qnode,tsCtx->qold);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(grid->qnode,tsCtx->qold));
 
     c_info->ntt = tsCtx->itstep+1;
-    ierr        = PetscTime(&time2);CHKERRQ(ierr);
+    CHKERRQ(PetscTime(&time2));
     cpuloc      = time2-time1;
     cpuglo      = 0.0;
-    ierr        = MPI_Allreduce(&cpuloc,&cpuglo,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Allreduce(&cpuloc,&cpuglo,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD));
     c_info->tot = cpuglo;    /* Total CPU time used upto this time step */
 
-    ierr = VecScatterBegin(scatter,grid->qnode,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scatter,grid->qnode,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    CHKERRQ(VecScatterBegin(scatter,grid->qnode,localX,INSERT_VALUES,SCATTER_FORWARD));
+    CHKERRQ(VecScatterEnd(scatter,grid->qnode,localX,INSERT_VALUES,SCATTER_FORWARD));
     /* VecCopy(grid->qnode,localX); */
 
-    ierr = VecGetArray(grid->res,&res);CHKERRQ(ierr);
-    ierr = VecGetArray(localX,&qnode);CHKERRQ(ierr);
+    CHKERRQ(VecGetArray(grid->res,&res));
+    CHKERRQ(VecGetArray(localX,&qnode));
 
     f77FORCE(&grid->nnodesLoc,&grid->nedgeLoc,
               grid->isnode, grid->ivnode,
@@ -570,10 +570,10 @@ int Update(SNES snes,void *ctx)
       ierr = PetscFPrintf(PETSC_COMM_WORLD,fptr,"%d\t%g\t%g\t%g\t%g\t%g\t%g\n",
                           tsCtx->itstep,tsCtx->cfl,tsCtx->fnorm,clift,cdrag,cmom,cpuglo);
     }
-    ierr   = VecRestoreArray(localX,&qnode);CHKERRQ(ierr);
-    ierr   = VecRestoreArray(grid->res,&res);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(localX,&qnode));
+    CHKERRQ(VecRestoreArray(grid->res,&res));
     fratio = tsCtx->fnorm_ini/tsCtx->fnorm;
-    ierr   = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Barrier(PETSC_COMM_WORLD));
 
   } /* End of time step loop */
 
@@ -584,7 +584,7 @@ int Update(SNES snes,void *ctx)
     char str[256];
     /* if ((gen_read = read_counters(event0,&counter0,event1,&counter1)) < 0)
     SETERRQ(PETSC_COMM_SELF,1,"Error in read_counter");
-    ierr = PetscTime(&time_read_counters);CHKERRQ(ierr);
+    CHKERRQ(PetscTime(&time_read_counters));
     if (gen_read != gen_start) {
     SETERRQ(PETSC_COMM_SELF,1,"Lost Counters!! Aborting ...");
     }*/
@@ -598,13 +598,13 @@ int Update(SNES snes,void *ctx)
 #endif
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Total wall clock time needed %g seconds for %d time steps\n",
                      cpuglo,tsCtx->itstep);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"cfl = %g fnorm = %g\n",tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"clift = %g cdrag = %g cmom = %g\n",clift,cdrag,cmom);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"cfl = %g fnorm = %g\n",tsCtx->cfl,tsCtx->fnorm));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"clift = %g cdrag = %g cmom = %g\n",clift,cdrag,cmom));
 
   if (rank == 0 && print_flag) fclose(fptr);
   if (user->PreLoading) {
     tsCtx->fnorm_ini = 0.0;
-    ierr             = PetscPrintf(PETSC_COMM_WORLD,"Preloading done ...\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Preloading done ...\n"));
   }
   PetscFunctionReturn(0);
 }
@@ -623,9 +623,9 @@ int ComputeTimeStep(SNES snes,int iter,void *ctx)
 
   PetscFunctionBegin;
   tsCtx->ires = 0;
-  ierr        = FormFunction(snes,tsCtx->qold,func,user);CHKERRQ(ierr);
+  CHKERRQ(FormFunction(snes,tsCtx->qold,func,user));
   tsCtx->ires = 1;
-  ierr        = VecNorm(func,NORM_2,&tsCtx->fnorm);CHKERRQ(ierr);
+  CHKERRQ(VecNorm(func,NORM_2,&tsCtx->fnorm));
   /* first time through so compute initial function norm */
   if (tsCtx->fnorm_ini == 0.0) {
     tsCtx->fnorm_ini = tsCtx->fnorm;
@@ -645,7 +645,7 @@ int ComputeTimeStep(SNES snes,int iter,void *ctx)
   }
   tsCtx->cfl = MIN(newcfl,tsCtx->cfl_max);*/
   /*printf("In ComputeTime Step - fnorm is %f\n",tsCtx->fnorm);*/
-  /*ierr = VecDestroy(&func);CHKERRQ(ierr);*/
+  /*CHKERRQ(VecDestroy(&func));*/
   PetscFunctionReturn(0);
 }
 
@@ -683,14 +683,14 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(grid_param,&tmp);
   if (rank == 0) {
     PetscBool exists;
-    ierr = PetscOptionsGetString(NULL,NULL,"-mesh",mesh_file,sizeof(mesh_file),&flg);CHKERRQ(ierr);
-    ierr = PetscTestFile(mesh_file,'r',&exists);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsGetString(NULL,NULL,"-mesh",mesh_file,sizeof(mesh_file),&flg));
+    CHKERRQ(PetscTestFile(mesh_file,'r',&exists));
     if (!exists) { /* try uns3d.msh as the file name */
-      ierr = PetscStrcpy(mesh_file,"uns3d.msh");CHKERRQ(ierr);
+      CHKERRQ(PetscStrcpy(mesh_file,"uns3d.msh"));
     }
-    ierr = PetscBinaryOpen(mesh_file,FILE_MODE_READ,&fdes);CHKERRQ(ierr);
+    CHKERRQ(PetscBinaryOpen(mesh_file,FILE_MODE_READ,&fdes));
   }
-  ierr          = PetscBinarySynchronizedRead(comm,fdes,tmp,grid_param,PETSC_INT);CHKERRQ(ierr);
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,tmp,grid_param,PETSC_INT));
   grid->ncell   = tmp[0];
   grid->nnodes  = tmp[1];
   grid->nedge   = tmp[2];
@@ -707,7 +707,7 @@ int GetLocalOrdering(GRID *grid)
   grid->nsface  = 0;
   grid->nvface  = 0;
   grid->nfface  = 0;
-  ierr          = PetscFree(tmp);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(tmp));
   ierr          = PetscPrintf(comm,"nnodes = %d,nedge = %d,nnfacet = %d,nsnode = %d,nfnode = %d\n",
                               grid->nnodes,grid->nedge,grid->nnfacet,grid->nsnode,grid->nfnode);CHKERRQ(ierr);
 
@@ -730,20 +730,20 @@ int GetLocalOrdering(GRID *grid)
   nnodesLoc = 0;
 
   for (i = 0; i < nnodes; i++) a2l[i] = -1;
-  ierr = PetscTime(&time_ini);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&time_ini));
 
   if (rank == 0) {
     if (size == 1) {
-      ierr = PetscMemzero(v2p,nnodes*sizeof(int));CHKERRQ(ierr);
+      CHKERRQ(PetscMemzero(v2p,nnodes*sizeof(int)));
     } else {
       char      spart_file[PETSC_MAX_PATH_LEN],part_file[PETSC_MAX_PATH_LEN];
       PetscBool exists;
 
-      ierr = PetscOptionsGetString(NULL,NULL,"-partition",spart_file,sizeof(spart_file),&flg);CHKERRQ(ierr);
-      ierr = PetscTestFile(spart_file,'r',&exists);CHKERRQ(ierr);
+      CHKERRQ(PetscOptionsGetString(NULL,NULL,"-partition",spart_file,sizeof(spart_file),&flg));
+      CHKERRQ(PetscTestFile(spart_file,'r',&exists));
       if (!exists) { /* try appending the number of processors */
         sprintf(part_file,"part_vec.part.%d",size);
-        ierr = PetscStrcpy(spart_file,part_file);CHKERRQ(ierr);
+        CHKERRQ(PetscStrcpy(spart_file,part_file));
       }
       fptr = fopen(spart_file,"r");
       PetscCheckFalse(!fptr,PETSC_COMM_SELF,1,"Cannot open file %s",part_file);
@@ -754,7 +754,7 @@ int GetLocalOrdering(GRID *grid)
       fclose(fptr);
     }
   }
-  ierr = MPI_Bcast(v2p,nnodes,MPI_INT,0,comm);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Bcast(v2p,nnodes,MPI_INT,0,comm));
   for (inode = 0; inode < nnodes; inode++) {
     if (v2p[inode] == rank) {
       l2a[nnodesLoc] = inode;
@@ -763,17 +763,17 @@ int GetLocalOrdering(GRID *grid)
     }
   }
 
-  ierr      = PetscTime(&time_fin);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&time_fin));
   time_fin -= time_ini;
-  ierr      = PetscPrintf(comm,"Partition Vector read successfully\n");CHKERRQ(ierr);
-  ierr      = PetscPrintf(comm,"Time taken in this phase was %g\n",time_fin);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(comm,"Partition Vector read successfully\n"));
+  CHKERRQ(PetscPrintf(comm,"Time taken in this phase was %g\n",time_fin));
 
-  ierr    = MPI_Scan(&nnodesLoc,&rstart,1,MPI_INT,MPI_SUM,comm);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Scan(&nnodesLoc,&rstart,1,MPI_INT,MPI_SUM,comm));
   rstart -= nnodesLoc;
   ICALLOC(nnodesLoc,&pordering);
   for (i=0; i < nnodesLoc; i++) pordering[i] = rstart + i;
-  ierr = AOCreateBasic(comm,nnodesLoc,l2a,pordering,&ao);CHKERRQ(ierr);
-  ierr = PetscFree(pordering);CHKERRQ(ierr);
+  CHKERRQ(AOCreateBasic(comm,nnodesLoc,l2a,pordering,&ao));
+  CHKERRQ(PetscFree(pordering));
 
   /* Now count the local number of edges - including edges with
    ghost nodes but edges between ghost nodes are NOT counted */
@@ -786,15 +786,15 @@ int GetLocalOrdering(GRID *grid)
   nedgeLocEst = PetscMin(nedge,1000000);
   remEdges    = nedge;
   ICALLOC(2*nedgeLocEst,&tmp);
-  ierr = PetscBinarySynchronizedSeek(comm,fdes,0,PETSC_BINARY_SEEK_CUR,&currentPos);CHKERRQ(ierr);
-  ierr = PetscTime(&time_ini);CHKERRQ(ierr);
+  CHKERRQ(PetscBinarySynchronizedSeek(comm,fdes,0,PETSC_BINARY_SEEK_CUR,&currentPos));
+  CHKERRQ(PetscTime(&time_ini));
   while (remEdges > 0) {
     readEdges = PetscMin(remEdges,nedgeLocEst);
     /*time_ini = PetscTime();*/
-    ierr = PetscBinarySynchronizedRead(comm,fdes,tmp,readEdges,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscBinarySynchronizedSeek(comm,fdes,(nedge-readEdges)*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
-    ierr = PetscBinarySynchronizedRead(comm,fdes,tmp+readEdges,readEdges,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscBinarySynchronizedSeek(comm,fdes,-nedge*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
+    CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,tmp,readEdges,PETSC_INT));
+    CHKERRQ(PetscBinarySynchronizedSeek(comm,fdes,(nedge-readEdges)*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos));
+    CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,tmp+readEdges,readEdges,PETSC_INT));
+    CHKERRQ(PetscBinarySynchronizedSeek(comm,fdes,-nedge*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos));
     /*time_fin += PetscTime()-time_ini;*/
     for (j = 0; j < readEdges; j++) {
       node1 = tmp[j]-1;
@@ -816,11 +816,11 @@ int GetLocalOrdering(GRID *grid)
     remEdges = remEdges - readEdges;
     ierr     = MPI_Barrier(comm);
   }
-  ierr      = PetscTime(&time_fin);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&time_fin));
   time_fin -= time_ini;
-  ierr      = PetscPrintf(comm,"Local edges counted with MPI_Bcast %d\n",nedgeLoc);CHKERRQ(ierr);
-  ierr      = PetscPrintf(comm,"Local vertices counted %d\n",nvertices);CHKERRQ(ierr);
-  ierr      = PetscPrintf(comm,"Time taken in this phase was %g\n",time_fin);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(comm,"Local edges counted with MPI_Bcast %d\n",nedgeLoc));
+  CHKERRQ(PetscPrintf(comm,"Local vertices counted %d\n",nvertices));
+  CHKERRQ(PetscPrintf(comm,"Time taken in this phase was %g\n",time_fin));
 
   /* Now store the local edges */
   ICALLOC(2*nedgeLoc,&grid->eptr);
@@ -828,16 +828,16 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(nedgeLoc,&eperm);
   i = 0; j = 0; k = 0;
   remEdges   = nedge;
-  ierr       = PetscBinarySynchronizedSeek(comm,fdes,currentPos,PETSC_BINARY_SEEK_SET,&newPos);CHKERRQ(ierr);
+  CHKERRQ(PetscBinarySynchronizedSeek(comm,fdes,currentPos,PETSC_BINARY_SEEK_SET,&newPos));
   currentPos = newPos;
 
-  ierr = PetscTime(&time_ini);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&time_ini));
   while (remEdges > 0) {
     readEdges = PetscMin(remEdges,nedgeLocEst);
-    ierr      = PetscBinarySynchronizedRead(comm,fdes,tmp,readEdges,PETSC_INT);CHKERRQ(ierr);
-    ierr      = PetscBinarySynchronizedSeek(comm,fdes,(nedge-readEdges)*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
-    ierr      = PetscBinarySynchronizedRead(comm,fdes,tmp+readEdges,readEdges,PETSC_INT);CHKERRQ(ierr);
-    ierr      = PetscBinarySynchronizedSeek(comm,fdes,-nedge*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
+    CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,tmp,readEdges,PETSC_INT));
+    CHKERRQ(PetscBinarySynchronizedSeek(comm,fdes,(nedge-readEdges)*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos));
+    CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,tmp+readEdges,readEdges,PETSC_INT));
+    CHKERRQ(PetscBinarySynchronizedSeek(comm,fdes,-nedge*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos));
     for (j = 0; j < readEdges; j++) {
       node1 = tmp[j]-1;
       node2 = tmp[j+readEdges]-1;
@@ -853,15 +853,15 @@ int GetLocalOrdering(GRID *grid)
     remEdges = remEdges - readEdges;
     ierr     = MPI_Barrier(comm);
   }
-  ierr      = PetscBinarySynchronizedSeek(comm,fdes,currentPos+2*nedge*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_SET,&newPos);CHKERRQ(ierr);
-  ierr      = PetscTime(&time_fin);CHKERRQ(ierr);
+  CHKERRQ(PetscBinarySynchronizedSeek(comm,fdes,currentPos+2*nedge*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_SET,&newPos));
+  CHKERRQ(PetscTime(&time_fin));
   time_fin -= time_ini;
-  ierr      = PetscPrintf(comm,"Local edges stored\n");CHKERRQ(ierr);
-  ierr      = PetscPrintf(comm,"Time taken in this phase was %g\n",time_fin);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(comm,"Local edges stored\n"));
+  CHKERRQ(PetscPrintf(comm,"Time taken in this phase was %g\n",time_fin));
 
-  ierr = PetscFree(tmp);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(tmp));
   ICALLOC(2*nedgeLoc,&tmp);
-  ierr = PetscMemcpy(tmp,grid->eptr,2*nedgeLoc*sizeof(int));CHKERRQ(ierr);
+  CHKERRQ(PetscMemcpy(tmp,grid->eptr,2*nedgeLoc*sizeof(int)));
 #if defined(_OPENMP) && defined(HAVE_EDGE_COLORING)
   ierr = EdgeColoring(nvertices,nedgeLoc,grid->eptr,eperm,&grid->ncolor,grid->ncount);
 #else
@@ -873,12 +873,12 @@ int GetLocalOrdering(GRID *grid)
    printf("%d %d %d\n",i,tmp[i],eperm[i]);
   */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(0,"-no_edge_reordering",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(0,"-no_edge_reordering",&flg,NULL));
   if (!flg) {
-    ierr = PetscSortIntWithPermutation(nedgeLoc,tmp,eperm);CHKERRQ(ierr);
+    CHKERRQ(PetscSortIntWithPermutation(nedgeLoc,tmp,eperm));
   }
 #endif
-  ierr = PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__);CHKERRQ(ierr);
+  CHKERRQ(PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__));
   k    = 0;
   for (i = 0; i < nedgeLoc; i++) {
     int cross_node=nnodesLoc/2;
@@ -896,8 +896,8 @@ int GetLocalOrdering(GRID *grid)
             rank,i,node1,node2);CHKERRQ(ierr);*/
     if ((node1 <= cross_node) && (node2 > cross_node)) cross_edges++;
   }
-  ierr = PetscPrintf(comm,"Number of cross edges %d\n", cross_edges);CHKERRQ(ierr);
-  ierr = PetscFree(tmp);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(comm,"Number of cross edges %d\n", cross_edges));
+  CHKERRQ(PetscFree(tmp));
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK) && !defined(HAVE_EDGE_COLORING)
   /* Now make the local 'ia' and 'ja' arrays */
   ICALLOC(nvertices+1,&grid->ia);
@@ -907,7 +907,7 @@ int GetLocalOrdering(GRID *grid)
   nnz = grid->ia[nvertices] - 1;
   ICALLOC(nnz,&grid->ja);
   f77GETJA(&nvertices,&nedgeLoc,grid->eptr,grid->ia,grid->ja,tmp,&rank);
-  ierr = PetscFree(tmp);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(tmp));
 #else
   /* Now make the local 'ia' and 'ja' arrays */
   ICALLOC(nnodesLoc+1,&grid->ia);
@@ -916,22 +916,22 @@ int GetLocalOrdering(GRID *grid)
   f77GETIA(&nnodesLoc,&nedgeLoc,grid->eptr,grid->ia,tmp,&rank);
   nnz = grid->ia[nnodesLoc] - 1;
 #if defined(BLOCKING)
-  ierr = PetscPrintf(comm,"The Jacobian has %d non-zero blocks with block size = %d\n",nnz,bs);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(comm,"The Jacobian has %d non-zero blocks with block size = %d\n",nnz,bs));
 #else
-  ierr = PetscPrintf(comm,"The Jacobian has %d non-zeros\n",nnz);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(comm,"The Jacobian has %d non-zeros\n",nnz));
 #endif
   ICALLOC(nnz,&grid->ja);
   f77GETJA(&nnodesLoc,&nedgeLoc,grid->eptr,grid->ia,grid->ja,tmp,&rank);
-  ierr = PetscFree(tmp);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(tmp));
 #endif
   ICALLOC(nvertices,&grid->loc2glo);
-  ierr = PetscMemcpy(grid->loc2glo,l2a,nvertices*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscFree(l2a);CHKERRQ(ierr);
+  CHKERRQ(PetscMemcpy(grid->loc2glo,l2a,nvertices*sizeof(int)));
+  CHKERRQ(PetscFree(l2a));
   l2a  = grid->loc2glo;
   ICALLOC(nvertices,&grid->loc2pet);
   l2p  = grid->loc2pet;
-  ierr = PetscMemcpy(l2p,l2a,nvertices*sizeof(int));CHKERRQ(ierr);
-  ierr = AOApplicationToPetsc(ao,nvertices,l2p);CHKERRQ(ierr);
+  CHKERRQ(PetscMemcpy(l2p,l2a,nvertices*sizeof(int)));
+  CHKERRQ(AOApplicationToPetsc(ao,nvertices,l2p));
 
   /* Renumber unit normals of dual face (from node1 to node2)
       and the area of the dual mesh face */
@@ -941,10 +941,10 @@ int GetLocalOrdering(GRID *grid)
   /* Do the x-component */
   i = 0; k = 0;
   remEdges = nedge;
-  ierr     = PetscTime(&time_ini);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&time_ini));
   while (remEdges > 0) {
     readEdges = PetscMin(remEdges,nedgeLocEst);
-    ierr      = PetscBinarySynchronizedRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR);CHKERRQ(ierr);
+    CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR));
     for (j = 0; j < readEdges; j++)
       if (edge_bit[k] == (i+j)) {
         ftmp1[k] = ftmp[j];
@@ -952,7 +952,7 @@ int GetLocalOrdering(GRID *grid)
       }
     i       += readEdges;
     remEdges = remEdges - readEdges;
-    ierr     = MPI_Barrier(comm);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Barrier(comm));
   }
   for (i = 0; i < nedgeLoc; i++)
 #if defined(INTERLACING)
@@ -965,7 +965,7 @@ int GetLocalOrdering(GRID *grid)
   remEdges = nedge;
   while (remEdges > 0) {
     readEdges = PetscMin(remEdges,nedgeLocEst);
-    ierr      = PetscBinarySynchronizedRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR);CHKERRQ(ierr);
+    CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR));
     for (j = 0; j < readEdges; j++)
       if (edge_bit[k] == (i+j)) {
         ftmp1[k] = ftmp[j];
@@ -973,7 +973,7 @@ int GetLocalOrdering(GRID *grid)
       }
     i       += readEdges;
     remEdges = remEdges - readEdges;
-    ierr     = MPI_Barrier(comm);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Barrier(comm));
   }
   for (i = 0; i < nedgeLoc; i++)
 #if defined(INTERLACING)
@@ -986,7 +986,7 @@ int GetLocalOrdering(GRID *grid)
   remEdges = nedge;
   while (remEdges > 0) {
     readEdges = PetscMin(remEdges,nedgeLocEst);
-    ierr      = PetscBinarySynchronizedRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR);CHKERRQ(ierr);
+    CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR));
     for (j = 0; j < readEdges; j++)
       if (edge_bit[k] == (i+j)) {
         ftmp1[k] = ftmp[j];
@@ -994,7 +994,7 @@ int GetLocalOrdering(GRID *grid)
       }
     i       += readEdges;
     remEdges = remEdges - readEdges;
-    ierr     = MPI_Barrier(comm);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Barrier(comm));
   }
   for (i = 0; i < nedgeLoc; i++)
 #if defined(INTERLACING)
@@ -1007,7 +1007,7 @@ int GetLocalOrdering(GRID *grid)
   remEdges = nedge;
   while (remEdges > 0) {
     readEdges = PetscMin(remEdges,nedgeLocEst);
-    ierr      = PetscBinarySynchronizedRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR);CHKERRQ(ierr);
+    CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR));
     for (j = 0; j < readEdges; j++)
       if (edge_bit[k] == (i+j)) {
         ftmp1[k] = ftmp[j];
@@ -1015,7 +1015,7 @@ int GetLocalOrdering(GRID *grid)
       }
     i       += readEdges;
     remEdges = remEdges - readEdges;
-    ierr     = MPI_Barrier(comm);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Barrier(comm));
   }
   for (i = 0; i < nedgeLoc; i++)
 #if defined(INTERLACING)
@@ -1024,14 +1024,14 @@ int GetLocalOrdering(GRID *grid)
     grid->xyzn[3*nedgeLoc+i] = ftmp1[eperm[i]];
 #endif
 
-  ierr      = PetscFree(edge_bit);CHKERRQ(ierr);
-  ierr      = PetscFree(eperm);CHKERRQ(ierr);
-  ierr      = PetscFree(ftmp);CHKERRQ(ierr);
-  ierr      = PetscFree(ftmp1);CHKERRQ(ierr);
-  ierr      = PetscTime(&time_fin);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(edge_bit));
+  CHKERRQ(PetscFree(eperm));
+  CHKERRQ(PetscFree(ftmp));
+  CHKERRQ(PetscFree(ftmp1));
+  CHKERRQ(PetscTime(&time_fin));
   time_fin -= time_ini;
-  ierr      = PetscPrintf(comm,"Edge normals partitioned\n");CHKERRQ(ierr);
-  ierr      = PetscPrintf(comm,"Time taken in this phase was %g\n",time_fin);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(comm,"Edge normals partitioned\n"));
+  CHKERRQ(PetscPrintf(comm,"Time taken in this phase was %g\n",time_fin));
 #if defined(_OPENMP)
   /*Arrange for the division of work among threads*/
 #if defined(HAVE_EDGE_COLORING)
@@ -1059,7 +1059,7 @@ int GetLocalOrdering(GRID *grid)
       }
     }
     ICALLOC(nvertices,&grid->part_thr);
-    ierr       = PetscMemzero(grid->part_thr,nvertices*sizeof(int));CHKERRQ(ierr);
+    CHKERRQ(PetscMemzero(grid->part_thr,nvertices*sizeof(int)));
     options[0] = 0;
     /* Call the pmetis library routine */
     if (max_threads > 1)
@@ -1068,7 +1068,7 @@ int GetLocalOrdering(GRID *grid)
     PetscPrintf(MPI_COMM_WORLD,"The number of cut edges is %d\n", edgecut);
     /* Write the partition vector to disk */
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(0,"-omp_partitioning",&flg,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsGetBool(0,"-omp_partitioning",&flg,NULL));
     if (flg) {
       int  *partv_loc, *partv_glo;
       int  *disp,*counts,*loc2glo_glo;
@@ -1089,7 +1089,7 @@ int GetLocalOrdering(GRID *grid)
       MPI_Gatherv(grid->loc2glo,nnodesLoc,MPI_INT,loc2glo_glo,counts,disp,MPI_INT,0,MPI_COMM_WORLD);
       MPI_Gatherv(partv_loc,nnodesLoc,MPI_INT,partv_glo,counts,disp,MPI_INT,0,MPI_COMM_WORLD);
       if (rank == 0) {
-        ierr = PetscSortIntWithArray(nnodes,loc2glo_glo,partv_glo);CHKERRQ(ierr);
+        CHKERRQ(PetscSortIntWithArray(nnodes,loc2glo_glo,partv_glo));
         sprintf(part_file,"hyb_part_vec.%d",2*size);
         fp = fopen(part_file,"w");
         for (i = 0; i < nnodes; i++) fprintf(fp,"%d\n",partv_glo[i]);
@@ -1105,7 +1105,7 @@ int GetLocalOrdering(GRID *grid)
     /* Divide the work among threads */
     k = 0;
     ICALLOC((max_threads+1),&grid->nedge_thr);
-    ierr        = PetscMemzero(grid->nedge_thr,(max_threads+1)*sizeof(int));CHKERRQ(ierr);
+    CHKERRQ(PetscMemzero(grid->nedge_thr,(max_threads+1)*sizeof(int)));
     cross_edges = 0;
     for (i = 0; i < nedgeLoc; i++) {
       node1 = grid->eptr[k++]-1;
@@ -1178,10 +1178,10 @@ int GetLocalOrdering(GRID *grid)
   FCALLOC(3*nvertices,&grid->xyz);
   remNodes = nnodes;
   i        = 0;
-  ierr     = PetscTime(&time_ini);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&time_ini));
   while (remNodes > 0) {
     readNodes = PetscMin(remNodes,nnodesLocEst);
-    ierr      = PetscBinarySynchronizedRead(comm,fdes,ftmp,readNodes,PETSC_SCALAR);CHKERRQ(ierr);
+    CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,ftmp,readNodes,PETSC_SCALAR));
     for (j = 0; j < readNodes; j++) {
       if (a2l[i+j] >= 0) {
 #if defined(INTERLACING)
@@ -1193,14 +1193,14 @@ int GetLocalOrdering(GRID *grid)
     }
     i        += nnodesLocEst;
     remNodes -= nnodesLocEst;
-    ierr      = MPI_Barrier(comm);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Barrier(comm));
   }
 
   remNodes = nnodes;
   i = 0;
   while (remNodes > 0) {
     readNodes = PetscMin(remNodes,nnodesLocEst);
-    ierr      = PetscBinarySynchronizedRead(comm,fdes,ftmp,readNodes,PETSC_SCALAR);CHKERRQ(ierr);
+    CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,ftmp,readNodes,PETSC_SCALAR));
     for (j = 0; j < readNodes; j++) {
       if (a2l[i+j] >= 0) {
 #if defined(INTERLACING)
@@ -1212,14 +1212,14 @@ int GetLocalOrdering(GRID *grid)
     }
     i        += nnodesLocEst;
     remNodes -= nnodesLocEst;
-    ierr      = MPI_Barrier(comm);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Barrier(comm));
   }
 
   remNodes = nnodes;
   i        = 0;
   while (remNodes > 0) {
     readNodes = PetscMin(remNodes,nnodesLocEst);
-    ierr      = PetscBinarySynchronizedRead(comm,fdes,ftmp,readNodes,PETSC_SCALAR);CHKERRQ(ierr);
+    CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,ftmp,readNodes,PETSC_SCALAR));
     for (j = 0; j < readNodes; j++) {
       if (a2l[i+j] >= 0) {
 #if defined(INTERLACING)
@@ -1231,7 +1231,7 @@ int GetLocalOrdering(GRID *grid)
     }
     i        += nnodesLocEst;
     remNodes -= nnodesLocEst;
-    ierr      = MPI_Barrier(comm);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Barrier(comm));
   }
 
   /* Renumber dual volume "area" */
@@ -1240,20 +1240,20 @@ int GetLocalOrdering(GRID *grid)
   i        = 0;
   while (remNodes > 0) {
     readNodes = PetscMin(remNodes,nnodesLocEst);
-    ierr      = PetscBinarySynchronizedRead(comm,fdes,ftmp,readNodes,PETSC_SCALAR);CHKERRQ(ierr);
+    CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,ftmp,readNodes,PETSC_SCALAR));
     for (j = 0; j < readNodes; j++)
       if (a2l[i+j] >= 0)
         grid->area[a2l[i+j]] = ftmp[j];
     i        += nnodesLocEst;
     remNodes -= nnodesLocEst;
-    ierr      = MPI_Barrier(comm);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Barrier(comm));
   }
 
-  ierr      = PetscFree(ftmp);CHKERRQ(ierr);
-  ierr      = PetscTime(&time_fin);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(ftmp));
+  CHKERRQ(PetscTime(&time_fin));
   time_fin -= time_ini;
-  ierr      = PetscPrintf(comm,"Coordinates remapped\n");CHKERRQ(ierr);
-  ierr      = PetscPrintf(comm,"Time taken in this phase was %g\n",time_fin);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(comm,"Coordinates remapped\n"));
+  CHKERRQ(PetscPrintf(comm,"Time taken in this phase was %g\n",time_fin));
 
 /* Now,handle all the solid boundaries - things to be done :
  * 1. Identify the nodes belonging to the solid
@@ -1271,13 +1271,13 @@ int GetLocalOrdering(GRID *grid)
   FCALLOC(nsnode,&grid->syn);
   FCALLOC(nsnode,&grid->szn);
   FCALLOC(nsnode,&grid->sa);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->nntet,nnbound,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->nnpts,nnbound,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->f2ntn,4*nnfacet,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->isnode,nsnode,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->sxn,nsnode,PETSC_SCALAR);CHKERRQ(ierr);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->syn,nsnode,PETSC_SCALAR);CHKERRQ(ierr);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->szn,nsnode,PETSC_SCALAR);CHKERRQ(ierr);
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->nntet,nnbound,PETSC_INT));
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->nnpts,nnbound,PETSC_INT));
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->f2ntn,4*nnfacet,PETSC_INT));
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->isnode,nsnode,PETSC_INT));
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->sxn,nsnode,PETSC_SCALAR));
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->syn,nsnode,PETSC_SCALAR));
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->szn,nsnode,PETSC_SCALAR));
 
   isurf      = 0;
   nsnodeLoc  = 0;
@@ -1288,9 +1288,9 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(nsnode,&tmp1);
   ICALLOC(nnodes,&tmp2);
   FCALLOC(4*nsnode,&ftmp);
-  ierr = PetscMemzero(tmp,3*nnfacet*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscMemzero(tmp1,nsnode*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscMemzero(tmp2,nnodes*sizeof(int));CHKERRQ(ierr);
+  CHKERRQ(PetscMemzero(tmp,3*nnfacet*sizeof(int)));
+  CHKERRQ(PetscMemzero(tmp1,nsnode*sizeof(int)));
+  CHKERRQ(PetscMemzero(tmp2,nnodes*sizeof(int)));
 
   j = 0;
   for (i = 0; i < nsnode; i++) {
@@ -1325,12 +1325,12 @@ int GetLocalOrdering(GRID *grid)
     /*printf("grid->nntet[%d] after reordering is %d\n",i,grid->nntet[i]);*/
     nte = 0;
   }
-  ierr = PetscFree(grid->f2ntn);CHKERRQ(ierr);
-  ierr = PetscFree(grid->isnode);CHKERRQ(ierr);
-  ierr = PetscFree(grid->sxn);CHKERRQ(ierr);
-  ierr = PetscFree(grid->syn);CHKERRQ(ierr);
-  ierr = PetscFree(grid->szn);CHKERRQ(ierr);
-  ierr = PetscFree(grid->sa);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(grid->f2ntn));
+  CHKERRQ(PetscFree(grid->isnode));
+  CHKERRQ(PetscFree(grid->sxn));
+  CHKERRQ(PetscFree(grid->syn));
+  CHKERRQ(PetscFree(grid->szn));
+  CHKERRQ(PetscFree(grid->sa));
   ICALLOC(4*nnfacetLoc,&grid->f2ntn);
   ICALLOC(nsnodeLoc,&grid->isnode);
   FCALLOC(nsnodeLoc,&grid->sxn);
@@ -1351,10 +1351,10 @@ int GetLocalOrdering(GRID *grid)
     grid->f2ntn[nnfacetLoc+i]   = tmp[j++] + 1;
     grid->f2ntn[2*nnfacetLoc+i] = tmp[j++] + 1;
   }
-  ierr = PetscFree(tmp);CHKERRQ(ierr);
-  ierr = PetscFree(tmp1);CHKERRQ(ierr);
-  ierr = PetscFree(tmp2);CHKERRQ(ierr);
-  ierr = PetscFree(ftmp);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(tmp));
+  CHKERRQ(PetscFree(tmp1));
+  CHKERRQ(PetscFree(tmp2));
+  CHKERRQ(PetscFree(ftmp));
 
 /* Now identify the triangles on which the current proceesor
    would perform force calculation */
@@ -1371,7 +1371,7 @@ int GetLocalOrdering(GRID *grid)
       grid->sface_bit[i] = 1;
   }
   /*printf("On processor %d total solid triangles = %d,locally owned = %d alpha = %d\n",rank,totTr,myTr,alpha);*/
-  ierr = PetscPrintf(comm,"Solid boundaries partitioned\n");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(comm,"Solid boundaries partitioned\n"));
 
 /* Now,handle all the viscous boundaries - things to be done :
  * 1. Identify the nodes belonging to the viscous
@@ -1389,13 +1389,13 @@ int GetLocalOrdering(GRID *grid)
   FCALLOC(nvnode,&grid->vyn);
   FCALLOC(nvnode,&grid->vzn);
   FCALLOC(nvnode,&grid->va);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->nvtet,nvbound,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->nvpts,nvbound,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->f2ntv,4*nvfacet,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->ivnode,nvnode,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->vxn,nvnode,PETSC_SCALAR);CHKERRQ(ierr);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->vyn,nvnode,PETSC_SCALAR);CHKERRQ(ierr);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->vzn,nvnode,PETSC_SCALAR);CHKERRQ(ierr);
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->nvtet,nvbound,PETSC_INT));
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->nvpts,nvbound,PETSC_INT));
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->f2ntv,4*nvfacet,PETSC_INT));
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->ivnode,nvnode,PETSC_INT));
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->vxn,nvnode,PETSC_SCALAR));
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->vyn,nvnode,PETSC_SCALAR));
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->vzn,nvnode,PETSC_SCALAR));
 
   isurf      = 0;
   nvnodeLoc  = 0;
@@ -1406,9 +1406,9 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(nvnode,&tmp1);
   ICALLOC(nnodes,&tmp2);
   FCALLOC(4*nvnode,&ftmp);
-  ierr = PetscMemzero(tmp,3*nvfacet*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscMemzero(tmp1,nvnode*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscMemzero(tmp2,nnodes*sizeof(int));CHKERRQ(ierr);
+  CHKERRQ(PetscMemzero(tmp,3*nvfacet*sizeof(int)));
+  CHKERRQ(PetscMemzero(tmp1,nvnode*sizeof(int)));
+  CHKERRQ(PetscMemzero(tmp2,nnodes*sizeof(int)));
 
   j = 0;
   for (i = 0; i < nvnode; i++) {
@@ -1440,12 +1440,12 @@ int GetLocalOrdering(GRID *grid)
     grid->nvtet[i] = nte;
     nte            = 0;
   }
-  ierr = PetscFree(grid->f2ntv);CHKERRQ(ierr);
-  ierr = PetscFree(grid->ivnode);CHKERRQ(ierr);
-  ierr = PetscFree(grid->vxn);CHKERRQ(ierr);
-  ierr = PetscFree(grid->vyn);CHKERRQ(ierr);
-  ierr = PetscFree(grid->vzn);CHKERRQ(ierr);
-  ierr = PetscFree(grid->va);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(grid->f2ntv));
+  CHKERRQ(PetscFree(grid->ivnode));
+  CHKERRQ(PetscFree(grid->vxn));
+  CHKERRQ(PetscFree(grid->vyn));
+  CHKERRQ(PetscFree(grid->vzn));
+  CHKERRQ(PetscFree(grid->va));
   ICALLOC(4*nvfacetLoc,&grid->f2ntv);
   ICALLOC(nvnodeLoc,&grid->ivnode);
   FCALLOC(nvnodeLoc,&grid->vxn);
@@ -1466,15 +1466,15 @@ int GetLocalOrdering(GRID *grid)
     grid->f2ntv[nvfacetLoc+i]   = tmp[j++] + 1;
     grid->f2ntv[2*nvfacetLoc+i] = tmp[j++] + 1;
   }
-  ierr = PetscFree(tmp);CHKERRQ(ierr);
-  ierr = PetscFree(tmp1);CHKERRQ(ierr);
-  ierr = PetscFree(tmp2);CHKERRQ(ierr);
-  ierr = PetscFree(ftmp);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(tmp));
+  CHKERRQ(PetscFree(tmp1));
+  CHKERRQ(PetscFree(tmp2));
+  CHKERRQ(PetscFree(ftmp));
 
 /* Now identify the triangles on which the current proceesor
    would perform force calculation */
   ICALLOC(nvfacetLoc,&grid->vface_bit);
-  ierr = PetscMemzero(grid->vface_bit,nvfacetLoc*sizeof(int));CHKERRQ(ierr);
+  CHKERRQ(PetscMemzero(grid->vface_bit,nvfacetLoc*sizeof(int)));
   for (i = 0; i < nvfacetLoc; i++) {
     node1 = l2a[grid->ivnode[grid->f2ntv[i] - 1] - 1];
     node2 = l2a[grid->ivnode[grid->f2ntv[nvfacetLoc + i] - 1] - 1];
@@ -1486,8 +1486,8 @@ int GetLocalOrdering(GRID *grid)
          grid->vface_bit[i] = 1;
     }
   }
-  ierr = PetscFree(v2p);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Viscous boundaries partitioned\n");CHKERRQ(ierr);
+  CHKERRQ(PetscFree(v2p));
+  CHKERRQ(PetscPrintf(comm,"Viscous boundaries partitioned\n"));
 
 /* Now,handle all the free boundaries - things to be done :
  * 1. Identify the nodes belonging to the free
@@ -1506,13 +1506,13 @@ int GetLocalOrdering(GRID *grid)
   FCALLOC(nfnode,&grid->fyn);
   FCALLOC(nfnode,&grid->fzn);
   FCALLOC(nfnode,&grid->fa);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->nftet,nfbound,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->nfpts,nfbound,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->f2ntf,4*nffacet,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->ifnode,nfnode,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->fxn,nfnode,PETSC_SCALAR);CHKERRQ(ierr);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->fyn,nfnode,PETSC_SCALAR);CHKERRQ(ierr);
-  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->fzn,nfnode,PETSC_SCALAR);CHKERRQ(ierr);
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->nftet,nfbound,PETSC_INT));
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->nfpts,nfbound,PETSC_INT));
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->f2ntf,4*nffacet,PETSC_INT));
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->ifnode,nfnode,PETSC_INT));
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->fxn,nfnode,PETSC_SCALAR));
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->fyn,nfnode,PETSC_SCALAR));
+  CHKERRQ(PetscBinarySynchronizedRead(comm,fdes,grid->fzn,nfnode,PETSC_SCALAR));
 
   isurf      = 0;
   nfnodeLoc  = 0;
@@ -1523,9 +1523,9 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(nfnode,&tmp1);
   ICALLOC(nnodes,&tmp2);
   FCALLOC(4*nfnode,&ftmp);
-  ierr = PetscMemzero(tmp,3*nffacet*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscMemzero(tmp1,nfnode*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscMemzero(tmp2,nnodes*sizeof(int));CHKERRQ(ierr);
+  CHKERRQ(PetscMemzero(tmp,3*nffacet*sizeof(int)));
+  CHKERRQ(PetscMemzero(tmp1,nfnode*sizeof(int)));
+  CHKERRQ(PetscMemzero(tmp2,nnodes*sizeof(int)));
 
   j = 0;
   for (i = 0; i < nfnode; i++) {
@@ -1557,12 +1557,12 @@ int GetLocalOrdering(GRID *grid)
     grid->nftet[i] = nte;
     nte            = 0;
   }
-  ierr = PetscFree(grid->f2ntf);CHKERRQ(ierr);
-  ierr = PetscFree(grid->ifnode);CHKERRQ(ierr);
-  ierr = PetscFree(grid->fxn);CHKERRQ(ierr);
-  ierr = PetscFree(grid->fyn);CHKERRQ(ierr);
-  ierr = PetscFree(grid->fzn);CHKERRQ(ierr);
-  ierr = PetscFree(grid->fa);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(grid->f2ntf));
+  CHKERRQ(PetscFree(grid->ifnode));
+  CHKERRQ(PetscFree(grid->fxn));
+  CHKERRQ(PetscFree(grid->fyn));
+  CHKERRQ(PetscFree(grid->fzn));
+  CHKERRQ(PetscFree(grid->fa));
   ICALLOC(4*nffacetLoc,&grid->f2ntf);
   ICALLOC(nfnodeLoc,&grid->ifnode);
   FCALLOC(nfnodeLoc,&grid->fxn);
@@ -1584,16 +1584,16 @@ int GetLocalOrdering(GRID *grid)
     grid->f2ntf[2*nffacetLoc+i] = tmp[j++] + 1;
   }
 
-  ierr = PetscFree(tmp);CHKERRQ(ierr);
-  ierr = PetscFree(tmp1);CHKERRQ(ierr);
-  ierr = PetscFree(tmp2);CHKERRQ(ierr);
-  ierr = PetscFree(ftmp);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Free boundaries partitioned\n");CHKERRQ(ierr);
+  CHKERRQ(PetscFree(tmp));
+  CHKERRQ(PetscFree(tmp1));
+  CHKERRQ(PetscFree(tmp2));
+  CHKERRQ(PetscFree(ftmp));
+  CHKERRQ(PetscPrintf(comm,"Free boundaries partitioned\n"));
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(0,"-mem_use",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(0,"-mem_use",&flg,NULL));
   if (flg) {
-    ierr = PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after partitioning\n");CHKERRQ(ierr);
+    CHKERRQ(PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after partitioning\n"));
   }
 
   /* Put different mappings and other info into grid */
@@ -1601,8 +1601,8 @@ int GetLocalOrdering(GRID *grid)
    ICALLOC(nvertices,&grid->loc2glo);
    PetscMemcpy(grid->loc2pet,l2p,nvertices*sizeof(int));
    PetscMemcpy(grid->loc2glo,l2a,nvertices*sizeof(int));
-   ierr = PetscFree(l2a);CHKERRQ(ierr);
-   ierr = PetscFree(l2p);CHKERRQ(ierr);*/
+   CHKERRQ(PetscFree(l2a));
+   CHKERRQ(PetscFree(l2p));*/
 
   grid->nnodesLoc  = nnodesLoc;
   grid->nedgeLoc   = nedgeLoc;
@@ -1632,8 +1632,8 @@ int GetLocalOrdering(GRID *grid)
 
 /* Map the 'ja' array in petsc ordering */
   for (i = 0; i < nnz; i++) grid->ja[i] = l2a[grid->ja[i] - 1];
-  ierr = AOApplicationToPetsc(ao,nnz,grid->ja);CHKERRQ(ierr);
-  ierr = AODestroy(&ao);CHKERRQ(ierr);
+  CHKERRQ(AOApplicationToPetsc(ao,nnz,grid->ja));
+  CHKERRQ(AODestroy(&ao));
 
 /* Print the different mappings
  *
@@ -1653,15 +1653,15 @@ int GetLocalOrdering(GRID *grid)
       partSum[i] = 0;
     }
 
-    ierr = MPI_Allreduce(partLoc,partMax,7,MPI_INT,MPI_MAX,comm);CHKERRMPI(ierr);
-    ierr = MPI_Allreduce(partLoc,partMin,7,MPI_INT,MPI_MIN,comm);CHKERRMPI(ierr);
-    ierr = MPI_Allreduce(partLoc,partSum,7,MPI_INT,MPI_SUM,comm);CHKERRMPI(ierr);
-    ierr = PetscPrintf(comm,"==============================\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"Partitioning quality info ....\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"==============================\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"------------------------------------------------------------\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"Item                    Min        Max    Average      Total\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"------------------------------------------------------------\n");CHKERRQ(ierr);
+    CHKERRMPI(MPI_Allreduce(partLoc,partMax,7,MPI_INT,MPI_MAX,comm));
+    CHKERRMPI(MPI_Allreduce(partLoc,partMin,7,MPI_INT,MPI_MIN,comm));
+    CHKERRMPI(MPI_Allreduce(partLoc,partSum,7,MPI_INT,MPI_SUM,comm));
+    CHKERRQ(PetscPrintf(comm,"==============================\n"));
+    CHKERRQ(PetscPrintf(comm,"Partitioning quality info ....\n"));
+    CHKERRQ(PetscPrintf(comm,"==============================\n"));
+    CHKERRQ(PetscPrintf(comm,"------------------------------------------------------------\n"));
+    CHKERRQ(PetscPrintf(comm,"Item                    Min        Max    Average      Total\n"));
+    CHKERRQ(PetscPrintf(comm,"------------------------------------------------------------\n"));
     ierr = PetscPrintf(comm,"Local Nodes       %9d  %9d  %9d  %9d\n",
                        partMin[0],partMax[0],partSum[0]/size,partSum[0]);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"Local+Ghost Nodes %9d  %9d  %9d  %9d\n",
@@ -1676,10 +1676,10 @@ int GetLocalOrdering(GRID *grid)
                        partMin[5],partMax[5],partSum[5]/size,partSum[5]);CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"Local free nodes  %9d  %9d  %9d  %9d\n",
                        partMin[6],partMax[6],partSum[6]/size,partSum[6]);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"------------------------------------------------------------\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(comm,"------------------------------------------------------------\n"));
   }
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(0,"-partition_info",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(0,"-partition_info",&flg,NULL));
   if (flg) {
     char part_file[PETSC_MAX_PATH_LEN];
     sprintf(part_file,"output.%d",rank);
@@ -1791,13 +1791,13 @@ int GetLocalOrdering(GRID *grid)
 
     }
     fprintf(fptr1,"\n");
-    ierr = PetscFree(p2l);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(p2l));
     fclose(fptr1);
   }
 
 /* Free the temporary arrays */
-  ierr = PetscFree(a2l);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm);CHKERRMPI(ierr);
+  CHKERRQ(PetscFree(a2l));
+  CHKERRMPI(MPI_Barrier(comm));
   PetscFunctionReturn(0);
 }
 
@@ -1826,7 +1826,7 @@ static PetscErrorCode PetscFWrite_FUN3D(MPI_Comm comm,FILE *fp,void *data,PetscI
   PetscFunctionBegin;
   PetscCheckFalse(n < 0,comm,PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %" PetscInt_FMT,n);
   if (!n) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     size_t count;
     int    bytes;
@@ -1850,7 +1850,7 @@ static PetscErrorCode PetscFWrite_FUN3D(MPI_Comm comm,FILE *fp,void *data,PetscI
       unsigned char *buf,*ptr;
       int           i;
       size_t        b64alloc = 9 + (n*size*4) / 3 + (n*size*4) % 3;
-      ierr = PetscMalloc(b64alloc,&buf);CHKERRQ(ierr);
+      CHKERRQ(PetscMalloc(b64alloc,&buf));
       ptr  = buf;
       ptr  = (unsigned char*)base64_encodeblock(ptr,&bytes,3);
       ptr  = (unsigned char*)base64_encodeblock(ptr,((char*)&bytes)+3,1);
@@ -1865,7 +1865,7 @@ static PetscErrorCode PetscFWrite_FUN3D(MPI_Comm comm,FILE *fp,void *data,PetscI
         perror("");
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_WRITE,"Wrote %" PetscInt_FMT " of %" PetscInt_FMT " bytes",(PetscInt)count,(PetscInt)(ptr-buf));
       }
-      ierr = PetscFree(buf);CHKERRQ(ierr);
+      CHKERRQ(PetscFree(buf));
     } else {
       count = fwrite(&bytes,sizeof(int),1,fp);
       if (count != 1) {
@@ -1933,9 +1933,9 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
   *incell = -1;
   *iconn  = NULL;
   acell   = 100000;              /* allocate for this many cells */
-  ierr    = PetscMalloc1(acell,&conn);CHKERRQ(ierr);
-  ierr    = PetscMalloc2(nnodes+1,&ui,nedge,&uj);CHKERRQ(ierr);
-  ierr    = PetscCalloc1(nnodes,&utmp);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(acell,&conn));
+  CHKERRQ(PetscMalloc2(nnodes+1,&ui,nedge,&uj));
+  CHKERRQ(PetscCalloc1(nnodes,&utmp));
   /* count the number of edges in the upper-triangular matrix u */
   for (i=0; i<nedge; i++) {     /* count number of nonzeros in upper triangular matrix */
     GetEdge(eptr,i,node0,node1);
@@ -1953,33 +1953,33 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
     SortInt2(&node0,&node1);
     uj[ui[node0] + utmp[node0]++] = node1;
   }
-  ierr = PetscFree(utmp);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(utmp));
   for (i=0; i<nnodes; i++) {    /* sort every row */
     PetscInt n = ui[i+1] - ui[i];
-    ierr = PetscSortInt(n,&uj[ui[i]]);CHKERRQ(ierr);
+    CHKERRQ(PetscSortInt(n,&uj[ui[i]]));
   }
 
   /* Infer cells */
   ncell = 0;
-  ierr  = PetscMalloc3(rowmax,&tmp1,rowmax,&tmp2,rowmax,&tmp3);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc3(rowmax,&tmp1,rowmax,&tmp2,rowmax,&tmp3));
   for (i=0; i<nnodes; i++) {
     node0 = i;
     ntmp1 = ui[node0+1] - ui[node0]; /* Number of candidates for node1 */
-    ierr  = PetscMemcpy(tmp1,&uj[ui[node0]],ntmp1*sizeof(PetscInt));CHKERRQ(ierr);
+    CHKERRQ(PetscMemcpy(tmp1,&uj[ui[node0]],ntmp1*sizeof(PetscInt)));
     for (j=0; j<ntmp1; j++) {
       node1 = tmp1[j];
       PetscCheckFalse(node1 < 0 || nnodes <= node1,PETSC_COMM_SELF,1,"node index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",node1,nnodes);
       PetscCheckFalse(node1 <= node0,PETSC_COMM_SELF,1,"forward neighbor of %" PetscInt_FMT " is %" PetscInt_FMT ", should be larger",node0,node1);
       ntmp2 = ui[node1+1] - ui[node1];
-      ierr  = PetscMemcpy(tmp2,&uj[ui[node1]],ntmp2*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr  = IntersectInt(ntmp1,tmp1,&ntmp2,tmp2);CHKERRQ(ierr);
+      CHKERRQ(PetscMemcpy(tmp2,&uj[ui[node1]],ntmp2*sizeof(PetscInt)));
+      CHKERRQ(IntersectInt(ntmp1,tmp1,&ntmp2,tmp2));
       for (k=0; k<ntmp2; k++) {
         node2 = tmp2[k];
         PetscCheckFalse(node2 < 0 || nnodes <= node2,PETSC_COMM_SELF,1,"node index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",node2,nnodes);
         PetscCheckFalse(node2 <= node1,PETSC_COMM_SELF,1,"forward neighbor of %" PetscInt_FMT " is %" PetscInt_FMT ", should be larger",node1,node2);
         ntmp3 = ui[node2+1] - ui[node2];
-        ierr  = PetscMemcpy(tmp3,&uj[ui[node2]],ntmp3*sizeof(PetscInt));CHKERRQ(ierr);
-        ierr  = IntersectInt(ntmp2,tmp2,&ntmp3,tmp3);CHKERRQ(ierr);
+        CHKERRQ(PetscMemcpy(tmp3,&uj[ui[node2]],ntmp3*sizeof(PetscInt)));
+        CHKERRQ(IntersectInt(ntmp2,tmp2,&ntmp3,tmp3));
         for (l=0; l<ntmp3; l++) {
           node3 = tmp3[l];
           PetscCheckFalse(node3 < 0 || nnodes <= node3,PETSC_COMM_SELF,1,"node index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",node3,nnodes);
@@ -2005,11 +2005,11 @@ static PetscErrorCode InferLocalCellConnectivity(PetscInt nnodes,PetscInt nedge,
       }
     }
   }
-  ierr = PetscFree3(tmp1,tmp2,tmp3);CHKERRQ(ierr);
-  ierr = PetscFree2(ui,uj);CHKERRQ(ierr);
+  CHKERRQ(PetscFree3(tmp1,tmp2,tmp3));
+  CHKERRQ(PetscFree2(ui,uj));
 
-  ierr    = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Inferred %" PetscInt_FMT " cells with nnodes=%" PetscInt_FMT " nedge=%" PetscInt_FMT "\n",ncell,nnodes,nedge);CHKERRQ(ierr);
-  ierr    = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Inferred %" PetscInt_FMT " cells with nnodes=%" PetscInt_FMT " nedge=%" PetscInt_FMT "\n",ncell,nnodes,nedge));
+  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
   *incell = ncell;
   *iconn  = (PetscInt*)conn;
   PetscFunctionReturn(0);
@@ -2033,10 +2033,10 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   nedgeLoc  = grid->nedgeLoc;   /* Number of edges connected to owned nodes */
 
   /* Count the number of neighbors of each owned node */
-  ierr    = MPI_Scan(&nnodesLoc,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Scan(&nnodesLoc,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD));
   rstart -= nnodesLoc;
-  ierr    = PetscMalloc2(nnodesLoc,&nodeEdgeCount,nnodesLoc,&nodeEdgeOffset);CHKERRQ(ierr);
-  ierr    = PetscMemzero(nodeEdgeCount,nnodesLoc*sizeof(*nodeEdgeCount));CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc2(nnodesLoc,&nodeEdgeCount,nnodesLoc,&nodeEdgeOffset));
+  CHKERRQ(PetscMemzero(nodeEdgeCount,nnodesLoc*sizeof(*nodeEdgeCount)));
   for (i=0; i<nedgeLoc; i++) {
     GetEdge(grid->eptr,i,node0,node1);
     node0p = grid->loc2pet[node0];
@@ -2050,9 +2050,9 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   nodeEdgeCountAll = nodeEdgeCount[nnodesLoc-1] + nodeEdgeOffset[nnodesLoc-1];
 
   /* Pack a Vec by node of all the edges for that node. The nodes are stored by global index */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,nodeEdgeCountAll,PETSC_DETERMINE,&VNodeEdge);CHKERRQ(ierr);
-  ierr = PetscMemzero(nodeEdgeCount,nnodesLoc*sizeof(*nodeEdgeCount));CHKERRQ(ierr);
-  ierr = VecGetArray(VNodeEdge,&vne);CHKERRQ(ierr);
+  CHKERRQ(VecCreateMPI(PETSC_COMM_WORLD,nodeEdgeCountAll,PETSC_DETERMINE,&VNodeEdge));
+  CHKERRQ(PetscMemzero(nodeEdgeCount,nnodesLoc*sizeof(*nodeEdgeCount)));
+  CHKERRQ(VecGetArray(VNodeEdge,&vne));
   for (i=0; i<nedgeLoc; i++) {
     GetEdge(grid->eptr,i,node0,node1);
     node0p = grid->loc2pet[node0];
@@ -2060,72 +2060,72 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
     if (rstart <= node0p && node0p < rstart+nnodesLoc) vne[nodeEdgeOffset[node0p-rstart] + nodeEdgeCount[node0p-rstart]++] = node1p;
     if (rstart <= node1p && node1p < rstart+nnodesLoc) vne[nodeEdgeOffset[node1p-rstart] + nodeEdgeCount[node1p-rstart]++] = node0p;
   }
-  ierr = VecRestoreArray(VNodeEdge,&vne);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(VNodeEdge,&nodeEdgeRstart,NULL);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(VNodeEdge,&vne));
+  CHKERRQ(VecGetOwnershipRange(VNodeEdge,&nodeEdgeRstart,NULL));
 
   /* Move the count and offset into a Vec so that we can use VecScatter, translating offset from local to global */
-  ierr = VecCreate(PETSC_COMM_WORLD,&VNodeEdgeInfo);CHKERRQ(ierr);
-  ierr = VecSetSizes(VNodeEdgeInfo,2*nnodesLoc,2*nnodes);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(VNodeEdgeInfo,2);CHKERRQ(ierr);
-  ierr = VecSetType(VNodeEdgeInfo,VECMPI);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&VNodeEdgeInfo));
+  CHKERRQ(VecSetSizes(VNodeEdgeInfo,2*nnodesLoc,2*nnodes));
+  CHKERRQ(VecSetBlockSize(VNodeEdgeInfo,2));
+  CHKERRQ(VecSetType(VNodeEdgeInfo,VECMPI));
 
-  ierr = VecGetArray(VNodeEdgeInfo,&vnei);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(VNodeEdgeInfo,&vnei));
   for (i=0; i<nnodesLoc; i++) {
     vnei[i*2+0] = nodeEdgeCount[i];                   /* Total number of edges from this vertex */
     vnei[i*2+1] = nodeEdgeOffset[i] + nodeEdgeRstart; /* Now the global index in the next comm round */
   }
-  ierr = VecRestoreArray(VNodeEdgeInfo,&vnei);CHKERRQ(ierr);
-  ierr = PetscFree2(nodeEdgeCount,nodeEdgeOffset);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(VNodeEdgeInfo,&vnei));
+  CHKERRQ(PetscFree2(nodeEdgeCount,nodeEdgeOffset));
 
   /* Create a Vec to receive the edge count and global offset for each node in owned+ghosted, get them, and clean up */
-  ierr = VecCreate(PETSC_COMM_SELF,&VNodeEdgeInfoOv);CHKERRQ(ierr);
-  ierr = VecSetSizes(VNodeEdgeInfoOv,2*nvertices,2*nvertices);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(VNodeEdgeInfoOv,2);CHKERRQ(ierr);
-  ierr = VecSetType(VNodeEdgeInfoOv,VECSEQ);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_SELF,&VNodeEdgeInfoOv));
+  CHKERRQ(VecSetSizes(VNodeEdgeInfoOv,2*nvertices,2*nvertices));
+  CHKERRQ(VecSetBlockSize(VNodeEdgeInfoOv,2));
+  CHKERRQ(VecSetType(VNodeEdgeInfoOv,VECSEQ));
 
-  ierr = ISCreateBlock(PETSC_COMM_WORLD,2,nvertices,grid->loc2pet,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr); /* Address the nodes in overlap to get info from */
-  ierr = VecScatterCreate(VNodeEdgeInfo,isglobal,VNodeEdgeInfoOv,NULL,&neiscat);CHKERRQ(ierr);
-  ierr = VecScatterBegin(neiscat,VNodeEdgeInfo,VNodeEdgeInfoOv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(neiscat,VNodeEdgeInfo,VNodeEdgeInfoOv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&neiscat);CHKERRQ(ierr);
-  ierr = VecDestroy(&VNodeEdgeInfo);CHKERRQ(ierr);
-  ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
+  CHKERRQ(ISCreateBlock(PETSC_COMM_WORLD,2,nvertices,grid->loc2pet,PETSC_COPY_VALUES,&isglobal)); /* Address the nodes in overlap to get info from */
+  CHKERRQ(VecScatterCreate(VNodeEdgeInfo,isglobal,VNodeEdgeInfoOv,NULL,&neiscat));
+  CHKERRQ(VecScatterBegin(neiscat,VNodeEdgeInfo,VNodeEdgeInfoOv,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterEnd(neiscat,VNodeEdgeInfo,VNodeEdgeInfoOv,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterDestroy(&neiscat));
+  CHKERRQ(VecDestroy(&VNodeEdgeInfo));
+  CHKERRQ(ISDestroy(&isglobal));
 
   /* Create a Vec to receive the actual edges for all nodes (owned and ghosted), execute the scatter */
   nedgeOv = 0;                  /* First count the number of edges in the complete overlap */
-  ierr    = VecGetArray(VNodeEdgeInfoOv,&vnei);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(VNodeEdgeInfoOv,&vnei));
   for (i=0; i<nvertices; i++) nedgeOv += (PetscInt)vnei[2*i+0];
   /* Allocate for the global indices in VNodeEdge of the edges to receive */
-  ierr = PetscMalloc1(nedgeOv,&eIdxOv);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(nedgeOv,&eIdxOv));
   for (i=0,cnt=0; i<nvertices; i++) {
     for (j=0; j<(PetscInt)vnei[2*i+0]; j++) eIdxOv[cnt++] = (PetscInt)vnei[2*i+1] + j;
   }
-  ierr = VecRestoreArray(VNodeEdgeInfoOv,&vnei);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,nedgeOv,eIdxOv,PETSC_USE_POINTER,&isedgeOv);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,nedgeOv,&VNodeEdgeOv);CHKERRQ(ierr);
-  ierr = VecScatterCreate(VNodeEdge,isedgeOv,VNodeEdgeOv,NULL,&nescat);CHKERRQ(ierr);
-  ierr = VecScatterBegin(nescat,VNodeEdge,VNodeEdgeOv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(nescat,VNodeEdge,VNodeEdgeOv,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&nescat);CHKERRQ(ierr);
-  ierr = VecDestroy(&VNodeEdge);CHKERRQ(ierr);
-  ierr = ISDestroy(&isedgeOv);CHKERRQ(ierr);
-  ierr = PetscFree(eIdxOv);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(VNodeEdgeInfoOv,&vnei));
+  CHKERRQ(ISCreateGeneral(PETSC_COMM_WORLD,nedgeOv,eIdxOv,PETSC_USE_POINTER,&isedgeOv));
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,nedgeOv,&VNodeEdgeOv));
+  CHKERRQ(VecScatterCreate(VNodeEdge,isedgeOv,VNodeEdgeOv,NULL,&nescat));
+  CHKERRQ(VecScatterBegin(nescat,VNodeEdge,VNodeEdgeOv,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterEnd(nescat,VNodeEdge,VNodeEdgeOv,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterDestroy(&nescat));
+  CHKERRQ(VecDestroy(&VNodeEdge));
+  CHKERRQ(ISDestroy(&isedgeOv));
+  CHKERRQ(PetscFree(eIdxOv));
 
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: number of edges before pruning: %" PetscInt_FMT ", half=%" PetscInt_FMT "\n",rank,PETSC_FUNCTION_NAME,nedgeOv,nedgeOv/2);CHKERRQ(ierr);
+  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: number of edges before pruning: %" PetscInt_FMT ", half=%" PetscInt_FMT "\n",rank,PETSC_FUNCTION_NAME,nedgeOv,nedgeOv/2));
 
   /* Create the non-scalable global-to-local index map. Yuck, but it has already been used elsewhere. */
-  ierr = PetscMalloc1(nnodes,&p2l);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(nnodes,&p2l));
   for (i=0; i<nnodes; i++) p2l[i] = -1;
   for (i=0; i<nvertices; i++) p2l[grid->loc2pet[i]] = i;
   if (1) {
     PetscInt m = 0;
     for (i=0; i<nnodes; i++) m += (p2l[i] >= 0);
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: number of global indices that map to local indices: %" PetscInt_FMT "; nvertices=%" PetscInt_FMT " nnodesLoc=%" PetscInt_FMT " nnodes=%" PetscInt_FMT "\n",rank,PETSC_FUNCTION_NAME,m,nvertices,nnodesLoc,nnodes);CHKERRQ(ierr);
+    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: number of global indices that map to local indices: %" PetscInt_FMT "; nvertices=%" PetscInt_FMT " nnodesLoc=%" PetscInt_FMT " nnodes=%" PetscInt_FMT "\n",rank,PETSC_FUNCTION_NAME,m,nvertices,nnodesLoc,nnodes));
   }
 
   /* Log each edge connecting nodes in owned+ghosted exactly once */
-  ierr = VecGetArray(VNodeEdgeInfoOv,&vnei);CHKERRQ(ierr);
-  ierr = VecGetArray(VNodeEdgeOv,&vne);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(VNodeEdgeInfoOv,&vnei));
+  CHKERRQ(VecGetArray(VNodeEdgeOv,&vne));
   /* First count the number of edges to keep */
   nedgeOv = 0;
   for (i=0,cnt=0; i<nvertices; i++) {
@@ -2138,7 +2138,7 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
     }
   }
   /* Array of edges to keep */
-  ierr    = PetscMalloc1(2*nedgeOv,&eptrOv);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(2*nedgeOv,&eptrOv));
   nedgeOv = 0;
   for (i=0,cnt=0; i<nvertices; i++) {
     PetscInt n = (PetscInt)vnei[2*i+0]; /* number of nodes connected to i */
@@ -2153,17 +2153,17 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
       }
     }
   }
-  ierr = VecRestoreArray(VNodeEdgeInfoOv,&vnei);CHKERRQ(ierr);
-  ierr = VecRestoreArray(VNodeEdgeOv,&vne);CHKERRQ(ierr);
-  ierr = VecDestroy(&VNodeEdgeInfoOv);CHKERRQ(ierr);
-  ierr = VecDestroy(&VNodeEdgeOv);CHKERRQ(ierr);
-  ierr = PetscFree(p2l);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(VNodeEdgeInfoOv,&vnei));
+  CHKERRQ(VecRestoreArray(VNodeEdgeOv,&vne));
+  CHKERRQ(VecDestroy(&VNodeEdgeInfoOv));
+  CHKERRQ(VecDestroy(&VNodeEdgeOv));
+  CHKERRQ(PetscFree(p2l));
 
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: nedgeLoc=%" PetscInt_FMT " nedgeOv=%" PetscInt_FMT "\n",rank,PETSC_FUNCTION_NAME,nedgeLoc,nedgeOv);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %s: nedgeLoc=%" PetscInt_FMT " nedgeOv=%" PetscInt_FMT "\n",rank,PETSC_FUNCTION_NAME,nedgeLoc,nedgeOv));
+  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
   flg  = PETSC_TRUE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-complete_overlap",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-complete_overlap",&flg,NULL));
   if (flg) {
     *invertices = grid->nvertices; /* We did not change the number of vertices */
     *inedgeOv   = nedgeOv;
@@ -2171,9 +2171,9 @@ static PetscErrorCode GridCompleteOverlap(GRID *grid,PetscInt *invertices,PetscI
   } else {
     *invertices = grid->nvertices;
     *inedgeOv   = nedgeLoc;
-    ierr        = PetscFree(eptrOv);CHKERRQ(ierr);
-    ierr        = PetscMalloc1(2*nedgeLoc,&eptrOv);CHKERRQ(ierr);
-    ierr        = PetscMemcpy(eptrOv,grid->eptr,2*nedgeLoc*sizeof(PetscInt));CHKERRQ(ierr);
+    CHKERRQ(PetscFree(eptrOv));
+    CHKERRQ(PetscMalloc1(2*nedgeLoc,&eptrOv));
+    CHKERRQ(PetscMemcpy(eptrOv,grid->eptr,2*nedgeLoc*sizeof(PetscInt)));
     *ieptrOv    = eptrOv;
   }
   PetscFunctionReturn(0);
@@ -2197,141 +2197,141 @@ static PetscErrorCode WritePVTU(AppCtx *user,const char *fname,PetscBool base64)
   const char        *byte_order = PetscBinaryBigEndian() ? "BigEndian" : "LittleEndian";
 
   PetscFunctionBegin;
-  ierr = GridCompleteOverlap(user->grid,&nvertices,&nedgeLoc,&eptr);CHKERRQ(ierr);
+  CHKERRQ(GridCompleteOverlap(user->grid,&nvertices,&nedgeLoc,&eptr));
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  CHKERRMPI(MPI_Comm_size(comm,&size));
 #if defined(PETSC_USE_COMPLEX) || !defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_64BIT_INDICES)
   SETERRQ(comm,PETSC_ERR_SUP,"This function is only implemented for scalar-type=real precision=double, 32-bit indices");
 #endif
-  ierr = PetscSNPrintf(pvtu_fname,sizeof(pvtu_fname),"%s-%" PetscInt_FMT ".pvtu",fname,tsCtx->itstep);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(vtu_fname,sizeof(vtu_fname),"%s-%" PetscInt_FMT "-%" PetscInt_FMT ".vtu",fname,tsCtx->itstep,rank);CHKERRQ(ierr);
-  ierr = PetscFOpen(comm,pvtu_fname,"w",&pvtu);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu,"<?xml version=\"1.0\"?>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu,"<VTKFile type=\"PUnstructuredGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu," <PUnstructuredGrid GhostLevel=\"0\">\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu,"  <PPointData Scalars=\"Pressure\" Vectors=\"Velocity\">\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu,"   <PDataArray type=\"Float64\" Name=\"Pressure\" NumberOfComponents=\"1\" />\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu,"   <PDataArray type=\"Float64\" Name=\"Velocity\" NumberOfComponents=\"3\" />\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu,"  </PPointData>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu,"  <PCellData>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu,"   <PDataArray type=\"Int32\" Name=\"Rank\" NumberOfComponents=\"1\" />\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu,"  </PCellData>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu,"  <PPoints>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu,"   <PDataArray type=\"Float64\" Name=\"Position\" NumberOfComponents=\"3\" />\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu,"  </PPoints>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu,"  <PCells>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu,"   <PDataArray type=\"Int32\" Name=\"connectivity\" NumberOfComponents=\"1\" />\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu,"   <PDataArray type=\"Int32\" Name=\"offsets\"      NumberOfComponents=\"1\" />\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu,"   <PDataArray type=\"UInt8\" Name=\"types\"        NumberOfComponents=\"1\" />\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu,"  </PCells>\n");CHKERRQ(ierr);
+  CHKERRQ(PetscSNPrintf(pvtu_fname,sizeof(pvtu_fname),"%s-%" PetscInt_FMT ".pvtu",fname,tsCtx->itstep));
+  CHKERRQ(PetscSNPrintf(vtu_fname,sizeof(vtu_fname),"%s-%" PetscInt_FMT "-%" PetscInt_FMT ".vtu",fname,tsCtx->itstep,rank));
+  CHKERRQ(PetscFOpen(comm,pvtu_fname,"w",&pvtu));
+  CHKERRQ(PetscFPrintf(comm,pvtu,"<?xml version=\"1.0\"?>\n"));
+  CHKERRQ(PetscFPrintf(comm,pvtu,"<VTKFile type=\"PUnstructuredGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order));
+  CHKERRQ(PetscFPrintf(comm,pvtu," <PUnstructuredGrid GhostLevel=\"0\">\n"));
+  CHKERRQ(PetscFPrintf(comm,pvtu,"  <PPointData Scalars=\"Pressure\" Vectors=\"Velocity\">\n"));
+  CHKERRQ(PetscFPrintf(comm,pvtu,"   <PDataArray type=\"Float64\" Name=\"Pressure\" NumberOfComponents=\"1\" />\n"));
+  CHKERRQ(PetscFPrintf(comm,pvtu,"   <PDataArray type=\"Float64\" Name=\"Velocity\" NumberOfComponents=\"3\" />\n"));
+  CHKERRQ(PetscFPrintf(comm,pvtu,"  </PPointData>\n"));
+  CHKERRQ(PetscFPrintf(comm,pvtu,"  <PCellData>\n"));
+  CHKERRQ(PetscFPrintf(comm,pvtu,"   <PDataArray type=\"Int32\" Name=\"Rank\" NumberOfComponents=\"1\" />\n"));
+  CHKERRQ(PetscFPrintf(comm,pvtu,"  </PCellData>\n"));
+  CHKERRQ(PetscFPrintf(comm,pvtu,"  <PPoints>\n"));
+  CHKERRQ(PetscFPrintf(comm,pvtu,"   <PDataArray type=\"Float64\" Name=\"Position\" NumberOfComponents=\"3\" />\n"));
+  CHKERRQ(PetscFPrintf(comm,pvtu,"  </PPoints>\n"));
+  CHKERRQ(PetscFPrintf(comm,pvtu,"  <PCells>\n"));
+  CHKERRQ(PetscFPrintf(comm,pvtu,"   <PDataArray type=\"Int32\" Name=\"connectivity\" NumberOfComponents=\"1\" />\n"));
+  CHKERRQ(PetscFPrintf(comm,pvtu,"   <PDataArray type=\"Int32\" Name=\"offsets\"      NumberOfComponents=\"1\" />\n"));
+  CHKERRQ(PetscFPrintf(comm,pvtu,"   <PDataArray type=\"UInt8\" Name=\"types\"        NumberOfComponents=\"1\" />\n"));
+  CHKERRQ(PetscFPrintf(comm,pvtu,"  </PCells>\n"));
   for (i=0; i<size; i++) {
-    ierr = PetscFPrintf(comm,pvtu,"  <Piece Source=\"%s-%" PetscInt_FMT "-%" PetscInt_FMT ".vtu\" />\n",fname,tsCtx->itstep,i);CHKERRQ(ierr);
+    CHKERRQ(PetscFPrintf(comm,pvtu,"  <Piece Source=\"%s-%" PetscInt_FMT "-%" PetscInt_FMT ".vtu\" />\n",fname,tsCtx->itstep,i));
   }
-  ierr = PetscFPrintf(comm,pvtu," </PUnstructuredGrid>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,pvtu,"</VTKFile>\n");CHKERRQ(ierr);
-  ierr = PetscFClose(comm,pvtu);CHKERRQ(ierr);
+  CHKERRQ(PetscFPrintf(comm,pvtu," </PUnstructuredGrid>\n"));
+  CHKERRQ(PetscFPrintf(comm,pvtu,"</VTKFile>\n"));
+  CHKERRQ(PetscFClose(comm,pvtu));
 
   Xloc = grid->qnodeLoc;
-  ierr = VecScatterBegin(grid->scatter,grid->qnode,Xloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(grid->scatter,grid->qnode,Xloc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(Xloc,&bs);CHKERRQ(ierr);
+  CHKERRQ(VecScatterBegin(grid->scatter,grid->qnode,Xloc,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterEnd(grid->scatter,grid->qnode,Xloc,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecGetBlockSize(Xloc,&bs));
   PetscCheckFalse(bs != 4,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"expected block size 4, got %" PetscInt_FMT,bs);
-  ierr = VecGetSize(Xloc,&nloc);CHKERRQ(ierr);
+  CHKERRQ(VecGetSize(Xloc,&nloc));
   PetscCheckFalse(nloc/bs != nvertices,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"expected nloc/bs=%" PetscInt_FMT " to match nvertices=%" PetscInt_FMT,nloc/bs,nvertices);
   PetscCheckFalse(nvertices != grid->nvertices,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"expected nvertices=%" PetscInt_FMT " to match grid->nvertices=%" PetscInt_FMT,nvertices,grid->nvertices);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,nvertices,&Xploc);CHKERRQ(ierr);
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,nvertices,&Xploc));
 
-  ierr = VecCreate(PETSC_COMM_SELF,&Xuloc);CHKERRQ(ierr);
-  ierr = VecSetSizes(Xuloc,3*nvertices,3*nvertices);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(Xuloc,3);CHKERRQ(ierr);
-  ierr = VecSetType(Xuloc,VECSEQ);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_SELF,&Xuloc));
+  CHKERRQ(VecSetSizes(Xuloc,3*nvertices,3*nvertices));
+  CHKERRQ(VecSetBlockSize(Xuloc,3));
+  CHKERRQ(VecSetType(Xuloc,VECSEQ));
 
-  ierr = VecGetArrayRead(Xloc,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(Xploc,&xp);CHKERRQ(ierr);
-  ierr = VecGetArray(Xuloc,&xu);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(Xloc,&x));
+  CHKERRQ(VecGetArray(Xploc,&xp));
+  CHKERRQ(VecGetArray(Xuloc,&xu));
   for (i=0; i<nvertices; i++) {
     xp[i]     = x[i*4+0];
     xu[i*3+0] = x[i*4+1];
     xu[i*3+1] = x[i*4+2];
     xu[i*3+2] = x[i*4+3];
   }
-  ierr = VecRestoreArrayRead(Xloc,&x);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(Xloc,&x));
 
-  ierr = InferLocalCellConnectivity(nvertices,nedgeLoc,eptr,&ncells,&conn);CHKERRQ(ierr);
+  CHKERRQ(InferLocalCellConnectivity(nvertices,nedgeLoc,eptr,&ncells,&conn));
 
-  ierr = PetscFOpen(PETSC_COMM_SELF,vtu_fname,"w",&vtu);CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF,vtu,"<?xml version=\"1.0\"?>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF,vtu,"<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order);CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF,vtu," <UnstructuredGrid>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF,vtu,"  <Piece NumberOfPoints=\"%" PetscInt_FMT "\" NumberOfCells=\"%" PetscInt_FMT "\">\n",nvertices,ncells);CHKERRQ(ierr);
+  CHKERRQ(PetscFOpen(PETSC_COMM_SELF,vtu_fname,"w",&vtu));
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"<?xml version=\"1.0\"?>\n"));
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"%s\">\n",byte_order));
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu," <UnstructuredGrid>\n"));
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"  <Piece NumberOfPoints=\"%" PetscInt_FMT "\" NumberOfCells=\"%" PetscInt_FMT "\">\n",nvertices,ncells));
 
   /* Solution fields */
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"   <PointData Scalars=\"Pressure\" Vectors=\"Velocity\">\n");CHKERRQ(ierr);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Float64\" Name=\"Pressure\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset);CHKERRQ(ierr);
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"   <PointData Scalars=\"Pressure\" Vectors=\"Velocity\">\n"));
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Float64\" Name=\"Pressure\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset));
   boffset += nvertices*sizeof(PetscScalar) + sizeof(int);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Float64\" Name=\"Velocity\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset);CHKERRQ(ierr);
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Float64\" Name=\"Velocity\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset));
   boffset += nvertices*3*sizeof(PetscScalar) + sizeof(int);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"   </PointData>\n");CHKERRQ(ierr);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"   <CellData>\n");CHKERRQ(ierr);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Int32\" Name=\"Rank\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset);CHKERRQ(ierr);
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"   </PointData>\n"));
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"   <CellData>\n"));
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Int32\" Name=\"Rank\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset));
   boffset += ncells*sizeof(int) + sizeof(int);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"   </CellData>\n");CHKERRQ(ierr);
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"   </CellData>\n"));
   /* Coordinate positions */
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"   <Points>\n");CHKERRQ(ierr);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Float64\" Name=\"Position\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset);CHKERRQ(ierr);
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"   <Points>\n"));
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Float64\" Name=\"Position\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset));
   boffset += nvertices*3*sizeof(double) + sizeof(int);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"   </Points>\n");CHKERRQ(ierr);
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"   </Points>\n"));
   /* Cell connectivity */
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"   <Cells>\n");CHKERRQ(ierr);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Int32\" Name=\"connectivity\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset);CHKERRQ(ierr);
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"   <Cells>\n"));
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Int32\" Name=\"connectivity\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset));
   boffset += ncells*4*sizeof(int) + sizeof(int);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Int32\" Name=\"offsets\"      NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset);CHKERRQ(ierr);
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"Int32\" Name=\"offsets\"      NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset));
   boffset += ncells*sizeof(int) + sizeof(int);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"UInt8\" Name=\"types\"        NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset);CHKERRQ(ierr);
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"    <DataArray type=\"UInt8\" Name=\"types\"        NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n",boffset));
   boffset += ncells*sizeof(unsigned char) + sizeof(int);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"   </Cells>\n");CHKERRQ(ierr);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"  </Piece>\n");CHKERRQ(ierr);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu," </UnstructuredGrid>\n");CHKERRQ(ierr);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu," <AppendedData encoding=\"%s\">\n",base64 ? "base64" : "raw");CHKERRQ(ierr);
-  ierr     = PetscFPrintf(PETSC_COMM_SELF,vtu,"_");CHKERRQ(ierr);
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"   </Cells>\n"));
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"  </Piece>\n"));
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu," </UnstructuredGrid>\n"));
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu," <AppendedData encoding=\"%s\">\n",base64 ? "base64" : "raw"));
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"_"));
 
   /* Write pressure */
-  ierr = PetscFWrite_FUN3D(PETSC_COMM_SELF,vtu,xp,nvertices,PETSC_SCALAR,base64);CHKERRQ(ierr);
+  CHKERRQ(PetscFWrite_FUN3D(PETSC_COMM_SELF,vtu,xp,nvertices,PETSC_SCALAR,base64));
 
   /* Write velocity */
-  ierr = PetscFWrite_FUN3D(PETSC_COMM_SELF,vtu,xu,nvertices*3,PETSC_SCALAR,base64);CHKERRQ(ierr);
+  CHKERRQ(PetscFWrite_FUN3D(PETSC_COMM_SELF,vtu,xu,nvertices*3,PETSC_SCALAR,base64));
 
   /* Label cell rank, not a measure of computation because nothing is actually computed at cells.  This is written
    * primarily to aid in debugging. The partition for computation should label vertices. */
-  ierr = PetscMalloc1(ncells,&cellrank);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(ncells,&cellrank));
   for (i=0; i<ncells; i++) cellrank[i] = rank;
-  ierr = PetscFWrite_FUN3D(PETSC_COMM_SELF,vtu,cellrank,ncells,PETSC_INT,base64);CHKERRQ(ierr);
-  ierr = PetscFree(cellrank);CHKERRQ(ierr);
+  CHKERRQ(PetscFWrite_FUN3D(PETSC_COMM_SELF,vtu,cellrank,ncells,PETSC_INT,base64));
+  CHKERRQ(PetscFree(cellrank));
 
-  ierr = PetscFWrite_FUN3D(PETSC_COMM_SELF,vtu,grid->xyz,nvertices*3,PETSC_DOUBLE,base64);CHKERRQ(ierr);
-  ierr = PetscFWrite_FUN3D(PETSC_COMM_SELF,vtu,conn,ncells*4,PETSC_INT,base64);CHKERRQ(ierr);
-  ierr = PetscFree(conn);CHKERRQ(ierr);
+  CHKERRQ(PetscFWrite_FUN3D(PETSC_COMM_SELF,vtu,grid->xyz,nvertices*3,PETSC_DOUBLE,base64));
+  CHKERRQ(PetscFWrite_FUN3D(PETSC_COMM_SELF,vtu,conn,ncells*4,PETSC_INT,base64));
+  CHKERRQ(PetscFree(conn));
 
-  ierr = PetscMalloc1(ncells,&celloffset);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(ncells,&celloffset));
   for (i=0; i<ncells; i++) celloffset[i] = 4*(i+1);
-  ierr = PetscFWrite_FUN3D(PETSC_COMM_SELF,vtu,celloffset,ncells,PETSC_INT,base64);CHKERRQ(ierr);
-  ierr = PetscFree(celloffset);CHKERRQ(ierr);
+  CHKERRQ(PetscFWrite_FUN3D(PETSC_COMM_SELF,vtu,celloffset,ncells,PETSC_INT,base64));
+  CHKERRQ(PetscFree(celloffset));
 
-  ierr = PetscMalloc1(ncells,&celltype);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(ncells,&celltype));
   for (i=0; i<ncells; i++) celltype[i] = 10; /* VTK_TETRA */
-  ierr = PetscFWrite_FUN3D(PETSC_COMM_SELF,vtu,celltype,ncells,PETSC_CHAR,base64);CHKERRQ(ierr);
-  ierr = PetscFree(celltype);CHKERRQ(ierr);
+  CHKERRQ(PetscFWrite_FUN3D(PETSC_COMM_SELF,vtu,celltype,ncells,PETSC_CHAR,base64));
+  CHKERRQ(PetscFree(celltype));
 
-  ierr = PetscFPrintf(PETSC_COMM_SELF,vtu,"\n </AppendedData>\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_SELF,vtu,"</VTKFile>\n");CHKERRQ(ierr);
-  ierr = PetscFClose(PETSC_COMM_SELF,vtu);CHKERRQ(ierr);
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"\n </AppendedData>\n"));
+  CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,vtu,"</VTKFile>\n"));
+  CHKERRQ(PetscFClose(PETSC_COMM_SELF,vtu));
 
-  ierr = VecRestoreArray(Xploc,&xp);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Xuloc,&xu);CHKERRQ(ierr);
-  ierr = VecDestroy(&Xploc);CHKERRQ(ierr);
-  ierr = VecDestroy(&Xuloc);CHKERRQ(ierr);
-  ierr = PetscFree(eptr);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(Xploc,&xp));
+  CHKERRQ(VecRestoreArray(Xuloc,&xu));
+  CHKERRQ(VecDestroy(&Xploc));
+  CHKERRQ(VecDestroy(&Xuloc));
+  CHKERRQ(PetscFree(eptr));
   PetscFunctionReturn(0);
 }
 
@@ -2357,78 +2357,78 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 
   /* Set up the PETSc datastructures */
 
-  ierr = VecCreate(comm,&grid->qnode);CHKERRQ(ierr);
-  ierr = VecSetSizes(grid->qnode,bs*nnodesLoc,bs*nnodes);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(grid->qnode,bs);CHKERRQ(ierr);
-  ierr = VecSetType(grid->qnode,VECMPI);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(comm,&grid->qnode));
+  CHKERRQ(VecSetSizes(grid->qnode,bs*nnodesLoc,bs*nnodes));
+  CHKERRQ(VecSetBlockSize(grid->qnode,bs));
+  CHKERRQ(VecSetType(grid->qnode,VECMPI));
 
-  ierr = VecDuplicate(grid->qnode,&grid->res);CHKERRQ(ierr);
-  ierr = VecDuplicate(grid->qnode,&tsCtx->qold);CHKERRQ(ierr);
-  ierr = VecDuplicate(grid->qnode,&tsCtx->func);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(grid->qnode,&grid->res));
+  CHKERRQ(VecDuplicate(grid->qnode,&tsCtx->qold));
+  CHKERRQ(VecDuplicate(grid->qnode,&tsCtx->func));
 
-  ierr = VecCreate(MPI_COMM_SELF,&grid->qnodeLoc);CHKERRQ(ierr);
-  ierr = VecSetSizes(grid->qnodeLoc,bs*nvertices,bs*nvertices);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(grid->qnodeLoc,bs);CHKERRQ(ierr);
-  ierr = VecSetType(grid->qnodeLoc,VECSEQ);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(MPI_COMM_SELF,&grid->qnodeLoc));
+  CHKERRQ(VecSetSizes(grid->qnodeLoc,bs*nvertices,bs*nvertices));
+  CHKERRQ(VecSetBlockSize(grid->qnodeLoc,bs));
+  CHKERRQ(VecSetType(grid->qnodeLoc,VECSEQ));
 
   ierr = VecCreate(comm,&grid->grad);
-  ierr = VecSetSizes(grid->grad,3*bs*nnodesLoc,3*bs*nnodes);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(grid->grad,3*bs);CHKERRQ(ierr);
-  ierr = VecSetType(grid->grad,VECMPI);CHKERRQ(ierr);
+  CHKERRQ(VecSetSizes(grid->grad,3*bs*nnodesLoc,3*bs*nnodes));
+  CHKERRQ(VecSetBlockSize(grid->grad,3*bs));
+  CHKERRQ(VecSetType(grid->grad,VECMPI));
 
   ierr = VecCreate(MPI_COMM_SELF,&grid->gradLoc);
-  ierr = VecSetSizes(grid->gradLoc,3*bs*nvertices,3*bs*nvertices);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(grid->gradLoc,3*bs);CHKERRQ(ierr);
-  ierr = VecSetType(grid->gradLoc,VECSEQ);CHKERRQ(ierr);
+  CHKERRQ(VecSetSizes(grid->gradLoc,3*bs*nvertices,3*bs*nvertices));
+  CHKERRQ(VecSetBlockSize(grid->gradLoc,3*bs));
+  CHKERRQ(VecSetType(grid->gradLoc,VECSEQ));
 
 /* Create Scatter between the local and global vectors */
 /* First create scatter for qnode */
-  ierr = ISCreateStride(MPI_COMM_SELF,bs*nvertices,0,1,&islocal);CHKERRQ(ierr);
+  CHKERRQ(ISCreateStride(MPI_COMM_SELF,bs*nvertices,0,1,&islocal));
 #if defined(INTERLACING)
 #if defined(BLOCKING)
   ICALLOC(nvertices,&svertices);
   for (i=0; i < nvertices; i++) svertices[i] = loc2pet[i];
-  ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
+  CHKERRQ(ISCreateBlock(MPI_COMM_SELF,bs,nvertices,svertices,PETSC_COPY_VALUES,&isglobal));
 #else
   ICALLOC(bs*nvertices,&svertices);
   for (i = 0; i < nvertices; i++)
     for (j = 0; j < bs; j++) svertices[j+bs*i] = j + bs*loc2pet[i];
-  ierr = ISCreateGeneral(MPI_COMM_SELF,bs*nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(MPI_COMM_SELF,bs*nvertices,svertices,PETSC_COPY_VALUES,&isglobal));
 #endif
 #else
   ICALLOC(bs*nvertices,&svertices);
   for (j = 0; j < bs; j++)
     for (i = 0; i < nvertices; i++) svertices[j*nvertices+i] = j*nvertices + loc2pet[i];
-  ierr = ISCreateGeneral(MPI_COMM_SELF,bs*nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(MPI_COMM_SELF,bs*nvertices,svertices,PETSC_COPY_VALUES,&isglobal));
 #endif
-  ierr = PetscFree(svertices);CHKERRQ(ierr);
-  ierr = VecScatterCreate(grid->qnode,isglobal,grid->qnodeLoc,islocal,&grid->scatter);CHKERRQ(ierr);
-  ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
-  ierr = ISDestroy(&islocal);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(svertices));
+  CHKERRQ(VecScatterCreate(grid->qnode,isglobal,grid->qnodeLoc,islocal,&grid->scatter));
+  CHKERRQ(ISDestroy(&isglobal));
+  CHKERRQ(ISDestroy(&islocal));
 
 /* Now create scatter for gradient vector of qnode */
-  ierr = ISCreateStride(MPI_COMM_SELF,3*bs*nvertices,0,1,&islocal);CHKERRQ(ierr);
+  CHKERRQ(ISCreateStride(MPI_COMM_SELF,3*bs*nvertices,0,1,&islocal));
 #if defined(INTERLACING)
 #if defined(BLOCKING)
   ICALLOC(nvertices,&svertices);
   for (i=0; i < nvertices; i++) svertices[i] = loc2pet[i];
-  ierr = ISCreateBlock(MPI_COMM_SELF,3*bs,nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
+  CHKERRQ(ISCreateBlock(MPI_COMM_SELF,3*bs,nvertices,svertices,PETSC_COPY_VALUES,&isglobal));
 #else
   ICALLOC(3*bs*nvertices,&svertices);
   for (i = 0; i < nvertices; i++)
     for (j = 0; j < 3*bs; j++) svertices[j+3*bs*i] = j + 3*bs*loc2pet[i];
-  ierr = ISCreateGeneral(MPI_COMM_SELF,3*bs*nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(MPI_COMM_SELF,3*bs*nvertices,svertices,PETSC_COPY_VALUES,&isglobal));
 #endif
 #else
   ICALLOC(3*bs*nvertices,&svertices);
   for (j = 0; j < 3*bs; j++)
     for (i = 0; i < nvertices; i++) svertices[j*nvertices+i] = j*nvertices + loc2pet[i];
-  ierr = ISCreateGeneral(MPI_COMM_SELF,3*bs*nvertices,svertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(MPI_COMM_SELF,3*bs*nvertices,svertices,PETSC_COPY_VALUES,&isglobal));
 #endif
   ierr = PetscFree(svertices);
-  ierr = VecScatterCreate(grid->grad,isglobal,grid->gradLoc,islocal,&grid->gradScatter);CHKERRQ(ierr);
-  ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
-  ierr = ISDestroy(&islocal);CHKERRQ(ierr);
+  CHKERRQ(VecScatterCreate(grid->grad,isglobal,grid->gradLoc,islocal,&grid->gradScatter));
+  CHKERRQ(ISDestroy(&isglobal));
+  CHKERRQ(ISDestroy(&islocal));
 
 /* Store the number of non-zeroes per row */
 #if defined(INTERLACING)
@@ -2472,8 +2472,8 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
                       bs*nnodes,bs*nnodes,NULL,val_diag,
                       NULL,val_offd,&grid->A);CHKERRQ(ierr);
 #endif
-  ierr = PetscFree(val_diag);CHKERRQ(ierr);
-  ierr = PetscFree(val_offd);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(val_diag));
+  CHKERRQ(PetscFree(val_offd));
 
 #else
   PetscCheckFalse(size > 1,PETSC_COMM_SELF,1,"Parallel case not supported in non-interlaced case");
@@ -2494,23 +2494,23 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
   ierr = MatCreateAIJ(comm,bs*nnodesLoc,bs*nnodesLoc,
                       bs*nnodes,bs*nnodes,NULL,val_diag,
                       NULL,val_offd,&grid->A);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(grid->A,bs);CHKERRQ(ierr);
-  ierr = PetscFree(val_diag);CHKERRQ(ierr);
-  ierr = PetscFree(val_offd);CHKERRQ(ierr);
+  CHKERRQ(MatSetBlockSize(grid->A,bs));
+  CHKERRQ(PetscFree(val_diag));
+  CHKERRQ(PetscFree(val_offd));
 #endif
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(0,"-mem_use",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(0,"-mem_use",&flg,NULL));
   if (flg) {
-    ierr = PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after allocating PETSc data structures\n");CHKERRQ(ierr);
+    CHKERRQ(PetscMemoryView(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after allocating PETSc data structures\n"));
   }
 
 /* Set local to global mapping for setting the matrix elements in
    local ordering : first set row by row mapping
 */
   ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs,nvertices,loc2pet,PETSC_COPY_VALUES,&isl2g);
-  ierr = MatSetLocalToGlobalMapping(grid->A,isl2g,isl2g);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&isl2g);CHKERRQ(ierr);
+  CHKERRQ(MatSetLocalToGlobalMapping(grid->A,isl2g,isl2g));
+  CHKERRQ(ISLocalToGlobalMappingDestroy(&isl2g));
   PetscFunctionReturn(0);
 }
 
@@ -2843,7 +2843,7 @@ int EventCountersBegin(int *gen_start,PetscScalar *time_start_counters)
 {
   PetscErrorCode ierr;
   PetscCheckFalse((*gen_start = start_counters(event0,event1)) < 0,PETSC_COMM_SELF,1,"Error in start_counters");
-  ierr = PetscTime(&time_start_counters);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&time_start_counters));
   return 0;
 }
 
@@ -2854,7 +2854,7 @@ int EventCountersEnd(int gen_start,PetscScalar time_start_counters)
   long long   _counter0,_counter1;
 
   PetscCheckFalse((gen_read = read_counters(event0,&_counter0,event1,&_counter1)) < 0,PETSC_COMM_SELF,1,"Error in read_counter");
-  ierr = PetscTime(&&time_read_counters);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&&time_read_counters));
   PetscCheckFalse(gen_read != gen_start,PETSC_COMM_SELF,1,"Lost Counters!! Aborting ...");
   counter0      += _counter0;
   counter1      += _counter1;

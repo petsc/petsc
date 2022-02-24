@@ -22,19 +22,16 @@ PetscLogEvent PETSC_Barrier;
     across MPI_COMM_WORLD. You can also pass in any PETSc object, Vec, Mat, etc
 
 @*/
-PetscErrorCode  PetscBarrier(PetscObject obj)
+PetscErrorCode PetscBarrier(PetscObject obj)
 {
-  PetscErrorCode ierr;
-  MPI_Comm       comm;
+  MPI_Comm comm;
 
   PetscFunctionBegin;
   if (obj) PetscValidHeader(obj,1);
-  ierr = PetscLogEventBegin(PETSC_Barrier,obj,0,0,0);CHKERRQ(ierr);
-  if (obj) {
-    ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
-  } else comm = PETSC_COMM_WORLD;
-  ierr = MPI_Barrier(comm);CHKERRMPI(ierr);
-  ierr = PetscLogEventEnd(PETSC_Barrier,obj,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(PETSC_Barrier,obj,0,0,0));
+  if (obj) CHKERRQ(PetscObjectGetComm(obj,&comm));
+  else comm = PETSC_COMM_WORLD;
+  CHKERRMPI(MPI_Barrier(comm));
+  CHKERRQ(PetscLogEventEnd(PETSC_Barrier,obj,0,0,0));
   PetscFunctionReturn(0);
 }
-

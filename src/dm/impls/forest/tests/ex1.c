@@ -19,50 +19,50 @@ int main (int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
 
-  ierr = DMCreate(PETSC_COMM_WORLD, &base);CHKERRQ(ierr);
-  ierr = DMSetType(base, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(base);CHKERRQ(ierr);
+  CHKERRQ(DMCreate(PETSC_COMM_WORLD, &base));
+  CHKERRQ(DMSetType(base, DMPLEX));
+  CHKERRQ(DMSetFromOptions(base));
 
-  ierr = DMCreate(PETSC_COMM_WORLD, &forest);CHKERRQ(ierr);
-  ierr = DMSetType(forest, DMP4EST);CHKERRQ(ierr);
-  ierr = DMForestSetBaseDM(forest, base);CHKERRQ(ierr);
-  ierr = DMForestSetInitialRefinement(forest, min_refine);CHKERRQ(ierr);
-  ierr = DMForestSetPartitionOverlap(forest, overlap);CHKERRQ(ierr);
-  ierr = DMSetUp(forest);CHKERRQ(ierr);
-  ierr = DMDestroy(&base);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(forest, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreate(PETSC_COMM_WORLD, &forest));
+  CHKERRQ(DMSetType(forest, DMP4EST));
+  CHKERRQ(DMForestSetBaseDM(forest, base));
+  CHKERRQ(DMForestSetInitialRefinement(forest, min_refine));
+  CHKERRQ(DMForestSetPartitionOverlap(forest, overlap));
+  CHKERRQ(DMSetUp(forest));
+  CHKERRQ(DMDestroy(&base));
+  CHKERRQ(DMViewFromOptions(forest, NULL, "-dm_view"));
 
-  ierr = DMConvert(forest, DMPLEX, &plex);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(plex, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMDestroy(&plex);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) forest), &s);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(s, vStart, vEnd);CHKERRQ(ierr);
-  for (v = vStart; v < vEnd; ++v) {ierr = PetscSectionSetDof(s, v, 1);CHKERRQ(ierr);}
-  ierr = PetscSectionSetUp(s);CHKERRQ(ierr);
-  ierr = DMSetLocalSection(forest, s);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
+  CHKERRQ(DMConvert(forest, DMPLEX, &plex));
+  CHKERRQ(DMPlexGetDepthStratum(plex, 0, &vStart, &vEnd));
+  CHKERRQ(DMDestroy(&plex));
+  CHKERRQ(PetscSectionCreate(PetscObjectComm((PetscObject) forest), &s));
+  CHKERRQ(PetscSectionSetChart(s, vStart, vEnd));
+  for (v = vStart; v < vEnd; ++v) CHKERRQ(PetscSectionSetDof(s, v, 1));
+  CHKERRQ(PetscSectionSetUp(s));
+  CHKERRQ(DMSetLocalSection(forest, s));
+  CHKERRQ(PetscSectionDestroy(&s));
 
-  ierr = DMCreateGlobalVector(forest, &g);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) g, "g");CHKERRQ(ierr);
-  ierr = VecSet(g, 1.0);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "forest.h5", FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
-  ierr = VecView(g, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(forest, &g));
+  CHKERRQ(PetscObjectSetName((PetscObject) g, "g"));
+  CHKERRQ(VecSet(g, 1.0));
+  CHKERRQ(PetscViewerHDF5Open(PETSC_COMM_WORLD, "forest.h5", FILE_MODE_WRITE, &viewer));
+  CHKERRQ(VecView(g, viewer));
+  CHKERRQ(PetscViewerDestroy(&viewer));
 
-  ierr = DMCreateGlobalVector(forest, &g2);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) g2, "g");CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "forest.h5", FILE_MODE_READ, &viewer);CHKERRQ(ierr);
-  ierr = VecLoad(g2, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(forest, &g2));
+  CHKERRQ(PetscObjectSetName((PetscObject) g2, "g"));
+  CHKERRQ(PetscViewerHDF5Open(PETSC_COMM_WORLD, "forest.h5", FILE_MODE_READ, &viewer));
+  CHKERRQ(VecLoad(g2, viewer));
+  CHKERRQ(PetscViewerDestroy(&viewer));
 
   /*  Check if the data is the same*/
-  ierr = VecAXPY(g2, -1.0, g);CHKERRQ(ierr);
-  ierr = VecNorm(g2, NORM_INFINITY, &diff);CHKERRQ(ierr);
-  if (diff > PETSC_MACHINE_EPSILON) {ierr = PetscPrintf(PETSC_COMM_WORLD, "Check failed: %g\n", (double) diff);CHKERRQ(ierr);}
+  CHKERRQ(VecAXPY(g2, -1.0, g));
+  CHKERRQ(VecNorm(g2, NORM_INFINITY, &diff));
+  if (diff > PETSC_MACHINE_EPSILON) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Check failed: %g\n", (double) diff));
 
-  ierr = VecDestroy(&g);CHKERRQ(ierr);
-  ierr = VecDestroy(&g2);CHKERRQ(ierr);
-  ierr = DMDestroy(&forest);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&g));
+  CHKERRQ(VecDestroy(&g2));
+  CHKERRQ(DMDestroy(&forest));
   ierr = PetscFinalize();
   return ierr;
 }

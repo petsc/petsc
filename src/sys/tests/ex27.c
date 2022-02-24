@@ -11,9 +11,8 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscMergeIntArray(5,first,6,second,&n,&result);CHKERRQ(ierr);
-  ierr = PetscIntView(n,result,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  CHKERRQ(PetscMergeIntArray(5,first,6,second,&n,&result));
+  CHKERRQ(PetscIntView(n,result,PETSC_VIEWER_STDOUT_SELF));
   ierr = PetscFinalize();
   return ierr;
 }
-

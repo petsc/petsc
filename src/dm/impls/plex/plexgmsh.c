@@ -239,12 +239,11 @@ typedef struct {
 static PetscErrorCode GmshBufferGet(GmshFile *gmsh, size_t count, size_t eltsize, void *buf)
 {
   size_t         size = count * eltsize;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (gmsh->wlen < size) {
-    ierr = PetscFree(gmsh->wbuf);CHKERRQ(ierr);
-    ierr = PetscMalloc(size, &gmsh->wbuf);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(gmsh->wbuf));
+    CHKERRQ(PetscMalloc(size, &gmsh->wbuf));
     gmsh->wlen = size;
   }
   *(void**)buf = size ? gmsh->wbuf : NULL;
@@ -255,12 +254,11 @@ static PetscErrorCode GmshBufferSizeGet(GmshFile *gmsh, size_t count, void *buf)
 {
   size_t         dataSize = (size_t)gmsh->dataSize;
   size_t         size = count * dataSize;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (gmsh->slen < size) {
-    ierr = PetscFree(gmsh->sbuf);CHKERRQ(ierr);
-    ierr = PetscMalloc(size, &gmsh->sbuf);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(gmsh->sbuf));
+    CHKERRQ(PetscMalloc(size, &gmsh->sbuf));
     gmsh->slen = size;
   }
   *(void**)buf = size ? gmsh->sbuf : NULL;
@@ -269,36 +267,32 @@ static PetscErrorCode GmshBufferSizeGet(GmshFile *gmsh, size_t count, void *buf)
 
 static PetscErrorCode GmshRead(GmshFile *gmsh, void *buf, PetscInt count, PetscDataType dtype)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscViewerRead(gmsh->viewer, buf, count, NULL, dtype);CHKERRQ(ierr);
-  if (gmsh->byteSwap) {ierr = PetscByteSwap(buf, dtype, count);CHKERRQ(ierr);}
+  CHKERRQ(PetscViewerRead(gmsh->viewer, buf, count, NULL, dtype));
+  if (gmsh->byteSwap) CHKERRQ(PetscByteSwap(buf, dtype, count));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode GmshReadString(GmshFile *gmsh, char *buf, PetscInt count)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscViewerRead(gmsh->viewer, buf, count, NULL, PETSC_STRING);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerRead(gmsh->viewer, buf, count, NULL, PETSC_STRING));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode GmshMatch(PETSC_UNUSED GmshFile *gmsh, const char Section[], char line[PETSC_MAX_PATH_LEN], PetscBool *match)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscStrcmp(line, Section, match);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcmp(line, Section, match));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode GmshExpect(GmshFile *gmsh, const char Section[], char line[PETSC_MAX_PATH_LEN])
 {
   PetscBool      match;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = GmshMatch(gmsh, Section, line, &match);CHKERRQ(ierr);
+  CHKERRQ(GmshMatch(gmsh, Section, line, &match));
   PetscCheckFalse(!match,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file, expecting %s",Section);
   PetscFunctionReturn(0);
 }
@@ -306,16 +300,15 @@ static PetscErrorCode GmshExpect(GmshFile *gmsh, const char Section[], char line
 static PetscErrorCode GmshReadSection(GmshFile *gmsh, char line[PETSC_MAX_PATH_LEN])
 {
   PetscBool      match;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   while (PETSC_TRUE) {
-    ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);
-    ierr = GmshMatch(gmsh, "$Comments", line, &match);CHKERRQ(ierr);
+    CHKERRQ(GmshReadString(gmsh, line, 1));
+    CHKERRQ(GmshMatch(gmsh, "$Comments", line, &match));
     if (!match) break;
     while (PETSC_TRUE) {
-      ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);
-      ierr = GmshMatch(gmsh, "$EndComments", line, &match);CHKERRQ(ierr);
+      CHKERRQ(GmshReadString(gmsh, line, 1));
+      CHKERRQ(GmshMatch(gmsh, "$EndComments", line, &match));
       if (match) break;
     }
   }
@@ -324,10 +317,9 @@ static PetscErrorCode GmshReadSection(GmshFile *gmsh, char line[PETSC_MAX_PATH_L
 
 static PetscErrorCode GmshReadEndSection(GmshFile *gmsh, const char EndSection[], char line[PETSC_MAX_PATH_LEN])
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);
-  ierr = GmshExpect(gmsh, EndSection, line);CHKERRQ(ierr);
+  CHKERRQ(GmshReadString(gmsh, line, 1));
+  CHKERRQ(GmshExpect(gmsh, EndSection, line));
   PetscFunctionReturn(0);
 }
 
@@ -335,25 +327,24 @@ static PetscErrorCode GmshReadSize(GmshFile *gmsh, PetscInt *buf, PetscInt count
 {
   PetscInt       i;
   size_t         dataSize = (size_t)gmsh->dataSize;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (dataSize == sizeof(PetscInt)) {
-    ierr = GmshRead(gmsh, buf, count, PETSC_INT);CHKERRQ(ierr);
+    CHKERRQ(GmshRead(gmsh, buf, count, PETSC_INT));
   } else  if (dataSize == sizeof(int)) {
     int *ibuf = NULL;
-    ierr = GmshBufferSizeGet(gmsh, count, &ibuf);CHKERRQ(ierr);
-    ierr = GmshRead(gmsh, ibuf, count, PETSC_ENUM);CHKERRQ(ierr);
+    CHKERRQ(GmshBufferSizeGet(gmsh, count, &ibuf));
+    CHKERRQ(GmshRead(gmsh, ibuf, count, PETSC_ENUM));
     for (i = 0; i < count; ++i) buf[i] = (PetscInt)ibuf[i];
   } else  if (dataSize == sizeof(long)) {
     long *ibuf = NULL;
-    ierr = GmshBufferSizeGet(gmsh, count, &ibuf);CHKERRQ(ierr);
-    ierr = GmshRead(gmsh, ibuf, count, PETSC_LONG);CHKERRQ(ierr);
+    CHKERRQ(GmshBufferSizeGet(gmsh, count, &ibuf));
+    CHKERRQ(GmshRead(gmsh, ibuf, count, PETSC_LONG));
     for (i = 0; i < count; ++i) buf[i] = (PetscInt)ibuf[i];
   } else if (dataSize == sizeof(PetscInt64)) {
     PetscInt64 *ibuf = NULL;
-    ierr = GmshBufferSizeGet(gmsh, count, &ibuf);CHKERRQ(ierr);
-    ierr = GmshRead(gmsh, ibuf, count, PETSC_INT64);CHKERRQ(ierr);
+    CHKERRQ(GmshBufferSizeGet(gmsh, count, &ibuf));
+    CHKERRQ(GmshRead(gmsh, ibuf, count, PETSC_INT64));
     for (i = 0; i < count; ++i) buf[i] = (PetscInt)ibuf[i];
   }
   PetscFunctionReturn(0);
@@ -361,17 +352,15 @@ static PetscErrorCode GmshReadSize(GmshFile *gmsh, PetscInt *buf, PetscInt count
 
 static PetscErrorCode GmshReadInt(GmshFile *gmsh, int *buf, PetscInt count)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = GmshRead(gmsh, buf, count, PETSC_ENUM);CHKERRQ(ierr);
+  CHKERRQ(GmshRead(gmsh, buf, count, PETSC_ENUM));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode GmshReadDouble(GmshFile *gmsh, double *buf, PetscInt count)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = GmshRead(gmsh, buf, count, PETSC_DOUBLE);CHKERRQ(ierr);
+  CHKERRQ(GmshRead(gmsh, buf, count, PETSC_DOUBLE));
   PetscFunctionReturn(0);
 }
 
@@ -391,13 +380,12 @@ typedef struct {
 static PetscErrorCode GmshEntitiesCreate(PetscInt count[4], GmshEntities **entities)
 {
   PetscInt       dim;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(entities);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(entities));
   for (dim = 0; dim < 4; ++dim) {
-    ierr = PetscCalloc1(count[dim], &(*entities)->entity[dim]);CHKERRQ(ierr);
-    ierr = PetscHMapICreate(&(*entities)->entityMap[dim]);CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc1(count[dim], &(*entities)->entity[dim]));
+    CHKERRQ(PetscHMapICreate(&(*entities)->entityMap[dim]));
   }
   PetscFunctionReturn(0);
 }
@@ -405,24 +393,21 @@ static PetscErrorCode GmshEntitiesCreate(PetscInt count[4], GmshEntities **entit
 static PetscErrorCode GmshEntitiesDestroy(GmshEntities **entities)
 {
   PetscInt       dim;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!*entities) PetscFunctionReturn(0);
   for (dim = 0; dim < 4; ++dim) {
-    ierr = PetscFree((*entities)->entity[dim]);CHKERRQ(ierr);
-    ierr = PetscHMapIDestroy(&(*entities)->entityMap[dim]);CHKERRQ(ierr);
+    CHKERRQ(PetscFree((*entities)->entity[dim]));
+    CHKERRQ(PetscHMapIDestroy(&(*entities)->entityMap[dim]));
   }
-  ierr = PetscFree((*entities));CHKERRQ(ierr);
+  CHKERRQ(PetscFree((*entities)));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode GmshEntitiesAdd(GmshEntities *entities, PetscInt index, PetscInt dim, PetscInt eid, GmshEntity** entity)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscHMapISet(entities->entityMap[dim], eid, index);CHKERRQ(ierr);
+  CHKERRQ(PetscHMapISet(entities->entityMap[dim], eid, index));
   entities->entity[dim][index].dim = dim;
   entities->entity[dim][index].id  = eid;
   if (entity) *entity = &entities->entity[dim][index];
@@ -432,10 +417,9 @@ static PetscErrorCode GmshEntitiesAdd(GmshEntities *entities, PetscInt index, Pe
 static PetscErrorCode GmshEntitiesGet(GmshEntities *entities, PetscInt dim, PetscInt eid, GmshEntity** entity)
 {
   PetscInt       index;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscHMapIGet(entities->entityMap[dim], eid, &index);CHKERRQ(ierr);
+  CHKERRQ(PetscHMapIGet(entities->entityMap[dim], eid, &index));
   *entity = &entities->entity[dim][index];
   PetscFunctionReturn(0);
 }
@@ -448,25 +432,22 @@ typedef struct {
 
 static PetscErrorCode GmshNodesCreate(PetscInt count, GmshNodes **nodes)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscNew(nodes);CHKERRQ(ierr);
-  ierr = PetscMalloc1(count*1, &(*nodes)->id);CHKERRQ(ierr);
-  ierr = PetscMalloc1(count*3, &(*nodes)->xyz);CHKERRQ(ierr);
-  ierr = PetscMalloc1(count*1, &(*nodes)->tag);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(nodes));
+  CHKERRQ(PetscMalloc1(count*1, &(*nodes)->id));
+  CHKERRQ(PetscMalloc1(count*3, &(*nodes)->xyz));
+  CHKERRQ(PetscMalloc1(count*1, &(*nodes)->tag));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode GmshNodesDestroy(GmshNodes **nodes)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   if (!*nodes) PetscFunctionReturn(0);
-  ierr = PetscFree((*nodes)->id);CHKERRQ(ierr);
-  ierr = PetscFree((*nodes)->xyz);CHKERRQ(ierr);
-  ierr = PetscFree((*nodes)->tag);CHKERRQ(ierr);
-  ierr = PetscFree((*nodes));CHKERRQ(ierr);
+  CHKERRQ(PetscFree((*nodes)->id));
+  CHKERRQ(PetscFree((*nodes)->xyz));
+  CHKERRQ(PetscFree((*nodes)->tag));
+  CHKERRQ(PetscFree((*nodes)));
   PetscFunctionReturn(0);
 }
 
@@ -483,20 +464,16 @@ typedef struct {
 
 static PetscErrorCode GmshElementsCreate(PetscInt count, GmshElement **elements)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscCalloc1(count, elements);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc1(count, elements));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode GmshElementsDestroy(GmshElement **elements)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!*elements) PetscFunctionReturn(0);
-  ierr = PetscFree(*elements);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(*elements));
   PetscFunctionReturn(0);
 }
 
@@ -520,30 +497,27 @@ typedef struct {
 
 static PetscErrorCode GmshMeshCreate(GmshMesh **mesh)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscNew(mesh);CHKERRQ(ierr);
-  ierr = PetscSegBufferCreate(sizeof(PetscInt), 0, &(*mesh)->segbuf);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(mesh));
+  CHKERRQ(PetscSegBufferCreate(sizeof(PetscInt), 0, &(*mesh)->segbuf));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode GmshMeshDestroy(GmshMesh **mesh)
 {
   PetscInt       r;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!*mesh) PetscFunctionReturn(0);
-  ierr = GmshEntitiesDestroy(&(*mesh)->entities);CHKERRQ(ierr);
-  ierr = GmshNodesDestroy(&(*mesh)->nodelist);CHKERRQ(ierr);
-  ierr = GmshElementsDestroy(&(*mesh)->elements);CHKERRQ(ierr);
-  ierr = PetscFree((*mesh)->periodMap);CHKERRQ(ierr);
-  ierr = PetscFree((*mesh)->vertexMap);CHKERRQ(ierr);
-  ierr = PetscSegBufferDestroy(&(*mesh)->segbuf);CHKERRQ(ierr);
-  for (r = 0; r < (*mesh)->numRegions; ++r) {ierr = PetscFree((*mesh)->regionNames[r]);CHKERRQ(ierr);}
-  ierr = PetscFree2((*mesh)->regionTags, (*mesh)->regionNames);CHKERRQ(ierr);
-  ierr = PetscFree((*mesh));CHKERRQ(ierr);
+  CHKERRQ(GmshEntitiesDestroy(&(*mesh)->entities));
+  CHKERRQ(GmshNodesDestroy(&(*mesh)->nodelist));
+  CHKERRQ(GmshElementsDestroy(&(*mesh)->elements));
+  CHKERRQ(PetscFree((*mesh)->periodMap));
+  CHKERRQ(PetscFree((*mesh)->vertexMap));
+  CHKERRQ(PetscSegBufferDestroy(&(*mesh)->segbuf));
+  for (r = 0; r < (*mesh)->numRegions; ++r) CHKERRQ(PetscFree((*mesh)->regionNames[r]));
+  CHKERRQ(PetscFree2((*mesh)->regionTags, (*mesh)->regionNames));
+  CHKERRQ(PetscFree((*mesh)));
   PetscFunctionReturn(0);
 }
 
@@ -554,21 +528,20 @@ static PetscErrorCode GmshReadNodes_v22(GmshFile *gmsh, GmshMesh *mesh)
   char           line[PETSC_MAX_PATH_LEN];
   int            n, num, nid, snum;
   GmshNodes      *nodes;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
   snum = sscanf(line, "%d", &num);
   PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
-  ierr = GmshNodesCreate(num, &nodes);CHKERRQ(ierr);
+  CHKERRQ(GmshNodesCreate(num, &nodes));
   mesh->numNodes = num;
   mesh->nodelist = nodes;
   for (n = 0; n < num; ++n) {
     double *xyz = nodes->xyz + n*3;
-    ierr = PetscViewerRead(viewer, &nid, 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
-    ierr = PetscViewerRead(viewer, xyz, 3, NULL, PETSC_DOUBLE);CHKERRQ(ierr);
-    if (byteSwap) {ierr = PetscByteSwap(&nid, PETSC_ENUM, 1);CHKERRQ(ierr);}
-    if (byteSwap) {ierr = PetscByteSwap(xyz, PETSC_DOUBLE, 3);CHKERRQ(ierr);}
+    CHKERRQ(PetscViewerRead(viewer, &nid, 1, NULL, PETSC_ENUM));
+    CHKERRQ(PetscViewerRead(viewer, xyz, 3, NULL, PETSC_DOUBLE));
+    if (byteSwap) CHKERRQ(PetscByteSwap(&nid, PETSC_ENUM, 1));
+    if (byteSwap) CHKERRQ(PetscByteSwap(xyz, PETSC_DOUBLE, 3));
     nodes->id[n] = nid;
     nodes->tag[n] = -1;
   }
@@ -589,24 +562,23 @@ static PetscErrorCode GmshReadElements_v22(GmshFile* gmsh, GmshMesh *mesh)
   int            cellType, numElem, numVerts, numNodes, numTags;
   GmshElement   *elements;
   PetscInt      *nodeMap = gmsh->nodeMap;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
   snum = sscanf(line, "%d", &num);
   PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
-  ierr = GmshElementsCreate(num, &elements);CHKERRQ(ierr);
+  CHKERRQ(GmshElementsCreate(num, &elements));
   mesh->numElems = num;
   mesh->elements = elements;
   for (c = 0; c < num;) {
-    ierr = PetscViewerRead(viewer, ibuf, 3, NULL, PETSC_ENUM);CHKERRQ(ierr);
-    if (byteSwap) {ierr = PetscByteSwap(ibuf, PETSC_ENUM, 3);CHKERRQ(ierr);}
+    CHKERRQ(PetscViewerRead(viewer, ibuf, 3, NULL, PETSC_ENUM));
+    if (byteSwap) CHKERRQ(PetscByteSwap(ibuf, PETSC_ENUM, 3));
 
     cellType = binary ? ibuf[0] : ibuf[1];
     numElem  = binary ? ibuf[1] : 1;
     numTags  = ibuf[2];
 
-    ierr = GmshCellTypeCheck(cellType);CHKERRQ(ierr);
+    CHKERRQ(GmshCellTypeCheck(cellType));
     numVerts = GmshCellMap[cellType].numVerts;
     numNodes = GmshCellMap[cellType].numNodes;
 
@@ -614,15 +586,15 @@ static PetscErrorCode GmshReadElements_v22(GmshFile* gmsh, GmshMesh *mesh)
       GmshElement *element = elements + c;
       const int off = binary ? 0 : 1, nint = 1 + numTags + numNodes - off;
       const int *id = ibuf, *nodes = ibuf + 1 + numTags, *tags = ibuf + 1;
-      ierr = PetscViewerRead(viewer, ibuf+off, nint, NULL, PETSC_ENUM);CHKERRQ(ierr);
-      if (byteSwap) {ierr = PetscByteSwap(ibuf+off, PETSC_ENUM, nint);CHKERRQ(ierr);}
+      CHKERRQ(PetscViewerRead(viewer, ibuf+off, nint, NULL, PETSC_ENUM));
+      if (byteSwap) CHKERRQ(PetscByteSwap(ibuf+off, PETSC_ENUM, nint));
       element->id  = id[0];
       element->dim = GmshCellMap[cellType].dim;
       element->cellType = cellType;
       element->numVerts = numVerts;
       element->numNodes = numNodes;
       element->numTags  = PetscMin(numTags, 4);
-      ierr = PetscSegBufferGet(mesh->segbuf, (size_t)element->numNodes, &element->nodes);CHKERRQ(ierr);
+      CHKERRQ(PetscSegBufferGet(mesh->segbuf, (size_t)element->numNodes, &element->nodes));
       for (p = 0; p < element->numNodes; p++) element->nodes[p] = nodeMap[nodes[p]];
       for (p = 0; p < element->numTags;  p++) element->tags[p]  = tags[p];
     }
@@ -667,33 +639,32 @@ static PetscErrorCode GmshReadEntities_v40(GmshFile *gmsh, GmshMesh *mesh)
   int            dim, eid, numTags, *ibuf, t;
   PetscInt       count[4], i;
   GmshEntity     *entity = NULL;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerRead(viewer, lbuf, 4, NULL, PETSC_LONG);CHKERRQ(ierr);
-  if (byteSwap) {ierr = PetscByteSwap(lbuf, PETSC_LONG, 4);CHKERRQ(ierr);}
+  CHKERRQ(PetscViewerRead(viewer, lbuf, 4, NULL, PETSC_LONG));
+  if (byteSwap) CHKERRQ(PetscByteSwap(lbuf, PETSC_LONG, 4));
   for (i = 0; i < 4; ++i) count[i] = lbuf[i];
-  ierr = GmshEntitiesCreate(count, &mesh->entities);CHKERRQ(ierr);
+  CHKERRQ(GmshEntitiesCreate(count, &mesh->entities));
   for (dim = 0; dim < 4; ++dim) {
     for (index = 0; index < count[dim]; ++index) {
-      ierr = PetscViewerRead(viewer, &eid, 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
-      if (byteSwap) {ierr = PetscByteSwap(&eid, PETSC_ENUM, 1);CHKERRQ(ierr);}
-      ierr = GmshEntitiesAdd(mesh->entities, (PetscInt)index, dim, eid, &entity);CHKERRQ(ierr);
-      ierr = PetscViewerRead(viewer, entity->bbox, 6, NULL, PETSC_DOUBLE);CHKERRQ(ierr);
-      if (byteSwap) {ierr = PetscByteSwap(entity->bbox, PETSC_DOUBLE, 6);CHKERRQ(ierr);}
-      ierr = PetscViewerRead(viewer, &num, 1, NULL, PETSC_LONG);CHKERRQ(ierr);
-      if (byteSwap) {ierr = PetscByteSwap(&num, PETSC_LONG, 1);CHKERRQ(ierr);}
-      ierr = GmshBufferGet(gmsh, num, sizeof(int), &ibuf);CHKERRQ(ierr);
-      ierr = PetscViewerRead(viewer, ibuf, num, NULL, PETSC_ENUM);CHKERRQ(ierr);
-      if (byteSwap) {ierr = PetscByteSwap(ibuf, PETSC_ENUM, num);CHKERRQ(ierr);}
+      CHKERRQ(PetscViewerRead(viewer, &eid, 1, NULL, PETSC_ENUM));
+      if (byteSwap) CHKERRQ(PetscByteSwap(&eid, PETSC_ENUM, 1));
+      CHKERRQ(GmshEntitiesAdd(mesh->entities, (PetscInt)index, dim, eid, &entity));
+      CHKERRQ(PetscViewerRead(viewer, entity->bbox, 6, NULL, PETSC_DOUBLE));
+      if (byteSwap) CHKERRQ(PetscByteSwap(entity->bbox, PETSC_DOUBLE, 6));
+      CHKERRQ(PetscViewerRead(viewer, &num, 1, NULL, PETSC_LONG));
+      if (byteSwap) CHKERRQ(PetscByteSwap(&num, PETSC_LONG, 1));
+      CHKERRQ(GmshBufferGet(gmsh, num, sizeof(int), &ibuf));
+      CHKERRQ(PetscViewerRead(viewer, ibuf, num, NULL, PETSC_ENUM));
+      if (byteSwap) CHKERRQ(PetscByteSwap(ibuf, PETSC_ENUM, num));
       entity->numTags = numTags = (int) PetscMin(num, 4);
       for (t = 0; t < numTags; ++t) entity->tags[t] = ibuf[t];
       if (dim == 0) continue;
-      ierr = PetscViewerRead(viewer, &num, 1, NULL, PETSC_LONG);CHKERRQ(ierr);
-      if (byteSwap) {ierr = PetscByteSwap(&num, PETSC_LONG, 1);CHKERRQ(ierr);}
-      ierr = GmshBufferGet(gmsh, num, sizeof(int), &ibuf);CHKERRQ(ierr);
-      ierr = PetscViewerRead(viewer, ibuf, num, NULL, PETSC_ENUM);CHKERRQ(ierr);
-      if (byteSwap) {ierr = PetscByteSwap(ibuf, PETSC_ENUM, num);CHKERRQ(ierr);}
+      CHKERRQ(PetscViewerRead(viewer, &num, 1, NULL, PETSC_LONG));
+      if (byteSwap) CHKERRQ(PetscByteSwap(&num, PETSC_LONG, 1));
+      CHKERRQ(GmshBufferGet(gmsh, num, sizeof(int), &ibuf));
+      CHKERRQ(PetscViewerRead(viewer, ibuf, num, NULL, PETSC_ENUM));
+      if (byteSwap) CHKERRQ(PetscByteSwap(ibuf, PETSC_ENUM, num));
     }
   }
   PetscFunctionReturn(0);
@@ -715,44 +686,43 @@ static PetscErrorCode GmshReadNodes_v40(GmshFile *gmsh, GmshMesh *mesh)
   long           block, node, n, numEntityBlocks, numTotalNodes, numNodes;
   int            info[3], nid;
   GmshNodes      *nodes;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerRead(viewer, &numEntityBlocks, 1, NULL, PETSC_LONG);CHKERRQ(ierr);
-  if (byteSwap) {ierr = PetscByteSwap(&numEntityBlocks, PETSC_LONG, 1);CHKERRQ(ierr);}
-  ierr = PetscViewerRead(viewer, &numTotalNodes, 1, NULL, PETSC_LONG);CHKERRQ(ierr);
-  if (byteSwap) {ierr = PetscByteSwap(&numTotalNodes, PETSC_LONG, 1);CHKERRQ(ierr);}
-  ierr = GmshNodesCreate(numTotalNodes, &nodes);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerRead(viewer, &numEntityBlocks, 1, NULL, PETSC_LONG));
+  if (byteSwap) CHKERRQ(PetscByteSwap(&numEntityBlocks, PETSC_LONG, 1));
+  CHKERRQ(PetscViewerRead(viewer, &numTotalNodes, 1, NULL, PETSC_LONG));
+  if (byteSwap) CHKERRQ(PetscByteSwap(&numTotalNodes, PETSC_LONG, 1));
+  CHKERRQ(GmshNodesCreate(numTotalNodes, &nodes));
   mesh->numNodes = numTotalNodes;
   mesh->nodelist = nodes;
   for (n = 0, block = 0; block < numEntityBlocks; ++block) {
-    ierr = PetscViewerRead(viewer, info, 3, NULL, PETSC_ENUM);CHKERRQ(ierr);
-    ierr = PetscViewerRead(viewer, &numNodes, 1, NULL, PETSC_LONG);CHKERRQ(ierr);
-    if (byteSwap) {ierr = PetscByteSwap(&numNodes, PETSC_LONG, 1);CHKERRQ(ierr);}
+    CHKERRQ(PetscViewerRead(viewer, info, 3, NULL, PETSC_ENUM));
+    CHKERRQ(PetscViewerRead(viewer, &numNodes, 1, NULL, PETSC_LONG));
+    if (byteSwap) CHKERRQ(PetscByteSwap(&numNodes, PETSC_LONG, 1));
     if (gmsh->binary) {
       size_t nbytes = sizeof(int) + 3*sizeof(double);
       char   *cbuf = NULL; /* dummy value to prevent warning from compiler about possible unitilized value */
-      ierr = GmshBufferGet(gmsh, numNodes, nbytes, &cbuf);CHKERRQ(ierr);
-      ierr = PetscViewerRead(viewer, cbuf, numNodes*nbytes, NULL, PETSC_CHAR);CHKERRQ(ierr);
+      CHKERRQ(GmshBufferGet(gmsh, numNodes, nbytes, &cbuf));
+      CHKERRQ(PetscViewerRead(viewer, cbuf, numNodes*nbytes, NULL, PETSC_CHAR));
       for (node = 0; node < numNodes; ++node, ++n) {
         char   *cnid = cbuf + node*nbytes, *cxyz = cnid + sizeof(int);
         double *xyz = nodes->xyz + n*3;
-        if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(cnid, PETSC_ENUM, 1);CHKERRQ(ierr);}
-        if (!PetscBinaryBigEndian()) {ierr = PetscByteSwap(cxyz, PETSC_DOUBLE, 3);CHKERRQ(ierr);}
-        ierr = PetscMemcpy(&nid, cnid, sizeof(int));CHKERRQ(ierr);
-        ierr = PetscMemcpy(xyz, cxyz, 3*sizeof(double));CHKERRQ(ierr);
-        if (byteSwap) {ierr = PetscByteSwap(&nid, PETSC_ENUM, 1);CHKERRQ(ierr);}
-        if (byteSwap) {ierr = PetscByteSwap(xyz, PETSC_DOUBLE, 3);CHKERRQ(ierr);}
+        if (!PetscBinaryBigEndian()) CHKERRQ(PetscByteSwap(cnid, PETSC_ENUM, 1));
+        if (!PetscBinaryBigEndian()) CHKERRQ(PetscByteSwap(cxyz, PETSC_DOUBLE, 3));
+        CHKERRQ(PetscMemcpy(&nid, cnid, sizeof(int)));
+        CHKERRQ(PetscMemcpy(xyz, cxyz, 3*sizeof(double)));
+        if (byteSwap) CHKERRQ(PetscByteSwap(&nid, PETSC_ENUM, 1));
+        if (byteSwap) CHKERRQ(PetscByteSwap(xyz, PETSC_DOUBLE, 3));
         nodes->id[n] = nid;
         nodes->tag[n] = -1;
       }
     } else {
       for (node = 0; node < numNodes; ++node, ++n) {
         double *xyz = nodes->xyz + n*3;
-        ierr = PetscViewerRead(viewer, &nid, 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
-        ierr = PetscViewerRead(viewer, xyz, 3, NULL, PETSC_DOUBLE);CHKERRQ(ierr);
-        if (byteSwap) {ierr = PetscByteSwap(&nid, PETSC_ENUM, 1);CHKERRQ(ierr);}
-        if (byteSwap) {ierr = PetscByteSwap(xyz, PETSC_DOUBLE, 3);CHKERRQ(ierr);}
+        CHKERRQ(PetscViewerRead(viewer, &nid, 1, NULL, PETSC_ENUM));
+        CHKERRQ(PetscViewerRead(viewer, xyz, 3, NULL, PETSC_DOUBLE));
+        if (byteSwap) CHKERRQ(PetscByteSwap(&nid, PETSC_ENUM, 1));
+        if (byteSwap) CHKERRQ(PetscByteSwap(xyz, PETSC_DOUBLE, 3));
         nodes->id[n] = nid;
         nodes->tag[n] = -1;
       }
@@ -780,30 +750,29 @@ static PetscErrorCode GmshReadElements_v40(GmshFile *gmsh, GmshMesh *mesh)
   GmshEntity     *entity = NULL;
   GmshElement    *elements;
   PetscInt       *nodeMap = gmsh->nodeMap;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerRead(viewer, &numEntityBlocks, 1, NULL, PETSC_LONG);CHKERRQ(ierr);
-  if (byteSwap) {ierr = PetscByteSwap(&numEntityBlocks, PETSC_LONG, 1);CHKERRQ(ierr);}
-  ierr = PetscViewerRead(viewer, &numTotalElements, 1, NULL, PETSC_LONG);CHKERRQ(ierr);
-  if (byteSwap) {ierr = PetscByteSwap(&numTotalElements, PETSC_LONG, 1);CHKERRQ(ierr);}
-  ierr = GmshElementsCreate(numTotalElements, &elements);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerRead(viewer, &numEntityBlocks, 1, NULL, PETSC_LONG));
+  if (byteSwap) CHKERRQ(PetscByteSwap(&numEntityBlocks, PETSC_LONG, 1));
+  CHKERRQ(PetscViewerRead(viewer, &numTotalElements, 1, NULL, PETSC_LONG));
+  if (byteSwap) CHKERRQ(PetscByteSwap(&numTotalElements, PETSC_LONG, 1));
+  CHKERRQ(GmshElementsCreate(numTotalElements, &elements));
   mesh->numElems = numTotalElements;
   mesh->elements = elements;
   for (c = 0, block = 0; block < numEntityBlocks; ++block) {
-    ierr = PetscViewerRead(viewer, info, 3, NULL, PETSC_ENUM);CHKERRQ(ierr);
-    if (byteSwap) {ierr = PetscByteSwap(info, PETSC_ENUM, 3);CHKERRQ(ierr);}
+    CHKERRQ(PetscViewerRead(viewer, info, 3, NULL, PETSC_ENUM));
+    if (byteSwap) CHKERRQ(PetscByteSwap(info, PETSC_ENUM, 3));
     eid = info[0]; dim = info[1]; cellType = info[2];
-    ierr = GmshEntitiesGet(mesh->entities, dim, eid, &entity);CHKERRQ(ierr);
-    ierr = GmshCellTypeCheck(cellType);CHKERRQ(ierr);
+    CHKERRQ(GmshEntitiesGet(mesh->entities, dim, eid, &entity));
+    CHKERRQ(GmshCellTypeCheck(cellType));
     numVerts = GmshCellMap[cellType].numVerts;
     numNodes = GmshCellMap[cellType].numNodes;
     numTags  = entity->numTags;
-    ierr = PetscViewerRead(viewer, &numElements, 1, NULL, PETSC_LONG);CHKERRQ(ierr);
-    if (byteSwap) {ierr = PetscByteSwap(&numElements, PETSC_LONG, 1);CHKERRQ(ierr);}
-    ierr = GmshBufferGet(gmsh, (1+numNodes)*numElements, sizeof(int), &ibuf);CHKERRQ(ierr);
-    ierr = PetscViewerRead(viewer, ibuf, (1+numNodes)*numElements, NULL, PETSC_ENUM);CHKERRQ(ierr);
-    if (byteSwap) {ierr = PetscByteSwap(ibuf, PETSC_ENUM, (1+numNodes)*numElements);CHKERRQ(ierr);}
+    CHKERRQ(PetscViewerRead(viewer, &numElements, 1, NULL, PETSC_LONG));
+    if (byteSwap) CHKERRQ(PetscByteSwap(&numElements, PETSC_LONG, 1));
+    CHKERRQ(GmshBufferGet(gmsh, (1+numNodes)*numElements, sizeof(int), &ibuf));
+    CHKERRQ(PetscViewerRead(viewer, ibuf, (1+numNodes)*numElements, NULL, PETSC_ENUM));
+    if (byteSwap) CHKERRQ(PetscByteSwap(ibuf, PETSC_ENUM, (1+numNodes)*numElements));
     for (elem = 0; elem < numElements; ++elem, ++c) {
       GmshElement *element = elements + c;
       const int *id = ibuf + elem*(1+numNodes), *nodes = id + 1;
@@ -813,7 +782,7 @@ static PetscErrorCode GmshReadElements_v40(GmshFile *gmsh, GmshMesh *mesh)
       element->numVerts = numVerts;
       element->numNodes = numNodes;
       element->numTags  = numTags;
-      ierr = PetscSegBufferGet(mesh->segbuf, (size_t)element->numNodes, &element->nodes);CHKERRQ(ierr);
+      CHKERRQ(PetscSegBufferGet(mesh->segbuf, (size_t)element->numNodes, &element->nodes));
       for (p = 0; p < element->numNodes; p++) element->nodes[p] = nodeMap[nodes[p]];
       for (p = 0; p < element->numTags;  p++) element->tags[p]  = entity->tags[p];
     }
@@ -830,16 +799,15 @@ static PetscErrorCode GmshReadPeriodic_v40(GmshFile *gmsh, PetscInt periodicMap[
   int            numPeriodic, snum, i;
   char           line[PETSC_MAX_PATH_LEN];
   PetscInt       *nodeMap = gmsh->nodeMap;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (fileFormat == 22 || !binary) {
-    ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
     snum = sscanf(line, "%d", &numPeriodic);
     PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
   } else {
-    ierr = PetscViewerRead(viewer, &numPeriodic, 1, NULL, PETSC_ENUM);CHKERRQ(ierr);
-    if (byteSwap) {ierr = PetscByteSwap(&numPeriodic, PETSC_ENUM, 1);CHKERRQ(ierr);}
+    CHKERRQ(PetscViewerRead(viewer, &numPeriodic, 1, NULL, PETSC_ENUM));
+    if (byteSwap) CHKERRQ(PetscByteSwap(&numPeriodic, PETSC_ENUM, 1));
   }
   for (i = 0; i < numPeriodic; i++) {
     int    ibuf[3], correspondingDim = -1, correspondingTag = -1, primaryTag = -1, correspondingNode, primaryNode;
@@ -847,43 +815,43 @@ static PetscErrorCode GmshReadPeriodic_v40(GmshFile *gmsh, PetscInt periodicMap[
     double affine[16];
 
     if (fileFormat == 22 || !binary) {
-      ierr = PetscViewerRead(viewer, line, 3, NULL, PETSC_STRING);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerRead(viewer, line, 3, NULL, PETSC_STRING));
       snum = sscanf(line, "%d %d %d", &correspondingDim, &correspondingTag, &primaryTag);
       PetscCheckFalse(snum != 3,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
     } else {
-      ierr = PetscViewerRead(viewer, ibuf, 3, NULL, PETSC_ENUM);CHKERRQ(ierr);
-      if (byteSwap) {ierr = PetscByteSwap(ibuf, PETSC_ENUM, 3);CHKERRQ(ierr);}
+      CHKERRQ(PetscViewerRead(viewer, ibuf, 3, NULL, PETSC_ENUM));
+      if (byteSwap) CHKERRQ(PetscByteSwap(ibuf, PETSC_ENUM, 3));
       correspondingDim = ibuf[0]; correspondingTag = ibuf[1]; primaryTag = ibuf[2];
     }
     (void)correspondingDim; (void)correspondingTag; (void)primaryTag; /* unused */
 
     if (fileFormat == 22 || !binary) {
-      ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
       snum = sscanf(line, "%ld", &nNodes);
       if (snum != 1) { /* discard transformation and try again */
-        ierr = PetscViewerRead(viewer, line, -PETSC_MAX_PATH_LEN, NULL, PETSC_STRING);CHKERRQ(ierr);
-        ierr = PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
+        CHKERRQ(PetscViewerRead(viewer, line, -PETSC_MAX_PATH_LEN, NULL, PETSC_STRING));
+        CHKERRQ(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
         snum = sscanf(line, "%ld", &nNodes);
         PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
       }
     } else {
-      ierr = PetscViewerRead(viewer, &nNodes, 1, NULL, PETSC_LONG);CHKERRQ(ierr);
-      if (byteSwap) {ierr = PetscByteSwap(&nNodes, PETSC_LONG, 1);CHKERRQ(ierr);}
+      CHKERRQ(PetscViewerRead(viewer, &nNodes, 1, NULL, PETSC_LONG));
+      if (byteSwap) CHKERRQ(PetscByteSwap(&nNodes, PETSC_LONG, 1));
       if (nNodes == -1) { /* discard transformation and try again */
-        ierr = PetscViewerRead(viewer, affine, 16, NULL, PETSC_DOUBLE);CHKERRQ(ierr);
-        ierr = PetscViewerRead(viewer, &nNodes, 1, NULL, PETSC_LONG);CHKERRQ(ierr);
-        if (byteSwap) {ierr = PetscByteSwap(&nNodes, PETSC_LONG, 1);CHKERRQ(ierr);}
+        CHKERRQ(PetscViewerRead(viewer, affine, 16, NULL, PETSC_DOUBLE));
+        CHKERRQ(PetscViewerRead(viewer, &nNodes, 1, NULL, PETSC_LONG));
+        if (byteSwap) CHKERRQ(PetscByteSwap(&nNodes, PETSC_LONG, 1));
       }
     }
 
     for (j = 0; j < nNodes; j++) {
       if (fileFormat == 22 || !binary) {
-        ierr = PetscViewerRead(viewer, line, 2, NULL, PETSC_STRING);CHKERRQ(ierr);
+        CHKERRQ(PetscViewerRead(viewer, line, 2, NULL, PETSC_STRING));
         snum = sscanf(line, "%d %d", &correspondingNode, &primaryNode);
         PetscCheckFalse(snum != 2,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
       } else {
-        ierr = PetscViewerRead(viewer, ibuf, 2, NULL, PETSC_ENUM);CHKERRQ(ierr);
-        if (byteSwap) {ierr = PetscByteSwap(ibuf, PETSC_ENUM, 2);CHKERRQ(ierr);}
+        CHKERRQ(PetscViewerRead(viewer, ibuf, 2, NULL, PETSC_ENUM));
+        if (byteSwap) CHKERRQ(PetscByteSwap(ibuf, PETSC_ENUM, 2));
         correspondingNode = ibuf[0]; primaryNode = ibuf[1];
       }
       correspondingNode  = (int) nodeMap[correspondingNode];
@@ -923,25 +891,24 @@ static PetscErrorCode GmshReadEntities_v41(GmshFile *gmsh, GmshMesh *mesh)
   PetscInt       count[4], index, numTags, i;
   int            dim, eid, *tags = NULL;
   GmshEntity     *entity = NULL;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = GmshReadSize(gmsh, count, 4);CHKERRQ(ierr);
-  ierr = GmshEntitiesCreate(count, &mesh->entities);CHKERRQ(ierr);
+  CHKERRQ(GmshReadSize(gmsh, count, 4));
+  CHKERRQ(GmshEntitiesCreate(count, &mesh->entities));
   for (dim = 0; dim < 4; ++dim) {
     for (index = 0; index < count[dim]; ++index) {
-      ierr = GmshReadInt(gmsh, &eid, 1);CHKERRQ(ierr);
-      ierr = GmshEntitiesAdd(mesh->entities, (PetscInt)index, dim, eid, &entity);CHKERRQ(ierr);
-      ierr = GmshReadDouble(gmsh, entity->bbox, (dim == 0) ? 3 : 6);CHKERRQ(ierr);
-      ierr = GmshReadSize(gmsh, &numTags, 1);CHKERRQ(ierr);
-      ierr = GmshBufferGet(gmsh, numTags, sizeof(int), &tags);CHKERRQ(ierr);
-      ierr = GmshReadInt(gmsh, tags, numTags);CHKERRQ(ierr);
+      CHKERRQ(GmshReadInt(gmsh, &eid, 1));
+      CHKERRQ(GmshEntitiesAdd(mesh->entities, (PetscInt)index, dim, eid, &entity));
+      CHKERRQ(GmshReadDouble(gmsh, entity->bbox, (dim == 0) ? 3 : 6));
+      CHKERRQ(GmshReadSize(gmsh, &numTags, 1));
+      CHKERRQ(GmshBufferGet(gmsh, numTags, sizeof(int), &tags));
+      CHKERRQ(GmshReadInt(gmsh, tags, numTags));
       entity->numTags = PetscMin(numTags, 4);
       for (i = 0; i < entity->numTags; ++i) entity->tags[i] = tags[i];
       if (dim == 0) continue;
-      ierr = GmshReadSize(gmsh, &numTags, 1);CHKERRQ(ierr);
-      ierr = GmshBufferGet(gmsh, numTags, sizeof(int), &tags);CHKERRQ(ierr);
-      ierr = GmshReadInt(gmsh, tags, numTags);CHKERRQ(ierr);
+      CHKERRQ(GmshReadSize(gmsh, &numTags, 1));
+      CHKERRQ(GmshBufferGet(gmsh, numTags, sizeof(int), &tags));
+      CHKERRQ(GmshReadInt(gmsh, tags, numTags));
       /* Currently, we do not save the ids for the bounding entities */
     }
   }
@@ -968,24 +935,23 @@ static PetscErrorCode GmshReadNodes_v41(GmshFile *gmsh, GmshMesh *mesh)
   PetscInt       sizes[4], numEntityBlocks, numTags, numNodes, numNodesBlock = 0, block, node, n;
   GmshEntity     *entity = NULL;
   GmshNodes      *nodes;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = GmshReadSize(gmsh, sizes, 4);CHKERRQ(ierr);
+  CHKERRQ(GmshReadSize(gmsh, sizes, 4));
   numEntityBlocks = sizes[0]; numNodes = sizes[1];
-  ierr = GmshNodesCreate(numNodes, &nodes);CHKERRQ(ierr);
+  CHKERRQ(GmshNodesCreate(numNodes, &nodes));
   mesh->numNodes = numNodes;
   mesh->nodelist = nodes;
   for (block = 0, node = 0; block < numEntityBlocks; ++block, node += numNodesBlock) {
-    ierr = GmshReadInt(gmsh, info, 3);CHKERRQ(ierr);
+    CHKERRQ(GmshReadInt(gmsh, info, 3));
     dim = info[0]; eid = info[1]; parametric = info[2];
-    ierr = GmshEntitiesGet(mesh->entities, dim, eid, &entity);CHKERRQ(ierr);
+    CHKERRQ(GmshEntitiesGet(mesh->entities, dim, eid, &entity));
     numTags = PetscMin(1, entity->numTags);
     if (entity->numTags > 1) PetscInfo(NULL, "Entity %d has more than %d physical tags, assigning only the first to nodes", eid, 1);
     PetscCheck(!parametric, PETSC_COMM_SELF, PETSC_ERR_SUP, "Parametric coordinates not supported");
-    ierr = GmshReadSize(gmsh, &numNodesBlock, 1);CHKERRQ(ierr);
-    ierr = GmshReadSize(gmsh, nodes->id+node, numNodesBlock);CHKERRQ(ierr);
-    ierr = GmshReadDouble(gmsh, nodes->xyz+node*3, numNodesBlock*3);CHKERRQ(ierr);
+    CHKERRQ(GmshReadSize(gmsh, &numNodesBlock, 1));
+    CHKERRQ(GmshReadSize(gmsh, nodes->id+node, numNodesBlock));
+    CHKERRQ(GmshReadDouble(gmsh, nodes->xyz+node*3, numNodesBlock*3));
     for (n = 0; n < numNodesBlock; ++n) nodes->tag[node+n] = numTags ? entity->tags[0] : -1;
   }
   gmsh->nodeStart = sizes[2];
@@ -1010,26 +976,25 @@ static PetscErrorCode GmshReadElements_v41(GmshFile *gmsh, GmshMesh *mesh)
   GmshEntity     *entity = NULL;
   GmshElement    *elements;
   PetscInt       *nodeMap = gmsh->nodeMap;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = GmshReadSize(gmsh, sizes, 4);CHKERRQ(ierr);
+  CHKERRQ(GmshReadSize(gmsh, sizes, 4));
   numEntityBlocks = sizes[0]; numElements = sizes[1];
-  ierr = GmshElementsCreate(numElements, &elements);CHKERRQ(ierr);
+  CHKERRQ(GmshElementsCreate(numElements, &elements));
   mesh->numElems = numElements;
   mesh->elements = elements;
   for (c = 0, block = 0; block < numEntityBlocks; ++block) {
-    ierr = GmshReadInt(gmsh, info, 3);CHKERRQ(ierr);
+    CHKERRQ(GmshReadInt(gmsh, info, 3));
     dim = info[0]; eid = info[1]; cellType = info[2];
-    ierr = GmshEntitiesGet(mesh->entities, dim, eid, &entity);CHKERRQ(ierr);
-    ierr = GmshCellTypeCheck(cellType);CHKERRQ(ierr);
+    CHKERRQ(GmshEntitiesGet(mesh->entities, dim, eid, &entity));
+    CHKERRQ(GmshCellTypeCheck(cellType));
     numVerts = GmshCellMap[cellType].numVerts;
     numNodes = GmshCellMap[cellType].numNodes;
     numTags  = PetscMin(4, entity->numTags);
     if (entity->numTags > 4) PetscInfo(NULL, "Entity %d has more then %d physical tags, assigning only the first to elements", eid, 4);
-    ierr = GmshReadSize(gmsh, &numBlockElements, 1);CHKERRQ(ierr);
-    ierr = GmshBufferGet(gmsh, (1+numNodes)*numBlockElements, sizeof(PetscInt), &ibuf);CHKERRQ(ierr);
-    ierr = GmshReadSize(gmsh, ibuf, (1+numNodes)*numBlockElements);CHKERRQ(ierr);
+    CHKERRQ(GmshReadSize(gmsh, &numBlockElements, 1));
+    CHKERRQ(GmshBufferGet(gmsh, (1+numNodes)*numBlockElements, sizeof(PetscInt), &ibuf));
+    CHKERRQ(GmshReadSize(gmsh, ibuf, (1+numNodes)*numBlockElements));
     for (elem = 0; elem < numBlockElements; ++elem, ++c) {
       GmshElement *element = elements + c;
       const PetscInt *id = ibuf + elem*(1+numNodes), *nodes = id + 1;
@@ -1039,7 +1004,7 @@ static PetscErrorCode GmshReadElements_v41(GmshFile *gmsh, GmshMesh *mesh)
       element->numVerts = numVerts;
       element->numNodes = numNodes;
       element->numTags  = numTags;
-      ierr = PetscSegBufferGet(mesh->segbuf, (size_t)element->numNodes, &element->nodes);CHKERRQ(ierr);
+      CHKERRQ(PetscSegBufferGet(mesh->segbuf, (size_t)element->numNodes, &element->nodes));
       for (p = 0; p < element->numNodes; p++) element->nodes[p] = nodeMap[nodes[p]];
       for (p = 0; p < element->numTags;  p++) element->tags[p]  = entity->tags[p];
     }
@@ -1064,17 +1029,16 @@ static PetscErrorCode GmshReadPeriodic_v41(GmshFile *gmsh, PetscInt periodicMap[
   double         dbuf[16];
   PetscInt       numPeriodicLinks, numAffine, numCorrespondingNodes, *nodeTags = NULL, link, node;
   PetscInt       *nodeMap = gmsh->nodeMap;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = GmshReadSize(gmsh, &numPeriodicLinks, 1);CHKERRQ(ierr);
+  CHKERRQ(GmshReadSize(gmsh, &numPeriodicLinks, 1));
   for (link = 0; link < numPeriodicLinks; ++link) {
-    ierr = GmshReadInt(gmsh, info, 3);CHKERRQ(ierr);
-    ierr = GmshReadSize(gmsh, &numAffine, 1);CHKERRQ(ierr);
-    ierr = GmshReadDouble(gmsh, dbuf, numAffine);CHKERRQ(ierr);
-    ierr = GmshReadSize(gmsh, &numCorrespondingNodes, 1);CHKERRQ(ierr);
-    ierr = GmshBufferGet(gmsh, numCorrespondingNodes, sizeof(PetscInt), &nodeTags);CHKERRQ(ierr);
-    ierr = GmshReadSize(gmsh, nodeTags, numCorrespondingNodes*2);CHKERRQ(ierr);
+    CHKERRQ(GmshReadInt(gmsh, info, 3));
+    CHKERRQ(GmshReadSize(gmsh, &numAffine, 1));
+    CHKERRQ(GmshReadDouble(gmsh, dbuf, numAffine));
+    CHKERRQ(GmshReadSize(gmsh, &numCorrespondingNodes, 1));
+    CHKERRQ(GmshBufferGet(gmsh, numCorrespondingNodes, sizeof(PetscInt), &nodeTags));
+    CHKERRQ(GmshReadSize(gmsh, nodeTags, numCorrespondingNodes*2));
     for (node = 0; node < numCorrespondingNodes; ++node) {
       PetscInt correspondingNode = nodeMap[nodeTags[node*2+0]];
       PetscInt primaryNode = nodeMap[nodeTags[node*2+1]];
@@ -1097,10 +1061,9 @@ static PetscErrorCode GmshReadMeshFormat(GmshFile *gmsh)
   char           line[PETSC_MAX_PATH_LEN];
   int            snum, fileType, fileFormat, dataSize, checkEndian;
   float          version;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = GmshReadString(gmsh, line, 3);CHKERRQ(ierr);
+  CHKERRQ(GmshReadString(gmsh, line, 3));
   snum = sscanf(line, "%f %d %d", &version, &fileType, &dataSize);
   PetscCheckFalse(snum != 3,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Unable to parse Gmsh file header: %s", line);
   PetscCheckFalse(version < 2.2,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at least 2.2", (double)version);
@@ -1115,9 +1078,9 @@ static PetscErrorCode GmshReadMeshFormat(GmshFile *gmsh)
   gmsh->dataSize = dataSize;
   gmsh->byteSwap = PETSC_FALSE;
   if (gmsh->binary) {
-    ierr = GmshReadInt(gmsh, &checkEndian, 1);CHKERRQ(ierr);
+    CHKERRQ(GmshReadInt(gmsh, &checkEndian, 1));
     if (checkEndian != 1) {
-      ierr = PetscByteSwap(&checkEndian, PETSC_ENUM, 1);CHKERRQ(ierr);
+      CHKERRQ(PetscByteSwap(&checkEndian, PETSC_ENUM, 1));
       PetscCheckFalse(checkEndian != 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Unable to detect endianness in Gmsh file header: %s", line);
       gmsh->byteSwap = PETSC_TRUE;
     }
@@ -1136,51 +1099,46 @@ static PetscErrorCode GmshReadPhysicalNames(GmshFile *gmsh, GmshMesh *mesh)
 {
   char           line[PETSC_MAX_PATH_LEN], name[128+2], *p, *q;
   int            snum, region, dim, tag;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = GmshReadString(gmsh, line, 1);CHKERRQ(ierr);
+  CHKERRQ(GmshReadString(gmsh, line, 1));
   snum = sscanf(line, "%d", &region);
   mesh->numRegions = region;
   PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
-  ierr = PetscMalloc2(mesh->numRegions, &mesh->regionTags, mesh->numRegions, &mesh->regionNames);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc2(mesh->numRegions, &mesh->regionTags, mesh->numRegions, &mesh->regionNames));
   for (region = 0; region < mesh->numRegions; ++region) {
-    ierr = GmshReadString(gmsh, line, 2);CHKERRQ(ierr);
+    CHKERRQ(GmshReadString(gmsh, line, 2));
     snum = sscanf(line, "%d %d", &dim, &tag);
     PetscCheckFalse(snum != 2,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
-    ierr = GmshReadString(gmsh, line, -(PetscInt)sizeof(line));CHKERRQ(ierr);
-    ierr = PetscStrchr(line, '"', &p);CHKERRQ(ierr);
+    CHKERRQ(GmshReadString(gmsh, line, -(PetscInt)sizeof(line)));
+    CHKERRQ(PetscStrchr(line, '"', &p));
     PetscCheckFalse(!p,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
-    ierr = PetscStrrchr(line, '"', &q);CHKERRQ(ierr);
+    CHKERRQ(PetscStrrchr(line, '"', &q));
     PetscCheckFalse(q == p,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
-    ierr = PetscStrncpy(name, p+1, (size_t)(q-p-1));CHKERRQ(ierr);
+    CHKERRQ(PetscStrncpy(name, p+1, (size_t)(q-p-1)));
     mesh->regionTags[region] = tag;
-    ierr = PetscStrallocpy(name, &mesh->regionNames[region]);CHKERRQ(ierr);
+    CHKERRQ(PetscStrallocpy(name, &mesh->regionNames[region]));
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode GmshReadEntities(GmshFile *gmsh, GmshMesh *mesh)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   switch (gmsh->fileFormat) {
-  case 41: ierr = GmshReadEntities_v41(gmsh, mesh);CHKERRQ(ierr); break;
-  default: ierr = GmshReadEntities_v40(gmsh, mesh);CHKERRQ(ierr); break;
+  case 41: CHKERRQ(GmshReadEntities_v41(gmsh, mesh)); break;
+  default: CHKERRQ(GmshReadEntities_v40(gmsh, mesh)); break;
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode GmshReadNodes(GmshFile *gmsh, GmshMesh *mesh)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   switch (gmsh->fileFormat) {
-  case 41: ierr = GmshReadNodes_v41(gmsh, mesh);CHKERRQ(ierr); break;
-  case 40: ierr = GmshReadNodes_v40(gmsh, mesh);CHKERRQ(ierr); break;
-  default: ierr = GmshReadNodes_v22(gmsh, mesh);CHKERRQ(ierr); break;
+  case 41: CHKERRQ(GmshReadNodes_v41(gmsh, mesh)); break;
+  case 40: CHKERRQ(GmshReadNodes_v40(gmsh, mesh)); break;
+  default: CHKERRQ(GmshReadNodes_v22(gmsh, mesh)); break;
   }
 
   { /* Gmsh v2.2/v4.0 does not provide min/max node tags */
@@ -1200,7 +1158,7 @@ static PetscErrorCode GmshReadNodes(GmshFile *gmsh, GmshMesh *mesh)
   { /* Support for sparse node tags */
     PetscInt  n, t;
     GmshNodes *nodes = mesh->nodelist;
-    ierr = PetscMalloc1(gmsh->nodeEnd - gmsh->nodeStart, &gmsh->nbuf);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(gmsh->nodeEnd - gmsh->nodeStart, &gmsh->nbuf));
     for (t = 0; t < gmsh->nodeEnd - gmsh->nodeStart; ++t) gmsh->nbuf[t] = PETSC_MIN_INT;
     gmsh->nodeMap = gmsh->nbuf - gmsh->nodeStart;
     for (n = 0; n < mesh->numNodes; ++n) {
@@ -1214,13 +1172,11 @@ static PetscErrorCode GmshReadNodes(GmshFile *gmsh, GmshMesh *mesh)
 
 static PetscErrorCode GmshReadElements(GmshFile *gmsh, GmshMesh *mesh)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   switch (gmsh->fileFormat) {
-  case 41: ierr = GmshReadElements_v41(gmsh, mesh);CHKERRQ(ierr); break;
-  case 40: ierr = GmshReadElements_v40(gmsh, mesh);CHKERRQ(ierr); break;
-  default: ierr = GmshReadElements_v22(gmsh, mesh);CHKERRQ(ierr); break;
+  case 41: CHKERRQ(GmshReadElements_v41(gmsh, mesh)); break;
+  case 40: CHKERRQ(GmshReadElements_v40(gmsh, mesh)); break;
+  default: CHKERRQ(GmshReadElements_v22(gmsh, mesh)); break;
   }
 
   { /* Reorder elements by codimension and polytope type */
@@ -1230,7 +1186,7 @@ static PetscErrorCode GmshReadElements(GmshFile *gmsh, GmshMesh *mesh)
     PetscInt    offset[GMSH_NUM_POLYTOPES+1], e, k;
 
     for (k = 0; k < GMSH_NUM_POLYTOPES; ++k) keymap[k] = PETSC_MIN_INT;
-    ierr = PetscMemzero(offset,sizeof(offset));CHKERRQ(ierr);
+    CHKERRQ(PetscMemzero(offset,sizeof(offset)));
 
     keymap[GMSH_TET] = nk++;
     keymap[GMSH_HEX] = nk++;
@@ -1241,13 +1197,13 @@ static PetscErrorCode GmshReadElements(GmshFile *gmsh, GmshMesh *mesh)
     keymap[GMSH_SEG] = nk++;
     keymap[GMSH_VTX] = nk++;
 
-    ierr = GmshElementsCreate(mesh->numElems, &mesh->elements);CHKERRQ(ierr);
+    CHKERRQ(GmshElementsCreate(mesh->numElems, &mesh->elements));
 #define key(eid) keymap[GmshCellMap[elements[(eid)].cellType].polytope]
     for (e = 0; e < ne; ++e) offset[1+key(e)]++;
     for (k = 1; k < nk; ++k) offset[k] += offset[k-1];
     for (e = 0; e < ne; ++e) mesh->elements[offset[key(e)]++] = elements[e];
 #undef key
-    ierr = GmshElementsDestroy(&elements);CHKERRQ(ierr);
+    CHKERRQ(GmshElementsDestroy(&elements));
   }
 
   { /* Mesh dimension and order */
@@ -1260,7 +1216,7 @@ static PetscErrorCode GmshReadElements(GmshFile *gmsh, GmshMesh *mesh)
     PetscBT  vtx;
     PetscInt dim = mesh->dim, e, n, v;
 
-    ierr = PetscBTCreate(mesh->numNodes, &vtx);CHKERRQ(ierr);
+    CHKERRQ(PetscBTCreate(mesh->numNodes, &vtx));
 
     /* Compute number of cells and set of vertices */
     mesh->numCells = 0;
@@ -1268,17 +1224,17 @@ static PetscErrorCode GmshReadElements(GmshFile *gmsh, GmshMesh *mesh)
       GmshElement *elem = mesh->elements + e;
       if (elem->dim == dim && dim > 0) mesh->numCells++;
       for (v = 0; v < elem->numVerts; v++) {
-        ierr = PetscBTSet(vtx, elem->nodes[v]);CHKERRQ(ierr);
+        CHKERRQ(PetscBTSet(vtx, elem->nodes[v]));
       }
     }
 
     /* Compute numbering for vertices */
     mesh->numVerts = 0;
-    ierr = PetscMalloc1(mesh->numNodes, &mesh->vertexMap);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(mesh->numNodes, &mesh->vertexMap));
     for (n = 0; n < mesh->numNodes; ++n)
       mesh->vertexMap[n] = PetscBTLookup(vtx, n) ? mesh->numVerts++ : PETSC_MIN_INT;
 
-    ierr = PetscBTDestroy(&vtx);CHKERRQ(ierr);
+    CHKERRQ(PetscBTDestroy(&vtx));
   }
   PetscFunctionReturn(0);
 }
@@ -1286,14 +1242,13 @@ static PetscErrorCode GmshReadElements(GmshFile *gmsh, GmshMesh *mesh)
 static PetscErrorCode GmshReadPeriodic(GmshFile *gmsh, GmshMesh *mesh)
 {
   PetscInt       n;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(mesh->numNodes, &mesh->periodMap);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(mesh->numNodes, &mesh->periodMap));
   for (n = 0; n < mesh->numNodes; ++n) mesh->periodMap[n] = n;
   switch (gmsh->fileFormat) {
-  case 41: ierr = GmshReadPeriodic_v41(gmsh, mesh->periodMap);CHKERRQ(ierr); break;
-  default: ierr = GmshReadPeriodic_v40(gmsh, mesh->periodMap);CHKERRQ(ierr); break;
+  case 41: CHKERRQ(GmshReadPeriodic_v41(gmsh, mesh->periodMap)); break;
+  default: CHKERRQ(GmshReadPeriodic_v40(gmsh, mesh->periodMap)); break;
   }
 
   /* Find canonical primary nodes */
@@ -1342,70 +1297,69 @@ static PetscErrorCode GmshCreateFE(MPI_Comm comm, const char prefix[], PetscBool
   PetscBool       isTensor = isSimplex ? PETSC_FALSE : PETSC_TRUE;
   PetscBool       endpoint = PETSC_TRUE;
   char            name[32];
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   /* Create space */
-  ierr = PetscSpaceCreate(comm, &P);CHKERRQ(ierr);
-  ierr = PetscSpaceSetType(P, PETSCSPACEPOLYNOMIAL);CHKERRQ(ierr);
-  ierr = PetscSpacePolynomialSetTensor(P, isTensor);CHKERRQ(ierr);
-  ierr = PetscSpaceSetNumComponents(P, Nc);CHKERRQ(ierr);
-  ierr = PetscSpaceSetNumVariables(P, dim);CHKERRQ(ierr);
-  ierr = PetscSpaceSetDegree(P, k, PETSC_DETERMINE);CHKERRQ(ierr);
+  CHKERRQ(PetscSpaceCreate(comm, &P));
+  CHKERRQ(PetscSpaceSetType(P, PETSCSPACEPOLYNOMIAL));
+  CHKERRQ(PetscSpacePolynomialSetTensor(P, isTensor));
+  CHKERRQ(PetscSpaceSetNumComponents(P, Nc));
+  CHKERRQ(PetscSpaceSetNumVariables(P, dim));
+  CHKERRQ(PetscSpaceSetDegree(P, k, PETSC_DETERMINE));
   if (prefix) {
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) P, prefix);CHKERRQ(ierr);
-    ierr = PetscSpaceSetFromOptions(P);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) P, NULL);CHKERRQ(ierr);
-    ierr = PetscSpaceGetDegree(P, &k, NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) P, prefix));
+    CHKERRQ(PetscSpaceSetFromOptions(P));
+    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) P, NULL));
+    CHKERRQ(PetscSpaceGetDegree(P, &k, NULL));
   }
-  ierr = PetscSpaceSetUp(P);CHKERRQ(ierr);
+  CHKERRQ(PetscSpaceSetUp(P));
   /* Create dual space */
-  ierr = PetscDualSpaceCreate(comm, &Q);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetType(Q, PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
-  ierr = PetscDualSpaceLagrangeSetTensor(Q, isTensor);CHKERRQ(ierr);
-  ierr = PetscDualSpaceLagrangeSetContinuity(Q, continuity);CHKERRQ(ierr);
-  ierr = PetscDualSpaceLagrangeSetNodeType(Q, nodeType, endpoint, 0);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetNumComponents(Q, Nc);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetOrder(Q, k);CHKERRQ(ierr);
-  ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, isSimplex), &K);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
-  ierr = DMDestroy(&K);CHKERRQ(ierr);
+  CHKERRQ(PetscDualSpaceCreate(comm, &Q));
+  CHKERRQ(PetscDualSpaceSetType(Q, PETSCDUALSPACELAGRANGE));
+  CHKERRQ(PetscDualSpaceLagrangeSetTensor(Q, isTensor));
+  CHKERRQ(PetscDualSpaceLagrangeSetContinuity(Q, continuity));
+  CHKERRQ(PetscDualSpaceLagrangeSetNodeType(Q, nodeType, endpoint, 0));
+  CHKERRQ(PetscDualSpaceSetNumComponents(Q, Nc));
+  CHKERRQ(PetscDualSpaceSetOrder(Q, k));
+  CHKERRQ(DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, isSimplex), &K));
+  CHKERRQ(PetscDualSpaceSetDM(Q, K));
+  CHKERRQ(DMDestroy(&K));
   if (prefix) {
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) Q, prefix);CHKERRQ(ierr);
-    ierr = PetscDualSpaceSetFromOptions(Q);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) Q, NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) Q, prefix));
+    CHKERRQ(PetscDualSpaceSetFromOptions(Q));
+    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) Q, NULL));
   }
-  ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);
+  CHKERRQ(PetscDualSpaceSetUp(Q));
   /* Create quadrature */
   if (isSimplex) {
-    ierr = PetscDTStroudConicalQuadrature(dim,   1, k+1, -1, +1, &q);CHKERRQ(ierr);
-    ierr = PetscDTStroudConicalQuadrature(dim-1, 1, k+1, -1, +1, &fq);CHKERRQ(ierr);
+    CHKERRQ(PetscDTStroudConicalQuadrature(dim,   1, k+1, -1, +1, &q));
+    CHKERRQ(PetscDTStroudConicalQuadrature(dim-1, 1, k+1, -1, +1, &fq));
   } else {
-    ierr = PetscDTGaussTensorQuadrature(dim,   1, k+1, -1, +1, &q);CHKERRQ(ierr);
-    ierr = PetscDTGaussTensorQuadrature(dim-1, 1, k+1, -1, +1, &fq);CHKERRQ(ierr);
+    CHKERRQ(PetscDTGaussTensorQuadrature(dim,   1, k+1, -1, +1, &q));
+    CHKERRQ(PetscDTGaussTensorQuadrature(dim-1, 1, k+1, -1, +1, &fq));
   }
   /* Create finite element */
-  ierr = PetscFECreate(comm, fem);CHKERRQ(ierr);
-  ierr = PetscFESetType(*fem, PETSCFEBASIC);CHKERRQ(ierr);
-  ierr = PetscFESetNumComponents(*fem, Nc);CHKERRQ(ierr);
-  ierr = PetscFESetBasisSpace(*fem, P);CHKERRQ(ierr);
-  ierr = PetscFESetDualSpace(*fem, Q);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(*fem, q);CHKERRQ(ierr);
-  ierr = PetscFESetFaceQuadrature(*fem, fq);CHKERRQ(ierr);
+  CHKERRQ(PetscFECreate(comm, fem));
+  CHKERRQ(PetscFESetType(*fem, PETSCFEBASIC));
+  CHKERRQ(PetscFESetNumComponents(*fem, Nc));
+  CHKERRQ(PetscFESetBasisSpace(*fem, P));
+  CHKERRQ(PetscFESetDualSpace(*fem, Q));
+  CHKERRQ(PetscFESetQuadrature(*fem, q));
+  CHKERRQ(PetscFESetFaceQuadrature(*fem, fq));
   if (prefix) {
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) *fem, prefix);CHKERRQ(ierr);
-    ierr = PetscFESetFromOptions(*fem);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) *fem, NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *fem, prefix));
+    CHKERRQ(PetscFESetFromOptions(*fem));
+    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *fem, NULL));
   }
-  ierr = PetscFESetUp(*fem);CHKERRQ(ierr);
+  CHKERRQ(PetscFESetUp(*fem));
   /* Cleanup */
-  ierr = PetscSpaceDestroy(&P);CHKERRQ(ierr);
-  ierr = PetscDualSpaceDestroy(&Q);CHKERRQ(ierr);
-  ierr = PetscQuadratureDestroy(&q);CHKERRQ(ierr);
-  ierr = PetscQuadratureDestroy(&fq);CHKERRQ(ierr);
+  CHKERRQ(PetscSpaceDestroy(&P));
+  CHKERRQ(PetscDualSpaceDestroy(&Q));
+  CHKERRQ(PetscQuadratureDestroy(&q));
+  CHKERRQ(PetscQuadratureDestroy(&fq));
   /* Set finite element name */
-  ierr = PetscSNPrintf(name, sizeof(name), "%s%D", isSimplex? "P" : "Q", k);CHKERRQ(ierr);
-  ierr = PetscFESetName(*fem, name);CHKERRQ(ierr);
+  CHKERRQ(PetscSNPrintf(name, sizeof(name), "%s%D", isSimplex? "P" : "Q", k));
+  CHKERRQ(PetscFESetName(*fem, name));
   PetscFunctionReturn(0);
 }
 
@@ -1429,10 +1383,9 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
   PetscMPIInt     rank;
   int             fileType;
   PetscViewerType vtype;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm, &rank));
 
   /* Determine Gmsh file type (ASCII or binary) from file header */
   if (rank == 0) {
@@ -1441,32 +1394,32 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
     int         snum;
     float       version;
 
-    ierr = PetscArrayzero(gmsh,1);CHKERRQ(ierr);
-    ierr = PetscViewerCreate(PETSC_COMM_SELF, &gmsh->viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(gmsh->viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetMode(gmsh->viewer, FILE_MODE_READ);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(gmsh->viewer, filename);CHKERRQ(ierr);
+    CHKERRQ(PetscArrayzero(gmsh,1));
+    CHKERRQ(PetscViewerCreate(PETSC_COMM_SELF, &gmsh->viewer));
+    CHKERRQ(PetscViewerSetType(gmsh->viewer, PETSCVIEWERASCII));
+    CHKERRQ(PetscViewerFileSetMode(gmsh->viewer, FILE_MODE_READ));
+    CHKERRQ(PetscViewerFileSetName(gmsh->viewer, filename));
     /* Read only the first two lines of the Gmsh file */
-    ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);
-    ierr = GmshExpect(gmsh, "$MeshFormat", line);CHKERRQ(ierr);
-    ierr = GmshReadString(gmsh, line, 2);CHKERRQ(ierr);
+    CHKERRQ(GmshReadSection(gmsh, line));
+    CHKERRQ(GmshExpect(gmsh, "$MeshFormat", line));
+    CHKERRQ(GmshReadString(gmsh, line, 2));
     snum = sscanf(line, "%f %d", &version, &fileType);
     PetscCheckFalse(snum != 2,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Unable to parse Gmsh file header: %s", line);
     PetscCheckFalse(version < 2.2,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at least 2.2", (double)version);
     PetscCheckFalse((int)version == 3,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f not supported", (double)version);
     PetscCheckFalse(version > 4.1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Gmsh file version %3.1f must be at most 4.1", (double)version);
-    ierr = PetscViewerDestroy(&gmsh->viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerDestroy(&gmsh->viewer));
   }
-  ierr = MPI_Bcast(&fileType, 1, MPI_INT, 0, comm);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Bcast(&fileType, 1, MPI_INT, 0, comm));
   vtype = (fileType == 0) ? PETSCVIEWERASCII : PETSCVIEWERBINARY;
 
   /* Create appropriate viewer and build plex */
-  ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, vtype);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
-  ierr = DMPlexCreateGmsh(comm, viewer, interpolate, dm);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerCreate(comm, &viewer));
+  CHKERRQ(PetscViewerSetType(viewer, vtype));
+  CHKERRQ(PetscViewerFileSetMode(viewer, FILE_MODE_READ));
+  CHKERRQ(PetscViewerFileSetName(viewer, filename));
+  CHKERRQ(DMPlexCreateGmsh(comm, viewer, interpolate, dm));
+  CHKERRQ(PetscViewerDestroy(&viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1510,32 +1463,32 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm, &rank));
   ierr = PetscObjectOptionsBegin((PetscObject)viewer);CHKERRQ(ierr);
-  ierr = PetscOptionsHead(PetscOptionsObject,"DMPlex Gmsh options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-dm_plex_gmsh_hybrid", "Generate hybrid cell bounds", "DMPlexCreateGmsh", hybrid, &hybrid, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-dm_plex_gmsh_periodic","Read Gmsh periodic section", "DMPlexCreateGmsh", periodic, &periodic, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-dm_plex_gmsh_highorder","Generate high-order coordinates", "DMPlexCreateGmsh", highOrder, &highOrder, &highOrderSet);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-dm_plex_gmsh_project", "Project high-order coordinates to a different space", "DMPlexCreateGmsh", project, &project, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-dm_plex_gmsh_use_marker", "Generate marker label", "DMPlexCreateGmsh", usemarker, &usemarker, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-dm_plex_gmsh_use_regions", "Generate labels with region names", "DMPlexCreateGmsh", useregions, &useregions, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-dm_plex_gmsh_mark_vertices", "Add vertices to generated labels", "DMPlexCreateGmsh", markvertices, &markvertices, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-dm_plex_gmsh_spacedim", "Embedding space dimension", "DMPlexCreateGmsh", coordDim, &coordDim, NULL, PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"DMPlex Gmsh options"));
+  CHKERRQ(PetscOptionsBool("-dm_plex_gmsh_hybrid", "Generate hybrid cell bounds", "DMPlexCreateGmsh", hybrid, &hybrid, NULL));
+  CHKERRQ(PetscOptionsBool("-dm_plex_gmsh_periodic","Read Gmsh periodic section", "DMPlexCreateGmsh", periodic, &periodic, NULL));
+  CHKERRQ(PetscOptionsBool("-dm_plex_gmsh_highorder","Generate high-order coordinates", "DMPlexCreateGmsh", highOrder, &highOrder, &highOrderSet));
+  CHKERRQ(PetscOptionsBool("-dm_plex_gmsh_project", "Project high-order coordinates to a different space", "DMPlexCreateGmsh", project, &project, NULL));
+  CHKERRQ(PetscOptionsBool("-dm_plex_gmsh_use_marker", "Generate marker label", "DMPlexCreateGmsh", usemarker, &usemarker, NULL));
+  CHKERRQ(PetscOptionsBool("-dm_plex_gmsh_use_regions", "Generate labels with region names", "DMPlexCreateGmsh", useregions, &useregions, NULL));
+  CHKERRQ(PetscOptionsBool("-dm_plex_gmsh_mark_vertices", "Add vertices to generated labels", "DMPlexCreateGmsh", markvertices, &markvertices, NULL));
+  CHKERRQ(PetscOptionsBoundedInt("-dm_plex_gmsh_spacedim", "Embedding space dimension", "DMPlexCreateGmsh", coordDim, &coordDim, NULL, PETSC_DECIDE));
+  CHKERRQ(PetscOptionsTail());
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = GmshCellInfoSetUp();CHKERRQ(ierr);
+  CHKERRQ(GmshCellInfoSetUp());
 
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(DMPLEX_CreateGmsh,*dm,NULL,NULL,NULL);CHKERRQ(ierr);
+  CHKERRQ(DMCreate(comm, dm));
+  CHKERRQ(DMSetType(*dm, DMPLEX));
+  CHKERRQ(PetscLogEventBegin(DMPLEX_CreateGmsh,*dm,NULL,NULL,NULL));
 
-  ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &binary);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &binary));
 
   /* Binary viewers read on all ranks, get subviewer to read only in rank 0 */
   if (binary) {
     parentviewer = viewer;
-    ierr = PetscViewerGetSubViewer(parentviewer, PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerGetSubViewer(parentviewer, PETSC_COMM_SELF, &viewer));
   }
 
   if (rank == 0) {
@@ -1543,63 +1496,63 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     char      line[PETSC_MAX_PATH_LEN];
     PetscBool match;
 
-    ierr = PetscArrayzero(gmsh,1);CHKERRQ(ierr);
+    CHKERRQ(PetscArrayzero(gmsh,1));
     gmsh->viewer = viewer;
     gmsh->binary = binary;
 
-    ierr = GmshMeshCreate(&mesh);CHKERRQ(ierr);
+    CHKERRQ(GmshMeshCreate(&mesh));
 
     /* Read mesh format */
-    ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);
-    ierr = GmshExpect(gmsh, "$MeshFormat", line);CHKERRQ(ierr);
-    ierr = GmshReadMeshFormat(gmsh);CHKERRQ(ierr);
-    ierr = GmshReadEndSection(gmsh, "$EndMeshFormat", line);CHKERRQ(ierr);
+    CHKERRQ(GmshReadSection(gmsh, line));
+    CHKERRQ(GmshExpect(gmsh, "$MeshFormat", line));
+    CHKERRQ(GmshReadMeshFormat(gmsh));
+    CHKERRQ(GmshReadEndSection(gmsh, "$EndMeshFormat", line));
 
     /* OPTIONAL Read physical names */
-    ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);
-    ierr = GmshMatch(gmsh, "$PhysicalNames", line, &match);CHKERRQ(ierr);
+    CHKERRQ(GmshReadSection(gmsh, line));
+    CHKERRQ(GmshMatch(gmsh, "$PhysicalNames", line, &match));
     if (match) {
-      ierr = GmshExpect(gmsh, "$PhysicalNames", line);CHKERRQ(ierr);
-      ierr = GmshReadPhysicalNames(gmsh, mesh);CHKERRQ(ierr);
-      ierr = GmshReadEndSection(gmsh, "$EndPhysicalNames", line);CHKERRQ(ierr);
+      CHKERRQ(GmshExpect(gmsh, "$PhysicalNames", line));
+      CHKERRQ(GmshReadPhysicalNames(gmsh, mesh));
+      CHKERRQ(GmshReadEndSection(gmsh, "$EndPhysicalNames", line));
       /* Initial read for entity section */
-      ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);
+      CHKERRQ(GmshReadSection(gmsh, line));
     }
 
     /* Read entities */
     if (gmsh->fileFormat >= 40) {
-      ierr = GmshExpect(gmsh, "$Entities", line);CHKERRQ(ierr);
-      ierr = GmshReadEntities(gmsh, mesh);CHKERRQ(ierr);
-      ierr = GmshReadEndSection(gmsh, "$EndEntities", line);CHKERRQ(ierr);
+      CHKERRQ(GmshExpect(gmsh, "$Entities", line));
+      CHKERRQ(GmshReadEntities(gmsh, mesh));
+      CHKERRQ(GmshReadEndSection(gmsh, "$EndEntities", line));
       /* Initial read for nodes section */
-      ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);
+      CHKERRQ(GmshReadSection(gmsh, line));
     }
 
     /* Read nodes */
-    ierr = GmshExpect(gmsh, "$Nodes", line);CHKERRQ(ierr);
-    ierr = GmshReadNodes(gmsh, mesh);CHKERRQ(ierr);
-    ierr = GmshReadEndSection(gmsh, "$EndNodes", line);CHKERRQ(ierr);
+    CHKERRQ(GmshExpect(gmsh, "$Nodes", line));
+    CHKERRQ(GmshReadNodes(gmsh, mesh));
+    CHKERRQ(GmshReadEndSection(gmsh, "$EndNodes", line));
 
     /* Read elements */
-    ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);
-    ierr = GmshExpect(gmsh, "$Elements", line);CHKERRQ(ierr);
-    ierr = GmshReadElements(gmsh, mesh);CHKERRQ(ierr);
-    ierr = GmshReadEndSection(gmsh, "$EndElements", line);CHKERRQ(ierr);
+    CHKERRQ(GmshReadSection(gmsh, line));
+    CHKERRQ(GmshExpect(gmsh, "$Elements", line));
+    CHKERRQ(GmshReadElements(gmsh, mesh));
+    CHKERRQ(GmshReadEndSection(gmsh, "$EndElements", line));
 
     /* Read periodic section (OPTIONAL) */
     if (periodic) {
-      ierr = GmshReadSection(gmsh, line);CHKERRQ(ierr);
-      ierr = GmshMatch(gmsh, "$Periodic", line, &periodic);CHKERRQ(ierr);
+      CHKERRQ(GmshReadSection(gmsh, line));
+      CHKERRQ(GmshMatch(gmsh, "$Periodic", line, &periodic));
     }
     if (periodic) {
-      ierr = GmshExpect(gmsh, "$Periodic", line);CHKERRQ(ierr);
-      ierr = GmshReadPeriodic(gmsh, mesh);CHKERRQ(ierr);
-      ierr = GmshReadEndSection(gmsh, "$EndPeriodic", line);CHKERRQ(ierr);
+      CHKERRQ(GmshExpect(gmsh, "$Periodic", line));
+      CHKERRQ(GmshReadPeriodic(gmsh, mesh));
+      CHKERRQ(GmshReadEndSection(gmsh, "$EndPeriodic", line));
     }
 
-    ierr = PetscFree(gmsh->wbuf);CHKERRQ(ierr);
-    ierr = PetscFree(gmsh->sbuf);CHKERRQ(ierr);
-    ierr = PetscFree(gmsh->nbuf);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(gmsh->wbuf));
+    CHKERRQ(PetscFree(gmsh->sbuf));
+    CHKERRQ(PetscFree(gmsh->nbuf));
 
     dim       = mesh->dim;
     order     = mesh->order;
@@ -1620,7 +1573,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   }
 
   if (parentviewer) {
-    ierr = PetscViewerRestoreSubViewer(parentviewer, PETSC_COMM_SELF, &viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerRestoreSubViewer(parentviewer, PETSC_COMM_SELF, &viewer));
   }
 
   {
@@ -1633,7 +1586,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     buf[4] = isHybrid;
     buf[5] = hasTetra;
 
-    ierr = MPI_Bcast(buf, 6, MPI_INT, 0, comm);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Bcast(buf, 6, MPI_INT, 0, comm));
 
     dim       = buf[0];
     order     = buf[1];
@@ -1647,21 +1600,21 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   PetscCheckFalse(highOrder && isHybrid,comm, PETSC_ERR_SUP, "No support for discretization on hybrid meshes yet");
 
   /* We do not want this label automatically computed, instead we fill it here */
-  ierr = DMCreateLabel(*dm, "celltype");CHKERRQ(ierr);
+  CHKERRQ(DMCreateLabel(*dm, "celltype"));
 
   /* Allocate the cell-vertex mesh */
-  ierr = DMPlexSetChart(*dm, 0, numCells+numVerts);CHKERRQ(ierr);
+  CHKERRQ(DMPlexSetChart(*dm, 0, numCells+numVerts));
   for (cell = 0; cell < numCells; ++cell) {
     GmshElement *elem = mesh->elements + cell;
     DMPolytopeType ctype = DMPolytopeTypeFromGmsh(elem->cellType);
     if (hybrid && hasTetra && ctype == DM_POLYTOPE_TRI_PRISM) ctype = DM_POLYTOPE_TRI_PRISM_TENSOR;
-    ierr = DMPlexSetConeSize(*dm, cell, elem->numVerts);CHKERRQ(ierr);
-    ierr = DMPlexSetCellType(*dm, cell, ctype);CHKERRQ(ierr);
+    CHKERRQ(DMPlexSetConeSize(*dm, cell, elem->numVerts));
+    CHKERRQ(DMPlexSetCellType(*dm, cell, ctype));
   }
   for (v = numCells; v < numCells+numVerts; ++v) {
-    ierr = DMPlexSetCellType(*dm, v, DM_POLYTOPE_POINT);CHKERRQ(ierr);
+    CHKERRQ(DMPlexSetCellType(*dm, v, DM_POLYTOPE_POINT));
   }
-  ierr = DMSetUp(*dm);CHKERRQ(ierr);
+  CHKERRQ(DMSetUp(*dm));
 
   /* Add cell-vertex connections */
   for (cell = 0; cell < numCells; ++cell) {
@@ -1671,18 +1624,18 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       const PetscInt vv = mesh->vertexMap[nn];
       cone[v] = numCells + vv;
     }
-    ierr = DMPlexReorderCell(*dm, cell, cone);CHKERRQ(ierr);
-    ierr = DMPlexSetCone(*dm, cell, cone);CHKERRQ(ierr);
+    CHKERRQ(DMPlexReorderCell(*dm, cell, cone));
+    CHKERRQ(DMPlexSetCone(*dm, cell, cone));
   }
 
-  ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
-  ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
-  ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
+  CHKERRQ(DMSetDimension(*dm, dim));
+  CHKERRQ(DMPlexSymmetrize(*dm));
+  CHKERRQ(DMPlexStratify(*dm));
   if (interpolate) {
     DM idm;
 
-    ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    CHKERRQ(DMPlexInterpolate(*dm, &idm));
+    CHKERRQ(DMDestroy(dm));
     *dm  = idm;
   }
 
@@ -1691,20 +1644,20 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   if (rank == 0 && usemarker) {
     PetscInt f, fStart, fEnd;
 
-    ierr = DMCreateLabel(*dm, "marker");CHKERRQ(ierr);
-    ierr = DMPlexGetHeightStratum(*dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
+    CHKERRQ(DMCreateLabel(*dm, "marker"));
+    CHKERRQ(DMPlexGetHeightStratum(*dm, 1, &fStart, &fEnd));
     for (f = fStart; f < fEnd; ++f) {
       PetscInt suppSize;
 
-      ierr = DMPlexGetSupportSize(*dm, f, &suppSize);CHKERRQ(ierr);
+      CHKERRQ(DMPlexGetSupportSize(*dm, f, &suppSize));
       if (suppSize == 1) {
         PetscInt *cone = NULL, coneSize, p;
 
-        ierr = DMPlexGetTransitiveClosure(*dm, f, PETSC_TRUE, &coneSize, &cone);CHKERRQ(ierr);
+        CHKERRQ(DMPlexGetTransitiveClosure(*dm, f, PETSC_TRUE, &coneSize, &cone));
         for (p = 0; p < coneSize; p += 2) {
-          ierr = DMSetLabelValue_Fast(*dm, &marker, "marker", cone[p], 1);CHKERRQ(ierr);
+          CHKERRQ(DMSetLabelValue_Fast(*dm, &marker, "marker", cone[p], 1));
         }
-        ierr = DMPlexRestoreTransitiveClosure(*dm, f, PETSC_TRUE, &coneSize, &cone);CHKERRQ(ierr);
+        CHKERRQ(DMPlexRestoreTransitiveClosure(*dm, f, PETSC_TRUE, &coneSize, &cone));
       }
     }
   }
@@ -1713,8 +1666,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     const PetscInt Nr = useregions ? mesh->numRegions : 0;
     PetscInt       vStart, vEnd;
 
-    ierr = PetscCalloc1(Nr, &regionSets);CHKERRQ(ierr);
-    ierr = DMPlexGetDepthStratum(*dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc1(Nr, &regionSets));
+    CHKERRQ(DMPlexGetDepthStratum(*dm, 0, &vStart, &vEnd));
     for (cell = 0, e = 0; e < numElems; ++e) {
       GmshElement *elem = mesh->elements + e;
 
@@ -1724,9 +1677,9 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
           const PetscInt tag = elem->tags[0];
           PetscInt       r;
 
-          if (!Nr) {ierr = DMSetLabelValue_Fast(*dm, &cellSets, "Cell Sets", cell, tag);CHKERRQ(ierr);}
+          if (!Nr) CHKERRQ(DMSetLabelValue_Fast(*dm, &cellSets, "Cell Sets", cell, tag));
           for (r = 0; r < Nr; ++r) {
-            if (mesh->regionTags[r] == tag) {ierr = DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], cell, tag);CHKERRQ(ierr);}
+            if (mesh->regionTags[r] == tag) CHKERRQ(DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], cell, tag));
           }
         }
         cell++;
@@ -1745,13 +1698,13 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
           const PetscInt vv = mesh->vertexMap[nn];
           cone[v] = vStart + vv;
         }
-        ierr = DMPlexGetFullJoin(*dm, elem->numVerts, cone, &joinSize, &join);CHKERRQ(ierr);
+        CHKERRQ(DMPlexGetFullJoin(*dm, elem->numVerts, cone, &joinSize, &join));
         PetscCheckFalse(joinSize != 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Could not determine Plex facet for Gmsh element %D (Plex cell %D)", elem->id, e);
-        if (!Nr) {ierr = DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", join[0], tag);CHKERRQ(ierr);}
+        if (!Nr) CHKERRQ(DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", join[0], tag));
         for (r = 0; r < Nr; ++r) {
-          if (mesh->regionTags[r] == tag) {ierr = DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], join[0], tag);CHKERRQ(ierr);}
+          if (mesh->regionTags[r] == tag) CHKERRQ(DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], join[0], tag));
         }
-        ierr = DMPlexRestoreJoin(*dm, elem->numVerts, cone, &joinSize, &join);CHKERRQ(ierr);
+        CHKERRQ(DMPlexRestoreJoin(*dm, elem->numVerts, cone, &joinSize, &join));
       }
 
       /* Create vertex sets */
@@ -1762,9 +1715,9 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
           const PetscInt tag = elem->tags[0];
           PetscInt       r;
 
-          if (!Nr) {ierr = DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vStart + vv, tag);CHKERRQ(ierr);}
+          if (!Nr) CHKERRQ(DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vStart + vv, tag));
           for (r = 0; r < Nr; ++r) {
-            if (mesh->regionTags[r] == tag) {ierr = DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], vStart + vv, tag);CHKERRQ(ierr);}
+            if (mesh->regionTags[r] == tag) CHKERRQ(DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], vStart + vv, tag));
           }
         }
       }
@@ -1776,14 +1729,14 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         PetscInt       r;
 
         if (tag != -1) {
-          if (!Nr) {ierr = DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vStart + vv, tag);CHKERRQ(ierr);}
+          if (!Nr) CHKERRQ(DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vStart + vv, tag));
           for (r = 0; r < Nr; ++r) {
-            if (mesh->regionTags[r] == tag) {ierr = DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], vStart + vv, tag);CHKERRQ(ierr);}
+            if (mesh->regionTags[r] == tag) CHKERRQ(DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], vStart + vv, tag));
           }
         }
       }
     }
-    ierr = PetscFree(regionSets);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(regionSets));
   }
 
   { /* Create Cell/Face/Vertex Sets labels at all processes */
@@ -1794,32 +1747,32 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     flag[1] = faceSets ? PETSC_TRUE : PETSC_FALSE;
     flag[2] = vertSets ? PETSC_TRUE : PETSC_FALSE;
     flag[3] = marker   ? PETSC_TRUE : PETSC_FALSE;
-    ierr = MPI_Bcast(flag, n, MPIU_BOOL, 0, comm);CHKERRMPI(ierr);
-    if (flag[0]) {ierr = DMCreateLabel(*dm, "Cell Sets");CHKERRQ(ierr);}
-    if (flag[1]) {ierr = DMCreateLabel(*dm, "Face Sets");CHKERRQ(ierr);}
-    if (flag[2]) {ierr = DMCreateLabel(*dm, "Vertex Sets");CHKERRQ(ierr);}
-    if (flag[3]) {ierr = DMCreateLabel(*dm, "marker");CHKERRQ(ierr);}
+    CHKERRMPI(MPI_Bcast(flag, n, MPIU_BOOL, 0, comm));
+    if (flag[0]) CHKERRQ(DMCreateLabel(*dm, "Cell Sets"));
+    if (flag[1]) CHKERRQ(DMCreateLabel(*dm, "Face Sets"));
+    if (flag[2]) CHKERRQ(DMCreateLabel(*dm, "Vertex Sets"));
+    if (flag[3]) CHKERRQ(DMCreateLabel(*dm, "marker"));
   }
 
   if (periodic) {
-    ierr = PetscBTCreate(numVerts, &periodicVerts);CHKERRQ(ierr);
+    CHKERRQ(PetscBTCreate(numVerts, &periodicVerts));
     for (n = 0; n < numNodes; ++n) {
       if (mesh->vertexMap[n] >= 0) {
         if (PetscUnlikely(mesh->periodMap[n] != n)) {
           PetscInt m = mesh->periodMap[n];
-          ierr = PetscBTSet(periodicVerts, mesh->vertexMap[n]);CHKERRQ(ierr);
-          ierr = PetscBTSet(periodicVerts, mesh->vertexMap[m]);CHKERRQ(ierr);
+          CHKERRQ(PetscBTSet(periodicVerts, mesh->vertexMap[n]));
+          CHKERRQ(PetscBTSet(periodicVerts, mesh->vertexMap[m]));
         }
       }
     }
-    ierr = PetscBTCreate(numCells, &periodicCells);CHKERRQ(ierr);
+    CHKERRQ(PetscBTCreate(numCells, &periodicCells));
     for (cell = 0; cell < numCells; ++cell) {
       GmshElement *elem = mesh->elements + cell;
       for (v = 0; v < elem->numVerts; ++v) {
         PetscInt nn = elem->nodes[v];
         PetscInt vv = mesh->vertexMap[nn];
         if (PetscUnlikely(PetscBTLookup(periodicVerts, vv))) {
-          ierr = PetscBTSet(periodicCells, cell);CHKERRQ(ierr); break;
+          CHKERRQ(PetscBTSet(periodicCells, cell)); break;
         }
       }
     }
@@ -1827,8 +1780,8 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
 
   /* Setup coordinate DM */
   if (coordDim < 0) coordDim = dim;
-  ierr = DMSetCoordinateDim(*dm, coordDim);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(*dm, &cdm);CHKERRQ(ierr);
+  CHKERRQ(DMSetCoordinateDim(*dm, coordDim));
+  CHKERRQ(DMGetCoordinateDM(*dm, &cdm));
   if (highOrder) {
     PetscFE         fe;
     PetscBool       continuity = periodic ? PETSC_FALSE : PETSC_TRUE;
@@ -1836,11 +1789,11 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
 
     if (isSimplex) continuity = PETSC_FALSE; /* XXX FIXME Requires DMPlexSetClosurePermutationLexicographic() */
 
-    ierr = GmshCreateFE(comm, NULL, isSimplex, continuity, nodeType, dim, coordDim, order, &fe);CHKERRQ(ierr);
-    ierr = PetscFEViewFromOptions(fe, NULL, "-dm_plex_gmsh_fe_view");CHKERRQ(ierr);
-    ierr = DMSetField(cdm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
-    ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-    ierr = DMCreateDS(cdm);CHKERRQ(ierr);
+    CHKERRQ(GmshCreateFE(comm, NULL, isSimplex, continuity, nodeType, dim, coordDim, order, &fe));
+    CHKERRQ(PetscFEViewFromOptions(fe, NULL, "-dm_plex_gmsh_fe_view"));
+    CHKERRQ(DMSetField(cdm, 0, NULL, (PetscObject) fe));
+    CHKERRQ(PetscFEDestroy(&fe));
+    CHKERRQ(DMCreateDS(cdm));
   }
 
   /* Create coordinates */
@@ -1851,13 +1804,13 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     PetscSection section;
     PetscScalar  *cellCoords;
 
-    ierr = DMSetLocalSection(cdm, NULL);CHKERRQ(ierr);
-    ierr = DMGetLocalSection(cdm, &coordSection);CHKERRQ(ierr);
-    ierr = PetscSectionClone(coordSection, &section);CHKERRQ(ierr);
-    ierr = DMPlexSetClosurePermutationTensor(cdm, 0, section);CHKERRQ(ierr); /* XXX Implement DMPlexSetClosurePermutationLexicographic() */
+    CHKERRQ(DMSetLocalSection(cdm, NULL));
+    CHKERRQ(DMGetLocalSection(cdm, &coordSection));
+    CHKERRQ(PetscSectionClone(coordSection, &section));
+    CHKERRQ(DMPlexSetClosurePermutationTensor(cdm, 0, section)); /* XXX Implement DMPlexSetClosurePermutationLexicographic() */
 
-    ierr = DMCreateLocalVector(cdm, &coordinates);CHKERRQ(ierr);
-    ierr = PetscMalloc1(maxDof, &cellCoords);CHKERRQ(ierr);
+    CHKERRQ(DMCreateLocalVector(cdm, &coordinates));
+    CHKERRQ(PetscMalloc1(maxDof, &cellCoords));
     for (cell = 0; cell < numCells; ++cell) {
       GmshElement *elem = mesh->elements + cell;
       const int *lexorder = GmshCellMap[elem->cellType].lexorder();
@@ -1910,10 +1863,10 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
           }
         }
       }
-      ierr = DMPlexVecSetClosure(cdm, section, coordinates, cell, cellCoords, INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(DMPlexVecSetClosure(cdm, section, coordinates, cell, cellCoords, INSERT_VALUES));
     }
-    ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
-    ierr = PetscFree(cellCoords);CHKERRQ(ierr);
+    CHKERRQ(PetscSectionDestroy(&section));
+    CHKERRQ(PetscFree(cellCoords));
 
   } else {
 
@@ -1921,32 +1874,32 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     double      *coords = mesh ? mesh->nodelist->xyz : NULL;
     PetscScalar *pointCoords;
 
-    ierr = DMGetLocalSection(cdm, &coordSection);CHKERRQ(ierr);
-    ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
-    ierr = PetscSectionSetFieldComponents(coordSection, 0, coordDim);CHKERRQ(ierr);
+    CHKERRQ(DMGetLocalSection(cdm, &coordSection));
+    CHKERRQ(PetscSectionSetNumFields(coordSection, 1));
+    CHKERRQ(PetscSectionSetFieldComponents(coordSection, 0, coordDim));
     if (periodic) { /* we need to localize coordinates on cells */
-      ierr = PetscSectionSetChart(coordSection, 0, numCells+numVerts);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionSetChart(coordSection, 0, numCells+numVerts));
     } else {
-      ierr = PetscSectionSetChart(coordSection, numCells, numCells+numVerts);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionSetChart(coordSection, numCells, numCells+numVerts));
     }
     if (periodic) {
       for (cell = 0; cell < numCells; ++cell) {
         if (PetscUnlikely(PetscBTLookup(periodicCells, cell))) {
           GmshElement *elem = mesh->elements + cell;
           PetscInt dof = elem->numVerts * coordDim;
-          ierr = PetscSectionSetDof(coordSection, cell, dof);CHKERRQ(ierr);
-          ierr = PetscSectionSetFieldDof(coordSection, cell, 0, dof);CHKERRQ(ierr);
+          CHKERRQ(PetscSectionSetDof(coordSection, cell, dof));
+          CHKERRQ(PetscSectionSetFieldDof(coordSection, cell, 0, dof));
         }
       }
     }
     for (v = numCells; v < numCells+numVerts; ++v) {
-      ierr = PetscSectionSetDof(coordSection, v, coordDim);CHKERRQ(ierr);
-      ierr = PetscSectionSetFieldDof(coordSection, v, 0, coordDim);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionSetDof(coordSection, v, coordDim));
+      CHKERRQ(PetscSectionSetFieldDof(coordSection, v, 0, coordDim));
     }
-    ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
+    CHKERRQ(PetscSectionSetUp(coordSection));
 
-    ierr = DMCreateLocalVector(cdm, &coordinates);CHKERRQ(ierr);
-    ierr = VecGetArray(coordinates, &pointCoords);CHKERRQ(ierr);
+    CHKERRQ(DMCreateLocalVector(cdm, &coordinates));
+    CHKERRQ(VecGetArray(coordinates, &pointCoords));
     if (periodic) {
       for (cell = 0; cell < numCells; ++cell) {
         if (PetscUnlikely(PetscBTLookup(periodicCells, cell))) {
@@ -1954,38 +1907,38 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
           PetscInt off, node;
           for (v = 0; v < elem->numVerts; ++v)
             cone[v] = elem->nodes[v];
-          ierr = DMPlexReorderCell(cdm, cell, cone);CHKERRQ(ierr);
-          ierr = PetscSectionGetOffset(coordSection, cell, &off);CHKERRQ(ierr);
+          CHKERRQ(DMPlexReorderCell(cdm, cell, cone));
+          CHKERRQ(PetscSectionGetOffset(coordSection, cell, &off));
           for (v = 0; v < elem->numVerts; ++v)
             for (node = cone[v], d = 0; d < coordDim; ++d)
               pointCoords[off++] = (PetscReal) coords[node*3+d];
         }
       }
     }
-    ierr = PetscMalloc1(numVerts, &nodeMap);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(numVerts, &nodeMap));
     for (n = 0; n < numNodes; n++)
       if (mesh->vertexMap[n] >= 0)
         nodeMap[mesh->vertexMap[n]] = n;
     for (v = 0; v < numVerts; ++v) {
       PetscInt off, node = nodeMap[v];
-      ierr = PetscSectionGetOffset(coordSection, numCells + v, &off);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionGetOffset(coordSection, numCells + v, &off));
       for (d = 0; d < coordDim; ++d)
         pointCoords[off+d] = (PetscReal) coords[node*3+d];
     }
-    ierr = PetscFree(nodeMap);CHKERRQ(ierr);
-    ierr = VecRestoreArray(coordinates, &pointCoords);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(nodeMap));
+    CHKERRQ(VecRestoreArray(coordinates, &pointCoords));
 
   }
 
-  ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
-  ierr = VecSetBlockSize(coordinates, coordDim);CHKERRQ(ierr);
-  ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
-  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
-  ierr = DMSetPeriodicity(*dm, periodic, NULL, NULL, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetName((PetscObject) coordinates, "coordinates"));
+  CHKERRQ(VecSetBlockSize(coordinates, coordDim));
+  CHKERRQ(DMSetCoordinatesLocal(*dm, coordinates));
+  CHKERRQ(VecDestroy(&coordinates));
+  CHKERRQ(DMSetPeriodicity(*dm, periodic, NULL, NULL, NULL));
 
-  ierr = GmshMeshDestroy(&mesh);CHKERRQ(ierr);
-  ierr = PetscBTDestroy(&periodicVerts);CHKERRQ(ierr);
-  ierr = PetscBTDestroy(&periodicCells);CHKERRQ(ierr);
+  CHKERRQ(GmshMeshDestroy(&mesh));
+  CHKERRQ(PetscBTDestroy(&periodicVerts));
+  CHKERRQ(PetscBTDestroy(&periodicCells));
 
   if (highOrder && project)  {
     PetscFE         fe;
@@ -1995,12 +1948,12 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
 
     if (isSimplex) continuity = PETSC_FALSE; /* XXX FIXME Requires DMPlexSetClosurePermutationLexicographic() */
 
-    ierr = GmshCreateFE(comm, prefix, isSimplex, continuity, nodeType, dim, coordDim, order, &fe);CHKERRQ(ierr);
-    ierr = PetscFEViewFromOptions(fe, NULL, "-dm_plex_gmsh_project_fe_view");CHKERRQ(ierr);
-    ierr = DMProjectCoordinates(*dm, fe);CHKERRQ(ierr);
-    ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+    CHKERRQ(GmshCreateFE(comm, prefix, isSimplex, continuity, nodeType, dim, coordDim, order, &fe));
+    CHKERRQ(PetscFEViewFromOptions(fe, NULL, "-dm_plex_gmsh_project_fe_view"));
+    CHKERRQ(DMProjectCoordinates(*dm, fe));
+    CHKERRQ(PetscFEDestroy(&fe));
   }
 
-  ierr = PetscLogEventEnd(DMPLEX_CreateGmsh,*dm,NULL,NULL,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventEnd(DMPLEX_CreateGmsh,*dm,NULL,NULL,NULL));
   PetscFunctionReturn(0);
 }

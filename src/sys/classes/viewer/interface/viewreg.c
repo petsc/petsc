@@ -16,13 +16,11 @@ struct  _n_PetscOptionsHelpPrinted{
 
 PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted *hp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!*hp) PetscFunctionReturn(0);
   kh_destroy(HTPrinted,(*hp)->printed);
-  ierr = PetscSegBufferDestroy(&(*hp)->strings);CHKERRQ(ierr);
-  ierr = PetscFree(*hp);CHKERRQ(ierr);
+  CHKERRQ(PetscSegBufferDestroy(&(*hp)->strings));
+  CHKERRQ(PetscFree(*hp));
   PetscFunctionReturn(0);
 }
 
@@ -38,12 +36,10 @@ PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted *hp)
 @*/
 PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinted *hp)
 {
-  PetscErrorCode             ierr;
-
   PetscFunctionBegin;
-  ierr = PetscNew(hp);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(hp));
   (*hp)->printed = kh_init(HTPrinted);
-  ierr = PetscSegBufferCreate(sizeof(char),10000,&(*hp)->strings);CHKERRQ(ierr);
+  CHKERRQ(PetscSegBufferCreate(sizeof(char),10000,&(*hp)->strings));
   PetscFunctionReturn(0);
 }
 
@@ -71,22 +67,21 @@ PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted hp,const cha
   char            *both;
   int             newitem;
 #endif
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrlen(pre,&l1);CHKERRQ(ierr);
-  ierr = PetscStrlen(name,&l2);CHKERRQ(ierr);
+  CHKERRQ(PetscStrlen(pre,&l1));
+  CHKERRQ(PetscStrlen(name,&l2));
   if (l1+l2 == 0) {
     *found = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
 #if !defined(PETSC_HAVE_THREADSAFETY)
-  ierr = PetscSegBufferGet(hp->strings,l1+l2+1,&both);CHKERRQ(ierr);
-  ierr = PetscStrcpy(both,pre);CHKERRQ(ierr);
-  ierr = PetscStrcat(both,name);CHKERRQ(ierr);
+  CHKERRQ(PetscSegBufferGet(hp->strings,l1+l2+1,&both));
+  CHKERRQ(PetscStrcpy(both,pre));
+  CHKERRQ(PetscStrcat(both,name));
   kh_put(HTPrinted,hp->printed,both,&newitem);
   if (!newitem) {
-    ierr = PetscSegBufferUnuse(hp->strings,l1+l2+1);CHKERRQ(ierr);
+    CHKERRQ(PetscSegBufferUnuse(hp->strings,l1+l2+1));
   }
   *found = newitem ? PETSC_FALSE : PETSC_TRUE;
 #else
@@ -218,7 +213,6 @@ $       saws[:communicatorname]                    publishes object to the Scien
 PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const char pre[],const char name[],PetscViewer *viewer,PetscViewerFormat *format,PetscBool  *set)
 {
   const char                     *value;
-  PetscErrorCode                 ierr;
   PetscBool                      flag,hashelp;
 
   PetscFunctionBegin;
@@ -227,59 +221,59 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
   if (viewer) *viewer = NULL;
   if (format) *format = PETSC_VIEWER_DEFAULT;
   if (set)    *set    = PETSC_FALSE;
-  ierr = PetscOptionsGetViewerOff(&flag);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetViewerOff(&flag));
   if (flag) PetscFunctionReturn(0);
 
-  ierr = PetscOptionsHasHelp(NULL,&hashelp);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHasHelp(NULL,&hashelp));
   if (hashelp) {
     PetscBool found;
 
     if (!PetscOptionsHelpPrintedSingleton) {
-      ierr = PetscOptionsHelpPrintedCreate(&PetscOptionsHelpPrintedSingleton);CHKERRQ(ierr);
+      CHKERRQ(PetscOptionsHelpPrintedCreate(&PetscOptionsHelpPrintedSingleton));
     }
-    ierr = PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrintedSingleton,pre,name,&found);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrintedSingleton,pre,name,&found));
     if (!found && viewer) {
-      ierr = (*PetscHelpPrintf)(comm,"----------------------------------------\nViewer (-%s%s) options:\n",pre ? pre : "",name+1);CHKERRQ(ierr);
-      ierr = (*PetscHelpPrintf)(comm,"  -%s%s ascii[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Prints object to stdout or ASCII file","PetscOptionsGetViewer");CHKERRQ(ierr);
-      ierr = (*PetscHelpPrintf)(comm,"  -%s%s binary[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Saves object to a binary file","PetscOptionsGetViewer");CHKERRQ(ierr);
-      ierr = (*PetscHelpPrintf)(comm,"  -%s%s draw[:[drawtype][:filename|format]] %s (%s)\n",pre ? pre : "",name+1,"Draws object","PetscOptionsGetViewer");CHKERRQ(ierr);
-      ierr = (*PetscHelpPrintf)(comm,"  -%s%s socket[:port]: %s (%s)\n",pre ? pre : "",name+1,"Pushes object to a Unix socket","PetscOptionsGetViewer");CHKERRQ(ierr);
-      ierr = (*PetscHelpPrintf)(comm,"  -%s%s saws[:communicatorname]: %s (%s)\n",pre ? pre : "",name+1,"Publishes object to SAWs","PetscOptionsGetViewer");CHKERRQ(ierr);
+      CHKERRQ((*PetscHelpPrintf)(comm,"----------------------------------------\nViewer (-%s%s) options:\n",pre ? pre : "",name+1));
+      CHKERRQ((*PetscHelpPrintf)(comm,"  -%s%s ascii[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Prints object to stdout or ASCII file","PetscOptionsGetViewer"));
+      CHKERRQ((*PetscHelpPrintf)(comm,"  -%s%s binary[:[filename][:[format][:append]]]: %s (%s)\n",pre ? pre : "",name+1,"Saves object to a binary file","PetscOptionsGetViewer"));
+      CHKERRQ((*PetscHelpPrintf)(comm,"  -%s%s draw[:[drawtype][:filename|format]] %s (%s)\n",pre ? pre : "",name+1,"Draws object","PetscOptionsGetViewer"));
+      CHKERRQ((*PetscHelpPrintf)(comm,"  -%s%s socket[:port]: %s (%s)\n",pre ? pre : "",name+1,"Pushes object to a Unix socket","PetscOptionsGetViewer"));
+      CHKERRQ((*PetscHelpPrintf)(comm,"  -%s%s saws[:communicatorname]: %s (%s)\n",pre ? pre : "",name+1,"Publishes object to SAWs","PetscOptionsGetViewer"));
     }
   }
 
   if (format) *format = PETSC_VIEWER_DEFAULT;
-  ierr = PetscOptionsFindPair(options,pre,name,&value,&flag);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsFindPair(options,pre,name,&value,&flag));
   if (flag) {
     if (set) *set = PETSC_TRUE;
     if (!value) {
       if (viewer) {
-        ierr = PetscViewerASCIIGetStdout(comm,viewer);CHKERRQ(ierr);
-        ierr = PetscObjectReference((PetscObject)*viewer);CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIGetStdout(comm,viewer));
+        CHKERRQ(PetscObjectReference((PetscObject)*viewer));
       }
     } else {
       char       *loc0_vtype,*loc1_fname,*loc2_fmt = NULL,*loc3_fmode = NULL;
       PetscInt   cnt;
       const char *viewers[] = {PETSCVIEWERASCII,PETSCVIEWERBINARY,PETSCVIEWERDRAW,PETSCVIEWERSOCKET,PETSCVIEWERMATLAB,PETSCVIEWERSAWS,PETSCVIEWERVTK,PETSCVIEWERHDF5,PETSCVIEWERGLVIS,PETSCVIEWEREXODUSII,NULL};
 
-      ierr = PetscStrallocpy(value,&loc0_vtype);CHKERRQ(ierr);
-      ierr = PetscStrchr(loc0_vtype,':',&loc1_fname);CHKERRQ(ierr);
+      CHKERRQ(PetscStrallocpy(value,&loc0_vtype));
+      CHKERRQ(PetscStrchr(loc0_vtype,':',&loc1_fname));
       if (loc1_fname) {
         *loc1_fname++ = 0;
-        ierr = PetscStrchr(loc1_fname,':',&loc2_fmt);CHKERRQ(ierr);
+        CHKERRQ(PetscStrchr(loc1_fname,':',&loc2_fmt));
       }
       if (loc2_fmt) {
         *loc2_fmt++ = 0;
-        ierr = PetscStrchr(loc2_fmt,':',&loc3_fmode);CHKERRQ(ierr);
+        CHKERRQ(PetscStrchr(loc2_fmt,':',&loc3_fmode));
       }
       if (loc3_fmode) *loc3_fmode++ = 0;
-      ierr = PetscStrendswithwhich(*loc0_vtype ? loc0_vtype : "ascii",viewers,&cnt);CHKERRQ(ierr);
+      CHKERRQ(PetscStrendswithwhich(*loc0_vtype ? loc0_vtype : "ascii",viewers,&cnt));
       PetscCheckFalse(cnt > (PetscInt) sizeof(viewers)-1,comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown viewer type: %s",loc0_vtype);
       if (viewer) {
         if (!loc1_fname) {
           switch (cnt) {
           case 0:
-            ierr = PetscViewerASCIIGetStdout(comm,viewer);CHKERRQ(ierr);
+            CHKERRQ(PetscViewerASCIIGetStdout(comm,viewer));
             break;
           case 1:
             if (!(*viewer = PETSC_VIEWER_BINARY_(comm))) CHKERRQ(PETSC_ERR_PLIB);
@@ -317,51 +311,51 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
 #endif
           default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported viewer %s",loc0_vtype);
           }
-          ierr = PetscObjectReference((PetscObject)*viewer);CHKERRQ(ierr);
+          CHKERRQ(PetscObjectReference((PetscObject)*viewer));
         } else {
           if (loc2_fmt && !*loc1_fname && (cnt == 0)) { /* ASCII format without file name */
-            ierr = PetscViewerASCIIGetStdout(comm,viewer);CHKERRQ(ierr);
-            ierr = PetscObjectReference((PetscObject)*viewer);CHKERRQ(ierr);
+            CHKERRQ(PetscViewerASCIIGetStdout(comm,viewer));
+            CHKERRQ(PetscObjectReference((PetscObject)*viewer));
           } else {
             PetscFileMode fmode;
-            ierr = PetscViewerCreate(comm,viewer);CHKERRQ(ierr);
-            ierr = PetscViewerSetType(*viewer,*loc0_vtype ? loc0_vtype : "ascii");CHKERRQ(ierr);
+            CHKERRQ(PetscViewerCreate(comm,viewer));
+            CHKERRQ(PetscViewerSetType(*viewer,*loc0_vtype ? loc0_vtype : "ascii"));
             fmode = FILE_MODE_WRITE;
             if (loc3_fmode && *loc3_fmode) { /* Has non-empty file mode ("write" or "append") */
-              ierr = PetscEnumFind(PetscFileModes,loc3_fmode,(PetscEnum*)&fmode,&flag);CHKERRQ(ierr);
+              CHKERRQ(PetscEnumFind(PetscFileModes,loc3_fmode,(PetscEnum*)&fmode,&flag));
               PetscCheckFalse(!flag,comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown file mode: %s",loc3_fmode);
             }
             if (loc2_fmt) {
               PetscBool tk,im;
-              ierr = PetscStrcmp(loc1_fname,"tikz",&tk);CHKERRQ(ierr);
-              ierr = PetscStrcmp(loc1_fname,"image",&im);CHKERRQ(ierr);
+              CHKERRQ(PetscStrcmp(loc1_fname,"tikz",&tk));
+              CHKERRQ(PetscStrcmp(loc1_fname,"image",&im));
               if (tk || im) {
-                ierr = PetscViewerDrawSetInfo(*viewer,NULL,loc2_fmt,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+                CHKERRQ(PetscViewerDrawSetInfo(*viewer,NULL,loc2_fmt,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE));
                 *loc2_fmt = 0;
               }
             }
-            ierr = PetscViewerFileSetMode(*viewer,flag?fmode:FILE_MODE_WRITE);CHKERRQ(ierr);
-            ierr = PetscViewerFileSetName(*viewer,loc1_fname);CHKERRQ(ierr);
+            CHKERRQ(PetscViewerFileSetMode(*viewer,flag?fmode:FILE_MODE_WRITE));
+            CHKERRQ(PetscViewerFileSetName(*viewer,loc1_fname));
             if (*loc1_fname) {
-              ierr = PetscViewerDrawSetDrawType(*viewer,loc1_fname);CHKERRQ(ierr);
+              CHKERRQ(PetscViewerDrawSetDrawType(*viewer,loc1_fname));
             }
-            ierr = PetscViewerSetFromOptions(*viewer);CHKERRQ(ierr);
+            CHKERRQ(PetscViewerSetFromOptions(*viewer));
           }
         }
       }
       if (viewer) {
-        ierr = PetscViewerSetUp(*viewer);CHKERRQ(ierr);
+        CHKERRQ(PetscViewerSetUp(*viewer));
       }
       if (loc2_fmt && *loc2_fmt) {
         PetscViewerFormat tfmt;
 
-        ierr = PetscEnumFind(PetscViewerFormats,loc2_fmt,(PetscEnum*)&tfmt,&flag);CHKERRQ(ierr);
+        CHKERRQ(PetscEnumFind(PetscViewerFormats,loc2_fmt,(PetscEnum*)&tfmt,&flag));
         if (format) *format = tfmt;
         PetscCheckFalse(!flag,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer format %s",loc2_fmt);
       } else if (viewer && (cnt == 6) && format) { /* Get format from VTK viewer */
-        ierr = PetscViewerGetFormat(*viewer,format);CHKERRQ(ierr);
+        CHKERRQ(PetscViewerGetFormat(*viewer,format));
       }
-      ierr = PetscFree(loc0_vtype);CHKERRQ(ierr);
+      CHKERRQ(PetscFree(loc0_vtype));
     }
   }
   PetscFunctionReturn(0);
@@ -386,12 +380,11 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
 PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
 {
   PetscViewer    viewer;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *inviewer = NULL;
-  ierr = PetscViewerInitializePackage();CHKERRQ(ierr);
-  ierr         = PetscHeaderCreate(viewer,PETSC_VIEWER_CLASSID,"PetscViewer","PetscViewer","Viewer",comm,PetscViewerDestroy,PetscViewerView);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerInitializePackage());
+  CHKERRQ(PetscHeaderCreate(viewer,PETSC_VIEWER_CLASSID,"PetscViewer","PetscViewer","Viewer",comm,PetscViewerDestroy,PetscViewerView));
   *inviewer    = viewer;
   viewer->data = NULL;
   PetscFunctionReturn(0);
@@ -420,29 +413,29 @@ PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
 @*/
 PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
 {
-  PetscErrorCode ierr,(*r)(PetscViewer);
   PetscBool      match;
+  PetscErrorCode (*r)(PetscViewer);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(type,2);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,type,&match);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,type,&match));
   if (match) PetscFunctionReturn(0);
 
   /* cleanup any old type that may be there */
   if (viewer->data) {
-    ierr         = (*viewer->ops->destroy)(viewer);CHKERRQ(ierr);
+    CHKERRQ((*viewer->ops->destroy)(viewer));
 
     viewer->ops->destroy = NULL;
     viewer->data         = NULL;
   }
-  ierr = PetscMemzero(viewer->ops,sizeof(struct _PetscViewerOps));CHKERRQ(ierr);
+  CHKERRQ(PetscMemzero(viewer->ops,sizeof(struct _PetscViewerOps)));
 
-  ierr =  PetscFunctionListFind(PetscViewerList,type,&r);CHKERRQ(ierr);
+  CHKERRQ(PetscFunctionListFind(PetscViewerList,type,&r));
   PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscViewer type given: %s",type);
 
-  ierr = PetscObjectChangeTypeName((PetscObject)viewer,type);CHKERRQ(ierr);
-  ierr = (*r)(viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectChangeTypeName((PetscObject)viewer,type));
+  CHKERRQ((*r)(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -473,11 +466,9 @@ $     -viewer_type my_viewer_type
  @*/
 PetscErrorCode  PetscViewerRegister(const char *sname,PetscErrorCode (*function)(PetscViewer))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscViewerInitializePackage();CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&PetscViewerList,sname,function);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerInitializePackage());
+  CHKERRQ(PetscFunctionListAdd(&PetscViewerList,sname,function));
   PetscFunctionReturn(0);
 }
 
@@ -508,83 +499,78 @@ PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
 
   if (!PetscViewerList) {
-    ierr = PetscViewerRegisterAll();CHKERRQ(ierr);
+    CHKERRQ(PetscViewerRegisterAll());
   }
   ierr = PetscObjectOptionsBegin((PetscObject)viewer);CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-viewer_type","Type of PetscViewer","None",PetscViewerList,(char*)(((PetscObject)viewer)->type_name ? ((PetscObject)viewer)->type_name : PETSCVIEWERASCII),vtype,256,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsFList("-viewer_type","Type of PetscViewer","None",PetscViewerList,(char*)(((PetscObject)viewer)->type_name ? ((PetscObject)viewer)->type_name : PETSCVIEWERASCII),vtype,256,&flg));
   if (flg) {
-    ierr = PetscViewerSetType(viewer,vtype);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerSetType(viewer,vtype));
   }
   /* type has not been set? */
   if (!((PetscObject)viewer)->type_name) {
-    ierr = PetscViewerSetType(viewer,PETSCVIEWERASCII);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerSetType(viewer,PETSCVIEWERASCII));
   }
   if (viewer->ops->setfromoptions) {
-    ierr = (*viewer->ops->setfromoptions)(PetscOptionsObject,viewer);CHKERRQ(ierr);
+    CHKERRQ((*viewer->ops->setfromoptions)(PetscOptionsObject,viewer));
   }
 
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)viewer);CHKERRQ(ierr);
-  ierr = PetscViewerViewFromOptions(viewer,NULL,"-viewer_view");CHKERRQ(ierr);
+  CHKERRQ(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)viewer));
+  CHKERRQ(PetscViewerViewFromOptions(viewer,NULL,"-viewer_view"));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscViewerFlowControlStart(PetscViewer viewer,PetscInt *mcnt,PetscInt *cnt)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscViewerBinaryGetFlowControl(viewer,mcnt);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryGetFlowControl(viewer,cnt);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryGetFlowControl(viewer,mcnt));
+  CHKERRQ(PetscViewerBinaryGetFlowControl(viewer,cnt));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscViewerFlowControlStepMain(PetscViewer viewer,PetscInt i,PetscInt *mcnt,PetscInt cnt)
 {
-  PetscErrorCode ierr;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)viewer,&comm));
   if (i >= *mcnt) {
     *mcnt += cnt;
-    ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Bcast(mcnt,1,MPIU_INT,0,comm));
   }
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscViewerFlowControlEndMain(PetscViewer viewer,PetscInt *mcnt)
 {
-  PetscErrorCode ierr;
   MPI_Comm       comm;
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)viewer,&comm));
   *mcnt = 0;
-  ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Bcast(mcnt,1,MPIU_INT,0,comm));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer viewer,PetscMPIInt rank,PetscInt *mcnt)
 {
-  PetscErrorCode ierr;
   MPI_Comm       comm;
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)viewer,&comm));
   while (PETSC_TRUE) {
     if (rank < *mcnt) break;
-    ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Bcast(mcnt,1,MPIU_INT,0,comm));
   }
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer viewer,PetscInt *mcnt)
 {
-  PetscErrorCode ierr;
   MPI_Comm       comm;
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)viewer,&comm));
   while (PETSC_TRUE) {
-    ierr = MPI_Bcast(mcnt,1,MPIU_INT,0,comm);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Bcast(mcnt,1,MPIU_INT,0,comm));
     if (!*mcnt) break;
   }
   PetscFunctionReturn(0);

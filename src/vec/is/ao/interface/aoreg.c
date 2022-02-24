@@ -27,22 +27,21 @@ PetscErrorCode  AOSetType(AO ao, AOType method)
 {
   PetscErrorCode (*r)(AO);
   PetscBool      match;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)ao, method, &match);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)ao, method, &match));
   if (match) PetscFunctionReturn(0);
 
-  ierr = AORegisterAll();CHKERRQ(ierr);
-  ierr = PetscFunctionListFind(AOList,method,&r);CHKERRQ(ierr);
+  CHKERRQ(AORegisterAll());
+  CHKERRQ(PetscFunctionListFind(AOList,method,&r));
   PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown AO type: %s", method);
   if (ao->ops->destroy) {
-    ierr             = (*ao->ops->destroy)(ao);CHKERRQ(ierr);
+    CHKERRQ((*ao->ops->destroy)(ao));
     ao->ops->destroy = NULL;
   }
 
-  ierr = (*r)(ao);CHKERRQ(ierr);
+  CHKERRQ((*r)(ao));
   PetscFunctionReturn(0);
 }
 
@@ -63,12 +62,10 @@ PetscErrorCode  AOSetType(AO ao, AOType method)
 @*/
 PetscErrorCode  AOGetType(AO ao, AOType *type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID,1);
   PetscValidPointer(type,2);
-  ierr = AORegisterAll();CHKERRQ(ierr);
+  CHKERRQ(AORegisterAll());
   *type = ((PetscObject)ao)->type_name;
   PetscFunctionReturn(0);
 }
@@ -91,11 +88,8 @@ PetscErrorCode  AOGetType(AO ao, AOType *type)
 @*/
 PetscErrorCode  AORegister(const char sname[], PetscErrorCode (*function)(AO))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = AOInitializePackage();CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&AOList,sname,function);CHKERRQ(ierr);
+  CHKERRQ(AOInitializePackage());
+  CHKERRQ(PetscFunctionListAdd(&AOList,sname,function));
   PetscFunctionReturn(0);
 }
-

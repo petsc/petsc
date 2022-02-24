@@ -23,48 +23,48 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /*
       Create multi-component vector with 2 components
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&v);CHKERRQ(ierr);
-  ierr = VecSetSizes(v,PETSC_DECIDE,n);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(v,2);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(v);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&v));
+  CHKERRQ(VecSetSizes(v,PETSC_DECIDE,n));
+  CHKERRQ(VecSetBlockSize(v,2));
+  CHKERRQ(VecSetFromOptions(v));
 
   /*
       Create single-component vector
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&s);CHKERRQ(ierr);
-  ierr = VecSetSizes(s,PETSC_DECIDE,n/2);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(s);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&s));
+  CHKERRQ(VecSetSizes(s,PETSC_DECIDE,n/2));
+  CHKERRQ(VecSetFromOptions(s));
 
   /*
      Set the vectors to entries to a constant value.
   */
-  ierr = VecSet(v,one);CHKERRQ(ierr);
+  CHKERRQ(VecSet(v,one));
 
   /*
      Get the first component from the multi-component vector to the single vector
   */
-  ierr = VecStrideGather(v,0,s,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(VecStrideGather(v,0,s,INSERT_VALUES));
 
-  ierr = VecView(s,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecView(s,PETSC_VIEWER_STDOUT_WORLD));
 
   /*
      Put the values back into the second component
   */
-  ierr = VecStrideScatter(s,1,v,ADD_VALUES);CHKERRQ(ierr);
+  CHKERRQ(VecStrideScatter(s,1,v,ADD_VALUES));
 
-  ierr = VecView(v,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecView(v,PETSC_VIEWER_STDOUT_WORLD));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = VecDestroy(&v);CHKERRQ(ierr);
-  ierr = VecDestroy(&s);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&v));
+  CHKERRQ(VecDestroy(&s));
   ierr = PetscFinalize();
   return ierr;
 }

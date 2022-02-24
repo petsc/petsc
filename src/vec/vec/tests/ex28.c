@@ -4,16 +4,16 @@ static char help[] = "Tests repeated VecDotBegin()/VecDotEnd().\n\n";
 #include <petscvec.h>
 #define CheckError(a,b,tol) do {\
     if (!PetscIsCloseAtTol(a,b,0,tol)) {\
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Real error at line %d, tol %g: %s %g %s %g diff %g\n",__LINE__,(double)tol,#a,(double)(a),#b,(double)(b),(double)((a)-(b)));CHKERRQ(ierr); \
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Real error at line %d, tol %g: %s %g %s %g diff %g\n",__LINE__,(double)tol,#a,(double)(a),#b,(double)(b),(double)((a)-(b)))); \
     }\
   } while (0)
 
 #define CheckErrorScalar(a,b,tol) do {\
     if (!PetscIsCloseAtTol(PetscRealPart(a),PetscRealPart(b),0,tol)) {\
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Real error at line %d, tol %g: %s %g %s %g diff %g\n",__LINE__,(double)tol,#a,(double)PetscRealPart(a),#b,(double)PetscRealPart(b),(double)PetscRealPart((a)-(b)));CHKERRQ(ierr); \
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Real error at line %d, tol %g: %s %g %s %g diff %g\n",__LINE__,(double)tol,#a,(double)PetscRealPart(a),#b,(double)PetscRealPart(b),(double)PetscRealPart((a)-(b)))); \
     }\
     if (!PetscIsCloseAtTol(PetscImaginaryPart(a),PetscImaginaryPart(b),0,PETSC_SMALL)) {\
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Imag error at line %d, tol %g: %s %g %s %g diff %g\n",__LINE__,(double)tol,#a,(double)PetscImaginaryPart(a),#b,(double)PetscImaginaryPart(b),(double)PetscImaginaryPart((a)-(b)));CHKERRQ(ierr); \
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Imag error at line %d, tol %g: %s %g %s %g diff %g\n",__LINE__,(double)tol,#a,(double)PetscImaginaryPart(a),#b,(double)PetscImaginaryPart(b),(double)PetscImaginaryPart((a)-(b)))); \
     }\
   } while (0)
 
@@ -30,33 +30,33 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /* create vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
-  ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(x,NULL,"-x_view");CHKERRQ(ierr);
-  ierr = VecSet(y,two);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
+  CHKERRQ(VecSetSizes(x,n,PETSC_DECIDE));
+  CHKERRQ(VecSetFromOptions(x));
+  CHKERRQ(VecDuplicate(x,&y));
+  CHKERRQ(VecSetRandom(x,NULL));
+  CHKERRQ(VecViewFromOptions(x,NULL,"-x_view"));
+  CHKERRQ(VecSet(y,two));
 
   /*
         Test mixing dot products and norms that require sums
   */
   result1 = result2 = 0.0;
   result3 = result4 = 0.0;
-  ierr    = VecDotBegin(x,y,&result1);CHKERRQ(ierr);
-  ierr    = VecDotBegin(y,x,&result2);CHKERRQ(ierr);
-  ierr    = VecNormBegin(y,NORM_2,&result3);CHKERRQ(ierr);
-  ierr    = VecNormBegin(x,NORM_1,&result4);CHKERRQ(ierr);
-  ierr    = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)x));CHKERRQ(ierr);
-  ierr    = VecDotEnd(x,y,&result1);CHKERRQ(ierr);
-  ierr    = VecDotEnd(y,x,&result2);CHKERRQ(ierr);
-  ierr    = VecNormEnd(y,NORM_2,&result3);CHKERRQ(ierr);
-  ierr    = VecNormEnd(x,NORM_1,&result4);CHKERRQ(ierr);
+  CHKERRQ(VecDotBegin(x,y,&result1));
+  CHKERRQ(VecDotBegin(y,x,&result2));
+  CHKERRQ(VecNormBegin(y,NORM_2,&result3));
+  CHKERRQ(VecNormBegin(x,NORM_1,&result4));
+  CHKERRQ(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)x)));
+  CHKERRQ(VecDotEnd(x,y,&result1));
+  CHKERRQ(VecDotEnd(y,x,&result2));
+  CHKERRQ(VecNormEnd(y,NORM_2,&result3));
+  CHKERRQ(VecNormEnd(x,NORM_1,&result4));
 
-  ierr = VecDot(x,y,&result1a);CHKERRQ(ierr);
-  ierr = VecDot(y,x,&result2a);CHKERRQ(ierr);
-  ierr = VecNorm(y,NORM_2,&result3a);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_1,&result4a);CHKERRQ(ierr);
+  CHKERRQ(VecDot(x,y,&result1a));
+  CHKERRQ(VecDot(y,x,&result2a));
+  CHKERRQ(VecNorm(y,NORM_2,&result3a));
+  CHKERRQ(VecNorm(x,NORM_1,&result4a));
 
   CheckErrorScalar(result1,result1a,tol);
   CheckErrorScalar(result2,result2a,tol);
@@ -68,13 +68,13 @@ int main(int argc,char **argv)
   */
   result1 = result2 = 0.0;
   result3 = result4 = 0.0;
-  ierr = VecNormBegin(y,NORM_MAX,&result3);CHKERRQ(ierr);
-  ierr = VecNormBegin(x,NORM_MAX,&result4);CHKERRQ(ierr);
-  ierr = VecNormEnd(y,NORM_MAX,&result3);CHKERRQ(ierr);
-  ierr = VecNormEnd(x,NORM_MAX,&result4);CHKERRQ(ierr);
+  CHKERRQ(VecNormBegin(y,NORM_MAX,&result3));
+  CHKERRQ(VecNormBegin(x,NORM_MAX,&result4));
+  CHKERRQ(VecNormEnd(y,NORM_MAX,&result3));
+  CHKERRQ(VecNormEnd(x,NORM_MAX,&result4));
 
-  ierr = VecNorm(x,NORM_MAX,&result4a);CHKERRQ(ierr);
-  ierr = VecNorm(y,NORM_MAX,&result3a);CHKERRQ(ierr);
+  CHKERRQ(VecNorm(x,NORM_MAX,&result4a));
+  CHKERRQ(VecNorm(y,NORM_MAX,&result3a));
   CheckError(result3,result3a,tol);
   CheckError(result4,result4a,tol);
 
@@ -83,23 +83,23 @@ int main(int argc,char **argv)
   */
   result1 = result2 = 0.0;
   result3 = result4 = 0.0;
-  ierr = VecSetValues(x,1,&row0,&ten,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+  CHKERRQ(VecSetValues(x,1,&row0,&ten,INSERT_VALUES));
+  CHKERRQ(VecAssemblyBegin(x));
+  CHKERRQ(VecAssemblyEnd(x));
 
-  ierr = VecDotBegin(x,y,&result1);CHKERRQ(ierr);
-  ierr = VecDotBegin(y,x,&result2);CHKERRQ(ierr);
-  ierr = VecNormBegin(x,NORM_MAX,&result3);CHKERRQ(ierr);
-  ierr = VecNormBegin(x,NORM_1,&result4);CHKERRQ(ierr);
-  ierr = VecDotEnd(x,y,&result1);CHKERRQ(ierr);
-  ierr = VecDotEnd(y,x,&result2);CHKERRQ(ierr);
-  ierr = VecNormEnd(x,NORM_MAX,&result3);CHKERRQ(ierr);
-  ierr = VecNormEnd(x,NORM_1,&result4);CHKERRQ(ierr);
+  CHKERRQ(VecDotBegin(x,y,&result1));
+  CHKERRQ(VecDotBegin(y,x,&result2));
+  CHKERRQ(VecNormBegin(x,NORM_MAX,&result3));
+  CHKERRQ(VecNormBegin(x,NORM_1,&result4));
+  CHKERRQ(VecDotEnd(x,y,&result1));
+  CHKERRQ(VecDotEnd(y,x,&result2));
+  CHKERRQ(VecNormEnd(x,NORM_MAX,&result3));
+  CHKERRQ(VecNormEnd(x,NORM_1,&result4));
 
-  ierr = VecDot(x,y,&result1a);CHKERRQ(ierr);
-  ierr = VecDot(y,x,&result2a);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_MAX,&result3a);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_1,&result4a);CHKERRQ(ierr);
+  CHKERRQ(VecDot(x,y,&result1a));
+  CHKERRQ(VecDot(y,x,&result2a));
+  CHKERRQ(VecNorm(x,NORM_MAX,&result3a));
+  CHKERRQ(VecNorm(x,NORM_1,&result4a));
 
   CheckErrorScalar(result1,result1a,tol);
   CheckErrorScalar(result2,result2a,tol);
@@ -109,46 +109,46 @@ int main(int argc,char **argv)
   /*
        tests 1_and_2 norm
   */
-  ierr = VecNormBegin(x,NORM_MAX,&result3);CHKERRQ(ierr);
-  ierr = VecNormBegin(x,NORM_1_AND_2,result);CHKERRQ(ierr);
-  ierr = VecNormBegin(y,NORM_MAX,&result4);CHKERRQ(ierr);
-  ierr = VecNormEnd(x,NORM_MAX,&result3);CHKERRQ(ierr);
-  ierr = VecNormEnd(x,NORM_1_AND_2,result);CHKERRQ(ierr);
-  ierr = VecNormEnd(y,NORM_MAX,&result4);CHKERRQ(ierr);
+  CHKERRQ(VecNormBegin(x,NORM_MAX,&result3));
+  CHKERRQ(VecNormBegin(x,NORM_1_AND_2,result));
+  CHKERRQ(VecNormBegin(y,NORM_MAX,&result4));
+  CHKERRQ(VecNormEnd(x,NORM_MAX,&result3));
+  CHKERRQ(VecNormEnd(x,NORM_1_AND_2,result));
+  CHKERRQ(VecNormEnd(y,NORM_MAX,&result4));
 
-  ierr = VecNorm(x,NORM_MAX,&result3a);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_1_AND_2,resulta);CHKERRQ(ierr);
-  ierr = VecNorm(y,NORM_MAX,&result4a);CHKERRQ(ierr);
+  CHKERRQ(VecNorm(x,NORM_MAX,&result3a));
+  CHKERRQ(VecNorm(x,NORM_1_AND_2,resulta));
+  CHKERRQ(VecNorm(y,NORM_MAX,&result4a));
 
   CheckError(result3,result3a,tol);
   CheckError(result4,result4a,tol);
   CheckError(result[0],resulta[0],tol);
   CheckError(result[1],resulta[1],tol);
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
 
   /*
        Tests computing a large number of operations that require
     allocating a larger data structure internally
   */
   for (i=0; i<40; i++) {
-    ierr  = VecCreate(PETSC_COMM_WORLD,vecs+i);CHKERRQ(ierr);
-    ierr  = VecSetSizes(vecs[i],PETSC_DECIDE,n);CHKERRQ(ierr);
-    ierr  = VecSetFromOptions(vecs[i]);CHKERRQ(ierr);
+    CHKERRQ(VecCreate(PETSC_COMM_WORLD,vecs+i));
+    CHKERRQ(VecSetSizes(vecs[i],PETSC_DECIDE,n));
+    CHKERRQ(VecSetFromOptions(vecs[i]));
     value = (PetscReal)i;
-    ierr  = VecSet(vecs[i],value);CHKERRQ(ierr);
+    CHKERRQ(VecSet(vecs[i],value));
   }
   for (i=0; i<39; i++) {
-    ierr = VecDotBegin(vecs[i],vecs[i+1],results+i);CHKERRQ(ierr);
+    CHKERRQ(VecDotBegin(vecs[i],vecs[i+1],results+i));
   }
   for (i=0; i<39; i++) {
     PetscScalar expected = 25.0*i*(i+1);
-    ierr = VecDotEnd(vecs[i],vecs[i+1],results+i);CHKERRQ(ierr);
+    CHKERRQ(VecDotEnd(vecs[i],vecs[i+1],results+i));
     CheckErrorScalar(results[i],expected,tol);
   }
   for (i=0; i<40; i++) {
-    ierr = VecDestroy(&vecs[i]);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&vecs[i]));
   }
 
   ierr = PetscFinalize();

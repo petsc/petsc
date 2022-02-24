@@ -20,21 +20,20 @@ static PetscErrorCode PetscSFViewCustomLocals_Private(PetscSF sf,const PetscInt 
   const PetscSFNode *iremote;
   PetscInt          i,nroots,nleaves,nranks;
   PetscMPIInt       rank;
-  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRMPI(ierr);
-  ierr = PetscSFGetGraph(sf,&nroots,&nleaves,NULL,&iremote);CHKERRQ(ierr);
-  ierr = PetscSFGetRootRanks(sf,&nranks,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of roots=%" PetscInt_FMT ", leaves=%" PetscInt_FMT ", remote ranks=%" PetscInt_FMT "\n",rank,nroots,nleaves,nranks);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank));
+  CHKERRQ(PetscSFGetGraph(sf,&nroots,&nleaves,NULL,&iremote));
+  CHKERRQ(PetscSFGetRootRanks(sf,&nranks,NULL,NULL,NULL,NULL));
+  CHKERRQ(PetscViewerASCIIPushTab(viewer));
+  CHKERRQ(PetscViewerASCIIPushSynchronized(viewer));
+  CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of roots=%" PetscInt_FMT ", leaves=%" PetscInt_FMT ", remote ranks=%" PetscInt_FMT "\n",rank,nroots,nleaves,nranks));
   for (i=0; i<nleaves; i++) {
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %" PetscInt_FMT " <- (%" PetscInt_FMT ",%" PetscInt_FMT ")\n",rank,locals[i],iremote[i].rank,iremote[i].index);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %" PetscInt_FMT " <- (%" PetscInt_FMT ",%" PetscInt_FMT ")\n",rank,locals[i],iremote[i].rank,iremote[i].index));
   }
-  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerFlush(viewer));
+  CHKERRQ(PetscViewerASCIIPopTab(viewer));
+  CHKERRQ(PetscViewerASCIIPopSynchronized(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -51,80 +50,80 @@ int main(int argc,char **argv)
   PetscBool      strflg;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   ierr            = PetscOptionsBegin(PETSC_COMM_WORLD,"","PetscSF Test Options","none");CHKERRQ(ierr);
   test_all        = PETSC_FALSE;
-  ierr            = PetscOptionsBool("-test_all","Test all SF communications","",test_all,&test_all,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-test_all","Test all SF communications","",test_all,&test_all,NULL));
   test_bcast      = test_all;
-  ierr            = PetscOptionsBool("-test_bcast","Test broadcast","",test_bcast,&test_bcast,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-test_bcast","Test broadcast","",test_bcast,&test_bcast,NULL));
   test_bcastop    = test_all;
-  ierr            = PetscOptionsBool("-test_bcastop","Test broadcast and reduce","",test_bcastop,&test_bcastop,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-test_bcastop","Test broadcast and reduce","",test_bcastop,&test_bcastop,NULL));
   test_reduce     = test_all;
-  ierr            = PetscOptionsBool("-test_reduce","Test reduction","",test_reduce,&test_reduce,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-test_reduce","Test reduction","",test_reduce,&test_reduce,NULL));
   test_char       = test_all;
-  ierr            = PetscOptionsBool("-test_char","Test signed char, unsigned char, and char","",test_char,&test_char,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-test_char","Test signed char, unsigned char, and char","",test_char,&test_char,NULL));
   mop             = MPI_SUM;
-  ierr            = PetscStrcpy(opstring,"sum");CHKERRQ(ierr);
-  ierr            = PetscOptionsString("-test_op","Designate which MPI_Op to use","",opstring,opstring,sizeof(opstring),NULL);CHKERRQ(ierr);
-  ierr = PetscStrcmp("sum",opstring,&strflg);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcpy(opstring,"sum"));
+  CHKERRQ(PetscOptionsString("-test_op","Designate which MPI_Op to use","",opstring,opstring,sizeof(opstring),NULL));
+  CHKERRQ(PetscStrcmp("sum",opstring,&strflg));
   if (strflg) {
     mop = MPIU_SUM;
   }
-  ierr = PetscStrcmp("prod",opstring,&strflg);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcmp("prod",opstring,&strflg));
   if (strflg) {
     mop = MPI_PROD;
   }
-  ierr = PetscStrcmp("max",opstring,&strflg);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcmp("max",opstring,&strflg));
   if (strflg) {
     mop = MPI_MAX;
   }
-  ierr = PetscStrcmp("min",opstring,&strflg);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcmp("min",opstring,&strflg));
   if (strflg) {
     mop = MPI_MIN;
   }
-  ierr = PetscStrcmp("land",opstring,&strflg);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcmp("land",opstring,&strflg));
   if (strflg) {
     mop = MPI_LAND;
   }
-  ierr = PetscStrcmp("band",opstring,&strflg);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcmp("band",opstring,&strflg));
   if (strflg) {
     mop = MPI_BAND;
   }
-  ierr = PetscStrcmp("lor",opstring,&strflg);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcmp("lor",opstring,&strflg));
   if (strflg) {
     mop = MPI_LOR;
   }
-  ierr = PetscStrcmp("bor",opstring,&strflg);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcmp("bor",opstring,&strflg));
   if (strflg) {
     mop = MPI_BOR;
   }
-  ierr = PetscStrcmp("lxor",opstring,&strflg);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcmp("lxor",opstring,&strflg));
   if (strflg) {
     mop = MPI_LXOR;
   }
-  ierr = PetscStrcmp("bxor",opstring,&strflg);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcmp("bxor",opstring,&strflg));
   if (strflg) {
     mop = MPI_BXOR;
   }
   test_degree     = test_all;
-  ierr            = PetscOptionsBool("-test_degree","Test computation of vertex degree","",test_degree,&test_degree,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-test_degree","Test computation of vertex degree","",test_degree,&test_degree,NULL));
   test_fetchandop = test_all;
-  ierr            = PetscOptionsBool("-test_fetchandop","Test atomic Fetch-And-Op","",test_fetchandop,&test_fetchandop,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-test_fetchandop","Test atomic Fetch-And-Op","",test_fetchandop,&test_fetchandop,NULL));
   test_gather     = test_all;
-  ierr            = PetscOptionsBool("-test_gather","Test point gather","",test_gather,&test_gather,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-test_gather","Test point gather","",test_gather,&test_gather,NULL));
   test_scatter    = test_all;
-  ierr            = PetscOptionsBool("-test_scatter","Test point scatter","",test_scatter,&test_scatter,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-test_scatter","Test point scatter","",test_scatter,&test_scatter,NULL));
   test_embed      = test_all;
-  ierr            = PetscOptionsBool("-test_embed","Test point embed","",test_embed,&test_embed,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-test_embed","Test point embed","",test_embed,&test_embed,NULL));
   test_invert     = test_all;
-  ierr            = PetscOptionsBool("-test_invert","Test point invert","",test_invert,&test_invert,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-test_invert","Test point invert","",test_invert,&test_invert,NULL));
   stride          = 1;
-  ierr            = PetscOptionsInt("-stride","Stride for leaf and root data","",stride,&stride,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsInt("-stride","Stride for leaf and root data","",stride,&stride,NULL));
   test_sf_distribute = PETSC_FALSE;
-  ierr            = PetscOptionsBool("-test_sf_distribute","Create an SF that 'distributes' to each process, like an alltoall","",test_sf_distribute,&test_sf_distribute,NULL);CHKERRQ(ierr);
-  ierr            = PetscOptionsString("-test_op","Designate which MPI_Op to use","",opstring,opstring,sizeof(opstring),NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-test_sf_distribute","Create an SF that 'distributes' to each process, like an alltoall","",test_sf_distribute,&test_sf_distribute,NULL));
+  CHKERRQ(PetscOptionsString("-test_op","Designate which MPI_Op to use","",opstring,opstring,sizeof(opstring),NULL));
   ierr            = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (test_sf_distribute) {
@@ -133,7 +132,7 @@ int main(int argc,char **argv)
     nleaves = size;
     nleavesalloc = size;
     mine = NULL;
-    ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(nleaves,&remote));
     for (i=0; i<size; i++) {
       remote[i].rank = i;
       remote[i].index = rank;
@@ -147,12 +146,12 @@ int main(int argc,char **argv)
     if (stride > 1) {
       PetscInt i;
 
-      ierr = PetscMalloc1(nleaves,&mine);CHKERRQ(ierr);
+      CHKERRQ(PetscMalloc1(nleaves,&mine));
       for (i = 0; i < nleaves; i++) {
         mine[i] = stride * i;
       }
     }
-    ierr = PetscMalloc1(nleaves,&remote);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(nleaves,&remote));
     /* Left periodic neighbor */
     remote[0].rank  = (rank+size-1)%size;
     remote[0].index = 1 * stride;
@@ -166,247 +165,247 @@ int main(int argc,char **argv)
   }
 
   /* Create a star forest for communication. In this example, the leaf space is dense, so we pass NULL. */
-  ierr = PetscSFCreate(PETSC_COMM_WORLD,&sf);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(sf,nrootsalloc,nleaves,mine,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER);CHKERRQ(ierr);
-  ierr = PetscSFSetUp(sf);CHKERRQ(ierr);
+  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
+  CHKERRQ(PetscSFSetFromOptions(sf));
+  CHKERRQ(PetscSFSetGraph(sf,nrootsalloc,nleaves,mine,PETSC_OWN_POINTER,remote,PETSC_OWN_POINTER));
+  CHKERRQ(PetscSFSetUp(sf));
 
   /* View graph, mostly useful for debugging purposes. */
-  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
-  ierr = PetscSFView(sf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL));
+  CHKERRQ(PetscSFView(sf,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
 
   if (test_bcast) {             /* broadcast rootdata into leafdata */
     PetscInt *rootdata,*leafdata;
     /* Allocate space for send and receive buffers. This example communicates PetscInt, but other types, including
      * user-defined structures, could also be used. */
-    ierr = PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata));
     /* Set rootdata buffer to be broadcast */
     for (i=0; i<nrootsalloc; i++) rootdata[i] = -1;
     for (i=0; i<nroots; i++) rootdata[i*stride] = 100*(rank+1) + i;
     /* Initialize local buffer, these values are never used. */
     for (i=0; i<nleavesalloc; i++) leafdata[i] = -1;
     /* Broadcast entries from rootdata to leafdata. Computation or other communication can be performed between the begin and end calls. */
-    ierr = PetscSFBcastBegin(sf,MPIU_INT,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf,MPIU_INT,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Rootdata\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Leafdata\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
+    CHKERRQ(PetscSFBcastBegin(sf,MPIU_INT,rootdata,leafdata,MPI_REPLACE));
+    CHKERRQ(PetscSFBcastEnd(sf,MPIU_INT,rootdata,leafdata,MPI_REPLACE));
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Rootdata\n"));
+    CHKERRQ(PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Leafdata\n"));
+    CHKERRQ(PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscFree2(rootdata,leafdata));
   }
 
   if (test_bcast && test_char) { /* Bcast with char */
     PetscInt len;
     char buf[256];
     char *rootdata,*leafdata;
-    ierr = PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata));
     /* Set rootdata buffer to be broadcast */
     for (i=0; i<nrootsalloc; i++) rootdata[i] = '*';
     for (i=0; i<nroots; i++) rootdata[i*stride] = 'A' + rank*3 + i; /* rank is very small, so it is fine to compute a char */
     /* Initialize local buffer, these values are never used. */
     for (i=0; i<nleavesalloc; i++) leafdata[i] = '?';
 
-    ierr = PetscSFBcastBegin(sf,MPI_CHAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf,MPI_CHAR,rootdata,leafdata,MPI_REPLACE);CHKERRQ(ierr);
+    CHKERRQ(PetscSFBcastBegin(sf,MPI_CHAR,rootdata,leafdata,MPI_REPLACE));
+    CHKERRQ(PetscSFBcastEnd(sf,MPI_CHAR,rootdata,leafdata,MPI_REPLACE));
 
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Rootdata in type of char\n");CHKERRQ(ierr);
-    len  = 0; ierr = PetscSNPrintf(buf,256,"%4d:",rank);CHKERRQ(ierr); len += 5;
-    for (i=0; i<nrootsalloc; i++) {ierr = PetscSNPrintf(buf+len,256-len,"%5c",rootdata[i]);CHKERRQ(ierr); len += 5;}
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Rootdata in type of char\n"));
+    len  = 0; CHKERRQ(PetscSNPrintf(buf,256,"%4d:",rank)); len += 5;
+    for (i=0; i<nrootsalloc; i++) {CHKERRQ(PetscSNPrintf(buf+len,256-len,"%5c",rootdata[i])); len += 5;}
+    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf));
+    CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Leafdata in type of char\n");CHKERRQ(ierr);
-    len = 0; ierr = PetscSNPrintf(buf,256,"%4d:",rank);CHKERRQ(ierr); len += 5;
-    for (i=0; i<nleavesalloc; i++) {ierr = PetscSNPrintf(buf+len,256-len,"%5c",leafdata[i]);CHKERRQ(ierr); len += 5;}
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Bcast Leafdata in type of char\n"));
+    len = 0; CHKERRQ(PetscSNPrintf(buf,256,"%4d:",rank)); len += 5;
+    for (i=0; i<nleavesalloc; i++) {CHKERRQ(PetscSNPrintf(buf+len,256-len,"%5c",leafdata[i])); len += 5;}
+    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf));
+    CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
-    ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
+    CHKERRQ(PetscFree2(rootdata,leafdata));
   }
 
   if (test_bcastop) {         /* Reduce rootdata into leafdata */
     PetscInt *rootdata,*leafdata;
     /* Allocate space for send and receive buffers. This example communicates PetscInt, but other types, including
      * user-defined structures, could also be used. */
-    ierr = PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata));
     /* Set rootdata buffer to be broadcast */
     for (i=0; i<nrootsalloc; i++) rootdata[i] = -1;
     for (i=0; i<nroots; i++) rootdata[i*stride] = 100*(rank+1) + i;
     /* Set leaf values to reduce with */
     for (i=0; i<nleavesalloc; i++) leafdata[i] = -10*(rank+1) - i;
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Pre-BcastAndOp Leafdata\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Pre-BcastAndOp Leafdata\n"));
+    CHKERRQ(PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD));
     /* Broadcast entries from rootdata to leafdata. Computation or other communication can be performed between the begin and end calls. */
-    ierr = PetscSFBcastBegin(sf,MPIU_INT,rootdata,leafdata,mop);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf,MPIU_INT,rootdata,leafdata,mop);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## BcastAndOp Rootdata\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## BcastAndOp Leafdata\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
+    CHKERRQ(PetscSFBcastBegin(sf,MPIU_INT,rootdata,leafdata,mop));
+    CHKERRQ(PetscSFBcastEnd(sf,MPIU_INT,rootdata,leafdata,mop));
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## BcastAndOp Rootdata\n"));
+    CHKERRQ(PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## BcastAndOp Leafdata\n"));
+    CHKERRQ(PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscFree2(rootdata,leafdata));
   }
 
   if (test_reduce) {            /* Reduce leafdata into rootdata */
     PetscInt *rootdata,*leafdata;
-    ierr = PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata));
     /* Initialize rootdata buffer in which the result of the reduction will appear. */
     for (i=0; i<nrootsalloc; i++) rootdata[i] = -1;
     for (i=0; i<nroots; i++) rootdata[i*stride] = 100*(rank+1) + i;
     /* Set leaf values to reduce. */
     for (i=0; i<nleavesalloc; i++) leafdata[i] = -1;
     for (i=0; i<nleaves; i++) leafdata[i*stride] = 1000*(rank+1) + 10*i;
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Pre-Reduce Rootdata\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Pre-Reduce Rootdata\n"));
+    CHKERRQ(PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD));
     /* Perform reduction. Computation or other communication can be performed between the begin and end calls.
      * This example sums the values, but other MPI_Ops can be used (e.g MPI_MAX, MPI_PROD). */
-    ierr = PetscSFReduceBegin(sf,MPIU_INT,leafdata,rootdata,mop);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(sf,MPIU_INT,leafdata,rootdata,mop);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Leafdata\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Rootdata\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
+    CHKERRQ(PetscSFReduceBegin(sf,MPIU_INT,leafdata,rootdata,mop));
+    CHKERRQ(PetscSFReduceEnd(sf,MPIU_INT,leafdata,rootdata,mop));
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Leafdata\n"));
+    CHKERRQ(PetscIntView(nleavesalloc,leafdata,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Rootdata\n"));
+    CHKERRQ(PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscFree2(rootdata,leafdata));
   }
 
   if (test_reduce && test_char) { /* Reduce with signed char */
     PetscInt len;
     char buf[256];
     signed char *rootdata,*leafdata;
-    ierr = PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata));
     /* Initialize rootdata buffer in which the result of the reduction will appear. */
     for (i=0; i<nrootsalloc; i++) rootdata[i] = -1;
     for (i=0; i<nroots; i++) rootdata[i*stride] = 10*(rank+1) + i;
     /* Set leaf values to reduce. */
     for (i=0; i<nleavesalloc; i++) leafdata[i] = -1;
     for (i=0; i<nleaves; i++) leafdata[i*stride] = 50*(rank+1) + 10*i;
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Pre-Reduce Rootdata in type of signed char\n");CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Pre-Reduce Rootdata in type of signed char\n"));
 
-    len = 0; ierr = PetscSNPrintf(buf,256,"%4d:",rank);CHKERRQ(ierr); len += 5;
-    for (i=0; i<nrootsalloc; i++) {ierr = PetscSNPrintf(buf+len,256-len,"%5d",rootdata[i]);CHKERRQ(ierr); len += 5;}
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+    len = 0; CHKERRQ(PetscSNPrintf(buf,256,"%4d:",rank)); len += 5;
+    for (i=0; i<nrootsalloc; i++) {CHKERRQ(PetscSNPrintf(buf+len,256-len,"%5d",rootdata[i])); len += 5;}
+    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf));
+    CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
     /* Using MPI_CHAR should trigger an error since MPI standard does not support reduction on MPI_CHAR.
        Testing with -test_op max, one can see the sign does take effect in MPI_MAX.
      */
-    ierr = PetscSFReduceBegin(sf,MPI_SIGNED_CHAR,leafdata,rootdata,mop);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(sf,MPI_SIGNED_CHAR,leafdata,rootdata,mop);CHKERRQ(ierr);
+    CHKERRQ(PetscSFReduceBegin(sf,MPI_SIGNED_CHAR,leafdata,rootdata,mop));
+    CHKERRQ(PetscSFReduceEnd(sf,MPI_SIGNED_CHAR,leafdata,rootdata,mop));
 
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Leafdata in type of signed char\n");CHKERRQ(ierr);
-    len  = 0; ierr = PetscSNPrintf(buf,256,"%4d:",rank);CHKERRQ(ierr); len += 5;
-    for (i=0; i<nleavesalloc; i++) {ierr = PetscSNPrintf(buf+len,256-len,"%5d",leafdata[i]);CHKERRQ(ierr); len += 5;}
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Leafdata in type of signed char\n"));
+    len  = 0; CHKERRQ(PetscSNPrintf(buf,256,"%4d:",rank)); len += 5;
+    for (i=0; i<nleavesalloc; i++) {CHKERRQ(PetscSNPrintf(buf+len,256-len,"%5d",leafdata[i])); len += 5;}
+    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf));
+    CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Rootdata in type of signed char\n");CHKERRQ(ierr);
-    len = 0; ierr = PetscSNPrintf(buf,256,"%4d:",rank);CHKERRQ(ierr); len += 5;
-    for (i=0; i<nrootsalloc; i++) {ierr = PetscSNPrintf(buf+len,256-len,"%5d",rootdata[i]);CHKERRQ(ierr); len += 5;}
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Rootdata in type of signed char\n"));
+    len = 0; CHKERRQ(PetscSNPrintf(buf,256,"%4d:",rank)); len += 5;
+    for (i=0; i<nrootsalloc; i++) {CHKERRQ(PetscSNPrintf(buf+len,256-len,"%5d",rootdata[i])); len += 5;}
+    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf));
+    CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
-    ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
+    CHKERRQ(PetscFree2(rootdata,leafdata));
   }
 
   if (test_reduce && test_char) { /* Reduce with unsigned char */
     PetscInt len;
     char buf[256];
     unsigned char *rootdata,*leafdata;
-    ierr = PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata));
     /* Initialize rootdata buffer in which the result of the reduction will appear. */
     for (i=0; i<nrootsalloc; i++) rootdata[i] = 0;
     for (i=0; i<nroots; i++) rootdata[i*stride] = 10*(rank+1) + i;
     /* Set leaf values to reduce. */
     for (i=0; i<nleavesalloc; i++) leafdata[i] = 0;
     for (i=0; i<nleaves; i++) leafdata[i*stride] = 50*(rank+1) + 10*i;
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Pre-Reduce Rootdata in type of unsigned char\n");CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Pre-Reduce Rootdata in type of unsigned char\n"));
 
-    len = 0; ierr = PetscSNPrintf(buf,256,"%4d:",rank);CHKERRQ(ierr); len += 5;
-    for (i=0; i<nrootsalloc; i++) {ierr = PetscSNPrintf(buf+len,256-len,"%5u",rootdata[i]);CHKERRQ(ierr); len += 5;}
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+    len = 0; CHKERRQ(PetscSNPrintf(buf,256,"%4d:",rank)); len += 5;
+    for (i=0; i<nrootsalloc; i++) {CHKERRQ(PetscSNPrintf(buf+len,256-len,"%5u",rootdata[i])); len += 5;}
+    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf));
+    CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
     /* Using MPI_CHAR should trigger an error since MPI standard does not support reduction on MPI_CHAR.
        Testing with -test_op max, one can see the sign does take effect in MPI_MAX.
      */
-    ierr = PetscSFReduceBegin(sf,MPI_UNSIGNED_CHAR,leafdata,rootdata,mop);CHKERRQ(ierr);
-    ierr = PetscSFReduceEnd(sf,MPI_UNSIGNED_CHAR,leafdata,rootdata,mop);CHKERRQ(ierr);
+    CHKERRQ(PetscSFReduceBegin(sf,MPI_UNSIGNED_CHAR,leafdata,rootdata,mop));
+    CHKERRQ(PetscSFReduceEnd(sf,MPI_UNSIGNED_CHAR,leafdata,rootdata,mop));
 
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Leafdata in type of unsigned char\n");CHKERRQ(ierr);
-    len  = 0; ierr = PetscSNPrintf(buf,256,"%4d:",rank);CHKERRQ(ierr); len += 5;
-    for (i=0; i<nleavesalloc; i++) {ierr = PetscSNPrintf(buf+len,256-len,"%5u",leafdata[i]);CHKERRQ(ierr); len += 5;}
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Leafdata in type of unsigned char\n"));
+    len  = 0; CHKERRQ(PetscSNPrintf(buf,256,"%4d:",rank)); len += 5;
+    for (i=0; i<nleavesalloc; i++) {CHKERRQ(PetscSNPrintf(buf+len,256-len,"%5u",leafdata[i])); len += 5;}
+    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf));
+    CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Rootdata in type of unsigned char\n");CHKERRQ(ierr);
-    len = 0; ierr = PetscSNPrintf(buf,256,"%4d:",rank);CHKERRQ(ierr); len += 5;
-    for (i=0; i<nrootsalloc; i++) {ierr = PetscSNPrintf(buf+len,256-len,"%5u",rootdata[i]);CHKERRQ(ierr); len += 5;}
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Reduce Rootdata in type of unsigned char\n"));
+    len = 0; CHKERRQ(PetscSNPrintf(buf,256,"%4d:",rank)); len += 5;
+    for (i=0; i<nrootsalloc; i++) {CHKERRQ(PetscSNPrintf(buf+len,256-len,"%5u",rootdata[i])); len += 5;}
+    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%s\n",buf));
+    CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
 
-    ierr = PetscFree2(rootdata,leafdata);CHKERRQ(ierr);
+    CHKERRQ(PetscFree2(rootdata,leafdata));
   }
 
   if (test_degree) {
     const PetscInt *degree;
-    ierr = PetscSFComputeDegreeBegin(sf,&degree);CHKERRQ(ierr);
-    ierr = PetscSFComputeDegreeEnd(sf,&degree);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Root degrees\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nrootsalloc,degree,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(PetscSFComputeDegreeBegin(sf,&degree));
+    CHKERRQ(PetscSFComputeDegreeEnd(sf,&degree));
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Root degrees\n"));
+    CHKERRQ(PetscIntView(nrootsalloc,degree,PETSC_VIEWER_STDOUT_WORLD));
   }
 
   if (test_fetchandop) {
     /* Cannot use text compare here because token ordering is not deterministic */
     PetscInt *leafdata,*leafupdate,*rootdata;
-    ierr = PetscMalloc3(nleavesalloc,&leafdata,nleavesalloc,&leafupdate,nrootsalloc,&rootdata);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc3(nleavesalloc,&leafdata,nleavesalloc,&leafupdate,nrootsalloc,&rootdata));
     for (i=0; i<nleavesalloc; i++) leafdata[i] = -1;
     for (i=0; i<nleaves; i++) leafdata[i*stride] = 1;
     for (i=0; i<nrootsalloc; i++) rootdata[i] = -1;
     for (i=0; i<nroots; i++) rootdata[i*stride] = 0;
-    ierr = PetscSFFetchAndOpBegin(sf,MPIU_INT,rootdata,leafdata,leafupdate,mop);CHKERRQ(ierr);
-    ierr = PetscSFFetchAndOpEnd(sf,MPIU_INT,rootdata,leafdata,leafupdate,mop);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Rootdata (sum of 1 from each leaf)\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Leafupdate (value at roots prior to my atomic update)\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nleavesalloc,leafupdate,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscFree3(leafdata,leafupdate,rootdata);CHKERRQ(ierr);
+    CHKERRQ(PetscSFFetchAndOpBegin(sf,MPIU_INT,rootdata,leafdata,leafupdate,mop));
+    CHKERRQ(PetscSFFetchAndOpEnd(sf,MPIU_INT,rootdata,leafdata,leafupdate,mop));
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Rootdata (sum of 1 from each leaf)\n"));
+    CHKERRQ(PetscIntView(nrootsalloc,rootdata,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Leafupdate (value at roots prior to my atomic update)\n"));
+    CHKERRQ(PetscIntView(nleavesalloc,leafupdate,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscFree3(leafdata,leafupdate,rootdata));
   }
 
   if (test_gather) {
     const PetscInt *degree;
     PetscInt       inedges,*indata,*outdata;
-    ierr = PetscSFComputeDegreeBegin(sf,&degree);CHKERRQ(ierr);
-    ierr = PetscSFComputeDegreeEnd(sf,&degree);CHKERRQ(ierr);
+    CHKERRQ(PetscSFComputeDegreeBegin(sf,&degree));
+    CHKERRQ(PetscSFComputeDegreeEnd(sf,&degree));
     for (i=0,inedges=0; i<nrootsalloc; i++) inedges += degree[i];
-    ierr = PetscMalloc2(inedges,&indata,nleavesalloc,&outdata);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc2(inedges,&indata,nleavesalloc,&outdata));
     for (i=0; i<nleavesalloc; i++) outdata[i] = -1;
     for (i=0; i<nleaves; i++) outdata[i*stride] = 1000*(rank+1) + i;
-    ierr = PetscSFGatherBegin(sf,MPIU_INT,outdata,indata);CHKERRQ(ierr);
-    ierr = PetscSFGatherEnd(sf,MPIU_INT,outdata,indata);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Gathered data at multi-roots from leaves\n");CHKERRQ(ierr);
-    ierr = PetscIntView(inedges,indata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscFree2(indata,outdata);CHKERRQ(ierr);
+    CHKERRQ(PetscSFGatherBegin(sf,MPIU_INT,outdata,indata));
+    CHKERRQ(PetscSFGatherEnd(sf,MPIU_INT,outdata,indata));
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Gathered data at multi-roots from leaves\n"));
+    CHKERRQ(PetscIntView(inedges,indata,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscFree2(indata,outdata));
   }
 
   if (test_scatter) {
     const PetscInt *degree;
     PetscInt       j,count,inedges,*indata,*outdata;
-    ierr = PetscSFComputeDegreeBegin(sf,&degree);CHKERRQ(ierr);
-    ierr = PetscSFComputeDegreeEnd(sf,&degree);CHKERRQ(ierr);
+    CHKERRQ(PetscSFComputeDegreeBegin(sf,&degree));
+    CHKERRQ(PetscSFComputeDegreeEnd(sf,&degree));
     for (i=0,inedges=0; i<nrootsalloc; i++) inedges += degree[i];
-    ierr = PetscMalloc2(inedges,&indata,nleavesalloc,&outdata);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc2(inedges,&indata,nleavesalloc,&outdata));
     for (i=0; i<nleavesalloc; i++) outdata[i] = -1;
     for (i=0,count=0; i<nrootsalloc; i++) {
       for (j=0; j<degree[i]; j++) indata[count++] = 1000*(rank+1) + 100*i + j;
     }
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Data at multi-roots, to scatter to leaves\n");CHKERRQ(ierr);
-    ierr = PetscIntView(inedges,indata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Data at multi-roots, to scatter to leaves\n"));
+    CHKERRQ(PetscIntView(inedges,indata,PETSC_VIEWER_STDOUT_WORLD));
 
-    ierr = PetscSFScatterBegin(sf,MPIU_INT,indata,outdata);CHKERRQ(ierr);
-    ierr = PetscSFScatterEnd(sf,MPIU_INT,indata,outdata);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Scattered data at leaves\n");CHKERRQ(ierr);
-    ierr = PetscIntView(nleavesalloc,outdata,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscFree2(indata,outdata);CHKERRQ(ierr);
+    CHKERRQ(PetscSFScatterBegin(sf,MPIU_INT,indata,outdata));
+    CHKERRQ(PetscSFScatterEnd(sf,MPIU_INT,indata,outdata));
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Scattered data at leaves\n"));
+    CHKERRQ(PetscIntView(nleavesalloc,outdata,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscFree2(indata,outdata));
   }
 
   if (test_embed) {
@@ -416,13 +415,13 @@ int main(int argc,char **argv)
 
     selected[0] = stride;
     selected[1] = 2*stride;
-    ierr = PetscSFCreateEmbeddedRootSF(sf,nroots,selected,&esf);CHKERRQ(ierr);
-    ierr = PetscSFSetUp(esf);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Embedded PetscSF\n");CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
-    ierr = PetscSFView(esf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscSFDestroy(&esf);CHKERRQ(ierr);
+    CHKERRQ(PetscSFCreateEmbeddedRootSF(sf,nroots,selected,&esf));
+    CHKERRQ(PetscSFSetUp(esf));
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Embedded PetscSF\n"));
+    CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL));
+    CHKERRQ(PetscSFView(esf,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscSFDestroy(&esf));
   }
 
   if (test_invert) {
@@ -431,27 +430,27 @@ int main(int argc,char **argv)
     PetscInt inedges;
     PetscSF msf,imsf;
 
-    ierr = PetscSFGetMultiSF(sf,&msf);CHKERRQ(ierr);
-    ierr = PetscSFCreateInverseSF(msf,&imsf);CHKERRQ(ierr);
-    ierr = PetscSFSetUp(msf);CHKERRQ(ierr);
-    ierr = PetscSFSetUp(imsf);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Multi-SF\n");CHKERRQ(ierr);
-    ierr = PetscSFView(msf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Multi-SF roots indices in original SF roots numbering\n");CHKERRQ(ierr);
-    ierr = PetscSFComputeDegreeBegin(sf,&degree);CHKERRQ(ierr);
-    ierr = PetscSFComputeDegreeEnd(sf,&degree);CHKERRQ(ierr);
-    ierr = PetscSFComputeMultiRootOriginalNumbering(sf,degree,&inedges,&mRootsOrigNumbering);CHKERRQ(ierr);
-    ierr = PetscIntView(inedges,mRootsOrigNumbering,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Inverse of Multi-SF\n");CHKERRQ(ierr);
-    ierr = PetscSFView(imsf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Inverse of Multi-SF, original numbering\n");CHKERRQ(ierr);
-    ierr = PetscSFViewCustomLocals_Private(imsf,mRootsOrigNumbering,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscSFDestroy(&imsf);CHKERRQ(ierr);
-    ierr = PetscFree(mRootsOrigNumbering);CHKERRQ(ierr);
+    CHKERRQ(PetscSFGetMultiSF(sf,&msf));
+    CHKERRQ(PetscSFCreateInverseSF(msf,&imsf));
+    CHKERRQ(PetscSFSetUp(msf));
+    CHKERRQ(PetscSFSetUp(imsf));
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Multi-SF\n"));
+    CHKERRQ(PetscSFView(msf,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Multi-SF roots indices in original SF roots numbering\n"));
+    CHKERRQ(PetscSFComputeDegreeBegin(sf,&degree));
+    CHKERRQ(PetscSFComputeDegreeEnd(sf,&degree));
+    CHKERRQ(PetscSFComputeMultiRootOriginalNumbering(sf,degree,&inedges,&mRootsOrigNumbering));
+    CHKERRQ(PetscIntView(inedges,mRootsOrigNumbering,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Inverse of Multi-SF\n"));
+    CHKERRQ(PetscSFView(imsf,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Inverse of Multi-SF, original numbering\n"));
+    CHKERRQ(PetscSFViewCustomLocals_Private(imsf,mRootsOrigNumbering,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscSFDestroy(&imsf));
+    CHKERRQ(PetscFree(mRootsOrigNumbering));
   }
 
   /* Clean storage for star forest. */
-  ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+  CHKERRQ(PetscSFDestroy(&sf));
   ierr = PetscFinalize();
   return ierr;
 }

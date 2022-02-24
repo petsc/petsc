@@ -15,19 +15,18 @@ static PetscErrorCode bowl(PetscInt dim, PetscReal time, const PetscReal x[], Pe
 static PetscErrorCode CreateIndicator(DM dm, Vec *indicator, DM *dmIndi)
 {
   MPI_Comm       comm;
-  PetscErrorCode ierr;
   PetscFE        fe;
   PetscInt       dim;
 
   PetscFunctionBeginUser;
-  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
-  ierr = DMClone(dm, dmIndi);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = PetscFECreateLagrange(comm, dim, 1, PETSC_TRUE, 1, PETSC_DETERMINE, &fe);CHKERRQ(ierr);
-  ierr = DMSetField(*dmIndi, 0, NULL, (PetscObject)fe);CHKERRQ(ierr);
-  ierr = DMCreateDS(*dmIndi);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(*dmIndi, indicator);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)dm, &comm));
+  CHKERRQ(DMClone(dm, dmIndi));
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(PetscFECreateLagrange(comm, dim, 1, PETSC_TRUE, 1, PETSC_DETERMINE, &fe));
+  CHKERRQ(DMSetField(*dmIndi, 0, NULL, (PetscObject)fe));
+  CHKERRQ(DMCreateDS(*dmIndi));
+  CHKERRQ(PetscFEDestroy(&fe));
+  CHKERRQ(DMCreateLocalVector(*dmIndi, indicator));
   PetscFunctionReturn(0);
 }
 
@@ -45,16 +44,16 @@ int main(int argc, char **argv) {
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm, "", "Mesh adaptation options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-noTagging", "Should tag preservation testing be turned off?", "ex60.c", noTagging, &noTagging, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-noTagging", "Should tag preservation testing be turned off?", "ex60.c", noTagging, &noTagging, NULL));
   ierr = PetscOptionsEnd();
 
   /* Create box mesh */
-  ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
-  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) dm, "DM_init");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-initial_mesh_view");CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  CHKERRQ(DMCreate(comm, &dm));
+  CHKERRQ(DMSetType(dm, DMPLEX));
+  CHKERRQ(DMSetFromOptions(dm));
+  CHKERRQ(PetscObjectSetName((PetscObject) dm, "DM_init"));
+  CHKERRQ(DMViewFromOptions(dm, NULL, "-initial_mesh_view"));
+  CHKERRQ(DMGetDimension(dm, &dim));
 
   /* Set tags to be preserved */
   if (!noTagging) {
@@ -64,65 +63,65 @@ int main(int argc, char **argv) {
     Vec                coordinates;
 
     /* Cell tags */
-    ierr = DMCreateLabel(dm, "Cell Sets");CHKERRQ(ierr);
-    ierr = DMGetLabel(dm, "Cell Sets", &rgLabel);CHKERRQ(ierr);
-    ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    CHKERRQ(DMCreateLabel(dm, "Cell Sets"));
+    CHKERRQ(DMGetLabel(dm, "Cell Sets", &rgLabel));
+    CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
     for (c = cStart; c < cEnd; ++c) {
       PetscReal centroid[3], volume, x;
 
-      ierr = DMPlexComputeCellGeometryFVM(dm, c, &volume, centroid, NULL);CHKERRQ(ierr);
+      CHKERRQ(DMPlexComputeCellGeometryFVM(dm, c, &volume, centroid, NULL));
       x = centroid[0];
-      if (x < 0.5) { ierr = DMLabelSetValue(rgLabel, c, 3);CHKERRQ(ierr); }
-      else         { ierr = DMLabelSetValue(rgLabel, c, 4);CHKERRQ(ierr); }
+      if (x < 0.5) CHKERRQ(DMLabelSetValue(rgLabel, c, 3));
+      else         CHKERRQ(DMLabelSetValue(rgLabel, c, 4));
     }
 
     /* Face tags */
-    ierr = DMCreateLabel(dm, "Face Sets");CHKERRQ(ierr);
-    ierr = DMGetLabel(dm, "Face Sets", &bdLabel);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(dm, 1, bdLabel);CHKERRQ(ierr);
-    ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-    ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
+    CHKERRQ(DMCreateLabel(dm, "Face Sets"));
+    CHKERRQ(DMGetLabel(dm, "Face Sets", &bdLabel));
+    CHKERRQ(DMPlexMarkBoundaryFaces(dm, 1, bdLabel));
+    CHKERRQ(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
+    CHKERRQ(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+    CHKERRQ(DMGetCoordinateDM(dm, &cdm));
+    CHKERRQ(DMGetCoordinatesLocal(dm, &coordinates));
+    CHKERRQ(VecGetArrayRead(coordinates, &coords));
     for (f = fStart; f < fEnd; ++f) {
       PetscBool flg = PETSC_TRUE;
       PetscInt *closure = NULL, closureSize, cl;
       PetscReal eps = 1.0e-08;
 
-      ierr = DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      CHKERRQ(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));
       for (cl = 0; cl < closureSize*2; cl += 2) {
         PetscInt   off = closure[cl];
         PetscReal *x;
 
         if ((off < vStart) || (off >= vEnd)) continue;
-        ierr = DMPlexPointLocalRead(cdm, off, coords, &x);CHKERRQ(ierr);
+        CHKERRQ(DMPlexPointLocalRead(cdm, off, coords, &x));
         if ((x[0] < 0.5 - eps) || (x[0] > 0.5 + eps)) flg = PETSC_FALSE;
       }
-      if (flg) { ierr = DMLabelSetValue(bdLabel, f, 2);CHKERRQ(ierr); }
-      ierr = DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+      if (flg) CHKERRQ(DMLabelSetValue(bdLabel, f, 2));
+      CHKERRQ(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));
     }
-    ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArrayRead(coordinates, &coords));
   }
 
   /* Construct metric */
-  ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = DMPlexMetricIsUniform(dm, &uniform);CHKERRQ(ierr);
-  ierr = DMPlexMetricIsIsotropic(dm, &isotropic);CHKERRQ(ierr);
+  CHKERRQ(DMPlexMetricSetFromOptions(dm));
+  CHKERRQ(DMPlexMetricIsUniform(dm, &uniform));
+  CHKERRQ(DMPlexMetricIsIsotropic(dm, &isotropic));
   if (uniform) {
-    ierr = DMPlexMetricCreateUniform(dm, 0, scaling, &metric);CHKERRQ(ierr);
+    CHKERRQ(DMPlexMetricCreateUniform(dm, 0, scaling, &metric));
   }
   else {
     DM  dmIndi;
     Vec indicator;
 
     /* Construct "error indicator" */
-    ierr = CreateIndicator(dm, &indicator, &dmIndi);CHKERRQ(ierr);
+    CHKERRQ(CreateIndicator(dm, &indicator, &dmIndi));
     if (isotropic) {
 
       /* Isotropic case: just specify unity */
-      ierr = VecSet(indicator, scaling);CHKERRQ(ierr);
-      ierr = DMPlexMetricCreateIsotropic(dm, 0, indicator, &metric);CHKERRQ(ierr);
+      CHKERRQ(VecSet(indicator, scaling));
+      CHKERRQ(DMPlexMetricCreateIsotropic(dm, 0, indicator, &metric));
 
     } else {
       PetscFE fe;
@@ -133,27 +132,27 @@ int main(int argc, char **argv) {
       Vec              gradient;
 
       /* Project the parabola into P1 space */
-      ierr = DMProjectFunctionLocal(dmIndi, 0.0, funcs, NULL, INSERT_ALL_VALUES, indicator);CHKERRQ(ierr);
+      CHKERRQ(DMProjectFunctionLocal(dmIndi, 0.0, funcs, NULL, INSERT_ALL_VALUES, indicator));
 
       /* Approximate the gradient */
-      ierr = DMClone(dmIndi, &dmGrad);CHKERRQ(ierr);
-      ierr = PetscFECreateLagrange(comm, dim, dim, PETSC_TRUE, 1, PETSC_DETERMINE, &fe);CHKERRQ(ierr);
-      ierr = DMSetField(dmGrad, 0, NULL, (PetscObject)fe);CHKERRQ(ierr);
-      ierr = DMCreateDS(dmGrad);CHKERRQ(ierr);
-      ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-      ierr = DMCreateLocalVector(dmGrad, &gradient);CHKERRQ(ierr);
-      ierr = DMPlexComputeGradientClementInterpolant(dmIndi, indicator, gradient);CHKERRQ(ierr);
-      ierr = VecViewFromOptions(gradient, NULL, "-adapt_gradient_view");CHKERRQ(ierr);
+      CHKERRQ(DMClone(dmIndi, &dmGrad));
+      CHKERRQ(PetscFECreateLagrange(comm, dim, dim, PETSC_TRUE, 1, PETSC_DETERMINE, &fe));
+      CHKERRQ(DMSetField(dmGrad, 0, NULL, (PetscObject)fe));
+      CHKERRQ(DMCreateDS(dmGrad));
+      CHKERRQ(PetscFEDestroy(&fe));
+      CHKERRQ(DMCreateLocalVector(dmGrad, &gradient));
+      CHKERRQ(DMPlexComputeGradientClementInterpolant(dmIndi, indicator, gradient));
+      CHKERRQ(VecViewFromOptions(gradient, NULL, "-adapt_gradient_view"));
 
       /* Approximate the Hessian */
-      ierr = DMPlexMetricCreate(dm, 0, &metric);CHKERRQ(ierr);
-      ierr = DMPlexComputeGradientClementInterpolant(dmGrad, gradient, metric);CHKERRQ(ierr);
-      ierr = VecViewFromOptions(metric, NULL, "-adapt_hessian_view");CHKERRQ(ierr);
-      ierr = VecDestroy(&gradient);CHKERRQ(ierr);
-      ierr = DMDestroy(&dmGrad);CHKERRQ(ierr);
+      CHKERRQ(DMPlexMetricCreate(dm, 0, &metric));
+      CHKERRQ(DMPlexComputeGradientClementInterpolant(dmGrad, gradient, metric));
+      CHKERRQ(VecViewFromOptions(metric, NULL, "-adapt_hessian_view"));
+      CHKERRQ(VecDestroy(&gradient));
+      CHKERRQ(DMDestroy(&dmGrad));
     }
-    ierr = VecDestroy(&indicator);CHKERRQ(ierr);
-    ierr = DMDestroy(&dmIndi);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&indicator));
+    CHKERRQ(DMDestroy(&dmIndi));
   }
 
   /* Test metric routines */
@@ -163,124 +162,124 @@ int main(int argc, char **argv) {
     Vec       metric1, metric2, metricComb, determinant;
     Vec       metrics[2];
 
-    ierr = VecDuplicate(metric, &metric1);CHKERRQ(ierr);
-    ierr = VecSet(metric1, 0);CHKERRQ(ierr);
-    ierr = VecAXPY(metric1, 0.625, metric);CHKERRQ(ierr);
-    ierr = VecDuplicate(metric, &metric2);CHKERRQ(ierr);
-    ierr = VecSet(metric2, 0);CHKERRQ(ierr);
-    ierr = VecAXPY(metric2, 2.5, metric);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(metric, &metric1));
+    CHKERRQ(VecSet(metric1, 0));
+    CHKERRQ(VecAXPY(metric1, 0.625, metric));
+    CHKERRQ(VecDuplicate(metric, &metric2));
+    CHKERRQ(VecSet(metric2, 0));
+    CHKERRQ(VecAXPY(metric2, 2.5, metric));
     metrics[0] = metric1;
     metrics[1] = metric2;
 
     /* Test metric average */
-    ierr = DMPlexMetricAverage(dm, 2, weights, metrics, &metricComb);CHKERRQ(ierr);
-    ierr = VecAXPY(metricComb, -1, metric);CHKERRQ(ierr);
-    ierr = VecNorm(metric, NORM_2, &norm);CHKERRQ(ierr);
-    ierr = VecNorm(metricComb, NORM_2, &errornorm);CHKERRQ(ierr);
+    CHKERRQ(DMPlexMetricAverage(dm, 2, weights, metrics, &metricComb));
+    CHKERRQ(VecAXPY(metricComb, -1, metric));
+    CHKERRQ(VecNorm(metric, NORM_2, &norm));
+    CHKERRQ(VecNorm(metricComb, NORM_2, &errornorm));
     errornorm /= norm;
-    ierr = PetscPrintf(comm, "Metric average L2 error: %.4f%%\n", 100*errornorm);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(comm, "Metric average L2 error: %.4f%%\n", 100*errornorm));
     PetscCheckFalse(errornorm > tol,comm, PETSC_ERR_ARG_OUTOFRANGE, "Metric average test failed");
-    ierr = VecDestroy(&metricComb);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&metricComb));
 
     /* Test metric intersection */
     if (isotropic) {
-      ierr = DMPlexMetricIntersection(dm, 2, metrics, &metricComb);CHKERRQ(ierr);
-      ierr = VecAXPY(metricComb, -1, metric1);CHKERRQ(ierr);
-      ierr = VecNorm(metricComb, NORM_2, &errornorm);CHKERRQ(ierr);
+      CHKERRQ(DMPlexMetricIntersection(dm, 2, metrics, &metricComb));
+      CHKERRQ(VecAXPY(metricComb, -1, metric1));
+      CHKERRQ(VecNorm(metricComb, NORM_2, &errornorm));
       errornorm /= norm;
-      ierr = PetscPrintf(comm, "Metric intersection L2 error: %.4f%%\n", 100*errornorm);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(comm, "Metric intersection L2 error: %.4f%%\n", 100*errornorm));
       PetscCheckFalse(errornorm > tol,comm, PETSC_ERR_ARG_OUTOFRANGE, "Metric intersection test failed");
     }
-    ierr = VecDestroy(&metric1);CHKERRQ(ierr);
-    ierr = VecDestroy(&metric2);CHKERRQ(ierr);
-    ierr = VecDestroy(&metricComb);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&metric1));
+    CHKERRQ(VecDestroy(&metric2));
+    CHKERRQ(VecDestroy(&metricComb));
 
     /* Test metric SPD enforcement */
-    ierr = DMPlexMetricEnforceSPD(dm, metric, PETSC_TRUE, PETSC_TRUE, &metric1, &determinant);CHKERRQ(ierr);
+    CHKERRQ(DMPlexMetricEnforceSPD(dm, metric, PETSC_TRUE, PETSC_TRUE, &metric1, &determinant));
     if (isotropic) {
       Vec err;
 
-      ierr = VecDuplicate(determinant, &err);CHKERRQ(ierr);
-      ierr = VecSet(err, 1.0);CHKERRQ(ierr);
-      ierr = VecNorm(err, NORM_2, &norm);CHKERRQ(ierr);
-      ierr = VecAXPY(err, -1, determinant);CHKERRQ(ierr);
-      ierr = VecNorm(err, NORM_2, &errornorm);CHKERRQ(ierr);
-      ierr = VecDestroy(&err);CHKERRQ(ierr);
+      CHKERRQ(VecDuplicate(determinant, &err));
+      CHKERRQ(VecSet(err, 1.0));
+      CHKERRQ(VecNorm(err, NORM_2, &norm));
+      CHKERRQ(VecAXPY(err, -1, determinant));
+      CHKERRQ(VecNorm(err, NORM_2, &errornorm));
+      CHKERRQ(VecDestroy(&err));
       errornorm /= norm;
-      ierr = PetscPrintf(comm, "Metric determinant L2 error: %.4f%%\n", 100*errornorm);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(comm, "Metric determinant L2 error: %.4f%%\n", 100*errornorm));
       PetscCheckFalse(errornorm > tol,comm, PETSC_ERR_ARG_OUTOFRANGE, "Determinant is not unit");
-      ierr = VecAXPY(metric1, -1, metric);CHKERRQ(ierr);
-      ierr = VecNorm(metric1, NORM_2, &errornorm);CHKERRQ(ierr);
+      CHKERRQ(VecAXPY(metric1, -1, metric));
+      CHKERRQ(VecNorm(metric1, NORM_2, &errornorm));
       errornorm /= norm;
-      ierr = PetscPrintf(comm, "Metric SPD enforcement L2 error: %.4f%%\n", 100*errornorm);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(comm, "Metric SPD enforcement L2 error: %.4f%%\n", 100*errornorm));
       PetscCheckFalse(errornorm > tol,comm, PETSC_ERR_ARG_OUTOFRANGE, "Metric SPD enforcement test failed");
     }
-    ierr = VecDestroy(&metric1);CHKERRQ(ierr);
-    ierr = VecGetDM(determinant, &dmDet);CHKERRQ(ierr);
-    ierr = VecDestroy(&determinant);CHKERRQ(ierr);
-    ierr = DMDestroy(&dmDet);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&metric1));
+    CHKERRQ(VecGetDM(determinant, &dmDet));
+    CHKERRQ(VecDestroy(&determinant));
+    CHKERRQ(DMDestroy(&dmDet));
 
     /* Test metric normalization */
-    ierr = DMPlexMetricNormalize(dm, metric, PETSC_TRUE, PETSC_TRUE, &metric1);CHKERRQ(ierr);
+    CHKERRQ(DMPlexMetricNormalize(dm, metric, PETSC_TRUE, PETSC_TRUE, &metric1));
     if (isotropic) {
       PetscReal target;
 
-      ierr = DMPlexMetricGetTargetComplexity(dm, &target);CHKERRQ(ierr);
+      CHKERRQ(DMPlexMetricGetTargetComplexity(dm, &target));
       scaling = PetscPowReal(target, 2.0/dim);
       if (uniform) {
-        ierr = DMPlexMetricCreateUniform(dm, 0, scaling, &metric2);CHKERRQ(ierr);
+        CHKERRQ(DMPlexMetricCreateUniform(dm, 0, scaling, &metric2));
       } else {
         DM  dmIndi;
         Vec indicator;
 
-        ierr = CreateIndicator(dm, &indicator, &dmIndi);CHKERRQ(ierr);
-        ierr = VecSet(indicator, scaling);CHKERRQ(ierr);
-        ierr = DMPlexMetricCreateIsotropic(dm, 0, indicator, &metric2);CHKERRQ(ierr);
-        ierr = DMDestroy(&dmIndi);CHKERRQ(ierr);
-        ierr = VecDestroy(&indicator);CHKERRQ(ierr);
+        CHKERRQ(CreateIndicator(dm, &indicator, &dmIndi));
+        CHKERRQ(VecSet(indicator, scaling));
+        CHKERRQ(DMPlexMetricCreateIsotropic(dm, 0, indicator, &metric2));
+        CHKERRQ(DMDestroy(&dmIndi));
+        CHKERRQ(VecDestroy(&indicator));
       }
-      ierr = VecAXPY(metric2, -1, metric1);CHKERRQ(ierr);
-      ierr = VecNorm(metric2, NORM_2, &errornorm);CHKERRQ(ierr);
+      CHKERRQ(VecAXPY(metric2, -1, metric1));
+      CHKERRQ(VecNorm(metric2, NORM_2, &errornorm));
       errornorm /= norm;
-      ierr = PetscPrintf(comm, "Metric normalization L2 error: %.4f%%\n", 100*errornorm);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(comm, "Metric normalization L2 error: %.4f%%\n", 100*errornorm));
       PetscCheckFalse(errornorm > tol,comm, PETSC_ERR_ARG_OUTOFRANGE, "Metric normalization test failed");
     }
-    ierr = VecCopy(metric1, metric);CHKERRQ(ierr);
-    ierr = VecDestroy(&metric2);CHKERRQ(ierr);
-    ierr = VecDestroy(&metric1);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(metric1, metric));
+    CHKERRQ(VecDestroy(&metric2));
+    CHKERRQ(VecDestroy(&metric1));
   }
 
   /* Adapt the mesh */
-  ierr = DMAdaptMetric(dm, metric, bdLabel, rgLabel, &dmAdapt);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) dmAdapt, "DM_adapted");CHKERRQ(ierr);
-  ierr = VecDestroy(&metric);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dmAdapt, NULL, "-adapted_mesh_view");CHKERRQ(ierr);
+  CHKERRQ(DMAdaptMetric(dm, metric, bdLabel, rgLabel, &dmAdapt));
+  CHKERRQ(DMDestroy(&dm));
+  CHKERRQ(PetscObjectSetName((PetscObject) dmAdapt, "DM_adapted"));
+  CHKERRQ(VecDestroy(&metric));
+  CHKERRQ(DMViewFromOptions(dmAdapt, NULL, "-adapted_mesh_view"));
 
   /* Test tag preservation */
   if (!noTagging) {
     PetscBool hasTag;
     PetscInt  size;
 
-    ierr = DMGetLabel(dmAdapt, "Face Sets", &bdLabel);CHKERRQ(ierr);
-    ierr = DMLabelHasStratum(bdLabel, 1, &hasTag);CHKERRQ(ierr);
+    CHKERRQ(DMGetLabel(dmAdapt, "Face Sets", &bdLabel));
+    CHKERRQ(DMLabelHasStratum(bdLabel, 1, &hasTag));
     PetscCheckFalse(!hasTag,comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh does not have face tag 1");
-    ierr = DMLabelHasStratum(bdLabel, 2, &hasTag);CHKERRQ(ierr);
+    CHKERRQ(DMLabelHasStratum(bdLabel, 2, &hasTag));
     PetscCheckFalse(!hasTag,comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh does not have face tag 2");
-    ierr = DMLabelGetNumValues(bdLabel, &size);CHKERRQ(ierr);
+    CHKERRQ(DMLabelGetNumValues(bdLabel, &size));
     PetscCheckFalse(size != 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh has the wrong number of face tags (got %d, expected 2)", size);
 
-    ierr = DMGetLabel(dmAdapt, "Cell Sets", &rgLabel);CHKERRQ(ierr);
-    ierr = DMLabelHasStratum(rgLabel, 3, &hasTag);CHKERRQ(ierr);
+    CHKERRQ(DMGetLabel(dmAdapt, "Cell Sets", &rgLabel));
+    CHKERRQ(DMLabelHasStratum(rgLabel, 3, &hasTag));
     PetscCheckFalse(!hasTag,comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh does not have cell tag 3");
-    ierr = DMLabelHasStratum(rgLabel, 4, &hasTag);CHKERRQ(ierr);
+    CHKERRQ(DMLabelHasStratum(rgLabel, 4, &hasTag));
     PetscCheckFalse(!hasTag,comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh does not have cell tag 4");
-    ierr = DMLabelGetNumValues(rgLabel, &size);CHKERRQ(ierr);
+    CHKERRQ(DMLabelGetNumValues(rgLabel, &size));
     PetscCheckFalse(size != 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh has the wrong number of cell tags (got %d, expected 2)", size);
   }
 
   /* Clean up */
-  ierr = DMDestroy(&dmAdapt);CHKERRQ(ierr);
+  CHKERRQ(DMDestroy(&dmAdapt));
   ierr = PetscFinalize();
   return 0;
 }

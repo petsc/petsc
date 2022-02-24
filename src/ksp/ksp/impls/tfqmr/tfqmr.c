@@ -3,17 +3,14 @@
 
 static PetscErrorCode KSPSetUp_TFQMR(KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCheckFalse(ksp->pc_side == PC_SYMMETRIC,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no symmetric preconditioning for KSPTFQMR");
-  ierr = KSPSetWorkVecs(ksp,9);CHKERRQ(ierr);
+  CHKERRQ(KSPSetWorkVecs(ksp,9));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
 {
-  PetscErrorCode ierr;
   PetscInt       i,m;
   PetscScalar    rho,rhoold,a,s,b,eta,etaold,psiold,cf;
   PetscReal      dp,dpold,w,dpest,tau,psi,cm;
@@ -34,22 +31,22 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
   AUQ = V;
 
   /* Compute initial preconditioned residual */
-  ierr = KSPInitialResidual(ksp,X,V,T,R,B);CHKERRQ(ierr);
+  CHKERRQ(KSPInitialResidual(ksp,X,V,T,R,B));
 
   /* Test for nothing to do */
-  ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+  CHKERRQ(VecNorm(R,NORM_2,&dp));
   KSPCheckNorm(ksp,dp);
-  ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = dp;
   else ksp->rnorm = 0.0;
   ksp->its = 0;
-  ierr     = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-  ierr     = KSPMonitor(ksp,0,ksp->rnorm);CHKERRQ(ierr);
-  ierr     = (*ksp->converged)(ksp,0,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+  CHKERRQ(KSPMonitor(ksp,0,ksp->rnorm));
+  CHKERRQ((*ksp->converged)(ksp,0,ksp->rnorm,&ksp->reason,ksp->cnvP));
   if (ksp->reason) PetscFunctionReturn(0);
 
   /* Make the initial Rp == R */
-  ierr = VecCopy(R,RP);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(R,RP));
 
   /* Set the initial conditions */
   etaold = 0.0;
@@ -57,25 +54,25 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
   tau    = dp;
   dpold  = dp;
 
-  ierr = VecDot(R,RP,&rhoold);CHKERRQ(ierr);       /* rhoold = (r,rp)     */
-  ierr = VecCopy(R,U);CHKERRQ(ierr);
-  ierr = VecCopy(R,P);CHKERRQ(ierr);
-  ierr = KSP_PCApplyBAorAB(ksp,P,V,T);CHKERRQ(ierr);
-  ierr = VecSet(D,0.0);CHKERRQ(ierr);
+  CHKERRQ(VecDot(R,RP,&rhoold));       /* rhoold = (r,rp)     */
+  CHKERRQ(VecCopy(R,U));
+  CHKERRQ(VecCopy(R,P));
+  CHKERRQ(KSP_PCApplyBAorAB(ksp,P,V,T));
+  CHKERRQ(VecSet(D,0.0));
 
   i=0;
   do {
-    ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)ksp));
     ksp->its++;
-    ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-    ierr = VecDot(V,RP,&s);CHKERRQ(ierr);          /* s <- (v,rp)          */
+    CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+    CHKERRQ(VecDot(V,RP,&s));          /* s <- (v,rp)          */
     KSPCheckDot(ksp,s);
     a    = rhoold / s;                              /* a <- rho / s         */
-    ierr = VecWAXPY(Q,-a,V,U);CHKERRQ(ierr);  /* q <- u - a v         */
-    ierr = VecWAXPY(T,1.0,U,Q);CHKERRQ(ierr);     /* t <- u + q           */
-    ierr = KSP_PCApplyBAorAB(ksp,T,AUQ,T1);CHKERRQ(ierr);
-    ierr = VecAXPY(R,-a,AUQ);CHKERRQ(ierr);      /* r <- r - a K (u + q) */
-    ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
+    CHKERRQ(VecWAXPY(Q,-a,V,U));  /* q <- u - a v         */
+    CHKERRQ(VecWAXPY(T,1.0,U,Q));     /* t <- u + q           */
+    CHKERRQ(KSP_PCApplyBAorAB(ksp,T,AUQ,T1));
+    CHKERRQ(VecAXPY(R,-a,AUQ));      /* r <- r - a K (u + q) */
+    CHKERRQ(VecNorm(R,NORM_2,&dp));
     KSPCheckNorm(ksp,dp);
     for (m=0; m<2; m++) {
       if (!m) w = PetscSqrtReal(dp*dpold);
@@ -86,20 +83,20 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
       eta = cm * cm * a;
       cf  = psiold * psiold * etaold / a;
       if (!m) {
-        ierr = VecAYPX(D,cf,U);CHKERRQ(ierr);
+        CHKERRQ(VecAYPX(D,cf,U));
       } else {
-        ierr = VecAYPX(D,cf,Q);CHKERRQ(ierr);
+        CHKERRQ(VecAYPX(D,cf,Q));
       }
-      ierr = VecAXPY(X,eta,D);CHKERRQ(ierr);
+      CHKERRQ(VecAXPY(X,eta,D));
 
       dpest = PetscSqrtReal(2*i + m + 2.0) * tau;
-      ierr  = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)ksp));
       if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = dpest;
       else ksp->rnorm = 0.0;
-      ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-      ierr = KSPLogResidualHistory(ksp,ksp->rnorm);CHKERRQ(ierr);
-      ierr = KSPMonitor(ksp,i+1,ksp->rnorm);CHKERRQ(ierr);
-      ierr = (*ksp->converged)(ksp,i+1,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)ksp));
+      CHKERRQ(KSPLogResidualHistory(ksp,ksp->rnorm));
+      CHKERRQ(KSPMonitor(ksp,i+1,ksp->rnorm));
+      CHKERRQ((*ksp->converged)(ksp,i+1,ksp->rnorm,&ksp->reason,ksp->cnvP));
       if (ksp->reason) break;
 
       etaold = eta;
@@ -107,12 +104,12 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
     }
     if (ksp->reason) break;
 
-    ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);        /* rho <- (r,rp)       */
+    CHKERRQ(VecDot(R,RP,&rho));        /* rho <- (r,rp)       */
     b    = rho / rhoold;                            /* b <- rho / rhoold   */
-    ierr = VecWAXPY(U,b,Q,R);CHKERRQ(ierr);       /* u <- r + b q        */
-    ierr = VecAXPY(Q,b,P);CHKERRQ(ierr);
-    ierr = VecWAXPY(P,b,Q,U);CHKERRQ(ierr);       /* p <- u + b(q + b p) */
-    ierr = KSP_PCApplyBAorAB(ksp,P,V,Q);CHKERRQ(ierr); /* v <- K p  */
+    CHKERRQ(VecWAXPY(U,b,Q,R));       /* u <- r + b q        */
+    CHKERRQ(VecAXPY(Q,b,P));
+    CHKERRQ(VecWAXPY(P,b,Q,U));       /* p <- u + b(q + b p) */
+    CHKERRQ(KSP_PCApplyBAorAB(ksp,P,V,Q)); /* v <- K p  */
 
     rhoold = rho;
     dpold  = dp;
@@ -121,7 +118,7 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
 
-  ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr);
+  CHKERRQ(KSPUnwindPreconditioner(ksp,X,T));
   PetscFunctionReturn(0);
 }
 
@@ -147,13 +144,11 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_TFQMR(KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3));
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2));
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1));
 
   ksp->data                = (void*)0;
   ksp->ops->setup          = KSPSetUp_TFQMR;

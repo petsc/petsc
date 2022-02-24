@@ -107,7 +107,6 @@
 
 PetscErrorCode TaoSolve_BNTL(Tao tao)
 {
-  PetscErrorCode               ierr;
   TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
   KSPConvergedReason           ksp_reason;
   TaoLineSearchConvergedReason ls_reason;
@@ -119,112 +118,112 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
   PetscFunctionBegin;
   /* Initialize the preconditioner, KSP solver and trust radius/line search */
   tao->reason = TAO_CONTINUE_ITERATING;
-  ierr = TaoBNKInitialize(tao, bnk->init_type, &needH);CHKERRQ(ierr);
+  CHKERRQ(TaoBNKInitialize(tao, bnk->init_type, &needH));
   if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   /* Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
     /* Call general purpose update function */
     if (tao->ops->update) {
-      ierr = (*tao->ops->update)(tao, tao->niter, tao->user_update);CHKERRQ(ierr);
+      CHKERRQ((*tao->ops->update)(tao, tao->niter, tao->user_update));
     }
     ++tao->niter;
 
     if (needH && bnk->inactive_idx) {
       /* Take BNCG steps (if enabled) to trade-off Hessian evaluations for more gradient evaluations */
-      ierr = TaoBNKTakeCGSteps(tao, &cgTerminate);CHKERRQ(ierr);
+      CHKERRQ(TaoBNKTakeCGSteps(tao, &cgTerminate));
       if (cgTerminate) {
         tao->reason = bnk->bncg->reason;
         PetscFunctionReturn(0);
       }
       /* Compute the hessian and update the BFGS preconditioner at the new iterate */
-      ierr = (*bnk->computehessian)(tao);CHKERRQ(ierr);
+      CHKERRQ((*bnk->computehessian)(tao));
       needH = PETSC_FALSE;
     }
 
     /* Use the common BNK kernel to compute the Newton step (for inactive variables only) */
-    ierr = (*bnk->computestep)(tao, shift, &ksp_reason, &stepType);CHKERRQ(ierr);
+    CHKERRQ((*bnk->computestep)(tao, shift, &ksp_reason, &stepType));
 
     /* Store current solution before it changes */
     oldTrust = tao->trust;
     bnk->fold = bnk->f;
-    ierr = VecCopy(tao->solution, bnk->Xold);CHKERRQ(ierr);
-    ierr = VecCopy(tao->gradient, bnk->Gold);CHKERRQ(ierr);
-    ierr = VecCopy(bnk->unprojected_gradient, bnk->unprojected_gradient_old);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(tao->solution, bnk->Xold));
+    CHKERRQ(VecCopy(tao->gradient, bnk->Gold));
+    CHKERRQ(VecCopy(bnk->unprojected_gradient, bnk->unprojected_gradient_old));
 
     /* Temporarily accept the step and project it into the bounds */
-    ierr = VecAXPY(tao->solution, 1.0, tao->stepdirection);CHKERRQ(ierr);
-    ierr = TaoBoundSolution(tao->solution, tao->XL,tao->XU, 0.0, &nDiff, tao->solution);CHKERRQ(ierr);
+    CHKERRQ(VecAXPY(tao->solution, 1.0, tao->stepdirection));
+    CHKERRQ(TaoBoundSolution(tao->solution, tao->XL,tao->XU, 0.0, &nDiff, tao->solution));
 
     /* Check if the projection changed the step direction */
     if (nDiff > 0) {
       /* Projection changed the step, so we have to recompute the step and
          the predicted reduction. Leave the trust radius unchanged. */
-      ierr = VecCopy(tao->solution, tao->stepdirection);CHKERRQ(ierr);
-      ierr = VecAXPY(tao->stepdirection, -1.0, bnk->Xold);CHKERRQ(ierr);
-      ierr = TaoBNKRecomputePred(tao, tao->stepdirection, &prered);CHKERRQ(ierr);
+      CHKERRQ(VecCopy(tao->solution, tao->stepdirection));
+      CHKERRQ(VecAXPY(tao->stepdirection, -1.0, bnk->Xold));
+      CHKERRQ(TaoBNKRecomputePred(tao, tao->stepdirection, &prered));
     } else {
       /* Step did not change, so we can just recover the pre-computed prediction */
-      ierr = KSPCGGetObjFcn(tao->ksp, &prered);CHKERRQ(ierr);
+      CHKERRQ(KSPCGGetObjFcn(tao->ksp, &prered));
     }
     prered = -prered;
 
     /* Compute the actual reduction and update the trust radius */
-    ierr = TaoComputeObjective(tao, tao->solution, &bnk->f);CHKERRQ(ierr);
+    CHKERRQ(TaoComputeObjective(tao, tao->solution, &bnk->f));
     PetscCheck(!PetscIsInfOrNanReal(bnk->f),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
     actred = bnk->fold - bnk->f;
-    ierr = TaoBNKUpdateTrustRadius(tao, prered, actred, bnk->update_type, stepType, &stepAccepted);CHKERRQ(ierr);
+    CHKERRQ(TaoBNKUpdateTrustRadius(tao, prered, actred, bnk->update_type, stepType, &stepAccepted));
 
     if (stepAccepted) {
       /* Step is good, evaluate the gradient and the hessian */
       steplen = 1.0;
       needH = PETSC_TRUE;
       ++bnk->newt;
-      ierr = TaoComputeGradient(tao, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
-      ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);CHKERRQ(ierr);
-      ierr = VecCopy(bnk->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
-      ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
-      ierr = TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
+      CHKERRQ(TaoComputeGradient(tao, tao->solution, bnk->unprojected_gradient));
+      CHKERRQ(TaoBNKEstimateActiveSet(tao, bnk->as_type));
+      CHKERRQ(VecCopy(bnk->unprojected_gradient, tao->gradient));
+      CHKERRQ(VecISSet(tao->gradient, bnk->active_idx, 0.0));
+      CHKERRQ(TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm));
     } else {
       /* Trust-region rejected the step. Revert the solution. */
       bnk->f = bnk->fold;
-      ierr = VecCopy(bnk->Xold, tao->solution);CHKERRQ(ierr);
+      CHKERRQ(VecCopy(bnk->Xold, tao->solution));
       /* Trigger the line search */
-      ierr = TaoBNKSafeguardStep(tao, ksp_reason, &stepType);CHKERRQ(ierr);
-      ierr = TaoBNKPerformLineSearch(tao, &stepType, &steplen, &ls_reason);CHKERRQ(ierr);
+      CHKERRQ(TaoBNKSafeguardStep(tao, ksp_reason, &stepType));
+      CHKERRQ(TaoBNKPerformLineSearch(tao, &stepType, &steplen, &ls_reason));
       if (ls_reason != TAOLINESEARCH_SUCCESS && ls_reason != TAOLINESEARCH_SUCCESS_USER) {
         /* Line search failed, revert solution and terminate */
         stepAccepted = PETSC_FALSE;
         needH = PETSC_FALSE;
         bnk->f = bnk->fold;
-        ierr = VecCopy(bnk->Xold, tao->solution);CHKERRQ(ierr);
-        ierr = VecCopy(bnk->Gold, tao->gradient);CHKERRQ(ierr);
-        ierr = VecCopy(bnk->unprojected_gradient_old, bnk->unprojected_gradient);CHKERRQ(ierr);
+        CHKERRQ(VecCopy(bnk->Xold, tao->solution));
+        CHKERRQ(VecCopy(bnk->Gold, tao->gradient));
+        CHKERRQ(VecCopy(bnk->unprojected_gradient_old, bnk->unprojected_gradient));
         tao->trust = 0.0;
         tao->reason = TAO_DIVERGED_LS_FAILURE;
       } else {
         /* new iterate so we need to recompute the Hessian */
         needH = PETSC_TRUE;
         /* compute the projected gradient */
-        ierr = TaoBNKEstimateActiveSet(tao, bnk->as_type);CHKERRQ(ierr);
-        ierr = VecCopy(bnk->unprojected_gradient, tao->gradient);CHKERRQ(ierr);
-        ierr = VecISSet(tao->gradient, bnk->active_idx, 0.0);CHKERRQ(ierr);
-        ierr = TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm);CHKERRQ(ierr);
+        CHKERRQ(TaoBNKEstimateActiveSet(tao, bnk->as_type));
+        CHKERRQ(VecCopy(bnk->unprojected_gradient, tao->gradient));
+        CHKERRQ(VecISSet(tao->gradient, bnk->active_idx, 0.0));
+        CHKERRQ(TaoGradientNorm(tao, tao->gradient, NORM_2, &bnk->gnorm));
         /* Line search succeeded so we should update the trust radius based on the LS step length */
         tao->trust = oldTrust;
-        ierr = TaoBNKUpdateTrustRadius(tao, prered, actred, BNK_UPDATE_STEP, stepType, &stepAccepted);CHKERRQ(ierr);
+        CHKERRQ(TaoBNKUpdateTrustRadius(tao, prered, actred, BNK_UPDATE_STEP, stepType, &stepAccepted));
         /* count the accepted step type */
-        ierr = TaoBNKAddStepCounts(tao, stepType);CHKERRQ(ierr);
+        CHKERRQ(TaoBNKAddStepCounts(tao, stepType));
       }
     }
 
     /*  Check for termination */
-    ierr = VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->W);CHKERRQ(ierr);
-    ierr = VecNorm(bnk->W, NORM_2, &resnorm);CHKERRQ(ierr);
+    CHKERRQ(VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->W));
+    CHKERRQ(VecNorm(bnk->W, NORM_2, &resnorm));
     PetscCheck(!PetscIsInfOrNanReal(resnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
-    ierr = TaoLogConvergenceHistory(tao, bnk->f, resnorm, 0.0, tao->ksp_its);CHKERRQ(ierr);
-    ierr = TaoMonitor(tao, tao->niter, bnk->f, resnorm, 0.0, steplen);CHKERRQ(ierr);
-    ierr = (*tao->ops->convergencetest)(tao, tao->cnvP);CHKERRQ(ierr);
+    CHKERRQ(TaoLogConvergenceHistory(tao, bnk->f, resnorm, 0.0, tao->ksp_its));
+    CHKERRQ(TaoMonitor(tao, tao->niter, bnk->f, resnorm, 0.0, steplen));
+    CHKERRQ((*tao->ops->convergencetest)(tao, tao->cnvP));
   }
   PetscFunctionReturn(0);
 }
@@ -232,14 +231,13 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
 /*------------------------------------------------------------*/
 static PetscErrorCode TaoSetUp_BNTL(Tao tao)
 {
-  PetscErrorCode    ierr;
   KSP               ksp;
   PetscVoidFunction valid;
 
   PetscFunctionBegin;
-  ierr = TaoSetUp_BNK(tao);CHKERRQ(ierr);
-  ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPCGSetRadius_C",&valid);CHKERRQ(ierr);
+  CHKERRQ(TaoSetUp_BNK(tao));
+  CHKERRQ(TaoGetKSP(tao,&ksp));
+  CHKERRQ(PetscObjectQueryFunction((PetscObject)ksp,"KSPCGSetRadius_C",&valid));
   PetscCheck(valid,PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Not for KSP type %s. Must use a trust-region CG method for KSP (e.g. KSPNASH, KSPSTCG, KSPGLTR)",((PetscObject)ksp)->type_name);
   PetscFunctionReturn(0);
 }
@@ -248,10 +246,9 @@ static PetscErrorCode TaoSetUp_BNTL(Tao tao)
 static PetscErrorCode TaoSetFromOptions_BNTL(PetscOptionItems *PetscOptionsObject,Tao tao)
 {
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TaoSetFromOptions_BNK(PetscOptionsObject, tao);CHKERRQ(ierr);
+  CHKERRQ(TaoSetFromOptions_BNK(PetscOptionsObject, tao));
   if (bnk->update_type == BNK_UPDATE_STEP) bnk->update_type = BNK_UPDATE_REDUCTION;
   PetscFunctionReturn(0);
 }
@@ -272,10 +269,9 @@ M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BNTL(Tao tao)
 {
   TAO_BNK        *bnk;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TaoCreate_BNK(tao);CHKERRQ(ierr);
+  CHKERRQ(TaoCreate_BNK(tao));
   tao->ops->solve=TaoSolve_BNTL;
   tao->ops->setup=TaoSetUp_BNTL;
   tao->ops->setfromoptions=TaoSetFromOptions_BNTL;

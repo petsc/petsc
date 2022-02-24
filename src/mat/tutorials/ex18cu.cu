@@ -1,4 +1,3 @@
-#include <cuda_runtime.h>
 #include <petscdevice.h>
 #include "ex18.h"
 
@@ -18,14 +17,12 @@ __global__ void FillValues(PetscInt n, PetscScalar *v)
 
 PetscErrorCode FillMatrixCUDACOO(FEStruct *fe,Mat A)
 {
-  PetscErrorCode             ierr;
-  cudaError_t                cerr;
-  PetscScalar                *v;
+  PetscScalar *v;
 
   PetscFunctionBeginUser;
-  cerr = cudaMalloc((void**)&v,3*3*fe->Ne*sizeof(PetscScalar));CHKERRCUDA(cerr);
+  CHKERRCUDA(cudaMalloc((void**)&v,3*3*fe->Ne*sizeof(PetscScalar)));
   FillValues<<<(fe->Ne+255)/256,256>>>(fe->Ne,v);
-  ierr = MatSetValuesCOO(A,v,INSERT_VALUES);CHKERRQ(ierr);
-  cerr = cudaFree(v);CHKERRCUDA(cerr);
+  CHKERRQ(MatSetValuesCOO(A,v,INSERT_VALUES));
+  CHKERRCUDA(cudaFree(v));
   PetscFunctionReturn(0);
 }

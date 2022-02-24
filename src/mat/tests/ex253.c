@@ -10,30 +10,30 @@ int main(int argc, char **args)
 
   ierr = PetscInitialize(&argc, &args, (char*)0, help); if (ierr) return ierr;
 
-  ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
-  ierr = MatSetType(A, MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, 10, 10);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD, &A));
+  CHKERRQ(MatSetType(A, MATAIJ));
+  CHKERRQ(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, 10, 10));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatSetUp(A));
 
-  ierr = MatSetValue(A, 0, 0, 1.0, INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatSetValue(A, 0, 0, 1.0, INSERT_VALUES));
+  CHKERRQ(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
-  ierr = MatCreateHermitianTranspose(A, &AHT);CHKERRQ(ierr);
-  ierr = MatCreateVecs(AHT, &x, &y);CHKERRQ(ierr);
+  CHKERRQ(MatCreateHermitianTranspose(A, &AHT));
+  CHKERRQ(MatCreateVecs(AHT, &x, &y));
 
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD, &rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
-  ierr = VecSetRandom(y, rand);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD, &rand));
+  CHKERRQ(PetscRandomSetFromOptions(rand));
+  CHKERRQ(VecSetRandom(y, rand));
+  CHKERRQ(PetscRandomDestroy(&rand));
 
-  ierr = MatMultHermitianTranspose(AHT, y, x);CHKERRQ(ierr);
+  CHKERRQ(MatMultHermitianTranspose(AHT, y, x));
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&AHT);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&AHT));
   ierr = PetscFinalize();
   return ierr;
 }

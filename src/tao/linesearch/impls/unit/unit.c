@@ -3,49 +3,45 @@
 
 static PetscErrorCode TaoLineSearchDestroy_Unit(TaoLineSearch ls)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscFree(ls->data);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(ls->data));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TaoLineSearchSetFromOptions_Unit(PetscOptionItems *PetscOptionsObject,TaoLineSearch ls)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"No Unit line search options");CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"No Unit line search options"));
+  CHKERRQ(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TaoLineSearchView_Unit(TaoLineSearch ls,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
   PetscBool      isascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Line Search: Unit Step.\n");CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Line Search: Unit Step.\n"));
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls,Vec x,PetscReal *f,Vec g,Vec step_direction)
 {
-  PetscErrorCode ierr;
   PetscReal      ftry;
   PetscReal      startf = *f;
 
   PetscFunctionBegin;
   /* Take unit step (newx = startx + 1.0*step_direction) */
-  ierr = TaoLineSearchMonitor(ls, 0, *f, 0.0);CHKERRQ(ierr);
-  ierr = VecAXPY(x,1.0,step_direction);CHKERRQ(ierr);
-  ierr = TaoLineSearchComputeObjectiveAndGradient(ls,x,&ftry,g);CHKERRQ(ierr);
-  ierr = TaoLineSearchMonitor(ls, 1, *f, 1.0);CHKERRQ(ierr);
-  ierr = PetscInfo(ls,"Tao Apply Unit Step: %4.4e\n",1.0);CHKERRQ(ierr);
+  CHKERRQ(TaoLineSearchMonitor(ls, 0, *f, 0.0));
+  CHKERRQ(VecAXPY(x,1.0,step_direction));
+  CHKERRQ(TaoLineSearchComputeObjectiveAndGradient(ls,x,&ftry,g));
+  CHKERRQ(TaoLineSearchMonitor(ls, 1, *f, 1.0));
+  CHKERRQ(PetscInfo(ls,"Tao Apply Unit Step: %4.4e\n",1.0));
   if (startf < ftry) {
-    ierr = PetscInfo(ls,"Tao Apply Unit Step, FINCREASE: F old:= %12.10e, F new: %12.10e\n",(double)startf,(double)ftry);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(ls,"Tao Apply Unit Step, FINCREASE: F old:= %12.10e, F new: %12.10e\n",(double)startf,(double)ftry));
   }
   *f = ftry;
   ls->step = 1.0;
@@ -74,4 +70,3 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch ls)
   ls->ops->setfromoptions = TaoLineSearchSetFromOptions_Unit;
   PetscFunctionReturn(0);
 }
-

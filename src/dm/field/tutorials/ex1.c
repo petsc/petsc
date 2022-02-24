@@ -6,22 +6,20 @@ static char help[] = "Demonstration of creating and viewing DMFields objects.\n\
 
 static PetscErrorCode ViewResults(PetscViewer viewer, PetscInt N, PetscInt dim, PetscScalar *B, PetscScalar *D, PetscScalar *H, PetscReal *rB, PetscReal *rD, PetscReal *rH)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscViewerASCIIPrintf(viewer,"B:\n");CHKERRQ(ierr);
-  ierr = PetscScalarView(N,B,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"D:\n");CHKERRQ(ierr);
-  ierr = PetscScalarView(N*dim,D,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"H:\n");CHKERRQ(ierr);
-  ierr = PetscScalarView(N*dim*dim,H,viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"B:\n"));
+  CHKERRQ(PetscScalarView(N,B,viewer));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"D:\n"));
+  CHKERRQ(PetscScalarView(N*dim,D,viewer));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"H:\n"));
+  CHKERRQ(PetscScalarView(N*dim*dim,H,viewer));
 
-  ierr = PetscViewerASCIIPrintf(viewer,"rB:\n");CHKERRQ(ierr);
-  ierr = PetscRealView(N,rB,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"rD:\n");CHKERRQ(ierr);
-  ierr = PetscRealView(N*dim,rD,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"rH:\n");CHKERRQ(ierr);
-  ierr = PetscRealView(N*dim*dim,rH,viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"rB:\n"));
+  CHKERRQ(PetscRealView(N,rB,viewer));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"rD:\n"));
+  CHKERRQ(PetscRealView(N*dim,rD,viewer));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"rH:\n"));
+  CHKERRQ(PetscRealView(N*dim*dim,rH,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -35,29 +33,28 @@ static PetscErrorCode TestEvaluate(DMField field, PetscInt n, PetscRandom rand)
   PetscScalar    *array;
   PetscViewer    viewer;
   MPI_Comm       comm;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   comm = PetscObjectComm((PetscObject)field);
-  ierr = DMFieldGetNumComponents(field,&nc);CHKERRQ(ierr);
-  ierr = DMFieldGetDM(field,&dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PetscObjectComm((PetscObject)field),n * dim,PETSC_DETERMINE,&points);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(points,dim);CHKERRQ(ierr);
-  ierr = VecGetArray(points,&array);CHKERRQ(ierr);
-  for (i = 0; i < n * dim; i++) {ierr = PetscRandomGetValue(rand,&array[i]);CHKERRQ(ierr);}
-  ierr = VecRestoreArray(points,&array);CHKERRQ(ierr);
-  ierr = PetscMalloc6(n*nc,&B,n*nc,&rB,n*nc*dim,&D,n*nc*dim,&rD,n*nc*dim*dim,&H,n*nc*dim*dim,&rH);CHKERRQ(ierr);
-  ierr = DMFieldEvaluate(field,points,PETSC_SCALAR,B,D,H);CHKERRQ(ierr);
-  ierr = DMFieldEvaluate(field,points,PETSC_REAL,rB,rD,rH);CHKERRQ(ierr);
+  CHKERRQ(DMFieldGetNumComponents(field,&nc));
+  CHKERRQ(DMFieldGetDM(field,&dm));
+  CHKERRQ(DMGetDimension(dm,&dim));
+  CHKERRQ(VecCreateMPI(PetscObjectComm((PetscObject)field),n * dim,PETSC_DETERMINE,&points));
+  CHKERRQ(VecSetBlockSize(points,dim));
+  CHKERRQ(VecGetArray(points,&array));
+  for (i = 0; i < n * dim; i++) CHKERRQ(PetscRandomGetValue(rand,&array[i]));
+  CHKERRQ(VecRestoreArray(points,&array));
+  CHKERRQ(PetscMalloc6(n*nc,&B,n*nc,&rB,n*nc*dim,&D,n*nc*dim,&rD,n*nc*dim*dim,&H,n*nc*dim*dim,&rH));
+  CHKERRQ(DMFieldEvaluate(field,points,PETSC_SCALAR,B,D,H));
+  CHKERRQ(DMFieldEvaluate(field,points,PETSC_REAL,rB,rD,rH));
   viewer = PETSC_VIEWER_STDOUT_(comm);
 
-  ierr = PetscObjectSetName((PetscObject)points,"Test Points");CHKERRQ(ierr);
-  ierr = VecView(points,viewer);CHKERRQ(ierr);
-  ierr = ViewResults(viewer,n*nc,dim,B,D,H,rB,rD,rH);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetName((PetscObject)points,"Test Points"));
+  CHKERRQ(VecView(points,viewer));
+  CHKERRQ(ViewResults(viewer,n*nc,dim,B,D,H,rB,rD,rH));
 
-  ierr = PetscFree6(B,rB,D,rD,H,rH);CHKERRQ(ierr);
-  ierr = VecDestroy(&points);CHKERRQ(ierr);
+  CHKERRQ(PetscFree6(B,rB,D,rD,H,rH));
+  CHKERRQ(VecDestroy(&points));
   PetscFunctionReturn(0);
 }
 
@@ -72,37 +69,36 @@ static PetscErrorCode TestEvaluateFE(DMField field, PetscInt n, PetscInt cStart,
   IS             cellIS;
   PetscViewer    viewer;
   MPI_Comm       comm;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   comm = PetscObjectComm((PetscObject)field);
-  ierr = DMFieldGetNumComponents(field,&nc);CHKERRQ(ierr);
-  ierr = DMFieldGetDM(field,&dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  ierr = PetscRandomSetInterval(rand,(PetscScalar) cStart, (PetscScalar) cEnd);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&cells);CHKERRQ(ierr);
+  CHKERRQ(DMFieldGetNumComponents(field,&nc));
+  CHKERRQ(DMFieldGetDM(field,&dm));
+  CHKERRQ(DMGetDimension(dm,&dim));
+  CHKERRQ(PetscRandomSetInterval(rand,(PetscScalar) cStart, (PetscScalar) cEnd));
+  CHKERRQ(PetscMalloc1(n,&cells));
   for (i = 0; i < n; i++) {
     PetscReal rc;
 
-    ierr = PetscRandomGetValueReal(rand,&rc);CHKERRQ(ierr);
+    CHKERRQ(PetscRandomGetValueReal(rand,&rc));
     cells[i] = PetscFloorReal(rc);
   }
-  ierr = ISCreateGeneral(comm,n,cells,PETSC_OWN_POINTER,&cellIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)cellIS,"FE Test Cells");CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(quad,NULL,NULL,&nq,NULL,NULL);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(comm,n,cells,PETSC_OWN_POINTER,&cellIS));
+  CHKERRQ(PetscObjectSetName((PetscObject)cellIS,"FE Test Cells"));
+  CHKERRQ(PetscQuadratureGetData(quad,NULL,NULL,&nq,NULL,NULL));
   N    = n * nq * nc;
-  ierr = PetscMalloc6(N,&B,N,&rB,N*dim,&D,N*dim,&rD,N*dim*dim,&H,N*dim*dim,&rH);CHKERRQ(ierr);
-  ierr = DMFieldEvaluateFE(field,cellIS,quad,PETSC_SCALAR,B,D,H);CHKERRQ(ierr);
-  ierr = DMFieldEvaluateFE(field,cellIS,quad,PETSC_REAL,rB,rD,rH);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc6(N,&B,N,&rB,N*dim,&D,N*dim,&rD,N*dim*dim,&H,N*dim*dim,&rH));
+  CHKERRQ(DMFieldEvaluateFE(field,cellIS,quad,PETSC_SCALAR,B,D,H));
+  CHKERRQ(DMFieldEvaluateFE(field,cellIS,quad,PETSC_REAL,rB,rD,rH));
   viewer = PETSC_VIEWER_STDOUT_(comm);
 
-  ierr = PetscObjectSetName((PetscObject)quad,"Test quadrature");CHKERRQ(ierr);
-  ierr = PetscQuadratureView(quad,viewer);CHKERRQ(ierr);
-  ierr = ISView(cellIS,viewer);CHKERRQ(ierr);
-  ierr = ViewResults(viewer,N,dim,B,D,H,rB,rD,rH);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetName((PetscObject)quad,"Test quadrature"));
+  CHKERRQ(PetscQuadratureView(quad,viewer));
+  CHKERRQ(ISView(cellIS,viewer));
+  CHKERRQ(ViewResults(viewer,N,dim,B,D,H,rB,rD,rH));
 
-  ierr = PetscFree6(B,rB,D,rD,H,rH);CHKERRQ(ierr);
-  ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
+  CHKERRQ(PetscFree6(B,rB,D,rD,H,rH));
+  CHKERRQ(ISDestroy(&cellIS));
   PetscFunctionReturn(0);
 }
 
@@ -117,34 +113,33 @@ static PetscErrorCode TestEvaluateFV(DMField field, PetscInt n, PetscInt cStart,
   IS             cellIS;
   PetscViewer    viewer;
   MPI_Comm       comm;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   comm = PetscObjectComm((PetscObject)field);
-  ierr = DMFieldGetNumComponents(field,&nc);CHKERRQ(ierr);
-  ierr = DMFieldGetDM(field,&dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
-  ierr = PetscRandomSetInterval(rand,(PetscScalar) cStart, (PetscScalar) cEnd);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&cells);CHKERRQ(ierr);
+  CHKERRQ(DMFieldGetNumComponents(field,&nc));
+  CHKERRQ(DMFieldGetDM(field,&dm));
+  CHKERRQ(DMGetDimension(dm,&dim));
+  CHKERRQ(PetscRandomSetInterval(rand,(PetscScalar) cStart, (PetscScalar) cEnd));
+  CHKERRQ(PetscMalloc1(n,&cells));
   for (i = 0; i < n; i++) {
     PetscReal rc;
 
-    ierr = PetscRandomGetValueReal(rand,&rc);CHKERRQ(ierr);
+    CHKERRQ(PetscRandomGetValueReal(rand,&rc));
     cells[i] = PetscFloorReal(rc);
   }
-  ierr = ISCreateGeneral(comm,n,cells,PETSC_OWN_POINTER,&cellIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)cellIS,"FV Test Cells");CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(comm,n,cells,PETSC_OWN_POINTER,&cellIS));
+  CHKERRQ(PetscObjectSetName((PetscObject)cellIS,"FV Test Cells"));
   N    = n * nc;
-  ierr = PetscMalloc6(N,&B,N,&rB,N*dim,&D,N*dim,&rD,N*dim*dim,&H,N*dim*dim,&rH);CHKERRQ(ierr);
-  ierr = DMFieldEvaluateFV(field,cellIS,PETSC_SCALAR,B,D,H);CHKERRQ(ierr);
-  ierr = DMFieldEvaluateFV(field,cellIS,PETSC_REAL,rB,rD,rH);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc6(N,&B,N,&rB,N*dim,&D,N*dim,&rD,N*dim*dim,&H,N*dim*dim,&rH));
+  CHKERRQ(DMFieldEvaluateFV(field,cellIS,PETSC_SCALAR,B,D,H));
+  CHKERRQ(DMFieldEvaluateFV(field,cellIS,PETSC_REAL,rB,rD,rH));
   viewer = PETSC_VIEWER_STDOUT_(comm);
 
-  ierr = ISView(cellIS,viewer);CHKERRQ(ierr);
-  ierr = ViewResults(viewer,N,dim,B,D,H,rB,rD,rH);CHKERRQ(ierr);
+  CHKERRQ(ISView(cellIS,viewer));
+  CHKERRQ(ViewResults(viewer,N,dim,B,D,H,rB,rD,rH));
 
-  ierr = PetscFree6(B,rB,D,rD,H,rH);CHKERRQ(ierr);
-  ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
+  CHKERRQ(PetscFree6(B,rB,D,rD,H,rH));
+  CHKERRQ(ISDestroy(&cellIS));
   PetscFunctionReturn(0);
 }
 
@@ -168,16 +163,15 @@ static PetscErrorCode TestShellEvaluate(DMField field, Vec points, PetscDataType
   PetscInt           dim;
   const PetscScalar *x;
   PetscInt           Nc, n, i, j, k, l;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = DMFieldGetNumComponents(field, &Nc);CHKERRQ(ierr);
-  ierr = DMFieldShellGetContext(field, &ctxVec);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(points, &dim);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(points, &n);CHKERRQ(ierr);
+  CHKERRQ(DMFieldGetNumComponents(field, &Nc));
+  CHKERRQ(DMFieldShellGetContext(field, &ctxVec));
+  CHKERRQ(VecGetBlockSize(points, &dim));
+  CHKERRQ(VecGetLocalSize(points, &n));
   n /= Nc;
-  ierr = VecGetArrayRead(ctxVec, &mult);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(points, &x);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(ctxVec, &mult));
+  CHKERRQ(VecGetArrayRead(points, &x));
   for (i = 0; i < n; i++) {
     PetscReal r2 = 0.;
 
@@ -207,19 +201,18 @@ static PetscErrorCode TestShellEvaluate(DMField field, Vec points, PetscDataType
       }
     }
   }
-  ierr = VecRestoreArrayRead(points, &x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(ctxVec, &mult);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(points, &x));
+  CHKERRQ(VecRestoreArrayRead(ctxVec, &mult));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TestShellDestroy(DMField field)
 {
   Vec                ctxVec = NULL;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = DMFieldShellGetContext(field, &ctxVec);CHKERRQ(ierr);
-  ierr = VecDestroy(&ctxVec);CHKERRQ(ierr);
+  CHKERRQ(DMFieldShellGetContext(field, &ctxVec));
+  CHKERRQ(VecDestroy(&ctxVec));
   PetscFunctionReturn(0);
 }
 
@@ -243,22 +236,22 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm, "", "DMField Tutorial Options", "DM");CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-dm_type","DM implementation on which to define field","ex1.c",DMList,type,type,256,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim","DM intrinsic dimension", "ex1.c", dim, &dim, NULL,1,3);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-num_components","Number of components in field", "ex1.c", nc, &nc, NULL,1);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-num_quad_points","Number of quadrature points per dimension", "ex1.c", pointsPerEdge, &pointsPerEdge, NULL,1);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-num_point_tests", "Number of test points for DMFieldEvaluate()", "ex1.c", numPoint, &numPoint, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-num_fe_tests", "Number of test cells for DMFieldEvaluateFE()", "ex1.c", numFE, &numFE, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-num_fv_tests", "Number of test cells for DMFieldEvaluateFV()", "ex1.c", numFV, &numFV, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-test_shell", "Test the DMFIELDSHELL implementation of DMField", "ex1.c", testShell, &testShell, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsFList("-dm_type","DM implementation on which to define field","ex1.c",DMList,type,type,256,NULL));
+  CHKERRQ(PetscOptionsRangeInt("-dim","DM intrinsic dimension", "ex1.c", dim, &dim, NULL,1,3));
+  CHKERRQ(PetscOptionsBoundedInt("-num_components","Number of components in field", "ex1.c", nc, &nc, NULL,1));
+  CHKERRQ(PetscOptionsBoundedInt("-num_quad_points","Number of quadrature points per dimension", "ex1.c", pointsPerEdge, &pointsPerEdge, NULL,1));
+  CHKERRQ(PetscOptionsBoundedInt("-num_point_tests", "Number of test points for DMFieldEvaluate()", "ex1.c", numPoint, &numPoint, NULL,0));
+  CHKERRQ(PetscOptionsBoundedInt("-num_fe_tests", "Number of test cells for DMFieldEvaluateFE()", "ex1.c", numFE, &numFE, NULL,0));
+  CHKERRQ(PetscOptionsBoundedInt("-num_fv_tests", "Number of test cells for DMFieldEvaluateFV()", "ex1.c", numFV, &numFV, NULL,0));
+  CHKERRQ(PetscOptionsBool("-test_shell", "Test the DMFIELDSHELL implementation of DMField", "ex1.c", testShell, &testShell, NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscCheckFalse(dim > 3,comm,PETSC_ERR_ARG_OUTOFRANGE,"This examples works for dim <= 3, not %D",dim);
-  ierr = PetscStrncmp(type,DMPLEX,256,&isplex);CHKERRQ(ierr);
-  ierr = PetscStrncmp(type,DMDA,256,&isda);CHKERRQ(ierr);
+  CHKERRQ(PetscStrncmp(type,DMPLEX,256,&isplex));
+  CHKERRQ(PetscStrncmp(type,DMDA,256,&isda));
 
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF,&rand));
+  CHKERRQ(PetscRandomSetFromOptions(rand));
   if (isplex) {
     PetscInt  overlap = 0;
     Vec       fieldvec;
@@ -267,44 +260,44 @@ int main(int argc, char **argv)
     PetscFE   fe;
 
     ierr = PetscOptionsBegin(comm, "", "DMField DMPlex Options", "DM");CHKERRQ(ierr);
-    ierr = PetscOptionsBoundedInt("-overlap","DMPlex parallel overlap","ex1.c",overlap,&overlap,NULL,0);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsBoundedInt("-overlap","DMPlex parallel overlap","ex1.c",overlap,&overlap,NULL,0));
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
     if (0) {
-      ierr = DMPlexCreateBoxMesh(comm,2,PETSC_TRUE,cells,NULL,NULL,NULL,PETSC_TRUE,&dm);CHKERRQ(ierr);
+      CHKERRQ(DMPlexCreateBoxMesh(comm,2,PETSC_TRUE,cells,NULL,NULL,NULL,PETSC_TRUE,&dm));
     } else {
-      ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
-      ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-      ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+      CHKERRQ(DMCreate(comm, &dm));
+      CHKERRQ(DMSetType(dm, DMPLEX));
+      CHKERRQ(DMSetFromOptions(dm));
       CHKMEMQ;
     }
-    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-    ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
+    CHKERRQ(DMGetDimension(dm, &dim));
+    CHKERRQ(DMPlexIsSimplex(dm, &simplex));
     if (simplex) {
-      ierr = PetscDTStroudConicalQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad);CHKERRQ(ierr);
+      CHKERRQ(PetscDTStroudConicalQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad));
     } else {
-      ierr = PetscDTGaussTensorQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad);CHKERRQ(ierr);
+      CHKERRQ(PetscDTGaussTensorQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad));
     }
-    ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetHeightStratum(dm,0,&cStart,&cEnd));
     if (testShell) {
       Vec ctxVec;
       PetscInt i;
       PetscScalar *array;
 
-      ierr = VecCreateSeq(PETSC_COMM_SELF, nc, &ctxVec);CHKERRQ(ierr);
-      ierr = VecSetUp(ctxVec);CHKERRQ(ierr);
-      ierr = VecGetArray(ctxVec,&array);CHKERRQ(ierr);
+      CHKERRQ(VecCreateSeq(PETSC_COMM_SELF, nc, &ctxVec));
+      CHKERRQ(VecSetUp(ctxVec));
+      CHKERRQ(VecGetArray(ctxVec,&array));
       for (i = 0; i < nc; i++) array[i] = i + 1.;
-      ierr = VecRestoreArray(ctxVec,&array);CHKERRQ(ierr);
-      ierr = DMFieldCreateShell(dm, nc, DMFIELD_VERTEX, (void *) ctxVec, &field);CHKERRQ(ierr);
-      ierr = DMFieldShellSetEvaluate(field, TestShellEvaluate);CHKERRQ(ierr);
-      ierr = DMFieldShellSetDestroy(field, TestShellDestroy);CHKERRQ(ierr);
+      CHKERRQ(VecRestoreArray(ctxVec,&array));
+      CHKERRQ(DMFieldCreateShell(dm, nc, DMFIELD_VERTEX, (void *) ctxVec, &field));
+      CHKERRQ(DMFieldShellSetEvaluate(field, TestShellEvaluate));
+      CHKERRQ(DMFieldShellSetDestroy(field, TestShellDestroy));
     } else {
-      ierr = PetscFECreateDefault(PETSC_COMM_SELF,dim,nc,simplex,NULL,PETSC_DEFAULT,&fe);CHKERRQ(ierr);
-      ierr = PetscFESetName(fe,"MyPetscFE");CHKERRQ(ierr);
-      ierr = DMSetField(dm,0,NULL,(PetscObject)fe);CHKERRQ(ierr);
-      ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-      ierr = DMCreateDS(dm);CHKERRQ(ierr);
-      ierr = DMCreateLocalVector(dm,&fieldvec);CHKERRQ(ierr);
+      CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF,dim,nc,simplex,NULL,PETSC_DEFAULT,&fe));
+      CHKERRQ(PetscFESetName(fe,"MyPetscFE"));
+      CHKERRQ(DMSetField(dm,0,NULL,(PetscObject)fe));
+      CHKERRQ(PetscFEDestroy(&fe));
+      CHKERRQ(DMCreateDS(dm));
+      CHKERRQ(DMCreateLocalVector(dm,&fieldvec));
       {
         PetscErrorCode (*func[1]) (PetscInt,PetscReal,const PetscReal [],PetscInt, PetscScalar *,void *);
         void            *ctxs[1];
@@ -312,10 +305,10 @@ int main(int argc, char **argv)
         func[0] = radiusSquared;
         ctxs[0] = NULL;
 
-        ierr = DMProjectFunctionLocal(dm,0.0,func,ctxs,INSERT_ALL_VALUES,fieldvec);CHKERRQ(ierr);
+        CHKERRQ(DMProjectFunctionLocal(dm,0.0,func,ctxs,INSERT_ALL_VALUES,fieldvec));
       }
-      ierr = DMFieldCreateDS(dm,0,fieldvec,&field);CHKERRQ(ierr);
-      ierr = VecDestroy(&fieldvec);CHKERRQ(ierr);
+      CHKERRQ(DMFieldCreateDS(dm,0,fieldvec,&field));
+      CHKERRQ(VecDestroy(&fieldvec));
     }
   } else if (isda) {
     PetscInt       i;
@@ -323,40 +316,40 @@ int main(int argc, char **argv)
 
     switch (dim) {
     case 1:
-      ierr = DMDACreate1d(comm, DM_BOUNDARY_NONE, 3, 1, 1, NULL, &dm);CHKERRQ(ierr);
+      CHKERRQ(DMDACreate1d(comm, DM_BOUNDARY_NONE, 3, 1, 1, NULL, &dm));
       break;
     case 2:
-      ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 3, 3, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, &dm);CHKERRQ(ierr);
+      CHKERRQ(DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 3, 3, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, &dm));
       break;
     default:
-      ierr = DMDACreate3d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 3, 3, 3, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, NULL, &dm);CHKERRQ(ierr);
+      CHKERRQ(DMDACreate3d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 3, 3, 3, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, NULL, &dm));
       break;
     }
-    ierr = DMSetUp(dm);CHKERRQ(ierr);
-    ierr = DMDAGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-    ierr = PetscMalloc1(nc * (1 << dim),&cv);CHKERRQ(ierr);
+    CHKERRQ(DMSetUp(dm));
+    CHKERRQ(DMDAGetHeightStratum(dm,0,&cStart,&cEnd));
+    CHKERRQ(PetscMalloc1(nc * (1 << dim),&cv));
     for (i = 0; i < nc * (1 << dim); i++) {
       PetscReal rv;
 
-      ierr = PetscRandomGetValueReal(rand,&rv);CHKERRQ(ierr);
+      CHKERRQ(PetscRandomGetValueReal(rand,&rv));
       cv[i] = rv;
     }
-    ierr = DMFieldCreateDA(dm,nc,cv,&field);CHKERRQ(ierr);
-    ierr = PetscFree(cv);CHKERRQ(ierr);
-    ierr = PetscDTGaussTensorQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad);CHKERRQ(ierr);
+    CHKERRQ(DMFieldCreateDA(dm,nc,cv,&field));
+    CHKERRQ(PetscFree(cv));
+    CHKERRQ(PetscDTGaussTensorQuadrature(dim, 1, pointsPerEdge, -1.0, 1.0, &quad));
   } else SETERRQ(comm,PETSC_ERR_SUP,"This test does not run for DM type %s",type);
 
-  ierr = PetscObjectSetName((PetscObject)dm,"mesh");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm,NULL,"-dm_view");CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)field,"field");CHKERRQ(ierr);
-  ierr = PetscObjectViewFromOptions((PetscObject)field,NULL,"-dmfield_view");CHKERRQ(ierr);
-  if (numPoint) {ierr = TestEvaluate(field,numPoint,rand);CHKERRQ(ierr);}
-  if (numFE) {ierr = TestEvaluateFE(field,numFE,cStart,cEnd,quad,rand);CHKERRQ(ierr);}
-  if (numFV) {ierr = TestEvaluateFV(field,numFV,cStart,cEnd,rand);CHKERRQ(ierr);}
-  ierr = DMFieldDestroy(&field);CHKERRQ(ierr);
-  ierr = PetscQuadratureDestroy(&quad);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetName((PetscObject)dm,"mesh"));
+  CHKERRQ(DMViewFromOptions(dm,NULL,"-dm_view"));
+  CHKERRQ(DMDestroy(&dm));
+  CHKERRQ(PetscObjectSetName((PetscObject)field,"field"));
+  CHKERRQ(PetscObjectViewFromOptions((PetscObject)field,NULL,"-dmfield_view"));
+  if (numPoint) CHKERRQ(TestEvaluate(field,numPoint,rand));
+  if (numFE) CHKERRQ(TestEvaluateFE(field,numFE,cStart,cEnd,quad,rand));
+  if (numFV) CHKERRQ(TestEvaluateFV(field,numFV,cStart,cEnd,rand));
+  CHKERRQ(DMFieldDestroy(&field));
+  CHKERRQ(PetscQuadratureDestroy(&quad));
+  CHKERRQ(PetscRandomDestroy(&rand));
   ierr = PetscFinalize();
   return ierr;
 }

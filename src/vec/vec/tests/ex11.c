@@ -14,45 +14,45 @@ int main(int argc,char **argv)
   VecScatter     ctx = 0;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* create two vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,rank+1,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecGetSize(x,&N);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N-rank,&y);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
+  CHKERRQ(VecSetSizes(x,rank+1,PETSC_DECIDE));
+  CHKERRQ(VecSetFromOptions(x));
+  CHKERRQ(VecGetSize(x,&N));
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,N-rank,&y));
 
   /* create two index sets */
-  ierr = ISCreateStride(PETSC_COMM_SELF,N-rank,rank,1,&is1);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,N-rank,0,1,&is2);CHKERRQ(ierr);
+  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,N-rank,rank,1,&is1));
+  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,N-rank,0,1,&is2));
 
   /* fill parallel vector: note this is not efficient way*/
   for (i=0; i<N; i++) {
     value = (PetscScalar) i;
-    ierr  = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(x,1,&i,&value,INSERT_VALUES));
   }
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-  ierr = VecSet(y,-1.0);CHKERRQ(ierr);
+  CHKERRQ(VecAssemblyBegin(x));
+  CHKERRQ(VecAssemblyEnd(x));
+  CHKERRQ(VecSet(y,-1.0));
 
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
+  CHKERRQ(VecScatterCreate(x,is1,y,is2,&ctx));
+  CHKERRQ(VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterDestroy(&ctx));
 
   if (rank == 0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"----\n");CHKERRQ(ierr);
-    ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"----\n"));
+    CHKERRQ(VecView(y,PETSC_VIEWER_STDOUT_SELF));
   }
 
-  ierr = ISDestroy(&is1);CHKERRQ(ierr);
-  ierr = ISDestroy(&is2);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&is1));
+  CHKERRQ(ISDestroy(&is2));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
 
   ierr = PetscFinalize();
   return ierr;

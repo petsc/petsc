@@ -7,18 +7,15 @@ typedef struct {
 
 static PetscErrorCode KSPSetUp_MINRES(KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCheckFalse(ksp->pc_side == PC_RIGHT,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"No right preconditioning for KSPMINRES");
   else PetscCheckFalse(ksp->pc_side == PC_SYMMETRIC,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"No symmetric preconditioning for KSPMINRES");
-  ierr = KSPSetWorkVecs(ksp,9);CHKERRQ(ierr);
+  CHKERRQ(KSPSetWorkVecs(ksp,9));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 {
-  PetscErrorCode    ierr;
   PetscInt          i;
   PetscScalar       alpha,beta,ibeta,betaold,eta,c=1.0,ceta,cold=1.0,coold,s=0.0,sold=0.0,soold;
   PetscScalar       rho0,rho1,irho1,rho2,rho3,dp = 0.0;
@@ -30,7 +27,7 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   PetscBool         diagonalscale;
 
   PetscFunctionBegin;
-  ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
+  CHKERRQ(PCGetDiagonalScale(ksp->pc,&diagonalscale));
   PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   X     = ksp->vec_sol;
@@ -45,39 +42,39 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   WOLD  = ksp->work[7];
   WOOLD = ksp->work[8];
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
+  CHKERRQ(PCGetOperators(ksp->pc,&Amat,&Pmat));
 
   ksp->its = 0;
 
-  ierr = VecSet(UOLD,0.0);CHKERRQ(ierr);          /*     u_old  <-   0   */
-  ierr = VecSet(VOLD,0.0);CHKERRQ(ierr);         /*     v_old  <-   0   */
-  ierr = VecSet(W,0.0);CHKERRQ(ierr);            /*     w      <-   0   */
-  ierr = VecSet(WOLD,0.0);CHKERRQ(ierr);         /*     w_old  <-   0   */
+  CHKERRQ(VecSet(UOLD,0.0));          /*     u_old  <-   0   */
+  CHKERRQ(VecSet(VOLD,0.0));         /*     v_old  <-   0   */
+  CHKERRQ(VecSet(W,0.0));            /*     w      <-   0   */
+  CHKERRQ(VecSet(WOLD,0.0));         /*     w_old  <-   0   */
 
   if (!ksp->guess_zero) {
-    ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr); /*     r <- b - A*x    */
-    ierr = VecAYPX(R,-1.0,B);CHKERRQ(ierr);
+    CHKERRQ(KSP_MatMult(ksp,Amat,X,R)); /*     r <- b - A*x    */
+    CHKERRQ(VecAYPX(R,-1.0,B));
   } else {
-    ierr = VecCopy(B,R);CHKERRQ(ierr);              /*     r <- b (x is 0) */
+    CHKERRQ(VecCopy(B,R));              /*     r <- b (x is 0) */
   }
-  ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);       /*     z  <- B*r       */
-  ierr = VecNorm(Z,NORM_2,&np);CHKERRQ(ierr);      /*   np <- ||z||        */
+  CHKERRQ(KSP_PCApply(ksp,R,Z));       /*     z  <- B*r       */
+  CHKERRQ(VecNorm(Z,NORM_2,&np));      /*   np <- ||z||        */
   KSPCheckNorm(ksp,np);
-  ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
+  CHKERRQ(VecDot(R,Z,&dp));
   KSPCheckDot(ksp,dp);
 
   if (PetscRealPart(dp) < minres->haptol && np > minres->haptol) {
     PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_CONV_FAILED,"Detected indefinite operator %g tolerance %g",(double)PetscRealPart(dp),(double)minres->haptol);
-    ierr = PetscInfo(ksp,"Detected indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(ksp,"Detected indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol));
     ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
     PetscFunctionReturn(0);
   }
 
   ksp->rnorm = 0.0;
   if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = np;
-  ierr = KSPLogResidualHistory(ksp,ksp->rnorm);CHKERRQ(ierr);
-  ierr = KSPMonitor(ksp,0,ksp->rnorm);CHKERRQ(ierr);
-  ierr = (*ksp->converged)(ksp,0,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
+  CHKERRQ(KSPLogResidualHistory(ksp,ksp->rnorm));
+  CHKERRQ(KSPMonitor(ksp,0,ksp->rnorm));
+  CHKERRQ((*ksp->converged)(ksp,0,ksp->rnorm,&ksp->reason,ksp->cnvP)); /* test for convergence */
   if (ksp->reason) PetscFunctionReturn(0);
 
   dp   = PetscAbsScalar(dp);
@@ -85,11 +82,11 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   beta = dp;                                        /*  beta <- sqrt(r'*z  */
   eta  = beta;
 
-  ierr  = VecCopy(R,V);CHKERRQ(ierr);
-  ierr  = VecCopy(Z,U);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(R,V));
+  CHKERRQ(VecCopy(Z,U));
   ibeta = 1.0 / beta;
-  ierr  = VecScale(V,ibeta);CHKERRQ(ierr);        /*    v <- r / beta     */
-  ierr  = VecScale(U,ibeta);CHKERRQ(ierr);        /*    u <- z / beta     */
+  CHKERRQ(VecScale(V,ibeta));        /*    v <- r / beta     */
+  CHKERRQ(VecScale(U,ibeta));        /*    u <- z / beta     */
 
   i = 0;
   do {
@@ -97,18 +94,18 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
     /*   Lanczos  */
 
-    ierr = KSP_MatMult(ksp,Amat,U,R);CHKERRQ(ierr);   /*      r <- A*u   */
-    ierr = VecDot(U,R,&alpha);CHKERRQ(ierr);          /*  alpha <- r'*u  */
-    ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /*      z <- B*r   */
+    CHKERRQ(KSP_MatMult(ksp,Amat,U,R));   /*      r <- A*u   */
+    CHKERRQ(VecDot(U,R,&alpha));          /*  alpha <- r'*u  */
+    CHKERRQ(KSP_PCApply(ksp,R,Z)); /*      z <- B*r   */
 
-    ierr = VecAXPY(R,-alpha,V);CHKERRQ(ierr);     /*  r <- r - alpha v     */
-    ierr = VecAXPY(Z,-alpha,U);CHKERRQ(ierr);     /*  z <- z - alpha u     */
-    ierr = VecAXPY(R,-beta,VOLD);CHKERRQ(ierr);   /*  r <- r - beta v_old  */
-    ierr = VecAXPY(Z,-beta,UOLD);CHKERRQ(ierr);   /*  z <- z - beta u_old  */
+    CHKERRQ(VecAXPY(R,-alpha,V));     /*  r <- r - alpha v     */
+    CHKERRQ(VecAXPY(Z,-alpha,U));     /*  z <- z - alpha u     */
+    CHKERRQ(VecAXPY(R,-beta,VOLD));   /*  r <- r - beta v_old  */
+    CHKERRQ(VecAXPY(Z,-beta,UOLD));   /*  z <- z - beta u_old  */
 
     betaold = beta;
 
-    ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);
+    CHKERRQ(VecDot(R,Z,&dp));
     KSPCheckDot(ksp,dp);
     dp   = PetscAbsScalar(dp);
     beta = PetscSqrtScalar(dp);                               /*  beta <- sqrt(r'*z)   */
@@ -129,27 +126,27 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
     /*    Update    */
 
-    ierr = VecCopy(WOLD,WOOLD);CHKERRQ(ierr);     /*  w_oold <- w_old      */
-    ierr = VecCopy(W,WOLD);CHKERRQ(ierr);         /*  w_old  <- w          */
+    CHKERRQ(VecCopy(WOLD,WOOLD));     /*  w_oold <- w_old      */
+    CHKERRQ(VecCopy(W,WOLD));         /*  w_old  <- w          */
 
-    ierr  = VecCopy(U,W);CHKERRQ(ierr);           /*  w      <- u          */
-    ierr  = VecAXPY(W,-rho2,WOLD);CHKERRQ(ierr); /*  w <- w - rho2 w_old  */
-    ierr  = VecAXPY(W,-rho3,WOOLD);CHKERRQ(ierr); /*  w <- w - rho3 w_oold */
+    CHKERRQ(VecCopy(U,W));           /*  w      <- u          */
+    CHKERRQ(VecAXPY(W,-rho2,WOLD)); /*  w <- w - rho2 w_old  */
+    CHKERRQ(VecAXPY(W,-rho3,WOOLD)); /*  w <- w - rho3 w_oold */
     irho1 = 1.0 / rho1;
-    ierr  = VecScale(W,irho1);CHKERRQ(ierr);     /*  w <- w / rho1        */
+    CHKERRQ(VecScale(W,irho1));     /*  w <- w / rho1        */
 
     ceta = c * eta;
-    ierr = VecAXPY(X,ceta,W);CHKERRQ(ierr);      /*  x <- x + c eta w     */
+    CHKERRQ(VecAXPY(X,ceta,W));      /*  x <- x + c eta w     */
 
     /*
         when dp is really small we have either convergence or an indefinite operator so compute true
         residual norm to check for convergence
     */
     if (PetscRealPart(dp) < minres->haptol) {
-      ierr = PetscInfo(ksp,"Possible indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
-      ierr = KSP_MatMult(ksp,Amat,X,VOLD);CHKERRQ(ierr);
-      ierr = VecAXPY(VOLD,none,B);CHKERRQ(ierr);
-      ierr = VecNorm(VOLD,NORM_2,&np);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(ksp,"Possible indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol));
+      CHKERRQ(KSP_MatMult(ksp,Amat,X,VOLD));
+      CHKERRQ(VecAXPY(VOLD,none,B));
+      CHKERRQ(VecNorm(VOLD,NORM_2,&np));
       KSPCheckNorm(ksp,np);
     } else {
       /* otherwise compute new residual norm via recurrence relation */
@@ -157,26 +154,26 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
     }
 
     if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = np;
-    ierr = KSPLogResidualHistory(ksp,ksp->rnorm);CHKERRQ(ierr);
-    ierr = KSPMonitor(ksp,i+1,ksp->rnorm);CHKERRQ(ierr);
-    ierr = (*ksp->converged)(ksp,i+1,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
+    CHKERRQ(KSPLogResidualHistory(ksp,ksp->rnorm));
+    CHKERRQ(KSPMonitor(ksp,i+1,ksp->rnorm));
+    CHKERRQ((*ksp->converged)(ksp,i+1,ksp->rnorm,&ksp->reason,ksp->cnvP)); /* test for convergence */
     if (ksp->reason) break;
 
     if (PetscRealPart(dp) < minres->haptol) {
       PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_CONV_FAILED,"Detected indefinite operator %g tolerance %g",(double)PetscRealPart(dp),(double)minres->haptol);
-      ierr = PetscInfo(ksp,"Detected indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(ksp,"Detected indefinite operator %g tolerance %g\n",(double)PetscRealPart(dp),(double)minres->haptol));
       ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
       break;
     }
 
     eta  = -s * eta;
-    ierr  = VecCopy(V,VOLD);CHKERRQ(ierr);
-    ierr  = VecCopy(U,UOLD);CHKERRQ(ierr);
-    ierr  = VecCopy(R,V);CHKERRQ(ierr);
-    ierr  = VecCopy(Z,U);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(V,VOLD));
+    CHKERRQ(VecCopy(U,UOLD));
+    CHKERRQ(VecCopy(R,V));
+    CHKERRQ(VecCopy(Z,U));
     ibeta = 1.0 / beta;
-    ierr  = VecScale(V,ibeta);CHKERRQ(ierr);     /*  v <- r / beta       */
-    ierr  = VecScale(U,ibeta);CHKERRQ(ierr);     /*  u <- z / beta       */
+    CHKERRQ(VecScale(V,ibeta));     /*  v <- r / beta       */
+    CHKERRQ(VecScale(U,ibeta));     /*  u <- z / beta       */
 
     i++;
   } while (i<ksp->max_it);
@@ -206,12 +203,11 @@ M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
 {
   KSP_MINRES     *minres;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
-  ierr = PetscNewLog(ksp,&minres);CHKERRQ(ierr);
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3));
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
+  CHKERRQ(PetscNewLog(ksp,&minres));
 
   /* this parameter is arbitrary; but e-50 didn't work for __float128 in one example */
 #if defined(PETSC_USE_REAL___FLOAT128)

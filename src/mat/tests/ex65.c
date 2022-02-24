@@ -12,7 +12,7 @@ int main(int argc,char **args)
   PetscViewer    view;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,m,n,20,0,&A);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_WORLD,m,n,20,0,&A));
 
   for (i=0; i<n; i++) values[i] = (PetscReal)i;
 
@@ -25,16 +25,16 @@ int main(int argc,char **args)
     } else {
       ;
     }
-    ierr = MatSetValues(A,1,&i,cnt,js,values,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&i,cnt,js,values,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"rect",FILE_MODE_WRITE,&view);CHKERRQ(ierr);
-  ierr = MatView(A,view);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"rect",FILE_MODE_WRITE,&view));
+  CHKERRQ(MatView(A,view));
+  CHKERRQ(PetscViewerDestroy(&view));
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
 
   ierr = PetscFinalize();
   return ierr;

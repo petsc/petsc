@@ -5,44 +5,42 @@
 #include <engine.h>   /* MATLAB include file */
 #include <mex.h>      /* MATLAB include file */
 
-PETSC_EXTERN PetscErrorCode  VecMatlabEnginePut_Default(PetscObject obj,void *mengine)
+PETSC_EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject obj, void *mengine)
 {
-  PetscErrorCode    ierr;
   PetscInt          n;
   Vec               vec = (Vec)obj;
   const PetscScalar *array;
   mxArray           *mat;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(vec,&array);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
-#if !defined(PETSC_USE_COMPLEX)
-  mat  = mxCreateDoubleMatrix(n,1,mxREAL);
+  CHKERRQ(VecGetArrayRead(vec,&array));
+  CHKERRQ(VecGetLocalSize(vec,&n));
+#if defined(PETSC_USE_COMPLEX)
+  mat = mxCreateDoubleMatrix(n,1,mxCOMPLEX);
 #else
-  mat  = mxCreateDoubleMatrix(n,1,mxCOMPLEX);
+  mat = mxCreateDoubleMatrix(n,1,mxREAL);
 #endif
-  ierr = PetscArraycpy(mxGetPr(mat),array,n);CHKERRQ(ierr);
-  ierr = PetscObjectName(obj);CHKERRQ(ierr);
+  CHKERRQ(PetscArraycpy(mxGetPr(mat),array,n));
+  CHKERRQ(PetscObjectName(obj));
   engPutVariable((Engine*)mengine,obj->name,mat);
 
-  ierr = VecRestoreArrayRead(vec,&array);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(vec,&array));
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode  VecMatlabEngineGet_Default(PetscObject obj,void *mengine)
+PETSC_EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject obj, void *mengine)
 {
-  PetscErrorCode ierr;
-  PetscInt       n;
-  Vec            vec = (Vec)obj;
-  PetscScalar    *array;
-  mxArray        *mat;
+  PetscInt     n;
+  Vec          vec = (Vec)obj;
+  PetscScalar *array;
+  mxArray     *mat;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
-  mat  = engGetVariable((Engine*)mengine,obj->name);
-  PetscCheckFalse(!mat,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to get object %s from matlab",obj->name);
-  ierr = PetscArraycpy(array,mxGetPr(mat),n);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(vec,&array));
+  CHKERRQ(VecGetLocalSize(vec,&n));
+  mat = engGetVariable((Engine*)mengine,obj->name);
+  PetscCheck(mat,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to get object %s from matlab",obj->name);
+  CHKERRQ(PetscArraycpy(array,mxGetPr(mat),n));
+  CHKERRQ(VecRestoreArray(vec,&array));
   PetscFunctionReturn(0);
 }

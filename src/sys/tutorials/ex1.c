@@ -28,8 +28,8 @@ int main(int argc,char **argv)
      The following MPI calls return the number of processes
      being used and the rank of this process in the group.
    */
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /*
      Here we would like to print only one message that represents
@@ -37,12 +37,12 @@ int main(int argc,char **argv)
      communicator PETSC_COMM_WORLD.  Thus, only one message is
      printed representng PETSC_COMM_WORLD, i.e., all the processors.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of processors = %d, rank = %d\n",size,rank);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Number of processors = %d, rank = %d\n",size,rank));
 
   /*
     Here a barrier is used to separate the two program states.
   */
-  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Barrier(PETSC_COMM_WORLD));
 
   /*
     Here we simply use PetscPrintf() with the communicator PETSC_COMM_SELF,
@@ -51,7 +51,7 @@ int main(int argc,char **argv)
     appear in any particular order.
   */
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Jumbled Hello World\n",rank);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"[%d] Jumbled Hello World\n",rank));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

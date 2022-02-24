@@ -17,51 +17,51 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /* test that PetscFormatConvertGetSize() correctly counts needed amount of space */
-  ierr = PetscFormatConvertGetSize(formatstr,&sz);CHKERRQ(ierr);
+  CHKERRQ(PetscFormatConvertGetSize(formatstr,&sz));
   if (PetscDefined(USE_64BIT_INDICES)) {
     PetscCheckFalse(sz != 29,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Format size %zu should be 29",sz);
   } else {
     PetscCheckFalse(sz != 27,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Format size %zu should be 27",sz);
   }
-  ierr = PetscMalloc1(sz,&newformatstr);CHKERRQ(ierr);
-  ierr = PetscFormatConvert(formatstr,newformatstr);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,newformatstr,twentytwo,3.47,3.0);CHKERRQ(ierr);
-  ierr = PetscFree(newformatstr);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(sz,&newformatstr));
+  CHKERRQ(PetscFormatConvert(formatstr,newformatstr));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,newformatstr,twentytwo,3.47,3.0));
+  CHKERRQ(PetscFree(newformatstr));
 
   /* Test correct count is returned with %g format */
-  ierr = PetscSNPrintfCount(buffer,sizeof(buffer),"Test %g %g\n",&sz,3.33,2.7);CHKERRQ(ierr);
-  ierr = PetscStrlen(buffer,&fullLength);CHKERRQ(ierr);
+  CHKERRQ(PetscSNPrintfCount(buffer,sizeof(buffer),"Test %g %g\n",&sz,3.33,2.7));
+  CHKERRQ(PetscStrlen(buffer,&fullLength));
   PetscCheckFalse(sz != fullLength+1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscSNPrintfCount() count should be %d it is %d",(int)fullLength+1,(int)sz);
 
   /* test that TestPetscVSNPrintf() fullLength argument returns required space for the string when buffer is long enough */
-  ierr = TestPetscVSNPrintf(buffer,sizeof(buffer),&fullLength,"Greetings %s","This is my string");CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"buffer :%s: fullLength %d\n",buffer,(int)fullLength);CHKERRQ(ierr);
+  CHKERRQ(TestPetscVSNPrintf(buffer,sizeof(buffer),&fullLength,"Greetings %s","This is my string"));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"buffer :%s: fullLength %d\n",buffer,(int)fullLength));
 
   /* test that TestPetscVSNPrintf() fullLength argument returns required space for the string when buffer is not long enough */
   for (i=0; i<255; i++) {longstr[i] = 's';} longstr[255] = 0;
-  ierr = TestPetscVSNPrintf(buffer,sizeof(buffer),&fullLength,"Greetings %s",longstr);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"longstr fullLength %d\n",(int)fullLength);CHKERRQ(ierr);
+  CHKERRQ(TestPetscVSNPrintf(buffer,sizeof(buffer),&fullLength,"Greetings %s",longstr));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"longstr fullLength %d\n",(int)fullLength));
 
   /* test that PetscPrintf() works for strings longer than the default buffer size */
   for (i=0; i<9998; i++) {superlongstr[i] = 's';} superlongstr[9998] = 't'; superlongstr[9999] = 0;
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Greetings %s",superlongstr);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Greetings %s",superlongstr));
 
   /* test that PetscSynchronizedPrintf() works for strings longer than the default buffer size */
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Greetings %s",superlongstr);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
+  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Greetings %s",superlongstr));
+  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout));
 
   /* test that PetscSynchronizedFPrintf() works for strings longer than the default buffer size */
-  ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"Greetings %s",superlongstr);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
+  CHKERRQ(PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"Greetings %s",superlongstr));
+  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout));
 
   /* test that PetscSynchronizedFPrintf() works for strings longer than the default buffer size */
-  ierr = PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"Greetings %s",superlongstr);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"Greetings %s",superlongstr));
+  CHKERRQ(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
 
   /* add new line to end of file so that diff does not warn about it being missing */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n"));
   ierr = PetscFinalize();
   return ierr;
 }
@@ -69,11 +69,10 @@ int main(int argc,char **argv)
 PetscErrorCode TestPetscVSNPrintf(char *str,size_t l_str,size_t *fullLength,const char* format,...)
 {
   va_list        Argp;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   va_start(Argp,format);
-  ierr = PetscVSNPrintf(str,l_str,format,fullLength,Argp);CHKERRQ(ierr);
+  CHKERRQ(PetscVSNPrintf(str,l_str,format,fullLength,Argp));
   PetscFunctionReturn(0);
 }
 /*TEST

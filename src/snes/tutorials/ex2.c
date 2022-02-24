@@ -49,16 +49,16 @@ int main(int argc,char **argv)
   PetscReal      abstol,rtol,stol,norm;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only!");
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   h    = 1.0/(n-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine
@@ -66,26 +66,26 @@ int main(int argc,char **argv)
   /*
      Note that we form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&F);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&U);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
+  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,n));
+  CHKERRQ(VecSetFromOptions(x));
+  CHKERRQ(VecDuplicate(x,&r));
+  CHKERRQ(VecDuplicate(x,&F));
+  CHKERRQ(VecDuplicate(x,&U));
 
   /*
      Set function evaluation routine and vector
   */
-  ierr = SNESSetFunction(snes,r,FormFunction,(void*)F);CHKERRQ(ierr);
+  CHKERRQ(SNESSetFunction(snes,r,FormFunction,(void*)F));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
-  ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(J);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(J,3,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&J));
+  CHKERRQ(MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,n,n));
+  CHKERRQ(MatSetFromOptions(J));
+  CHKERRQ(MatSeqAIJSetPreallocation(J,3,NULL));
 
   /*
      Set Jacobian matrix data structure and default Jacobian evaluation
@@ -98,7 +98,7 @@ int main(int argc,char **argv)
                          products within Newton-Krylov method
   */
 
-  ierr = SNESSetJacobian(snes,J,J,FormJacobian,NULL);CHKERRQ(ierr);
+  CHKERRQ(SNESSetJacobian(snes,J,J,FormJacobian,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -107,28 +107,28 @@ int main(int argc,char **argv)
   /*
      Set an optional user-defined monitoring routine
   */
-  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer);CHKERRQ(ierr);
-  ierr = SNESMonitorSet(snes,Monitor,&monP,0);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer));
+  CHKERRQ(SNESMonitorSet(snes,Monitor,&monP,0));
 
   /*
      Set names for some vectors to facilitate monitoring (optional)
   */
-  ierr = PetscObjectSetName((PetscObject)x,"Approximate Solution");CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)U,"Exact Solution");CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetName((PetscObject)x,"Approximate Solution"));
+  CHKERRQ(PetscObjectSetName((PetscObject)U,"Exact Solution"));
 
   /*
      Set SNES/KSP/KSP/PC runtime options, e.g.,
          -snes_view -snes_monitor -ksp_type <ksp> -pc_type <pc>
   */
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  CHKERRQ(SNESSetFromOptions(snes));
 
   /*
      Print parameters used for convergence testing (optional) ... just
      to demonstrate this routine; this information is also printed with
      the option -snes_view
   */
-  ierr = SNESGetTolerances(snes,&abstol,&rtol,&stol,&maxit,&maxf);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%D, maxf=%D\n",(double)abstol,(double)rtol,(double)stol,maxit,maxf);CHKERRQ(ierr);
+  CHKERRQ(SNESGetTolerances(snes,&abstol,&rtol,&stol,&maxit,&maxf));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%D, maxf=%D\n",(double)abstol,(double)rtol,(double)stol,maxit,maxf));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize application:
@@ -138,9 +138,9 @@ int main(int argc,char **argv)
   xp = 0.0;
   for (i=0; i<n; i++) {
     v    = 6.0*xp + PetscPowScalar(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
-    ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(F,1,&i,&v,INSERT_VALUES));
     v    = xp*xp*xp;
-    ierr = VecSetValues(U,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(U,1,&i,&v,INSERT_VALUES));
     xp  += h;
   }
 
@@ -153,10 +153,10 @@ int main(int argc,char **argv)
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-  ierr = FormInitialGuess(x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
-  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"number of SNES iterations = %D\n\n",its);CHKERRQ(ierr);
+  CHKERRQ(FormInitialGuess(x));
+  CHKERRQ(SNESSolve(snes,NULL,x));
+  CHKERRQ(SNESGetIterationNumber(snes,&its));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"number of SNES iterations = %D\n\n",its));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Check solution and clean up
@@ -165,18 +165,18 @@ int main(int argc,char **argv)
   /*
      Check the error
   */
-  ierr = VecAXPY(x,none,U);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(x,none,U));
+  CHKERRQ(VecNorm(x,NORM_2,&norm));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = VecDestroy(&x);CHKERRQ(ierr);  ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = VecDestroy(&U);CHKERRQ(ierr);  ierr = VecDestroy(&F);CHKERRQ(ierr);
-  ierr = MatDestroy(&J);CHKERRQ(ierr);  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&monP.viewer);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));  CHKERRQ(VecDestroy(&r));
+  CHKERRQ(VecDestroy(&U));  CHKERRQ(VecDestroy(&F));
+  CHKERRQ(MatDestroy(&J));  CHKERRQ(SNESDestroy(&snes));
+  CHKERRQ(PetscViewerDestroy(&monP.viewer));
   ierr = PetscFinalize();
   return ierr;
 }
@@ -189,9 +189,8 @@ int main(int argc,char **argv)
 */
 PetscErrorCode FormInitialGuess(Vec x)
 {
-  PetscErrorCode ierr;
   PetscScalar    pfive = .50;
-  ierr = VecSet(x,pfive);CHKERRQ(ierr);
+  CHKERRQ(VecSet(x,pfive));
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -218,7 +217,6 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   Vec               g = (Vec)ctx;
   const PetscScalar *xx,*gg;
   PetscScalar       *ff,d;
-  PetscErrorCode    ierr;
   PetscInt          i,n;
 
   /*
@@ -228,14 +226,14 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
-  ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(g,&gg);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(x,&xx));
+  CHKERRQ(VecGetArray(f,&ff));
+  CHKERRQ(VecGetArrayRead(g,&gg));
 
   /*
      Compute function
   */
-  ierr  = VecGetSize(x,&n);CHKERRQ(ierr);
+  CHKERRQ(VecGetSize(x,&n));
   d     = (PetscReal)(n - 1); d = d*d;
   ff[0] = xx[0];
   for (i=1; i<n-1; i++) ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - gg[i];
@@ -244,9 +242,9 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   /*
      Restore vectors
   */
-  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(g,&gg);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(x,&xx));
+  CHKERRQ(VecRestoreArray(f,&ff));
+  CHKERRQ(VecRestoreArrayRead(g,&gg));
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -268,20 +266,19 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 {
   const PetscScalar *xx;
   PetscScalar       A[3],d;
-  PetscErrorCode    ierr;
   PetscInt          i,n,j[3];
 
   /*
      Get pointer to vector data
   */
-  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(x,&xx));
 
   /*
      Compute Jacobian entries and insert into matrix.
       - Note that in this case we set all elements for a particular
         row at once.
   */
-  ierr = VecGetSize(x,&n);CHKERRQ(ierr);
+  CHKERRQ(VecGetSize(x,&n));
   d    = (PetscReal)(n - 1); d = d*d;
 
   /*
@@ -290,7 +287,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   for (i=1; i<n-1; i++) {
     j[0] = i - 1; j[1] = i; j[2] = i + 1;
     A[0] = A[2] = d; A[1] = -2.0*d + 2.0*xx[i];
-    ierr = MatSetValues(B,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(B,1,&i,3,j,A,INSERT_VALUES));
   }
 
   /*
@@ -298,25 +295,25 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
   */
   i = 0;   A[0] = 1.0;
 
-  ierr = MatSetValues(B,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(B,1,&i,1,&i,A,INSERT_VALUES));
 
   i = n-1; A[0] = 1.0;
 
-  ierr = MatSetValues(B,1,&i,1,&i,A,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(B,1,&i,1,&i,A,INSERT_VALUES));
 
   /*
      Restore vector
   */
-  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(x,&xx));
 
   /*
      Assemble matrix
   */
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   if (jac != B) {
-    ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   }
   return 0;
 }
@@ -338,13 +335,12 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
  */
 PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
 {
-  PetscErrorCode ierr;
   MonitorCtx     *monP = (MonitorCtx*) ctx;
   Vec            x;
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"iter = %D, SNES Function norm %g\n",its,(double)fnorm);CHKERRQ(ierr);
-  ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
-  ierr = VecView(x,monP->viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"iter = %D, SNES Function norm %g\n",its,(double)fnorm));
+  CHKERRQ(SNESGetSolution(snes,&x));
+  CHKERRQ(VecView(x,monP->viewer));
   return 0;
 }
 

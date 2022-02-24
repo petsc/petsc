@@ -36,26 +36,26 @@ int main(int argc,char **argv)
     Note each processor is generating its own index set
     (in this case they are all identical)
   */
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,first,step,&set);CHKERRQ(ierr);
-  ierr = ISView(set,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,n,first,step,&set));
+  CHKERRQ(ISView(set,PETSC_VIEWER_STDOUT_SELF));
 
   /*
     Extract indices from set.
   */
-  ierr = ISGetIndices(set,&indices);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Printing indices directly\n");CHKERRQ(ierr);
+  CHKERRQ(ISGetIndices(set,&indices));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Printing indices directly\n"));
   for (i=0; i<n; i++) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "\n",indices[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "\n",indices[i]));
   }
 
-  ierr = ISRestoreIndices(set,&indices);CHKERRQ(ierr);
+  CHKERRQ(ISRestoreIndices(set,&indices));
 
   /*
       Determine information on stride
   */
-  ierr = ISStrideGetInfo(set,&first,&step);CHKERRQ(ierr);
+  CHKERRQ(ISStrideGetInfo(set,&first,&step));
   PetscCheckFalse(first != 3 || step != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stride info not correct!");
-  ierr = ISDestroy(&set);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&set));
   ierr = PetscFinalize();
   return ierr;
 }

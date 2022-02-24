@@ -3,15 +3,13 @@
 
 PETSC_EXTERN PetscErrorCode PetscHIPHostMalloc(size_t a,PetscBool clear,int lineno,const char function[],const char filename[],void **result)
 {
-  hipError_t ierr;
-  ierr = hipHostMalloc(result,a);CHKERRHIP(ierr);
+  CHKERRHIP(hipHostMalloc(result,a));
   return 0;
 }
 
 PETSC_EXTERN PetscErrorCode PetscHIPHostFree(void *aa,int lineno,const char function[],const char filename[])
 {
-  hipError_t ierr;
-  ierr = hipHostFree(aa);CHKERRHIP(ierr);
+  CHKERRHIP(hipHostFree(aa));
   return 0;
 }
 

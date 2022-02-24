@@ -39,8 +39,8 @@ int main(int argc, char *argv[])
      The following MPI calls return the number of processes
      being used and the rank of this process in the group.
    */
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /*
      Here we would like to print only one message that represents
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
      communicator PETSC_COMM_WORLD.  Thus, only one message is
      printed representng PETSC_COMM_WORLD, i.e., all the processors.
   */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of processors = %d, rank = %d\n", size, rank);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Number of processors = %d, rank = %d\n", size, rank));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

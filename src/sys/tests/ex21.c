@@ -17,30 +17,30 @@ int main(int argc,char **argv)
   PetscInt       Nlevels,*Level,*Levelcnt,*Idbylevel,*Column;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = PetscProcessTree(n,mask,parentId,&Nlevels,&Level,&Levelcnt,&Idbylevel,&Column);CHKERRQ(ierr);
+  CHKERRQ(PetscProcessTree(n,mask,parentId,&Nlevels,&Level,&Levelcnt,&Idbylevel,&Column));
   for (i=0; i<n; i++) {
     if (!mask[i]) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD," %" PetscInt_FMT " ",Level[i]);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," %" PetscInt_FMT " ",Level[i]));
     }
   }
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\nNumber of levels %" PetscInt_FMT "\n",Nlevels);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nNumber of levels %" PetscInt_FMT "\n",Nlevels));
   for (i=0; i<Nlevels; i++) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nLevel %" PetscInt_FMT " ",i);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nLevel %" PetscInt_FMT " ",i));
     for (j=0; j<Levelcnt[i]; j++) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " ",Idbylevel[cnt++]);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " ",Idbylevel[cnt++]));
     }
   }
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\nColumn of each node");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nColumn of each node"));
   for (i=0; i<n; i++) {
     if (!mask[i]) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD," %" PetscInt_FMT " ",Column[i]);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," %" PetscInt_FMT " ",Column[i]));
     }
   }
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
-  ierr = PetscFree(Level);CHKERRQ(ierr);
-  ierr = PetscFree(Levelcnt);CHKERRQ(ierr);
-  ierr = PetscFree(Idbylevel);CHKERRQ(ierr);
-  ierr = PetscFree(Column);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n"));
+  CHKERRQ(PetscFree(Level));
+  CHKERRQ(PetscFree(Levelcnt));
+  CHKERRQ(PetscFree(Idbylevel));
+  CHKERRQ(PetscFree(Column));
   ierr = PetscFinalize();
   return ierr;
 }

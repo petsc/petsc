@@ -71,38 +71,35 @@ static PetscErrorCode DivideDomain(DM dm, AppCtx *user)
   DMLabel        top, bottom;
   PetscReal      low[3], high[3], midy;
   PetscInt       cStart, cEnd, c;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMCreateLabel(dm, "top");CHKERRQ(ierr);
-  ierr = DMCreateLabel(dm, "bottom");CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "top", &top);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "bottom", &bottom);CHKERRQ(ierr);
-  ierr = DMGetBoundingBox(dm, low, high);CHKERRQ(ierr);
+  CHKERRQ(DMCreateLabel(dm, "top"));
+  CHKERRQ(DMCreateLabel(dm, "bottom"));
+  CHKERRQ(DMGetLabel(dm, "top", &top));
+  CHKERRQ(DMGetLabel(dm, "bottom", &bottom));
+  CHKERRQ(DMGetBoundingBox(dm, low, high));
   midy = 0.5*(high[1] - low[1]);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   for (c = cStart; c < cEnd; ++c) {
     PetscReal centroid[3];
 
-    ierr = DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL);CHKERRQ(ierr);
-    if (centroid[1] > midy) {ierr = DMLabelSetValue(top, c, 1);CHKERRQ(ierr);}
-    else                    {ierr = DMLabelSetValue(bottom, c, 1);CHKERRQ(ierr);}
+    CHKERRQ(DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL));
+    if (centroid[1] > midy) CHKERRQ(DMLabelSetValue(top, c, 1));
+    else                    CHKERRQ(DMLabelSetValue(bottom, c, 1));
   }
-  ierr = DMPlexLabelComplete(dm, top);CHKERRQ(ierr);
+  CHKERRQ(DMPlexLabelComplete(dm, top));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DivideDomain(*dm, user);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(*dm, user);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreate(comm, dm));
+  CHKERRQ(DMSetType(*dm, DMPLEX));
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(DivideDomain(*dm, user));
+  CHKERRQ(DMSetApplicationContext(*dm, user));
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -112,24 +109,23 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   PetscWeakForm  wf;
   DMLabel        label;
   const PetscInt id = 1;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetRegionNumDS(dm, 0, &label, NULL, &ds);CHKERRQ(ierr);
-  ierr = PetscDSGetWeakForm(ds, &wf);CHKERRQ(ierr);
-  ierr = PetscWeakFormSetIndexResidual(wf, label, 1, 0, 0, 0, f0_quad_u, 0, f1_u);CHKERRQ(ierr);
-  ierr = PetscWeakFormSetIndexJacobian(wf, label, 1, 0, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu);CHKERRQ(ierr);
-  ierr = PetscDSSetExactSolution(ds, 0, quad_u, user);CHKERRQ(ierr);
-  ierr = DMGetRegionNumDS(dm, 1, &label, NULL, &ds);CHKERRQ(ierr);
-  ierr = PetscDSGetWeakForm(ds, &wf);CHKERRQ(ierr);
-  ierr = PetscWeakFormSetIndexResidual(wf, label, 1, 0, 0, 0, f0_quad_u, 0, f1_u);CHKERRQ(ierr);
-  ierr = PetscWeakFormSetIndexJacobian(wf, label, 1, 0, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu);CHKERRQ(ierr);
-  ierr = PetscWeakFormSetIndexResidual(wf, label, 1, 1, 0, 0, f0_quad_p, 0, NULL);CHKERRQ(ierr);
-  ierr = PetscWeakFormSetIndexJacobian(wf, label, 1, 1, 1, 0, 0, g0_pp, 0, NULL, 0, NULL, 0, NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetExactSolution(ds, 0, quad_u, user);CHKERRQ(ierr);
-  ierr = PetscDSSetExactSolution(ds, 1, quad_p, user);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
-  ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) quad_u, NULL, user, NULL);CHKERRQ(ierr);
+  CHKERRQ(DMGetRegionNumDS(dm, 0, &label, NULL, &ds));
+  CHKERRQ(PetscDSGetWeakForm(ds, &wf));
+  CHKERRQ(PetscWeakFormSetIndexResidual(wf, label, 1, 0, 0, 0, f0_quad_u, 0, f1_u));
+  CHKERRQ(PetscWeakFormSetIndexJacobian(wf, label, 1, 0, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu));
+  CHKERRQ(PetscDSSetExactSolution(ds, 0, quad_u, user));
+  CHKERRQ(DMGetRegionNumDS(dm, 1, &label, NULL, &ds));
+  CHKERRQ(PetscDSGetWeakForm(ds, &wf));
+  CHKERRQ(PetscWeakFormSetIndexResidual(wf, label, 1, 0, 0, 0, f0_quad_u, 0, f1_u));
+  CHKERRQ(PetscWeakFormSetIndexJacobian(wf, label, 1, 0, 0, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu));
+  CHKERRQ(PetscWeakFormSetIndexResidual(wf, label, 1, 1, 0, 0, f0_quad_p, 0, NULL));
+  CHKERRQ(PetscWeakFormSetIndexJacobian(wf, label, 1, 1, 1, 0, 0, g0_pp, 0, NULL, 0, NULL, 0, NULL));
+  CHKERRQ(PetscDSSetExactSolution(ds, 0, quad_u, user));
+  CHKERRQ(PetscDSSetExactSolution(ds, 1, quad_p, user));
+  CHKERRQ(DMGetLabel(dm, "marker", &label));
+  CHKERRQ(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) quad_u, NULL, user, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -143,29 +139,28 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
   PetscBool       simplex;
   const char     *nameTop = "pressure";
   char            prefix[PETSC_MAX_PATH_LEN];
-  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, simplex, name ? prefix : NULL, -1, &fe);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe, name);CHKERRQ(ierr);
-  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = PetscFEGetQuadrature(fe, &q);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "top", &top);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_top_", nameTop);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, simplex, name ? prefix : NULL, -1, &feTop);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) feTop, nameTop);CHKERRQ(ierr);
-  ierr = PetscFESetQuadrature(feTop, q);CHKERRQ(ierr);
-  ierr = DMSetField(dm, 1, top, (PetscObject) feTop);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&feTop);CHKERRQ(ierr);
-  ierr = DMCreateDS(dm);CHKERRQ(ierr);
-  ierr = (*setup)(dm, user);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(DMPlexIsSimplex(dm, &simplex));
+  CHKERRQ(PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_", name));
+  CHKERRQ(PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, simplex, name ? prefix : NULL, -1, &fe));
+  CHKERRQ(PetscObjectSetName((PetscObject) fe, name));
+  CHKERRQ(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  CHKERRQ(PetscFEGetQuadrature(fe, &q));
+  CHKERRQ(PetscFEDestroy(&fe));
+  CHKERRQ(DMGetLabel(dm, "top", &top));
+  CHKERRQ(PetscSNPrintf(prefix, PETSC_MAX_PATH_LEN, "%s_top_", nameTop));
+  CHKERRQ(PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, simplex, name ? prefix : NULL, -1, &feTop));
+  CHKERRQ(PetscObjectSetName((PetscObject) feTop, nameTop));
+  CHKERRQ(PetscFESetQuadrature(feTop, q));
+  CHKERRQ(DMSetField(dm, 1, top, (PetscObject) feTop));
+  CHKERRQ(PetscFEDestroy(&feTop));
+  CHKERRQ(DMCreateDS(dm));
+  CHKERRQ((*setup)(dm, user));
   while (cdm) {
-    ierr = DMCopyDisc(dm,cdm);CHKERRQ(ierr);
-    ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+    CHKERRQ(DMCopyDisc(dm,cdm));
+    CHKERRQ(DMGetCoarseDM(cdm, &cdm));
   }
   PetscFunctionReturn(0);
 }
@@ -180,23 +175,23 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   /* Primal system */
-  ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = SNESSetDM(snes, dm);CHKERRQ(ierr);
-  ierr = SetupDiscretization(dm, "potential", SetupPrimalProblem, &user);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = VecSet(u, 0.0);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) u, "solution");CHKERRQ(ierr);
-  ierr = DMPlexSetSNESLocalFEM(dm, &user, &user, &user);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = DMSNESCheckFromOptions(snes, u);CHKERRQ(ierr);
-  ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
-  ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(u, NULL, "-sol_view");CHKERRQ(ierr);
+  CHKERRQ(SNESCreate(PETSC_COMM_WORLD, &snes));
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  CHKERRQ(SNESSetDM(snes, dm));
+  CHKERRQ(SetupDiscretization(dm, "potential", SetupPrimalProblem, &user));
+  CHKERRQ(DMCreateGlobalVector(dm, &u));
+  CHKERRQ(VecSet(u, 0.0));
+  CHKERRQ(PetscObjectSetName((PetscObject) u, "solution"));
+  CHKERRQ(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));
+  CHKERRQ(SNESSetFromOptions(snes));
+  CHKERRQ(DMSNESCheckFromOptions(snes, u));
+  CHKERRQ(SNESSolve(snes, NULL, u));
+  CHKERRQ(SNESGetSolution(snes, &u));
+  CHKERRQ(VecViewFromOptions(u, NULL, "-sol_view"));
   /* Cleanup */
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&u));
+  CHKERRQ(SNESDestroy(&snes));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

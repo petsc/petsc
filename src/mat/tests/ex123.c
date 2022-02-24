@@ -28,46 +28,46 @@ int main(int argc,char **args)
   PetscErrorCode         ierr;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-neg",&neg,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-loc",&loc,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-locdiag",&locdiag,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-localapi",&localapi,NULL);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-neg",&neg,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-loc",&loc,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-locdiag",&locdiag,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-localapi",&localapi,NULL));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
   if (loc) {
     if (locdiag) {
-      ierr = MatSetSizes(A,m,N,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+      CHKERRQ(MatSetSizes(A,m,N,PETSC_DECIDE,PETSC_DECIDE));
     } else {
-      ierr = MatSetSizes(A,m,m+N,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+      CHKERRQ(MatSetSizes(A,m,m+N,PETSC_DECIDE,PETSC_DECIDE));
     }
   } else {
-    ierr = MatSetSizes(A,m,PETSC_DECIDE,PETSC_DECIDE,N);CHKERRQ(ierr);
+    CHKERRQ(MatSetSizes(A,m,PETSC_DECIDE,PETSC_DECIDE,N));
   }
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatGetLayouts(A,&rmap,&cmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(cmap);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRange(rmap,&rstart,NULL);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRange(cmap,&cstart,NULL);CHKERRQ(ierr);
-  ierr = PetscLayoutGetSize(rmap,&M);CHKERRQ(ierr);
-  ierr = PetscLayoutGetSize(cmap,&N);CHKERRQ(ierr);
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatGetLayouts(A,&rmap,&cmap));
+  CHKERRQ(PetscLayoutSetUp(rmap));
+  CHKERRQ(PetscLayoutSetUp(cmap));
+  CHKERRQ(PetscLayoutGetRange(rmap,&rstart,NULL));
+  CHKERRQ(PetscLayoutGetRange(cmap,&cstart,NULL));
+  CHKERRQ(PetscLayoutGetSize(rmap,&M));
+  CHKERRQ(PetscLayoutGetSize(cmap,&N));
 
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATIS,&ismatis);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATIS,&ismatis));
 
   /* create fake l2g maps to test the local API */
-  ierr = ISCreateStride(PETSC_COMM_WORLD,M-rstart,rstart,1,&is);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreateIS(is,&rl2g);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_WORLD,N,0,1,&is);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreateIS(is,&cl2g);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(A,rl2g,cl2g);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&rl2g);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&cl2g);CHKERRQ(ierr);
+  CHKERRQ(ISCreateStride(PETSC_COMM_WORLD,M-rstart,rstart,1,&is));
+  CHKERRQ(ISLocalToGlobalMappingCreateIS(is,&rl2g));
+  CHKERRQ(ISDestroy(&is));
+  CHKERRQ(ISCreateStride(PETSC_COMM_WORLD,N,0,1,&is));
+  CHKERRQ(ISLocalToGlobalMappingCreateIS(is,&cl2g));
+  CHKERRQ(ISDestroy(&is));
+  CHKERRQ(MatSetLocalToGlobalMapping(A,rl2g,cl2g));
+  CHKERRQ(ISLocalToGlobalMappingDestroy(&rl2g));
+  CHKERRQ(ISLocalToGlobalMappingDestroy(&cl2g));
 
-  ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,NULL,&z);CHKERRQ(ierr);
-  ierr = VecSet(x,1.);CHKERRQ(ierr);
-  ierr = VecSet(z,2.);CHKERRQ(ierr);
+  CHKERRQ(MatCreateVecs(A,&x,&y));
+  CHKERRQ(MatCreateVecs(A,NULL,&z));
+  CHKERRQ(VecSet(x,1.));
+  CHKERRQ(VecSet(z,2.));
   if (!localapi) for (i = 0; i < n1; i++) i1[i] += rstart;
   if (!localapi) for (i = 0; i < n2; i++) i2[i] += rstart;
   if (loc) {
@@ -81,84 +81,84 @@ int main(int argc,char **args)
   }
   if (neg) { n1 += 2; n2 += 2; }
   /* MatSetPreallocationCOOLocal maps the indices! */
-  ierr = PetscMalloc2(PetscMax(n1,n2),&it,PetscMax(n1,n2),&jt);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc2(PetscMax(n1,n2),&it,PetscMax(n1,n2),&jt));
   /* test with repeated entries */
   if (!localapi) {
-    ierr = MatSetPreallocationCOO(A,n1,i1,j1);CHKERRQ(ierr);
+    CHKERRQ(MatSetPreallocationCOO(A,n1,i1,j1));
   } else {
-    ierr = PetscArraycpy(it,i1,n1);CHKERRQ(ierr);
-    ierr = PetscArraycpy(jt,j1,n1);CHKERRQ(ierr);
-    ierr = MatSetPreallocationCOOLocal(A,n1,it,jt);CHKERRQ(ierr);
+    CHKERRQ(PetscArraycpy(it,i1,n1));
+    CHKERRQ(PetscArraycpy(jt,j1,n1));
+    CHKERRQ(MatSetPreallocationCOOLocal(A,n1,it,jt));
   }
-  ierr = MatSetValuesCOO(A,v1,ADD_VALUES);CHKERRQ(ierr);
-  ierr = MatMult(A,x,y);CHKERRQ(ierr);
-  ierr = MyMatView(A,NULL);CHKERRQ(ierr);
-  ierr = MyVecView(y,NULL);CHKERRQ(ierr);
-  ierr = MatSetValuesCOO(A,v2,ADD_VALUES);CHKERRQ(ierr);
-  ierr = MatMultAdd(A,x,y,y);CHKERRQ(ierr);
-  ierr = MyMatView(A,NULL);CHKERRQ(ierr);
-  ierr = MyVecView(y,NULL);CHKERRQ(ierr);
-  ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
+  CHKERRQ(MatSetValuesCOO(A,v1,ADD_VALUES));
+  CHKERRQ(MatMult(A,x,y));
+  CHKERRQ(MyMatView(A,NULL));
+  CHKERRQ(MyVecView(y,NULL));
+  CHKERRQ(MatSetValuesCOO(A,v2,ADD_VALUES));
+  CHKERRQ(MatMultAdd(A,x,y,y));
+  CHKERRQ(MyMatView(A,NULL));
+  CHKERRQ(MyVecView(y,NULL));
+  CHKERRQ(MatTranspose(A,MAT_INITIAL_MATRIX,&At));
   if (!ismatis) {
-    ierr = MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt);CHKERRQ(ierr);
-    ierr = MyMatView(AAt,NULL);CHKERRQ(ierr);
-    ierr = MatDestroy(&AAt);CHKERRQ(ierr);
-    ierr = MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt);CHKERRQ(ierr);
-    ierr = MyMatView(AAt,NULL);CHKERRQ(ierr);
-    ierr = MatDestroy(&AAt);CHKERRQ(ierr);
+    CHKERRQ(MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
+    CHKERRQ(MyMatView(AAt,NULL));
+    CHKERRQ(MatDestroy(&AAt));
+    CHKERRQ(MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
+    CHKERRQ(MyMatView(AAt,NULL));
+    CHKERRQ(MatDestroy(&AAt));
   }
-  ierr = MatDestroy(&At);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&At));
 
   /* INSERT_VALUES will overwrite matrix entries but
      still perform the sum of the repeated entries */
-  ierr = MatSetValuesCOO(A,v2,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MyMatView(A,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatSetValuesCOO(A,v2,INSERT_VALUES));
+  CHKERRQ(MyMatView(A,NULL));
 
   /* test with unique entries */
   if (!localapi) {
-    ierr = MatSetPreallocationCOO(A,n2,i2,j2);CHKERRQ(ierr);
+    CHKERRQ(MatSetPreallocationCOO(A,n2,i2,j2));
   } else {
-    ierr = PetscArraycpy(it,i2,n2);CHKERRQ(ierr);
-    ierr = PetscArraycpy(jt,j2,n2);CHKERRQ(ierr);
-    ierr = MatSetPreallocationCOOLocal(A,n2,it,jt);CHKERRQ(ierr);
+    CHKERRQ(PetscArraycpy(it,i2,n2));
+    CHKERRQ(PetscArraycpy(jt,j2,n2));
+    CHKERRQ(MatSetPreallocationCOOLocal(A,n2,it,jt));
   }
-  ierr = MatSetValuesCOO(A,v1,ADD_VALUES);CHKERRQ(ierr);
-  ierr = MatMult(A,x,y);CHKERRQ(ierr);
-  ierr = MyMatView(A,NULL);CHKERRQ(ierr);
-  ierr = MyVecView(y,NULL);CHKERRQ(ierr);
-  ierr = MatSetValuesCOO(A,v2,ADD_VALUES);CHKERRQ(ierr);
-  ierr = MatMultAdd(A,x,y,z);CHKERRQ(ierr);
-  ierr = MyMatView(A,NULL);CHKERRQ(ierr);
-  ierr = MyVecView(z,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatSetValuesCOO(A,v1,ADD_VALUES));
+  CHKERRQ(MatMult(A,x,y));
+  CHKERRQ(MyMatView(A,NULL));
+  CHKERRQ(MyVecView(y,NULL));
+  CHKERRQ(MatSetValuesCOO(A,v2,ADD_VALUES));
+  CHKERRQ(MatMultAdd(A,x,y,z));
+  CHKERRQ(MyMatView(A,NULL));
+  CHKERRQ(MyVecView(z,NULL));
   if (!localapi) {
-    ierr = MatSetPreallocationCOO(A,n2,i2,j2);CHKERRQ(ierr);
+    CHKERRQ(MatSetPreallocationCOO(A,n2,i2,j2));
   } else {
-    ierr = PetscArraycpy(it,i2,n2);CHKERRQ(ierr);
-    ierr = PetscArraycpy(jt,j2,n2);CHKERRQ(ierr);
-    ierr = MatSetPreallocationCOOLocal(A,n2,it,jt);CHKERRQ(ierr);
+    CHKERRQ(PetscArraycpy(it,i2,n2));
+    CHKERRQ(PetscArraycpy(jt,j2,n2));
+    CHKERRQ(MatSetPreallocationCOOLocal(A,n2,it,jt));
   }
-  ierr = MatSetValuesCOO(A,v1,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatMult(A,x,y);CHKERRQ(ierr);
-  ierr = MyMatView(A,NULL);CHKERRQ(ierr);
-  ierr = MyVecView(y,NULL);CHKERRQ(ierr);
-  ierr = MatSetValuesCOO(A,v2,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatMultAdd(A,x,y,z);CHKERRQ(ierr);
-  ierr = MyMatView(A,NULL);CHKERRQ(ierr);
-  ierr = MyVecView(z,NULL);CHKERRQ(ierr);
-  ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
+  CHKERRQ(MatSetValuesCOO(A,v1,INSERT_VALUES));
+  CHKERRQ(MatMult(A,x,y));
+  CHKERRQ(MyMatView(A,NULL));
+  CHKERRQ(MyVecView(y,NULL));
+  CHKERRQ(MatSetValuesCOO(A,v2,INSERT_VALUES));
+  CHKERRQ(MatMultAdd(A,x,y,z));
+  CHKERRQ(MyMatView(A,NULL));
+  CHKERRQ(MyVecView(z,NULL));
+  CHKERRQ(MatTranspose(A,MAT_INITIAL_MATRIX,&At));
   if (!ismatis) {
-    ierr = MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt);CHKERRQ(ierr);
-    ierr = MyMatView(AAt,NULL);CHKERRQ(ierr);
-    ierr = MatDestroy(&AAt);CHKERRQ(ierr);
-    ierr = MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt);CHKERRQ(ierr);
-    ierr = MyMatView(AAt,NULL);CHKERRQ(ierr);
-    ierr = MatDestroy(&AAt);CHKERRQ(ierr);
+    CHKERRQ(MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
+    CHKERRQ(MyMatView(AAt,NULL));
+    CHKERRQ(MatDestroy(&AAt));
+    CHKERRQ(MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
+    CHKERRQ(MyMatView(AAt,NULL));
+    CHKERRQ(MatDestroy(&AAt));
   }
-  ierr = MatDestroy(&At);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&At));
 
   /* test providing diagonal first, then offdiagonal */
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
-  ierr = PetscObjectBaseTypeCompare((PetscObject)A,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
+  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)A,MATMPIAIJ,&ismpiaij));
   if (ismpiaij && size > 1) {
     Mat               lA,lB;
     const PetscInt    *garray,*iA,*jA,*iB,*jB;
@@ -168,13 +168,13 @@ int main(int argc,char **args)
     PetscInt          i,j,nA,nB,nnz;
     PetscBool         flg;
 
-    ierr = MatMPIAIJGetSeqAIJ(A,&lA,&lB,&garray);CHKERRQ(ierr);
-    ierr = MatSeqAIJGetArrayRead(lA,&vA);CHKERRQ(ierr);
-    ierr = MatSeqAIJGetArrayRead(lB,&vB);CHKERRQ(ierr);
-    ierr = MatGetRowIJ(lA,0,PETSC_FALSE,PETSC_FALSE,&nA,&iA,&jA,&flg);CHKERRQ(ierr);
-    ierr = MatGetRowIJ(lB,0,PETSC_FALSE,PETSC_FALSE,&nB,&iB,&jB,&flg);CHKERRQ(ierr);
+    CHKERRQ(MatMPIAIJGetSeqAIJ(A,&lA,&lB,&garray));
+    CHKERRQ(MatSeqAIJGetArrayRead(lA,&vA));
+    CHKERRQ(MatSeqAIJGetArrayRead(lB,&vB));
+    CHKERRQ(MatGetRowIJ(lA,0,PETSC_FALSE,PETSC_FALSE,&nA,&iA,&jA,&flg));
+    CHKERRQ(MatGetRowIJ(lB,0,PETSC_FALSE,PETSC_FALSE,&nB,&iB,&jB,&flg));
     nnz  = iA[nA] + iB[nB];
-    ierr = PetscMalloc3(nnz,&coo_i,nnz,&coo_j,nnz,&coo_v);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc3(nnz,&coo_i,nnz,&coo_j,nnz,&coo_v));
     nnz  = 0;
     for (i=0;i<nA;i++) {
       for (j=iA[i];j<iA[i+1];j++,nnz++) {
@@ -190,36 +190,36 @@ int main(int argc,char **args)
         coo_v[nnz] = vB[j];
       }
     }
-    ierr = MatRestoreRowIJ(lA,0,PETSC_FALSE,PETSC_FALSE,&nA,&iA,&jA,&flg);CHKERRQ(ierr);
-    ierr = MatRestoreRowIJ(lB,0,PETSC_FALSE,PETSC_FALSE,&nB,&iB,&jB,&flg);CHKERRQ(ierr);
-    ierr = MatSeqAIJRestoreArrayRead(lA,&vA);CHKERRQ(ierr);
-    ierr = MatSeqAIJRestoreArrayRead(lB,&vB);CHKERRQ(ierr);
+    CHKERRQ(MatRestoreRowIJ(lA,0,PETSC_FALSE,PETSC_FALSE,&nA,&iA,&jA,&flg));
+    CHKERRQ(MatRestoreRowIJ(lB,0,PETSC_FALSE,PETSC_FALSE,&nB,&iB,&jB,&flg));
+    CHKERRQ(MatSeqAIJRestoreArrayRead(lA,&vA));
+    CHKERRQ(MatSeqAIJRestoreArrayRead(lB,&vB));
 
-    ierr = MatSetPreallocationCOO(A,nnz,coo_i,coo_j);CHKERRQ(ierr);
-    ierr = MatSetValuesCOO(A,coo_v,ADD_VALUES);CHKERRQ(ierr);
-    ierr = MatMult(A,x,y);CHKERRQ(ierr);
-    ierr = MyMatView(A,NULL);CHKERRQ(ierr);
-    ierr = MyVecView(y,NULL);CHKERRQ(ierr);
-    ierr = MatSetValuesCOO(A,coo_v,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatMult(A,x,y);CHKERRQ(ierr);
-    ierr = MyMatView(A,NULL);CHKERRQ(ierr);
-    ierr = MyVecView(y,NULL);CHKERRQ(ierr);
-    ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
-    ierr = MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt);CHKERRQ(ierr);
-    ierr = MyMatView(AAt,NULL);CHKERRQ(ierr);
-    ierr = MatDestroy(&AAt);CHKERRQ(ierr);
-    ierr = MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt);CHKERRQ(ierr);
-    ierr = MyMatView(AAt,NULL);CHKERRQ(ierr);
-    ierr = MatDestroy(&AAt);CHKERRQ(ierr);
-    ierr = MatDestroy(&At);CHKERRQ(ierr);
+    CHKERRQ(MatSetPreallocationCOO(A,nnz,coo_i,coo_j));
+    CHKERRQ(MatSetValuesCOO(A,coo_v,ADD_VALUES));
+    CHKERRQ(MatMult(A,x,y));
+    CHKERRQ(MyMatView(A,NULL));
+    CHKERRQ(MyVecView(y,NULL));
+    CHKERRQ(MatSetValuesCOO(A,coo_v,INSERT_VALUES));
+    CHKERRQ(MatMult(A,x,y));
+    CHKERRQ(MyMatView(A,NULL));
+    CHKERRQ(MyVecView(y,NULL));
+    CHKERRQ(MatTranspose(A,MAT_INITIAL_MATRIX,&At));
+    CHKERRQ(MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
+    CHKERRQ(MyMatView(AAt,NULL));
+    CHKERRQ(MatDestroy(&AAt));
+    CHKERRQ(MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt));
+    CHKERRQ(MyMatView(AAt,NULL));
+    CHKERRQ(MatDestroy(&AAt));
+    CHKERRQ(MatDestroy(&At));
 
-    ierr = PetscFree3(coo_i,coo_j,coo_v);CHKERRQ(ierr);
+    CHKERRQ(PetscFree3(coo_i,coo_j,coo_v));
   }
-  ierr = PetscFree2(it,jt);CHKERRQ(ierr);
-  ierr = VecDestroy(&z);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(PetscFree2(it,jt));
+  CHKERRQ(VecDestroy(&z));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
+  CHKERRQ(MatDestroy(&A));
   ierr = PetscFinalize();
   return ierr;
 }

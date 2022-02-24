@@ -17,116 +17,116 @@ int main(int argc,char **argv)
 
   /* ------- Assemble matrix, --------- */
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,4,4);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(mat);CHKERRQ(ierr);
-  ierr = MatSetUp(mat);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&mat));
+  CHKERRQ(MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,4,4));
+  CHKERRQ(MatSetFromOptions(mat));
+  CHKERRQ(MatSetUp(mat));
 
   /* set anti-diagonal of matrix */
   v    = 1.0;
   i    = 0; j = 3;
-  ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES));
   v    = 2.0;
   i    = 1; j = 2;
-  ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES));
   v    = 3.0;
   i    = 2; j = 1;
-  ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES));
   v    = 4.0;
   i    = 3; j = 0;
-  ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES));
+  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
 
-  ierr = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Original matrix\n");CHKERRQ(ierr);
-  ierr = MatView(mat,viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer));
+  CHKERRQ(PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_DENSE));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"Original matrix\n"));
+  CHKERRQ(MatView(mat,viewer));
 
-  ierr = MatGetOrdering(mat,MATORDERINGNATURAL,&isrow,&iscol);CHKERRQ(ierr);
+  CHKERRQ(MatGetOrdering(mat,MATORDERINGNATURAL,&isrow,&iscol));
 
-  ierr = MatPermute(mat,isrow,iscol,&B);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Original matrix permuted by identity\n");CHKERRQ(ierr);
-  ierr = MatView(B,viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  CHKERRQ(MatPermute(mat,isrow,iscol,&B));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"Original matrix permuted by identity\n"));
+  CHKERRQ(MatView(B,viewer));
+  CHKERRQ(MatDestroy(&B));
 
-  ierr = MatReorderForNonzeroDiagonal(mat,1.e-8,isrow,iscol);CHKERRQ(ierr);
-  ierr = MatPermute(mat,isrow,iscol,&B);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Original matrix permuted by identity + NonzeroDiagonal()\n");CHKERRQ(ierr);
-  ierr = MatView(B,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Row permutation\n");CHKERRQ(ierr);
-  ierr = ISView(isrow,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Column permutation\n");CHKERRQ(ierr);
-  ierr = ISView(iscol,viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  CHKERRQ(MatReorderForNonzeroDiagonal(mat,1.e-8,isrow,iscol));
+  CHKERRQ(MatPermute(mat,isrow,iscol,&B));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"Original matrix permuted by identity + NonzeroDiagonal()\n"));
+  CHKERRQ(MatView(B,viewer));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"Row permutation\n"));
+  CHKERRQ(ISView(isrow,viewer));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"Column permutation\n"));
+  CHKERRQ(ISView(iscol,viewer));
+  CHKERRQ(MatDestroy(&B));
 
-  ierr = ISDestroy(&isrow);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscol);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&isrow));
+  CHKERRQ(ISDestroy(&iscol));
 
-  ierr = MatGetOrdering(mat,MATORDERINGND,&isrow,&iscol);CHKERRQ(ierr);
-  ierr = MatPermute(mat,isrow,iscol,&B);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Original matrix permuted by ND\n");CHKERRQ(ierr);
-  ierr = MatView(B,viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"ND row permutation\n");CHKERRQ(ierr);
-  ierr = ISView(isrow,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"ND column permutation\n");CHKERRQ(ierr);
-  ierr = ISView(iscol,viewer);CHKERRQ(ierr);
+  CHKERRQ(MatGetOrdering(mat,MATORDERINGND,&isrow,&iscol));
+  CHKERRQ(MatPermute(mat,isrow,iscol,&B));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"Original matrix permuted by ND\n"));
+  CHKERRQ(MatView(B,viewer));
+  CHKERRQ(MatDestroy(&B));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"ND row permutation\n"));
+  CHKERRQ(ISView(isrow,viewer));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"ND column permutation\n"));
+  CHKERRQ(ISView(iscol,viewer));
 
-  ierr = MatReorderForNonzeroDiagonal(mat,1.e-8,isrow,iscol);CHKERRQ(ierr);
-  ierr = MatPermute(mat,isrow,iscol,&B);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Original matrix permuted by ND + NonzeroDiagonal()\n");CHKERRQ(ierr);
-  ierr = MatView(B,viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"ND + NonzeroDiagonal() row permutation\n");CHKERRQ(ierr);
-  ierr = ISView(isrow,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"ND + NonzeroDiagonal() column permutation\n");CHKERRQ(ierr);
-  ierr = ISView(iscol,viewer);CHKERRQ(ierr);
+  CHKERRQ(MatReorderForNonzeroDiagonal(mat,1.e-8,isrow,iscol));
+  CHKERRQ(MatPermute(mat,isrow,iscol,&B));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"Original matrix permuted by ND + NonzeroDiagonal()\n"));
+  CHKERRQ(MatView(B,viewer));
+  CHKERRQ(MatDestroy(&B));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"ND + NonzeroDiagonal() row permutation\n"));
+  CHKERRQ(ISView(isrow,viewer));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"ND + NonzeroDiagonal() column permutation\n"));
+  CHKERRQ(ISView(iscol,viewer));
 
-  ierr = ISDestroy(&isrow);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscol);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&isrow));
+  CHKERRQ(ISDestroy(&iscol));
 
-  ierr = MatGetOrdering(mat,MATORDERINGRCM,&isrow,&iscol);CHKERRQ(ierr);
-  ierr = MatPermute(mat,isrow,iscol,&B);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Original matrix permuted by RCM\n");CHKERRQ(ierr);
-  ierr = MatView(B,viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"RCM row permutation\n");CHKERRQ(ierr);
-  ierr = ISView(isrow,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"RCM column permutation\n");CHKERRQ(ierr);
-  ierr = ISView(iscol,viewer);CHKERRQ(ierr);
+  CHKERRQ(MatGetOrdering(mat,MATORDERINGRCM,&isrow,&iscol));
+  CHKERRQ(MatPermute(mat,isrow,iscol,&B));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"Original matrix permuted by RCM\n"));
+  CHKERRQ(MatView(B,viewer));
+  CHKERRQ(MatDestroy(&B));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"RCM row permutation\n"));
+  CHKERRQ(ISView(isrow,viewer));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"RCM column permutation\n"));
+  CHKERRQ(ISView(iscol,viewer));
 
-  ierr = MatReorderForNonzeroDiagonal(mat,1.e-8,isrow,iscol);CHKERRQ(ierr);
-  ierr = MatPermute(mat,isrow,iscol,&B);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Original matrix permuted by RCM + NonzeroDiagonal()\n");CHKERRQ(ierr);
-  ierr = MatView(B,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"RCM + NonzeroDiagonal() row permutation\n");CHKERRQ(ierr);
-  ierr = ISView(isrow,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"RCM + NonzeroDiagonal() column permutation\n");CHKERRQ(ierr);
-  ierr = ISView(iscol,viewer);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRQ(MatReorderForNonzeroDiagonal(mat,1.e-8,isrow,iscol));
+  CHKERRQ(MatPermute(mat,isrow,iscol,&B));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"Original matrix permuted by RCM + NonzeroDiagonal()\n"));
+  CHKERRQ(MatView(B,viewer));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"RCM + NonzeroDiagonal() row permutation\n"));
+  CHKERRQ(ISView(isrow,viewer));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"RCM + NonzeroDiagonal() column permutation\n"));
+  CHKERRQ(ISView(iscol,viewer));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   if (size == 1) {
-    ierr = MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,4,0,1,&identity);CHKERRQ(ierr);
-    ierr = MatPermute(B,identity,identity,&C);CHKERRQ(ierr);
-    ierr = MatConvert(C,MATSEQSBAIJ,MAT_INPLACE_MATRIX,&C);CHKERRQ(ierr);
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
-    ierr = ISDestroy(&identity);CHKERRQ(ierr);
+    CHKERRQ(MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE));
+    CHKERRQ(ISCreateStride(PETSC_COMM_SELF,4,0,1,&identity));
+    CHKERRQ(MatPermute(B,identity,identity,&C));
+    CHKERRQ(MatConvert(C,MATSEQSBAIJ,MAT_INPLACE_MATRIX,&C));
+    CHKERRQ(MatDestroy(&C));
+    CHKERRQ(ISDestroy(&identity));
   }
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&B));
   /* Test MatLUFactor(); set diagonal as zeros as requested by PETSc matrix factorization */
   for (i=0; i<4; i++) {
     v = 0.0;
-    ierr = MatSetValues(mat,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(mat,1,&i,1,&i,&v,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatLUFactor(mat,isrow,iscol,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatLUFactor(mat,isrow,iscol,NULL));
 
   /* Free data structures */
-  ierr = ISDestroy(&isrow);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscol);CHKERRQ(ierr);
-  ierr = MatDestroy(&mat);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&isrow));
+  CHKERRQ(ISDestroy(&iscol));
+  CHKERRQ(MatDestroy(&mat));
 
   ierr = PetscFinalize();
   return ierr;

@@ -140,16 +140,15 @@ PetscErrorCode EventFunction(TS ts,PetscReal t,Vec X,PetscScalar *fvalue,void *c
   Vec            Xgen,Xnet;
   PetscInt       i,idx=0;
   const PetscScalar *xgen,*xnet;
-  PetscErrorCode ierr;
   PetscScalar    Efd,RF,VR,Vr,Vi,Vm;
 
   PetscFunctionBegin;
 
-  ierr = DMCompositeGetLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
-  ierr = DMCompositeScatter(user->dmpgrid,X,Xgen,Xnet);CHKERRQ(ierr);
+  CHKERRQ(DMCompositeGetLocalVectors(user->dmpgrid,&Xgen,&Xnet));
+  CHKERRQ(DMCompositeScatter(user->dmpgrid,X,Xgen,Xnet));
 
-  ierr = VecGetArrayRead(Xgen,&xgen);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Xnet,&xnet);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(Xgen,&xgen));
+  CHKERRQ(VecGetArrayRead(Xnet,&xnet));
 
   /* Event for fault-on time */
   fvalue[0] = t - user->tfaulton;
@@ -177,10 +176,10 @@ PetscErrorCode EventFunction(TS ts,PetscReal t,Vec X,PetscScalar *fvalue,void *c
     }
     idx = idx+9;
   }
-  ierr = VecRestoreArrayRead(Xgen,&xgen);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Xnet,&xnet);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(Xgen,&xgen));
+  CHKERRQ(VecRestoreArrayRead(Xnet,&xnet));
 
-  ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
+  CHKERRQ(DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet));
 
   PetscFunctionReturn(0);
 }
@@ -192,7 +191,6 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
   PetscScalar *xgen,*xnet;
   PetscInt row_loc,col_loc;
   PetscScalar val;
-  PetscErrorCode ierr;
   PetscInt i,idx=0,event_num;
   PetscScalar fvalue;
   PetscScalar Efd, RF, VR;
@@ -200,11 +198,11 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
 
   PetscFunctionBegin;
 
-  ierr = DMCompositeGetLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
-  ierr = DMCompositeScatter(user->dmpgrid,X,Xgen,Xnet);CHKERRQ(ierr);
+  CHKERRQ(DMCompositeGetLocalVectors(user->dmpgrid,&Xgen,&Xnet));
+  CHKERRQ(DMCompositeScatter(user->dmpgrid,X,Xgen,Xnet));
 
-  ierr = VecGetArray(Xgen,&xgen);CHKERRQ(ierr);
-  ierr = VecGetArray(Xnet,&xnet);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(Xgen,&xgen));
+  CHKERRQ(VecGetArray(Xnet,&xnet));
 
   for (i=0; i < nevents; i++) {
     if (event_list[i] == 0) {
@@ -213,30 +211,30 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
          in the Ybus matrix */
       row_loc = 2*user->faultbus; col_loc = 2*user->faultbus+1; /* Location for G */
       val     = 1/user->Rfault;
-      ierr    = MatSetValues(user->Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(user->Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES));
       row_loc = 2*user->faultbus+1; col_loc = 2*user->faultbus; /* Location for G */
       val     = 1/user->Rfault;
-      ierr    = MatSetValues(user->Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(user->Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES));
 
-      ierr = MatAssemblyBegin(user->Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(user->Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      CHKERRQ(MatAssemblyBegin(user->Ybus,MAT_FINAL_ASSEMBLY));
+      CHKERRQ(MatAssemblyEnd(user->Ybus,MAT_FINAL_ASSEMBLY));
 
       /* Solve the algebraic equations */
-      ierr = SNESSolve(user->snes_alg,NULL,X);CHKERRQ(ierr);
+      CHKERRQ(SNESSolve(user->snes_alg,NULL,X));
     } else if (event_list[i] == 1) {
       /* Remove the fault */
       row_loc = 2*user->faultbus; col_loc = 2*user->faultbus+1;
       val     = -1/user->Rfault;
-      ierr    = MatSetValues(user->Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(user->Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES));
       row_loc = 2*user->faultbus+1; col_loc = 2*user->faultbus;
       val     = -1/user->Rfault;
-      ierr    = MatSetValues(user->Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(user->Ybus,1,&row_loc,1,&col_loc,&val,ADD_VALUES));
 
-      ierr = MatAssemblyBegin(user->Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(user->Ybus,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      CHKERRQ(MatAssemblyBegin(user->Ybus,MAT_FINAL_ASSEMBLY));
+      CHKERRQ(MatAssemblyEnd(user->Ybus,MAT_FINAL_ASSEMBLY));
 
       /* Solve the algebraic equations */
-      ierr = SNESSolve(user->snes_alg,NULL,X);CHKERRQ(ierr);
+      CHKERRQ(SNESSolve(user->snes_alg,NULL,X));
 
       /* Check the VR derivatives and reset flags if needed */
       for (i=0; i < ngen; i++) {
@@ -252,7 +250,7 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
           fvalue = (VR - KA[i]*RF + KA[i]*KF[i]*Efd/TF[i] - KA[i]*(Vref[i] - Vm))/TA[i];
           if (fvalue < 0) {
             VRatmax[i] = 0;
-            ierr = PetscPrintf(PETSC_COMM_SELF,"VR[%d]: dVR_dt went negative on fault clearing at time %g\n",i,t);CHKERRQ(ierr);
+            CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"VR[%d]: dVR_dt went negative on fault clearing at time %g\n",i,t));
           }
         }
         if (VRatmin[i]) {
@@ -260,7 +258,7 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
 
           if (fvalue > 0) {
             VRatmin[i] = 0;
-            ierr = PetscPrintf(PETSC_COMM_SELF,"VR[%d]: dVR_dt went positive on fault clearing at time %g\n",i,t);CHKERRQ(ierr);
+            CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"VR[%d]: dVR_dt went positive on fault clearing at time %g\n",i,t));
           }
         }
         idx = idx+9;
@@ -271,29 +269,29 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
       if (event_num == 0) { /* Max VR */
         if (!VRatmax[idx]) {
           VRatmax[idx] = 1;
-          ierr = PetscPrintf(PETSC_COMM_SELF,"VR[%d]: hit upper limit at time %g\n",idx,t);CHKERRQ(ierr);
+          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"VR[%d]: hit upper limit at time %g\n",idx,t));
         }
         else {
           VRatmax[idx] = 0;
-          ierr = PetscPrintf(PETSC_COMM_SELF,"VR[%d]: freeing variable as dVR_dt is negative at time %g\n",idx,t);CHKERRQ(ierr);
+          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"VR[%d]: freeing variable as dVR_dt is negative at time %g\n",idx,t));
         }
       } else {
         if (!VRatmin[idx]) {
           VRatmin[idx] = 1;
-          ierr = PetscPrintf(PETSC_COMM_SELF,"VR[%d]: hit lower limit at time %g\n",idx,t);CHKERRQ(ierr);
+          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"VR[%d]: hit lower limit at time %g\n",idx,t));
         }
         else {
           VRatmin[idx] = 0;
-          ierr = PetscPrintf(PETSC_COMM_SELF,"VR[%d]: freeing variable as dVR_dt is positive at time %g\n",idx,t);CHKERRQ(ierr);
+          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"VR[%d]: freeing variable as dVR_dt is positive at time %g\n",idx,t));
         }
       }
     }
   }
 
-  ierr = VecRestoreArray(Xgen,&xgen);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Xnet,&xnet);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(Xgen,&xgen));
+  CHKERRQ(VecRestoreArray(Xnet,&xnet));
 
-  ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
+  CHKERRQ(DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet));
 
   PetscFunctionReturn(0);
 }
@@ -319,7 +317,6 @@ PetscErrorCode ri2dq(PetscScalar Fr,PetscScalar Fi,PetscScalar delta,PetscScalar
 /* Saves the solution at each time to a matrix */
 PetscErrorCode SaveSolution(TS ts)
 {
-  PetscErrorCode    ierr;
   Userctx           *user;
   Vec               X;
   const PetscScalar *x;
@@ -328,23 +325,22 @@ PetscErrorCode SaveSolution(TS ts)
   PetscReal         t;
 
   PetscFunctionBegin;
-  ierr     = TSGetApplicationContext(ts,&user);CHKERRQ(ierr);
-  ierr     = TSGetTime(ts,&t);CHKERRQ(ierr);
-  ierr     = TSGetSolution(ts,&X);CHKERRQ(ierr);
+  CHKERRQ(TSGetApplicationContext(ts,&user));
+  CHKERRQ(TSGetTime(ts,&t));
+  CHKERRQ(TSGetSolution(ts,&X));
   idx      = user->stepnum*(user->neqs_pgrid+1);
-  ierr     = MatDenseGetArray(user->Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  CHKERRQ(MatDenseGetArray(user->Sol,&mat));
+  CHKERRQ(VecGetArrayRead(X,&x));
   mat[idx] = t;
-  ierr     = PetscArraycpy(mat+idx+1,x,user->neqs_pgrid);CHKERRQ(ierr);
-  ierr     = MatDenseRestoreArray(user->Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  CHKERRQ(PetscArraycpy(mat+idx+1,x,user->neqs_pgrid));
+  CHKERRQ(MatDenseRestoreArray(user->Sol,&mat));
+  CHKERRQ(VecRestoreArrayRead(X,&x));
   user->stepnum++;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode SetInitialGuess(Vec X,Userctx *user)
 {
-  PetscErrorCode    ierr;
   Vec               Xgen,Xnet;
   PetscScalar       *xgen;
   const PetscScalar *xnet;
@@ -359,14 +355,14 @@ PetscErrorCode SetInitialGuess(Vec X,Userctx *user)
   M[0] = 2*H[0]/w_s; M[1] = 2*H[1]/w_s; M[2] = 2*H[2]/w_s;
   D[0] = 0.1*M[0]; D[1] = 0.1*M[1]; D[2] = 0.1*M[2];
 
-  ierr = DMCompositeGetLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
+  CHKERRQ(DMCompositeGetLocalVectors(user->dmpgrid,&Xgen,&Xnet));
 
   /* Network subsystem initialization */
-  ierr = VecCopy(user->V0,Xnet);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(user->V0,Xnet));
 
   /* Generator subsystem initialization */
-  ierr = VecGetArrayWrite(Xgen,&xgen);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Xnet,&xnet);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayWrite(Xgen,&xgen));
+  CHKERRQ(VecGetArrayRead(Xnet,&xnet));
 
   for (i=0; i < ngen; i++) {
     Vr  = xnet[2*gbus[i]]; /* Real part of generator terminal voltage */
@@ -419,19 +415,18 @@ PetscErrorCode SetInitialGuess(Vec X,Userctx *user)
 
     idx = idx + 3;
   }
-  ierr = VecRestoreArrayWrite(Xgen,&xgen);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Xnet,&xnet);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayWrite(Xgen,&xgen));
+  CHKERRQ(VecRestoreArrayRead(Xnet,&xnet));
 
-  /* ierr = VecView(Xgen,0);CHKERRQ(ierr); */
-  ierr = DMCompositeGather(user->dmpgrid,INSERT_VALUES,X,Xgen,Xnet);CHKERRQ(ierr);
-  ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
+  /* CHKERRQ(VecView(Xgen,0)); */
+  CHKERRQ(DMCompositeGather(user->dmpgrid,INSERT_VALUES,X,Xgen,Xnet));
+  CHKERRQ(DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet));
   PetscFunctionReturn(0);
 }
 
 /* Computes F = [f(x,y);g(x,y)] */
 PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user)
 {
-  PetscErrorCode    ierr;
   Vec               Xgen,Xnet,Fgen,Fnet;
   const PetscScalar *xgen,*xnet;
   PetscScalar       *fgen,*fnet;
@@ -447,11 +442,11 @@ PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user)
   PetscInt          k;
 
   PetscFunctionBegin;
-  ierr = VecZeroEntries(F);CHKERRQ(ierr);
-  ierr = DMCompositeGetLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
-  ierr = DMCompositeGetLocalVectors(user->dmpgrid,&Fgen,&Fnet);CHKERRQ(ierr);
-  ierr = DMCompositeScatter(user->dmpgrid,X,Xgen,Xnet);CHKERRQ(ierr);
-  ierr = DMCompositeScatter(user->dmpgrid,F,Fgen,Fnet);CHKERRQ(ierr);
+  CHKERRQ(VecZeroEntries(F));
+  CHKERRQ(DMCompositeGetLocalVectors(user->dmpgrid,&Xgen,&Xnet));
+  CHKERRQ(DMCompositeGetLocalVectors(user->dmpgrid,&Fgen,&Fnet));
+  CHKERRQ(DMCompositeScatter(user->dmpgrid,X,Xgen,Xnet));
+  CHKERRQ(DMCompositeScatter(user->dmpgrid,F,Fgen,Fnet));
 
   /* Network current balance residual IG + Y*V + IL = 0. Only YV is added here.
      The generator current injection, IG, and load current injection, ID are added later
@@ -461,12 +456,12 @@ PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user)
      Thus imaginary current contribution goes in location 2*i, and
      real current contribution in 2*i+1
   */
-  ierr = MatMult(user->Ybus,Xnet,Fnet);CHKERRQ(ierr);
+  CHKERRQ(MatMult(user->Ybus,Xnet,Fnet));
 
-  ierr = VecGetArrayRead(Xgen,&xgen);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Xnet,&xnet);CHKERRQ(ierr);
-  ierr = VecGetArrayWrite(Fgen,&fgen);CHKERRQ(ierr);
-  ierr = VecGetArrayWrite(Fnet,&fnet);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(Xgen,&xgen));
+  CHKERRQ(VecGetArrayRead(Xnet,&xnet));
+  CHKERRQ(VecGetArrayWrite(Fgen,&fgen));
+  CHKERRQ(VecGetArrayWrite(Fnet,&fnet));
 
   /* Generator subsystem */
   for (i=0; i < ngen; i++) {
@@ -489,7 +484,7 @@ PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user)
     Vr = xnet[2*gbus[i]]; /* Real part of generator terminal voltage */
     Vi = xnet[2*gbus[i]+1]; /* Imaginary part of the generator terminal voltage */
 
-    ierr = ri2dq(Vr,Vi,delta,&Vd,&Vq);CHKERRQ(ierr);
+    CHKERRQ(ri2dq(Vr,Vi,delta,&Vd,&Vq));
     /* Algebraic equations for stator currents */
     det = Rs[i]*Rs[i] + Xdp[i]*Xqp[i];
 
@@ -502,7 +497,7 @@ PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user)
     fgen[idx+5] = Zdq_inv[2]*(-Edp + Vd) + Zdq_inv[3]*(-Eqp + Vq) + Iq;
 
     /* Add generator current injection to network */
-    ierr = dq2ri(Id,Iq,delta,&IGr,&IGi);CHKERRQ(ierr);
+    CHKERRQ(dq2ri(Id,Iq,delta,&IGr,&IGi));
 
     fnet[2*gbus[i]]   -= IGi;
     fnet[2*gbus[i]+1] -= IGr;
@@ -521,7 +516,7 @@ PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user)
     idx = idx + 9;
   }
 
-  ierr = VecGetArray(user->V0,&v0);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(user->V0,&v0));
   for (i=0; i < nload; i++) {
     Vr  = xnet[2*lbus[i]]; /* Real part of load bus voltage */
     Vi  = xnet[2*lbus[i]+1]; /* Imaginary part of the load bus voltage */
@@ -538,16 +533,16 @@ PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user)
     fnet[2*lbus[i]]   += IDi;
     fnet[2*lbus[i]+1] += IDr;
   }
-  ierr = VecRestoreArray(user->V0,&v0);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(user->V0,&v0));
 
-  ierr = VecRestoreArrayRead(Xgen,&xgen);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Xnet,&xnet);CHKERRQ(ierr);
-  ierr = VecRestoreArrayWrite(Fgen,&fgen);CHKERRQ(ierr);
-  ierr = VecRestoreArrayWrite(Fnet,&fnet);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(Xgen,&xgen));
+  CHKERRQ(VecRestoreArrayRead(Xnet,&xnet));
+  CHKERRQ(VecRestoreArrayWrite(Fgen,&fgen));
+  CHKERRQ(VecRestoreArrayWrite(Fnet,&fnet));
 
-  ierr = DMCompositeGather(user->dmpgrid,INSERT_VALUES,F,Fgen,Fnet);CHKERRQ(ierr);
-  ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
-  ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Fgen,&Fnet);CHKERRQ(ierr);
+  CHKERRQ(DMCompositeGather(user->dmpgrid,INSERT_VALUES,F,Fgen,Fnet));
+  CHKERRQ(DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet));
+  CHKERRQ(DMCompositeRestoreLocalVectors(user->dmpgrid,&Fgen,&Fnet));
   PetscFunctionReturn(0);
 }
 
@@ -556,12 +551,11 @@ PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user)
  */
 PetscErrorCode RHSFunction(TS ts,PetscReal t, Vec X, Vec F, void *ctx)
 {
-  PetscErrorCode ierr;
   Userctx        *user=(Userctx*)ctx;
 
   PetscFunctionBegin;
   user->t = t;
-  ierr = ResidualFunction(X,F,user);CHKERRQ(ierr);
+  CHKERRQ(ResidualFunction(X,F,user));
   PetscFunctionReturn(0);
 }
 
@@ -570,16 +564,15 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t, Vec X, Vec F, void *ctx)
  */
 PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
 {
-  PetscErrorCode    ierr;
   PetscScalar       *f;
   const PetscScalar *xdot;
   PetscInt          i;
 
   PetscFunctionBegin;
-  ierr = RHSFunction(ts,t,X,F,ctx);CHKERRQ(ierr);
-  ierr = VecScale(F,-1.0);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
+  CHKERRQ(RHSFunction(ts,t,X,F,ctx));
+  CHKERRQ(VecScale(F,-1.0));
+  CHKERRQ(VecGetArray(F,&f));
+  CHKERRQ(VecGetArrayRead(Xdot,&xdot));
   for (i=0;i < ngen;i++) {
     f[9*i]   += xdot[9*i];
     f[9*i+1] += xdot[9*i+1];
@@ -589,8 +582,8 @@ PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
     f[9*i+7] += xdot[9*i+7];
     f[9*i+8] += xdot[9*i+8];
   }
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Xdot,&xdot);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(F,&f));
+  CHKERRQ(VecRestoreArrayRead(Xdot,&xdot));
   PetscFunctionReturn(0);
 }
 
@@ -601,14 +594,13 @@ PetscErrorCode IFunction(TS ts,PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
 */
 PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
 {
-  PetscErrorCode ierr;
   Userctx        *user=(Userctx*)ctx;
   PetscScalar    *f;
   PetscInt       i;
 
   PetscFunctionBegin;
-  ierr = ResidualFunction(X,F,user);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(ResidualFunction(X,F,user));
+  CHKERRQ(VecGetArray(F,&f));
   for (i=0; i < ngen; i++) {
     f[9*i]   = 0;
     f[9*i+1] = 0;
@@ -618,43 +610,40 @@ PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
     f[9*i+7] = 0;
     f[9*i+8] = 0;
   }
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PostStage(TS ts, PetscReal t, PetscInt i, Vec *X)
 {
-  PetscErrorCode ierr;
   Userctx        *user;
 
   PetscFunctionBegin;
-  ierr = TSGetApplicationContext(ts,&user);CHKERRQ(ierr);
-  ierr = SNESSolve(user->snes_alg,NULL,X[i]);CHKERRQ(ierr);
+  CHKERRQ(TSGetApplicationContext(ts,&user));
+  CHKERRQ(SNESSolve(user->snes_alg,NULL,X[i]));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PostEvaluate(TS ts)
 {
-  PetscErrorCode ierr;
   Userctx        *user;
   Vec            X;
 
   PetscFunctionBegin;
-  ierr = TSGetApplicationContext(ts,&user);CHKERRQ(ierr);
-  ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
-  ierr = SNESSolve(user->snes_alg,NULL,X);CHKERRQ(ierr);
+  CHKERRQ(TSGetApplicationContext(ts,&user));
+  CHKERRQ(TSGetSolution(ts,&X));
+  CHKERRQ(SNESSolve(user->snes_alg,NULL,X));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
 {
-  PetscErrorCode ierr;
   PetscInt       *d_nnz;
   PetscInt       i,idx=0,start=0;
   PetscInt       ncols;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(user->neqs_pgrid,&d_nnz);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(user->neqs_pgrid,&d_nnz));
   for (i=0; i<user->neqs_pgrid; i++) d_nnz[i] = 0;
   /* Generator subsystem */
   for (i=0; i < ngen; i++) {
@@ -678,13 +667,13 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
   start = user->neqs_gen;
 
   for (i=0; i < nbus; i++) {
-    ierr = MatGetRow(user->Ybus,2*i,&ncols,NULL,NULL);CHKERRQ(ierr);
+    CHKERRQ(MatGetRow(user->Ybus,2*i,&ncols,NULL,NULL));
     d_nnz[start+2*i]   += ncols;
     d_nnz[start+2*i+1] += ncols;
-    ierr = MatRestoreRow(user->Ybus,2*i,&ncols,NULL,NULL);CHKERRQ(ierr);
+    CHKERRQ(MatRestoreRow(user->Ybus,2*i,&ncols,NULL,NULL));
   }
-  ierr = MatSeqAIJSetPreallocation(J,0,d_nnz);CHKERRQ(ierr);
-  ierr = PetscFree(d_nnz);CHKERRQ(ierr);
+  CHKERRQ(MatSeqAIJSetPreallocation(J,0,d_nnz));
+  CHKERRQ(PetscFree(d_nnz));
   PetscFunctionReturn(0);
 }
 
@@ -694,7 +683,6 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
 */
 PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
 {
-  PetscErrorCode    ierr;
   Userctx           *user = (Userctx*)ctx;
   Vec               Xgen,Xnet;
   const PetscScalar *xgen,*xnet;
@@ -722,12 +710,12 @@ PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
   PetscScalar       dIDr_dVr,dIDr_dVi,dIDi_dVr,dIDi_dVi;
 
   PetscFunctionBegin;
-  ierr  = MatZeroEntries(B);CHKERRQ(ierr);
-  ierr  = DMCompositeGetLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
-  ierr  = DMCompositeScatter(user->dmpgrid,X,Xgen,Xnet);CHKERRQ(ierr);
+  CHKERRQ(MatZeroEntries(B));
+  CHKERRQ(DMCompositeGetLocalVectors(user->dmpgrid,&Xgen,&Xnet));
+  CHKERRQ(DMCompositeScatter(user->dmpgrid,X,Xgen,Xnet));
 
-  ierr = VecGetArrayRead(Xgen,&xgen);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Xnet,&xnet);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(Xgen,&xgen));
+  CHKERRQ(VecGetArrayRead(Xnet,&xnet));
 
   /* Generator subsystem */
   for (i=0; i < ngen; i++) {
@@ -743,29 +731,29 @@ PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
     col[0] = idx;           col[1] = idx+4;          col[2] = idx+6;
     val[0] = -1/ Td0p[i]; val[1] = -(Xd[i] - Xdp[i])/ Td0p[i]; val[2] = 1/Td0p[i];
 
-    ierr = MatSetValues(J,1,row,3,col,val,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(J,1,row,3,col,val,INSERT_VALUES));
 
     /*    fgen[idx+1] = (-Edp + (Xq[i] - Xqp[i])*Iq)/Tq0p[i]; */
     row[0] = idx + 1;
     col[0] = idx + 1;       col[1] = idx+5;
     val[0] = -1/Tq0p[i]; val[1] = (Xq[i] - Xqp[i])/Tq0p[i];
-    ierr   = MatSetValues(J,1,row,2,col,val,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(J,1,row,2,col,val,INSERT_VALUES));
 
     /*    fgen[idx+2] = w - w_s; */
     row[0] = idx + 2;
     col[0] = idx + 2; col[1] = idx + 3;
     val[0] = 0;       val[1] = 1;
-    ierr   = MatSetValues(J,1,row,2,col,val,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(J,1,row,2,col,val,INSERT_VALUES));
 
     /*    fgen[idx+3] = (TM[i] - Edp*Id - Eqp*Iq - (Xqp[i] - Xdp[i])*Id*Iq - D[i]*(w - w_s))/M[i]; */
     row[0] = idx + 3;
     col[0] = idx; col[1] = idx + 1; col[2] = idx + 3;       col[3] = idx + 4;                  col[4] = idx + 5;
     val[0] = -Iq/M[i];  val[1] = -Id/M[i];      val[2] = -D[i]/M[i]; val[3] = (-Edp - (Xqp[i]-Xdp[i])*Iq)/M[i]; val[4] = (-Eqp - (Xqp[i] - Xdp[i])*Id)/M[i];
-    ierr   = MatSetValues(J,1,row,5,col,val,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(J,1,row,5,col,val,INSERT_VALUES));
 
     Vr   = xnet[2*gbus[i]]; /* Real part of generator terminal voltage */
     Vi   = xnet[2*gbus[i]+1]; /* Imaginary part of the generator terminal voltage */
-    ierr = ri2dq(Vr,Vi,delta,&Vd,&Vq);CHKERRQ(ierr);
+    CHKERRQ(ri2dq(Vr,Vi,delta,&Vd,&Vq));
 
     det = Rs[i]*Rs[i] + Xdp[i]*Xqp[i];
 
@@ -785,7 +773,7 @@ PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
     val[0] = -Zdq_inv[1]; val[1] = -Zdq_inv[0];  val[2] = Zdq_inv[0]*dVd_ddelta + Zdq_inv[1]*dVq_ddelta;
     col[3] = idx + 4; col[4] = net_start+2*gbus[i];                     col[5] = net_start + 2*gbus[i]+1;
     val[3] = 1;       val[4] = Zdq_inv[0]*dVd_dVr + Zdq_inv[1]*dVq_dVr; val[5] = Zdq_inv[0]*dVd_dVi + Zdq_inv[1]*dVq_dVi;
-    ierr   = MatSetValues(J,1,row,6,col,val,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(J,1,row,6,col,val,INSERT_VALUES));
 
     /*  fgen[idx+5] = Zdq_inv[2]*(-Edp + Vd) + Zdq_inv[3]*(-Eqp + Vq) + Iq; */
     row[0] = idx+5;
@@ -793,7 +781,7 @@ PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
     val[0] = -Zdq_inv[3]; val[1] = -Zdq_inv[2];  val[2] = Zdq_inv[2]*dVd_ddelta + Zdq_inv[3]*dVq_ddelta;
     col[3] = idx + 5; col[4] = net_start+2*gbus[i];                     col[5] = net_start + 2*gbus[i]+1;
     val[3] = 1;       val[4] = Zdq_inv[2]*dVd_dVr + Zdq_inv[3]*dVq_dVr; val[5] = Zdq_inv[2]*dVd_dVi + Zdq_inv[3]*dVq_dVi;
-    ierr   = MatSetValues(J,1,row,6,col,val,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(J,1,row,6,col,val,INSERT_VALUES));
 
     dIGr_ddelta = Id*PetscCosScalar(delta) - Iq*PetscSinScalar(delta);
     dIGi_ddelta = Id*PetscSinScalar(delta) + Iq*PetscCosScalar(delta);
@@ -804,13 +792,13 @@ PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
     row[0] = net_start + 2*gbus[i];
     col[0] = idx+2;        col[1] = idx + 4;   col[2] = idx + 5;
     val[0] = -dIGi_ddelta; val[1] = -dIGi_dId; val[2] = -dIGi_dIq;
-    ierr = MatSetValues(J,1,row,3,col,val,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(J,1,row,3,col,val,INSERT_VALUES));
 
     /* fnet[2*gbus[i]+1]   -= IGr; */
     row[0] = net_start + 2*gbus[i]+1;
     col[0] = idx+2;        col[1] = idx + 4;   col[2] = idx + 5;
     val[0] = -dIGr_ddelta; val[1] = -dIGr_dId; val[2] = -dIGr_dIq;
-    ierr   = MatSetValues(J,1,row,3,col,val,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(J,1,row,3,col,val,INSERT_VALUES));
 
     Vm = PetscSqrtScalar(Vd*Vd + Vq*Vq);
 
@@ -822,7 +810,7 @@ PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
     row[0] = idx + 6;
     col[0] = idx + 6;                     col[1] = idx + 8;
     val[0] = (-KE[i] - dSE_dEfd)/TE[i];  val[1] = 1/TE[i];
-    ierr   = MatSetValues(J,1,row,2,col,val,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(J,1,row,2,col,val,INSERT_VALUES));
 
     /* Exciter differential equations */
 
@@ -830,7 +818,7 @@ PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
     row[0] = idx + 7;
     col[0] = idx + 6;       col[1] = idx + 7;
     val[0] = (KF[i]/TF[i])/TF[i];  val[1] = -1/TF[i];
-    ierr   = MatSetValues(J,1,row,2,col,val,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(J,1,row,2,col,val,INSERT_VALUES));
 
     /*    fgen[idx+8] = (-VR + KA[i]*RF - KA[i]*KF[i]*Efd/TF[i] + KA[i]*(Vref[i] - Vm))/TA[i]; */
     /* Vm = (Vd^2 + Vq^2)^0.5; */
@@ -838,10 +826,10 @@ PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
     row[0] = idx + 8;
     if (VRatmax[i]) {
       col[0] = idx + 8; val[0] = 1.0;
-      ierr = MatSetValues(J,1,row,1,col,val,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(J,1,row,1,col,val,INSERT_VALUES));
     } else if (VRatmin[i]) {
       col[0] = idx + 8; val[0] = -1.0;
-      ierr = MatSetValues(J,1,row,1,col,val,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(J,1,row,1,col,val,INSERT_VALUES));
     } else {
       dVm_dVd    = Vd/Vm; dVm_dVq = Vq/Vm;
       dVm_dVr    = dVm_dVd*dVd_dVr + dVm_dVq*dVq_dVr;
@@ -851,35 +839,35 @@ PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
       val[0]     = -(KA[i]*KF[i]/TF[i])/TA[i]; val[1] = KA[i]/TA[i];  val[2] = -1/TA[i];
       col[3]     = net_start + 2*gbus[i]; col[4] = net_start + 2*gbus[i]+1;
       val[3]     = -KA[i]*dVm_dVr/TA[i];         val[4] = -KA[i]*dVm_dVi/TA[i];
-      ierr       = MatSetValues(J,1,row,5,col,val,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(J,1,row,5,col,val,INSERT_VALUES));
     }
     idx        = idx + 9;
   }
 
   for (i=0; i<nbus; i++) {
-    ierr   = MatGetRow(user->Ybus,2*i,&ncols,&cols,&yvals);CHKERRQ(ierr);
+    CHKERRQ(MatGetRow(user->Ybus,2*i,&ncols,&cols,&yvals));
     row[0] = net_start + 2*i;
     for (k=0; k<ncols; k++) {
       col[k] = net_start + cols[k];
       val[k] = yvals[k];
     }
-    ierr = MatSetValues(J,1,row,ncols,col,val,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatRestoreRow(user->Ybus,2*i,&ncols,&cols,&yvals);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(J,1,row,ncols,col,val,INSERT_VALUES));
+    CHKERRQ(MatRestoreRow(user->Ybus,2*i,&ncols,&cols,&yvals));
 
-    ierr   = MatGetRow(user->Ybus,2*i+1,&ncols,&cols,&yvals);CHKERRQ(ierr);
+    CHKERRQ(MatGetRow(user->Ybus,2*i+1,&ncols,&cols,&yvals));
     row[0] = net_start + 2*i+1;
     for (k=0; k<ncols; k++) {
       col[k] = net_start + cols[k];
       val[k] = yvals[k];
     }
-    ierr = MatSetValues(J,1,row,ncols,col,val,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatRestoreRow(user->Ybus,2*i+1,&ncols,&cols,&yvals);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(J,1,row,ncols,col,val,INSERT_VALUES));
+    CHKERRQ(MatRestoreRow(user->Ybus,2*i+1,&ncols,&cols,&yvals));
   }
 
-  ierr = MatAssemblyBegin(J,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(J,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(J,MAT_FLUSH_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(J,MAT_FLUSH_ASSEMBLY));
 
-  ierr = VecGetArrayRead(user->V0,&v0);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(user->V0,&v0));
   for (i=0; i < nload; i++) {
     Vr      = xnet[2*lbus[i]]; /* Real part of load bus voltage */
     Vi      = xnet[2*lbus[i]+1]; /* Imaginary part of the load bus voltage */
@@ -911,22 +899,22 @@ PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
     row[0] = net_start + 2*lbus[i];
     col[0] = net_start + 2*lbus[i];  col[1] = net_start + 2*lbus[i]+1;
     val[0] = dIDi_dVr;               val[1] = dIDi_dVi;
-    ierr   = MatSetValues(J,1,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(J,1,row,2,col,val,ADD_VALUES));
     /*    fnet[2*lbus[i]+1] += IDr; */
     row[0] = net_start + 2*lbus[i]+1;
     col[0] = net_start + 2*lbus[i];  col[1] = net_start + 2*lbus[i]+1;
     val[0] = dIDr_dVr;               val[1] = dIDr_dVi;
-    ierr   = MatSetValues(J,1,row,2,col,val,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(J,1,row,2,col,val,ADD_VALUES));
   }
-  ierr = VecRestoreArrayRead(user->V0,&v0);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(user->V0,&v0));
 
-  ierr = VecRestoreArrayRead(Xgen,&xgen);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Xnet,&xnet);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(Xgen,&xgen));
+  CHKERRQ(VecRestoreArrayRead(Xnet,&xnet));
 
-  ierr = DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet);CHKERRQ(ierr);
+  CHKERRQ(DMCompositeRestoreLocalVectors(user->dmpgrid,&Xgen,&Xnet));
 
-  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -936,13 +924,12 @@ PetscErrorCode ResidualJacobian(Vec X,Mat J,Mat B,void *ctx)
 */
 PetscErrorCode AlgJacobian(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode ierr;
   Userctx        *user=(Userctx*)ctx;
 
   PetscFunctionBegin;
-  ierr = ResidualJacobian(X,A,B,ctx);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatZeroRowsIS(A,user->is_diff,1.0,NULL,NULL);CHKERRQ(ierr);
+  CHKERRQ(ResidualJacobian(X,A,B,ctx));
+  CHKERRQ(MatSetOption(A,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE));
+  CHKERRQ(MatZeroRowsIS(A,user->is_diff,1.0,NULL,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -953,13 +940,12 @@ PetscErrorCode AlgJacobian(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 
 PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode ierr;
   Userctx        *user=(Userctx*)ctx;
 
   PetscFunctionBegin;
   user->t = t;
 
-  ierr = ResidualJacobian(X,A,B,user);CHKERRQ(ierr);
+  CHKERRQ(ResidualJacobian(X,A,B,user));
 
   PetscFunctionReturn(0);
 }
@@ -971,33 +957,32 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat A,Mat B,void *ctx)
 
 PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,Userctx *user)
 {
-  PetscErrorCode ierr;
   PetscScalar    atmp = (PetscScalar) a;
   PetscInt       i,row;
 
   PetscFunctionBegin;
   user->t = t;
 
-  ierr = RHSJacobian(ts,t,X,A,B,user);CHKERRQ(ierr);
-  ierr = MatScale(B,-1.0);CHKERRQ(ierr);
+  CHKERRQ(RHSJacobian(ts,t,X,A,B,user));
+  CHKERRQ(MatScale(B,-1.0));
   for (i=0;i < ngen;i++) {
     row = 9*i;
-    ierr = MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES));
     row  = 9*i+1;
-    ierr = MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES));
     row  = 9*i+2;
-    ierr = MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES));
     row  = 9*i+3;
-    ierr = MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES));
     row  = 9*i+6;
-    ierr = MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES));
     row  = 9*i+7;
-    ierr = MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES));
     row  = 9*i+8;
-    ierr = MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&row,1,&row,&atmp,ADD_VALUES));
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -1023,7 +1008,7 @@ int main(int argc,char **argv)
   PetscInt          k;
 
   ierr = PetscInitialize(&argc,&argv,"petscoptions",help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
 
   user.neqs_gen   = 9*ngen; /* # eqs. for generator subsystem */
@@ -1032,28 +1017,28 @@ int main(int argc,char **argv)
 
   /* Create indices for differential and algebraic equations */
 
-  ierr = PetscMalloc1(7*ngen,&idx2);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(7*ngen,&idx2));
   for (i=0; i<ngen; i++) {
     idx2[7*i]   = 9*i;   idx2[7*i+1] = 9*i+1; idx2[7*i+2] = 9*i+2; idx2[7*i+3] = 9*i+3;
     idx2[7*i+4] = 9*i+6; idx2[7*i+5] = 9*i+7; idx2[7*i+6] = 9*i+8;
   }
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,7*ngen,idx2,PETSC_COPY_VALUES,&user.is_diff);CHKERRQ(ierr);
-  ierr = ISComplement(user.is_diff,0,user.neqs_pgrid,&user.is_alg);CHKERRQ(ierr);
-  ierr = PetscFree(idx2);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(PETSC_COMM_WORLD,7*ngen,idx2,PETSC_COPY_VALUES,&user.is_diff));
+  CHKERRQ(ISComplement(user.is_diff,0,user.neqs_pgrid,&user.is_alg));
+  CHKERRQ(PetscFree(idx2));
 
   /* Read initial voltage vector and Ybus */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"X.bin",FILE_MODE_READ,&Xview);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"Ybus.bin",FILE_MODE_READ,&Ybusview);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"X.bin",FILE_MODE_READ,&Xview));
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"Ybus.bin",FILE_MODE_READ,&Ybusview));
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&user.V0);CHKERRQ(ierr);
-  ierr = VecSetSizes(user.V0,PETSC_DECIDE,user.neqs_net);CHKERRQ(ierr);
-  ierr = VecLoad(user.V0,Xview);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&user.V0));
+  CHKERRQ(VecSetSizes(user.V0,PETSC_DECIDE,user.neqs_net));
+  CHKERRQ(VecLoad(user.V0,Xview));
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&user.Ybus);CHKERRQ(ierr);
-  ierr = MatSetSizes(user.Ybus,PETSC_DECIDE,PETSC_DECIDE,user.neqs_net,user.neqs_net);CHKERRQ(ierr);
-  ierr = MatSetType(user.Ybus,MATBAIJ);CHKERRQ(ierr);
-  /*  ierr = MatSetBlockSize(user.Ybus,2);CHKERRQ(ierr); */
-  ierr = MatLoad(user.Ybus,Ybusview);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&user.Ybus));
+  CHKERRQ(MatSetSizes(user.Ybus,PETSC_DECIDE,PETSC_DECIDE,user.neqs_net,user.neqs_net));
+  CHKERRQ(MatSetType(user.Ybus,MATBAIJ));
+  /*  CHKERRQ(MatSetBlockSize(user.Ybus,2)); */
+  CHKERRQ(MatLoad(user.Ybus,Ybusview));
 
   /* Set run time options */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Transient stability fault options","");CHKERRQ(ierr);
@@ -1064,96 +1049,96 @@ int main(int argc,char **argv)
     user.setisdiff = PETSC_FALSE;
     user.semiexplicit = PETSC_FALSE;
     user.faultbus  = 8;
-    ierr           = PetscOptionsReal("-tfaulton","","",user.tfaulton,&user.tfaulton,NULL);CHKERRQ(ierr);
-    ierr           = PetscOptionsReal("-tfaultoff","","",user.tfaultoff,&user.tfaultoff,NULL);CHKERRQ(ierr);
-    ierr           = PetscOptionsInt("-faultbus","","",user.faultbus,&user.faultbus,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsReal("-tfaulton","","",user.tfaulton,&user.tfaulton,NULL));
+    CHKERRQ(PetscOptionsReal("-tfaultoff","","",user.tfaultoff,&user.tfaultoff,NULL));
+    CHKERRQ(PetscOptionsInt("-faultbus","","",user.faultbus,&user.faultbus,NULL));
     user.t0        = 0.0;
     user.tmax      = 5.0;
-    ierr           = PetscOptionsReal("-t0","","",user.t0,&user.t0,NULL);CHKERRQ(ierr);
-    ierr           = PetscOptionsReal("-tmax","","",user.tmax,&user.tmax,NULL);CHKERRQ(ierr);
-    ierr           = PetscOptionsBool("-setisdiff","","",user.setisdiff,&user.setisdiff,NULL);CHKERRQ(ierr);
-    ierr           = PetscOptionsBool("-dae_semiexplicit","","",user.semiexplicit,&user.semiexplicit,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsReal("-t0","","",user.t0,&user.t0,NULL));
+    CHKERRQ(PetscOptionsReal("-tmax","","",user.tmax,&user.tmax,NULL));
+    CHKERRQ(PetscOptionsBool("-setisdiff","","",user.setisdiff,&user.setisdiff,NULL));
+    CHKERRQ(PetscOptionsBool("-dae_semiexplicit","","",user.semiexplicit,&user.semiexplicit,NULL));
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = PetscViewerDestroy(&Xview);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&Ybusview);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDestroy(&Xview));
+  CHKERRQ(PetscViewerDestroy(&Ybusview));
 
   /* Create DMs for generator and network subsystems */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,user.neqs_gen,1,1,NULL,&user.dmgen);CHKERRQ(ierr);
-  ierr = DMSetOptionsPrefix(user.dmgen,"dmgen_");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(user.dmgen);CHKERRQ(ierr);
-  ierr = DMSetUp(user.dmgen);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,user.neqs_net,1,1,NULL,&user.dmnet);CHKERRQ(ierr);
-  ierr = DMSetOptionsPrefix(user.dmnet,"dmnet_");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(user.dmnet);CHKERRQ(ierr);
-  ierr = DMSetUp(user.dmnet);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,user.neqs_gen,1,1,NULL,&user.dmgen));
+  CHKERRQ(DMSetOptionsPrefix(user.dmgen,"dmgen_"));
+  CHKERRQ(DMSetFromOptions(user.dmgen));
+  CHKERRQ(DMSetUp(user.dmgen));
+  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,user.neqs_net,1,1,NULL,&user.dmnet));
+  CHKERRQ(DMSetOptionsPrefix(user.dmnet,"dmnet_"));
+  CHKERRQ(DMSetFromOptions(user.dmnet));
+  CHKERRQ(DMSetUp(user.dmnet));
   /* Create a composite DM packer and add the two DMs */
-  ierr = DMCompositeCreate(PETSC_COMM_WORLD,&user.dmpgrid);CHKERRQ(ierr);
-  ierr = DMSetOptionsPrefix(user.dmpgrid,"pgrid_");CHKERRQ(ierr);
-  ierr = DMCompositeAddDM(user.dmpgrid,user.dmgen);CHKERRQ(ierr);
-  ierr = DMCompositeAddDM(user.dmpgrid,user.dmnet);CHKERRQ(ierr);
+  CHKERRQ(DMCompositeCreate(PETSC_COMM_WORLD,&user.dmpgrid));
+  CHKERRQ(DMSetOptionsPrefix(user.dmpgrid,"pgrid_"));
+  CHKERRQ(DMCompositeAddDM(user.dmpgrid,user.dmgen));
+  CHKERRQ(DMCompositeAddDM(user.dmpgrid,user.dmnet));
 
-  ierr = DMCreateGlobalVector(user.dmpgrid,&X);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(user.dmpgrid,&X));
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
-  ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,user.neqs_pgrid,user.neqs_pgrid);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(J);CHKERRQ(ierr);
-  ierr = PreallocateJacobian(J,&user);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&J));
+  CHKERRQ(MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,user.neqs_pgrid,user.neqs_pgrid));
+  CHKERRQ(MatSetFromOptions(J));
+  CHKERRQ(PreallocateJacobian(J,&user));
 
   /* Create matrix to save solutions at each time step */
   user.stepnum = 0;
 
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,user.neqs_pgrid+1,1002,NULL,&user.Sol);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF,user.neqs_pgrid+1,1002,NULL,&user.Sol));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
+  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
   if (user.semiexplicit) {
-    ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);
-    ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&user);CHKERRQ(ierr);
-    ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,&user);CHKERRQ(ierr);
+    CHKERRQ(TSSetType(ts,TSRK));
+    CHKERRQ(TSSetRHSFunction(ts,NULL,RHSFunction,&user));
+    CHKERRQ(TSSetRHSJacobian(ts,J,J,RHSJacobian,&user));
   } else {
-    ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
-    ierr = TSSetEquationType(ts,TS_EQ_DAE_IMPLICIT_INDEX1);CHKERRQ(ierr);
-    ierr = TSSetIFunction(ts,NULL,(TSIFunction) IFunction,&user);CHKERRQ(ierr);
-    ierr = TSSetIJacobian(ts,J,J,(TSIJacobian)IJacobian,&user);CHKERRQ(ierr);
+    CHKERRQ(TSSetType(ts,TSCN));
+    CHKERRQ(TSSetEquationType(ts,TS_EQ_DAE_IMPLICIT_INDEX1));
+    CHKERRQ(TSSetIFunction(ts,NULL,(TSIFunction) IFunction,&user));
+    CHKERRQ(TSSetIJacobian(ts,J,J,(TSIJacobian)IJacobian,&user));
   }
-  ierr = TSSetApplicationContext(ts,&user);CHKERRQ(ierr);
+  CHKERRQ(TSSetApplicationContext(ts,&user));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = SetInitialGuess(X,&user);CHKERRQ(ierr);
+  CHKERRQ(SetInitialGuess(X,&user));
   /* Just to set up the Jacobian structure */
 
-  ierr = VecDuplicate(X,&Xdot);CHKERRQ(ierr);
-  ierr = IJacobian(ts,0.0,X,Xdot,0.0,J,J,&user);CHKERRQ(ierr);
-  ierr = VecDestroy(&Xdot);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(X,&Xdot));
+  CHKERRQ(IJacobian(ts,0.0,X,Xdot,0.0,J,J,&user));
+  CHKERRQ(VecDestroy(&Xdot));
 
   /* Save initial solution */
 
   idx=user.stepnum*(user.neqs_pgrid+1);
-  ierr = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  CHKERRQ(MatDenseGetArray(user.Sol,&mat));
+  CHKERRQ(VecGetArray(X,&x));
 
   mat[idx] = 0.0;
 
-  ierr = PetscArraycpy(mat+idx+1,x,user.neqs_pgrid);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(user.Sol,&mat);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  CHKERRQ(PetscArraycpy(mat+idx+1,x,user.neqs_pgrid));
+  CHKERRQ(MatDenseRestoreArray(user.Sol,&mat));
+  CHKERRQ(VecRestoreArray(X,&x));
   user.stepnum++;
 
-  ierr = TSSetMaxTime(ts,user.tmax);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,0.01);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
+  CHKERRQ(TSSetMaxTime(ts,user.tmax));
+  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
+  CHKERRQ(TSSetTimeStep(ts,0.01));
+  CHKERRQ(TSSetFromOptions(ts));
+  CHKERRQ(TSSetPostStep(ts,SaveSolution));
+  CHKERRQ(TSSetSolution(ts,X));
 
-  ierr = PetscMalloc1((2*ngen+2),&direction);CHKERRQ(ierr);
-  ierr = PetscMalloc1((2*ngen+2),&terminate);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1((2*ngen+2),&direction));
+  CHKERRQ(PetscMalloc1((2*ngen+2),&terminate));
   direction[0] = direction[1] = 1;
   terminate[0] = terminate[1] = PETSC_FALSE;
   for (i=0; i < ngen;i++) {
@@ -1161,25 +1146,25 @@ int main(int argc,char **argv)
     terminate[2+2*i] = terminate[2+2*i+1] = PETSC_FALSE;
   }
 
-  ierr = TSSetEventHandler(ts,2*ngen+2,direction,terminate,EventFunction,PostEventFunction,(void*)&user);CHKERRQ(ierr);
+  CHKERRQ(TSSetEventHandler(ts,2*ngen+2,direction,terminate,EventFunction,PostEventFunction,(void*)&user));
 
   if (user.semiexplicit) {
     /* Use a semi-explicit approach with the time-stepping done by an explicit method and the
        algrebraic part solved via PostStage and PostEvaluate callbacks
     */
-    ierr = TSSetType(ts,TSRK);CHKERRQ(ierr);
-    ierr = TSSetPostStage(ts,PostStage);CHKERRQ(ierr);
-    ierr = TSSetPostEvaluate(ts,PostEvaluate);CHKERRQ(ierr);
+    CHKERRQ(TSSetType(ts,TSRK));
+    CHKERRQ(TSSetPostStage(ts,PostStage));
+    CHKERRQ(TSSetPostEvaluate(ts,PostEvaluate));
   }
 
   if (user.setisdiff) {
     /* Create vector of absolute tolerances and set the algebraic part to infinity */
-    ierr = VecDuplicate(X,&vatol);CHKERRQ(ierr);
-    ierr = VecSet(vatol,100000.0);CHKERRQ(ierr);
-    ierr = VecGetArray(vatol,&vatoli);CHKERRQ(ierr);
-    ierr = ISGetIndices(user.is_diff,&idx3);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(X,&vatol));
+    CHKERRQ(VecSet(vatol,100000.0));
+    CHKERRQ(VecGetArray(vatol,&vatoli));
+    CHKERRQ(ISGetIndices(user.is_diff,&idx3));
     for (k=0; k < 7*ngen; k++) vatoli[idx3[k]] = 1e-2;
-    ierr = VecRestoreArray(vatol,&vatoli);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(vatol,&vatoli));
   }
 
   /* Create the nonlinear solver for solving the algebraic system */
@@ -1189,48 +1174,48 @@ int main(int argc,char **argv)
      putting a 1 on the Jacobian diagonal for xgen rows
   */
 
-  ierr = VecDuplicate(X,&F_alg);CHKERRQ(ierr);
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes_alg);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes_alg,F_alg,AlgFunction,&user);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes_alg,J,J,AlgJacobian,&user);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes_alg);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(X,&F_alg));
+  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes_alg));
+  CHKERRQ(SNESSetFunction(snes_alg,F_alg,AlgFunction,&user));
+  CHKERRQ(SNESSetJacobian(snes_alg,J,J,AlgJacobian,&user));
+  CHKERRQ(SNESSetFromOptions(snes_alg));
 
   user.snes_alg=snes_alg;
 
   /* Solve */
-  ierr = TSSolve(ts,X);CHKERRQ(ierr);
+  CHKERRQ(TSSolve(ts,X));
 
-  ierr = MatAssemblyBegin(user.Sol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(user.Sol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(user.Sol,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(user.Sol,MAT_FINAL_ASSEMBLY));
 
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,user.neqs_pgrid+1,user.stepnum,NULL,&A);CHKERRQ(ierr);
-  ierr = MatDenseGetArrayRead(user.Sol,&rmat);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(A,&amat);CHKERRQ(ierr);
-  ierr = PetscArraycpy(amat,rmat,user.stepnum*(user.neqs_pgrid+1));CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(A,&amat);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArrayRead(user.Sol,&rmat);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"out.bin",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-  ierr = MatView(A,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF,user.neqs_pgrid+1,user.stepnum,NULL,&A));
+  CHKERRQ(MatDenseGetArrayRead(user.Sol,&rmat));
+  CHKERRQ(MatDenseGetArray(A,&amat));
+  CHKERRQ(PetscArraycpy(amat,rmat,user.stepnum*(user.neqs_pgrid+1)));
+  CHKERRQ(MatDenseRestoreArray(A,&amat));
+  CHKERRQ(MatDenseRestoreArrayRead(user.Sol,&rmat));
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,"out.bin",FILE_MODE_WRITE,&viewer));
+  CHKERRQ(MatView(A,viewer));
+  CHKERRQ(PetscViewerDestroy(&viewer));
+  CHKERRQ(MatDestroy(&A));
 
-  ierr = PetscFree(direction);CHKERRQ(ierr);
-  ierr = PetscFree(terminate);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes_alg);CHKERRQ(ierr);
-  ierr = VecDestroy(&F_alg);CHKERRQ(ierr);
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
-  ierr = MatDestroy(&user.Ybus);CHKERRQ(ierr);
-  ierr = MatDestroy(&user.Sol);CHKERRQ(ierr);
-  ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.V0);CHKERRQ(ierr);
-  ierr = DMDestroy(&user.dmgen);CHKERRQ(ierr);
-  ierr = DMDestroy(&user.dmnet);CHKERRQ(ierr);
-  ierr = DMDestroy(&user.dmpgrid);CHKERRQ(ierr);
-  ierr = ISDestroy(&user.is_diff);CHKERRQ(ierr);
-  ierr = ISDestroy(&user.is_alg);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(direction));
+  CHKERRQ(PetscFree(terminate));
+  CHKERRQ(SNESDestroy(&snes_alg));
+  CHKERRQ(VecDestroy(&F_alg));
+  CHKERRQ(MatDestroy(&J));
+  CHKERRQ(MatDestroy(&user.Ybus));
+  CHKERRQ(MatDestroy(&user.Sol));
+  CHKERRQ(VecDestroy(&X));
+  CHKERRQ(VecDestroy(&user.V0));
+  CHKERRQ(DMDestroy(&user.dmgen));
+  CHKERRQ(DMDestroy(&user.dmnet));
+  CHKERRQ(DMDestroy(&user.dmpgrid));
+  CHKERRQ(ISDestroy(&user.is_diff));
+  CHKERRQ(ISDestroy(&user.is_alg));
+  CHKERRQ(TSDestroy(&ts));
   if (user.setisdiff) {
-    ierr = VecDestroy(&vatol);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&vatol));
   }
   ierr = PetscFinalize();
   return ierr;

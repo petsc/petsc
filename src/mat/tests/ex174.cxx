@@ -20,61 +20,61 @@ int main(int argc,char **args)
   PetscInt       M,N;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* Load PETSc matrices */
-  ierr = PetscOptionsGetString(NULL,NULL,"-fA",file[0],sizeof(file[0]),NULL);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&view);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(A,"orig_");CHKERRQ(ierr);
-  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatLoad(A,view);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-fA",file[0],sizeof(file[0]),NULL));
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&view));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetOptionsPrefix(A,"orig_"));
+  CHKERRQ(MatSetType(A,MATAIJ));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatLoad(A,view));
+  CHKERRQ(PetscViewerDestroy(&view));
 
   PetscOptionsGetString(NULL,NULL,"-fB",file[1],sizeof(file[1]),&flgB);
   if (flgB) {
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&view);CHKERRQ(ierr);
-    ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-    ierr = MatSetOptionsPrefix(B,"orig_");CHKERRQ(ierr);
-    ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(B);CHKERRQ(ierr);
-    ierr = MatLoad(B,view);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&view));
+    CHKERRQ(MatCreate(PETSC_COMM_WORLD,&B));
+    CHKERRQ(MatSetOptionsPrefix(B,"orig_"));
+    CHKERRQ(MatSetType(B,MATAIJ));
+    CHKERRQ(MatSetFromOptions(B));
+    CHKERRQ(MatLoad(B,view));
+    CHKERRQ(PetscViewerDestroy(&view));
   } else {
     /* Create matrix B = I */
     PetscInt rstart,rend,i;
-    ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+    CHKERRQ(MatGetSize(A,&M,&N));
+    CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
 
-    ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-    ierr = MatSetOptionsPrefix(B,"orig_");CHKERRQ(ierr);
-    ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
-    ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(B);CHKERRQ(ierr);
-    ierr = MatSetUp(B);CHKERRQ(ierr);
+    CHKERRQ(MatCreate(PETSC_COMM_WORLD,&B));
+    CHKERRQ(MatSetOptionsPrefix(B,"orig_"));
+    CHKERRQ(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,N));
+    CHKERRQ(MatSetType(B,MATAIJ));
+    CHKERRQ(MatSetFromOptions(B));
+    CHKERRQ(MatSetUp(B));
     for (i=rstart; i<rend; i++) {
-      ierr = MatSetValues(B,1,&i,1,&i,&one,ADD_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(B,1,&i,1,&i,&one,ADD_VALUES));
     }
-    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   }
 
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATELEMENTAL,&isElemental);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATELEMENTAL,&isElemental));
   if (isElemental) {
     Ae = A;
     Be = B;
     isDense = isAij = isSbaij = PETSC_FALSE;
   } else { /* Convert AIJ/DENSE/SBAIJ matrices into Elemental matrices */
     if (size == 1) {
-      ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQDENSE,&isDense);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isAij);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSbaij);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATSEQDENSE,&isDense));
+      CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isAij));
+      CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSbaij));
     } else {
-      ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIDENSE,&isDense);CHKERRQ(ierr);
-      ierr = PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&isAij);CHKERRQ(ierr);
-       ierr = PetscObjectTypeCompare((PetscObject)A,MATMPISBAIJ,&isSbaij);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATMPIDENSE,&isDense));
+      CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&isAij));
+       CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATMPISBAIJ,&isSbaij));
     }
 
     if (rank == 0) {
@@ -86,27 +86,27 @@ int main(int argc,char **args)
         printf(" Convert SBAIJ matrices A and B into Elemental matrix... \n");
       } else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not supported yet");
     }
-    ierr = MatConvert(A, MATELEMENTAL, MAT_INITIAL_MATRIX, &Ae);CHKERRQ(ierr);
-    ierr = MatConvert(B, MATELEMENTAL, MAT_INITIAL_MATRIX, &Be);CHKERRQ(ierr);
+    CHKERRQ(MatConvert(A, MATELEMENTAL, MAT_INITIAL_MATRIX, &Ae));
+    CHKERRQ(MatConvert(B, MATELEMENTAL, MAT_INITIAL_MATRIX, &Be));
 
     /* Test accuracy */
-    ierr = MatMultEqual(A,Ae,5,&flg);CHKERRQ(ierr);
+    CHKERRQ(MatMultEqual(A,Ae,5,&flg));
     PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != A_elemental.");
-    ierr = MatMultEqual(B,Be,5,&flg);CHKERRQ(ierr);
+    CHKERRQ(MatMultEqual(B,Be,5,&flg));
     PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"B != B_elemental.");
   }
 
   if (!isElemental) {
-    ierr = MatDestroy(&Ae);CHKERRQ(ierr);
-    ierr = MatDestroy(&Be);CHKERRQ(ierr);
+    CHKERRQ(MatDestroy(&Ae));
+    CHKERRQ(MatDestroy(&Be));
 
     /* Test MAT_REUSE_MATRIX which is only supported for inplace conversion */
-    ierr = MatConvert(A, MATELEMENTAL, MAT_INPLACE_MATRIX, &A);CHKERRQ(ierr);
-    //ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(MatConvert(A, MATELEMENTAL, MAT_INPLACE_MATRIX, &A));
+    //CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
   }
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&B));
   ierr = PetscFinalize();
   return ierr;
 }

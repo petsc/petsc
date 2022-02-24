@@ -27,39 +27,39 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   /* Allocate vectors / matrix */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,1);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
+  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,1));
+  CHKERRQ(VecSetFromOptions(x));
+  CHKERRQ(VecDuplicate(x,&r));
 
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,1,1,1,NULL,&J);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_WORLD,1,1,1,NULL,&J));
 
   /* Create / set-up SNES */
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes,r,UserFunction,&user);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,J,J,UserJacobian,&user);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes));
+  CHKERRQ(SNESSetFunction(snes,r,UserFunction,&user));
+  CHKERRQ(SNESSetJacobian(snes,J,J,UserJacobian,&user));
+  CHKERRQ(SNESSetFromOptions(snes));
 
   /* Set initial guess (=1) and target value */
   user.value = 1e-4;
 
-  ierr = VecSet(x,1.0);CHKERRQ(ierr);
+  CHKERRQ(VecSet(x,1.0));
 
   /* Set initial guess / solve */
-  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
-  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(SNESSolve(snes,NULL,x));
+  CHKERRQ(SNESGetIterationNumber(snes,&its));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its));
+  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Done */
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&r));
+  CHKERRQ(MatDestroy(&J));
+  CHKERRQ(SNESDestroy(&snes));
   ierr = PetscFinalize();
   return ierr;
 }
@@ -74,13 +74,12 @@ PetscErrorCode UserFunction(SNES snes,Vec X,Vec F,void *ptr)
   PetscScalar       *f;
   PetscReal         half;
   const PetscScalar *x;
-  PetscErrorCode    ierr;
 
   half = 0.5;
 
-  ierr = VecGetSize(X,&N);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecGetSize(X,&N));
+  CHKERRQ(VecGetArrayRead(X,&x));
+  CHKERRQ(VecGetArray(F,&f));
 
   /* Calculate residual */
   for (i=0; i<N; ++i) {
@@ -91,13 +90,13 @@ PetscErrorCode UserFunction(SNES snes,Vec X,Vec F,void *ptr)
        In later iterations, snes->domainerror should be cleared, allowing iterations in the feasible region to be accepted.
     */
     if ((half-user->value) < PetscRealPart(x[i]) && PetscRealPart(x[i]) < (half+user->value)) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"DOMAIN ERROR: x=%g\n",(double)PetscRealPart(x[i]));CHKERRQ(ierr);
-      ierr = SNESSetFunctionDomainError(snes);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"DOMAIN ERROR: x=%g\n",(double)PetscRealPart(x[i])));
+      CHKERRQ(SNESSetFunctionDomainError(snes));
     }
     f[i] = x[i]*x[i] - user->value;
   }
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(X,&x));
+  CHKERRQ(VecRestoreArray(F,&f));
   return 0;
 }
 
@@ -109,25 +108,24 @@ PetscErrorCode UserJacobian(SNES snes,Vec X,Mat J,Mat jac,void *ptr)
   PetscInt          N,i,row,col;
   const PetscScalar *x;
   PetscScalar       v;
-  PetscErrorCode    ierr;
 
-  ierr = VecGetSize(X,&N);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  CHKERRQ(VecGetSize(X,&N));
+  CHKERRQ(VecGetArrayRead(X,&x));
 
   /* Calculate Jacobian */
   for (i=0; i<N; ++i) {
     row = i;
     col = i;
     v = 2*x[i];
-    ierr = MatSetValues(jac,1,&row,1,&col,&v,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(jac,1,&row,1,&col,&v,INSERT_VALUES));
   }
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(X,&x));
+  CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
 
   if (jac != J) {
-    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   }
   return 0;
 }

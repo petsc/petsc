@@ -55,7 +55,7 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only");
 
   /* initializations */
@@ -72,64 +72,64 @@ int main(int argc,char **argv)
   appctx.useAlhs    = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"","");CHKERRQ(ierr);
-  ierr = PetscOptionsName("-debug",NULL,NULL,&appctx.debug);CHKERRQ(ierr);
-  ierr = PetscOptionsName("-useAlhs",NULL,NULL,&appctx.useAlhs);CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-nphase",NULL,NULL,nphase,&nphase,NULL,1,3);CHKERRQ(ierr);
-  PetscOptionsEnd();
-  T         = 0.014/nphase;
+  CHKERRQ(PetscOptionsName("-debug",NULL,NULL,&appctx.debug));
+  CHKERRQ(PetscOptionsName("-useAlhs",NULL,NULL,&appctx.useAlhs));
+  CHKERRQ(PetscOptionsRangeInt("-nphase",NULL,NULL,nphase,&nphase,NULL,1,3));
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  T = 0.014/nphase;
 
   /* create vector to hold ts solution */
   /*-----------------------------------*/
-  ierr = VecCreate(PETSC_COMM_WORLD, &init_sol);CHKERRQ(ierr);
-  ierr = VecSetSizes(init_sol, PETSC_DECIDE, m);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(init_sol);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD, &init_sol));
+  CHKERRQ(VecSetSizes(init_sol, PETSC_DECIDE, m));
+  CHKERRQ(VecSetFromOptions(init_sol));
 
   /* create vector to hold true ts soln for comparison */
-  ierr = VecDuplicate(init_sol, &appctx.solution);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(init_sol, &appctx.solution));
 
   /* create LHS matrix Amat */
   /*------------------------*/
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, m, m, 3, NULL, &appctx.Amat);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(appctx.Amat);CHKERRQ(ierr);
-  ierr = MatSetUp(appctx.Amat);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_WORLD, m, m, 3, NULL, &appctx.Amat));
+  CHKERRQ(MatSetFromOptions(appctx.Amat));
+  CHKERRQ(MatSetUp(appctx.Amat));
   /* set space grid points - interio points only! */
-  ierr = PetscMalloc1(nz+1,&z);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(nz+1,&z));
   for (i=0; i<nz; i++) z[i]=(i)*((zFinal-zInitial)/(nz-1));
   appctx.z = z;
   femA(&appctx,nz,z);
 
   /* create the jacobian matrix */
   /*----------------------------*/
-  ierr = MatCreate(PETSC_COMM_WORLD, &Jmat);CHKERRQ(ierr);
-  ierr = MatSetSizes(Jmat,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(Jmat);CHKERRQ(ierr);
-  ierr = MatSetUp(Jmat);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD, &Jmat));
+  CHKERRQ(MatSetSizes(Jmat,PETSC_DECIDE,PETSC_DECIDE,m,m));
+  CHKERRQ(MatSetFromOptions(Jmat));
+  CHKERRQ(MatSetUp(Jmat));
 
   /* create working vectors for formulating rhs=inv(Alhs)*(Arhs*U + g) */
-  ierr = VecDuplicate(init_sol,&appctx.ksp_rhs);CHKERRQ(ierr);
-  ierr = VecDuplicate(init_sol,&appctx.ksp_sol);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(init_sol,&appctx.ksp_rhs));
+  CHKERRQ(VecDuplicate(init_sol,&appctx.ksp_sol));
 
   /* set initial guess */
   /*-------------------*/
   for (i=0; i<nz-2; i++) {
     val  = exact(z[i+1], 0.0);
-    ierr = VecSetValue(init_sol,i,(PetscScalar)val,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValue(init_sol,i,(PetscScalar)val,INSERT_VALUES));
   }
-  ierr = VecAssemblyBegin(init_sol);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(init_sol);CHKERRQ(ierr);
+  CHKERRQ(VecAssemblyBegin(init_sol));
+  CHKERRQ(VecAssemblyEnd(init_sol));
 
   /*create a time-stepping context and set the problem type */
   /*--------------------------------------------------------*/
-  ierr = TSCreate(PETSC_COMM_WORLD, &ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(PETSC_COMM_WORLD, &ts));
+  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
 
   /* set time-step method */
-  ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
+  CHKERRQ(TSSetType(ts,TSCN));
 
   /* Set optional user-defined monitoring routine */
-  ierr = TSMonitorSet(ts,Monitor,&appctx,NULL);CHKERRQ(ierr);
+  CHKERRQ(TSMonitorSet(ts,Monitor,&appctx,NULL));
   /* set the right hand side of U_t = RHSfunction(U,t) */
-  ierr = TSSetRHSFunction(ts,NULL,(PetscErrorCode (*)(TS,PetscScalar,Vec,Vec,void*))RHSfunction,&appctx);CHKERRQ(ierr);
+  CHKERRQ(TSSetRHSFunction(ts,NULL,(PetscErrorCode (*)(TS,PetscScalar,Vec,Vec,void*))RHSfunction,&appctx));
 
   if (appctx.useAlhs) {
     /* set the left hand side matrix of Amat*U_t = rhs(U,t) */
@@ -138,56 +138,56 @@ int main(int argc,char **argv)
      * Alhs matrix without making a copy.  Either finite difference the entire thing or use analytic Jacobians in both
      * places.
      */
-    ierr = TSSetIFunction(ts,NULL,TSComputeIFunctionLinear,&appctx);CHKERRQ(ierr);
-    ierr = TSSetIJacobian(ts,appctx.Amat,appctx.Amat,TSComputeIJacobianConstant,&appctx);CHKERRQ(ierr);
+    CHKERRQ(TSSetIFunction(ts,NULL,TSComputeIFunctionLinear,&appctx));
+    CHKERRQ(TSSetIJacobian(ts,appctx.Amat,appctx.Amat,TSComputeIJacobianConstant,&appctx));
   }
 
   /* use petsc to compute the jacobian by finite differences */
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,Jmat,Jmat,SNESComputeJacobianDefault,NULL);CHKERRQ(ierr);
+  CHKERRQ(TSGetSNES(ts,&snes));
+  CHKERRQ(SNESSetJacobian(snes,Jmat,Jmat,SNESComputeJacobianDefault,NULL));
 
   /* get the command line options if there are any and set them */
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  CHKERRQ(TSSetFromOptions(ts));
 
 #if defined(PETSC_HAVE_SUNDIALS2)
   {
     TSType    type;
     PetscBool sundialstype=PETSC_FALSE;
-    ierr = TSGetType(ts,&type);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)ts,TSSUNDIALS,&sundialstype);CHKERRQ(ierr);
+    CHKERRQ(TSGetType(ts,&type));
+    CHKERRQ(PetscObjectTypeCompare((PetscObject)ts,TSSUNDIALS,&sundialstype));
     PetscCheck(!sundialstype || !appctx.useAlhs,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use Alhs formulation for TSSUNDIALS type");
   }
 #endif
   /* Sets the initial solution */
-  ierr = TSSetSolution(ts,init_sol);CHKERRQ(ierr);
+  CHKERRQ(TSSetSolution(ts,init_sol));
 
   stepsz[0] = 1.0/(2.0*(nz-1)*(nz-1)); /* (mesh_size)^2/2.0 */
   ftime     = 0.0;
   for (k=0; k<nphase; k++) {
-    if (nphase > 1) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Phase %D initial time %g, stepsz %g, duration: %g\n",k,(double)ftime,(double)stepsz[k],(double)((k+1)*T));CHKERRQ(ierr);}
-    ierr = TSSetTime(ts,ftime);CHKERRQ(ierr);
-    ierr = TSSetTimeStep(ts,stepsz[k]);CHKERRQ(ierr);
-    ierr = TSSetMaxSteps(ts,max_steps);CHKERRQ(ierr);
-    ierr = TSSetMaxTime(ts,(k+1)*T);CHKERRQ(ierr);
-    ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+    if (nphase > 1) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Phase %D initial time %g, stepsz %g, duration: %g\n",k,(double)ftime,(double)stepsz[k],(double)((k+1)*T)));
+    CHKERRQ(TSSetTime(ts,ftime));
+    CHKERRQ(TSSetTimeStep(ts,stepsz[k]));
+    CHKERRQ(TSSetMaxSteps(ts,max_steps));
+    CHKERRQ(TSSetMaxTime(ts,(k+1)*T));
+    CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
 
     /* loop over time steps */
     /*----------------------*/
-    ierr = TSSolve(ts,init_sol);CHKERRQ(ierr);
-    ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
-    ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
+    CHKERRQ(TSSolve(ts,init_sol));
+    CHKERRQ(TSGetSolveTime(ts,&ftime));
+    CHKERRQ(TSGetStepNumber(ts,&steps));
     stepsz[k+1] = stepsz[k]*1.5; /* change step size for the next phase */
   }
 
   /* free space */
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = MatDestroy(&appctx.Amat);CHKERRQ(ierr);
-  ierr = MatDestroy(&Jmat);CHKERRQ(ierr);
-  ierr = VecDestroy(&appctx.ksp_rhs);CHKERRQ(ierr);
-  ierr = VecDestroy(&appctx.ksp_sol);CHKERRQ(ierr);
-  ierr = VecDestroy(&init_sol);CHKERRQ(ierr);
-  ierr = VecDestroy(&appctx.solution);CHKERRQ(ierr);
-  ierr = PetscFree(z);CHKERRQ(ierr);
+  CHKERRQ(TSDestroy(&ts));
+  CHKERRQ(MatDestroy(&appctx.Amat));
+  CHKERRQ(MatDestroy(&Jmat));
+  CHKERRQ(VecDestroy(&appctx.ksp_rhs));
+  CHKERRQ(VecDestroy(&appctx.ksp_sol));
+  CHKERRQ(VecDestroy(&init_sol));
+  CHKERRQ(VecDestroy(&appctx.solution));
+  CHKERRQ(PetscFree(z));
 
   ierr = PetscFinalize();
   return ierr;
@@ -226,38 +226,37 @@ PetscScalar exact(PetscScalar z,PetscReal t)
 PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 {
   AppCtx         *appctx = (AppCtx*)ctx;
-  PetscErrorCode ierr;
   PetscInt       i,m=appctx->m;
   PetscReal      norm_2,norm_max,h=1.0/(m+1);
   PetscScalar    *u_exact;
 
   /* Compute the exact solution */
-  ierr = VecGetArrayWrite(appctx->solution,&u_exact);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayWrite(appctx->solution,&u_exact));
   for (i=0; i<m; i++) u_exact[i] = exact(appctx->z[i+1],time);
-  ierr = VecRestoreArrayWrite(appctx->solution,&u_exact);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayWrite(appctx->solution,&u_exact));
 
   /* Print debugging information if desired */
   if (appctx->debug) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Computed solution vector at time %g\n",(double)time);CHKERRQ(ierr);
-    ierr = VecView(u,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Exact solution vector\n");CHKERRQ(ierr);
-    ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Computed solution vector at time %g\n",(double)time));
+    CHKERRQ(VecView(u,PETSC_VIEWER_STDOUT_SELF));
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Exact solution vector\n"));
+    CHKERRQ(VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF));
   }
 
   /* Compute the 2-norm and max-norm of the error */
-  ierr = VecAXPY(appctx->solution,-1.0,u);CHKERRQ(ierr);
-  ierr = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(appctx->solution,-1.0,u));
+  CHKERRQ(VecNorm(appctx->solution,NORM_2,&norm_2));
 
   norm_2 = PetscSqrtReal(h)*norm_2;
-  ierr   = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
-  ierr   = PetscPrintf(PETSC_COMM_SELF,"Timestep %D: time = %g, 2-norm error = %6.4f, max norm error = %6.4f\n",step,(double)time,(double)norm_2,(double)norm_max);CHKERRQ(ierr);
+  CHKERRQ(VecNorm(appctx->solution,NORM_MAX,&norm_max));
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Timestep %D: time = %g, 2-norm error = %6.4f, max norm error = %6.4f\n",step,(double)time,(double)norm_2,(double)norm_max));
 
   /*
      Print debugging information if desired
   */
   if (appctx->debug) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error vector\n");CHKERRQ(ierr);
-    ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Error vector\n"));
+    CHKERRQ(VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF));
   }
   return 0;
 }
@@ -268,26 +267,25 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 
 PetscErrorCode Petsc_KSPSolve(AppCtx *obj)
 {
-  PetscErrorCode ierr;
   KSP            ksp;
   PC             pc;
 
   /*create the ksp context and set the operators,that is, associate the system matrix with it*/
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,obj->Amat,obj->Amat);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPSetOperators(ksp,obj->Amat,obj->Amat));
 
   /*get the preconditioner context, set its type and the tolerances*/
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+  CHKERRQ(KSPGetPC(ksp,&pc));
+  CHKERRQ(PCSetType(pc,PCLU));
+  CHKERRQ(KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
 
   /*get the command line options if there are any and set them*/
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPSetFromOptions(ksp));
 
   /*get the linear system (ksp) solve*/
-  ierr = KSPSolve(ksp,obj->ksp_rhs,obj->ksp_sol);CHKERRQ(ierr);
+  CHKERRQ(KSPSolve(ksp,obj->ksp_rhs,obj->ksp_sol));
 
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&ksp));
   return 0;
 }
 
@@ -420,7 +418,6 @@ PetscErrorCode femA(AppCtx *obj,PetscInt nz,PetscScalar *z)
   PetscInt       nli[num_z][2],indx[num_z];
   PetscScalar    dd,dl,zip,zipq,zz,bb,bbb,aij;
   PetscScalar    rquad[num_z][3],dlen[num_z],qdwt[3],add_term;
-  PetscErrorCode ierr;
 
   /*  initializing everything  */
   for (i=0; i < nz; i++) {
@@ -477,15 +474,15 @@ PetscErrorCode femA(AppCtx *obj,PetscInt nz,PetscScalar *z)
             aij = bb*bbb;
             if (j > -1) {
               add_term = aij*dd;
-              ierr = MatSetValue(obj->Amat,i,j,add_term,ADD_VALUES);CHKERRQ(ierr);
+              CHKERRQ(MatSetValue(obj->Amat,i,j,add_term,ADD_VALUES));
             }/*endif*/
           } /*end for (iqq)*/
         } /*end if (i>0)*/
       } /*end for (iq)*/
     } /*end for (iquad)*/
   } /*end for (il)*/
-  ierr = MatAssemblyBegin(obj->Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(obj->Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(obj->Amat,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(obj->Amat,MAT_FINAL_ASSEMBLY));
   return 0;
 }
 
@@ -497,7 +494,6 @@ PetscErrorCode rhs(AppCtx *obj,PetscScalar *y, PetscInt nz, PetscScalar *z, Pets
 {
   PetscInt       i,j,js,je,jj;
   PetscScalar    val,g[num_z],btri[num_z][3],add_term;
-  PetscErrorCode ierr;
 
   for (i=0; i < nz-2; i++) {
     for (j=0; j <= 2; j++) btri[i][j]=0.0;
@@ -520,10 +516,10 @@ PetscErrorCode rhs(AppCtx *obj,PetscScalar *y, PetscInt nz, PetscScalar *z, Pets
       val += (btri[i][jj])*(y[j]);
     }
     add_term = val + g[i];
-    ierr = VecSetValue(obj->ksp_rhs,(PetscInt)i,(PetscScalar)add_term,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValue(obj->ksp_rhs,(PetscInt)i,(PetscScalar)add_term,INSERT_VALUES));
   }
-  ierr = VecAssemblyBegin(obj->ksp_rhs);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(obj->ksp_rhs);CHKERRQ(ierr);
+  CHKERRQ(VecAssemblyBegin(obj->ksp_rhs));
+  CHKERRQ(VecAssemblyEnd(obj->ksp_rhs));
   return 0;
 }
 
@@ -540,7 +536,6 @@ PetscErrorCode rhs(AppCtx *obj,PetscScalar *y, PetscInt nz, PetscScalar *z, Pets
 
 PetscErrorCode RHSfunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 {
-  PetscErrorCode    ierr;
   AppCtx            *obj = (AppCtx*)ctx;
   PetscScalar       soln[num_z];
   const PetscScalar *soln_ptr;
@@ -548,14 +543,14 @@ PetscErrorCode RHSfunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   PetscReal         time;
 
   /* get the previous solution to compute updated system */
-  ierr = VecGetArrayRead(globalin,&soln_ptr);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(globalin,&soln_ptr));
   for (i=0; i < num_z-2; i++) soln[i] = soln_ptr[i];
-  ierr = VecRestoreArrayRead(globalin,&soln_ptr);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(globalin,&soln_ptr));
   soln[num_z-1] = 0.0;
   soln[num_z-2] = 0.0;
 
   /* clear out the matrix and rhs for ksp to keep things straight */
-  ierr = VecSet(obj->ksp_rhs,(PetscScalar)0.0);CHKERRQ(ierr);
+  CHKERRQ(VecSet(obj->ksp_rhs,(PetscScalar)0.0));
 
   time = t;
   /* get the updated system */
@@ -564,11 +559,11 @@ PetscErrorCode RHSfunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   /* do a ksp solve to get the rhs for the ts problem */
   if (obj->useAlhs) {
     /* ksp_sol = ksp_rhs */
-    ierr = VecCopy(obj->ksp_rhs,globalout);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(obj->ksp_rhs,globalout));
   } else {
     /* ksp_sol = inv(Amat)*ksp_rhs */
-    ierr = Petsc_KSPSolve(obj);CHKERRQ(ierr);
-    ierr = VecCopy(obj->ksp_sol,globalout);CHKERRQ(ierr);
+    CHKERRQ(Petsc_KSPSolve(obj));
+    CHKERRQ(VecCopy(obj->ksp_sol,globalout));
   }
   return 0;
 }
@@ -589,4 +584,3 @@ PetscErrorCode RHSfunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
       TODO: Broken because SNESComputeJacobianDefault is incompatible with TSComputeIJacobianConstant
 
 TEST*/
-

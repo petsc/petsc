@@ -16,40 +16,40 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetEquationType(ts,TS_EQ_ODE_IMPLICIT);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&f);CHKERRQ(ierr);
-  ierr = VecSetSizes(f,1,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(f);CHKERRQ(ierr);
-  ierr = VecSetUp(f);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,f,IFunction,NULL);CHKERRQ(ierr);
-  ierr = VecDestroy(&f);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
+  CHKERRQ(TSSetEquationType(ts,TS_EQ_ODE_IMPLICIT));
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&f));
+  CHKERRQ(VecSetSizes(f,1,PETSC_DECIDE));
+  CHKERRQ(VecSetFromOptions(f));
+  CHKERRQ(VecSetUp(f));
+  CHKERRQ(TSSetIFunction(ts,f,IFunction,NULL));
+  CHKERRQ(VecDestroy(&f));
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,1,1,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetSizes(A,1,1,PETSC_DECIDE,PETSC_DECIDE));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatSetUp(A));
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   /* ensure that the Jacobian matrix has diagonal entries since that is required by TS */
-  ierr = MatShift(A,(PetscReal)1);CHKERRQ(ierr);
-  ierr = MatShift(A,(PetscReal)-1);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,A,A,IJacobian,NULL);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(MatShift(A,(PetscReal)1));
+  CHKERRQ(MatShift(A,(PetscReal)-1));
+  CHKERRQ(TSSetIJacobian(ts,A,A,IJacobian,NULL));
+  CHKERRQ(MatDestroy(&A));
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,1,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecSetUp(x);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
+  CHKERRQ(VecSetSizes(x,1,PETSC_DECIDE));
+  CHKERRQ(VecSetFromOptions(x));
+  CHKERRQ(VecSetUp(x));
+  CHKERRQ(TSSetSolution(ts,x));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(TSSetFromOptions(ts));
 
-  ierr = TSSetStepNumber(ts,0);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,1);CHKERRQ(ierr);
-  ierr = TSSetTime(ts,0);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts,PETSC_MAX_REAL);CHKERRQ(ierr);
-  ierr = TSSetMaxSteps(ts,3);CHKERRQ(ierr);
+  CHKERRQ(TSSetStepNumber(ts,0));
+  CHKERRQ(TSSetTimeStep(ts,1));
+  CHKERRQ(TSSetTime(ts,0));
+  CHKERRQ(TSSetMaxTime(ts,PETSC_MAX_REAL));
+  CHKERRQ(TSSetMaxSteps(ts,3));
 
   /*
       When an ARKIMEX scheme with an explicit stage is used this will error with a message informing the user it is not possible to use
@@ -58,32 +58,29 @@ int main(int argc,char **argv)
   ierr = TSSolve(ts,NULL);
   if (ierr != PETSC_ERR_ARG_INCOMP) CHKERRQ(ierr);
 
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  CHKERRQ(TSDestroy(&ts));
   ierr = PetscFinalize();
   return ierr;
 }
 
 PetscErrorCode IFunction(TS ts,PetscReal t,Vec x,Vec xdot,Vec f,void *ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecCopy(xdot,f);CHKERRQ(ierr);
-  ierr = VecScale(f,2.0);CHKERRQ(ierr);
-  ierr = VecShift(f,-1.0);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(xdot,f));
+  CHKERRQ(VecScale(f,2.0));
+  CHKERRQ(VecShift(f,-1.0));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode IJacobian(TS ts,PetscReal t,Vec x,Vec xdot,PetscReal shift,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode ierr;
   PetscScalar    j;
 
   PetscFunctionBegin;
   j = shift*2.0;
-  ierr = MatSetValue(B,0,0,j,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatSetValue(B,0,0,j,INSERT_VALUES));
+  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 

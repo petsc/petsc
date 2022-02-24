@@ -22,10 +22,10 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->fill      = 0.10;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-debug", "The debugging level", "ex6.c", options->debug, &options->debug, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-num_strata", "The number of label values", "ex6.c", options->numStrata, &options->numStrata, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-pend", "The label point limit", "ex6.c", options->pEnd, &options->pEnd, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-fill", "The percentage of label chart to set", "ex6.c", options->fill, &options->fill, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBoundedInt("-debug", "The debugging level", "ex6.c", options->debug, &options->debug, NULL,0));
+  CHKERRQ(PetscOptionsBoundedInt("-num_strata", "The number of label values", "ex6.c", options->numStrata, &options->numStrata, NULL,0));
+  CHKERRQ(PetscOptionsBoundedInt("-pend", "The label point limit", "ex6.c", options->pEnd, &options->pEnd, NULL,0));
+  CHKERRQ(PetscOptionsReal("-fill", "The percentage of label chart to set", "ex6.c", options->fill, &options->fill, NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -34,29 +34,28 @@ PetscErrorCode TestSetup(DMLabel label, AppCtx *user)
 {
   PetscRandom    r;
   PetscInt       n = (PetscInt) (user->fill*(user->pEnd - user->pStart)), i;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscRandomCreate(PETSC_COMM_SELF, &r);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);/* -random_type <> */
-  ierr = PetscRandomSetInterval(r, user->pStart, user->pEnd);CHKERRQ(ierr);
-  ierr = PetscRandomSetSeed(r, 123456789L);CHKERRQ(ierr);
-  ierr = PetscRandomSeed(r);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF, &r));
+  CHKERRQ(PetscRandomSetFromOptions(r));/* -random_type <> */
+  CHKERRQ(PetscRandomSetInterval(r, user->pStart, user->pEnd));
+  CHKERRQ(PetscRandomSetSeed(r, 123456789L));
+  CHKERRQ(PetscRandomSeed(r));
   user->size = 0;
   for (i = 0; i < n; ++i) {
     PetscReal p;
     PetscInt  val;
 
-    ierr = PetscRandomGetValueReal(r, &p);CHKERRQ(ierr);
-    ierr = DMLabelGetValue(label, (PetscInt) p, &val);CHKERRQ(ierr);
+    CHKERRQ(PetscRandomGetValueReal(r, &p));
+    CHKERRQ(DMLabelGetValue(label, (PetscInt) p, &val));
     if (val < 0) {
       ++user->size;
-      ierr = DMLabelSetValue(label, (PetscInt) p, i % user->numStrata);CHKERRQ(ierr);
+      CHKERRQ(DMLabelSetValue(label, (PetscInt) p, i % user->numStrata));
     }
   }
-  ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
-  ierr = DMLabelCreateIndex(label, user->pStart, user->pEnd);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "Created label with chart [%D, %D) and set %D values\n", user->pStart, user->pEnd, user->size);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomDestroy(&r));
+  CHKERRQ(DMLabelCreateIndex(label, user->pStart, user->pEnd));
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "Created label with chart [%D, %D) and set %D values\n", user->pStart, user->pEnd, user->size));
   PetscFunctionReturn(0);
 }
 
@@ -65,15 +64,14 @@ PetscErrorCode TestLookup(DMLabel label, AppCtx *user)
   const PetscInt pStart = user->pStart;
   const PetscInt pEnd   = user->pEnd;
   PetscInt       p, n = 0;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (p = pStart; p < pEnd; ++p) {
     PetscInt  val;
     PetscBool has;
 
-    ierr = DMLabelGetValue(label, p, &val);CHKERRQ(ierr);
-    ierr = DMLabelHasPoint(label, p, &has);CHKERRQ(ierr);
+    CHKERRQ(DMLabelGetValue(label, p, &val));
+    CHKERRQ(DMLabelHasPoint(label, p, &has));
     PetscCheckFalse(((val >= 0) && !has) || ((val < 0) && has),PETSC_COMM_SELF, PETSC_ERR_PLIB, "Label value %D does not match contains check %D for point %D", val, (PetscInt) has, p);
     if (has) ++n;
   }
@@ -86,20 +84,19 @@ PetscErrorCode TestClear(DMLabel label, AppCtx *user)
 {
   PetscInt       pStart = user->pStart, pEnd = user->pEnd, p;
   PetscInt       defaultValue;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMLabelGetDefaultValue(label,&defaultValue);CHKERRQ(ierr);
+  CHKERRQ(DMLabelGetDefaultValue(label,&defaultValue));
   for (p = pStart; p < pEnd; p++) {
     PetscInt  val;
     PetscBool hasPoint;
 
-    ierr = DMLabelGetValue(label,p,&val);CHKERRQ(ierr);
+    CHKERRQ(DMLabelGetValue(label,p,&val));
     if (val != defaultValue) {
-      ierr = DMLabelClearValue(label,p,val);CHKERRQ(ierr);
+      CHKERRQ(DMLabelClearValue(label,p,val));
     }
-    ierr = DMLabelGetValue(label,p,&val);CHKERRQ(ierr);
-    ierr = DMLabelHasPoint(label,p,&hasPoint);CHKERRQ(ierr);
+    CHKERRQ(DMLabelGetValue(label,p,&val));
+    CHKERRQ(DMLabelHasPoint(label,p,&hasPoint));
     PetscCheckFalse(val != defaultValue,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected default value %D after clearing point %D, got %D",defaultValue,p,val);
     PetscCheckFalse(hasPoint,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Label contains %D after clearing",p);
   }
@@ -113,12 +110,12 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = DMLabelCreate(PETSC_COMM_SELF, "Test Label", &label);CHKERRQ(ierr);
-  ierr = TestSetup(label, &user);CHKERRQ(ierr);
-  ierr = TestLookup(label, &user);CHKERRQ(ierr);
-  ierr = TestClear(label,&user);CHKERRQ(ierr);
-  ierr = DMLabelDestroy(&label);CHKERRQ(ierr);
+  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
+  CHKERRQ(DMLabelCreate(PETSC_COMM_SELF, "Test Label", &label));
+  CHKERRQ(TestSetup(label, &user));
+  CHKERRQ(TestLookup(label, &user));
+  CHKERRQ(TestClear(label,&user));
+  CHKERRQ(DMLabelDestroy(&label));
   ierr = PetscFinalize();
   return ierr;
 }

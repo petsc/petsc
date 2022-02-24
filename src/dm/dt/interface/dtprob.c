@@ -327,7 +327,7 @@ PetscErrorCode PetscProbCreateFromOptions(PetscInt dim, const char prefix[], con
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(PETSC_COMM_SELF, prefix, "PetscProb Options", "DT");CHKERRQ(ierr);
-  ierr = PetscOptionsEnum(name, "Method to compute PDF <constant, gaussian>", "", DTProbDensityTypes, (PetscEnum) den, (PetscEnum *) &den, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsEnum(name, "Method to compute PDF <constant, gaussian>", "", DTProbDensityTypes, (PetscEnum) den, (PetscEnum *) &den, NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (pdf) {PetscValidPointer(pdf, 4); *pdf = NULL;}
@@ -435,50 +435,49 @@ PetscErrorCode PetscProbComputeKSStatistic(Vec v, PetscProbFunc cdf, PetscReal *
   PetscOptions       options;
   const char        *prefix;
   MPI_Comm           comm;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) v, &comm);CHKERRQ(ierr);
-  ierr = PetscObjectGetOptionsPrefix((PetscObject) v, &prefix);CHKERRQ(ierr);
-  ierr = PetscObjectGetOptions((PetscObject) v, &options);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm, options, prefix, "-ks_monitor", &viewer, &format, &flg);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject) v, &comm));
+  CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject) v, &prefix));
+  CHKERRQ(PetscObjectGetOptions((PetscObject) v, &options));
+  CHKERRQ(PetscOptionsGetViewer(comm, options, prefix, "-ks_monitor", &viewer, &format, &flg));
   if (flg) {
-    ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW,  &isdraw);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &isascii));
+    CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW,  &isdraw));
   }
   if (isascii) {
-    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerPushFormat(viewer, format));
   } else if (isdraw) {
-    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-    ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
-    ierr = PetscDrawLGCreate(draw, 2, &lg);CHKERRQ(ierr);
-    ierr = PetscDrawLGSetLegend(lg, names);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerPushFormat(viewer, format));
+    CHKERRQ(PetscViewerDrawGetDraw(viewer, 0, &draw));
+    CHKERRQ(PetscDrawLGCreate(draw, 2, &lg));
+    CHKERRQ(PetscDrawLGSetLegend(lg, names));
   }
 
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) v), &size);CHKERRMPI(ierr);
-  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
-  ierr = VecGetBlockSize(v, &dim);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject) v), &size));
+  CHKERRQ(VecGetLocalSize(v, &n));
+  CHKERRQ(VecGetBlockSize(v, &dim));
   n   /= dim;
   /* TODO Parallel algorithm is harder */
   if (size == 1) {
-    ierr = PetscMalloc1(n, &speed);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(v, &a);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(n, &speed));
+    CHKERRQ(VecGetArrayRead(v, &a));
     for (p = 0; p < n; ++p) {
       PetscReal mag = 0.;
 
       for (d = 0; d < dim; ++d) mag += PetscSqr(PetscRealPart(a[p*dim+d]));
       speed[p] = PetscSqrtReal(mag);
     }
-    ierr = PetscSortReal(n, speed);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(v, &a);CHKERRQ(ierr);
+    CHKERRQ(PetscSortReal(n, speed));
+    CHKERRQ(VecRestoreArrayRead(v, &a));
     for (p = 0; p < n; ++p) {
       const PetscReal x = speed[p], Fn = ((PetscReal) p) / n;
       PetscReal       F, vals[2];
 
-      ierr = cdf(&x, NULL, &F);CHKERRQ(ierr);
+      CHKERRQ(cdf(&x, NULL, &F));
       Dn = PetscMax(PetscAbsReal(Fn - F), Dn);
-      if (isascii) {ierr = PetscViewerASCIIPrintf(viewer, "x: %g F: %g Fn: %g Dn: %.2g\n", x, F, Fn, Dn);CHKERRQ(ierr);}
-      if (isdraw)  {vals[0] = F; vals[1] = Fn; ierr = PetscDrawLGAddCommonPoint(lg, x, vals);CHKERRQ(ierr);}
+      if (isascii) CHKERRQ(PetscViewerASCIIPrintf(viewer, "x: %g F: %g Fn: %g Dn: %.2g\n", x, F, Fn, Dn));
+      if (isdraw)  {vals[0] = F; vals[1] = Fn; CHKERRQ(PetscDrawLGAddCommonPoint(lg, x, vals));}
     }
     if (speed[n-1] < 6.) {
       const PetscReal k = (PetscInt) (6. - speed[n-1]) + 1, dx = (6. - speed[n-1])/k;
@@ -486,25 +485,25 @@ PetscErrorCode PetscProbComputeKSStatistic(Vec v, PetscProbFunc cdf, PetscReal *
         const PetscReal x = speed[n-1] + p*dx, Fn = 1.0;
         PetscReal       F, vals[2];
 
-        ierr = cdf(&x, NULL, &F);CHKERRQ(ierr);
+        CHKERRQ(cdf(&x, NULL, &F));
         Dn = PetscMax(PetscAbsReal(Fn - F), Dn);
-        if (isascii) {ierr = PetscViewerASCIIPrintf(viewer, "x: %g F: %g Fn: %g Dn: %.2g\n", x, F, Fn, Dn);CHKERRQ(ierr);}
-        if (isdraw)  {vals[0] = F; vals[1] = Fn; ierr = PetscDrawLGAddCommonPoint(lg, x, vals);CHKERRQ(ierr);}
+        if (isascii) CHKERRQ(PetscViewerASCIIPrintf(viewer, "x: %g F: %g Fn: %g Dn: %.2g\n", x, F, Fn, Dn));
+        if (isdraw)  {vals[0] = F; vals[1] = Fn; CHKERRQ(PetscDrawLGAddCommonPoint(lg, x, vals));}
       }
     }
-    ierr = PetscFree(speed);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(speed));
   }
   if (isdraw) {
-    ierr = PetscDrawLGGetAxis(lg, &axis);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(title, PETSC_MAX_PATH_LEN, "Kolmogorov-Smirnov Test (Dn %.2g)", Dn);CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetLabels(axis, title, "x", "CDF(x)");CHKERRQ(ierr);
-    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
-    ierr = PetscDrawLGDestroy(&lg);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawLGGetAxis(lg, &axis));
+    CHKERRQ(PetscSNPrintf(title, PETSC_MAX_PATH_LEN, "Kolmogorov-Smirnov Test (Dn %.2g)", Dn));
+    CHKERRQ(PetscDrawAxisSetLabels(axis, title, "x", "CDF(x)"));
+    CHKERRQ(PetscDrawLGDraw(lg));
+    CHKERRQ(PetscDrawLGDestroy(&lg));
   }
   if (viewer) {
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerFlush(viewer));
+    CHKERRQ(PetscViewerPopFormat(viewer));
+    CHKERRQ(PetscViewerDestroy(&viewer));
   }
   *alpha = KSfbar((int) n, (double) Dn);
   PetscFunctionReturn(0);

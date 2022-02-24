@@ -56,7 +56,7 @@ namespace Impl
 // functions of a class inheriting from CUPM::Interface. Can use it in the usual trailing
 // CHKERRQ() form:
 //
-// auto cerr = foo();CHKERRCUPM(cerr);
+// CHKERRCUPM(foo());
 //
 // or wrap it around the function:
 //

@@ -9,17 +9,14 @@ typedef struct {
 
 static PetscErrorCode MatColoringDestroy_Greedy(MatColoring mc)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFree(mc->data);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(mc->data));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc,PetscReal *wts,PetscInt *lperm,ISColoringValue *colors)
 {
   PetscInt        i,j,k,s,e,n,no,nd,nd_global,n_global,idx,ncols,maxcolors,masksize,ccol,*mask;
-  PetscErrorCode  ierr;
   Mat             m=mc->mat;
   Mat_MPIAIJ      *aij = (Mat_MPIAIJ*)m->data;
   Mat             md=NULL,mo=NULL;
@@ -33,14 +30,14 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc,Pets
   PetscLayout     layout;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(m,&n_global,NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(m,&s,&e);CHKERRQ(ierr);
+  CHKERRQ(MatGetSize(m,&n_global,NULL));
+  CHKERRQ(MatGetOwnershipRange(m,&s,&e));
   n=e-s;
   masksize=20;
   nd_global = 0;
   /* get the matrix communication structures */
-  ierr = PetscObjectTypeCompare((PetscObject)m, MATMPIAIJ, &isMPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectBaseTypeCompare((PetscObject)m, MATSEQAIJ, &isSEQAIJ);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)m, MATMPIAIJ, &isMPIAIJ));
+  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)m, MATSEQAIJ, &isSEQAIJ));
   if (isMPIAIJ) {
     /* get the CSR data for on and off diagonal portions of m */
     Mat_SeqAIJ *dseq;
@@ -66,17 +63,17 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc,Pets
     mo_i = NULL;
     mo_j = NULL;
   } else SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_WRONG,"Matrix must be AIJ for greedy coloring");
-  ierr = MatColoringGetMaxColors(mc,&maxcolors);CHKERRQ(ierr);
+  CHKERRQ(MatColoringGetMaxColors(mc,&maxcolors));
   if (mo) {
-    ierr = VecGetSize(aij->lvec,&no);CHKERRQ(ierr);
-    ierr = PetscMalloc2(no,&ocolors,no,&owts);CHKERRQ(ierr);
+    CHKERRQ(VecGetSize(aij->lvec,&no));
+    CHKERRQ(PetscMalloc2(no,&ocolors,no,&owts));
     for (i=0;i<no;i++) {
       ocolors[i]=maxcolors;
     }
   }
 
-  ierr = PetscMalloc1(masksize,&mask);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&lcolors);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(masksize,&mask));
+  CHKERRQ(PetscMalloc1(n,&lcolors));
   for (i=0;i<n;i++) {
     lcolors[i]=maxcolors;
   }
@@ -85,16 +82,16 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc,Pets
   }
   if (mo) {
     /* transfer neighbor weights */
-    ierr = PetscSFCreate(PetscObjectComm((PetscObject)m),&sf);CHKERRQ(ierr);
-    ierr = MatGetLayouts(m,&layout,NULL);CHKERRQ(ierr);
-    ierr = PetscSFSetGraphLayout(sf,layout,no,NULL,PETSC_COPY_VALUES,aij->garray);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(sf,MPIU_REAL,wts,owts,MPI_REPLACE);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf,MPIU_REAL,wts,owts,MPI_REPLACE);CHKERRQ(ierr);
+    CHKERRQ(PetscSFCreate(PetscObjectComm((PetscObject)m),&sf));
+    CHKERRQ(MatGetLayouts(m,&layout,NULL));
+    CHKERRQ(PetscSFSetGraphLayout(sf,layout,no,NULL,PETSC_COPY_VALUES,aij->garray));
+    CHKERRQ(PetscSFBcastBegin(sf,MPIU_REAL,wts,owts,MPI_REPLACE));
+    CHKERRQ(PetscSFBcastEnd(sf,MPIU_REAL,wts,owts,MPI_REPLACE));
   }
   while (nd_global < n_global) {
     nd=n;
     /* assign lowest possible color to each local vertex */
-    ierr = PetscLogEventBegin(MATCOLORING_Local,mc,0,0,0);CHKERRQ(ierr);
+    CHKERRQ(PetscLogEventBegin(MATCOLORING_Local,mc,0,0,0));
     for (i=0;i<n;i++) {
       idx=lperm[i];
       if (lcolors[idx] == maxcolors) {
@@ -105,14 +102,14 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc,Pets
             ccol=lcolors[cidx[j]];
             if (ccol>=masksize) {
               PetscInt *newmask;
-              ierr = PetscMalloc1(masksize*2,&newmask);CHKERRQ(ierr);
+              CHKERRQ(PetscMalloc1(masksize*2,&newmask));
               for (k=0;k<2*masksize;k++) {
                 newmask[k]=-1;
               }
               for (k=0;k<masksize;k++) {
                 newmask[k]=mask[k];
               }
-              ierr = PetscFree(mask);CHKERRQ(ierr);
+              CHKERRQ(PetscFree(mask));
               mask=newmask;
               masksize*=2;
             }
@@ -127,14 +124,14 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc,Pets
               ccol=ocolors[cidx[j]];
               if (ccol>=masksize) {
                 PetscInt *newmask;
-                ierr = PetscMalloc1(masksize*2,&newmask);CHKERRQ(ierr);
+                CHKERRQ(PetscMalloc1(masksize*2,&newmask));
                 for (k=0;k<2*masksize;k++) {
                   newmask[k]=-1;
                 }
                 for (k=0;k<masksize;k++) {
                   newmask[k]=mask[k];
                 }
-                ierr = PetscFree(mask);CHKERRQ(ierr);
+                CHKERRQ(PetscFree(mask));
                 mask=newmask;
                 masksize*=2;
               }
@@ -152,12 +149,12 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc,Pets
         lcolors[idx]=pcol;
       }
     }
-    ierr = PetscLogEventEnd(MATCOLORING_Local,mc,0,0,0);CHKERRQ(ierr);
+    CHKERRQ(PetscLogEventEnd(MATCOLORING_Local,mc,0,0,0));
     if (mo) {
       /* transfer neighbor colors */
-      ierr = PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0);CHKERRQ(ierr);
-      ierr = PetscSFBcastBegin(sf,MPIU_INT,lcolors,ocolors,MPI_REPLACE);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sf,MPIU_INT,lcolors,ocolors,MPI_REPLACE);CHKERRQ(ierr);
+      CHKERRQ(PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0));
+      CHKERRQ(PetscSFBcastBegin(sf,MPIU_INT,lcolors,ocolors,MPI_REPLACE));
+      CHKERRQ(PetscSFBcastEnd(sf,MPIU_INT,lcolors,ocolors,MPI_REPLACE));
       /* check for conflicts -- this is merely checking if any adjacent off-processor rows have the same color and marking the ones that are lower weight locally for changing */
       for (i=0;i<n;i++) {
         ncols = mo_i[i+1]-mo_i[i];
@@ -172,16 +169,16 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc,Pets
       }
       nd_global=0;
     }
-    ierr = MPIU_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRMPI(ierr);
+    CHKERRMPI(MPIU_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc)));
   }
   for (i=0;i<n;i++) {
     colors[i] = (ISColoringValue)lcolors[i];
   }
-  ierr = PetscFree(mask);CHKERRQ(ierr);
-  ierr = PetscFree(lcolors);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(mask));
+  CHKERRQ(PetscFree(lcolors));
   if (mo) {
-    ierr = PetscFree2(ocolors,owts);CHKERRQ(ierr);
-    ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+    CHKERRQ(PetscFree2(ocolors,owts));
+    CHKERRQ(PetscSFDestroy(&sf));
   }
   PetscFunctionReturn(0);
 }
@@ -203,16 +200,15 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
   PetscInt        *oconf,*conf;
   PetscSF         sf;
   PetscLayout     layout;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(m,&n_global,NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(m,&s,&e);CHKERRQ(ierr);
+  CHKERRQ(MatGetSize(m,&n_global,NULL));
+  CHKERRQ(MatGetOwnershipRange(m,&s,&e));
   n=e-s;
   nd_global = 0;
   /* get the matrix communication structures */
-  ierr = PetscObjectBaseTypeCompare((PetscObject)m, MATMPIAIJ, &isMPIAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectBaseTypeCompare((PetscObject)m, MATSEQAIJ, &isSEQAIJ);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)m, MATMPIAIJ, &isMPIAIJ));
+  CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)m, MATSEQAIJ, &isSEQAIJ));
   if (isMPIAIJ) {
     Mat_SeqAIJ *dseq;
     Mat_SeqAIJ *oseq;
@@ -243,7 +239,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
     rmo_j = NULL;
   } else SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_WRONG,"Matrix must be AIJ for greedy coloring");
   if (!gr->symmetric) {
-    ierr = MatTranspose(m, MAT_INITIAL_MATRIX, &mt);CHKERRQ(ierr);
+    CHKERRQ(MatTranspose(m, MAT_INITIAL_MATRIX, &mt));
     if (isSEQAIJ) {
       Mat_SeqAIJ *dseq = (Mat_SeqAIJ*) mt->data;
       rmd_i = dseq->i;
@@ -255,18 +251,18 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
   /* create the vectors and communication structures if necessary */
   no=0;
   if (mo) {
-    ierr = VecGetLocalSize(aij->lvec,&no);CHKERRQ(ierr);
-    ierr = PetscSFCreate(PetscObjectComm((PetscObject)m),&sf);CHKERRQ(ierr);
-    ierr = MatGetLayouts(m,&layout,NULL);CHKERRQ(ierr);
-    ierr = PetscSFSetGraphLayout(sf,layout,no,NULL,PETSC_COPY_VALUES,aij->garray);CHKERRQ(ierr);
+    CHKERRQ(VecGetLocalSize(aij->lvec,&no));
+    CHKERRQ(PetscSFCreate(PetscObjectComm((PetscObject)m),&sf));
+    CHKERRQ(MatGetLayouts(m,&layout,NULL));
+    CHKERRQ(PetscSFSetGraphLayout(sf,layout,no,NULL,PETSC_COPY_VALUES,aij->garray));
   }
-  ierr = MatColoringGetMaxColors(mc,&maxcolors);CHKERRQ(ierr);
+  CHKERRQ(MatColoringGetMaxColors(mc,&maxcolors));
   masksize=n;
   nbad=0;
   badsize=n;
-  ierr = PetscMalloc1(masksize,&mask);CHKERRQ(ierr);
-  ierr = PetscMalloc4(n,&d1cols,n,&dcolors,n,&conf,n,&bad);CHKERRQ(ierr);
-  ierr = PetscMalloc2(badsize,&badidx,badsize,&badnext);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(masksize,&mask));
+  CHKERRQ(PetscMalloc4(n,&d1cols,n,&dcolors,n,&conf,n,&bad));
+  CHKERRQ(PetscMalloc2(badsize,&badidx,badsize,&badnext));
   for (i=0;i<masksize;i++) {
     mask[i]=-1;
   }
@@ -278,9 +274,9 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
     badnext[i]=-1;
   }
   if (mo) {
-    ierr = PetscMalloc3(no,&owts,no,&oconf,no,&ocolors);CHKERRQ(ierr);
-    ierr = PetscSFBcastBegin(sf,MPIU_REAL,wts,owts,MPI_REPLACE);CHKERRQ(ierr);
-    ierr = PetscSFBcastEnd(sf,MPIU_REAL,wts,owts,MPI_REPLACE);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc3(no,&owts,no,&oconf,no,&ocolors));
+    CHKERRQ(PetscSFBcastBegin(sf,MPIU_REAL,wts,owts,MPI_REPLACE));
+    CHKERRQ(PetscSFBcastEnd(sf,MPIU_REAL,wts,owts,MPI_REPLACE));
     for (i=0;i<no;i++) {
       ocolors[i]=maxcolors;
     }
@@ -294,7 +290,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
     nd=n;
     /* assign lowest possible color to each local vertex */
     mcol_global=0;
-    ierr = PetscLogEventBegin(MATCOLORING_Local,mc,0,0,0);CHKERRQ(ierr);
+    CHKERRQ(PetscLogEventBegin(MATCOLORING_Local,mc,0,0,0));
     for (i=0;i<n;i++) {
       idx=lperm[i];
       if (dcolors[idx] == maxcolors) {
@@ -304,14 +300,14 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
           ccol=badidx[cbad];
           if (ccol>=masksize) {
             PetscInt *newmask;
-            ierr = PetscMalloc1(masksize*2,&newmask);CHKERRQ(ierr);
+            CHKERRQ(PetscMalloc1(masksize*2,&newmask));
             for (k=0;k<2*masksize;k++) {
               newmask[k]=-1;
             }
             for (k=0;k<masksize;k++) {
               newmask[k]=mask[k];
             }
-            ierr = PetscFree(mask);CHKERRQ(ierr);
+            CHKERRQ(PetscFree(mask));
             mask=newmask;
             masksize*=2;
           }
@@ -329,14 +325,14 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
           if (ccol != maxcolors) {
             if (ccol>=masksize) {
               PetscInt *newmask;
-              ierr = PetscMalloc1(masksize*2,&newmask);CHKERRQ(ierr);
+              CHKERRQ(PetscMalloc1(masksize*2,&newmask));
               for (k=0;k<2*masksize;k++) {
                 newmask[k]=-1;
               }
               for (k=0;k<masksize;k++) {
                 newmask[k]=mask[k];
               }
-              ierr = PetscFree(mask);CHKERRQ(ierr);
+              CHKERRQ(PetscFree(mask));
               mask=newmask;
               masksize*=2;
             }
@@ -352,14 +348,14 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
             if (ccol != maxcolors) {
               if (ccol>=masksize) {
                 PetscInt *newmask;
-                ierr = PetscMalloc1(masksize*2,&newmask);CHKERRQ(ierr);
+                CHKERRQ(PetscMalloc1(masksize*2,&newmask));
                 for (k=0;k<2*masksize;k++) {
                   newmask[k]=-1;
                 }
                 for (k=0;k<masksize;k++) {
                   newmask[k]=mask[k];
                 }
-                ierr = PetscFree(mask);CHKERRQ(ierr);
+                CHKERRQ(PetscFree(mask));
                 mask=newmask;
                 masksize*=2;
               }
@@ -376,14 +372,14 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
             if (ccol != maxcolors) {
               if (ccol>=masksize) {
                 PetscInt *newmask;
-                ierr = PetscMalloc1(masksize*2,&newmask);CHKERRQ(ierr);
+                CHKERRQ(PetscMalloc1(masksize*2,&newmask));
                 for (k=0;k<2*masksize;k++) {
                   newmask[k]=-1;
                 }
                 for (k=0;k<masksize;k++) {
                   newmask[k]=mask[k];
                 }
-                ierr = PetscFree(mask);CHKERRQ(ierr);
+                CHKERRQ(PetscFree(mask));
                 mask=newmask;
                 masksize*=2;
               }
@@ -401,14 +397,14 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
               if (ccol != maxcolors) {
                 if (ccol>=masksize) {
                   PetscInt *newmask;
-                  ierr = PetscMalloc1(masksize*2,&newmask);CHKERRQ(ierr);
+                  CHKERRQ(PetscMalloc1(masksize*2,&newmask));
                   for (k=0;k<2*masksize;k++) {
                     newmask[k]=-1;
                   }
                   for (k=0;k<masksize;k++) {
                     newmask[k]=mask[k];
                   }
-                  ierr = PetscFree(mask);CHKERRQ(ierr);
+                  CHKERRQ(PetscFree(mask));
                   mask=newmask;
                   masksize*=2;
                 }
@@ -429,14 +425,14 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
         if (pcol>mcol) mcol=pcol;
       }
     }
-    ierr = PetscLogEventEnd(MATCOLORING_Local,mc,0,0,0);CHKERRQ(ierr);
+    CHKERRQ(PetscLogEventEnd(MATCOLORING_Local,mc,0,0,0));
     if (mo) {
       /* transfer neighbor colors */
-      ierr = PetscSFBcastBegin(sf,MPIU_INT,dcolors,ocolors,MPI_REPLACE);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sf,MPIU_INT,dcolors,ocolors,MPI_REPLACE);CHKERRQ(ierr);
+      CHKERRQ(PetscSFBcastBegin(sf,MPIU_INT,dcolors,ocolors,MPI_REPLACE));
+      CHKERRQ(PetscSFBcastEnd(sf,MPIU_INT,dcolors,ocolors,MPI_REPLACE));
       /* find the maximum color assigned locally and allocate a mask */
-      ierr = MPIU_Allreduce(&mcol,&mcol_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRMPI(ierr);
-      ierr = PetscMalloc1(mcol_global+1,&colorweights);CHKERRQ(ierr);
+      CHKERRMPI(MPIU_Allreduce(&mcol,&mcol_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc)));
+      CHKERRQ(PetscMalloc1(mcol_global+1,&colorweights));
       /* check for conflicts */
       for (i=0;i<n;i++) {
         conf[i]=PETSC_FALSE;
@@ -497,11 +493,11 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
         }
       }
       nd_global=0;
-      ierr = PetscFree(colorweights);CHKERRQ(ierr);
-      ierr = PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0);CHKERRQ(ierr);
-      ierr = PetscSFReduceBegin(sf,MPIU_INT,oconf,conf,MPIU_SUM);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(sf,MPIU_INT,oconf,conf,MPIU_SUM);CHKERRQ(ierr);
-      ierr = PetscLogEventEnd(MATCOLORING_Comm,mc,0,0,0);CHKERRQ(ierr);
+      CHKERRQ(PetscFree(colorweights));
+      CHKERRQ(PetscLogEventBegin(MATCOLORING_Comm,mc,0,0,0));
+      CHKERRQ(PetscSFReduceBegin(sf,MPIU_INT,oconf,conf,MPIU_SUM));
+      CHKERRQ(PetscSFReduceEnd(sf,MPIU_INT,oconf,conf,MPIU_SUM));
+      CHKERRQ(PetscLogEventEnd(MATCOLORING_Comm,mc,0,0,0));
       /* go through and unset local colors that have conflicts */
       for (i=0;i<n;i++) {
         if (conf[i]>0) {
@@ -513,7 +509,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
           if (nbad>=badsize) {
             PetscInt *newbadnext;
             ISColoringValue *newbadidx;
-            ierr = PetscMalloc2(badsize*2,&newbadidx,badsize*2,&newbadnext);CHKERRQ(ierr);
+            CHKERRQ(PetscMalloc2(badsize*2,&newbadidx,badsize*2,&newbadnext));
             for (k=0;k<2*badsize;k++) {
               newbadnext[k]=-1;
             }
@@ -521,7 +517,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
               newbadidx[k]=badidx[k];
               newbadnext[k]=badnext[k];
             }
-            ierr = PetscFree2(badidx,badnext);CHKERRQ(ierr);
+            CHKERRQ(PetscFree2(badidx,badnext));
             badidx=newbadidx;
             badnext=newbadnext;
             badsize*=2;
@@ -531,25 +527,24 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc,Pets
         }
       }
     }
-    ierr = MPIU_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc));CHKERRMPI(ierr);
+    CHKERRMPI(MPIU_Allreduce(&nd,&nd_global,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)mc)));
   }
   if (mo) {
-    ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-    ierr = PetscFree3(owts,oconf,ocolors);CHKERRQ(ierr);
+    CHKERRQ(PetscSFDestroy(&sf));
+    CHKERRQ(PetscFree3(owts,oconf,ocolors));
   }
   for (i=0;i<n;i++) {
     colors[i]=dcolors[i];
   }
-  ierr = PetscFree(mask);CHKERRQ(ierr);
-  ierr = PetscFree4(d1cols,dcolors,conf,bad);CHKERRQ(ierr);
-  ierr = PetscFree2(badidx,badnext);CHKERRQ(ierr);
-  if (!gr->symmetric) {ierr = MatDestroy(&mt);CHKERRQ(ierr);}
+  CHKERRQ(PetscFree(mask));
+  CHKERRQ(PetscFree4(d1cols,dcolors,conf,bad));
+  CHKERRQ(PetscFree2(badidx,badnext));
+  if (!gr->symmetric) CHKERRQ(MatDestroy(&mt));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *iscoloring)
 {
-  PetscErrorCode  ierr;
   PetscInt        finalcolor,finalcolor_global;
   ISColoringValue *colors;
   PetscInt        ncolstotal,ncols;
@@ -557,32 +552,32 @@ static PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *iscolor
   PetscInt        i,*lperm;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(mc->mat,NULL,&ncolstotal);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(mc->mat,NULL,&ncols);CHKERRQ(ierr);
+  CHKERRQ(MatGetSize(mc->mat,NULL,&ncolstotal));
+  CHKERRQ(MatGetLocalSize(mc->mat,NULL,&ncols));
   if (!mc->user_weights) {
-    ierr = MatColoringCreateWeights(mc,&wts,&lperm);CHKERRQ(ierr);
+    CHKERRQ(MatColoringCreateWeights(mc,&wts,&lperm));
   } else {
     wts = mc->user_weights;
     lperm = mc->user_lperm;
   }
-  ierr = PetscMalloc1(ncols,&colors);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(ncols,&colors));
   if (mc->dist == 1) {
-    ierr = GreedyColoringLocalDistanceOne_Private(mc,wts,lperm,colors);CHKERRQ(ierr);
+    CHKERRQ(GreedyColoringLocalDistanceOne_Private(mc,wts,lperm,colors));
   } else if (mc->dist == 2) {
-    ierr = GreedyColoringLocalDistanceTwo_Private(mc,wts,lperm,colors);CHKERRQ(ierr);
+    CHKERRQ(GreedyColoringLocalDistanceTwo_Private(mc,wts,lperm,colors));
   } else SETERRQ(PetscObjectComm((PetscObject)mc),PETSC_ERR_ARG_OUTOFRANGE,"Only distance 1 and distance 2 supported by MatColoringGreedy");
   finalcolor=0;
   for (i=0;i<ncols;i++) {
     if (colors[i] > finalcolor) finalcolor=colors[i];
   }
   finalcolor_global=0;
-  ierr = MPIU_Allreduce(&finalcolor,&finalcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc));CHKERRMPI(ierr);
-  ierr = PetscLogEventBegin(MATCOLORING_ISCreate,mc,0,0,0);CHKERRQ(ierr);
-  ierr = ISColoringCreate(PetscObjectComm((PetscObject)mc),finalcolor_global+1,ncols,colors,PETSC_OWN_POINTER,iscoloring);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MATCOLORING_ISCreate,mc,0,0,0);CHKERRQ(ierr);
+  CHKERRMPI(MPIU_Allreduce(&finalcolor,&finalcolor_global,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)mc)));
+  CHKERRQ(PetscLogEventBegin(MATCOLORING_ISCreate,mc,0,0,0));
+  CHKERRQ(ISColoringCreate(PetscObjectComm((PetscObject)mc),finalcolor_global+1,ncols,colors,PETSC_OWN_POINTER,iscoloring));
+  CHKERRQ(PetscLogEventEnd(MATCOLORING_ISCreate,mc,0,0,0));
   if (!mc->user_weights) {
-    ierr = PetscFree(wts);CHKERRQ(ierr);
-    ierr = PetscFree(lperm);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(wts));
+    CHKERRQ(PetscFree(lperm));
   }
   PetscFunctionReturn(0);
 }
@@ -590,12 +585,11 @@ static PetscErrorCode MatColoringApply_Greedy(MatColoring mc,ISColoring *iscolor
 static PetscErrorCode MatColoringSetFromOptions_Greedy(PetscOptionItems *PetscOptionsObject, MatColoring mc)
 {
   MC_Greedy     *gr = (MC_Greedy *) mc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject, "Greedy options");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-mat_coloring_greedy_symmetric", "Flag for assuming a symmetric matrix", "", gr->symmetric, &gr->symmetric, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHead(PetscOptionsObject, "Greedy options"));
+  CHKERRQ(PetscOptionsBool("-mat_coloring_greedy_symmetric", "Flag for assuming a symmetric matrix", "", gr->symmetric, &gr->symmetric, NULL));
+  CHKERRQ(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -626,10 +620,9 @@ M*/
 PETSC_EXTERN PetscErrorCode MatColoringCreate_Greedy(MatColoring mc)
 {
   MC_Greedy      *gr;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr                    = PetscNewLog(mc,&gr);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(mc,&gr));
   mc->data                = gr;
   mc->ops->apply          = MatColoringApply_Greedy;
   mc->ops->view           = NULL;

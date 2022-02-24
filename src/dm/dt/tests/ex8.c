@@ -12,22 +12,22 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = PetscMalloc3(maxdim + 1, &btup, maxdim + 1, &btupprev, maxdim, &gtup);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc3(maxdim + 1, &btup, maxdim + 1, &btupprev, maxdim, &gtup));
   for (d = 0; d <= maxdim; d++) {
     for (n = 0; n <= d + 2; n++) {
       PetscInt j, k, Nk, kchk;
 
-      ierr = PetscDTBinomialInt(d + n, d, &Nk);CHKERRQ(ierr);
+      CHKERRQ(PetscDTBinomialInt(d + n, d, &Nk));
       for (k = 0; k < Nk; k++) {
         PetscInt sum;
 
-        ierr = PetscDTIndexToBary(d + 1, n, k, btup);CHKERRQ(ierr);
+        CHKERRQ(PetscDTIndexToBary(d + 1, n, k, btup));
         for (j = 0, sum = 0; j < d + 1; j++) {
           PetscCheckFalse(btup[j] < 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTIndexToBary, d = %D, n = %D, k = %D negative entry", d, n, k);
           sum += btup[j];
         }
         PetscCheckFalse(sum != n,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTIndexToBary, d = %D, n = %D, k = %D incorrect sum", d, n, k);
-        ierr = PetscDTBaryToIndex(d + 1, n, btup, &kchk);CHKERRQ(ierr);
+        CHKERRQ(PetscDTBaryToIndex(d + 1, n, btup, &kchk));
         PetscCheckFalse(kchk != k,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTBaryToIndex, d = %D, n = %D, k = %D mismatch", d, n, k);
         if (k) {
           j = d;
@@ -35,10 +35,10 @@ int main(int argc, char **argv)
           PetscCheckFalse(j < 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTIndexToBary, d = %D, n = %D, k = %D equal to previous", d, n, k);
           PetscCheckFalse(btup[j] < btupprev[j],PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTIndexToBary, d = %D, n = %D, k = %D less to previous", d, n, k);
         } else {
-          ierr = PetscArraycpy(btupprev, btup, d + 1);CHKERRQ(ierr);
+          CHKERRQ(PetscArraycpy(btupprev, btup, d + 1));
         }
-        ierr = PetscDTIndexToGradedOrder(d, Nk - 1 - k, gtup);CHKERRQ(ierr);
-        ierr = PetscDTGradedOrderToIndex(d, gtup, &kchk);CHKERRQ(ierr);
+        CHKERRQ(PetscDTIndexToGradedOrder(d, Nk - 1 - k, gtup));
+        CHKERRQ(PetscDTGradedOrderToIndex(d, gtup, &kchk));
         PetscCheckFalse(kchk != Nk - 1 - k,PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTGradedOrderToIndex, d = %D, n = %D, k = %D mismatch", d, n, Nk - 1 - k);
         for (j = 0; j < d; j++) {
           PetscCheckFalse(gtup[j] != btup[d - 1 - j],PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDTIndexToGradedOrder, d = %D, n = %D, k = %D incorrect", d, n, Nk - 1 - k);
@@ -46,7 +46,7 @@ int main(int argc, char **argv)
       }
     }
   }
-  ierr = PetscFree3(btup, btupprev, gtup);CHKERRQ(ierr);
+  CHKERRQ(PetscFree3(btup, btupprev, gtup));
   ierr = PetscFinalize();
   return ierr;
 }

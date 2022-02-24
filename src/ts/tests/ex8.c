@@ -15,20 +15,19 @@ static char help[] = "Solves DAE with integrator only on non-algebraic terms \n"
 */
 PetscErrorCode f(PetscReal t,Vec UV,Vec F)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *u,*v;
   PetscScalar       *f;
   PetscInt          n,i;
 
   PetscFunctionBeginUser;
-  ierr = VecGetLocalSize(UV,&n);CHKERRQ(ierr);
+  CHKERRQ(VecGetLocalSize(UV,&n));
   n    = n/2;
-  ierr = VecGetArrayRead(UV,&u);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(UV,&u));
   v    = u + n;
-  ierr = VecGetArrayWrite(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayWrite(F,&f));
   for (i=0; i<n; i++) f[i] = u[i] + v[i];
-  ierr = VecRestoreArrayRead(UV,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayWrite(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(UV,&u));
+  CHKERRQ(VecRestoreArrayWrite(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -38,22 +37,21 @@ PetscErrorCode f(PetscReal t,Vec UV,Vec F)
 */
 PetscErrorCode F(PetscReal t,Vec UV,Vec F)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *u,*v;
   PetscScalar       *f;
   PetscInt          n,i;
 
   PetscFunctionBeginUser;
-  ierr = VecGetLocalSize(UV,&n);CHKERRQ(ierr);
+  CHKERRQ(VecGetLocalSize(UV,&n));
   n    = n/2;
-  ierr = VecGetArrayRead(UV,&u);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(UV,&u));
   v    = u + n;
-  ierr = VecGetArrayWrite(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayWrite(F,&f));
   f    = f + n;
   for (i=0; i<n; i++) f[i] = u[i] - v[i];
   f    = f - n;
-  ierr = VecRestoreArrayRead(UV,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayWrite(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(UV,&u));
+  CHKERRQ(VecRestoreArrayWrite(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -73,23 +71,23 @@ int main(int argc,char **argv)
   Vec            tsrhs,UV;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&tsrhs);CHKERRQ(ierr);
-  ierr = VecDuplicate(tsrhs,&UV);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,tsrhs,TSFunctionRHS,&ctx);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,NULL,TSFunctionI,&ctx);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts,1.0);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
+  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
+  CHKERRQ(TSSetType(ts,TSROSW));
+  CHKERRQ(TSSetFromOptions(ts));
+  CHKERRQ(VecCreateMPI(PETSC_COMM_WORLD,2,PETSC_DETERMINE,&tsrhs));
+  CHKERRQ(VecDuplicate(tsrhs,&UV));
+  CHKERRQ(TSSetRHSFunction(ts,tsrhs,TSFunctionRHS,&ctx));
+  CHKERRQ(TSSetIFunction(ts,NULL,TSFunctionI,&ctx));
+  CHKERRQ(TSSetMaxTime(ts,1.0));
   ctx.f = f;
   ctx.F = F;
 
-  ierr = VecSet(UV,1.0);CHKERRQ(ierr);
-  ierr = TSSolve(ts,UV);CHKERRQ(ierr);
-  ierr = VecDestroy(&tsrhs);CHKERRQ(ierr);
-  ierr = VecDestroy(&UV);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  CHKERRQ(VecSet(UV,1.0));
+  CHKERRQ(TSSolve(ts,UV));
+  CHKERRQ(VecDestroy(&tsrhs));
+  CHKERRQ(VecDestroy(&UV));
+  CHKERRQ(TSDestroy(&ts));
   ierr = PetscFinalize();
   return ierr;
 }
@@ -100,11 +98,10 @@ int main(int argc,char **argv)
 PetscErrorCode TSFunctionRHS(TS ts,PetscReal t,Vec UV,Vec F,void *actx)
 {
   AppCtx         *ctx = (AppCtx*)actx;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecSet(F,0.0);CHKERRQ(ierr);
-  ierr = (*ctx->f)(t,UV,F);CHKERRQ(ierr);
+  CHKERRQ(VecSet(F,0.0));
+  CHKERRQ((*ctx->f)(t,UV,F));
   PetscFunctionReturn(0);
 }
 
@@ -114,11 +111,10 @@ PetscErrorCode TSFunctionRHS(TS ts,PetscReal t,Vec UV,Vec F,void *actx)
 PetscErrorCode TSFunctionI(TS ts,PetscReal t,Vec UV,Vec UVdot,Vec F,void *actx)
 {
   AppCtx         *ctx = (AppCtx*)actx;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = VecCopy(UVdot,F);CHKERRQ(ierr);
-  ierr = (*ctx->F)(t,UV,F);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(UVdot,F));
+  CHKERRQ((*ctx->F)(t,UV,F));
   PetscFunctionReturn(0);
 }
 
@@ -132,4 +128,3 @@ PetscErrorCode TSFunctionI(TS ts,PetscReal t,Vec UV,Vec UVdot,Vec F,void *actx)
       args: -snes_lag_jacobian 2 -ts_view
 
 TEST*/
-

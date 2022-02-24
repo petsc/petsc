@@ -99,20 +99,19 @@ PetscErrorCode StokesSetupPC(Stokes *s, KSP ksp)
   KSP            *subksp;
   PC             pc;
   PetscInt       n = 1;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-  ierr = PCFieldSplitSetIS(pc, "0", s->isg[0]);CHKERRQ(ierr);
-  ierr = PCFieldSplitSetIS(pc, "1", s->isg[1]);CHKERRQ(ierr);
+  CHKERRQ(KSPGetPC(ksp, &pc));
+  CHKERRQ(PCFieldSplitSetIS(pc, "0", s->isg[0]));
+  CHKERRQ(PCFieldSplitSetIS(pc, "1", s->isg[1]));
   if (s->userPC) {
-    ierr = PCFieldSplitSetSchurPre(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, s->myS);CHKERRQ(ierr);
+    CHKERRQ(PCFieldSplitSetSchurPre(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, s->myS));
   }
   if (s->userKSP) {
-    ierr = PCSetUp(pc);CHKERRQ(ierr);
-    ierr = PCFieldSplitGetSubKSP(pc, &n, &subksp);CHKERRQ(ierr);
-    ierr = KSPSetOperators(subksp[1], s->myS, s->myS);CHKERRQ(ierr);
-    ierr = PetscFree(subksp);CHKERRQ(ierr);
+    CHKERRQ(PCSetUp(pc));
+    CHKERRQ(PCFieldSplitGetSubKSP(pc, &n, &subksp));
+    CHKERRQ(KSPSetOperators(subksp[1], s->myS, s->myS));
+    CHKERRQ(PetscFree(subksp));
   }
   PetscFunctionReturn(0);
 }
@@ -122,55 +121,50 @@ PetscErrorCode StokesWriteSolution(Stokes *s)
   PetscMPIInt       size;
   PetscInt          n,i,j;
   const PetscScalar *array;
-  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   /* write data (*warning* only works sequential) */
-  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(MPI_COMM_WORLD,&size));
   if (size == 1) {
     PetscViewer viewer;
-    ierr = VecGetArrayRead(s->x, &array);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "solution.dat", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "# x, y, u, v, p\n");CHKERRQ(ierr);
+    CHKERRQ(VecGetArrayRead(s->x, &array));
+    CHKERRQ(PetscViewerASCIIOpen(PETSC_COMM_WORLD, "solution.dat", &viewer));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer, "# x, y, u, v, p\n"));
     for (j = 0; j < s->ny; j++) {
       for (i = 0; i < s->nx; i++) {
         n    = j*s->nx+i;
-        ierr = PetscViewerASCIIPrintf(viewer, "%.12g %.12g %.12g %.12g %.12g\n", (double)(i*s->hx+s->hx/2),(double)(j*s->hy+s->hy/2), (double)PetscRealPart(array[n]), (double)PetscRealPart(array[n+s->nx*s->ny]),(double)PetscRealPart(array[n+2*s->nx*s->ny]));CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer, "%.12g %.12g %.12g %.12g %.12g\n", (double)(i*s->hx+s->hx/2),(double)(j*s->hy+s->hy/2), (double)PetscRealPart(array[n]), (double)PetscRealPart(array[n+s->nx*s->ny]),(double)PetscRealPart(array[n+2*s->nx*s->ny])));
       }
     }
-    ierr = VecRestoreArrayRead(s->x, &array);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArrayRead(s->x, &array));
+    CHKERRQ(PetscViewerDestroy(&viewer));
   }
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode StokesSetupIndexSets(Stokes *s)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   /* the two index sets */
-  ierr = MatNestGetISs(s->A, s->isg, NULL);CHKERRQ(ierr);
+  CHKERRQ(MatNestGetISs(s->A, s->isg, NULL));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode StokesSetupVectors(Stokes *s)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   /* solution vector x */
-  ierr = VecCreate(PETSC_COMM_WORLD, &s->x);CHKERRQ(ierr);
-  ierr = VecSetSizes(s->x, PETSC_DECIDE, 3*s->nx*s->ny);CHKERRQ(ierr);
-  ierr = VecSetType(s->x, VECMPI);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD, &s->x));
+  CHKERRQ(VecSetSizes(s->x, PETSC_DECIDE, 3*s->nx*s->ny));
+  CHKERRQ(VecSetType(s->x, VECMPI));
 
   /* exact solution y */
-  ierr = VecDuplicate(s->x, &s->y);CHKERRQ(ierr);
-  ierr = StokesExactSolution(s);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(s->x, &s->y));
+  CHKERRQ(StokesExactSolution(s));
 
   /* rhs vector b */
-  ierr = VecDuplicate(s->x, &s->b);CHKERRQ(ierr);
-  ierr = StokesRhs(s);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(s->x, &s->b));
+  CHKERRQ(StokesRhs(s));
   PetscFunctionReturn(0);
 }
 
@@ -191,32 +185,31 @@ PetscErrorCode StokesExactSolution(Stokes *s)
   PetscInt       row, start, end, i, j;
   PetscScalar    val;
   Vec            y0,y1;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   /* velocity part */
-  ierr = VecGetSubVector(s->y, s->isg[0], &y0);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(y0, &start, &end);CHKERRQ(ierr);
+  CHKERRQ(VecGetSubVector(s->y, s->isg[0], &y0));
+  CHKERRQ(VecGetOwnershipRange(y0, &start, &end));
   for (row = start; row < end; row++) {
-    ierr = StokesGetPosition(s, row,&i,&j);CHKERRQ(ierr);
+    CHKERRQ(StokesGetPosition(s, row,&i,&j));
     if (row < s->nx*s->ny) {
       val = StokesExactVelocityX(j*s->hy+s->hy/2);
     } else {
       val = 0;
     }
-    ierr = VecSetValue(y0, row, val, INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValue(y0, row, val, INSERT_VALUES));
   }
-  ierr = VecRestoreSubVector(s->y, s->isg[0], &y0);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreSubVector(s->y, s->isg[0], &y0));
 
   /* pressure part */
-  ierr = VecGetSubVector(s->y, s->isg[1], &y1);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(y1, &start, &end);CHKERRQ(ierr);
+  CHKERRQ(VecGetSubVector(s->y, s->isg[1], &y1));
+  CHKERRQ(VecGetOwnershipRange(y1, &start, &end));
   for (row = start; row < end; row++) {
-    ierr = StokesGetPosition(s, row, &i, &j);CHKERRQ(ierr);
+    CHKERRQ(StokesGetPosition(s, row, &i, &j));
     val  = StokesExactPressure(i*s->hx+s->hx/2);
-    ierr = VecSetValue(y1, row, val, INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValue(y1, row, val, INSERT_VALUES));
   }
-  ierr = VecRestoreSubVector(s->y, s->isg[1], &y1);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreSubVector(s->y, s->isg[1], &y1));
   PetscFunctionReturn(0);
 }
 
@@ -225,35 +218,34 @@ PetscErrorCode StokesRhs(Stokes *s)
   PetscInt       row, start, end, i, j;
   PetscScalar    val;
   Vec            b0,b1;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   /* velocity part */
-  ierr = VecGetSubVector(s->b, s->isg[0], &b0);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(b0, &start, &end);CHKERRQ(ierr);
+  CHKERRQ(VecGetSubVector(s->b, s->isg[0], &b0));
+  CHKERRQ(VecGetOwnershipRange(b0, &start, &end));
   for (row = start; row < end; row++) {
-    ierr = StokesGetPosition(s, row, &i, &j);CHKERRQ(ierr);
+    CHKERRQ(StokesGetPosition(s, row, &i, &j));
     if (row < s->nx*s->ny) {
-      ierr = StokesRhsMomX(s, i, j, &val);CHKERRQ(ierr);
+      CHKERRQ(StokesRhsMomX(s, i, j, &val));
     } else {
-      ierr = StokesRhsMomY(s, i, j, &val);CHKERRQ(ierr);
+      CHKERRQ(StokesRhsMomY(s, i, j, &val));
     }
-    ierr = VecSetValue(b0, row, val, INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValue(b0, row, val, INSERT_VALUES));
   }
-  ierr = VecRestoreSubVector(s->b, s->isg[0], &b0);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreSubVector(s->b, s->isg[0], &b0));
 
   /* pressure part */
-  ierr = VecGetSubVector(s->b, s->isg[1], &b1);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(b1, &start, &end);CHKERRQ(ierr);
+  CHKERRQ(VecGetSubVector(s->b, s->isg[1], &b1));
+  CHKERRQ(VecGetOwnershipRange(b1, &start, &end));
   for (row = start; row < end; row++) {
-    ierr = StokesGetPosition(s, row, &i, &j);CHKERRQ(ierr);
-    ierr = StokesRhsMass(s, i, j, &val);CHKERRQ(ierr);
+    CHKERRQ(StokesGetPosition(s, row, &i, &j));
+    CHKERRQ(StokesRhsMass(s, i, j, &val));
     if (s->matsymmetric) {
       val = -1.0*val;
     }
-    ierr = VecSetValue(b1, row, val, INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValue(b1, row, val, INSERT_VALUES));
   }
-  ierr = VecRestoreSubVector(s->b, s->isg[1], &b1);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreSubVector(s->b, s->isg[1], &b1));
   PetscFunctionReturn(0);
 }
 
@@ -262,30 +254,29 @@ PetscErrorCode StokesSetupMatBlock00(Stokes *s)
   PetscInt       row, start, end, sz, i, j;
   PetscInt       cols[5];
   PetscScalar    vals[5];
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   /* A[0] is 2N-by-2N */
-  ierr = MatCreate(PETSC_COMM_WORLD,&s->subA[0]);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(s->subA[0],"a00_");CHKERRQ(ierr);
-  ierr = MatSetSizes(s->subA[0],PETSC_DECIDE,PETSC_DECIDE,2*s->nx*s->ny,2*s->nx*s->ny);CHKERRQ(ierr);
-  ierr = MatSetType(s->subA[0],MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(s->subA[0],5,NULL,5,NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(s->subA[0], &start, &end);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&s->subA[0]));
+  CHKERRQ(MatSetOptionsPrefix(s->subA[0],"a00_"));
+  CHKERRQ(MatSetSizes(s->subA[0],PETSC_DECIDE,PETSC_DECIDE,2*s->nx*s->ny,2*s->nx*s->ny));
+  CHKERRQ(MatSetType(s->subA[0],MATMPIAIJ));
+  CHKERRQ(MatMPIAIJSetPreallocation(s->subA[0],5,NULL,5,NULL));
+  CHKERRQ(MatGetOwnershipRange(s->subA[0], &start, &end));
 
   for (row = start; row < end; row++) {
-    ierr = StokesGetPosition(s, row, &i, &j);CHKERRQ(ierr);
+    CHKERRQ(StokesGetPosition(s, row, &i, &j));
     /* first part: rows 0 to (nx*ny-1) */
-    ierr = StokesStencilLaplacian(s, i, j, &sz, cols, vals);CHKERRQ(ierr);
+    CHKERRQ(StokesStencilLaplacian(s, i, j, &sz, cols, vals));
     /* second part: rows (nx*ny) to (2*nx*ny-1) */
     if (row >= s->nx*s->ny) {
       for (i = 0; i < sz; i++) cols[i] += s->nx*s->ny;
     }
     for (i = 0; i < sz; i++) vals[i] = -1.0*vals[i]; /* dynamic viscosity coef mu=-1 */
-    ierr = MatSetValues(s->subA[0], 1, &row, sz, cols, vals, INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(s->subA[0], 1, &row, sz, cols, vals, INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(s->subA[0], MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(s->subA[0], MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(s->subA[0], MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(s->subA[0], MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -294,68 +285,62 @@ PetscErrorCode StokesSetupMatBlock01(Stokes *s)
   PetscInt       row, start, end, sz, i, j;
   PetscInt       cols[5];
   PetscScalar    vals[5];
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   /* A[1] is 2N-by-N */
-  ierr = MatCreate(PETSC_COMM_WORLD, &s->subA[1]);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(s->subA[1],"a01_");CHKERRQ(ierr);
-  ierr = MatSetSizes(s->subA[1],PETSC_DECIDE,PETSC_DECIDE,2*s->nx*s->ny,s->nx*s->ny);CHKERRQ(ierr);
-  ierr = MatSetType(s->subA[1],MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(s->subA[1],5,NULL,5,NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(s->subA[1],&start,&end);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD, &s->subA[1]));
+  CHKERRQ(MatSetOptionsPrefix(s->subA[1],"a01_"));
+  CHKERRQ(MatSetSizes(s->subA[1],PETSC_DECIDE,PETSC_DECIDE,2*s->nx*s->ny,s->nx*s->ny));
+  CHKERRQ(MatSetType(s->subA[1],MATMPIAIJ));
+  CHKERRQ(MatMPIAIJSetPreallocation(s->subA[1],5,NULL,5,NULL));
+  CHKERRQ(MatGetOwnershipRange(s->subA[1],&start,&end));
 
-  ierr = MatSetOption(s->subA[1],MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(MatSetOption(s->subA[1],MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE));
 
   for (row = start; row < end; row++) {
-    ierr = StokesGetPosition(s, row, &i, &j);CHKERRQ(ierr);
+    CHKERRQ(StokesGetPosition(s, row, &i, &j));
     /* first part: rows 0 to (nx*ny-1) */
     if (row < s->nx*s->ny) {
-      ierr = StokesStencilGradientX(s, i, j, &sz, cols, vals);CHKERRQ(ierr);
+      CHKERRQ(StokesStencilGradientX(s, i, j, &sz, cols, vals));
     } else {    /* second part: rows (nx*ny) to (2*nx*ny-1) */
-      ierr = StokesStencilGradientY(s, i, j, &sz, cols, vals);CHKERRQ(ierr);
+      CHKERRQ(StokesStencilGradientY(s, i, j, &sz, cols, vals));
     }
-    ierr = MatSetValues(s->subA[1], 1, &row, sz, cols, vals, INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(s->subA[1], 1, &row, sz, cols, vals, INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(s->subA[1], MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(s->subA[1], MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(s->subA[1], MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(s->subA[1], MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode StokesSetupMatBlock10(Stokes *s)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   /* A[2] is minus transpose of A[1] */
-  ierr = MatTranspose(s->subA[1], MAT_INITIAL_MATRIX, &s->subA[2]);CHKERRQ(ierr);
+  CHKERRQ(MatTranspose(s->subA[1], MAT_INITIAL_MATRIX, &s->subA[2]));
   if (!s->matsymmetric) {
-    ierr = MatScale(s->subA[2], -1.0);CHKERRQ(ierr);
+    CHKERRQ(MatScale(s->subA[2], -1.0));
   }
-  ierr = MatSetOptionsPrefix(s->subA[2], "a10_");CHKERRQ(ierr);
+  CHKERRQ(MatSetOptionsPrefix(s->subA[2], "a10_"));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode StokesSetupMatBlock11(Stokes *s)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   /* A[3] is N-by-N null matrix */
-  ierr = MatCreate(PETSC_COMM_WORLD, &s->subA[3]);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(s->subA[3], "a11_");CHKERRQ(ierr);
-  ierr = MatSetSizes(s->subA[3], PETSC_DECIDE, PETSC_DECIDE, s->nx*s->ny, s->nx*s->ny);CHKERRQ(ierr);
-  ierr = MatSetType(s->subA[3], MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(s->subA[3], 0, NULL, 0, NULL);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(s->subA[3], MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(s->subA[3], MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD, &s->subA[3]));
+  CHKERRQ(MatSetOptionsPrefix(s->subA[3], "a11_"));
+  CHKERRQ(MatSetSizes(s->subA[3], PETSC_DECIDE, PETSC_DECIDE, s->nx*s->ny, s->nx*s->ny));
+  CHKERRQ(MatSetType(s->subA[3], MATMPIAIJ));
+  CHKERRQ(MatMPIAIJSetPreallocation(s->subA[3], 0, NULL, 0, NULL));
+  CHKERRQ(MatAssemblyBegin(s->subA[3], MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(s->subA[3], MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode StokesSetupApproxSchur(Stokes *s)
 {
   Vec            diag;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   /* Schur complement approximation: myS = A11 - A10 inv(DIAGFORM(A00)) A01 */
@@ -364,35 +349,33 @@ PetscErrorCode StokesSetupApproxSchur(Stokes *s)
   /* i.e. without MatMatMult */
 
   /* inverse of diagonal of A00 */
-  ierr = VecCreate(PETSC_COMM_WORLD,&diag);CHKERRQ(ierr);
-  ierr = VecSetSizes(diag,PETSC_DECIDE,2*s->nx*s->ny);CHKERRQ(ierr);
-  ierr = VecSetType(diag,VECMPI);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(s->subA[0],diag);CHKERRQ(ierr);
-  ierr = VecReciprocal(diag);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&diag));
+  CHKERRQ(VecSetSizes(diag,PETSC_DECIDE,2*s->nx*s->ny));
+  CHKERRQ(VecSetType(diag,VECMPI));
+  CHKERRQ(MatGetDiagonal(s->subA[0],diag));
+  CHKERRQ(VecReciprocal(diag));
 
   /* compute: - A10 inv(DIAGFORM(A00)) A01 */
-  ierr = MatDiagonalScale(s->subA[1],diag,NULL);CHKERRQ(ierr); /* (*warning* overwrites subA[1]) */
-  ierr = MatMatMult(s->subA[2],s->subA[1],MAT_INITIAL_MATRIX,PETSC_DEFAULT,&s->myS);CHKERRQ(ierr);
-  ierr = MatScale(s->myS,-1.0);CHKERRQ(ierr);
+  CHKERRQ(MatDiagonalScale(s->subA[1],diag,NULL)); /* (*warning* overwrites subA[1]) */
+  CHKERRQ(MatMatMult(s->subA[2],s->subA[1],MAT_INITIAL_MATRIX,PETSC_DEFAULT,&s->myS));
+  CHKERRQ(MatScale(s->myS,-1.0));
 
   /* restore A10 */
-  ierr = MatGetDiagonal(s->subA[0],diag);CHKERRQ(ierr);
-  ierr = MatDiagonalScale(s->subA[1],diag,NULL);CHKERRQ(ierr);
-  ierr = VecDestroy(&diag);CHKERRQ(ierr);
+  CHKERRQ(MatGetDiagonal(s->subA[0],diag));
+  CHKERRQ(MatDiagonalScale(s->subA[1],diag,NULL));
+  CHKERRQ(VecDestroy(&diag));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode StokesSetupMatrix(Stokes *s)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = StokesSetupMatBlock00(s);CHKERRQ(ierr);
-  ierr = StokesSetupMatBlock01(s);CHKERRQ(ierr);
-  ierr = StokesSetupMatBlock10(s);CHKERRQ(ierr);
-  ierr = StokesSetupMatBlock11(s);CHKERRQ(ierr);
-  ierr = MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, s->subA, &s->A);CHKERRQ(ierr);
-  ierr = StokesSetupApproxSchur(s);CHKERRQ(ierr);
+  CHKERRQ(StokesSetupMatBlock00(s));
+  CHKERRQ(StokesSetupMatBlock01(s));
+  CHKERRQ(StokesSetupMatBlock10(s));
+  CHKERRQ(StokesSetupMatBlock11(s));
+  CHKERRQ(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, s->subA, &s->A));
+  CHKERRQ(StokesSetupApproxSchur(s));
   PetscFunctionReturn(0);
 }
 
@@ -599,28 +582,27 @@ PetscErrorCode StokesCalcResidual(Stokes *s)
 {
   PetscReal      val;
   Vec            b0, b1;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   /* residual Ax-b (*warning* overwrites b) */
-  ierr = VecScale(s->b, -1.0);CHKERRQ(ierr);
-  ierr = MatMultAdd(s->A, s->x, s->b, s->b);CHKERRQ(ierr);
+  CHKERRQ(VecScale(s->b, -1.0));
+  CHKERRQ(MatMultAdd(s->A, s->x, s->b, s->b));
 
   /* residual velocity */
-  ierr = VecGetSubVector(s->b, s->isg[0], &b0);CHKERRQ(ierr);
-  ierr = VecNorm(b0, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," residual u = %g\n",(double)val);CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(s->b, s->isg[0], &b0);CHKERRQ(ierr);
+  CHKERRQ(VecGetSubVector(s->b, s->isg[0], &b0));
+  CHKERRQ(VecNorm(b0, NORM_2, &val));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," residual u = %g\n",(double)val));
+  CHKERRQ(VecRestoreSubVector(s->b, s->isg[0], &b0));
 
   /* residual pressure */
-  ierr = VecGetSubVector(s->b, s->isg[1], &b1);CHKERRQ(ierr);
-  ierr = VecNorm(b1, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," residual p = %g\n",(double)val);CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(s->b, s->isg[1], &b1);CHKERRQ(ierr);
+  CHKERRQ(VecGetSubVector(s->b, s->isg[1], &b1));
+  CHKERRQ(VecNorm(b1, NORM_2, &val));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," residual p = %g\n",(double)val));
+  CHKERRQ(VecRestoreSubVector(s->b, s->isg[1], &b1));
 
   /* total residual */
-  ierr = VecNorm(s->b, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," residual [u,p] = %g\n", (double)val);CHKERRQ(ierr);
+  CHKERRQ(VecNorm(s->b, NORM_2, &val));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," residual [u,p] = %g\n", (double)val));
   PetscFunctionReturn(0);
 }
 
@@ -629,27 +611,26 @@ PetscErrorCode StokesCalcError(Stokes *s)
   PetscScalar    scale = PetscSqrtReal((double)s->nx*s->ny);
   PetscReal      val;
   Vec            y0, y1;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   /* error y-x */
-  ierr = VecAXPY(s->y, -1.0, s->x);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(s->y, -1.0, s->x));
 
   /* error in velocity */
-  ierr = VecGetSubVector(s->y, s->isg[0], &y0);CHKERRQ(ierr);
-  ierr = VecNorm(y0, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error u = %g\n",(double)(PetscRealPart(val/scale)));CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(s->y, s->isg[0], &y0);CHKERRQ(ierr);
+  CHKERRQ(VecGetSubVector(s->y, s->isg[0], &y0));
+  CHKERRQ(VecNorm(y0, NORM_2, &val));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," discretization error u = %g\n",(double)(PetscRealPart(val/scale))));
+  CHKERRQ(VecRestoreSubVector(s->y, s->isg[0], &y0));
 
   /* error in pressure */
-  ierr = VecGetSubVector(s->y, s->isg[1], &y1);CHKERRQ(ierr);
-  ierr = VecNorm(y1, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error p = %g\n",(double)(PetscRealPart(val/scale)));CHKERRQ(ierr);
-  ierr = VecRestoreSubVector(s->y, s->isg[1], &y1);CHKERRQ(ierr);
+  CHKERRQ(VecGetSubVector(s->y, s->isg[1], &y1));
+  CHKERRQ(VecNorm(y1, NORM_2, &val));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," discretization error p = %g\n",(double)(PetscRealPart(val/scale))));
+  CHKERRQ(VecRestoreSubVector(s->y, s->isg[1], &y1));
 
   /* total error */
-  ierr = VecNorm(s->y, NORM_2, &val);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," discretization error [u,p] = %g\n", (double)PetscRealPart((val/scale)));CHKERRQ(ierr);
+  CHKERRQ(VecNorm(s->y, NORM_2, &val));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," discretization error [u,p] = %g\n", (double)PetscRealPart((val/scale))));
   PetscFunctionReturn(0);
 }
 
@@ -662,41 +643,41 @@ int main(int argc, char **argv)
   ierr           = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   s.nx           = 4;
   s.ny           = 6;
-  ierr           = PetscOptionsGetInt(NULL,NULL, "-nx", &s.nx, NULL);CHKERRQ(ierr);
-  ierr           = PetscOptionsGetInt(NULL,NULL, "-ny", &s.ny, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-nx", &s.nx, NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-ny", &s.ny, NULL));
   s.hx           = 2.0/s.nx;
   s.hy           = 1.0/s.ny;
   s.matsymmetric = PETSC_FALSE;
-  ierr           = PetscOptionsGetBool(NULL,NULL, "-mat_set_symmetric", &s.matsymmetric,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL, "-mat_set_symmetric", &s.matsymmetric,NULL));
   s.userPC       = s.userKSP = PETSC_FALSE;
-  ierr           = PetscOptionsHasName(NULL,NULL, "-user_pc", &s.userPC);CHKERRQ(ierr);
-  ierr           = PetscOptionsHasName(NULL,NULL, "-user_ksp", &s.userKSP);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHasName(NULL,NULL, "-user_pc", &s.userPC));
+  CHKERRQ(PetscOptionsHasName(NULL,NULL, "-user_ksp", &s.userKSP));
 
-  ierr = StokesSetupMatrix(&s);CHKERRQ(ierr);
-  ierr = StokesSetupIndexSets(&s);CHKERRQ(ierr);
-  ierr = StokesSetupVectors(&s);CHKERRQ(ierr);
+  CHKERRQ(StokesSetupMatrix(&s));
+  CHKERRQ(StokesSetupIndexSets(&s));
+  CHKERRQ(StokesSetupVectors(&s));
 
-  ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp, s.A, s.A);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = StokesSetupPC(&s, ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp, s.b, s.x);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD, &ksp));
+  CHKERRQ(KSPSetOperators(ksp, s.A, s.A));
+  CHKERRQ(KSPSetFromOptions(ksp));
+  CHKERRQ(StokesSetupPC(&s, ksp));
+  CHKERRQ(KSPSolve(ksp, s.b, s.x));
 
   /* don't trust, verify! */
-  ierr = StokesCalcResidual(&s);CHKERRQ(ierr);
-  ierr = StokesCalcError(&s);CHKERRQ(ierr);
-  ierr = StokesWriteSolution(&s);CHKERRQ(ierr);
+  CHKERRQ(StokesCalcResidual(&s));
+  CHKERRQ(StokesCalcError(&s));
+  CHKERRQ(StokesWriteSolution(&s));
 
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = MatDestroy(&s.subA[0]);CHKERRQ(ierr);
-  ierr = MatDestroy(&s.subA[1]);CHKERRQ(ierr);
-  ierr = MatDestroy(&s.subA[2]);CHKERRQ(ierr);
-  ierr = MatDestroy(&s.subA[3]);CHKERRQ(ierr);
-  ierr = MatDestroy(&s.A);CHKERRQ(ierr);
-  ierr = VecDestroy(&s.x);CHKERRQ(ierr);
-  ierr = VecDestroy(&s.b);CHKERRQ(ierr);
-  ierr = VecDestroy(&s.y);CHKERRQ(ierr);
-  ierr = MatDestroy(&s.myS);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(MatDestroy(&s.subA[0]));
+  CHKERRQ(MatDestroy(&s.subA[1]));
+  CHKERRQ(MatDestroy(&s.subA[2]));
+  CHKERRQ(MatDestroy(&s.subA[3]));
+  CHKERRQ(MatDestroy(&s.A));
+  CHKERRQ(VecDestroy(&s.x));
+  CHKERRQ(VecDestroy(&s.b));
+  CHKERRQ(VecDestroy(&s.y));
+  CHKERRQ(MatDestroy(&s.myS));
   ierr = PetscFinalize();
   return ierr;
 }

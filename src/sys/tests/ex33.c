@@ -42,15 +42,15 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 #if defined(PETSC_USE_DEBUG)
-  ierr = PetscOptionsGetBool(NULL,NULL,"-checkstack",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-checkstack",&flg,NULL));
 #endif
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s for stack\n",flg ? "Checking" : "Not checking");CHKERRQ(ierr);
-  for (PetscInt i = 0; i < PETSCSTACKSIZE+1; i++) { ierr = correct();CHKERRQ(ierr); }
-  for (PetscInt i = 0; i < PETSCSTACKSIZE+1; i++) { ierr = foo();CHKERRQ(ierr); }
-  for (PetscInt i = 0; i < PETSCSTACKSIZE+1; i++) { ierr = bar();CHKERRQ(ierr); }
-  for (PetscInt i = 0; i < PETSCSTACKSIZE+1; i++) { ierr = foo();CHKERRQ(ierr); }
-  for (PetscInt i = 0; i < PETSCSTACKSIZE+1; i++) { ierr = baru();CHKERRQ(ierr); }
-  for (PetscInt i = 0; i < PETSCSTACKSIZE+1; i++) { ierr = foo();CHKERRQ(ierr); }
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%s for stack\n",flg ? "Checking" : "Not checking"));
+  for (PetscInt i = 0; i < PETSCSTACKSIZE+1; i++) CHKERRQ(correct());
+  for (PetscInt i = 0; i < PETSCSTACKSIZE+1; i++) CHKERRQ(foo());
+  for (PetscInt i = 0; i < PETSCSTACKSIZE+1; i++) CHKERRQ(bar());
+  for (PetscInt i = 0; i < PETSCSTACKSIZE+1; i++) CHKERRQ(foo());
+  for (PetscInt i = 0; i < PETSCSTACKSIZE+1; i++) CHKERRQ(baru());
+  for (PetscInt i = 0; i < PETSCSTACKSIZE+1; i++) CHKERRQ(foo());
   ierr = PetscFinalize();
   return ierr;
 }

@@ -8,7 +8,6 @@ typedef struct {
 static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,PetscReal *next_h,PetscBool *accept,PetscReal *wlte,PetscReal *wltea,PetscReal *wlter)
 {
   TSAdapt_GLEE   *glee = (TSAdapt_GLEE*)adapt->data;
-  PetscErrorCode ierr;
   Vec            X,Y,E;
   PetscReal      enorm,enorma,enormr,hfac_lte,hfac_ltea,hfac_lter,h_lte,safety;
   PetscInt       order;
@@ -17,33 +16,33 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   PetscFunctionBegin;
   *next_sc = 0; /* Reuse the same order scheme */
   safety = adapt->safety;
-  ierr = PetscObjectTypeCompare((PetscObject)ts,TSGLEE,&bGTEMethod);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)ts,TSGLEE,&bGTEMethod));
   order = adapt->candidates.order[0];
 
   if (bGTEMethod) {/* the method is of GLEE type */
     DM dm;
 
-    ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
+    CHKERRQ(TSGetSolution(ts,&X));
     if (!glee->Y && adapt->glee_use_local) {
-      ierr = VecDuplicate(X,&glee->Y);CHKERRQ(ierr);/*create vector to store previous step global error*/
-      ierr = VecZeroEntries(glee->Y);CHKERRQ(ierr); /*set error to zero on the first step - may not work if error is not zero initially*/
+      CHKERRQ(VecDuplicate(X,&glee->Y));/*create vector to store previous step global error*/
+      CHKERRQ(VecZeroEntries(glee->Y)); /*set error to zero on the first step - may not work if error is not zero initially*/
     }
-    ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-    ierr = DMGetGlobalVector(dm,&E);CHKERRQ(ierr);
-    ierr = TSGetTimeError(ts,0,&E);CHKERRQ(ierr);
+    CHKERRQ(TSGetDM(ts,&dm));
+    CHKERRQ(DMGetGlobalVector(dm,&E));
+    CHKERRQ(TSGetTimeError(ts,0,&E));
 
-    if (adapt->glee_use_local) {ierr = VecAXPY(E,-1.0,glee->Y);CHKERRQ(ierr);} /* local error = current error - previous step error */
+    if (adapt->glee_use_local) CHKERRQ(VecAXPY(E,-1.0,glee->Y)); /* local error = current error - previous step error */
 
     /* this should be called with the solution at the beginning of the step too*/
-    ierr = TSErrorWeightedENorm(ts,E,X,X,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
-    ierr = DMRestoreGlobalVector(dm,&E);CHKERRQ(ierr);
+    CHKERRQ(TSErrorWeightedENorm(ts,E,X,X,adapt->wnormtype,&enorm,&enorma,&enormr));
+    CHKERRQ(DMRestoreGlobalVector(dm,&E));
   } else {
     /* the method is NOT of GLEE type; use the stantard basic augmented by separate atol and rtol */
-    ierr = TSGetSolution(ts,&X);CHKERRQ(ierr);
-    if (!glee->Y) {ierr = VecDuplicate(X,&glee->Y);CHKERRQ(ierr);}
+    CHKERRQ(TSGetSolution(ts,&X));
+    if (!glee->Y) CHKERRQ(VecDuplicate(X,&glee->Y));
     Y     = glee->Y;
-    ierr  = TSEvaluateStep(ts,order-1,Y,NULL);CHKERRQ(ierr);
-    ierr  = TSErrorWeightedNorm(ts,X,Y,adapt->wnormtype,&enorm,&enorma,&enormr);CHKERRQ(ierr);
+    CHKERRQ(TSEvaluateStep(ts,order-1,Y,NULL));
+    CHKERRQ(TSErrorWeightedNorm(ts,X,Y,adapt->wnormtype,&enorm,&enorma,&enormr));
   }
 
   if (enorm < 0) {
@@ -58,17 +57,17 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
   if (enorm > 1. || enorma > 1. || enormr > 1.) {
     if (!*accept) safety *= adapt->reject_safety; /* The last attempt also failed, shorten more aggressively */
     if (h < (1 + PETSC_SQRT_MACHINE_EPSILON)*adapt->dt_min) {
-      ierr    = PetscInfo(adapt,"Estimated scaled truncation error [combined, absolute, relative]] [%g, %g, %g], accepting because step size %g is at minimum\n",(double)enorm,(double)enorma,(double)enormr,(double)h);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(adapt,"Estimated scaled truncation error [combined, absolute, relative]] [%g, %g, %g], accepting because step size %g is at minimum\n",(double)enorm,(double)enorma,(double)enormr,(double)h));
       *accept = PETSC_TRUE;
     } else if (adapt->always_accept) {
-      ierr    = PetscInfo(adapt,"Estimated scaled truncation error [combined, absolute, relative]] [%g, %g, %g], accepting step of size %g because always_accept is set\n",(double)enorm,(double)enorma,(double)enormr,(double)h);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(adapt,"Estimated scaled truncation error [combined, absolute, relative]] [%g, %g, %g], accepting step of size %g because always_accept is set\n",(double)enorm,(double)enorma,(double)enormr,(double)h));
       *accept = PETSC_TRUE;
     } else {
-      ierr    = PetscInfo(adapt,"Estimated scaled truncation error [combined, absolute, relative]] [%g, %g, %g], rejecting step of size %g\n",(double)enorm,(double)enorma,(double)enormr,(double)h);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(adapt,"Estimated scaled truncation error [combined, absolute, relative]] [%g, %g, %g], rejecting step of size %g\n",(double)enorm,(double)enorma,(double)enormr,(double)h));
       *accept = PETSC_FALSE;
     }
   } else {
-    ierr    = PetscInfo(adapt,"Estimated scaled truncation error [combined, absolute, relative] [%g, %g, %g], accepting step of size %g\n",(double)enorm,(double)enorma,(double)enormr,(double)h);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(adapt,"Estimated scaled truncation error [combined, absolute, relative] [%g, %g, %g], accepting step of size %g\n",(double)enorm,(double)enorma,(double)enormr,(double)h));
     *accept = PETSC_TRUE;
   }
 
@@ -76,7 +75,7 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
     if (*accept == PETSC_TRUE && adapt->glee_use_local) {
       /* If step is accepted, then overwrite previous step error with the current error to be used on the next step */
       /* WARNING: if the adapters are composable, then the accept test will not be reliable*/
-      ierr = TSGetTimeError(ts,0,&glee->Y);CHKERRQ(ierr);
+      CHKERRQ(TSGetTimeError(ts,0,&glee->Y));
     }
 
     /* The optimal new step based on the current global truncation error. */
@@ -116,20 +115,17 @@ static PetscErrorCode TSAdaptChoose_GLEE(TSAdapt adapt,TS ts,PetscReal h,PetscIn
 static PetscErrorCode TSAdaptReset_GLEE(TSAdapt adapt)
 {
   TSAdapt_GLEE  *glee = (TSAdapt_GLEE*)adapt->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(&glee->Y);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&glee->Y));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSAdaptDestroy_GLEE(TSAdapt adapt)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = TSAdaptReset_GLEE(adapt);CHKERRQ(ierr);
-  ierr = PetscFree(adapt->data);CHKERRQ(ierr);
+  CHKERRQ(TSAdaptReset_GLEE(adapt));
+  CHKERRQ(PetscFree(adapt->data));
   PetscFunctionReturn(0);
 }
 
@@ -142,11 +138,10 @@ static PetscErrorCode TSAdaptDestroy_GLEE(TSAdapt adapt)
 M*/
 PETSC_EXTERN PetscErrorCode TSAdaptCreate_GLEE(TSAdapt adapt)
 {
-  PetscErrorCode ierr;
   TSAdapt_GLEE  *glee;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(adapt,&glee);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(adapt,&glee));
   adapt->data         = (void*)glee;
   adapt->ops->choose  = TSAdaptChoose_GLEE;
   adapt->ops->reset   = TSAdaptReset_GLEE;

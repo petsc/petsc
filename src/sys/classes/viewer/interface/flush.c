@@ -17,13 +17,10 @@
 @*/
 PetscErrorCode  PetscViewerFlush(PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   if (viewer->ops->flush) {
-    ierr = (*viewer->ops->flush)(viewer);CHKERRQ(ierr);
+    CHKERRQ((*viewer->ops->flush)(viewer));
   }
   PetscFunctionReturn(0);
 }
-

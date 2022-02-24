@@ -495,13 +495,12 @@ struct _n_TSMonitorEnvelopeCtx {
 */
 static inline PetscErrorCode TSCheckImplicitTerm(TS ts)
 {
-  TSIFunction      ifunction;
-  DM               dm;
-  PetscErrorCode   ierr;
+  TSIFunction ifunction;
+  DM          dm;
 
   PetscFunctionBegin;
-  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = DMTSGetIFunction(dm,&ifunction,NULL);CHKERRQ(ierr);
+  CHKERRQ(TSGetDM(ts,&dm));
+  CHKERRQ(DMTSGetIFunction(dm,&ifunction,NULL));
   PetscCheck(!ifunction,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"You are attempting to use an explicit ODE integrator but provided an implicit function definition with TSSetIFunction()");
   PetscFunctionReturn(0);
 }

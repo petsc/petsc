@@ -21,16 +21,16 @@ int main(int argc,char ** argv)
   PetscInt          nodeOffset,k = 2,nedge;
 
   ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
-  ierr = PetscOptionsSetValue(NULL,"-petscpartitioner_use_vertex_weights","No");CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsSetValue(NULL,"-petscpartitioner_use_vertex_weights","No"));
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  CHKERRMPI(MPI_Comm_size(comm,&size));
 
-  ierr = DMNetworkCreate(PETSC_COMM_WORLD,&network);CHKERRQ(ierr);
+  CHKERRQ(DMNetworkCreate(PETSC_COMM_WORLD,&network));
 
   /* Register zero size componets to get compkeys to be used by DMNetworkAddComponent() */
-  ierr = DMNetworkRegisterComponent(network,"ecomp",0,&ecompkey);CHKERRQ(ierr);
-  ierr = DMNetworkRegisterComponent(network,"vcomp",0,&vcompkey);CHKERRQ(ierr);
+  CHKERRQ(DMNetworkRegisterComponent(network,"ecomp",0,&ecompkey));
+  CHKERRQ(DMNetworkRegisterComponent(network,"vcomp",0,&vcompkey));
 
   Ne = 2;
   Ni = 1;
@@ -41,52 +41,52 @@ int main(int argc,char ** argv)
 
   if (rank == 0) {
     nedge = 1;
-    ierr = PetscCalloc1(2*nedge,&edgelist);CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc1(2*nedge,&edgelist));
     edgelist[0] = nodeOffset + 2;
     edgelist[1] = nodeOffset + 3;
   } else {
     nedge = 2;
-    ierr = PetscCalloc1(2*nedge,&edgelist);CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc1(2*nedge,&edgelist));
     edgelist[0] = nodeOffset + 0;
     edgelist[1] = nodeOffset + 2;
     edgelist[2] = nodeOffset + 1;
     edgelist[3] = nodeOffset + 2;
   }
 
-  ierr = DMNetworkSetNumSubNetworks(network,PETSC_DECIDE,1);CHKERRQ(ierr);
-  ierr = DMNetworkAddSubnetwork(network,"Subnetwork 1",nedge,edgelist,NULL);CHKERRQ(ierr);
-  ierr = DMNetworkLayoutSetUp(network);CHKERRQ(ierr);
+  CHKERRQ(DMNetworkSetNumSubNetworks(network,PETSC_DECIDE,1));
+  CHKERRQ(DMNetworkAddSubnetwork(network,"Subnetwork 1",nedge,edgelist,NULL));
+  CHKERRQ(DMNetworkLayoutSetUp(network));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Network after DMNetworkLayoutSetUp:\n");CHKERRQ(ierr);
-  ierr = DMView(network,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Network after DMNetworkLayoutSetUp:\n"));
+  CHKERRQ(DMView(network,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Add components and variables for the network */
-  ierr = DMNetworkGetSubnetwork(network,0,&nv,&ne,&nodes,&edges);CHKERRQ(ierr);
+  CHKERRQ(DMNetworkGetSubnetwork(network,0,&nv,&ne,&nodes,&edges));
   for (e = 0; e < ne; e++) {
     /* The edges have no degrees of freedom */
-    ierr = DMNetworkAddComponent(network,edges[e],ecompkey,NULL,1);CHKERRQ(ierr);
+    CHKERRQ(DMNetworkAddComponent(network,edges[e],ecompkey,NULL,1));
   }
   for (v = 0; v < nv; v++) {
-    ierr = DMNetworkAddComponent(network,nodes[v],vcompkey,NULL,2);CHKERRQ(ierr);
+    CHKERRQ(DMNetworkAddComponent(network,nodes[v],vcompkey,NULL,2));
   }
 
-  ierr = DMSetUp(network);CHKERRQ(ierr);
-  ierr = DMNetworkGetPlex(network,&plex);CHKERRQ(ierr);
-  /* ierr = DMView(plex,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-  ierr = DMGetLocalSection(plex,&section);CHKERRQ(ierr);
-  ierr = PetscSectionView(section,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(DMSetUp(network));
+  CHKERRQ(DMNetworkGetPlex(network,&plex));
+  /* CHKERRQ(DMView(plex,PETSC_VIEWER_STDOUT_WORLD)); */
+  CHKERRQ(DMGetLocalSection(plex,&section));
+  CHKERRQ(PetscSectionView(section,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = PetscFree(edgelist);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(edgelist));
 
-  ierr = DMNetworkDistribute(&network,0);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\nNetwork after DMNetworkDistribute:\n");CHKERRQ(ierr);
-  ierr = DMView(network,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = DMNetworkGetPlex(network,&plex);CHKERRQ(ierr);
-  /* ierr = DMView(plex,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-  ierr = DMGetLocalSection(plex,&section);CHKERRQ(ierr);
-  ierr = PetscSectionView(section,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(DMNetworkDistribute(&network,0));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nNetwork after DMNetworkDistribute:\n"));
+  CHKERRQ(DMView(network,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(DMNetworkGetPlex(network,&plex));
+  /* CHKERRQ(DMView(plex,PETSC_VIEWER_STDOUT_WORLD)); */
+  CHKERRQ(DMGetLocalSection(plex,&section));
+  CHKERRQ(PetscSectionView(section,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = DMDestroy(&network);CHKERRQ(ierr);
+  CHKERRQ(DMDestroy(&network));
   ierr = PetscFinalize();
   return ierr;
 }

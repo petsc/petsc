@@ -16,13 +16,13 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-moment_max",&momentummax,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-sigma",&sigma,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-mu",&mu,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-moment_max",&momentummax,NULL));
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sigma",&sigma,NULL));
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-mu",&mu,NULL));
 
   /* calulate zeros and roots of Hermite Gauss quadrature */
-  ierr = PetscMalloc1(n,&zeros);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(n,&zeros));
   zeros[0] = 0;
   tick = n % 2;
   for (s=0; s<n/2; s++) {
@@ -30,9 +30,9 @@ int main(int argc, char **argv)
     zeros[2*s+1+tick] =  gsl_sf_hermite_zero(n,s+1);
   }
 
-  ierr = PetscDTFactorial(n, &scale);CHKERRQ(ierr);
+  CHKERRQ(PetscDTFactorial(n, &scale));
   scale = exp2(n-1)*scale*PetscSqrtReal(PETSC_PI)/(n*n);
-  ierr = PetscMalloc1(n+1,&weights);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(n+1,&weights));
   for (s=0; s<n; s++) {
     h          = gsl_sf_hermite(n-1, (double) zeros[s]);
     weights[s] = scale/(h*h);
@@ -54,11 +54,11 @@ int main(int argc, char **argv)
     }
     g /= sqrt(PETSC_PI);
     /* results confirmed with https://en.wikipedia.org/wiki/Normal_distribution#Moments sigma^p * (p-1)!!*/
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Moment %D %g \n",moment,(double)g);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Moment %D %g \n",moment,(double)g));
 
   }
-  ierr = PetscFree(zeros);CHKERRQ(ierr);
-  ierr = PetscFree(weights);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(zeros));
+  CHKERRQ(PetscFree(weights));
   ierr = PetscFinalize();
   return ierr;
 }
@@ -71,4 +71,3 @@ int main(int argc, char **argv)
   test:
 
 TEST*/
-

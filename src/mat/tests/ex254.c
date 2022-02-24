@@ -27,48 +27,48 @@ int main(int argc,char **args)
   } coo[3] = {{i0,j0,sizeof(i0)/sizeof(PetscInt)}, {i1,j1,sizeof(i1)/sizeof(PetscInt)}, {i2,j2,sizeof(i2)/sizeof(PetscInt)}};
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-ignore_remote",&flg,NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-ignore_remote",&flg,NULL));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   PetscCheckFalse(size > 3,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"This test requires at most 3 processes");
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N);
-  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
+  CHKERRQ(MatSetType(A,MATAIJ));
   ierr = MatSeqAIJSetPreallocation(A,2,NULL);
-  ierr = MatMPIAIJSetPreallocation(A,2,NULL,2,NULL);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,flg);CHKERRQ(ierr);
+  CHKERRQ(MatMPIAIJSetPreallocation(A,2,NULL,2,NULL));
+  CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
+  CHKERRQ(MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,flg));
 
   for (k=0; k<coo[rank].n; k++) {
     PetscScalar val = coo[rank].j[k];
-    ierr = MatSetValue(A,coo[rank].i[k],coo[rank].j[k],val,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValue(A,coo[rank].i[k],coo[rank].j[k],val,ADD_VALUES));
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&B));
   ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,N);
-  ierr = MatSetFromOptions(B);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_IGNORE_OFF_PROC_ENTRIES,flg);CHKERRQ(ierr);
-  ierr = MatSetPreallocationCOO(B,coo[rank].n,coo[rank].i,coo[rank].j);CHKERRQ(ierr);
+  CHKERRQ(MatSetFromOptions(B));
+  CHKERRQ(MatSetOption(B,MAT_IGNORE_OFF_PROC_ENTRIES,flg));
+  CHKERRQ(MatSetPreallocationCOO(B,coo[rank].n,coo[rank].i,coo[rank].j));
 
-  ierr = PetscMalloc1(coo[rank].n,&vals);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(coo[rank].n,&vals));
   for (k=0; k<coo[rank].n; k++) vals[k] = coo[rank].j[k];
-  ierr = MatSetValuesCOO(B,vals,ADD_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValuesCOO(B,vals,ADD_VALUES));
 
-  ierr = MatEqual(A,B,&equal);CHKERRQ(ierr);
+  CHKERRQ(MatEqual(A,B,&equal));
 
   if (!equal) {
-    ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(MatView(B,PETSC_VIEWER_STDOUT_WORLD));
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"MatSetValuesCOO() failed");
   }
 
-  ierr = PetscFree(vals);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(vals));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&B));
 
   ierr = PetscFinalize();
   return ierr;
@@ -96,4 +96,3 @@ int main(int argc,char **args)
       args: -mat_type aij
 
 TEST*/
-

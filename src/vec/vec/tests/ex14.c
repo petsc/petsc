@@ -15,35 +15,35 @@ int main(int argc,char **argv)
   VecScatter     ctx = 0;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* create two vectors */
   N    = size*n;
-  ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
-  ierr = VecSetSizes(y,PETSC_DECIDE,N);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(y);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&y));
+  CHKERRQ(VecSetSizes(y,PETSC_DECIDE,N));
+  CHKERRQ(VecSetFromOptions(y));
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,N,&x));
 
   /* create two index sets */
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&is1);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,n,rank,1,&is2);CHKERRQ(ierr);
+  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,n,0,1,&is1));
+  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,n,rank,1,&is2));
 
   value = rank+1;
-  ierr  = VecSet(x,value);CHKERRQ(ierr);
-  ierr  = VecSet(y,zero);CHKERRQ(ierr);
+  CHKERRQ(VecSet(x,value));
+  CHKERRQ(VecSet(y,zero));
 
-  ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ctx,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
+  CHKERRQ(VecScatterCreate(x,is1,y,is2,&ctx));
+  CHKERRQ(VecScatterBegin(ctx,x,y,ADD_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterEnd(ctx,x,y,ADD_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterDestroy(&ctx));
 
-  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecView(y,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = ISDestroy(&is1);CHKERRQ(ierr);
-  ierr = ISDestroy(&is2);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
+  CHKERRQ(ISDestroy(&is1));
+  CHKERRQ(ISDestroy(&is2));
 
   ierr = PetscFinalize();
   return ierr;

@@ -6,7 +6,6 @@
 PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
 {
   FILE           *fp;
-  PetscErrorCode ierr;
   VERTEX_Power   Bus;
   LOAD           Load;
   GEN            Gen;
@@ -52,16 +51,16 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
   pf->ngen    = gen_end_line - gen_start_line;
   pf->nbranch = br_end_line  - br_start_line;
 
-  ierr = PetscCalloc1(pf->nbus,&pf->bus);CHKERRQ(ierr);
-  ierr = PetscCalloc1(pf->ngen,&pf->gen);CHKERRQ(ierr);
-  ierr = PetscCalloc1(pf->nload,&pf->load);CHKERRQ(ierr);
-  ierr = PetscCalloc1(pf->nbranch,&pf->branch);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc1(pf->nbus,&pf->bus));
+  CHKERRQ(PetscCalloc1(pf->ngen,&pf->gen));
+  CHKERRQ(PetscCalloc1(pf->nload,&pf->load));
+  CHKERRQ(PetscCalloc1(pf->nbranch,&pf->branch));
   Bus = pf->bus; Gen = pf->gen; Load = pf->load; Branch = pf->branch;
 
   /* Setting pf->sbase to 100 */
   pf->sbase = 100.0;
 
-  ierr = PetscMalloc1(maxbusnum+1,&busext2intmap);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(maxbusnum+1,&busext2intmap));
   for (i=0; i < maxbusnum+1; i++) busext2intmap[i] = -1;
 
   fp = fopen(filename,"r");
@@ -166,21 +165,21 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
 
   /* Reorder the generator data structure according to bus numbers */
   genj=0; loadj=0;
-  ierr = PetscMalloc1(pf->ngen,&newgen);CHKERRQ(ierr);
-  ierr = PetscMalloc1(pf->nload,&newload);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(pf->ngen,&newgen));
+  CHKERRQ(PetscMalloc1(pf->nload,&newload));
   for (i = 0; i < pf->nbus; i++) {
     for (j = 0; j < pf->bus[i].ngen; j++) {
-      ierr = PetscMemcpy(&newgen[genj++],&pf->gen[pf->bus[i].gidx[j]],sizeof(struct _p_GEN));CHKERRQ(ierr);
+      CHKERRQ(PetscMemcpy(&newgen[genj++],&pf->gen[pf->bus[i].gidx[j]],sizeof(struct _p_GEN)));
     }
     for (j = 0; j < pf->bus[i].nload; j++) {
-      ierr = PetscMemcpy(&newload[loadj++],&pf->load[pf->bus[i].lidx[j]],sizeof(struct _p_LOAD));CHKERRQ(ierr);
+      CHKERRQ(PetscMemcpy(&newload[loadj++],&pf->load[pf->bus[i].lidx[j]],sizeof(struct _p_LOAD)));
     }
   }
-  ierr = PetscFree(pf->gen);CHKERRQ(ierr);
-  ierr = PetscFree(pf->load);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(pf->gen));
+  CHKERRQ(PetscFree(pf->load));
   pf->gen = newgen;
   pf->load = newload;
 
-  ierr = PetscFree(busext2intmap);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(busext2intmap));
   PetscFunctionReturn(0);
 }

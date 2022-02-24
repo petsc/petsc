@@ -23,105 +23,105 @@ int main(int argc,char **argv)
   AO               ao;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,400,&viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,400,&viewer));
 
   /* Readoptions */
-  ierr = PetscOptionsGetInt(NULL,NULL,"-NX",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-NY",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-s",&s,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-w",&w,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-NX",&M,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-NY",&N,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-s",&s,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-w",&w,NULL));
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-xperiodic",&flg,NULL);CHKERRQ(ierr); if (flg) bx = DM_BOUNDARY_PERIODIC;
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-xperiodic",&flg,NULL)); if (flg) bx = DM_BOUNDARY_PERIODIC;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-yperiodic",&flg,NULL);CHKERRQ(ierr); if (flg) by = DM_BOUNDARY_PERIODIC;
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-yperiodic",&flg,NULL)); if (flg) by = DM_BOUNDARY_PERIODIC;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-xghosted",&flg,NULL);CHKERRQ(ierr); if (flg) bx = DM_BOUNDARY_GHOSTED;
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-xghosted",&flg,NULL)); if (flg) bx = DM_BOUNDARY_GHOSTED;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-yghosted",&flg,NULL);CHKERRQ(ierr); if (flg) by = DM_BOUNDARY_GHOSTED;
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-yghosted",&flg,NULL)); if (flg) by = DM_BOUNDARY_GHOSTED;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-star",&flg,NULL);CHKERRQ(ierr); if (flg) st = DMDA_STENCIL_STAR;
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-star",&flg,NULL)); if (flg) st = DMDA_STENCIL_STAR;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-box",&flg,NULL);CHKERRQ(ierr); if (flg) st = DMDA_STENCIL_BOX;
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-box",&flg,NULL)); if (flg) st = DMDA_STENCIL_BOX;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-testorder",&testorder,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-testorder",&testorder,NULL));
   /*
       Test putting two nodes in x and y on each processor, exact last processor
       in x and y gets the rest.
   */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-distribute",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-distribute",&flg,NULL));
   if (flg) {
     PetscCheckFalse(m == PETSC_DECIDE,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must set -m option with -distribute option");
-    ierr = PetscMalloc1(m,&lx);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(m,&lx));
     for (i=0; i<m-1; i++) { lx[i] = 4;}
     lx[m-1] = M - 4*(m-1);
     PetscCheckFalse(n == PETSC_DECIDE,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must set -n option with -distribute option");
-    ierr = PetscMalloc1(n,&ly);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(n,&ly));
     for (i=0; i<n-1; i++) { ly[i] = 2;}
     ly[n-1] = N - 2*(n-1);
   }
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,st,M,N,m,n,w,s,lx,ly,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = PetscFree(lx);CHKERRQ(ierr);
-  ierr = PetscFree(ly);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,bx,by,st,M,N,m,n,w,s,lx,ly,&da));
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
+  CHKERRQ(PetscFree(lx));
+  CHKERRQ(PetscFree(ly));
 
-  ierr = DMView(da,viewer);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
+  CHKERRQ(DMView(da,viewer));
+  CHKERRQ(DMCreateGlobalVector(da,&global));
+  CHKERRQ(DMCreateLocalVector(da,&local));
 
   /* Set global vector; send ghost points to local vectors */
   value = 1;
-  ierr = VecSet(global,value);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  CHKERRQ(VecSet(global,value));
+  CHKERRQ(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
+  CHKERRQ(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
 
   /* Scale local vectors according to processor rank; pass to global vector */
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   value = rank;
-  ierr = VecScale(local,value);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
+  CHKERRQ(VecScale(local,value));
+  CHKERRQ(DMLocalToGlobalBegin(da,local,INSERT_VALUES,global));
+  CHKERRQ(DMLocalToGlobalEnd(da,local,INSERT_VALUES,global));
 
   if (!testorder) { /* turn off printing when testing ordering mappings */
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nGlobal Vectors:\n");CHKERRQ(ierr);
-    ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nGlobal Vectors:\n"));
+    CHKERRQ(VecView(global,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n\n"));
   }
 
   /* Send ghost points to local vectors */
-  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  CHKERRQ(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
+  CHKERRQ(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-local_print",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-local_print",&flg,NULL));
   if (flg) {
     PetscViewer sviewer;
 
-    ierr = PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nLocal Vector: processor %d\n",rank);CHKERRQ(ierr);
-    ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-    ierr = VecView(local,sviewer);CHKERRQ(ierr);
-    ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-    ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nLocal Vector: processor %d\n",rank));
+    CHKERRQ(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+    CHKERRQ(VecView(local,sviewer));
+    CHKERRQ(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+    CHKERRQ(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /* Tests mappings between application/PETSc orderings */
   if (testorder) {
     ISLocalToGlobalMapping ltogm;
 
-    ierr = DMGetLocalToGlobalMapping(da,&ltogm);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetSize(ltogm,&nloc);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetIndices(ltogm,&ltog);CHKERRQ(ierr);
-    ierr = DMDAGetGhostCorners(da,&Xs,&Ys,NULL,&Xm,&Ym,NULL);CHKERRQ(ierr);
-    ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
-    ierr = PetscMalloc1(nloc,&iglobal);CHKERRQ(ierr);
+    CHKERRQ(DMGetLocalToGlobalMapping(da,&ltogm));
+    CHKERRQ(ISLocalToGlobalMappingGetSize(ltogm,&nloc));
+    CHKERRQ(ISLocalToGlobalMappingGetIndices(ltogm,&ltog));
+    CHKERRQ(DMDAGetGhostCorners(da,&Xs,&Ys,NULL,&Xm,&Ym,NULL));
+    CHKERRQ(DMDAGetAO(da,&ao));
+    CHKERRQ(PetscMalloc1(nloc,&iglobal));
 
     /* Set iglobal to be global indices for each processor's local and ghost nodes,
        using the DMDA ordering of grid points */
@@ -137,10 +137,10 @@ int main(int argc,char **argv)
 
     /* Map this to the application ordering (which for DMDAs is just the natural ordering
        that would be used for 1 processor, numbering most rapidly by x, then y) */
-    ierr = AOPetscToApplication(ao,nloc,iglobal);CHKERRQ(ierr);
+    CHKERRQ(AOPetscToApplication(ao,nloc,iglobal));
 
     /* Then map the application ordering back to the PETSc DMDA ordering */
-    ierr = AOApplicationToPetsc(ao,nloc,iglobal);CHKERRQ(ierr);
+    CHKERRQ(AOApplicationToPetsc(ao,nloc,iglobal));
 
     /* Verify the mappings */
     kk=0;
@@ -149,21 +149,21 @@ int main(int argc,char **argv)
         iloc = w*((j-Ys)*Xm + i-Xs);
         for (l=0; l<w; l++) {
           if (iglobal[kk] != ltog[iloc+l]) {
-            ierr = PetscFPrintf(PETSC_COMM_SELF,stdout,"[%d] Problem with mapping: j=%D, i=%D, l=%D, petsc1=%D, petsc2=%D\n",rank,j,i,l,ltog[iloc+l],iglobal[kk]);CHKERRQ(ierr);
+            CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,stdout,"[%d] Problem with mapping: j=%D, i=%D, l=%D, petsc1=%D, petsc2=%D\n",rank,j,i,l,ltog[iloc+l],iglobal[kk]));
           }
           kk++;
         }
       }
     }
-    ierr = PetscFree(iglobal);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingRestoreIndices(ltogm,&ltog);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(iglobal));
+    CHKERRQ(ISLocalToGlobalMappingRestoreIndices(ltogm,&ltog));
   }
 
   /* Free memory */
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(&local);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDestroy(&viewer));
+  CHKERRQ(VecDestroy(&local));
+  CHKERRQ(VecDestroy(&global));
+  CHKERRQ(DMDestroy(&da));
 
   ierr = PetscFinalize();
   return ierr;

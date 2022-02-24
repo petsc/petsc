@@ -8,9 +8,8 @@
 
 PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = DMDACreateCompatibleDMDA(dm,dm->dim,cdm);CHKERRQ(ierr);
+  CHKERRQ(DMDACreateCompatibleDMDA(dm,dm->dim,cdm));
   PetscFunctionReturn(0);
 }
 
@@ -21,20 +20,19 @@ PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field)
   PetscInt       dim;
   PetscInt       i, j;
   DM             cdm;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm,&dim));
   /* TODO: this is wrong if coordinates are not rectilinear */
-  ierr = DMGetBoundingBox(dm,gmin,gmax);CHKERRQ(ierr);
+  CHKERRQ(DMGetBoundingBox(dm,gmin,gmax));
   for (i = 0; i < (1 << dim); i++) {
     for (j = 0; j < dim; j++) {
       corners[i*dim + j] = (i & (1 << j)) ? gmax[j] : gmin[j];
     }
   }
-  ierr = DMClone(dm,&cdm);CHKERRQ(ierr);
-  ierr = DMFieldCreateDA(cdm,dim,corners,field);CHKERRQ(ierr);
-  ierr = DMDestroy(&cdm);CHKERRQ(ierr);
+  CHKERRQ(DMClone(dm,&cdm));
+  CHKERRQ(DMFieldCreateDA(cdm,dim,corners,field));
+  CHKERRQ(DMDestroy(&cdm));
   PetscFunctionReturn(0);
 }
 
@@ -59,15 +57,14 @@ PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field)
 @*/
 PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
 {
-  PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscCheckFalse(nf < 0 || nf >= dd->w,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
   PetscCheck(dd->fieldname,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
-  ierr = PetscFree(dd->fieldname[nf]);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(name,&dd->fieldname[nf]);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(dd->fieldname[nf]));
+  CHKERRQ(PetscStrallocpy(name,&dd->fieldname[nf]));
   PetscFunctionReturn(0);
 }
 
@@ -117,7 +114,6 @@ PetscErrorCode  DMDAGetFieldNames(DM da,const char * const **names)
 @*/
 PetscErrorCode  DMDASetFieldNames(DM da,const char * const *names)
 {
-  PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
   char           **fieldname;
   PetscInt       nf = 0;
@@ -126,8 +122,8 @@ PetscErrorCode  DMDASetFieldNames(DM da,const char * const *names)
   PetscCheck(dd->fieldname,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   while (names[nf++]) {};
   PetscCheckFalse(nf != dd->w+1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid number of fields %D",nf-1);
-  ierr = PetscStrArrayallocpy(names,&fieldname);CHKERRQ(ierr);
-  ierr = PetscStrArrayDestroy(&dd->fieldname);CHKERRQ(ierr);
+  CHKERRQ(PetscStrArrayallocpy(names,&fieldname));
+  CHKERRQ(PetscStrArrayDestroy(&dd->fieldname));
   dd->fieldname = fieldname;
   PetscFunctionReturn(0);
 }
@@ -187,15 +183,14 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
 @*/
 PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
 {
-  PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
   PetscCheckFalse(nf < 0 || nf >= dm->dim,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
   PetscCheck(dd->coordinatename,PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"You should call DMSetUp() first");
-  ierr = PetscFree(dd->coordinatename[nf]);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(name,&dd->coordinatename[nf]);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(dd->coordinatename[nf]));
+  CHKERRQ(PetscStrallocpy(name,&dd->coordinatename[nf]));
   PetscFunctionReturn(0);
 }
 
@@ -284,10 +279,9 @@ PetscErrorCode  DMDAGetCorners(DM da,PetscInt *x,PetscInt *y,PetscInt *z,PetscIn
 PetscErrorCode DMGetLocalBoundingIndices_DMDA(DM dm, PetscReal lmin[], PetscReal lmax[])
 {
   DMDALocalInfo  info;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr   = DMDAGetLocalInfo(dm, &info);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetLocalInfo(dm, &info));
   lmin[0] = info.xs;
   lmin[1] = info.ys;
   lmin[2] = info.zs;
@@ -304,10 +298,8 @@ PetscErrorCode DMGetLocalBoundingIndices_DMDA(DM dm, PetscReal lmin[], PetscReal
 @*/
 PetscErrorCode DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = DMDACreateCompatibleDMDA(da,nfields,nda);CHKERRQ(ierr);
+  CHKERRQ(DMDACreateCompatibleDMDA(da,nfields,nda));
   PetscFunctionReturn(0);
 }
 
@@ -329,7 +321,6 @@ PetscErrorCode DMDAGetReducedDMDA(DM da,PetscInt nfields,DM *nda)
 @*/
 PetscErrorCode  DMDACreateCompatibleDMDA(DM da,PetscInt nfields,DM *nda)
 {
-  PetscErrorCode   ierr;
   DM_DA            *dd = (DM_DA*)da->data;
   PetscInt         s,m,n,p,M,N,P,dim,Mo,No,Po;
   const PetscInt   *lx,*ly,*lz;
@@ -353,27 +344,27 @@ PetscErrorCode  DMDACreateCompatibleDMDA(DM da,PetscInt nfields,DM *nda)
 
   stencil_type = dd->stencil_type;
 
-  ierr = DMDAGetOwnershipRanges(da,&lx,&ly,&lz);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetOwnershipRanges(da,&lx,&ly,&lz));
   if (dim == 1) {
-    ierr = DMDACreate1d(PetscObjectComm((PetscObject)da),bx,M,nfields,s,dd->lx,nda);CHKERRQ(ierr);
+    CHKERRQ(DMDACreate1d(PetscObjectComm((PetscObject)da),bx,M,nfields,s,dd->lx,nda));
   } else if (dim == 2) {
-    ierr = DMDACreate2d(PetscObjectComm((PetscObject)da),bx,by,stencil_type,M,N,m,n,nfields,s,lx,ly,nda);CHKERRQ(ierr);
+    CHKERRQ(DMDACreate2d(PetscObjectComm((PetscObject)da),bx,by,stencil_type,M,N,m,n,nfields,s,lx,ly,nda));
   } else if (dim == 3) {
-    ierr = DMDACreate3d(PetscObjectComm((PetscObject)da),bx,by,bz,stencil_type,M,N,P,m,n,p,nfields,s,lx,ly,lz,nda);CHKERRQ(ierr);
+    CHKERRQ(DMDACreate3d(PetscObjectComm((PetscObject)da),bx,by,bz,stencil_type,M,N,P,m,n,p,nfields,s,lx,ly,lz,nda));
   }
-  ierr = DMSetUp(*nda);CHKERRQ(ierr);
+  CHKERRQ(DMSetUp(*nda));
   if (da->coordinates) {
-    ierr = PetscObjectReference((PetscObject)da->coordinates);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectReference((PetscObject)da->coordinates));
     (*nda)->coordinates = da->coordinates;
   }
 
   /* allow for getting a reduced DA corresponding to a domain decomposition */
-  ierr = DMDAGetOffset(da,&ox,&oy,&oz,&Mo,&No,&Po);CHKERRQ(ierr);
-  ierr = DMDASetOffset(*nda,ox,oy,oz,Mo,No,Po);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetOffset(da,&ox,&oy,&oz,&Mo,&No,&Po));
+  CHKERRQ(DMDASetOffset(*nda,ox,oy,oz,Mo,No,Po));
 
   /* allow for getting a reduced DA corresponding to a coarsened DA */
-  ierr = DMGetCoarsenLevel(da,&cl);CHKERRQ(ierr);
-  ierr = DMGetRefineLevel(da,&rl);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoarsenLevel(da,&cl));
+  CHKERRQ(DMGetRefineLevel(da,&rl));
 
   (*nda)->levelup   = rl;
   (*nda)->leveldown = cl;
@@ -399,15 +390,14 @@ PetscErrorCode  DMDACreateCompatibleDMDA(DM da,PetscInt nfields,DM *nda)
 @*/
 PetscErrorCode DMDAGetCoordinateArray(DM dm,void *xc)
 {
-  PetscErrorCode ierr;
   DM             cdm;
   Vec            x;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetCoordinates(dm,&x);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(cdm,x,xc);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoordinates(dm,&x));
+  CHKERRQ(DMGetCoordinateDM(dm,&cdm));
+  CHKERRQ(DMDAVecGetArray(cdm,x,xc));
   PetscFunctionReturn(0);
 }
 
@@ -428,14 +418,13 @@ PetscErrorCode DMDAGetCoordinateArray(DM dm,void *xc)
 @*/
 PetscErrorCode DMDARestoreCoordinateArray(DM dm,void *xc)
 {
-  PetscErrorCode ierr;
   DM             cdm;
   Vec            x;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetCoordinates(dm,&x);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(cdm,x,xc);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoordinates(dm,&x));
+  CHKERRQ(DMGetCoordinateDM(dm,&cdm));
+  CHKERRQ(DMDAVecRestoreArray(cdm,x,xc));
   PetscFunctionReturn(0);
 }

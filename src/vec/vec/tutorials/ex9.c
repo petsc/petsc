@@ -31,8 +31,8 @@ int main(int argc,char **argv)
   Vec            lx,gx,gxs;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run example with two processors");
 
   /*
@@ -67,83 +67,83 @@ int main(int argc,char **argv)
      the local vector (lx) and the global vector (gx) share the same
      array for storing vector values.
   */
-  ierr = PetscOptionsHasName(NULL,NULL,"-allocate",&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-vecmpisetghost",&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-minvalues",&flg3);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-allocate",&flg));
+  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-vecmpisetghost",&flg2));
+  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-minvalues",&flg3));
   if (flg) {
-    ierr = PetscMalloc1(nlocal+nghost,&tarray);CHKERRQ(ierr);
-    ierr = VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(nlocal+nghost,&tarray));
+    CHKERRQ(VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,&gxs));
   } else if (flg2) {
-    ierr = VecCreate(PETSC_COMM_WORLD,&gxs);CHKERRQ(ierr);
-    ierr = VecSetType(gxs,VECMPI);CHKERRQ(ierr);
-    ierr = VecSetSizes(gxs,nlocal,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecMPISetGhost(gxs,nghost,ifrom);CHKERRQ(ierr);
+    CHKERRQ(VecCreate(PETSC_COMM_WORLD,&gxs));
+    CHKERRQ(VecSetType(gxs,VECMPI));
+    CHKERRQ(VecSetSizes(gxs,nlocal,PETSC_DECIDE));
+    CHKERRQ(VecMPISetGhost(gxs,nghost,ifrom));
   } else {
-    ierr = VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,&gxs);CHKERRQ(ierr);
+    CHKERRQ(VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,&gxs));
   }
 
   /*
       Test VecDuplicate()
   */
-  ierr = VecDuplicate(gxs,&gx);CHKERRQ(ierr);
-  ierr = VecDestroy(&gxs);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(gxs,&gx));
+  CHKERRQ(VecDestroy(&gxs));
 
   /*
      Access the local representation
   */
-  ierr = VecGhostGetLocalForm(gx,&lx);CHKERRQ(ierr);
+  CHKERRQ(VecGhostGetLocalForm(gx,&lx));
 
   /*
      Set the values from 0 to 12 into the "global" vector
   */
-  ierr = VecGetOwnershipRange(gx,&rstart,&rend);CHKERRQ(ierr);
+  CHKERRQ(VecGetOwnershipRange(gx,&rstart,&rend));
   for (i=rstart; i<rend; i++) {
     value = (PetscScalar) i;
-    ierr  = VecSetValues(gx,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(gx,1,&i,&value,INSERT_VALUES));
   }
-  ierr = VecAssemblyBegin(gx);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(gx);CHKERRQ(ierr);
+  CHKERRQ(VecAssemblyBegin(gx));
+  CHKERRQ(VecAssemblyEnd(gx));
 
-  ierr = VecGhostUpdateBegin(gx,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecGhostUpdateEnd(gx,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  CHKERRQ(VecGhostUpdateBegin(gx,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecGhostUpdateEnd(gx,INSERT_VALUES,SCATTER_FORWARD));
 
   /*
      Print out each vector, including the ghost padding region.
   */
-  ierr = VecGetArray(lx,&array);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(lx,&array));
   for (i=0; i<nlocal+nghost; i++) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " %g\n",i,(double)PetscRealPart(array[i]));CHKERRQ(ierr);
+    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " %g\n",i,(double)PetscRealPart(array[i])));
   }
-  ierr = VecRestoreArray(lx,&array);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-  ierr = VecGhostRestoreLocalForm(gx,&lx);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(lx,&array));
+  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  CHKERRQ(VecGhostRestoreLocalForm(gx,&lx));
 
   /* Another test that sets ghost values and then accumulates onto the owning processors using MIN_VALUES */
   if (flg3) {
-    if (rank == 0){ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nTesting VecGhostUpdate with MIN_VALUES\n");CHKERRQ(ierr);}
-    ierr = VecGhostGetLocalForm(gx,&lx);CHKERRQ(ierr);
-    ierr = VecGetArray(lx,&array);CHKERRQ(ierr);
+    if (rank == 0)CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nTesting VecGhostUpdate with MIN_VALUES\n"));
+    CHKERRQ(VecGhostGetLocalForm(gx,&lx));
+    CHKERRQ(VecGetArray(lx,&array));
     for (i=0; i<nghost; i++) array[nlocal+i] = rank ? (PetscScalar)4 : (PetscScalar)8;
-    ierr = VecRestoreArray(lx,&array);CHKERRQ(ierr);
-    ierr = VecGhostRestoreLocalForm(gx,&lx);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(lx,&array));
+    CHKERRQ(VecGhostRestoreLocalForm(gx,&lx));
 
-    ierr = VecGhostUpdateBegin(gx,MIN_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecGhostUpdateEnd(gx,MIN_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    CHKERRQ(VecGhostUpdateBegin(gx,MIN_VALUES,SCATTER_REVERSE));
+    CHKERRQ(VecGhostUpdateEnd(gx,MIN_VALUES,SCATTER_REVERSE));
 
-    ierr = VecGhostGetLocalForm(gx,&lx);CHKERRQ(ierr);
-    ierr = VecGetArray(lx,&array);CHKERRQ(ierr);
+    CHKERRQ(VecGhostGetLocalForm(gx,&lx));
+    CHKERRQ(VecGetArray(lx,&array));
 
     for (i=0; i<nlocal+nghost; i++) {
-      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " %g\n",i,(double)PetscRealPart(array[i]));CHKERRQ(ierr);
+      CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " %g\n",i,(double)PetscRealPart(array[i])));
     }
-    ierr = VecRestoreArray(lx,&array);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-    ierr = VecGhostRestoreLocalForm(gx,&lx);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(lx,&array));
+    CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+    CHKERRQ(VecGhostRestoreLocalForm(gx,&lx));
   }
 
-  ierr = VecDestroy(&gx);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&gx));
 
-  if (flg) {ierr = PetscFree(tarray);CHKERRQ(ierr);}
+  if (flg) CHKERRQ(PetscFree(tarray));
   ierr = PetscFinalize();
   return ierr;
 }
@@ -173,4 +173,3 @@ int main(int argc,char **argv)
        requires: !complex
 
 TEST*/
-

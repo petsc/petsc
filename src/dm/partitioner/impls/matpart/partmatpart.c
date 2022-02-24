@@ -31,23 +31,20 @@ static PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning_MatParti
 @*/
 PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning(PetscPartitioner part, MatPartitioning *mp)
 {
-  PetscErrorCode          ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidPointer(mp, 2);
-  ierr = PetscUseMethod(part,"PetscPartitionerMatPartitioningGetMatPartitioning_C",(PetscPartitioner,MatPartitioning*),(part,mp));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(part,"PetscPartitionerMatPartitioningGetMatPartitioning_C",(PetscPartitioner,MatPartitioning*),(part,mp)));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscPartitionerDestroy_MatPartitioning(PetscPartitioner part)
 {
   PetscPartitioner_MatPartitioning  *p = (PetscPartitioner_MatPartitioning *) part->data;
-  PetscErrorCode                    ierr;
 
   PetscFunctionBegin;
-  ierr = MatPartitioningDestroy(&p->mp);CHKERRQ(ierr);
-  ierr = PetscFree(part->data);CHKERRQ(ierr);
+  CHKERRQ(MatPartitioningDestroy(&p->mp));
+  CHKERRQ(PetscFree(part->data));
   PetscFunctionReturn(0);
 }
 
@@ -55,38 +52,35 @@ static PetscErrorCode PetscPartitionerView_MatPartitioning_ASCII(PetscPartitione
 {
   PetscPartitioner_MatPartitioning  *p = (PetscPartitioner_MatPartitioning *) part->data;
   PetscViewerFormat                 format;
-  PetscErrorCode                    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "MatPartitioning Graph Partitioner:\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  if (p->mp) {ierr = MatPartitioningView(p->mp, viewer);CHKERRQ(ierr);}
-  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerGetFormat(viewer, &format));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer, "MatPartitioning Graph Partitioner:\n"));
+  CHKERRQ(PetscViewerASCIIPushTab(viewer));
+  if (p->mp) CHKERRQ(MatPartitioningView(p->mp, viewer));
+  CHKERRQ(PetscViewerASCIIPopTab(viewer));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscPartitionerView_MatPartitioning(PetscPartitioner part, PetscViewer viewer)
 {
   PetscBool      iascii;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
-  if (iascii) {ierr = PetscPartitionerView_MatPartitioning_ASCII(part, viewer);CHKERRQ(ierr);}
+  CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
+  if (iascii) CHKERRQ(PetscPartitionerView_MatPartitioning_ASCII(part, viewer));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscPartitionerSetFromOptions_MatPartitioning(PetscOptionItems *PetscOptionsObject, PetscPartitioner part)
 {
   PetscPartitioner_MatPartitioning  *p = (PetscPartitioner_MatPartitioning *) part->data;
-  PetscErrorCode                    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)p->mp,((PetscObject)part)->prefix);CHKERRQ(ierr);
-  ierr = MatPartitioningSetFromOptions(p->mp);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)p->mp,((PetscObject)part)->prefix));
+  CHKERRQ(MatPartitioningSetFromOptions(p->mp));
   PetscFunctionReturn(0);
 }
 
@@ -99,27 +93,26 @@ static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner
   PetscInt                          numVerticesGlobal, numEdges;
   PetscInt                          *i, *j, *vwgt = NULL;
   MPI_Comm                          comm;
-  PetscErrorCode                    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)part, &comm);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)part, &comm));
 
   /* TODO: MatCreateMPIAdj should maybe take global number of ROWS */
   /* TODO: And vertex distribution in PetscPartitionerPartition_ParMetis should be done using PetscSplitOwnership */
   numVerticesGlobal = PETSC_DECIDE;
-  ierr = PetscSplitOwnership(comm, &numVertices, &numVerticesGlobal);CHKERRQ(ierr);
+  CHKERRQ(PetscSplitOwnership(comm, &numVertices, &numVerticesGlobal));
 
   /* copy arrays to avoid memory errors because MatMPIAdjSetPreallocation copies just pointers */
   numEdges = start[numVertices];
-  ierr = PetscMalloc1(numVertices+1, &i);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numEdges, &j);CHKERRQ(ierr);
-  ierr = PetscArraycpy(i, start, numVertices+1);CHKERRQ(ierr);
-  ierr = PetscArraycpy(j, adjacency, numEdges);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(numVertices+1, &i));
+  CHKERRQ(PetscMalloc1(numEdges, &j));
+  CHKERRQ(PetscArraycpy(i, start, numVertices+1));
+  CHKERRQ(PetscArraycpy(j, adjacency, numEdges));
 
   /* construct the adjacency matrix */
-  ierr = MatCreateMPIAdj(comm, numVertices, numVerticesGlobal, i, j, NULL, &matadj);CHKERRQ(ierr);
-  ierr = MatPartitioningSetAdjacency(p->mp, matadj);CHKERRQ(ierr);
-  ierr = MatPartitioningSetNParts(p->mp, nparts);CHKERRQ(ierr);
+  CHKERRQ(MatCreateMPIAdj(comm, numVertices, numVerticesGlobal, i, j, NULL, &matadj));
+  CHKERRQ(MatPartitioningSetAdjacency(p->mp, matadj));
+  CHKERRQ(MatPartitioningSetNParts(p->mp, nparts));
 
   /* calculate partition weights */
   if (targetSection) {
@@ -127,11 +120,11 @@ static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner
     PetscInt  p;
 
     sumt = 0.0;
-    ierr = PetscMalloc1(nparts,&tpwgts);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(nparts,&tpwgts));
     for (p = 0; p < nparts; ++p) {
       PetscInt tpd;
 
-      ierr = PetscSectionGetDof(targetSection,p,&tpd);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionGetDof(targetSection,p,&tpd));
       sumt += tpd;
       tpwgts[p] = tpd;
     }
@@ -144,65 +137,63 @@ static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner
       for (p = 0, sumt = 0.0; p < nparts-1; ++p) sumt += tpwgts[p];
       tpwgts[nparts - 1] = 1. - sumt;
     } else {
-      ierr = PetscFree(tpwgts);CHKERRQ(ierr);
+      CHKERRQ(PetscFree(tpwgts));
     }
   }
-  ierr = MatPartitioningSetPartitionWeights(p->mp, tpwgts);CHKERRQ(ierr);
+  CHKERRQ(MatPartitioningSetPartitionWeights(p->mp, tpwgts));
 
   /* calculate vertex weights */
   if (vertSection) {
     PetscInt v;
 
-    ierr = PetscMalloc1(numVertices,&vwgt);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(numVertices,&vwgt));
     for (v = 0; v < numVertices; ++v) {
-      ierr = PetscSectionGetDof(vertSection, v, &vwgt[v]);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionGetDof(vertSection, v, &vwgt[v]));
     }
   }
-  ierr = MatPartitioningSetVertexWeights(p->mp, vwgt);CHKERRQ(ierr);
+  CHKERRQ(MatPartitioningSetVertexWeights(p->mp, vwgt));
 
   /* apply the partitioning */
-  ierr = MatPartitioningApply(p->mp, &is1);CHKERRQ(ierr);
+  CHKERRQ(MatPartitioningApply(p->mp, &is1));
 
   /* construct the PetscSection */
   {
     PetscInt v;
     const PetscInt *assignment_arr;
 
-    ierr = ISGetIndices(is1, &assignment_arr);CHKERRQ(ierr);
-    for (v = 0; v < numVertices; ++v) {ierr = PetscSectionAddDof(partSection, assignment_arr[v], 1);CHKERRQ(ierr);}
-    ierr = ISRestoreIndices(is1, &assignment_arr);CHKERRQ(ierr);
+    CHKERRQ(ISGetIndices(is1, &assignment_arr));
+    for (v = 0; v < numVertices; ++v) CHKERRQ(PetscSectionAddDof(partSection, assignment_arr[v], 1));
+    CHKERRQ(ISRestoreIndices(is1, &assignment_arr));
   }
 
   /* convert assignment IS to global numbering IS */
-  ierr = ISPartitioningToNumbering(is1, &is2);CHKERRQ(ierr);
-  ierr = ISDestroy(&is1);CHKERRQ(ierr);
+  CHKERRQ(ISPartitioningToNumbering(is1, &is2));
+  CHKERRQ(ISDestroy(&is1));
 
   /* renumber IS into local numbering */
-  ierr = ISOnComm(is2, PETSC_COMM_SELF, PETSC_USE_POINTER, &is1);CHKERRQ(ierr);
-  ierr = ISRenumber(is1, NULL, NULL, &is3);CHKERRQ(ierr);
-  ierr = ISDestroy(&is1);CHKERRQ(ierr);
-  ierr = ISDestroy(&is2);CHKERRQ(ierr);
+  CHKERRQ(ISOnComm(is2, PETSC_COMM_SELF, PETSC_USE_POINTER, &is1));
+  CHKERRQ(ISRenumber(is1, NULL, NULL, &is3));
+  CHKERRQ(ISDestroy(&is1));
+  CHKERRQ(ISDestroy(&is2));
 
   /* invert IS */
-  ierr = ISSetPermutation(is3);CHKERRQ(ierr);
-  ierr = ISInvertPermutation(is3, numVertices, &is1);CHKERRQ(ierr);
-  ierr = ISDestroy(&is3);CHKERRQ(ierr);
+  CHKERRQ(ISSetPermutation(is3));
+  CHKERRQ(ISInvertPermutation(is3, numVertices, &is1));
+  CHKERRQ(ISDestroy(&is3));
 
-  ierr = MatDestroy(&matadj);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&matadj));
   *is = is1;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscPartitionerInitialize_MatPartitioning(PetscPartitioner part)
 {
-  PetscErrorCode                    ierr;
-
   PetscFunctionBegin;
   part->ops->view           = PetscPartitionerView_MatPartitioning;
   part->ops->setfromoptions = PetscPartitionerSetFromOptions_MatPartitioning;
   part->ops->destroy        = PetscPartitionerDestroy_MatPartitioning;
   part->ops->partition      = PetscPartitionerPartition_MatPartitioning;
-  ierr = PetscObjectComposeFunction((PetscObject)part,"PetscPartitionerMatPartitioningGetMatPartitioning_C",PetscPartitionerMatPartitioningGetMatPartitioning_MatPartitioning);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)part,"PetscPartitionerMatPartitioningGetMatPartitioning_C",PetscPartitionerMatPartitioningGetMatPartitioning_MatPartitioning));
   PetscFunctionReturn(0);
 }
 
@@ -217,14 +208,12 @@ M*/
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_MatPartitioning(PetscPartitioner part)
 {
   PetscPartitioner_MatPartitioning  *p;
-  PetscErrorCode                    ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  ierr       = PetscNewLog(part, &p);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(part, &p));
   part->data = p;
-  ierr = PetscPartitionerInitialize_MatPartitioning(part);CHKERRQ(ierr);
-  ierr = MatPartitioningCreate(PetscObjectComm((PetscObject)part), &p->mp);CHKERRQ(ierr);
+  CHKERRQ(PetscPartitionerInitialize_MatPartitioning(part));
+  CHKERRQ(MatPartitioningCreate(PetscObjectComm((PetscObject)part), &p->mp));
   PetscFunctionReturn(0);
 }
-

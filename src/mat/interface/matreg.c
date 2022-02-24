@@ -27,17 +27,16 @@ PetscFunctionList MatList = NULL;
 */
 PetscErrorCode MatGetRootType_Private(Mat mat, MatType *rootType)
 {
-  PetscErrorCode ierr;
   PetscBool      found = PETSC_FALSE;
   MatRootName    names = MatRootNameList;
   MatType        inType;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  ierr = MatGetType(mat,&inType);CHKERRQ(ierr);
+  CHKERRQ(MatGetType(mat,&inType));
   while (names) {
-    ierr = PetscStrcmp(inType,names->mname,&found);CHKERRQ(ierr);
-    if (!found) { ierr = PetscStrcmp(inType,names->sname,&found);CHKERRQ(ierr); }
+    CHKERRQ(PetscStrcmp(inType,names->mname,&found));
+    if (!found) CHKERRQ(PetscStrcmp(inType,names->sname,&found));
     if (found) {
       found     = PETSC_TRUE;
       *rootType = names->rname;
@@ -71,18 +70,18 @@ PetscErrorCode MatGetRootType_Private(Mat mat, MatType *rootType)
 @*/
 PetscErrorCode  MatSetType(Mat mat, MatType matype)
 {
-  PetscErrorCode ierr,(*r)(Mat);
   PetscBool      sametype,found,subclass = PETSC_FALSE;
   MatRootName    names = MatRootNameList;
+  PetscErrorCode (*r)(Mat);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
 
   while (names) {
-    ierr = PetscStrcmp(matype,names->rname,&found);CHKERRQ(ierr);
+    CHKERRQ(PetscStrcmp(matype,names->rname,&found));
     if (found) {
       PetscMPIInt size;
-      ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRMPI(ierr);
+      CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size));
       if (size == 1) matype = names->sname;
       else matype = names->mname;
       break;
@@ -90,29 +89,27 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
     names = names->next;
   }
 
-  ierr = PetscObjectTypeCompare((PetscObject)mat,matype,&sametype);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)mat,matype,&sametype));
   if (sametype) PetscFunctionReturn(0);
 
-  ierr = PetscFunctionListFind(MatList,matype,&r);CHKERRQ(ierr);
-  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown Mat type given: %s",matype);
+  CHKERRQ(PetscFunctionListFind(MatList,matype,&r));
+  PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown Mat type given: %s",matype);
 
-  if (mat->assembled && ((PetscObject)mat)->type_name) {
-    ierr = PetscStrbeginswith(matype,((PetscObject)mat)->type_name,&subclass);CHKERRQ(ierr);
-  }
+  if (mat->assembled && ((PetscObject)mat)->type_name) CHKERRQ(PetscStrbeginswith(matype,((PetscObject)mat)->type_name,&subclass));
   if (subclass) {
-    ierr = MatConvert(mat,matype,MAT_INPLACE_MATRIX,&mat);CHKERRQ(ierr);
+    CHKERRQ(MatConvert(mat,matype,MAT_INPLACE_MATRIX,&mat));
     PetscFunctionReturn(0);
   }
   if (mat->ops->destroy) {
     /* free the old data structure if it existed */
-    ierr = (*mat->ops->destroy)(mat);CHKERRQ(ierr);
+    CHKERRQ((*mat->ops->destroy)(mat));
     mat->ops->destroy = NULL;
 
     /* should these null spaces be removed? */
-    ierr = MatNullSpaceDestroy(&mat->nullsp);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&mat->nearnullsp);CHKERRQ(ierr);
+    CHKERRQ(MatNullSpaceDestroy(&mat->nullsp));
+    CHKERRQ(MatNullSpaceDestroy(&mat->nearnullsp));
   }
-  ierr = PetscMemzero(mat->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
+  CHKERRQ(PetscMemzero(mat->ops,sizeof(struct _MatOps)));
   mat->preallocated  = PETSC_FALSE;
   mat->assembled     = PETSC_FALSE;
   mat->was_assembled = PETSC_FALSE;
@@ -123,10 +120,10 @@ PetscErrorCode  MatSetType(Mat mat, MatType matype)
    obtained with a different structure, confusing the PC.
   */
   mat->nonzerostate++;
-  ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectStateIncrease((PetscObject)mat));
 
   /* create the new data structure */
-  ierr = (*r)(mat);CHKERRQ(ierr);
+  CHKERRQ((*r)(mat));
   PetscFunctionReturn(0);
 }
 
@@ -196,12 +193,10 @@ PetscErrorCode MatGetVecType(Mat mat,VecType *vtype)
 @*/
 PetscErrorCode MatSetVecType(Mat mat,VecType vtype)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  ierr = PetscFree(mat->defaultvectype);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(vtype,&mat->defaultvectype);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(mat->defaultvectype));
+  CHKERRQ(PetscStrallocpy(vtype,&mat->defaultvectype));
   PetscFunctionReturn(0);
 }
 
@@ -235,11 +230,9 @@ $     -mat_type my_mat
 @*/
 PetscErrorCode  MatRegister(const char sname[],PetscErrorCode (*function)(Mat))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatInitializePackage();CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&MatList,sname,function);CHKERRQ(ierr);
+  CHKERRQ(MatInitializePackage());
+  CHKERRQ(PetscFunctionListAdd(&MatList,sname,function));
   PetscFunctionReturn(0);
 }
 
@@ -269,14 +262,13 @@ MatRootName MatRootNameList = NULL;
 @*/
 PetscErrorCode  MatRegisterRootName(const char rname[],const char sname[],const char mname[])
 {
-  PetscErrorCode ierr;
   MatRootName    names;
 
   PetscFunctionBegin;
-  ierr = PetscNew(&names);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(rname,&names->rname);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(sname,&names->sname);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(mname,&names->mname);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(&names));
+  CHKERRQ(PetscStrallocpy(rname,&names->rname));
+  CHKERRQ(PetscStrallocpy(sname,&names->sname));
+  CHKERRQ(PetscStrallocpy(mname,&names->mname));
   if (!MatRootNameList) {
     MatRootNameList = names;
   } else {

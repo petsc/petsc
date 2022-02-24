@@ -30,46 +30,46 @@ int main(int argc,char **args)
   /*
      Determine files from which we read the matrix
   */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
   PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
 
   /*
      Open binary file.  Note that we use FILE_MODE_READ to indicate
      reading from this file.
   */
-  ierr = PetscViewerCreate(PETSC_COMM_WORLD,&fd);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(fd,PETSCVIEWERBINARY);CHKERRQ(ierr);
-  ierr = PetscViewerSetFromOptions(fd);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnum(NULL,NULL,"-viewer_format",PetscViewerFormats,(PetscEnum*)&format,&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PetscViewerPushFormat(fd,format);CHKERRQ(ierr);}
-  ierr = PetscViewerFileSetMode(fd,FILE_MODE_READ);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(fd,file);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerCreate(PETSC_COMM_WORLD,&fd));
+  CHKERRQ(PetscViewerSetType(fd,PETSCVIEWERBINARY));
+  CHKERRQ(PetscViewerSetFromOptions(fd));
+  CHKERRQ(PetscOptionsGetEnum(NULL,NULL,"-viewer_format",PetscViewerFormats,(PetscEnum*)&format,&flg));
+  if (flg) CHKERRQ(PetscViewerPushFormat(fd,format));
+  CHKERRQ(PetscViewerFileSetMode(fd,FILE_MODE_READ));
+  CHKERRQ(PetscViewerFileSetName(fd,file));
 
   /*
     Load the matrix; then destroy the viewer.
     Matrix type is set automatically but you can override it by MatSetType() prior to MatLoad().
     Do that only if you really insist on the given type.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(A,"a_");CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) A,"A");CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetOptionsPrefix(A,"a_"));
+  CHKERRQ(PetscObjectSetName((PetscObject) A,"A"));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatLoad(A,fd));
+  CHKERRQ(PetscViewerDestroy(&fd));
 
-  ierr = MatGetSize(A,NULL,&n);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRangeColumn(A,&cstart,&cend);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&norms);CHKERRQ(ierr);
-  ierr = MatGetColumnNorms(A,NORM_2,norms);CHKERRQ(ierr);
-  ierr = PetscRealView(cend-cstart,norms+cstart,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscFree(norms);CHKERRQ(ierr);
+  CHKERRQ(MatGetSize(A,NULL,&n));
+  CHKERRQ(MatGetOwnershipRangeColumn(A,&cstart,&cend));
+  CHKERRQ(PetscMalloc1(n,&norms));
+  CHKERRQ(MatGetColumnNorms(A,NORM_2,norms));
+  CHKERRQ(PetscRealView(cend-cstart,norms+cstart,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscFree(norms));
 
-  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatGetOption(A,MAT_SYMMETRIC,&flg);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"MAT_SYMMETRIC: %" PetscInt_FMT "\n",(PetscInt)flg);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(A,NULL,"-mat_view");CHKERRQ(ierr);
+  CHKERRQ(PetscObjectPrintClassNamePrefixType((PetscObject)A,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(MatGetOption(A,MAT_SYMMETRIC,&flg));
+  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"MAT_SYMMETRIC: %" PetscInt_FMT "\n",(PetscInt)flg));
+  CHKERRQ(MatViewFromOptions(A,NULL,"-mat_view"));
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
   ierr = PetscFinalize();
   return ierr;
 }

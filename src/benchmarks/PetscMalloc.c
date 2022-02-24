@@ -13,48 +13,48 @@ int main(int argc,char **argv)
   PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF,&r));
+  CHKERRQ(PetscRandomSetFromOptions(r));
   for (i=0; i<1000; i++) {
-    ierr     = PetscRandomGetValue(r,&value);CHKERRQ(ierr);
+    CHKERRQ(PetscRandomGetValue(r,&value));
     rand1[i] = (int)(value* 144327);
-    ierr     = PetscRandomGetValue(r,&value);CHKERRQ(ierr);
+    CHKERRQ(PetscRandomGetValue(r,&value));
     rand2[i] = (int)(value* 144327);
   }
 
   /* Take care of paging effects */
-  ierr = PetscMalloc1(100,&dummy);CHKERRQ(ierr);
-  ierr = PetscFree(dummy);CHKERRQ(ierr);
-  ierr = PetscTime(&x);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(100,&dummy));
+  CHKERRQ(PetscFree(dummy));
+  CHKERRQ(PetscTime(&x));
 
   /* Do all mallocs */
   for (i=0; i< 1000; i++) {
-    ierr = PetscMalloc1(rand1[i],&arr[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(rand1[i],&arr[i]));
   }
 
-  ierr = PetscTime(&x);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&x));
 
   /* Do some frees */
   for (i=0; i< 1000; i+=2) {
-    ierr = PetscFree(arr[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(arr[i]));
   }
 
   /* Do some mallocs */
   for (i=0; i< 1000; i+=2) {
-    ierr = PetscMalloc1(rand2[i],&arr[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(rand2[i],&arr[i]));
   }
-  ierr = PetscTime(&y);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&y));
 
   for (i=0; i< 1000; i++) {
-    ierr = PetscFree(arr[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(arr[i]));
   }
 
   fprintf(stdout,"%-15s : %e sec, with options : ","PetscMalloc",(y-x)/500.0);
-  ierr = PetscOptionsHasName(NULL,"-malloc",&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHasName(NULL,"-malloc",&flg));
   if (flg) fprintf(stdout,"-malloc ");
   fprintf(stdout,"\n");
 
-  ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomDestroy(&r));
   ierr = PetscFinalize();
   return ierr;
 }

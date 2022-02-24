@@ -21,52 +21,52 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /* Create a diagonal matrix with a given distribution of diagonal elements */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatSetUp(A));
    /*
      Assemble matrix
   */
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
-    ierr   = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&i,3,col,value,INSERT_VALUES));
   }
   i    = n - 1; col[0] = n - 2; col[1] = n - 1;
-  ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(A,1,&i,2,col,value,INSERT_VALUES));
   i    = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
-  ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(A,1,&i,2,col,value,INSERT_VALUES));
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
+  CHKERRQ(MatCreateVecs(A,&x,&b));
 
   /* Create a KSP object */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPSetOperators(ksp,A,A));
 
   /* Set up a composite preconditioner */
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCCOMPOSITE);CHKERRQ(ierr); /* default composite with single Identity PC */
-  ierr = PCCompositeSetType(pc,PC_COMPOSITE_ADDITIVE);CHKERRQ(ierr);
-  ierr = PCCompositeAddPCType(pc,PCLU);CHKERRQ(ierr);
-  ierr = PCCompositeGetPC(pc,0,&subpc);CHKERRQ(ierr);
+  CHKERRQ(KSPGetPC(ksp,&pc));
+  CHKERRQ(PCSetType(pc,PCCOMPOSITE)); /* default composite with single Identity PC */
+  CHKERRQ(PCCompositeSetType(pc,PC_COMPOSITE_ADDITIVE));
+  CHKERRQ(PCCompositeAddPCType(pc,PCLU));
+  CHKERRQ(PCCompositeGetPC(pc,0,&subpc));
   /*  B is set to the diagonal of A; this demonstrates that setting the operator for a subpc changes the preconditioning */
-  ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&B);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(A,b);CHKERRQ(ierr);
-  ierr = MatDiagonalSet(B,b,ADD_VALUES);CHKERRQ(ierr);
-  ierr = PCSetOperators(subpc,B,B);CHKERRQ(ierr);
-  ierr = PCCompositeAddPCType(pc,PCNONE);CHKERRQ(ierr);
+  CHKERRQ(MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&B));
+  CHKERRQ(MatGetDiagonal(A,b));
+  CHKERRQ(MatDiagonalSet(B,b,ADD_VALUES));
+  CHKERRQ(PCSetOperators(subpc,B,B));
+  CHKERRQ(PCCompositeAddPCType(pc,PCNONE));
 
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  CHKERRQ(KSPSetFromOptions(ksp));
+  CHKERRQ(KSPSolve(ksp,b,x));
 
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&B));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&b));
   ierr = PetscFinalize();
   return ierr;
 }

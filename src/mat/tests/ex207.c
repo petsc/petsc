@@ -10,30 +10,30 @@ int main(int argc,char **args)
   PetscMPIInt       size,rank;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
-  ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A, 2, 2, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(A, 2);CHKERRQ(ierr);
-  ierr = MatSetType(A, MATBAIJ);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD, &A));
+  CHKERRQ(MatSetSizes(A, 2, 2, PETSC_DETERMINE, PETSC_DETERMINE));
+  CHKERRQ(MatSetBlockSize(A, 2));
+  CHKERRQ(MatSetType(A, MATBAIJ));
+  CHKERRQ(MatSetUp(A));
 
-  ierr = MatCreateVecs(A, &diag, NULL);CHKERRQ(ierr);
-  ierr = VecSet(diag, 1.0);CHKERRQ(ierr);
-  ierr = MatDiagonalSet(A, diag, INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(MatCreateVecs(A, &diag, NULL));
+  CHKERRQ(VecSet(diag, 1.0));
+  CHKERRQ(MatDiagonalSet(A, diag, INSERT_VALUES));
+  CHKERRQ(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = MatCreateRedundantMatrix(A, size, MPI_COMM_NULL, MAT_INITIAL_MATRIX, &B);CHKERRQ(ierr);
+  CHKERRQ(MatCreateRedundantMatrix(A, size, MPI_COMM_NULL, MAT_INITIAL_MATRIX, &B));
   if (rank == 0) {
-    ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    CHKERRQ(MatView(B,PETSC_VIEWER_STDOUT_SELF));
   }
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = VecDestroy(&diag);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&B));
+  CHKERRQ(VecDestroy(&diag));
   ierr = PetscFinalize();
   return ierr;
 }

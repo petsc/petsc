@@ -16,30 +16,30 @@ int main(int argc,char **argv)
   Vec              global,local;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-P",&P,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-stencil_width",&stencil_width,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-stencil_type",(PetscInt*)&stencil_type,NULL);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-P",&P,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-stencil_width",&stencil_width,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-stencil_type",(PetscInt*)&stencil_type,NULL));
 
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stencil_type,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,0,0,0,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(global,&rstart,&rend);CHKERRQ(ierr);
-  for (i=rstart; i<rend; i++) {ierr = VecSetValue(global,i,(PetscReal)(i + 100*rank),INSERT_VALUES);CHKERRQ(ierr);}
-  ierr = VecAssemblyBegin(global);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(global);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
-  ierr = VecSet(local,-1);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  if (rank == 0) {ierr = VecView(local,0);CHKERRQ(ierr);}
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = VecDestroy(&local);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stencil_type,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,0,0,0,&da));
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
+  CHKERRQ(DMCreateGlobalVector(da,&global));
+  CHKERRQ(VecGetOwnershipRange(global,&rstart,&rend));
+  for (i=rstart; i<rend; i++) CHKERRQ(VecSetValue(global,i,(PetscReal)(i + 100*rank),INSERT_VALUES));
+  CHKERRQ(VecAssemblyBegin(global));
+  CHKERRQ(VecAssemblyEnd(global));
+  CHKERRQ(DMCreateLocalVector(da,&local));
+  CHKERRQ(VecSet(local,-1));
+  CHKERRQ(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
+  CHKERRQ(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
+  if (rank == 0) CHKERRQ(VecView(local,0));
+  CHKERRQ(DMDestroy(&da));
+  CHKERRQ(VecDestroy(&local));
+  CHKERRQ(VecDestroy(&global));
   ierr = PetscFinalize();
   return ierr;
 }

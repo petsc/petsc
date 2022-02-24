@@ -10,33 +10,30 @@ static PetscErrorCode LabelPoints(DM dm)
   DMLabel        label;
   PetscInt       pStart, pEnd, p;
   PetscBool      flg = PETSC_FALSE;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(NULL, NULL, "-label_mesh", &flg, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL, NULL, "-label_mesh", &flg, NULL));
   if (!flg) PetscFunctionReturn(0);
-  ierr = DMCreateLabel(dm, "test");CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "test", &label);CHKERRQ(ierr);
-  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  CHKERRQ(DMCreateLabel(dm, "test"));
+  CHKERRQ(DMGetLabel(dm, "test", &label));
+  CHKERRQ(DMPlexGetChart(dm, &pStart, &pEnd));
   for (p = pStart; p < pEnd; ++p) {
-    ierr = DMLabelSetValue(label, p, p);CHKERRQ(ierr);
+    CHKERRQ(DMLabelSetValue(label, p, p));
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = LabelPoints(*dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "post_label_");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreate(comm, dm));
+  CHKERRQ(DMSetType(*dm, DMPLEX));
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(LabelPoints(*dm));
+  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, "post_label_"));
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -46,8 +43,8 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
-  ierr = CreateMesh(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &dm));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

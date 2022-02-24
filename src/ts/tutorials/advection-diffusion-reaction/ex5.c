@@ -42,13 +42,12 @@ F*/
 /* ------------------------------------------------------------------- */
 PetscErrorCode InitialConditions(DM da,Vec U)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j,xs,ys,xm,ym,Mx,My;
   Field          **u;
   PetscReal      hx,hy,x,y;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   hx = 2.5/(PetscReal)(Mx);
   hy = 2.5/(PetscReal)(My);
@@ -56,12 +55,12 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   /*
      Get pointers to actual vector data
   */
-  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecGetArray(da,U,&u));
 
   /*
      Get local grid boundaries
   */
-  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   /*
      Compute function over the locally owned part of the grid
@@ -80,7 +79,7 @@ PetscErrorCode InitialConditions(DM da,Vec U)
   /*
      Restore access to vector
   */
-  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArray(da,U,&u));
   PetscFunctionReturn(0);
 }
 
@@ -106,53 +105,53 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,65,65,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,0,"u");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,1,"v");CHKERRQ(ierr);
+  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,65,65,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da));
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
+  CHKERRQ(DMDASetFieldName(da,0,"u"));
+  CHKERRQ(DMDASetFieldName(da,1,"v"));
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create global vector from DMDA; this will be used to store the solution
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(da,&x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
-  ierr = TSARKIMEXSetFullyImplicit(ts,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = TSSetDM(ts,da);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,NULL,RHSFunction,&appctx);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(ts,NULL,NULL,RHSJacobian,&appctx);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
+  CHKERRQ(TSSetType(ts,TSARKIMEX));
+  CHKERRQ(TSARKIMEXSetFullyImplicit(ts,PETSC_TRUE));
+  CHKERRQ(TSSetDM(ts,da));
+  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
+  CHKERRQ(TSSetRHSFunction(ts,NULL,RHSFunction,&appctx));
+  CHKERRQ(TSSetRHSJacobian(ts,NULL,NULL,RHSJacobian,&appctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = InitialConditions(da,x);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
+  CHKERRQ(InitialConditions(da,x));
+  CHKERRQ(TSSetSolution(ts,x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetMaxTime(ts,2000.0);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,.0001);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  CHKERRQ(TSSetMaxTime(ts,2000.0));
+  CHKERRQ(TSSetTimeStep(ts,.0001));
+  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  CHKERRQ(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve ODE system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,x);CHKERRQ(ierr);
+  CHKERRQ(TSSolve(ts,x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(TSDestroy(&ts));
+  CHKERRQ(DMDestroy(&da));
 
   ierr = PetscFinalize();
   return ierr;

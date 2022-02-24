@@ -5,9 +5,8 @@ static char help[] = "Demonstrates PETSc error handlers.\n";
 
 int CreateError(int n)
 {
-  PetscErrorCode ierr;
   PetscCheckFalse(!n,PETSC_COMM_SELF,PETSC_ERR_USER,"Error Created");
-  ierr = CreateError(n-1);CHKERRQ(ierr);
+  CHKERRQ(CreateError(n-1));
   return 0;
 }
 
@@ -15,10 +14,10 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"Demonstrates PETSc Error Handlers\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error is a contrived error to test error handling\n");CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-  ierr = CreateError(5);CHKERRQ(ierr);
+  CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD,stdout,"Demonstrates PETSc Error Handlers\n"));
+  CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error is a contrived error to test error handling\n"));
+  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  CHKERRQ(CreateError(5));
   ierr = PetscFinalize();
   return ierr;
 }

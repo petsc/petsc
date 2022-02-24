@@ -21,10 +21,9 @@ typedef struct {
 static PetscErrorCode PetscPartitionerDestroy_Chaco(PetscPartitioner part)
 {
   PetscPartitioner_Chaco *p = (PetscPartitioner_Chaco *) part->data;
-  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(p);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(p));
   PetscFunctionReturn(0);
 }
 
@@ -37,13 +36,12 @@ static PetscErrorCode PetscPartitionerView_Chaco_ASCII(PetscPartitioner part, Pe
 static PetscErrorCode PetscPartitionerView_Chaco(PetscPartitioner part, PetscViewer viewer)
 {
   PetscBool      iascii;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
-  if (iascii) {ierr = PetscPartitionerView_Chaco_ASCII(part, viewer);CHKERRQ(ierr);}
+  CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
+  if (iascii) CHKERRQ(PetscPartitionerView_Chaco_ASCII(part, viewer));
   PetscFunctionReturn(0);
 }
 
@@ -97,18 +95,18 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)part,&comm);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)part,&comm));
   if (PetscDefined (USE_DEBUG)) {
     int ival,isum;
     PetscBool distributed;
 
     ival = (numVertices > 0);
-    ierr = MPI_Allreduce(&ival, &isum, 1, MPI_INT, MPI_SUM, comm);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Allreduce(&ival, &isum, 1, MPI_INT, MPI_SUM, comm));
     distributed = (isum > 1) ? PETSC_TRUE : PETSC_FALSE;
     PetscCheckFalse(distributed,comm, PETSC_ERR_SUP, "Chaco cannot partition a distributed graph");
   }
   if (!numVertices) { /* distributed case, return if not holding the graph */
-    ierr = ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
+    CHKERRQ(ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, partition));
     PetscFunctionReturn(0);
   }
   FREE_GRAPH = 0; /* Do not let Chaco free my memory */
@@ -121,7 +119,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
   mesh_dims[0] = nparts;
   mesh_dims[1] = 1;
   mesh_dims[2] = 1;
-  ierr = PetscMalloc1(nvtxs, &assignment);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(nvtxs, &assignment));
   /* Chaco outputs to stdout. We redirect this to a buffer. */
   /* TODO: check error codes for UNIX calls */
 #if defined(PETSC_HAVE_UNISTD_H)
@@ -134,7 +132,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
     dup2(fd_pipe[1], 1);
   }
 #endif
-  if (part->usevwgt) { ierr = PetscInfo(part,"PETSCPARTITIONERCHACO ignores vertex weights\n");CHKERRQ(ierr); }
+  if (part->usevwgt) CHKERRQ(PetscInfo(part,"PETSCPARTITIONERCHACO ignores vertex weights\n"));
   ierr = interface(nvtxs, (int*) start, (int*) adjacency, vwgts, ewgts, x, y, z, outassignname, outfilename,
                    assignment, architecture, ndims_tot, mesh_dims, goal, global_method, local_method, rqi_flag,
                    vmax, ndims, eigtol, seed);
@@ -159,20 +157,20 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
 #endif
   /* Convert to PetscSection+IS */
   for (v = 0; v < nvtxs; ++v) {
-    ierr = PetscSectionAddDof(partSection, assignment[v], 1);CHKERRQ(ierr);
+    CHKERRQ(PetscSectionAddDof(partSection, assignment[v], 1));
   }
-  ierr = PetscMalloc1(nvtxs, &points);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(nvtxs, &points));
   for (p = 0, i = 0; p < nparts; ++p) {
     for (v = 0; v < nvtxs; ++v) {
       if (assignment[v] == p) points[i++] = v;
     }
   }
   PetscCheckFalse(i != nvtxs,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
-  ierr = ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition));
   if (global_method == INERTIAL_METHOD) {
     /* manager.destroyCellCoordinates(nvtxs, &x, &y, &z); */
   }
-  ierr = PetscFree(assignment);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(assignment));
   for (i = 0; i < start[numVertices]; ++i) --adjacency[i];
   PetscFunctionReturn(0);
 #else
@@ -201,14 +199,13 @@ M*/
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Chaco(PetscPartitioner part)
 {
   PetscPartitioner_Chaco *p;
-  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  ierr       = PetscNewLog(part, &p);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(part, &p));
   part->data = p;
 
-  ierr = PetscPartitionerInitialize_Chaco(part);CHKERRQ(ierr);
-  ierr = PetscCitationsRegister(ChacoPartitionerCitation, &ChacoPartitionerCite);CHKERRQ(ierr);
+  CHKERRQ(PetscPartitionerInitialize_Chaco(part));
+  CHKERRQ(PetscCitationsRegister(ChacoPartitionerCitation, &ChacoPartitionerCite));
   PetscFunctionReturn(0);
 }

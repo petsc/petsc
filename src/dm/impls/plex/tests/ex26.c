@@ -32,21 +32,21 @@ int main(int argc, char **argv) {
   PetscErrorCode    ierr;
 
   ierr = PetscInitialize(&argc, &argv,NULL, help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FEM Layout Options", "ex26");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-i", "Filename to read", "ex26", ifilename, ifilename, sizeof(ifilename), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-o", "Filename to write", "ex26", ofilename, ofilename, sizeof(ofilename), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-order", "FEM polynomial order", "ex26", order, &order, NULL,1);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsString("-i", "Filename to read", "ex26", ifilename, ifilename, sizeof(ifilename), NULL));
+  CHKERRQ(PetscOptionsString("-o", "Filename to write", "ex26", ofilename, ofilename, sizeof(ofilename), NULL));
+  CHKERRQ(PetscOptionsBoundedInt("-order", "FEM polynomial order", "ex26", order, &order, NULL,1));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscCheckFalse((order > 2) || (order < 1),PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Unsupported polynomial order %D not in [1, 2]", order);
 
   /* Read the mesh from a file in any supported format */
-  ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, ifilename, NULL, PETSC_TRUE, &dm);CHKERRQ(ierr);
-  ierr = DMPlexDistributeSetDefault(dm, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &sdim);CHKERRQ(ierr);
+  CHKERRQ(DMPlexCreateFromFile(PETSC_COMM_WORLD, ifilename, NULL, PETSC_TRUE, &dm));
+  CHKERRQ(DMPlexDistributeSetDefault(dm, PETSC_FALSE));
+  CHKERRQ(DMSetFromOptions(dm));
+  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
+  CHKERRQ(DMGetDimension(dm, &sdim));
 
   /* Create the exodus result file */
   {
@@ -59,17 +59,17 @@ int main(int argc, char **argv) {
     /* enable exodus debugging information */
     ex_opts(EX_VERBOSE|EX_DEBUG);
     /* Create the exodus file */
-    ierr = PetscViewerExodusIIOpen(PETSC_COMM_WORLD,ofilename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerExodusIIOpen(PETSC_COMM_WORLD,ofilename,FILE_MODE_WRITE,&viewer));
     /* The long way would be */
     /*
-      ierr = PetscViewerCreate(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetType(viewer,PETSCVIEWEREXODUSII);CHKERRQ(ierr);
-      ierr = PetscViewerFileSetMode(viewer,FILE_MODE_APPEND);CHKERRQ(ierr);
-      ierr = PetscViewerFileSetName(viewer,ofilename);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerCreate(PETSC_COMM_WORLD,&viewer));
+      CHKERRQ(PetscViewerSetType(viewer,PETSCVIEWEREXODUSII));
+      CHKERRQ(PetscViewerFileSetMode(viewer,FILE_MODE_APPEND));
+      CHKERRQ(PetscViewerFileSetName(viewer,ofilename));
     */
     /* set the mesh order */
-    ierr = PetscViewerExodusIISetOrder(viewer,order);CHKERRQ(ierr);
-    ierr = PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerExodusIISetOrder(viewer,order));
+    CHKERRQ(PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD));
     /*
       Notice how the exodus file is actually NOT open at this point (exoid is -1)
       Since we are overwritting the file (mode is FILE_MODE_WRITE), we are going to have to
@@ -77,8 +77,8 @@ int main(int argc, char **argv) {
     */
 
     /* Save the geometry to the file, erasing all previous content */
-    ierr = DMView(dm,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(DMView(dm,viewer));
+    CHKERRQ(PetscViewerView(viewer,PETSC_VIEWER_STDOUT_WORLD));
     /*
       Note how the exodus file is now open
     */
@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
       break;
     default: SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "No layout for dimension %D", sdim);
     }
-    ierr = PetscViewerExodusIIGetId(viewer,&exoid);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerExodusIIGetId(viewer,&exoid));
     PetscStackCallStandard(ex_put_variable_param,exoid, EX_ELEM_BLOCK, numZonalVar);
     PetscStackCallStandard(ex_put_variable_names,exoid, EX_ELEM_BLOCK, numZonalVar, zonalVarName);
     PetscStackCallStandard(ex_put_variable_param,exoid, EX_NODAL, numNodalVar);
@@ -122,10 +122,10 @@ int main(int argc, char **argv) {
       An exodusII truth table specifies which fields are saved at which time step
       It speeds up I/O but reserving space for fieldsin the file ahead of time.
     */
-    ierr = PetscMalloc1(numZonalVar * numCS, &truthtable);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(numZonalVar * numCS, &truthtable));
     for (i = 0; i < numZonalVar * numCS; ++i) truthtable[i] = 1;
     PetscStackCallStandard(ex_put_truth_table,exoid, EX_ELEM_BLOCK, numCS, numZonalVar, truthtable);
-    ierr = PetscFree(truthtable);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(truthtable));
 
     /* Writing time step information in the file. Note that this is currently broken in the exodus library for netcdf4 (HDF5-based) files */
     for (step = 0; step < numstep; ++step) {
@@ -135,31 +135,31 @@ int main(int argc, char **argv) {
   }
 
   /* Create the main section containing all fields */
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &section);CHKERRQ(ierr);
-  ierr = PetscSectionSetNumFields(section, 3);CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldName(section, fieldU, "U");CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldName(section, fieldA, "Alpha");CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldName(section, fieldS, "Sigma");CHKERRQ(ierr);
-  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
-  ierr = PetscMalloc2(sdim+1, &pStartDepth, sdim+1, &pEndDepth);CHKERRQ(ierr);
-  for (d = 0; d <= sdim; ++d) {ierr = DMPlexGetDepthStratum(dm, d, &pStartDepth[d], &pEndDepth[d]);CHKERRQ(ierr);}
+  CHKERRQ(PetscSectionCreate(PetscObjectComm((PetscObject) dm), &section));
+  CHKERRQ(PetscSectionSetNumFields(section, 3));
+  CHKERRQ(PetscSectionSetFieldName(section, fieldU, "U"));
+  CHKERRQ(PetscSectionSetFieldName(section, fieldA, "Alpha"));
+  CHKERRQ(PetscSectionSetFieldName(section, fieldS, "Sigma"));
+  CHKERRQ(DMPlexGetChart(dm, &pStart, &pEnd));
+  CHKERRQ(PetscSectionSetChart(section, pStart, pEnd));
+  CHKERRQ(PetscMalloc2(sdim+1, &pStartDepth, sdim+1, &pEndDepth));
+  for (d = 0; d <= sdim; ++d) CHKERRQ(DMPlexGetDepthStratum(dm, d, &pStartDepth[d], &pEndDepth[d]));
   /* Vector field U, Scalar field Alpha, Tensor field Sigma */
-  ierr = PetscSectionSetFieldComponents(section, fieldU, sdim);CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldComponents(section, fieldA, 1);CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldComponents(section, fieldS, sdim*(sdim+1)/2);CHKERRQ(ierr);
+  CHKERRQ(PetscSectionSetFieldComponents(section, fieldU, sdim));
+  CHKERRQ(PetscSectionSetFieldComponents(section, fieldA, 1));
+  CHKERRQ(PetscSectionSetFieldComponents(section, fieldS, sdim*(sdim+1)/2));
 
   /* Going through cell sets then cells, and setting up storage for the sections */
-  ierr = DMGetLabelSize(dm, "Cell Sets", &numCS);CHKERRQ(ierr);
-  ierr = DMGetLabelIdIS(dm, "Cell Sets", &csIS);CHKERRQ(ierr);
-  if (csIS) {ierr = ISGetIndices(csIS, &csID);CHKERRQ(ierr);}
+  CHKERRQ(DMGetLabelSize(dm, "Cell Sets", &numCS));
+  CHKERRQ(DMGetLabelIdIS(dm, "Cell Sets", &csIS));
+  if (csIS) CHKERRQ(ISGetIndices(csIS, &csID));
   for (set = 0; set < numCS; set++) {
     IS                cellIS;
     const PetscInt   *cellID;
     PetscInt          numCells, cell, closureSize, *closureA = NULL;
 
-    ierr = DMGetStratumSize(dm, "Cell Sets", csID[set], &numCells);CHKERRQ(ierr);
-    ierr = DMGetStratumIS(dm, "Cell Sets", csID[set], &cellIS);CHKERRQ(ierr);
+    CHKERRQ(DMGetStratumSize(dm, "Cell Sets", csID[set], &numCells));
+    CHKERRQ(DMGetStratumIS(dm, "Cell Sets", csID[set], &cellIS));
     if (numCells > 0) {
       /* dof layout ordered by increasing height in the DAG: cell, face, edge, vertex */
       PetscInt          dofUP1Tri[]  = {2, 0, 0};
@@ -190,8 +190,8 @@ int main(int argc, char **argv) {
 
       /* Identify cell type based on closure size only. This works for Tri/Tet/Quad/Hex meshes
          It will not be enough to identify more exotic elements like pyramid or prisms...  */
-      ierr = ISGetIndices(cellIS, &cellID);CHKERRQ(ierr);
-      ierr = DMPlexGetTransitiveClosure(dm, cellID[0], PETSC_TRUE, &closureSize, &closureA);CHKERRQ(ierr);
+      CHKERRQ(ISGetIndices(cellIS, &cellID));
+      CHKERRQ(DMPlexGetTransitiveClosure(dm, cellID[0], PETSC_TRUE, &closureSize, &closureA));
       switch (closureSize) {
         case 7: /* Tri */
         if (order == 1) {
@@ -231,35 +231,35 @@ int main(int argc, char **argv) {
         break;
         default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Unknown element with closure size %D", closureSize);
       }
-      ierr = DMPlexRestoreTransitiveClosure(dm, cellID[0], PETSC_TRUE, &closureSize, &closureA);CHKERRQ(ierr);
+      CHKERRQ(DMPlexRestoreTransitiveClosure(dm, cellID[0], PETSC_TRUE, &closureSize, &closureA));
 
       for (cell = 0; cell < numCells; cell++) {
         PetscInt *closure = NULL;
 
-        ierr = DMPlexGetTransitiveClosure(dm, cellID[cell], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+        CHKERRQ(DMPlexGetTransitiveClosure(dm, cellID[cell], PETSC_TRUE, &closureSize, &closure));
         for (p = 0; p < closureSize; ++p) {
           /* Find depth of p */
           for (d = 0; d <= sdim; ++d) {
             if ((closure[2*p] >= pStartDepth[d]) && (closure[2*p] < pEndDepth[d])) {
-              ierr = PetscSectionSetDof(section, closure[2*p], dofU[d]+dofA[d]+dofS[d]);CHKERRQ(ierr);
-              ierr = PetscSectionSetFieldDof(section, closure[2*p], fieldU, dofU[d]);CHKERRQ(ierr);
-              ierr = PetscSectionSetFieldDof(section, closure[2*p], fieldA, dofA[d]);CHKERRQ(ierr);
-              ierr = PetscSectionSetFieldDof(section, closure[2*p], fieldS, dofS[d]);CHKERRQ(ierr);
+              CHKERRQ(PetscSectionSetDof(section, closure[2*p], dofU[d]+dofA[d]+dofS[d]));
+              CHKERRQ(PetscSectionSetFieldDof(section, closure[2*p], fieldU, dofU[d]));
+              CHKERRQ(PetscSectionSetFieldDof(section, closure[2*p], fieldA, dofA[d]));
+              CHKERRQ(PetscSectionSetFieldDof(section, closure[2*p], fieldS, dofS[d]));
             }
           }
         }
-        ierr = DMPlexRestoreTransitiveClosure(dm, cellID[cell], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+        CHKERRQ(DMPlexRestoreTransitiveClosure(dm, cellID[cell], PETSC_TRUE, &closureSize, &closure));
       }
-      ierr = ISRestoreIndices(cellIS, &cellID);CHKERRQ(ierr);
-      ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
+      CHKERRQ(ISRestoreIndices(cellIS, &cellID));
+      CHKERRQ(ISDestroy(&cellIS));
     }
   }
-  if (csIS) {ierr = ISRestoreIndices(csIS, &csID);CHKERRQ(ierr);}
-  ierr = ISDestroy(&csIS);CHKERRQ(ierr);
-  ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
-  ierr = DMSetLocalSection(dm, section);CHKERRQ(ierr);
-  ierr = PetscObjectViewFromOptions((PetscObject) section, NULL, "-dm_section_view");CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+  if (csIS) CHKERRQ(ISRestoreIndices(csIS, &csID));
+  CHKERRQ(ISDestroy(&csIS));
+  CHKERRQ(PetscSectionSetUp(section));
+  CHKERRQ(DMSetLocalSection(dm, section));
+  CHKERRQ(PetscObjectViewFromOptions((PetscObject) section, NULL, "-dm_section_view"));
+  CHKERRQ(PetscSectionDestroy(&section));
 
   {
     DM               pdm;
@@ -267,49 +267,49 @@ int main(int argc, char **argv) {
     PetscInt         ovlp = 0;
     PetscPartitioner part;
 
-    ierr = DMSetUseNatural(dm,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = DMPlexGetPartitioner(dm,&part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(dm,ovlp,&migrationSF,&pdm);CHKERRQ(ierr);
+    CHKERRQ(DMSetUseNatural(dm,PETSC_TRUE));
+    CHKERRQ(DMPlexGetPartitioner(dm,&part));
+    CHKERRQ(PetscPartitionerSetFromOptions(part));
+    CHKERRQ(DMPlexDistribute(dm,ovlp,&migrationSF,&pdm));
     if (pdm) {
-      ierr = DMPlexSetMigrationSF(pdm,migrationSF);CHKERRQ(ierr);
-      ierr = PetscSFDestroy(&migrationSF);CHKERRQ(ierr);
-      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      CHKERRQ(DMPlexSetMigrationSF(pdm,migrationSF));
+      CHKERRQ(PetscSFDestroy(&migrationSF));
+      CHKERRQ(DMDestroy(&dm));
       dm = pdm;
-      ierr = DMViewFromOptions(dm,NULL,"-dm_view");CHKERRQ(ierr);
+      CHKERRQ(DMViewFromOptions(dm,NULL,"-dm_view"));
     }
   }
 
   /* Get DM and IS for each field of dm */
-  ierr = DMCreateSubDM(dm, 1, &fieldU, &isU,  &dmU);CHKERRQ(ierr);
-  ierr = DMCreateSubDM(dm, 1, &fieldA, &isA,  &dmA);CHKERRQ(ierr);
-  ierr = DMCreateSubDM(dm, 1, &fieldS, &isS,  &dmS);CHKERRQ(ierr);
-  ierr = DMCreateSubDM(dm, 2, fieldUA, &isUA, &dmUA);CHKERRQ(ierr);
+  CHKERRQ(DMCreateSubDM(dm, 1, &fieldU, &isU,  &dmU));
+  CHKERRQ(DMCreateSubDM(dm, 1, &fieldA, &isA,  &dmA));
+  CHKERRQ(DMCreateSubDM(dm, 1, &fieldS, &isS,  &dmS));
+  CHKERRQ(DMCreateSubDM(dm, 2, fieldUA, &isUA, &dmUA));
 
-  ierr = PetscMalloc1(2,&dmList);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(2,&dmList));
   dmList[0] = dmU;
   dmList[1] = dmA;
   /* We temporarily disable dmU->useNatural to test that we can reconstruct the
      NaturaltoGlobal SF from any of the dm in dms
   */
   dmU->useNatural = PETSC_FALSE;
-  ierr = DMCreateSuperDM(dmList,2,NULL,&dmUA2);CHKERRQ(ierr);
+  CHKERRQ(DMCreateSuperDM(dmList,2,NULL,&dmUA2));
   dmU->useNatural = PETSC_TRUE;
-  ierr = PetscFree(dmList);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(dmList));
 
-  ierr = DMGetGlobalVector(dm,   &X);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dmU,  &U);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dmA,  &A);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dmS,  &S);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dmUA, &UA);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dmUA2, &UA2);CHKERRQ(ierr);
+  CHKERRQ(DMGetGlobalVector(dm,   &X));
+  CHKERRQ(DMGetGlobalVector(dmU,  &U));
+  CHKERRQ(DMGetGlobalVector(dmA,  &A));
+  CHKERRQ(DMGetGlobalVector(dmS,  &S));
+  CHKERRQ(DMGetGlobalVector(dmUA, &UA));
+  CHKERRQ(DMGetGlobalVector(dmUA2, &UA2));
 
-  ierr = PetscObjectSetName((PetscObject) U,  "U");CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) A,  "Alpha");CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) S,  "Sigma");CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) UA, "UAlpha");CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) UA2, "UAlpha2");CHKERRQ(ierr);
-  ierr = VecSet(X, -111.);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetName((PetscObject) U,  "U"));
+  CHKERRQ(PetscObjectSetName((PetscObject) A,  "Alpha"));
+  CHKERRQ(PetscObjectSetName((PetscObject) S,  "Sigma"));
+  CHKERRQ(PetscObjectSetName((PetscObject) UA, "UAlpha"));
+  CHKERRQ(PetscObjectSetName((PetscObject) UA2, "UAlpha2"));
+  CHKERRQ(VecSet(X, -111.));
 
   /* Setting u to [x,y,z]  and alpha to x^2+y^2+z^2 by writing in UAlpha then restricting to U and Alpha */
   {
@@ -320,21 +320,21 @@ int main(int argc, char **argv) {
     PetscScalar *cval, *xyz;
     PetscInt     clSize, i, j;
 
-    ierr = DMGetLocalSection(dmUA, &sectionUA);CHKERRQ(ierr);
-    ierr = DMGetLocalVector(dmUA, &UALoc);CHKERRQ(ierr);
-    ierr = VecGetArray(UALoc, &cval);CHKERRQ(ierr);
-    ierr = DMGetCoordinateSection(dmUA, &coordSection);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(dmUA, &coord);CHKERRQ(ierr);
-    ierr = DMPlexGetChart(dmUA, &pStart, &pEnd);CHKERRQ(ierr);
+    CHKERRQ(DMGetLocalSection(dmUA, &sectionUA));
+    CHKERRQ(DMGetLocalVector(dmUA, &UALoc));
+    CHKERRQ(VecGetArray(UALoc, &cval));
+    CHKERRQ(DMGetCoordinateSection(dmUA, &coordSection));
+    CHKERRQ(DMGetCoordinatesLocal(dmUA, &coord));
+    CHKERRQ(DMPlexGetChart(dmUA, &pStart, &pEnd));
 
     for (p = pStart; p < pEnd; ++p) {
       PetscInt dofUA, offUA;
 
-      ierr = PetscSectionGetDof(sectionUA, p, &dofUA);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionGetDof(sectionUA, p, &dofUA));
       if (dofUA > 0) {
         xyz=NULL;
-        ierr = PetscSectionGetOffset(sectionUA, p, &offUA);CHKERRQ(ierr);
-        ierr = DMPlexVecGetClosure(dmUA, coordSection, coord, p, &clSize, &xyz);CHKERRQ(ierr);
+        CHKERRQ(PetscSectionGetOffset(sectionUA, p, &offUA));
+        CHKERRQ(DMPlexVecGetClosure(dmUA, coordSection, coord, p, &clSize, &xyz));
         cval[offUA+sdim] = 0.;
         for (i = 0; i < sdim; ++i) {
           cval[offUA+i] = 0;
@@ -344,25 +344,25 @@ int main(int argc, char **argv) {
           cval[offUA+i] = cval[offUA+i] * sdim / clSize;
           cval[offUA+sdim] += PetscSqr(cval[offUA+i]);
         }
-        ierr = DMPlexVecRestoreClosure(dmUA, coordSection, coord, p, &clSize, &xyz);CHKERRQ(ierr);
+        CHKERRQ(DMPlexVecRestoreClosure(dmUA, coordSection, coord, p, &clSize, &xyz));
       }
     }
-    ierr = VecRestoreArray(UALoc, &cval);CHKERRQ(ierr);
-    ierr = DMLocalToGlobalBegin(dmUA, UALoc, INSERT_VALUES, UA);CHKERRQ(ierr);
-    ierr = DMLocalToGlobalEnd(dmUA, UALoc, INSERT_VALUES, UA);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(dmUA, &UALoc);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(UALoc, &cval));
+    CHKERRQ(DMLocalToGlobalBegin(dmUA, UALoc, INSERT_VALUES, UA));
+    CHKERRQ(DMLocalToGlobalEnd(dmUA, UALoc, INSERT_VALUES, UA));
+    CHKERRQ(DMRestoreLocalVector(dmUA, &UALoc));
 
     /* Update X */
-    ierr = VecISCopy(X, isUA, SCATTER_FORWARD, UA);CHKERRQ(ierr);
-    ierr = VecViewFromOptions(UA, NULL, "-ua_vec_view");CHKERRQ(ierr);
+    CHKERRQ(VecISCopy(X, isUA, SCATTER_FORWARD, UA));
+    CHKERRQ(VecViewFromOptions(UA, NULL, "-ua_vec_view"));
 
     /* Restrict to U and Alpha */
-    ierr = VecISCopy(X, isU, SCATTER_REVERSE, U);CHKERRQ(ierr);
-    ierr = VecISCopy(X, isA, SCATTER_REVERSE, A);CHKERRQ(ierr);
+    CHKERRQ(VecISCopy(X, isU, SCATTER_REVERSE, U));
+    CHKERRQ(VecISCopy(X, isA, SCATTER_REVERSE, A));
 
     /* restrict to UA2 */
-    ierr = VecISCopy(X, isUA, SCATTER_REVERSE, UA2);CHKERRQ(ierr);
-    ierr = VecViewFromOptions(UA2, NULL, "-ua2_vec_view");CHKERRQ(ierr);
+    CHKERRQ(VecISCopy(X, isUA, SCATTER_REVERSE, UA2));
+    CHKERRQ(VecViewFromOptions(UA2, NULL, "-ua2_vec_view"));
   }
 
   {
@@ -373,11 +373,11 @@ int main(int argc, char **argv) {
     PetscReal    time = 1.234;
 
     /* Writing nodal variables to ExodusII file */
-    ierr = DMSetOutputSequenceNumber(dmU,0,time);CHKERRQ(ierr);
-    ierr = DMSetOutputSequenceNumber(dmA,0,time);CHKERRQ(ierr);
+    CHKERRQ(DMSetOutputSequenceNumber(dmU,0,time));
+    CHKERRQ(DMSetOutputSequenceNumber(dmA,0,time));
 
-    ierr = VecView(U, viewer);CHKERRQ(ierr);
-    ierr = VecView(A, viewer);CHKERRQ(ierr);
+    CHKERRQ(VecView(U, viewer));
+    CHKERRQ(VecView(A, viewer));
 
     /* Saving U and Alpha in one shot.
        For this, we need to cheat and change the Vec's name
@@ -385,43 +385,43 @@ int main(int argc, char **argv) {
        so that there is no real values in doing this
     */
 
-    ierr = DMSetOutputSequenceNumber(dmUA,1,time);CHKERRQ(ierr);
-    ierr = DMGetGlobalVector(dmUA, &tmpVec);CHKERRQ(ierr);
-    ierr = VecCopy(UA, tmpVec);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) tmpVec, "U");CHKERRQ(ierr);
-    ierr = VecView(tmpVec, viewer);CHKERRQ(ierr);
+    CHKERRQ(DMSetOutputSequenceNumber(dmUA,1,time));
+    CHKERRQ(DMGetGlobalVector(dmUA, &tmpVec));
+    CHKERRQ(VecCopy(UA, tmpVec));
+    CHKERRQ(PetscObjectSetName((PetscObject) tmpVec, "U"));
+    CHKERRQ(VecView(tmpVec, viewer));
     /* Reading nodal variables in Exodus file */
-    ierr = VecSet(tmpVec, -1000.0);CHKERRQ(ierr);
-    ierr = VecLoad(tmpVec, viewer);CHKERRQ(ierr);
-    ierr = VecAXPY(UA, -1.0, tmpVec);CHKERRQ(ierr);
-    ierr = VecNorm(UA, NORM_INFINITY, &norm);CHKERRQ(ierr);
+    CHKERRQ(VecSet(tmpVec, -1000.0));
+    CHKERRQ(VecLoad(tmpVec, viewer));
+    CHKERRQ(VecAXPY(UA, -1.0, tmpVec));
+    CHKERRQ(VecNorm(UA, NORM_INFINITY, &norm));
     PetscCheckFalse(norm > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "UAlpha ||Vin - Vout|| = %g", (double) norm);
-    ierr = DMRestoreGlobalVector(dmUA, &tmpVec);CHKERRQ(ierr);
+    CHKERRQ(DMRestoreGlobalVector(dmUA, &tmpVec));
 
     /* same thing with the UA2 Vec obtained from the superDM */
-    ierr = DMGetGlobalVector(dmUA2, &tmpVec);CHKERRQ(ierr);
-    ierr = VecCopy(UA2, tmpVec);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) tmpVec, "U");CHKERRQ(ierr);
-    ierr = DMSetOutputSequenceNumber(dmUA2,2,time);CHKERRQ(ierr);
-    ierr = VecView(tmpVec, viewer);CHKERRQ(ierr);
+    CHKERRQ(DMGetGlobalVector(dmUA2, &tmpVec));
+    CHKERRQ(VecCopy(UA2, tmpVec));
+    CHKERRQ(PetscObjectSetName((PetscObject) tmpVec, "U"));
+    CHKERRQ(DMSetOutputSequenceNumber(dmUA2,2,time));
+    CHKERRQ(VecView(tmpVec, viewer));
     /* Reading nodal variables in Exodus file */
-    ierr = VecSet(tmpVec, -1000.0);CHKERRQ(ierr);
-    ierr = VecLoad(tmpVec,viewer);CHKERRQ(ierr);
-    ierr = VecAXPY(UA2, -1.0, tmpVec);CHKERRQ(ierr);
-    ierr = VecNorm(UA2, NORM_INFINITY, &norm);CHKERRQ(ierr);
+    CHKERRQ(VecSet(tmpVec, -1000.0));
+    CHKERRQ(VecLoad(tmpVec,viewer));
+    CHKERRQ(VecAXPY(UA2, -1.0, tmpVec));
+    CHKERRQ(VecNorm(UA2, NORM_INFINITY, &norm));
     PetscCheckFalse(norm > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "UAlpha2 ||Vin - Vout|| = %g", (double) norm);
-    ierr = DMRestoreGlobalVector(dmUA2, &tmpVec);CHKERRQ(ierr);
+    CHKERRQ(DMRestoreGlobalVector(dmUA2, &tmpVec));
 
     /* Building and saving Sigma
        We set sigma_0 = rank (to see partitioning)
               sigma_1 = cell set ID
               sigma_2 = x_coordinate of the cell center of mass
     */
-    ierr = DMGetCoordinateSection(dmS, &coordSection);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(dmS, &coord);CHKERRQ(ierr);
-    ierr = DMGetLabelIdIS(dmS, "Cell Sets", &csIS);CHKERRQ(ierr);
-    ierr = DMGetLabelSize(dmS, "Cell Sets", &numCS);CHKERRQ(ierr);
-    ierr = ISGetIndices(csIS, &csID);CHKERRQ(ierr);
+    CHKERRQ(DMGetCoordinateSection(dmS, &coordSection));
+    CHKERRQ(DMGetCoordinatesLocal(dmS, &coord));
+    CHKERRQ(DMGetLabelIdIS(dmS, "Cell Sets", &csIS));
+    CHKERRQ(DMGetLabelSize(dmS, "Cell Sets", &numCS));
+    CHKERRQ(ISGetIndices(csIS, &csID));
     for (set = 0; set < numCS; ++set) {
       /* We know that all cells in a cell set have the same type, so we can dimension cval and xyz once for each cell set */
       IS              cellIS;
@@ -430,57 +430,57 @@ int main(int argc, char **argv) {
       PetscScalar    *cval = NULL, *xyz  = NULL;
       PetscInt        clSize, cdimCoord, c;
 
-      ierr = DMGetStratumIS(dmS, "Cell Sets", csID[set], &cellIS);CHKERRQ(ierr);
-      ierr = ISGetIndices(cellIS, &cellID);CHKERRQ(ierr);
-      ierr = ISGetSize(cellIS, &numCells);CHKERRQ(ierr);
+      CHKERRQ(DMGetStratumIS(dmS, "Cell Sets", csID[set], &cellIS));
+      CHKERRQ(ISGetIndices(cellIS, &cellID));
+      CHKERRQ(ISGetSize(cellIS, &numCells));
       for (cell = 0; cell < numCells; cell++) {
-        ierr = DMPlexVecGetClosure(dmS, NULL, S, cellID[cell], &clSize, &cval);CHKERRQ(ierr);
-        ierr = DMPlexVecGetClosure(dmS, coordSection, coord, cellID[cell], &cdimCoord, &xyz);CHKERRQ(ierr);
+        CHKERRQ(DMPlexVecGetClosure(dmS, NULL, S, cellID[cell], &clSize, &cval));
+        CHKERRQ(DMPlexVecGetClosure(dmS, coordSection, coord, cellID[cell], &cdimCoord, &xyz));
         cval[0] = rank;
         cval[1] = csID[set];
         cval[2] = 0.;
         for (c = 0; c < cdimCoord/sdim; c++) cval[2] += xyz[c*sdim];
         cval[2] = cval[2] * sdim / cdimCoord;
-        ierr = DMPlexVecSetClosure(dmS, NULL, S, cellID[cell], cval, INSERT_ALL_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMPlexVecSetClosure(dmS, NULL, S, cellID[cell], cval, INSERT_ALL_VALUES));
       }
-      ierr = DMPlexVecRestoreClosure(dmS, NULL, S, cellID[0], &clSize, &cval);CHKERRQ(ierr);
-      ierr = DMPlexVecRestoreClosure(dmS, coordSection, coord, cellID[0], NULL, &xyz);CHKERRQ(ierr);
-      ierr = ISRestoreIndices(cellIS, &cellID);CHKERRQ(ierr);
-      ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
+      CHKERRQ(DMPlexVecRestoreClosure(dmS, NULL, S, cellID[0], &clSize, &cval));
+      CHKERRQ(DMPlexVecRestoreClosure(dmS, coordSection, coord, cellID[0], NULL, &xyz));
+      CHKERRQ(ISRestoreIndices(cellIS, &cellID));
+      CHKERRQ(ISDestroy(&cellIS));
     }
-    ierr = ISRestoreIndices(csIS, &csID);CHKERRQ(ierr);
-    ierr = ISDestroy(&csIS);CHKERRQ(ierr);
-    ierr = VecViewFromOptions(S, NULL, "-s_vec_view");CHKERRQ(ierr);
+    CHKERRQ(ISRestoreIndices(csIS, &csID));
+    CHKERRQ(ISDestroy(&csIS));
+    CHKERRQ(VecViewFromOptions(S, NULL, "-s_vec_view"));
 
     /* Writing zonal variables in Exodus file */
-    ierr = DMSetOutputSequenceNumber(dmS,0,time);CHKERRQ(ierr);
-    ierr = VecView(S,viewer);CHKERRQ(ierr);
+    CHKERRQ(DMSetOutputSequenceNumber(dmS,0,time));
+    CHKERRQ(VecView(S,viewer));
 
     /* Reading zonal variables in Exodus file */
-    ierr = DMGetGlobalVector(dmS, &tmpVec);CHKERRQ(ierr);
-    ierr = VecSet(tmpVec, -1000.0);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) tmpVec, "Sigma");CHKERRQ(ierr);
-    ierr = VecLoad(tmpVec,viewer);CHKERRQ(ierr);
-    ierr = VecAXPY(S, -1.0, tmpVec);CHKERRQ(ierr);
-    ierr = VecNorm(S, NORM_INFINITY, &norm);CHKERRQ(ierr);
+    CHKERRQ(DMGetGlobalVector(dmS, &tmpVec));
+    CHKERRQ(VecSet(tmpVec, -1000.0));
+    CHKERRQ(PetscObjectSetName((PetscObject) tmpVec, "Sigma"));
+    CHKERRQ(VecLoad(tmpVec,viewer));
+    CHKERRQ(VecAXPY(S, -1.0, tmpVec));
+    CHKERRQ(VecNorm(S, NORM_INFINITY, &norm));
     PetscCheckFalse(norm > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Sigma ||Vin - Vout|| = %g", (double) norm);
-    ierr = DMRestoreGlobalVector(dmS, &tmpVec);CHKERRQ(ierr);
+    CHKERRQ(DMRestoreGlobalVector(dmS, &tmpVec));
   }
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDestroy(&viewer));
 
-  ierr = DMRestoreGlobalVector(dmUA2, &UA2);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dmUA, &UA);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dmS,  &S);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dmA,  &A);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dmU,  &U);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm,   &X);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmU);CHKERRQ(ierr); ierr = ISDestroy(&isU);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmA);CHKERRQ(ierr); ierr = ISDestroy(&isA);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmS);CHKERRQ(ierr); ierr = ISDestroy(&isS);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmUA);CHKERRQ(ierr);ierr = ISDestroy(&isUA);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmUA2);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFree2(pStartDepth, pEndDepth);CHKERRQ(ierr);
+  CHKERRQ(DMRestoreGlobalVector(dmUA2, &UA2));
+  CHKERRQ(DMRestoreGlobalVector(dmUA, &UA));
+  CHKERRQ(DMRestoreGlobalVector(dmS,  &S));
+  CHKERRQ(DMRestoreGlobalVector(dmA,  &A));
+  CHKERRQ(DMRestoreGlobalVector(dmU,  &U));
+  CHKERRQ(DMRestoreGlobalVector(dm,   &X));
+  CHKERRQ(DMDestroy(&dmU)); CHKERRQ(ISDestroy(&isU));
+  CHKERRQ(DMDestroy(&dmA)); CHKERRQ(ISDestroy(&isA));
+  CHKERRQ(DMDestroy(&dmS)); CHKERRQ(ISDestroy(&isS));
+  CHKERRQ(DMDestroy(&dmUA));CHKERRQ(ISDestroy(&isUA));
+  CHKERRQ(DMDestroy(&dmUA2));
+  CHKERRQ(DMDestroy(&dm));
+  CHKERRQ(PetscFree2(pStartDepth, pEndDepth));
   ierr = PetscFinalize();
   return ierr;
 }

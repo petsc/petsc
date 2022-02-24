@@ -23,73 +23,72 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /* create vectors X,Y and F and set values in it*/
-  ierr = VecCreate(PETSC_COMM_SELF,&X);CHKERRQ(ierr);
-  ierr = VecSetSizes(X,N,N);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(X);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)F,"F");CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_SELF,&X));
+  CHKERRQ(VecSetSizes(X,N,N));
+  CHKERRQ(VecSetFromOptions(X));
+  CHKERRQ(VecDuplicate(X,&Y));
+  CHKERRQ(VecDuplicate(X,&F));
+  CHKERRQ(PetscObjectSetName((PetscObject)F,"F"));
   for (i=0; i < N; i++) {
     value = i;
-    ierr  = VecSetValues(X,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(X,1,&i,&value,INSERT_VALUES));
     value = 100 + i;
-    ierr  = VecSetValues(Y,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(Y,1,&i,&value,INSERT_VALUES));
   }
-  ierr = VecSet(F,zero);CHKERRQ(ierr);
+  CHKERRQ(VecSet(F,zero));
 
   /* Create subvectors X1,X2,Y1,Y2,F1,F2 */
-  ierr = VecCreate(PETSC_COMM_SELF,&X1);CHKERRQ(ierr);
-  ierr = VecSetSizes(X1,N/2,N/2);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(X1);CHKERRQ(ierr);
-  ierr = VecDuplicate(X1,&X2);CHKERRQ(ierr);
-  ierr = VecDuplicate(X1,&Y1);CHKERRQ(ierr);
-  ierr = VecDuplicate(X1,&Y2);CHKERRQ(ierr);
-  ierr = VecDuplicate(X1,&F1);CHKERRQ(ierr);
-  ierr = VecDuplicate(X1,&F2);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_SELF,&X1));
+  CHKERRQ(VecSetSizes(X1,N/2,N/2));
+  CHKERRQ(VecSetFromOptions(X1));
+  CHKERRQ(VecDuplicate(X1,&X2));
+  CHKERRQ(VecDuplicate(X1,&Y1));
+  CHKERRQ(VecDuplicate(X1,&Y2));
+  CHKERRQ(VecDuplicate(X1,&F1));
+  CHKERRQ(VecDuplicate(X1,&F2));
 
   /* Get array pointers for X,Y,F */
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Y,&y);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(X,&x));
+  CHKERRQ(VecGetArrayRead(Y,&y));
+  CHKERRQ(VecGetArray(F,&f));
   /* Share X,Y,F array pointers with subvectors */
-  ierr = VecPlaceArray(X1,x);CHKERRQ(ierr);
-  ierr = VecPlaceArray(X2,x+N/2);CHKERRQ(ierr);
-  ierr = VecPlaceArray(Y1,y);CHKERRQ(ierr);
-  ierr = VecPlaceArray(Y2,y+N/2);CHKERRQ(ierr);
-  ierr = VecPlaceArray(F1,f);CHKERRQ(ierr);
-  ierr = VecPlaceArray(F2,f+N/2);CHKERRQ(ierr);
+  CHKERRQ(VecPlaceArray(X1,x));
+  CHKERRQ(VecPlaceArray(X2,x+N/2));
+  CHKERRQ(VecPlaceArray(Y1,y));
+  CHKERRQ(VecPlaceArray(Y2,y+N/2));
+  CHKERRQ(VecPlaceArray(F1,f));
+  CHKERRQ(VecPlaceArray(F2,f+N/2));
 
   /* Do subvector addition */
-  ierr = VecWAXPY(F1,1.0,X1,Y1);CHKERRQ(ierr);
-  ierr = VecWAXPY(F2,1.0,X2,Y2);CHKERRQ(ierr);
+  CHKERRQ(VecWAXPY(F1,1.0,X1,Y1));
+  CHKERRQ(VecWAXPY(F2,1.0,X2,Y2));
 
   /* Reset subvectors */
-  ierr = VecResetArray(X1);CHKERRQ(ierr);
-  ierr = VecResetArray(X2);CHKERRQ(ierr);
-  ierr = VecResetArray(Y1);CHKERRQ(ierr);
-  ierr = VecResetArray(Y2);CHKERRQ(ierr);
-  ierr = VecResetArray(F1);CHKERRQ(ierr);
-  ierr = VecResetArray(F2);CHKERRQ(ierr);
+  CHKERRQ(VecResetArray(X1));
+  CHKERRQ(VecResetArray(X2));
+  CHKERRQ(VecResetArray(Y1));
+  CHKERRQ(VecResetArray(Y2));
+  CHKERRQ(VecResetArray(F1));
+  CHKERRQ(VecResetArray(F2));
 
   /* Restore X,Y,and F */
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Y,&y);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(X,&x));
+  CHKERRQ(VecRestoreArrayRead(Y,&y));
+  CHKERRQ(VecRestoreArray(F,&f));
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"F = X + Y\n");CHKERRQ(ierr);
-  ierr = VecView(F,0);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"F = X + Y\n"));
+  CHKERRQ(VecView(F,0));
   /* Destroy vectors */
-  ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&Y);CHKERRQ(ierr);
-  ierr = VecDestroy(&F);CHKERRQ(ierr);
-  ierr = VecDestroy(&X1);CHKERRQ(ierr);
-  ierr = VecDestroy(&Y1);CHKERRQ(ierr);
-  ierr = VecDestroy(&F1);CHKERRQ(ierr);
-  ierr = VecDestroy(&X2);CHKERRQ(ierr);
-  ierr = VecDestroy(&Y2);CHKERRQ(ierr);
-  ierr = VecDestroy(&F2);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&X));
+  CHKERRQ(VecDestroy(&Y));
+  CHKERRQ(VecDestroy(&F));
+  CHKERRQ(VecDestroy(&X1));
+  CHKERRQ(VecDestroy(&Y1));
+  CHKERRQ(VecDestroy(&F1));
+  CHKERRQ(VecDestroy(&X2));
+  CHKERRQ(VecDestroy(&Y2));
+  CHKERRQ(VecDestroy(&F2));
 
   ierr = PetscFinalize();
   return ierr;
 }
-

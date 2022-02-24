@@ -6,12 +6,11 @@ PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext dctx)
 {
   static constexpr auto     contextHip = CUPMContextHip();
   PetscDeviceContext_(HIP) *dci;
-  PetscErrorCode            ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(&dci);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(&dci));
   dctx->data = static_cast<decltype(dctx->data)>(dci);
-  ierr = PetscMemcpy(dctx->ops,&contextHip.ops,sizeof(contextHip.ops));CHKERRQ(ierr);
+  CHKERRQ(PetscMemcpy(dctx->ops,&contextHip.ops,sizeof(contextHip.ops)));
   PetscFunctionReturn(0);
 }
 
@@ -27,23 +26,21 @@ PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext dctx)
 PetscErrorCode PetscHIPBLASGetHandle(hipblasHandle_t *handle)
 {
   PetscDeviceContext dctx;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(handle,1);
-  ierr = PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx,PETSC_DEVICE_HIP);CHKERRQ(ierr);
-  ierr = PetscDeviceContextGetBLASHandle_Internal(dctx,handle);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx,PETSC_DEVICE_HIP));
+  CHKERRQ(PetscDeviceContextGetBLASHandle_Internal(dctx,handle));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscHIPSOLVERGetHandle(hipsolverHandle_t *handle)
 {
   PetscDeviceContext dctx;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(handle,1);
-  ierr = PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx,PETSC_DEVICE_HIP);CHKERRQ(ierr);
-  ierr = PetscDeviceContextGetSOLVERHandle_Internal(dctx,handle);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx,PETSC_DEVICE_HIP));
+  CHKERRQ(PetscDeviceContextGetSOLVERHandle_Internal(dctx,handle));
   PetscFunctionReturn(0);
 }

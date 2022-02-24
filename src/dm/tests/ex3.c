@@ -19,54 +19,54 @@ int main(int argc,char **argv)
   PetscBool      flg = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-time",&time_steps,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-time",&time_steps,NULL));
   /*
       Test putting two nodes on each processor, exact last processor gets the rest
   */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-distribute",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-distribute",&flg,NULL));
   if (flg) {
-    ierr = PetscMalloc1(size,&localnodes);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(size,&localnodes));
     for (i=0; i<size-1; i++) localnodes[i] = 2;
     localnodes[size-1] = M - 2*(size-1);
   }
 
   /* Set up the array */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,M,1,1,localnodes,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = PetscFree(localnodes);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,M,1,1,localnodes,&da));
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
+  CHKERRQ(PetscFree(localnodes));
+  CHKERRQ(DMCreateGlobalVector(da,&global));
+  CHKERRQ(DMCreateLocalVector(da,&local));
 
   /* Set up display to show combined wave graph */
-  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"Entire Solution",20,480,800,200,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"Entire Solution",20,480,800,200,&viewer));
+  CHKERRQ(PetscViewerDrawGetDraw(viewer,0,&draw));
+  CHKERRQ(PetscDrawSetDoubleBuffer(draw));
 
   /* determine starting point of each processor */
-  ierr = VecGetOwnershipRange(global,&mybase,&myend);CHKERRQ(ierr);
+  CHKERRQ(VecGetOwnershipRange(global,&mybase,&myend));
 
   /* set up display to show my portion of the wave */
   xbase = (int)((mybase)*((800.0 - 4.0*size)/M) + 4.0*rank);
   width = (int)((myend-mybase)*800./M);
-  ierr  = PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Local Portion of Solution",xbase,200,width,200,&viewer_private);CHKERRQ(ierr);
-  ierr = PetscViewerDrawGetDraw(viewer_private,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_SELF,0,"Local Portion of Solution",xbase,200,width,200,&viewer_private));
+  CHKERRQ(PetscViewerDrawGetDraw(viewer_private,0,&draw));
+  CHKERRQ(PetscDrawSetDoubleBuffer(draw));
 
   /* Initialize the array */
-  ierr = VecGetLocalSize(local,&localsize);CHKERRQ(ierr);
-  ierr = VecGetArray(global,&globalptr);CHKERRQ(ierr);
+  CHKERRQ(VecGetLocalSize(local,&localsize));
+  CHKERRQ(VecGetArray(global,&globalptr));
 
   for (i=1; i<localsize-1; i++) {
     j           = (i-1)+mybase;
     globalptr[i-1] = PetscSinReal((PETSC_PI*j*6)/((PetscReal)M) + 1.2 * PetscSinReal((PETSC_PI*j*2)/((PetscReal)M))) * 2;
   }
 
-  ierr = VecRestoreArray(global,&globalptr);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(global,&globalptr));
 
   /* Assign Parameters */
   a= 1.0;
@@ -76,33 +76,33 @@ int main(int argc,char **argv)
   for (j=0; j<time_steps; j++) {
 
     /* Global to Local */
-    ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+    CHKERRQ(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
+    CHKERRQ(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
 
     /*Extract local array */
-    ierr = VecGetArray(local,&localptr);CHKERRQ(ierr);
-    ierr = VecGetArray(global,&globalptr);CHKERRQ(ierr);
+    CHKERRQ(VecGetArray(local,&localptr));
+    CHKERRQ(VecGetArray(global,&globalptr));
 
     /* Update Locally - Make array of new values */
     /* Note: I don't do anything for the first and last entry */
     for (i=1; i< localsize-1; i++) {
       globalptr[i-1] = .5*(localptr[i+1]+localptr[i-1]) - (k / (2.0*a*h)) * (localptr[i+1] - localptr[i-1]);
     }
-    ierr = VecRestoreArray(global,&globalptr);CHKERRQ(ierr);
-    ierr = VecRestoreArray(local,&localptr);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(global,&globalptr));
+    CHKERRQ(VecRestoreArray(local,&localptr));
 
     /* View my part of Wave */
-    ierr = VecView(global,viewer_private);CHKERRQ(ierr);
+    CHKERRQ(VecView(global,viewer_private));
 
     /* View global Wave */
-    ierr = VecView(global,viewer);CHKERRQ(ierr);
+    CHKERRQ(VecView(global,viewer));
   }
 
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer_private);CHKERRQ(ierr);
-  ierr = VecDestroy(&local);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
+  CHKERRQ(DMDestroy(&da));
+  CHKERRQ(PetscViewerDestroy(&viewer));
+  CHKERRQ(PetscViewerDestroy(&viewer_private));
+  CHKERRQ(VecDestroy(&local));
+  CHKERRQ(VecDestroy(&global));
 
   ierr = PetscFinalize();
   return ierr;

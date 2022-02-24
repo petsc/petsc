@@ -33,44 +33,44 @@ int main(int argc, char **argv) {
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm, &rank));
+  CHKERRMPI(MPI_Comm_size(comm, &size));
   /* Create local-to-global map */
   globalIdx[0] = rank;
   globalIdx[1] = rank+1;
-  ierr = ISLocalToGlobalMappingCreate(comm, 1, overlapSize, globalIdx, PETSC_COPY_VALUES, &map);CHKERRQ(ierr);
+  CHKERRQ(ISLocalToGlobalMappingCreate(comm, 1, overlapSize, globalIdx, PETSC_COPY_VALUES, &map));
   /* Create matrix */
-  ierr = MatCreateIS(comm, 1, PETSC_DECIDE, PETSC_DECIDE, size+1, size+1, map, map, &A);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) A, "A");CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&map);CHKERRQ(ierr);
-  ierr = MatISSetPreallocation(A, overlapSize, NULL, overlapSize, NULL);CHKERRQ(ierr);
-  ierr = MatSetValues(A, 2, globalIdx, 2, globalIdx, elemMat, ADD_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatCreateIS(comm, 1, PETSC_DECIDE, PETSC_DECIDE, size+1, size+1, map, map, &A));
+  CHKERRQ(PetscObjectSetName((PetscObject) A, "A"));
+  CHKERRQ(ISLocalToGlobalMappingDestroy(&map));
+  CHKERRQ(MatISSetPreallocation(A, overlapSize, NULL, overlapSize, NULL));
+  CHKERRQ(MatSetValues(A, 2, globalIdx, 2, globalIdx, elemMat, ADD_VALUES));
+  CHKERRQ(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   /* Check that the constant vector is in the nullspace */
-  ierr = MatCreateVecs(A, &x, &y);CHKERRQ(ierr);
-  ierr = VecSet(x, 1.0);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) x, "x");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(x, NULL, "-x_view");CHKERRQ(ierr);
-  ierr = MatMult(A, x, y);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) y, "y");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(y, NULL, "-y_view");CHKERRQ(ierr);
-  ierr = VecNorm(y, NORM_2, &error);CHKERRQ(ierr);
+  CHKERRQ(MatCreateVecs(A, &x, &y));
+  CHKERRQ(VecSet(x, 1.0));
+  CHKERRQ(PetscObjectSetName((PetscObject) x, "x"));
+  CHKERRQ(VecViewFromOptions(x, NULL, "-x_view"));
+  CHKERRQ(MatMult(A, x, y));
+  CHKERRQ(PetscObjectSetName((PetscObject) y, "y"));
+  CHKERRQ(VecViewFromOptions(y, NULL, "-y_view"));
+  CHKERRQ(VecNorm(y, NORM_2, &error));
   PetscCheckFalse(error > PETSC_SMALL,comm, PETSC_ERR_ARG_WRONG, "Invalid output, x should be in the nullspace of A");
   /* Check that an interior unit vector gets mapped to something of 1-norm 4 */
   if (size > 1) {
-    ierr = VecSet(x, 0.0);CHKERRQ(ierr);
-    ierr = VecSetValue(x, 1, 1.0, INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-    ierr = MatMult(A, x, y);CHKERRQ(ierr);
-    ierr = VecNorm(y, NORM_1, &error);CHKERRQ(ierr);
+    CHKERRQ(VecSet(x, 0.0));
+    CHKERRQ(VecSetValue(x, 1, 1.0, INSERT_VALUES));
+    CHKERRQ(VecAssemblyBegin(x));
+    CHKERRQ(VecAssemblyEnd(x));
+    CHKERRQ(MatMult(A, x, y));
+    CHKERRQ(VecNorm(y, NORM_1, &error));
     PetscCheckFalse(PetscAbsReal(error - 4) > PETSC_SMALL,comm, PETSC_ERR_ARG_WRONG, "Invalid output for matrix multiply");
   }
   /* Cleanup */
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
   ierr = PetscFinalize();
   return ierr;
 }

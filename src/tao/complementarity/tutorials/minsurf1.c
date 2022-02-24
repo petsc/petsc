@@ -62,67 +62,67 @@ int main(int argc, char **argv)
   user.mx = 4; user.my = 4;
 
   /* Check for any command line arguments that override defaults */
-  ierr = PetscOptionsGetInt(NULL,NULL, "-mx", &user.mx, &flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL, "-my", &user.my, &flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-mx", &user.mx, &flg));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-my", &user.my, &flg));
 
   /* Calculate any derived values from parameters */
   N = user.mx*user.my;
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"\n---- Minimum Surface Area Problem -----\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"mx:%D, my:%D\n", user.mx,user.my);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"\n---- Minimum Surface Area Problem -----\n"));
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"mx:%D, my:%D\n", user.mx,user.my));
 
   /* Create appropriate vectors and matrices */
-  ierr = VecCreateSeq(MPI_COMM_SELF, N, &x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x, &c);CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJ(MPI_COMM_SELF, N, N, 7, NULL, &J);CHKERRQ(ierr);
+  CHKERRQ(VecCreateSeq(MPI_COMM_SELF, N, &x));
+  CHKERRQ(VecDuplicate(x, &c));
+  CHKERRQ(MatCreateSeqAIJ(MPI_COMM_SELF, N, N, 7, NULL, &J));
 
   /* The TAO code begins here */
 
   /* Create TAO solver and set desired solution method */
-  ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,TAOSSILS);CHKERRQ(ierr);
+  CHKERRQ(TaoCreate(PETSC_COMM_SELF,&tao));
+  CHKERRQ(TaoSetType(tao,TAOSSILS));
 
   /* Set data structure */
-  ierr = TaoSetSolution(tao, x);CHKERRQ(ierr);
+  CHKERRQ(TaoSetSolution(tao, x));
 
   /*  Set routines for constraints function and Jacobian evaluation */
-  ierr = TaoSetConstraintsRoutine(tao, c, FormConstraints, (void *)&user);CHKERRQ(ierr);
-  ierr = TaoSetJacobianRoutine(tao, J, J, FormJacobian, (void *)&user);CHKERRQ(ierr);
+  CHKERRQ(TaoSetConstraintsRoutine(tao, c, FormConstraints, (void *)&user));
+  CHKERRQ(TaoSetJacobianRoutine(tao, J, J, FormJacobian, (void *)&user));
 
   /* Set the variable bounds */
-  ierr = MSA_BoundaryConditions(&user);CHKERRQ(ierr);
+  CHKERRQ(MSA_BoundaryConditions(&user));
 
   /* Set initial solution guess */
-  ierr = MSA_InitialPoint(&user, x);CHKERRQ(ierr);
+  CHKERRQ(MSA_InitialPoint(&user, x));
 
   /* Set Bounds on variables */
-  ierr = VecDuplicate(x, &xl);CHKERRQ(ierr);
-  ierr = VecDuplicate(x, &xu);CHKERRQ(ierr);
-  ierr = VecSet(xl, lb);CHKERRQ(ierr);
-  ierr = VecSet(xu, ub);CHKERRQ(ierr);
-  ierr = TaoSetVariableBounds(tao,xl,xu);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(x, &xl));
+  CHKERRQ(VecDuplicate(x, &xu));
+  CHKERRQ(VecSet(xl, lb));
+  CHKERRQ(VecSet(xu, ub));
+  CHKERRQ(TaoSetVariableBounds(tao,xl,xu));
 
   /* Check for any tao command line options */
-  ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
+  CHKERRQ(TaoSetFromOptions(tao));
 
   /* Solve the application */
-  ierr = TaoSolve(tao);CHKERRQ(ierr);
+  CHKERRQ(TaoSolve(tao));
 
   /* Free Tao data structures */
-  ierr = TaoDestroy(&tao);CHKERRQ(ierr);
+  CHKERRQ(TaoDestroy(&tao));
 
   /* Free PETSc data structures */
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&xl);CHKERRQ(ierr);
-  ierr = VecDestroy(&xu);CHKERRQ(ierr);
-  ierr = VecDestroy(&c);CHKERRQ(ierr);
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&xl));
+  CHKERRQ(VecDestroy(&xu));
+  CHKERRQ(VecDestroy(&c));
+  CHKERRQ(MatDestroy(&J));
 
   /* Free user-created data structures */
-  ierr = PetscFree(user.bottom);CHKERRQ(ierr);
-  ierr = PetscFree(user.top);CHKERRQ(ierr);
-  ierr = PetscFree(user.left);CHKERRQ(ierr);
-  ierr = PetscFree(user.right);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(user.bottom));
+  CHKERRQ(PetscFree(user.top));
+  CHKERRQ(PetscFree(user.left));
+  CHKERRQ(PetscFree(user.right));
 
   ierr = PetscFinalize();
   return ierr;
@@ -143,7 +143,6 @@ int main(int argc, char **argv)
 PetscErrorCode FormConstraints(Tao tao, Vec X, Vec G, void *ptr)
 {
   AppCtx         *user = (AppCtx *) ptr;
-  PetscErrorCode ierr;
   PetscInt       i,j,row;
   PetscInt       mx=user->mx, my=user->my;
   PetscReal      hx=1.0/(mx+1),hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy;
@@ -154,11 +153,11 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec G, void *ptr)
 
   PetscFunctionBegin;
   /* Initialize vector to zero */
-  ierr = VecSet(G, zero);CHKERRQ(ierr);
+  CHKERRQ(VecSet(G, zero));
 
   /* Get pointers to vector data */
-  ierr = VecGetArray(X, &x);CHKERRQ(ierr);
-  ierr = VecGetArray(G, &g);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(X, &x));
+  CHKERRQ(VecGetArray(G, &g));
 
   /* Compute function over the locally owned part of the mesh */
   for (j=0; j<my; j++) {
@@ -247,9 +246,9 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec G, void *ptr)
   }
 
   /* Restore vectors */
-  ierr = VecRestoreArray(X, &x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(G, &g);CHKERRQ(ierr);
-  ierr = PetscLogFlops(67*mx*my);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(X, &x));
+  CHKERRQ(VecRestoreArray(G, &g));
+  CHKERRQ(PetscLogFlops(67*mx*my));
   PetscFunctionReturn(0);
 }
 
@@ -269,7 +268,6 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec G, void *ptr)
 PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr)
 {
   AppCtx            *user = (AppCtx *) ptr;
-  PetscErrorCode    ierr;
   PetscInt          i,j,k,row;
   PetscInt          mx=user->mx, my=user->my;
   PetscInt          col[7];
@@ -282,12 +280,12 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr)
 
   /* Set various matrix options */
   PetscFunctionBegin;
-  ierr = MatSetOption(H,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatAssembled(H,&assembled);CHKERRQ(ierr);
-  if (assembled) {ierr = MatZeroEntries(H);CHKERRQ(ierr);}
+  CHKERRQ(MatSetOption(H,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE));
+  CHKERRQ(MatAssembled(H,&assembled));
+  if (assembled) CHKERRQ(MatZeroEntries(H));
 
   /* Get pointers to vector data */
-  ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(X, &x));
 
   /* Compute Jacobian over the locally owned part of the mesh */
   for (i=0; i< mx; i++) {
@@ -393,17 +391,17 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr)
          Set matrix values using local numbering, which was defined
          earlier, in the main routine.
       */
-      ierr = MatSetValues(H,1,&row,k,col,v,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(H,1,&row,k,col,v,INSERT_VALUES));
     }
   }
 
   /* Restore vectors */
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(X,&x));
 
   /* Assemble the matrix */
-  ierr = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscLogFlops(199*mx*my);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(PetscLogFlops(199*mx*my));
   PetscFunctionReturn(0);
 }
 
@@ -420,7 +418,6 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr)
 */
 static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 {
-  PetscErrorCode  ierr;
   PetscInt        i,j,k,limit=0,maxits=5;
   PetscInt        mx=user->mx,my=user->my;
   PetscInt        bsize=0, lsize=0, tsize=0, rsize=0;
@@ -433,10 +430,10 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
   PetscFunctionBegin;
   bsize=mx+2; lsize=my+2; rsize=my+2; tsize=mx+2;
 
-  ierr = PetscMalloc1(bsize, &user->bottom);CHKERRQ(ierr);
-  ierr = PetscMalloc1(tsize, &user->top);CHKERRQ(ierr);
-  ierr = PetscMalloc1(lsize, &user->left);CHKERRQ(ierr);
-  ierr = PetscMalloc1(rsize, &user->right);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(bsize, &user->bottom));
+  CHKERRQ(PetscMalloc1(tsize, &user->top));
+  CHKERRQ(PetscMalloc1(lsize, &user->left));
+  CHKERRQ(PetscMalloc1(rsize, &user->right));
 
   hx= (r-l)/(mx+1); hy=(t-b)/(my+1);
 
@@ -504,23 +501,22 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
 */
 static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 {
-  PetscErrorCode ierr;
   PetscInt       start=-1,i,j;
   PetscScalar    zero=0.0;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-start",&start,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-start",&start,&flg));
 
   if (flg && start==0) { /* The zero vector is reasonable */
-    ierr = VecSet(X, zero);CHKERRQ(ierr);
+    CHKERRQ(VecSet(X, zero));
   } else { /* Take an average of the boundary conditions */
     PetscInt    row;
     PetscInt    mx=user->mx,my=user->my;
     PetscScalar *x;
 
     /* Get pointers to vector data */
-    ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+    CHKERRQ(VecGetArray(X,&x));
 
     /* Perform local computations */
     for (j=0; j<my; j++) {
@@ -531,7 +527,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     }
 
     /* Restore vectors */
-    ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(X,&x));
   }
   PetscFunctionReturn(0);
 }

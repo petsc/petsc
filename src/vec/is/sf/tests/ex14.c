@@ -25,22 +25,22 @@ int main(int argc,char **argv)
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRQ(PetscLogDefaultBegin());
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&nproc));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  ierr = PetscLogStageRegister("Scatter(bs=1)", &stage1);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecScatter(bs=1)", PETSC_OBJECT_CLASSID, &event1);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("Scatter(bs=4)", &stage2);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecScatter(bs=4)", PETSC_OBJECT_CLASSID, &event2);CHKERRQ(ierr);
+  CHKERRQ(PetscLogStageRegister("Scatter(bs=1)", &stage1));
+  CHKERRQ(PetscLogEventRegister("VecScatter(bs=1)", PETSC_OBJECT_CLASSID, &event1));
+  CHKERRQ(PetscLogStageRegister("Scatter(bs=4)", &stage2));
+  CHKERRQ(PetscLogEventRegister("VecScatter(bs=4)", PETSC_OBJECT_CLASSID, &event2));
 
   /* Create a parallel vector x and a sequential vector y */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(x,&low,&high);CHKERRQ(ierr);
-  ierr = VecGetSize(x,&N);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
+  CHKERRQ(VecSetSizes(x,n,PETSC_DECIDE));
+  CHKERRQ(VecSetFromOptions(x));
+  CHKERRQ(VecGetOwnershipRange(x,&low,&high));
+  CHKERRQ(VecGetSize(x,&N));
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&y));
 
   /*=======================================
      test VecScatter with bs = 1
@@ -55,50 +55,50 @@ int main(int argc,char **argv)
   iy[0] = 0;
   iy[1] = 1;
 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,2,ix,PETSC_COPY_VALUES,&isx);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,2,iy,PETSC_COPY_VALUES,&isy);CHKERRQ(ierr);
-  ierr = VecScatterCreate(x,isx,y,isy,&ctx);CHKERRQ(ierr);
-  ierr = VecScatterSetUp(ctx);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,2,ix,PETSC_COPY_VALUES,&isx));
+  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,2,iy,PETSC_COPY_VALUES,&isy));
+  CHKERRQ(VecScatterCreate(x,isx,y,isy,&ctx));
+  CHKERRQ(VecScatterSetUp(ctx));
 
-  ierr = PetscLogStagePush(stage1);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(event1,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogStagePush(stage1));
+  CHKERRQ(PetscLogEventBegin(event1,0,0,0,0));
   errors = 0;
   for (i=0; i<niter; i++) {
     /* set x = 0+i, 1+i, 2+i, ..., N-1+i */
-    ierr = VecGetArray(x,&xval);CHKERRQ(ierr);
+    CHKERRQ(VecGetArray(x,&xval));
     for (j=0; j<n; j++) xval[j] = (PetscScalar)(low+j+i);
-    ierr = VecRestoreArray(x,&xval);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(x,&xval));
     /* scatter the ghosts to y */
-    ierr = VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    CHKERRQ(VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
+    CHKERRQ(VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
     /* check if y has correct values */
-    ierr = VecGetArrayRead(y,&yval);CHKERRQ(ierr);
+    CHKERRQ(VecGetArrayRead(y,&yval));
     if ((PetscInt)PetscRealPart(yval[0]) != ix[0]+i) errors++;
     if ((PetscInt)PetscRealPart(yval[1]) != ix[1]+i) errors++;
-    ierr = VecRestoreArrayRead(y,&yval);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArrayRead(y,&yval));
   }
-  ierr = PetscLogEventEnd(event1,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventEnd(event1,0,0,0,0));
+  CHKERRQ(PetscLogStagePop());
 
   /* check if we found wrong values on any processors */
-  ierr = MPI_Allreduce(&errors,&tot_errors,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-  if (tot_errors) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: wrong values were scatterred in vecscatter with bs = %" PetscInt_FMT "\n",bs);CHKERRQ(ierr); }
+  CHKERRMPI(MPI_Allreduce(&errors,&tot_errors,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD));
+  if (tot_errors) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error: wrong values were scatterred in vecscatter with bs = %" PetscInt_FMT "\n",bs));
 
   /* print out event log of VecScatter(bs=1) */
 #if defined(PETSC_USE_LOG)
-  ierr    = PetscLogEventGetPerfInfo(stage1,event1,&eventInfo);CHKERRQ(ierr);
-  ierr    = MPI_Allreduce(&eventInfo.numMessages,  &numMessages,  1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-  ierr    = MPI_Allreduce(&eventInfo.messageLength,&messageLength,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+  CHKERRQ(PetscLogEventGetPerfInfo(stage1,event1,&eventInfo));
+  CHKERRMPI(MPI_Allreduce(&eventInfo.numMessages,  &numMessages,  1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD));
+  CHKERRMPI(MPI_Allreduce(&eventInfo.messageLength,&messageLength,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD));
   tot_msg = (PetscInt)numMessages*0.5; /* two MPI calls (Send & Recv) per message */
   tot_len = (PetscInt)messageLength*0.5;
   avg_len = tot_msg? (PetscInt)(messageLength/numMessages) : 0;
   /* when nproc > 2, tot_msg = 2*nproc*niter, tot_len = tot_msg*sizeof(PetscScalar)*bs */
-  ierr    = PetscPrintf(PETSC_COMM_WORLD,"VecScatter(bs=%" PetscInt_FMT ") has sent out %" PetscInt_FMT " messages, total %" PetscInt_FMT " bytes, with average length %" PetscInt_FMT " bytes\n",bs,tot_msg,tot_len,avg_len);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"VecScatter(bs=%" PetscInt_FMT ") has sent out %" PetscInt_FMT " messages, total %" PetscInt_FMT " bytes, with average length %" PetscInt_FMT " bytes\n",bs,tot_msg,tot_len,avg_len));
 #endif
 
-  ierr = ISDestroy(&isx);CHKERRQ(ierr);
-  ierr = ISDestroy(&isy);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&isx));
+  CHKERRQ(ISDestroy(&isy));
+  CHKERRQ(VecScatterDestroy(&ctx));
 
   /*=======================================
      test VecScatter with bs = 4
@@ -111,55 +111,55 @@ int main(int argc,char **argv)
   iy[0] = 0;
   iy[1] = 1;
 
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2,ix,PETSC_COPY_VALUES,&isx);CHKERRQ(ierr);
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2,iy,PETSC_COPY_VALUES,&isy);CHKERRQ(ierr);
+  CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,2,ix,PETSC_COPY_VALUES,&isx));
+  CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,2,iy,PETSC_COPY_VALUES,&isy));
 
-  ierr = VecScatterCreate(x,isx,y,isy,&ctx);CHKERRQ(ierr);
+  CHKERRQ(VecScatterCreate(x,isx,y,isy,&ctx));
    /* Call SetUp explicitly, otherwise messages in implicit SetUp will be counted in events below */
-  ierr = VecScatterSetUp(ctx);CHKERRQ(ierr);
+  CHKERRQ(VecScatterSetUp(ctx));
 
-  ierr = PetscLogStagePush(stage2);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(event2,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogStagePush(stage2));
+  CHKERRQ(PetscLogEventBegin(event2,0,0,0,0));
   errors = 0;
   for (i=0; i<niter; i++) {
     /* set x = 0+i, 1+i, 2+i, ..., N-1+i */
-    ierr = VecGetArray(x,&xval);CHKERRQ(ierr);
+    CHKERRQ(VecGetArray(x,&xval));
     for (j=0; j<n; j++) xval[j] = (PetscScalar)(low+j+i);
-    ierr = VecRestoreArray(x,&xval);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(x,&xval));
     /* scatter the ghost blocks to y */
-    ierr = VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    CHKERRQ(VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
+    CHKERRQ(VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
     /* check if y has correct values */
-    ierr = VecGetArrayRead(y,&yval);CHKERRQ(ierr);
+    CHKERRQ(VecGetArrayRead(y,&yval));
     if ((PetscInt)PetscRealPart(yval[0])  != ix[0]*bs+i) errors++;
     if ((PetscInt)PetscRealPart(yval[bs]) != ix[1]*bs+i) errors++;
-    ierr = VecRestoreArrayRead(y,&yval);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArrayRead(y,&yval));
   }
-  ierr = PetscLogEventEnd(event2,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventEnd(event2,0,0,0,0));
+  CHKERRQ(PetscLogStagePop());
 
   /* check if we found wrong values on any processors */
-  ierr = MPI_Allreduce(&errors,&tot_errors,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-  if (tot_errors) { ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: wrong values were scatterred in vecscatter with bs = %" PetscInt_FMT "\n",bs);CHKERRQ(ierr); }
+  CHKERRMPI(MPI_Allreduce(&errors,&tot_errors,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD));
+  if (tot_errors) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error: wrong values were scatterred in vecscatter with bs = %" PetscInt_FMT "\n",bs));
 
   /* print out event log of VecScatter(bs=4) */
 #if defined(PETSC_USE_LOG)
-  ierr    = PetscLogEventGetPerfInfo(stage2,event2,&eventInfo);CHKERRQ(ierr);
-  ierr    = MPI_Allreduce(&eventInfo.numMessages,  &numMessages,  1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-  ierr    = MPI_Allreduce(&eventInfo.messageLength,&messageLength,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+  CHKERRQ(PetscLogEventGetPerfInfo(stage2,event2,&eventInfo));
+  CHKERRMPI(MPI_Allreduce(&eventInfo.numMessages,  &numMessages,  1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD));
+  CHKERRMPI(MPI_Allreduce(&eventInfo.messageLength,&messageLength,1,MPIU_PETSCLOGDOUBLE,MPI_SUM,PETSC_COMM_WORLD));
   tot_msg = (PetscInt)numMessages*0.5; /* two MPI calls (Send & Recv) per message */
   tot_len = (PetscInt)messageLength*0.5;
   avg_len = tot_msg? (PetscInt)(messageLength/numMessages) : 0;
   /* when nproc > 2, tot_msg = 2*nproc*niter, tot_len = tot_msg*sizeof(PetscScalar)*bs */
-  ierr    = PetscPrintf(PETSC_COMM_WORLD,"VecScatter(bs=%" PetscInt_FMT ") has sent out %" PetscInt_FMT " messages, total %" PetscInt_FMT " bytes, with average length %" PetscInt_FMT " bytes\n",bs,tot_msg,tot_len,avg_len);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"VecScatter(bs=%" PetscInt_FMT ") has sent out %" PetscInt_FMT " messages, total %" PetscInt_FMT " bytes, with average length %" PetscInt_FMT " bytes\n",bs,tot_msg,tot_len,avg_len));
 #endif
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Program finished\n");CHKERRQ(ierr);
-  ierr = ISDestroy(&isx);CHKERRQ(ierr);
-  ierr = ISDestroy(&isy);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Program finished\n"));
+  CHKERRQ(ISDestroy(&isx));
+  CHKERRQ(ISDestroy(&isy));
+  CHKERRQ(VecScatterDestroy(&ctx));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
   ierr = PetscFinalize();
   return ierr;
 }

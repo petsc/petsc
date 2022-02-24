@@ -17,22 +17,22 @@ int main(int argc,char **args)
   PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_size",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-ov",&ov,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-nd",&nd,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mat_size",&m,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-ov",&ov,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nd",&nd,NULL));
 
   /* create a SeqBAIJ matrix A */
   M    = m*bs;
-  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,1,NULL,&A);CHKERRQ(ierr);
-  ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,1,NULL,&A));
+  CHKERRQ(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF,&rand));
+  CHKERRQ(PetscRandomSetFromOptions(rand));
 
-  ierr = PetscMalloc1(bs,&rows);CHKERRQ(ierr);
-  ierr = PetscMalloc1(bs,&cols);CHKERRQ(ierr);
-  ierr = PetscMalloc1(bs*bs,&vals);CHKERRQ(ierr);
-  ierr = PetscMalloc1(M,&idx);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(bs,&rows));
+  CHKERRQ(PetscMalloc1(bs,&cols));
+  CHKERRQ(PetscMalloc1(bs*bs,&vals));
+  CHKERRQ(PetscMalloc1(M,&idx));
 
   /* Now set blocks of random values */
   /* first, set diagonal blocks as zero */
@@ -43,13 +43,13 @@ int main(int argc,char **args)
       rows[j] = rows[j-1]+1;
       cols[j] = cols[j-1]+1;
     }
-    ierr = MatSetValues(A,bs,rows,bs,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,bs,rows,bs,cols,vals,ADD_VALUES));
   }
   /* second, add random blocks */
   for (i=0; i<20*bs; i++) {
-    ierr    = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+    CHKERRQ(PetscRandomGetValue(rand,&rval));
     cols[0] = bs*(int)(PetscRealPart(rval)*m);
-    ierr    = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+    CHKERRQ(PetscRandomGetValue(rand,&rval));
     rows[0] = bs*(int)(PetscRealPart(rval)*m);
     for (j=1; j<bs; j++) {
       rows[j] = rows[j-1]+1;
@@ -57,152 +57,152 @@ int main(int argc,char **args)
     }
 
     for (j=0; j<bs*bs; j++) {
-      ierr    = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+      CHKERRQ(PetscRandomGetValue(rand,&rval));
       vals[j] = rval;
     }
-    ierr = MatSetValues(A,bs,rows,bs,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,bs,rows,bs,cols,vals,ADD_VALUES));
   }
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /* make A a symmetric matrix: A <- A^T + A */
-  ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans);CHKERRQ(ierr);
-  ierr = MatAXPY(A,one,Atrans,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
-  ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans);CHKERRQ(ierr);
-  ierr = MatEqual(A, Atrans, &flg);CHKERRQ(ierr);
+  CHKERRQ(MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans));
+  CHKERRQ(MatAXPY(A,one,Atrans,DIFFERENT_NONZERO_PATTERN));
+  CHKERRQ(MatDestroy(&Atrans));
+  CHKERRQ(MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans));
+  CHKERRQ(MatEqual(A, Atrans, &flg));
   PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A+A^T is non-symmetric");
-  ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&Atrans));
 
   /* create a SeqSBAIJ matrix sA (= A) */
-  ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatConvert(A,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
+  CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
+  CHKERRQ(MatConvert(A,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&sA));
 
   /* Test sA==A through MatMult() */
   for (i=0; i<nd; i++) {
-    ierr = MatGetSize(A,&mm,&nn);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,mm,&xx);CHKERRQ(ierr);
-    ierr = VecDuplicate(xx,&s1);CHKERRQ(ierr);
-    ierr = VecDuplicate(xx,&s2);CHKERRQ(ierr);
+    CHKERRQ(MatGetSize(A,&mm,&nn));
+    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,mm,&xx));
+    CHKERRQ(VecDuplicate(xx,&s1));
+    CHKERRQ(VecDuplicate(xx,&s2));
     for (j=0; j<3; j++) {
-      ierr  = VecSetRandom(xx,rand);CHKERRQ(ierr);
-      ierr  = MatMult(A,xx,s1);CHKERRQ(ierr);
-      ierr  = MatMult(sA,xx,s2);CHKERRQ(ierr);
-      ierr  = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
-      ierr  = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
+      CHKERRQ(VecSetRandom(xx,rand));
+      CHKERRQ(MatMult(A,xx,s1));
+      CHKERRQ(MatMult(sA,xx,s2));
+      CHKERRQ(VecNorm(s1,NORM_2,&s1norm));
+      CHKERRQ(VecNorm(s2,NORM_2,&s2norm));
       rnorm = s2norm-s1norm;
       if (rnorm<-tol || rnorm>tol) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",(double)s1norm,(double)s2norm);CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",(double)s1norm,(double)s2norm));
       }
     }
-    ierr = VecDestroy(&xx);CHKERRQ(ierr);
-    ierr = VecDestroy(&s1);CHKERRQ(ierr);
-    ierr = VecDestroy(&s2);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&xx));
+    CHKERRQ(VecDestroy(&s1));
+    CHKERRQ(VecDestroy(&s2));
   }
 
   /* Test MatIncreaseOverlap() */
-  ierr = PetscMalloc1(nd,&is1);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nd,&is2);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(nd,&is1));
+  CHKERRQ(PetscMalloc1(nd,&is2));
 
   for (i=0; i<nd; i++) {
-    ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+    CHKERRQ(PetscRandomGetValue(rand,&rval));
     size = (int)(PetscRealPart(rval)*m);
     for (j=0; j<size; j++) {
-      ierr      = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+      CHKERRQ(PetscRandomGetValue(rand,&rval));
       idx[j*bs] = bs*(int)(PetscRealPart(rval)*m);
       for (k=1; k<bs; k++) idx[j*bs+k] = idx[j*bs]+k;
     }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,size*bs,idx,PETSC_COPY_VALUES,is1+i);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,size*bs,idx,PETSC_COPY_VALUES,is2+i);CHKERRQ(ierr);
+    CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,size*bs,idx,PETSC_COPY_VALUES,is1+i));
+    CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,size*bs,idx,PETSC_COPY_VALUES,is2+i));
   }
   /* for debugging */
   /*
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = MatView(sA,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_SELF));
+  CHKERRQ(MatView(sA,PETSC_VIEWER_STDOUT_SELF));
   */
 
-  ierr = MatIncreaseOverlap(A,nd,is1,ov);CHKERRQ(ierr);
-  ierr = MatIncreaseOverlap(sA,nd,is2,ov);CHKERRQ(ierr);
+  CHKERRQ(MatIncreaseOverlap(A,nd,is1,ov));
+  CHKERRQ(MatIncreaseOverlap(sA,nd,is2,ov));
 
   for (i=0; i<nd; ++i) {
-    ierr = ISSort(is1[i]);CHKERRQ(ierr);
-    ierr = ISSort(is2[i]);CHKERRQ(ierr);
+    CHKERRQ(ISSort(is1[i]));
+    CHKERRQ(ISSort(is2[i]));
   }
 
   for (i=0; i<nd; ++i) {
-    ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
+    CHKERRQ(ISEqual(is1[i],is2[i],&flg));
     PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"i=%" PetscInt_FMT ", is1 != is2",i);
   }
 
-  ierr = MatCreateSubMatrices(A,nd,is1,is1,MAT_INITIAL_MATRIX,&submatA);CHKERRQ(ierr);
-  ierr = MatCreateSubMatrices(sA,nd,is2,is2,MAT_INITIAL_MATRIX,&submatsA);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSubMatrices(A,nd,is1,is1,MAT_INITIAL_MATRIX,&submatA));
+  CHKERRQ(MatCreateSubMatrices(sA,nd,is2,is2,MAT_INITIAL_MATRIX,&submatsA));
 
   /* Test MatMult() */
   for (i=0; i<nd; i++) {
-    ierr = MatGetSize(submatA[i],&mm,&nn);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,mm,&xx);CHKERRQ(ierr);
-    ierr = VecDuplicate(xx,&s1);CHKERRQ(ierr);
-    ierr = VecDuplicate(xx,&s2);CHKERRQ(ierr);
+    CHKERRQ(MatGetSize(submatA[i],&mm,&nn));
+    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,mm,&xx));
+    CHKERRQ(VecDuplicate(xx,&s1));
+    CHKERRQ(VecDuplicate(xx,&s2));
     for (j=0; j<3; j++) {
-      ierr  = VecSetRandom(xx,rand);CHKERRQ(ierr);
-      ierr  = MatMult(submatA[i],xx,s1);CHKERRQ(ierr);
-      ierr  = MatMult(submatsA[i],xx,s2);CHKERRQ(ierr);
-      ierr  = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
-      ierr  = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
+      CHKERRQ(VecSetRandom(xx,rand));
+      CHKERRQ(MatMult(submatA[i],xx,s1));
+      CHKERRQ(MatMult(submatsA[i],xx,s2));
+      CHKERRQ(VecNorm(s1,NORM_2,&s1norm));
+      CHKERRQ(VecNorm(s2,NORM_2,&s2norm));
       rnorm = s2norm-s1norm;
       if (rnorm<-tol || rnorm>tol) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",(double)s1norm,(double)s2norm);CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",(double)s1norm,(double)s2norm));
       }
     }
-    ierr = VecDestroy(&xx);CHKERRQ(ierr);
-    ierr = VecDestroy(&s1);CHKERRQ(ierr);
-    ierr = VecDestroy(&s2);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&xx));
+    CHKERRQ(VecDestroy(&s1));
+    CHKERRQ(VecDestroy(&s2));
   }
 
   /* Now test MatCreateSubmatrices with MAT_REUSE_MATRIX option */
-  ierr = MatCreateSubMatrices(A,nd,is1,is1,MAT_REUSE_MATRIX,&submatA);CHKERRQ(ierr);
-  ierr = MatCreateSubMatrices(sA,nd,is2,is2,MAT_REUSE_MATRIX,&submatsA);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSubMatrices(A,nd,is1,is1,MAT_REUSE_MATRIX,&submatA));
+  CHKERRQ(MatCreateSubMatrices(sA,nd,is2,is2,MAT_REUSE_MATRIX,&submatsA));
 
   /* Test MatMult() */
   for (i=0; i<nd; i++) {
-    ierr = MatGetSize(submatA[i],&mm,&nn);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,mm,&xx);CHKERRQ(ierr);
-    ierr = VecDuplicate(xx,&s1);CHKERRQ(ierr);
-    ierr = VecDuplicate(xx,&s2);CHKERRQ(ierr);
+    CHKERRQ(MatGetSize(submatA[i],&mm,&nn));
+    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,mm,&xx));
+    CHKERRQ(VecDuplicate(xx,&s1));
+    CHKERRQ(VecDuplicate(xx,&s2));
     for (j=0; j<3; j++) {
-      ierr  = VecSetRandom(xx,rand);CHKERRQ(ierr);
-      ierr  = MatMult(submatA[i],xx,s1);CHKERRQ(ierr);
-      ierr  = MatMult(submatsA[i],xx,s2);CHKERRQ(ierr);
-      ierr  = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
-      ierr  = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
+      CHKERRQ(VecSetRandom(xx,rand));
+      CHKERRQ(MatMult(submatA[i],xx,s1));
+      CHKERRQ(MatMult(submatsA[i],xx,s2));
+      CHKERRQ(VecNorm(s1,NORM_2,&s1norm));
+      CHKERRQ(VecNorm(s2,NORM_2,&s2norm));
       rnorm = s2norm-s1norm;
       if (rnorm<-tol || rnorm>tol) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",(double)s1norm,(double)s2norm);CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",(double)s1norm,(double)s2norm));
       }
     }
-    ierr = VecDestroy(&xx);CHKERRQ(ierr);
-    ierr = VecDestroy(&s1);CHKERRQ(ierr);
-    ierr = VecDestroy(&s2);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&xx));
+    CHKERRQ(VecDestroy(&s1));
+    CHKERRQ(VecDestroy(&s2));
   }
 
   /* Free allocated memory */
   for (i=0; i<nd; ++i) {
-    ierr = ISDestroy(&is1[i]);CHKERRQ(ierr);
-    ierr = ISDestroy(&is2[i]);CHKERRQ(ierr);
+    CHKERRQ(ISDestroy(&is1[i]));
+    CHKERRQ(ISDestroy(&is2[i]));
   }
-  ierr = MatDestroySubMatrices(nd,&submatA);CHKERRQ(ierr);
-  ierr = MatDestroySubMatrices(nd,&submatsA);CHKERRQ(ierr);
+  CHKERRQ(MatDestroySubMatrices(nd,&submatA));
+  CHKERRQ(MatDestroySubMatrices(nd,&submatsA));
 
-  ierr = PetscFree(is1);CHKERRQ(ierr);
-  ierr = PetscFree(is2);CHKERRQ(ierr);
-  ierr = PetscFree(idx);CHKERRQ(ierr);
-  ierr = PetscFree(rows);CHKERRQ(ierr);
-  ierr = PetscFree(cols);CHKERRQ(ierr);
-  ierr = PetscFree(vals);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&sA);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(is1));
+  CHKERRQ(PetscFree(is2));
+  CHKERRQ(PetscFree(idx));
+  CHKERRQ(PetscFree(rows));
+  CHKERRQ(PetscFree(cols));
+  CHKERRQ(PetscFree(vals));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&sA));
+  CHKERRQ(PetscRandomDestroy(&rand));
   ierr = PetscFinalize();
   return ierr;
 }

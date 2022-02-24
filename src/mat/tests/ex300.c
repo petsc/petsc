@@ -21,11 +21,11 @@ int main(int argc,char **args)
   PetscInt          o_nnz[3] = {0,0,0};
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   PetscCheckFalse(2 != size,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Relevant with 2 processes only");
-  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
 
 #ifdef SET_2nd_PROC_TO_HAVE_NO_LOCAL_LINES
   if (0 == rank) {
@@ -47,27 +47,27 @@ int main(int argc,char **args)
   }
 #endif
 
-  ierr = MatSetSizes(C,locallines,locallines,m,m);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-  ierr = MatXAIJSetPreallocation(C,1,d_nnz,o_nnz,NULL,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatSetSizes(C,locallines,locallines,m,m));
+  CHKERRQ(MatSetFromOptions(C));
+  CHKERRQ(MatXAIJSetPreallocation(C,1,d_nnz,o_nnz,NULL,NULL));
 
   v = 2;
   /* Assembly on the diagonal: */
   for (i=0; i<m; i++) {
-     ierr = MatSetValues(C,1,&i,1,&i,&v,ADD_VALUES);CHKERRQ(ierr);
+     CHKERRQ(MatSetValues(C,1,&i,1,&i,&v,ADD_VALUES));
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatSetOption(C,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatSetOption(C, MAT_KEEP_NONZERO_PATTERN, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatConvert(C,MATSAME, MAT_INITIAL_MATRIX, &lMatA);CHKERRQ(ierr);
-  ierr = MatView(lMatA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatSetOption(C,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
+  CHKERRQ(MatSetOption(C, MAT_KEEP_NONZERO_PATTERN, PETSC_TRUE));
+  CHKERRQ(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(MatConvert(C,MATSAME, MAT_INITIAL_MATRIX, &lMatA));
+  CHKERRQ(MatView(lMatA,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = MatShift(lMatA,-1.0);CHKERRQ(ierr);
+  CHKERRQ(MatShift(lMatA,-1.0));
 
-  ierr = MatDestroy(&lMatA);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&lMatA));
+  CHKERRQ(MatDestroy(&C));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -30,94 +30,94 @@ int main(int argc,char **args)
   PetscReal      h,norm;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
 
   N    = (m+1)*(m+1); /* dimension of matrix */
   M    = m*m;      /* number of elements */
   h    = 1.0/m;    /* mesh width */
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* Create stiffness matrix */
-  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
-  ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-  ierr = MatSetUp(C);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
+  CHKERRQ(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N));
+  CHKERRQ(MatSetFromOptions(C));
+  CHKERRQ(MatSetUp(C));
 
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank);
 
   /* Form the element stiffness for the Laplacian */
-  ierr = FormElementStiffness(h*h,Ke);CHKERRQ(ierr);
+  CHKERRQ(FormElementStiffness(h*h,Ke));
   for (i=start; i<end; i++) {
     /* location of lower left corner of element */
     /* node numbers for the four corners of element */
     idx[0] = (m+1)*(i/m) + (i % m);
     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-    ierr   = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES));
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   /* Assemble the matrix again */
-  ierr = MatZeroEntries(C);CHKERRQ(ierr);
+  CHKERRQ(MatZeroEntries(C));
 
   for (i=start; i<end; i++) {
     /* location of lower left corner of element */
     /* node numbers for the four corners of element */
     idx[0] = (m+1)*(i/m) + (i % m);
     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-    ierr   = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES));
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   /* Create test vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,N);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
-  ierr = VecSet(u,one);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
+  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,N));
+  CHKERRQ(VecSetFromOptions(u));
+  CHKERRQ(VecDuplicate(u,&b));
+  CHKERRQ(VecSet(u,one));
 
   /* Check error */
-  ierr = MatMult(C,u,b);CHKERRQ(ierr);
-  ierr = VecNorm(b,NORM_2,&norm);CHKERRQ(ierr);
+  CHKERRQ(MatMult(C,u,b));
+  CHKERRQ(VecNorm(b,NORM_2,&norm));
   if (norm > PETSC_SQRT_MACHINE_EPSILON) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error b %g should be near 0\n",(double)norm);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error b %g should be near 0\n",(double)norm));
   }
 
   /* Now test MatGetValues() */
-  ierr = PetscOptionsHasName(NULL,NULL,"-get_values",&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-get_values",&flg));
   if (flg) {
-    ierr  = MatGetOwnershipRange(C,&mystart,&myend);CHKERRQ(ierr);
+    CHKERRQ(MatGetOwnershipRange(C,&mystart,&myend));
     nrsub = myend - mystart; ncsub = 4;
-    ierr  = PetscMalloc1(nrsub*ncsub,&vals);CHKERRQ(ierr);
-    ierr  = PetscMalloc1(nrsub,&rsub);CHKERRQ(ierr);
-    ierr  = PetscMalloc1(ncsub,&csub);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(nrsub*ncsub,&vals));
+    CHKERRQ(PetscMalloc1(nrsub,&rsub));
+    CHKERRQ(PetscMalloc1(ncsub,&csub));
     for (i=myend-1; i>=mystart; i--) rsub[myend-i-1] = i;
     for (i=0; i<ncsub; i++) csub[i] = 2*(ncsub-i) + mystart;
-    ierr = MatGetValues(C,nrsub,rsub,ncsub,csub,vals);CHKERRQ(ierr);
-    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"processor number %d: start=%" PetscInt_FMT ", end=%" PetscInt_FMT ", mystart=%" PetscInt_FMT ", myend=%" PetscInt_FMT "\n",rank,start,end,mystart,myend);CHKERRQ(ierr);
+    CHKERRQ(MatGetValues(C,nrsub,rsub,ncsub,csub,vals));
+    CHKERRQ(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"processor number %d: start=%" PetscInt_FMT ", end=%" PetscInt_FMT ", mystart=%" PetscInt_FMT ", myend=%" PetscInt_FMT "\n",rank,start,end,mystart,myend));
     for (i=0; i<nrsub; i++) {
       for (j=0; j<ncsub; j++) {
         if (PetscImaginaryPart(vals[i*ncsub+j]) != 0.0) {
-          ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%" PetscInt_FMT ", %" PetscInt_FMT "] = %g + %g i\n",rsub[i],csub[j],(double)PetscRealPart(vals[i*ncsub+j]),(double)PetscImaginaryPart(vals[i*ncsub+j]));CHKERRQ(ierr);
+          CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%" PetscInt_FMT ", %" PetscInt_FMT "] = %g + %g i\n",rsub[i],csub[j],(double)PetscRealPart(vals[i*ncsub+j]),(double)PetscImaginaryPart(vals[i*ncsub+j])));
         } else {
-          ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%" PetscInt_FMT ", %" PetscInt_FMT "] = %g\n",rsub[i],csub[j],(double)PetscRealPart(vals[i*ncsub+j]));CHKERRQ(ierr);
+          CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"  C[%" PetscInt_FMT ", %" PetscInt_FMT "] = %g\n",rsub[i],csub[j],(double)PetscRealPart(vals[i*ncsub+j])));
         }
       }
     }
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-    ierr = PetscFree(rsub);CHKERRQ(ierr);
-    ierr = PetscFree(csub);CHKERRQ(ierr);
-    ierr = PetscFree(vals);CHKERRQ(ierr);
+    CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+    CHKERRQ(PetscFree(rsub));
+    CHKERRQ(PetscFree(csub));
+    CHKERRQ(PetscFree(vals));
   }
 
   /* Free data structures */
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&u));
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(MatDestroy(&C));
   ierr = PetscFinalize();
   return ierr;
 }

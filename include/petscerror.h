@@ -312,12 +312,12 @@ PetscPushErrorHandler(), PetscError(), CHKMEMQ, CHKERRA()
 M*/
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 void CHKERRQ(PetscErrorCode);
-void CHKERRV(PetscErrorCode);
 #else
 #define CHKERRQ(...) do {                                                                      \
     PetscErrorCode ierr_q_ = __VA_ARGS__;                                                      \
     if (PetscUnlikely(ierr_q_)) return PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr_q_,PETSC_ERROR_REPEAT," "); \
   } while (0)
+#endif
 #define CHKERRV(...) do {                                                                      \
     PetscErrorCode ierr_void_ = __VA_ARGS__;                                                   \
     if (PetscUnlikely(ierr_void_)) {                                                           \
@@ -325,7 +325,6 @@ void CHKERRV(PetscErrorCode);
       return;                                                                                  \
     }                                                                                          \
   } while (0)
-#endif
 
 /*MC
    CHKERRA - Fortran-only replacement for CHKERRQ in the main program, which aborts immediately
@@ -368,10 +367,6 @@ M*/
 
 .seealso: SETERRABORT(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, CHKERRMPI()
 M*/
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
-void CHKERRABORT(MPI_Comm,PetscErrorCode);
-void CHKERRCONTINUE(PetscErrorCode);
-#else
 #define CHKERRABORT(comm,...) do {                                                             \
     PetscErrorCode ierr_abort_ = __VA_ARGS__;                                                  \
     if (PetscUnlikely(ierr_abort_)) {                                                          \
@@ -383,7 +378,6 @@ void CHKERRCONTINUE(PetscErrorCode);
     PetscErrorCode ierr_continue_ = __VA_ARGS__;                                               \
     if (PetscUnlikely(ierr_continue_)) PetscError(PETSC_COMM_SELF,__LINE__,PETSC_FUNCTION_NAME,__FILE__,ierr_continue_,PETSC_ERROR_REPEAT," "); \
   } while (0)
-#endif
 
 PETSC_EXTERN PetscErrorCode PetscAbortFindSourceFile_Private(const char*,PetscInt*);
 PETSC_EXTERN PetscBool petscwaitonerrorflg;
@@ -446,20 +440,15 @@ PETSC_EXTERN PetscBool petscindebugger;
 
 .seealso: SETERRMPI(), CHKERRQ(), SETERRQ(), SETERRABORT(), CHKERRABORT(), PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), CHKMEMQ
 M*/
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
-void CHKERRMPI(PetscErrorCode);
-#else
-#define CHKERRMPI(...) \
-do { \
-  PetscErrorCode _7_errorcode = __VA_ARGS__; \
-  if (PetscUnlikely(_7_errorcode)) { \
-    char _7_errorstring[MPI_MAX_ERROR_STRING]; \
-    PetscMPIInt _7_resultlen; \
-    MPI_Error_string(_7_errorcode,(char*)_7_errorstring,&_7_resultlen); (void)_7_resultlen; \
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MPI,"MPI error %d %s",(int)_7_errorcode,_7_errorstring); \
-  } \
-} while (0)
-#endif
+#define CHKERRMPI(...) do {                                                                    \
+    PetscErrorCode _7_errorcode = __VA_ARGS__;                                                 \
+    if (PetscUnlikely(_7_errorcode)) {                                                         \
+      char        _7_errorstring[MPI_MAX_ERROR_STRING];                                        \
+      PetscMPIInt _7_resultlen;                                                                \
+      MPI_Error_string(_7_errorcode,(char*)_7_errorstring,&_7_resultlen); (void)_7_resultlen;  \
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MPI,"MPI error %d %s",(int)_7_errorcode,_7_errorstring); \
+    }                                                                                          \
+  } while (0)
 
 #ifdef PETSC_CLANGUAGE_CXX
 
@@ -551,7 +540,7 @@ M*/
 #define CHKMEMQ
 #define CHKMEMA
 #else
-#define CHKMEMQ do {PetscErrorCode _7_ierr = PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__);CHKERRQ(_7_ierr);} while (0)
+#define CHKMEMQ do CHKERRQ(PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__)); while (0)
 #define CHKMEMA PetscMallocValidate(__LINE__,PETSC_FUNCTION_NAME,__FILE__)
 #endif
 /*E
@@ -703,35 +692,33 @@ typedef struct {
     PetscStackSAWsGrantAccess();                                        \
   } while (0)
 
-#define PetscStackPopNoCheck(funct)                    do {             \
-    PetscStackSAWsTakeAccess();                                         \
-    if (PetscUnlikely(petscstack.currentsize <= 0)) {                   \
-      if (PetscUnlikely(petscstack.check)) {                            \
-        printf("Invalid stack size %d, pop %s\n",                       \
-               petscstack.currentsize,funct);                           \
-      }                                                                 \
-    } else {                                                            \
-      if (--petscstack.currentsize < PETSCSTACKSIZE) {                  \
-        if (PetscUnlikely(                                              \
-              petscstack.check                                &&        \
-              petscstack.petscroutine[petscstack.currentsize] &&        \
-              (petscstack.function[petscstack.currentsize]    !=        \
-               (const char*)funct))) {                                  \
+#define PetscStackPopNoCheck(funct)                    do {                                    \
+    PetscStackSAWsTakeAccess();                                                                \
+    if (PetscUnlikely(petscstack.currentsize <= 0)) {                                          \
+      if (PetscUnlikely(petscstack.check)) {                                                   \
+        printf("Invalid stack size %d, pop %s\n",petscstack.currentsize,funct);                \
+      }                                                                                        \
+    } else {                                                                                   \
+      if (--petscstack.currentsize < PETSCSTACKSIZE) {                                         \
+        if (PetscUnlikely(                                                                     \
+              petscstack.check                                &&                               \
+              petscstack.petscroutine[petscstack.currentsize] &&                               \
+              (petscstack.function[petscstack.currentsize]    !=                               \
+               (const char*)funct))) {                                                         \
           /* We need this string comparison because "unknown" can be defined in different static strings: */ \
-          PetscBool _cmpflg;                                            \
-          const char *_funct = petscstack.function[petscstack.currentsize]; \
-          PetscStrcmp(_funct,funct,&_cmpflg);                           \
-          if (!_cmpflg)                                                 \
-            printf("Invalid stack: push from %s, pop from %s\n", _funct,funct); \
-        }                                                               \
-        petscstack.function[petscstack.currentsize] = PETSC_NULLPTR;    \
-        petscstack.file[petscstack.currentsize]     = PETSC_NULLPTR;    \
-        petscstack.line[petscstack.currentsize]     = 0;                \
-        petscstack.petscroutine[petscstack.currentsize] = 0;            \
-      }                                                                 \
-      petscstack.hotdepth = PetscMax(petscstack.hotdepth-1,0);          \
-    }                                                                   \
-    PetscStackSAWsGrantAccess();                                        \
+          PetscBool _cmpflg;                                                                   \
+          const char *_funct = petscstack.function[petscstack.currentsize];                    \
+          PetscStrcmp(_funct,funct,&_cmpflg);                                                  \
+          if (!_cmpflg) printf("Invalid stack: push from %s, pop from %s\n", _funct,funct);    \
+        }                                                                                      \
+        petscstack.function[petscstack.currentsize]     = PETSC_NULLPTR;                       \
+        petscstack.file[petscstack.currentsize]         = PETSC_NULLPTR;                       \
+        petscstack.line[petscstack.currentsize]         = 0;                                   \
+        petscstack.petscroutine[petscstack.currentsize] = 0;                                   \
+      }                                                                                        \
+      petscstack.hotdepth = PetscMax(petscstack.hotdepth-1,0);                                 \
+    }                                                                                          \
+    PetscStackSAWsGrantAccess();                                                               \
   } while (0)
 
 #define PetscStackClearTop                             do {             \
@@ -902,7 +889,7 @@ M*/
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 #define PetscStackCall(name,routine)
-#define PetscStackCallStandard(name,...)
+#define PetscStackCallStandard(func,...)
 #else
 /*
     PetscStackCall - Calls an external library routine or user function after pushing the name of the routine on the stack.

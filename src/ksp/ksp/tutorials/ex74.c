@@ -102,7 +102,7 @@ int main(int argc, char **argv)
   char              irktype[256] = IRKGAUSS;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscFunctionListAdd(&IRKList,IRKGAUSS,RKCreate_Gauss);CHKERRQ(ierr);
+  CHKERRQ(PetscFunctionListAdd(&IRKList,IRKGAUSS,RKCreate_Gauss));
 
   /* default value */
   ctxt.a       = 1.0;
@@ -114,32 +114,32 @@ int main(int argc, char **argv)
   ctxt.physics_type = PHYSICS_DIFFUSION;
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"IRK options","");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-a","diffusion coefficient","<1.0>",ctxt.a,&ctxt.a,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt ("-imax","grid size","<20>",ctxt.imax,&ctxt.imax,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-xmin","xmin","<0.0>",ctxt.xmin,&ctxt.xmin,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-xmax","xmax","<1.0>",ctxt.xmax,&ctxt.xmax,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt ("-niter","number of time steps","<0>",ctxt.niter,&ctxt.niter,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-dt","time step size","<0.0>",ctxt.dt,&ctxt.dt,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-irk_type","IRK method family","",IRKList,irktype,irktype,sizeof(irktype),NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsReal("-a","diffusion coefficient","<1.0>",ctxt.a,&ctxt.a,NULL));
+  CHKERRQ(PetscOptionsInt ("-imax","grid size","<20>",ctxt.imax,&ctxt.imax,NULL));
+  CHKERRQ(PetscOptionsReal("-xmin","xmin","<0.0>",ctxt.xmin,&ctxt.xmin,NULL));
+  CHKERRQ(PetscOptionsReal("-xmax","xmax","<1.0>",ctxt.xmax,&ctxt.xmax,NULL));
+  CHKERRQ(PetscOptionsInt ("-niter","number of time steps","<0>",ctxt.niter,&ctxt.niter,NULL));
+  CHKERRQ(PetscOptionsReal("-dt","time step size","<0.0>",ctxt.dt,&ctxt.dt,NULL));
+  CHKERRQ(PetscOptionsFList("-irk_type","IRK method family","",IRKList,irktype,irktype,sizeof(irktype),NULL));
   nstages = 2;
-  ierr = PetscOptionsInt ("-irk_nstages","Number of stages in IRK method","",nstages,&nstages,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-physics_type","Type of process to discretize","",PhysicsTypes,(PetscEnum)ctxt.physics_type,(PetscEnum*)&ctxt.physics_type,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsInt ("-irk_nstages","Number of stages in IRK method","",nstages,&nstages,NULL));
+  CHKERRQ(PetscOptionsEnum("-physics_type","Type of process to discretize","",PhysicsTypes,(PetscEnum)ctxt.physics_type,(PetscEnum*)&ctxt.physics_type,NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* allocate and initialize solution vector and exact solution */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,ctxt.imax);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&uex);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
+  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,ctxt.imax));
+  CHKERRQ(VecSetFromOptions(u));
+  CHKERRQ(VecDuplicate(u,&uex));
   /* initial solution */
-  ierr = ExactSolution(u  ,&ctxt,0.0);CHKERRQ(ierr);
+  CHKERRQ(ExactSolution(u  ,&ctxt,0.0));
   /* exact   solution */
-  ierr = ExactSolution(uex,&ctxt,ctxt.dt*ctxt.niter);CHKERRQ(ierr);
+  CHKERRQ(ExactSolution(uex,&ctxt,ctxt.dt*ctxt.niter));
 
   {                             /* Create A,b,c */
     PetscErrorCode (*irkcreate)(PetscInt,PetscScalar**,PetscScalar**,PetscReal**);
-    ierr = PetscFunctionListFind(IRKList,irktype,&irkcreate);CHKERRQ(ierr);
-    ierr = (*irkcreate)(nstages,&A,&b,&c);CHKERRQ(ierr);
+    CHKERRQ(PetscFunctionListFind(IRKList,irktype,&irkcreate));
+    CHKERRQ((*irkcreate)(nstages,&A,&b,&c));
   }
   {                             /* Invert A */
     /* PETSc does not provide a routine to calculate the inverse of a general matrix.
@@ -148,21 +148,21 @@ int main(int argc, char **argv)
     Mat               A_baij;
     PetscInt          idxm[1]={0},idxn[1]={0};
     const PetscScalar *A_inv;
-    ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,nstages,nstages,nstages,1,NULL,&A_baij);CHKERRQ(ierr);
-    ierr = MatSetOption(A_baij,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = MatSetValuesBlocked(A_baij,1,idxm,1,idxn,A,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(A_baij,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A_baij,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatInvertBlockDiagonal(A_baij,&A_inv);CHKERRQ(ierr);
-    ierr = PetscMemcpy(A,A_inv,nstages*nstages*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = MatDestroy(&A_baij);CHKERRQ(ierr);
+    CHKERRQ(MatCreateSeqBAIJ(PETSC_COMM_SELF,nstages,nstages,nstages,1,NULL,&A_baij));
+    CHKERRQ(MatSetOption(A_baij,MAT_ROW_ORIENTED,PETSC_FALSE));
+    CHKERRQ(MatSetValuesBlocked(A_baij,1,idxm,1,idxn,A,INSERT_VALUES));
+    CHKERRQ(MatAssemblyBegin(A_baij,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(A_baij,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatInvertBlockDiagonal(A_baij,&A_inv));
+    CHKERRQ(PetscMemcpy(A,A_inv,nstages*nstages*sizeof(PetscScalar)));
+    CHKERRQ(MatDestroy(&A_baij));
   }
   /* Scale (1/dt)*A^{-1} and (1/dt)*b */
   for (s=0; s<nstages*nstages; s++) A[s] *= 1.0/ctxt.dt;
   for (s=0; s<nstages; s++) b[s] *= (-ctxt.dt);
 
   /* Compute row sums At and identity B */
-  ierr = PetscMalloc2(nstages,&At,PetscSqr(nstages),&B);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc2(nstages,&At,PetscSqr(nstages),&B));
   for (s=0; s<nstages; s++) {
     At[s] = 0;
     for (t=0; t<nstages; t++) {
@@ -175,55 +175,55 @@ int main(int argc, char **argv)
   switch (ctxt.physics_type) {
   case PHYSICS_ADVECTION:
   case PHYSICS_DIFFUSION:
-    ierr = Assemble_AdvDiff(PETSC_COMM_WORLD,&ctxt,&J);CHKERRQ(ierr);
+    CHKERRQ(Assemble_AdvDiff(PETSC_COMM_WORLD,&ctxt,&J));
   }
-  ierr = MatCreate(PETSC_COMM_WORLD,&Identity);CHKERRQ(ierr);
-  ierr = MatSetType(Identity,MATAIJ);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(J,&matis,&matie);CHKERRQ(ierr);
-  ierr = MatSetSizes(Identity,matie-matis,matie-matis,ctxt.imax,ctxt.imax);CHKERRQ(ierr);
-  ierr = MatSetUp(Identity);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&Identity));
+  CHKERRQ(MatSetType(Identity,MATAIJ));
+  CHKERRQ(MatGetOwnershipRange(J,&matis,&matie));
+  CHKERRQ(MatSetSizes(Identity,matie-matis,matie-matis,ctxt.imax,ctxt.imax));
+  CHKERRQ(MatSetUp(Identity));
   for (i=matis; i<matie; i++) {
-    ierr = MatSetValues(Identity,1,&i,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(Identity,1,&i,1,&i,&one,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(Identity,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd  (Identity,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(Identity,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd  (Identity,MAT_FINAL_ASSEMBLY));
 
   /* Create the KAIJ matrix for solving the stages */
-  ierr = MatCreateKAIJ(J,nstages,nstages,A,B,&TA);CHKERRQ(ierr);
+  CHKERRQ(MatCreateKAIJ(J,nstages,nstages,A,B,&TA));
 
   /* Create the KAIJ matrix for step completion */
-  ierr = MatCreateKAIJ(J,1,nstages,NULL,b,&SC);CHKERRQ(ierr);
+  CHKERRQ(MatCreateKAIJ(J,1,nstages,NULL,b,&SC));
 
   /* Create the KAIJ matrix to create the R for solving the stages */
-  ierr = MatCreateKAIJ(Identity,nstages,1,NULL,At,&R);CHKERRQ(ierr);
+  CHKERRQ(MatCreateKAIJ(Identity,nstages,1,NULL,At,&R));
 
   /* Create and set options for KSP */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,TA,TA);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPSetOperators(ksp,TA,TA));
+  CHKERRQ(KSPSetFromOptions(ksp));
 
   /* Allocate work and right-hand-side vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&z);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(z);CHKERRQ(ierr);
-  ierr = VecSetSizes(z,PETSC_DECIDE,ctxt.imax*nstages);CHKERRQ(ierr);
-  ierr = VecDuplicate(z,&rhs);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&z));
+  CHKERRQ(VecSetFromOptions(z));
+  CHKERRQ(VecSetSizes(z,PETSC_DECIDE,ctxt.imax*nstages));
+  CHKERRQ(VecDuplicate(z,&rhs));
 
-  ierr = VecGetOwnershipRange(u,&is,&ie);CHKERRQ(ierr);
-  ierr = PetscMalloc3(nstages,&ix,nstages,&zvals,ie-is,&ix2);CHKERRQ(ierr);
+  CHKERRQ(VecGetOwnershipRange(u,&is,&ie));
+  CHKERRQ(PetscMalloc3(nstages,&ix,nstages,&zvals,ie-is,&ix2));
   /* iterate in time */
   for (n=0,time=0.,total_its=0; n<ctxt.niter; n++) {
     PetscInt its;
 
     /* compute and set the right hand side */
-    ierr = MatMult(R,u,rhs);CHKERRQ(ierr);
+    CHKERRQ(MatMult(R,u,rhs));
 
     /* Solve the system */
-    ierr = KSPSolve(ksp,rhs,z);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+    CHKERRQ(KSPSolve(ksp,rhs,z));
+    CHKERRQ(KSPGetIterationNumber(ksp,&its));
     total_its += its;
 
     /* Update the solution */
-    ierr = MatMultAdd(SC,z,u,u);CHKERRQ(ierr);
+    CHKERRQ(MatMultAdd(SC,z,u,u));
 
     /* time step complete */
     time += ctxt.dt;
@@ -231,28 +231,28 @@ int main(int argc, char **argv)
   PetscFree3(ix,ix2,zvals);
 
   /* Deallocate work and right-hand-side vectors */
-  ierr = VecDestroy(&z);CHKERRQ(ierr);
-  ierr = VecDestroy(&rhs);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&z));
+  CHKERRQ(VecDestroy(&rhs));
 
   /* Calculate error in final solution */
-  ierr = VecAYPX(uex,-1.0,u);CHKERRQ(ierr);
-  ierr = VecNorm(uex,NORM_2,&err);CHKERRQ(ierr);
+  CHKERRQ(VecAYPX(uex,-1.0,u));
+  CHKERRQ(VecNorm(uex,NORM_2,&err));
   err  = PetscSqrtReal(err*err/((PetscReal)ctxt.imax));
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"L2 norm of the numerical error = %g (time=%g)\n",(double)err,(double)time);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of time steps: %D (%D Krylov iterations)\n",ctxt.niter,total_its);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"L2 norm of the numerical error = %g (time=%g)\n",(double)err,(double)time));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Number of time steps: %D (%D Krylov iterations)\n",ctxt.niter,total_its));
 
   /* Free up memory */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = MatDestroy(&TA);CHKERRQ(ierr);
-  ierr = MatDestroy(&SC);CHKERRQ(ierr);
-  ierr = MatDestroy(&R);CHKERRQ(ierr);
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
-  ierr = MatDestroy(&Identity);CHKERRQ(ierr);
-  ierr = PetscFree3(A,b,c);CHKERRQ(ierr);
-  ierr = PetscFree2(At,B);CHKERRQ(ierr);
-  ierr = VecDestroy(&uex);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = PetscFunctionListDestroy(&IRKList);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(MatDestroy(&TA));
+  CHKERRQ(MatDestroy(&SC));
+  CHKERRQ(MatDestroy(&R));
+  CHKERRQ(MatDestroy(&J));
+  CHKERRQ(MatDestroy(&Identity));
+  CHKERRQ(PetscFree3(A,b,c));
+  CHKERRQ(PetscFree2(At,B));
+  CHKERRQ(VecDestroy(&uex));
+  CHKERRQ(VecDestroy(&u));
+  CHKERRQ(PetscFunctionListDestroy(&IRKList));
 
   ierr = PetscFinalize();
   return ierr;
@@ -261,15 +261,14 @@ int main(int argc, char **argv)
 PetscErrorCode ExactSolution(Vec u,void *c,PetscReal t)
 {
   UserContext     *ctxt = (UserContext*) c;
-  PetscErrorCode  ierr;
   PetscInt        i,is,ie;
   PetscScalar     *uarr;
   PetscReal       x,dx,a=ctxt->a,pi=PETSC_PI;
 
   PetscFunctionBegin;
   dx = (ctxt->xmax - ctxt->xmin)/((PetscReal) ctxt->imax);
-  ierr = VecGetOwnershipRange(u,&is,&ie);CHKERRQ(ierr);
-  ierr = VecGetArray(u,&uarr);CHKERRQ(ierr);
+  CHKERRQ(VecGetOwnershipRange(u,&is,&ie));
+  CHKERRQ(VecGetArray(u,&uarr));
   for (i=is; i<ie; i++) {
     x          = i * dx;
     switch (ctxt->physics_type) {
@@ -282,23 +281,22 @@ PetscErrorCode ExactSolution(Vec u,void *c,PetscReal t)
     default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for physics type %s",PhysicsTypes[ctxt->physics_type]);
     }
   }
-  ierr = VecRestoreArray(u,&uarr);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(u,&uarr));
   PetscFunctionReturn(0);
 }
 
 /* Arrays should be freed with PetscFree3(A,b,c) */
 static PetscErrorCode RKCreate_Gauss(PetscInt nstages,PetscScalar **gauss_A,PetscScalar **gauss_b,PetscReal **gauss_c)
 {
-  PetscErrorCode    ierr;
   PetscScalar       *A,*G0,*G1;
   PetscReal         *b,*c;
   PetscInt          i,j;
   Mat               G0mat,G1mat,Amat;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc3(PetscSqr(nstages),&A,nstages,gauss_b,nstages,&c);CHKERRQ(ierr);
-  ierr = PetscMalloc3(nstages,&b,PetscSqr(nstages),&G0,PetscSqr(nstages),&G1);CHKERRQ(ierr);
-  ierr = PetscDTGaussQuadrature(nstages,0.,1.,c,b);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc3(PetscSqr(nstages),&A,nstages,gauss_b,nstages,&c));
+  CHKERRQ(PetscMalloc3(nstages,&b,PetscSqr(nstages),&G0,PetscSqr(nstages),&G1));
+  CHKERRQ(PetscDTGaussQuadrature(nstages,0.,1.,c,b));
   for (i=0; i<nstages; i++) (*gauss_b)[i] = b[i]; /* copy to possibly-complex array */
 
   /* A^T = G0^{-1} G1 */
@@ -309,17 +307,17 @@ static PetscErrorCode RKCreate_Gauss(PetscInt nstages,PetscScalar **gauss_A,Pets
     }
   }
   /* The arrays above are row-aligned, but we create dense matrices as the transpose */
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,nstages,nstages,G0,&G0mat);CHKERRQ(ierr);
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,nstages,nstages,G1,&G1mat);CHKERRQ(ierr);
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,nstages,nstages,A,&Amat);CHKERRQ(ierr);
-  ierr = MatLUFactor(G0mat,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = MatMatSolve(G0mat,G1mat,Amat);CHKERRQ(ierr);
-  ierr = MatTranspose(Amat,MAT_INPLACE_MATRIX,&Amat);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF,nstages,nstages,G0,&G0mat));
+  CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF,nstages,nstages,G1,&G1mat));
+  CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF,nstages,nstages,A,&Amat));
+  CHKERRQ(MatLUFactor(G0mat,NULL,NULL,NULL));
+  CHKERRQ(MatMatSolve(G0mat,G1mat,Amat));
+  CHKERRQ(MatTranspose(Amat,MAT_INPLACE_MATRIX,&Amat));
 
-  ierr = MatDestroy(&G0mat);CHKERRQ(ierr);
-  ierr = MatDestroy(&G1mat);CHKERRQ(ierr);
-  ierr = MatDestroy(&Amat);CHKERRQ(ierr);
-  ierr = PetscFree3(b,G0,G1);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&G0mat));
+  CHKERRQ(MatDestroy(&G1mat));
+  CHKERRQ(MatDestroy(&Amat));
+  CHKERRQ(PetscFree3(b,G0,G1));
   *gauss_A = A;
   *gauss_c = c;
   PetscFunctionReturn(0);
@@ -327,17 +325,16 @@ static PetscErrorCode RKCreate_Gauss(PetscInt nstages,PetscScalar **gauss_A,Pets
 
 static PetscErrorCode Assemble_AdvDiff(MPI_Comm comm,UserContext *user,Mat *J)
 {
-  PetscErrorCode ierr;
   PetscInt       matis,matie,i;
   PetscReal      dx,dx2;
 
   PetscFunctionBegin;
   dx = (user->xmax - user->xmin)/((PetscReal)user->imax); dx2 = dx*dx;
-  ierr = MatCreate(comm,J);CHKERRQ(ierr);
-  ierr = MatSetType(*J,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetSizes(*J,PETSC_DECIDE,PETSC_DECIDE,user->imax,user->imax);CHKERRQ(ierr);
-  ierr = MatSetUp(*J);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(*J,&matis,&matie);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(comm,J));
+  CHKERRQ(MatSetType(*J,MATAIJ));
+  CHKERRQ(MatSetSizes(*J,PETSC_DECIDE,PETSC_DECIDE,user->imax,user->imax));
+  CHKERRQ(MatSetUp(*J));
+  CHKERRQ(MatGetOwnershipRange(*J,&matis,&matie));
   for (i=matis; i<matie; i++) {
     PetscScalar values[3];
     PetscInt    col[3];
@@ -368,10 +365,10 @@ static PetscErrorCode Assemble_AdvDiff(MPI_Comm comm,UserContext *user,Mat *J)
       col[1] = i;
       col[2] = i+1;
     }
-    ierr = MatSetValues(*J,1,&i,3,col,values,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(*J,1,&i,3,col,values,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd  (*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd  (*J,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 

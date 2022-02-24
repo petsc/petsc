@@ -10,40 +10,40 @@ int main(int argc,char **args)
   PetscMPIInt       size,rank;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   nsubcomm = size;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-nsubcomm",&nsubcomm,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nsubcomm",&nsubcomm,NULL));
 
-  ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A, m, n, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(A, MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD, &A));
+  CHKERRQ(MatSetSizes(A, m, n, PETSC_DETERMINE, PETSC_DETERMINE));
+  CHKERRQ(MatSetType(A, MATAIJ));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatSetUp(A));
 
   if (rank == 0) {
     for (i=0;i<size*PetscMin(m,n);i++) {
-      ierr = MatSetValue(A, i, i, 1.0, INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValue(A, i, i, 1.0, INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = MatCreateRedundantMatrix(A, nsubcomm, MPI_COMM_NULL, MAT_INITIAL_MATRIX, &B);CHKERRQ(ierr);
+  CHKERRQ(MatCreateRedundantMatrix(A, nsubcomm, MPI_COMM_NULL, MAT_INITIAL_MATRIX, &B));
   if (nsubcomm==size) { /* B is a sequential matrix */
     if (rank == 0) {
-      ierr = MatView(B,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      CHKERRQ(MatView(B,PETSC_VIEWER_STDOUT_SELF));
     }
   } else {
     MPI_Comm comm;
-    ierr = PetscObjectGetComm((PetscObject)B,&comm);CHKERRQ(ierr);
-    ierr = MatView(B,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+    CHKERRQ(PetscObjectGetComm((PetscObject)B,&comm));
+    CHKERRQ(MatView(B,PETSC_VIEWER_STDOUT_(comm)));
   }
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&B));
   ierr = PetscFinalize();
   return ierr;
 }

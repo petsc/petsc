@@ -18,52 +18,52 @@ int main(int argc, char **args)
   PetscErrorCode  ierr;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   nemptyranks = 10;
   nbigranks   = 10;
-  ierr        = PetscMalloc2(nemptyranks,&emptyranks,nbigranks,&bigranks);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc2(nemptyranks,&emptyranks,nbigranks,&bigranks));
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Partitioning example options",NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsIntArray("-emptyranks","Ranks to be skipped by partition","",emptyranks,&nemptyranks,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsIntArray("-bigranks","Ranks to be overloaded","",bigranks,&nbigranks,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsIntArray("-emptyranks","Ranks to be skipped by partition","",emptyranks,&nemptyranks,NULL));
+  CHKERRQ(PetscOptionsIntArray("-bigranks","Ranks to be overloaded","",bigranks,&nbigranks,NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   m = 1;
   for (i=0; i<nemptyranks; i++) if (rank == emptyranks[i]) m = 0;
   for (i=0; i<nbigranks; i++) if (rank == bigranks[i]) m = 5;
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,m,m,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A,3,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,3,NULL,2,NULL);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(A,1,3,NULL);CHKERRQ(ierr);
-  ierr = MatMPIBAIJSetPreallocation(A,1,3,NULL,2,NULL);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocation(A,1,2,NULL);CHKERRQ(ierr);
-  ierr = MatMPISBAIJSetPreallocation(A,1,2,NULL,1,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetSizes(A,m,m,PETSC_DECIDE,PETSC_DECIDE));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatSeqAIJSetPreallocation(A,3,NULL));
+  CHKERRQ(MatMPIAIJSetPreallocation(A,3,NULL,2,NULL));
+  CHKERRQ(MatSeqBAIJSetPreallocation(A,1,3,NULL));
+  CHKERRQ(MatMPIBAIJSetPreallocation(A,1,3,NULL,2,NULL));
+  CHKERRQ(MatSeqSBAIJSetPreallocation(A,1,2,NULL));
+  CHKERRQ(MatMPISBAIJSetPreallocation(A,1,2,NULL,1,NULL));
 
-  ierr = MatGetSize(A,NULL,&N);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+  CHKERRQ(MatGetSize(A,NULL,&N));
+  CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
   for (i=rstart; i<rend; i++) {
     const PetscInt    cols[] = {(i+N-1)%N,i,(i+1)%N};
     const PetscScalar vals[] = {1,1,1};
-    ierr = MatSetValues(A,1,&i,3,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&i,3,cols,vals,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = MatPartitioningCreate(PETSC_COMM_WORLD,&part);CHKERRQ(ierr);
-  ierr = MatPartitioningSetAdjacency(part,A);CHKERRQ(ierr);
-  ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
-  ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
-  ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscFree2(emptyranks,bigranks);CHKERRQ(ierr);
+  CHKERRQ(MatPartitioningCreate(PETSC_COMM_WORLD,&part));
+  CHKERRQ(MatPartitioningSetAdjacency(part,A));
+  CHKERRQ(MatPartitioningSetFromOptions(part));
+  CHKERRQ(MatPartitioningApply(part,&is));
+  CHKERRQ(ISView(is,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(ISDestroy(&is));
+  CHKERRQ(MatPartitioningDestroy(&part));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(PetscFree2(emptyranks,bigranks));
   ierr = PetscFinalize();
   return ierr;
 }

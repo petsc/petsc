@@ -11,35 +11,35 @@ int main(int argc, char *argv[])
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
 
   /* basic creation and destruction */
-  ierr = PetscDeviceContextCreate(&dctx);CHKERRQ(ierr);
-  ierr = AssertDeviceContextExists(dctx);CHKERRQ(ierr);
-  ierr = PetscDeviceContextDestroy(&dctx);CHKERRQ(ierr);
-  ierr = AssertDeviceContextDoesNotExist(dctx);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceContextCreate(&dctx));
+  CHKERRQ(AssertDeviceContextExists(dctx));
+  CHKERRQ(PetscDeviceContextDestroy(&dctx));
+  CHKERRQ(AssertDeviceContextDoesNotExist(dctx));
   /* double free is no-op */
-  ierr = PetscDeviceContextDestroy(&dctx);CHKERRQ(ierr);
-  ierr = AssertDeviceContextDoesNotExist(dctx);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceContextDestroy(&dctx));
+  CHKERRQ(AssertDeviceContextDoesNotExist(dctx));
 
   /* test global context returns a valid context */
   dctx = NULL;
-  ierr = PetscDeviceContextGetCurrentContext(&dctx);CHKERRQ(ierr);
-  ierr = AssertDeviceContextExists(dctx);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceContextGetCurrentContext(&dctx));
+  CHKERRQ(AssertDeviceContextExists(dctx));
   /* test locally setting to null doesn't clobber the global */
   dctx = NULL;
-  ierr = PetscDeviceContextGetCurrentContext(&dctx);CHKERRQ(ierr);
-  ierr = AssertDeviceContextExists(dctx);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceContextGetCurrentContext(&dctx));
+  CHKERRQ(AssertDeviceContextExists(dctx));
 
   /* test duplicate */
-  ierr = PetscDeviceContextDuplicate(dctx,&ddup);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceContextDuplicate(dctx,&ddup));
   /* both device contexts should exist */
-  ierr = AssertDeviceContextExists(dctx);CHKERRQ(ierr);
-  ierr = AssertDeviceContextExists(ddup);CHKERRQ(ierr);
+  CHKERRQ(AssertDeviceContextExists(dctx));
+  CHKERRQ(AssertDeviceContextExists(ddup));
 
   /* destroying the dup should leave the original untouched */
-  ierr = PetscDeviceContextDestroy(&ddup);CHKERRQ(ierr);
-  ierr = AssertDeviceContextDoesNotExist(ddup);CHKERRQ(ierr);
-  ierr = AssertDeviceContextExists(dctx);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceContextDestroy(&ddup));
+  CHKERRQ(AssertDeviceContextDoesNotExist(ddup));
+  CHKERRQ(AssertDeviceContextExists(dctx));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"EXIT_SUCCESS\n");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"EXIT_SUCCESS\n"));
   ierr = PetscFinalize();
   return ierr;
 }

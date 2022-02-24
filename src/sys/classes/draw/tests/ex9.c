@@ -20,33 +20,33 @@ int main(int argc,char **argv)
   xlabel = "X-axis Label"; toplabel = "Top Label"; ylabel = "Y-axis Label";
 
   ierr  = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr  = PetscOptionsGetInt(NULL,NULL,"-width",&w,NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(NULL,NULL,"-height",&h,NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(NULL,NULL,"-n",&nn,NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(NULL,NULL,"-bins",&b,NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsGetInt(NULL,NULL,"-color",&c,NULL);CHKERRQ(ierr);
-  ierr  = PetscOptionsHasName(NULL,NULL,"-nolabels",&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-width",&w,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-height",&h,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&nn,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bins",&b,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-color",&c,NULL));
+  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-nolabels",&flg));
   width = (int) w; height = (int)h; n = (int)nn; bins = (int) b; color = (int) c;
   if (flg) { xlabel = NULL; ylabel = NULL; toplabel = NULL; }
 
-  ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
-  ierr = PetscDrawHGCreate(draw,bins,&hist);CHKERRQ(ierr);
-  ierr = PetscDrawHGSetColor(hist,color);CHKERRQ(ierr);
-  ierr = PetscDrawHGGetAxis(hist,&axis);CHKERRQ(ierr);
-  ierr = PetscDrawAxisSetColors(axis,PETSC_DRAW_BLACK,PETSC_DRAW_RED,PETSC_DRAW_BLUE);CHKERRQ(ierr);
-  ierr = PetscDrawAxisSetLabels(axis,toplabel,xlabel,ylabel);CHKERRQ(ierr);
-  /*ierr = PetscDrawHGSetFromOptions(hist);CHKERRQ(ierr);*/
+  CHKERRQ(PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw));
+  CHKERRQ(PetscDrawSetFromOptions(draw));
+  CHKERRQ(PetscDrawHGCreate(draw,bins,&hist));
+  CHKERRQ(PetscDrawHGSetColor(hist,color));
+  CHKERRQ(PetscDrawHGGetAxis(hist,&axis));
+  CHKERRQ(PetscDrawAxisSetColors(axis,PETSC_DRAW_BLACK,PETSC_DRAW_RED,PETSC_DRAW_BLUE));
+  CHKERRQ(PetscDrawAxisSetLabels(axis,toplabel,xlabel,ylabel));
+  /*CHKERRQ(PetscDrawHGSetFromOptions(hist));*/
 
   for (i=0; i<n; i++) {
     xd   = (PetscReal)(i - 5);
-    ierr = PetscDrawHGAddValue(hist,xd*xd);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawHGAddValue(hist,xd*xd));
   }
-  ierr = PetscDrawHGDraw(hist);CHKERRQ(ierr);
-  ierr = PetscDrawHGSave(hist);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawHGDraw(hist));
+  CHKERRQ(PetscDrawHGSave(hist));
 
-  ierr = PetscDrawHGDestroy(&hist);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawHGDestroy(&hist));
+  CHKERRQ(PetscDrawDestroy(&draw));
   ierr = PetscFinalize();
   return ierr;
 }

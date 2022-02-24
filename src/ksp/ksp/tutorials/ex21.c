@@ -36,133 +36,133 @@ int main(int argc,char **args)
   RBFCtx         fctx;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&r);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&r));
+  CHKERRQ(PetscRandomSetFromOptions(r));
 
   sdim = 2;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-sdim",&sdim,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-sdim",&sdim,NULL));
   n    = 32;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   eta  = 0.6;
-  ierr = PetscOptionsGetReal(NULL,NULL,"-eta",&eta,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-eta",&eta,NULL));
   leafsize = 32;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-leafsize",&leafsize,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-leafsize",&leafsize,NULL));
   basisord = 8;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-basisord",&basisord,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-basisord",&basisord,NULL));
 
   /* Create random points */
-  ierr = PetscMalloc1(sdim*n,&coords);CHKERRQ(ierr);
-  ierr = PetscRandomGetValuesReal(r,sdim*n,coords);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(sdim*n,&coords));
+  CHKERRQ(PetscRandomGetValuesReal(r,sdim*n,coords));
 
   fctx.lambda = 0.01;
-  ierr = PetscOptionsGetReal(NULL,NULL,"-lambda",&fctx.lambda,NULL);CHKERRQ(ierr);
-  ierr = PetscRandomGetValueReal(r,&fctx.sigma);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-sigma",&fctx.sigma,NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc1(sdim,&fctx.l);CHKERRQ(ierr);
-  ierr = PetscRandomGetValuesReal(r,sdim,fctx.l);CHKERRQ(ierr);
-  ierr = PetscOptionsGetRealArray(NULL,NULL,"-l",fctx.l,(i=sdim,&i),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-scale",&scale,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-lambda",&fctx.lambda,NULL));
+  CHKERRQ(PetscRandomGetValueReal(r,&fctx.sigma));
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sigma",&fctx.sigma,NULL));
+  CHKERRQ(PetscMalloc1(sdim,&fctx.l));
+  CHKERRQ(PetscRandomGetValuesReal(r,sdim,fctx.l));
+  CHKERRQ(PetscOptionsGetRealArray(NULL,NULL,"-l",fctx.l,(i=sdim,&i),NULL));
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-scale",&scale,NULL));
 
   /* Populate dense matrix for comparisons */
   {
     PetscInt i,j;
 
-    ierr = MatCreateDense(PETSC_COMM_WORLD,n,n,PETSC_DECIDE,PETSC_DECIDE,NULL,&Ad);CHKERRQ(ierr);
+    CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,n,n,PETSC_DECIDE,PETSC_DECIDE,NULL,&Ad));
     for (i = 0; i < n; i++) {
       for (j = 0; j < n; j++) {
-        ierr = MatSetValue(Ad,i,j,RBF(sdim,coords + i*sdim,coords + j*sdim,&fctx),INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValue(Ad,i,j,RBF(sdim,coords + i*sdim,coords + j*sdim,&fctx),INSERT_VALUES));
       }
     }
-    ierr = MatAssemblyBegin(Ad,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Ad,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(Ad,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(Ad,MAT_FINAL_ASSEMBLY));
   }
 
   /* Create and assemble the matrix */
-  ierr = MatCreateH2OpusFromKernel(PETSC_COMM_WORLD,n,n,PETSC_DECIDE,PETSC_DECIDE,sdim,coords,PETSC_FALSE,RBF,&fctx,eta,leafsize,basisord,&A);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)A,"RBF");CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(A,NULL,"-rbf_view");CHKERRQ(ierr);
+  CHKERRQ(MatCreateH2OpusFromKernel(PETSC_COMM_WORLD,n,n,PETSC_DECIDE,PETSC_DECIDE,sdim,coords,PETSC_FALSE,RBF,&fctx,eta,leafsize,basisord,&A));
+  CHKERRQ(MatSetOption(A,MAT_SYMMETRY_ETERNAL,PETSC_TRUE));
+  CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
+  CHKERRQ(PetscObjectSetName((PetscObject)A,"RBF"));
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatViewFromOptions(A,NULL,"-rbf_view"));
 
-  ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&d);CHKERRQ(ierr);
+  CHKERRQ(MatCreateVecs(A,&x,&b));
+  CHKERRQ(VecDuplicate(x,&u));
+  CHKERRQ(VecDuplicate(x,&d));
 
   {
     PetscReal norm;
-    ierr = MatComputeOperator(A,MATDENSE,&Ae);CHKERRQ(ierr);
-    ierr = MatAXPY(Ae,-1.0,Ad,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatGetDiagonal(Ae,d);CHKERRQ(ierr);
-    ierr = MatViewFromOptions(Ae,NULL,"-A_view");CHKERRQ(ierr);
-    ierr = MatViewFromOptions(Ae,NULL,"-D_view");CHKERRQ(ierr);
-    ierr = MatNorm(Ae,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Approx err %g\n",norm);CHKERRQ(ierr);
-    ierr = VecNorm(d,NORM_2,&norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Approx err (diag) %g\n",norm);CHKERRQ(ierr);
-    ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+    CHKERRQ(MatComputeOperator(A,MATDENSE,&Ae));
+    CHKERRQ(MatAXPY(Ae,-1.0,Ad,SAME_NONZERO_PATTERN));
+    CHKERRQ(MatGetDiagonal(Ae,d));
+    CHKERRQ(MatViewFromOptions(Ae,NULL,"-A_view"));
+    CHKERRQ(MatViewFromOptions(Ae,NULL,"-D_view"));
+    CHKERRQ(MatNorm(Ae,NORM_FROBENIUS,&norm));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Approx err %g\n",norm));
+    CHKERRQ(VecNorm(d,NORM_2,&norm));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Approx err (diag) %g\n",norm));
+    CHKERRQ(MatDestroy(&Ae));
   }
 
-  ierr = VecSet(u,1.0);CHKERRQ(ierr);
-  ierr = MatMult(Ad,u,b);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(Ad,NULL,"-Ad_view");CHKERRQ(ierr);
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,Ad,A);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCH2OPUS);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  CHKERRQ(VecSet(u,1.0));
+  CHKERRQ(MatMult(Ad,u,b));
+  CHKERRQ(MatViewFromOptions(Ad,NULL,"-Ad_view"));
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPSetOperators(ksp,Ad,A));
+  CHKERRQ(KSPGetPC(ksp,&pc));
+  CHKERRQ(PCSetType(pc,PCH2OPUS));
+  CHKERRQ(KSPSetFromOptions(ksp));
   /* we can also pass the points coordinates
      In this case it is not needed, since the preconditioning
      matrix is of type H2OPUS */
-  ierr = PCSetCoordinates(pc,sdim,n,coords);CHKERRQ(ierr);
+  CHKERRQ(PCSetCoordinates(pc,sdim,n,coords));
 
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  CHKERRQ(KSPSolve(ksp,b,x));
+  CHKERRQ(VecAXPY(x,-1.0,u));
+  CHKERRQ(VecNorm(x,NORM_2,&norm));
+  CHKERRQ(KSPGetIterationNumber(ksp,&its));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its));
 
   /* change lambda and reassemble */
-  ierr = VecSet(x,(scale-1.)*fctx.lambda);CHKERRQ(ierr);
-  ierr = MatDiagonalSet(Ad,x,ADD_VALUES);CHKERRQ(ierr);
+  CHKERRQ(VecSet(x,(scale-1.)*fctx.lambda));
+  CHKERRQ(MatDiagonalSet(Ad,x,ADD_VALUES));
   fctx.lambda *= scale;
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   {
     PetscReal norm;
-    ierr = MatComputeOperator(A,MATDENSE,&Ae);CHKERRQ(ierr);
-    ierr = MatAXPY(Ae,-1.0,Ad,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatGetDiagonal(Ae,d);CHKERRQ(ierr);
-    ierr = MatViewFromOptions(Ae,NULL,"-A_view");CHKERRQ(ierr);
-    ierr = MatViewFromOptions(Ae,NULL,"-D_view");CHKERRQ(ierr);
-    ierr = MatNorm(Ae,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Approx err %g\n",norm);CHKERRQ(ierr);
-    ierr = VecNorm(d,NORM_2,&norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Approx err (diag) %g\n",norm);CHKERRQ(ierr);
-    ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+    CHKERRQ(MatComputeOperator(A,MATDENSE,&Ae));
+    CHKERRQ(MatAXPY(Ae,-1.0,Ad,SAME_NONZERO_PATTERN));
+    CHKERRQ(MatGetDiagonal(Ae,d));
+    CHKERRQ(MatViewFromOptions(Ae,NULL,"-A_view"));
+    CHKERRQ(MatViewFromOptions(Ae,NULL,"-D_view"));
+    CHKERRQ(MatNorm(Ae,NORM_FROBENIUS,&norm));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Approx err %g\n",norm));
+    CHKERRQ(VecNorm(d,NORM_2,&norm));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Approx err (diag) %g\n",norm));
+    CHKERRQ(MatDestroy(&Ae));
   }
-  ierr = KSPSetOperators(ksp,Ad,A);CHKERRQ(ierr);
-  ierr = MatMult(Ad,u,b);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  ierr = MatMult(Ad,x,u);CHKERRQ(ierr);
-  ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  CHKERRQ(KSPSetOperators(ksp,Ad,A));
+  CHKERRQ(MatMult(Ad,u,b));
+  CHKERRQ(KSPSolve(ksp,b,x));
+  CHKERRQ(MatMult(Ad,x,u));
+  CHKERRQ(VecAXPY(u,-1.0,b));
+  CHKERRQ(VecNorm(u,NORM_2,&norm));
+  CHKERRQ(KSPGetIterationNumber(ksp,&its));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Residual norm error %g, Iterations %D\n",(double)norm,its));
 
-  ierr = PetscFree(coords);CHKERRQ(ierr);
-  ierr = PetscFree(fctx.l);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&d);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&Ad);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(coords));
+  CHKERRQ(PetscFree(fctx.l));
+  CHKERRQ(PetscRandomDestroy(&r));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&u));
+  CHKERRQ(VecDestroy(&d));
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&Ad));
+  CHKERRQ(KSPDestroy(&ksp));
   ierr = PetscFinalize();
   return ierr;
 }

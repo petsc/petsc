@@ -11,18 +11,18 @@ int main(int argc,char **argv)
   Vec            x,y;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetSizes(A,n,n,PETSC_DECIDE,PETSC_DECIDE));
+  CHKERRQ(MatSetFromOptions(A));
 
-  ierr = MatMPIAIJSetPreallocation(A,n,NULL,0,NULL);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
-  ierr = VecSet(x,1.0);CHKERRQ(ierr);
+  CHKERRQ(MatMPIAIJSetPreallocation(A,n,NULL,0,NULL));
+  CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
+  CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
+  CHKERRQ(MatCreateVecs(A,&x,&y));
+  CHKERRQ(VecSet(x,1.0));
 
   /*
     Matrix A only has nonzeros in the diagonal block, which is of size 3x3.
@@ -40,20 +40,20 @@ int main(int argc,char **argv)
     margin = (k == 2)? 0 : 2; /* Create two zero-rows in the first two assemblies */
     for (i=rstart; i<rend-margin; i++) {
       for (j=rstart; j<rend; j++) {
-        ierr = MatSetValue(A,i,j,(PetscScalar)vstart,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValue(A,i,j,(PetscScalar)vstart,INSERT_VALUES));
         vstart++;
       }
     }
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatMult(A,x,y);CHKERRQ(ierr);
-    ierr = MatMultTransposeAdd(A,x,y,y);CHKERRQ(ierr); /* y[i] = sum of row i and column i of A */
-    ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatMult(A,x,y));
+    CHKERRQ(MatMultTransposeAdd(A,x,y,y)); /* y[i] = sum of row i and column i of A */
+    CHKERRQ(VecView(y,PETSC_VIEWER_STDOUT_WORLD));
   }
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
   ierr = PetscFinalize();
 
   /* Uncomment this line if you want to use "cuda-memcheck --leaf-check full" to check this program */

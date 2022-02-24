@@ -9,7 +9,6 @@
 /* ----------------------------------- */
 PetscErrorCode PipeComputeSteadyState(Pipe pipe,PetscScalar Q0,PetscScalar H0)
 {
-  PetscErrorCode ierr;
   DM             cda;
   PipeField      *x;
   PetscInt       i,start,n;
@@ -17,19 +16,19 @@ PetscErrorCode PipeComputeSteadyState(Pipe pipe,PetscScalar Q0,PetscScalar H0)
   PetscScalar    *coords,c=pipe->R/(GRAV*pipe->A);
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinateDM(pipe->da, &cda);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(pipe->da, &local);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(pipe->da, pipe->x, &x);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayRead(cda, local, &coords);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(pipe->da, &start, 0, 0, &n, 0, 0);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoordinateDM(pipe->da, &cda));
+  CHKERRQ(DMGetCoordinatesLocal(pipe->da, &local));
+  CHKERRQ(DMDAVecGetArray(pipe->da, pipe->x, &x));
+  CHKERRQ(DMDAVecGetArrayRead(cda, local, &coords));
+  CHKERRQ(DMDAGetCorners(pipe->da, &start, 0, 0, &n, 0, 0));
 
   for (i = start; i < start + n; i++) {
     x[i].q = Q0;
     x[i].h = H0 - c * Q0 * PetscAbsScalar(Q0) * coords[i];
   }
 
-  ierr = DMDAVecRestoreArray(pipe->da, pipe->x, &x);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayRead(cda, local, &coords);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArray(pipe->da, pipe->x, &x));
+  CHKERRQ(DMDAVecRestoreArrayRead(cda, local, &coords));
   PetscFunctionReturn(0);
 }
 
@@ -60,7 +59,6 @@ static inline PetscScalar dhdx(PipeField *x,PetscInt i,PetscInt ilast,PetscReal 
 
 PetscErrorCode PipeIFunctionLocal_Lax(DMDALocalInfo *info,PetscReal ptime,PipeField *x,PipeField *xdot,PetscScalar *f,Pipe pipe)
 {
-  PetscErrorCode ierr;
   PetscInt       i,start,n,ilast;
   PetscReal      a=pipe->a,A=pipe->A,R=pipe->R,c=a*a/(GRAV*A);
   PetscReal      dx=pipe->length/(info->mx-1),dt=pipe->dt;
@@ -68,7 +66,7 @@ PetscErrorCode PipeIFunctionLocal_Lax(DMDALocalInfo *info,PetscReal ptime,PipeFi
   PipeField      *xold=pipe->xold;
 
   PetscFunctionBegin;
-  ierr = DMDAGetCorners(pipe->da, &start, 0, 0, &n, 0, 0);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(pipe->da, &start, 0, 0, &n, 0, 0));
 
   /* interior and boundary */
   ilast = start + n - 1;

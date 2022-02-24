@@ -25,11 +25,10 @@ typedef struct {
 @*/
 PetscErrorCode KSPMonitorSAWsCreate(KSP ksp,void **ctx)
 {
-  PetscErrorCode  ierr;
   KSPMonitor_SAWs *mon;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,&mon);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(ksp,&mon));
   mon->viewer = PETSC_VIEWER_SAWS_(PetscObjectComm((PetscObject)ksp));
   PetscCheckFalse(!mon->viewer,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Cannot create SAWs default viewer");
   *ctx = (void*)mon;
@@ -51,11 +50,10 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp,void **ctx)
 PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
 {
   KSPMonitor_SAWs *mon = (KSPMonitor_SAWs*)*ctx;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree2(mon->eigr,mon->eigi);CHKERRQ(ierr);
-  ierr = PetscFree(*ctx);CHKERRQ(ierr);
+  CHKERRQ(PetscFree2(mon->eigr,mon->eigi));
+  CHKERRQ(PetscFree(*ctx));
   PetscFunctionReturn(0);
 }
 
@@ -76,21 +74,20 @@ PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
 @*/
 PetscErrorCode KSPMonitorSAWs(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
 {
-  PetscErrorCode  ierr;
   KSPMonitor_SAWs *mon   = (KSPMonitor_SAWs*)ctx;
   PetscReal       emax,emin;
   PetscMPIInt     rank;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin);CHKERRQ(ierr);
+  CHKERRQ(KSPComputeExtremeSingularValues(ksp,&emax,&emin));
 
-  ierr = PetscFree2(mon->eigr,mon->eigi);CHKERRQ(ierr);
-  ierr = PetscMalloc2(n,&mon->eigr,n,&mon->eigi);CHKERRQ(ierr);
+  CHKERRQ(PetscFree2(mon->eigr,mon->eigi));
+  CHKERRQ(PetscMalloc2(n,&mon->eigr,n,&mon->eigi));
   if (n) {
-    ierr = KSPComputeEigenvalues(ksp,n,mon->eigr,mon->eigi,&mon->neigs);CHKERRQ(ierr);
+    CHKERRQ(KSPComputeEigenvalues(ksp,n,mon->eigr,mon->eigi,&mon->neigs));
 
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
     if (rank == 0) {
       SAWs_Delete("/PETSc/ksp_monitor_saws/eigr");
       SAWs_Delete("/PETSc/ksp_monitor_saws/eigi");
@@ -101,8 +98,8 @@ PetscErrorCode KSPMonitorSAWs(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
         PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/eigr",mon->eigr,mon->neigs,SAWs_READ,SAWs_DOUBLE));
         PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/eigi",mon->eigi,mon->neigs,SAWs_READ,SAWs_DOUBLE));
       }
-      ierr = PetscInfo(ksp,"KSP extreme singular values min=%g max=%g\n",(double)emin,(double)emax);CHKERRQ(ierr);
-      ierr = PetscSAWsBlock();CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(ksp,"KSP extreme singular values min=%g max=%g\n",(double)emin,(double)emax));
+      CHKERRQ(PetscSAWsBlock());
     }
   }
   PetscFunctionReturn(0);

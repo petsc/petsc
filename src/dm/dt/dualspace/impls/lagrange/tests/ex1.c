@@ -40,8 +40,6 @@ static PetscErrorCode ExpectedNumDofs_Interior(PetscInt dim, PetscInt order, Pet
 
 static PetscErrorCode ExpectedNumDofs_Total(PetscInt dim, PetscInt order, PetscInt formDegree, PetscBool trimmed, PetscInt tensor, PetscInt nCopies, PetscInt *nDofs)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   formDegree = PetscAbsInt(formDegree);
   /* see femtable.org for the source of most of these values */
@@ -51,15 +49,15 @@ static PetscErrorCode ExpectedNumDofs_Total(PetscInt dim, PetscInt order, PetscI
       PetscInt rnchooserk;
       PetscInt rkm1choosek;
 
-      ierr = PetscDTBinomialInt(order + dim, order + formDegree, &rnchooserk);CHKERRQ(ierr);
-      ierr = PetscDTBinomialInt(order + formDegree - 1, formDegree, &rkm1choosek);CHKERRQ(ierr);
+      CHKERRQ(PetscDTBinomialInt(order + dim, order + formDegree, &rnchooserk));
+      CHKERRQ(PetscDTBinomialInt(order + formDegree - 1, formDegree, &rkm1choosek));
       *nDofs = rnchooserk * rkm1choosek * nCopies;
     } else {
       PetscInt rnchooserk;
       PetscInt rkchoosek;
 
-      ierr = PetscDTBinomialInt(order + dim, order + formDegree, &rnchooserk);CHKERRQ(ierr);
-      ierr = PetscDTBinomialInt(order + formDegree, formDegree, &rkchoosek);CHKERRQ(ierr);
+      CHKERRQ(PetscDTBinomialInt(order + dim, order + formDegree, &rnchooserk));
+      CHKERRQ(PetscDTBinomialInt(order + formDegree, formDegree, &rkchoosek));
       *nDofs = rnchooserk * rkchoosek * nCopies;
     }
   } else if (tensor == 1) { /* hypercubes */
@@ -67,7 +65,7 @@ static PetscErrorCode ExpectedNumDofs_Total(PetscInt dim, PetscInt order, PetscI
       PetscInt nchoosek;
       PetscInt rpowk, rp1pownmk;
 
-      ierr = PetscDTBinomialInt(dim, formDegree, &nchoosek);CHKERRQ(ierr);
+      CHKERRQ(PetscDTBinomialInt(dim, formDegree, &nchoosek));
       rpowk = PetscPowInt(order, formDegree);
       rp1pownmk = PetscPowInt(order + 1, dim - formDegree);
       *nDofs = nchoosek * rpowk * rp1pownmk * nCopies;
@@ -75,7 +73,7 @@ static PetscErrorCode ExpectedNumDofs_Total(PetscInt dim, PetscInt order, PetscI
       PetscInt nchoosek;
       PetscInt rp1pown;
 
-      ierr = PetscDTBinomialInt(dim, formDegree, &nchoosek);CHKERRQ(ierr);
+      CHKERRQ(PetscDTBinomialInt(dim, formDegree, &nchoosek));
       rp1pown = PetscPowInt(order + 1, dim);
       *nDofs = nchoosek * rp1pown * nCopies;
     }
@@ -86,12 +84,12 @@ static PetscErrorCode ExpectedNumDofs_Total(PetscInt dim, PetscInt order, PetscI
     PetscInt fiber1 = 0;
 
     if (formDegree < dim) {
-      ierr = ExpectedNumDofs_Total(dim - 1, order, formDegree, trimmed, 0, 1, &tracek);CHKERRQ(ierr);
-      ierr = ExpectedNumDofs_Total(1, order, 0, trimmed, 0, 1, &fiber0);CHKERRQ(ierr);
+      CHKERRQ(ExpectedNumDofs_Total(dim - 1, order, formDegree, trimmed, 0, 1, &tracek));
+      CHKERRQ(ExpectedNumDofs_Total(1, order, 0, trimmed, 0, 1, &fiber0));
     }
     if (formDegree > 0) {
-      ierr = ExpectedNumDofs_Total(dim - 1, order, formDegree - 1, trimmed, 0, 1, &tracekm1);CHKERRQ(ierr);
-      ierr = ExpectedNumDofs_Total(1, order, 1, trimmed, 0, 1, &fiber1);CHKERRQ(ierr);
+      CHKERRQ(ExpectedNumDofs_Total(dim - 1, order, formDegree - 1, trimmed, 0, 1, &tracekm1));
+      CHKERRQ(ExpectedNumDofs_Total(1, order, 1, trimmed, 0, 1, &fiber1));
     }
     *nDofs = (tracek * fiber0 + tracekm1 * fiber1) * nCopies;
   }
@@ -101,8 +99,6 @@ static PetscErrorCode ExpectedNumDofs_Total(PetscInt dim, PetscInt order, PetscI
 static PetscErrorCode ExpectedNumDofs_Interior(PetscInt dim, PetscInt order, PetscInt formDegree, PetscBool trimmed,
                                                PetscInt tensor, PetscInt nCopies, PetscInt *nDofs)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   formDegree = PetscAbsInt(formDegree);
   /* see femtable.org for the source of most of these values */
@@ -115,8 +111,8 @@ static PetscErrorCode ExpectedNumDofs_Interior(PetscInt dim, PetscInt order, Pet
         PetscInt rnchooserk;
         PetscInt rkchoosek;
 
-        ierr = PetscDTBinomialInt(eorder + dim, eorder + eformDegree, &rnchooserk);CHKERRQ(ierr);
-        ierr = PetscDTBinomialInt(eorder + eformDegree, eformDegree, &rkchoosek);CHKERRQ(ierr);
+        CHKERRQ(PetscDTBinomialInt(eorder + dim, eorder + eformDegree, &rnchooserk));
+        CHKERRQ(PetscDTBinomialInt(eorder + eformDegree, eformDegree, &rkchoosek));
         *nDofs = rnchooserk * rkchoosek * nCopies;
       } else {
         *nDofs = 0;
@@ -129,8 +125,8 @@ static PetscErrorCode ExpectedNumDofs_Interior(PetscInt dim, PetscInt order, Pet
         PetscInt rnchooserk;
         PetscInt rkm1choosek;
 
-        ierr = PetscDTBinomialInt(eorder + dim, eorder + eformDegree, &rnchooserk);CHKERRQ(ierr);
-        ierr = PetscDTBinomialInt(eorder + eformDegree - 1, eformDegree, &rkm1choosek);CHKERRQ(ierr);
+        CHKERRQ(PetscDTBinomialInt(eorder + dim, eorder + eformDegree, &rnchooserk));
+        CHKERRQ(PetscDTBinomialInt(eorder + eformDegree - 1, eformDegree, &rkm1choosek));
         *nDofs = rnchooserk * rkm1choosek * nCopies;
       } else {
         *nDofs = 0;
@@ -138,7 +134,7 @@ static PetscErrorCode ExpectedNumDofs_Interior(PetscInt dim, PetscInt order, Pet
     }
   } else if (tensor == 1) { /* hypercubes */
     if (dim < 2) {
-      ierr = ExpectedNumDofs_Interior(dim, order, formDegree, trimmed, 0, nCopies, nDofs);CHKERRQ(ierr);
+      CHKERRQ(ExpectedNumDofs_Interior(dim, order, formDegree, trimmed, 0, nCopies, nDofs));
     } else {
       PetscInt tracek = 0;
       PetscInt tracekm1 = 0;
@@ -146,12 +142,12 @@ static PetscErrorCode ExpectedNumDofs_Interior(PetscInt dim, PetscInt order, Pet
       PetscInt fiber1 = 0;
 
       if (formDegree < dim) {
-        ierr = ExpectedNumDofs_Interior(dim - 1, order, formDegree, trimmed, dim > 2 ? 1 : 0, 1, &tracek);CHKERRQ(ierr);
-        ierr = ExpectedNumDofs_Interior(1, order, 0, trimmed, 0, 1, &fiber0);CHKERRQ(ierr);
+        CHKERRQ(ExpectedNumDofs_Interior(dim - 1, order, formDegree, trimmed, dim > 2 ? 1 : 0, 1, &tracek));
+        CHKERRQ(ExpectedNumDofs_Interior(1, order, 0, trimmed, 0, 1, &fiber0));
       }
       if (formDegree > 0) {
-        ierr = ExpectedNumDofs_Interior(dim - 1, order, formDegree - 1, trimmed, dim > 2 ? 1 : 0, 1, &tracekm1);CHKERRQ(ierr);
-        ierr = ExpectedNumDofs_Interior(1, order, 1, trimmed, 0, 1, &fiber1);CHKERRQ(ierr);
+        CHKERRQ(ExpectedNumDofs_Interior(dim - 1, order, formDegree - 1, trimmed, dim > 2 ? 1 : 0, 1, &tracekm1));
+        CHKERRQ(ExpectedNumDofs_Interior(1, order, 1, trimmed, 0, 1, &fiber1));
       }
       *nDofs = (tracek * fiber0 + tracekm1 * fiber1) * nCopies;
     }
@@ -162,12 +158,12 @@ static PetscErrorCode ExpectedNumDofs_Interior(PetscInt dim, PetscInt order, Pet
     PetscInt fiber1 = 0;
 
     if (formDegree < dim) {
-      ierr = ExpectedNumDofs_Interior(dim - 1, order, formDegree, trimmed, 0, 1, &tracek);CHKERRQ(ierr);
-      ierr = ExpectedNumDofs_Interior(1, order, 0, trimmed, 0, 1, &fiber0);CHKERRQ(ierr);
+      CHKERRQ(ExpectedNumDofs_Interior(dim - 1, order, formDegree, trimmed, 0, 1, &tracek));
+      CHKERRQ(ExpectedNumDofs_Interior(1, order, 0, trimmed, 0, 1, &fiber0));
     }
     if (formDegree > 0) {
-      ierr = ExpectedNumDofs_Interior(dim - 1, order, formDegree - 1, trimmed, 0, 1, &tracekm1);CHKERRQ(ierr);
-      ierr = ExpectedNumDofs_Interior(1, order, 1, trimmed, 0, 1, &fiber1);CHKERRQ(ierr);
+      CHKERRQ(ExpectedNumDofs_Interior(dim - 1, order, formDegree - 1, trimmed, 0, 1, &tracekm1));
+      CHKERRQ(ExpectedNumDofs_Interior(1, order, 1, trimmed, 0, 1, &fiber1));
     }
     *nDofs = (tracek * fiber0 + tracekm1 * fiber1) * nCopies;
   }
@@ -183,52 +179,51 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
   PetscHashIter   iter;
   PetscBool       missing;
   PetscInt        spdim, spintdim, exspdim, exspintdim;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDTBinomialInt(dim, PetscAbsInt(formDegree), &Nk);CHKERRQ(ierr);
-  ierr = PetscDualSpaceCreate(comm, &sp);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetType(sp, PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetDM(sp, K);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetOrder(sp, order);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetFormDegree(sp, formDegree);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetNumComponents(sp, nCopies * Nk);CHKERRQ(ierr);
-  ierr = PetscDualSpaceLagrangeSetContinuity(sp, continuous);CHKERRQ(ierr);
-  ierr = PetscDualSpaceLagrangeSetTensor(sp, (PetscBool) tensor);CHKERRQ(ierr);
-  ierr = PetscDualSpaceLagrangeSetTrimmed(sp, trimmed);CHKERRQ(ierr);
-  ierr = PetscInfo(NULL, "Input: dim %D, order %D, trimmed %D, tensor %D, continuous %D, formDegree %D, nCopies %D\n", dim, order, (PetscInt) trimmed, tensor, (PetscInt) continuous, formDegree, nCopies);CHKERRQ(ierr);
-  ierr = ExpectedNumDofs_Total(dim, order, formDegree, trimmed, tensor, nCopies, &exspdim);CHKERRQ(ierr);
+  CHKERRQ(PetscDTBinomialInt(dim, PetscAbsInt(formDegree), &Nk));
+  CHKERRQ(PetscDualSpaceCreate(comm, &sp));
+  CHKERRQ(PetscDualSpaceSetType(sp, PETSCDUALSPACELAGRANGE));
+  CHKERRQ(PetscDualSpaceSetDM(sp, K));
+  CHKERRQ(PetscDualSpaceSetOrder(sp, order));
+  CHKERRQ(PetscDualSpaceSetFormDegree(sp, formDegree));
+  CHKERRQ(PetscDualSpaceSetNumComponents(sp, nCopies * Nk));
+  CHKERRQ(PetscDualSpaceLagrangeSetContinuity(sp, continuous));
+  CHKERRQ(PetscDualSpaceLagrangeSetTensor(sp, (PetscBool) tensor));
+  CHKERRQ(PetscDualSpaceLagrangeSetTrimmed(sp, trimmed));
+  CHKERRQ(PetscInfo(NULL, "Input: dim %D, order %D, trimmed %D, tensor %D, continuous %D, formDegree %D, nCopies %D\n", dim, order, (PetscInt) trimmed, tensor, (PetscInt) continuous, formDegree, nCopies));
+  CHKERRQ(ExpectedNumDofs_Total(dim, order, formDegree, trimmed, tensor, nCopies, &exspdim));
   if (continuous && dim > 0 && order > 0) {
-    ierr = ExpectedNumDofs_Interior(dim, order, formDegree, trimmed, tensor, nCopies, &exspintdim);CHKERRQ(ierr);
+    CHKERRQ(ExpectedNumDofs_Interior(dim, order, formDegree, trimmed, tensor, nCopies, &exspintdim));
   } else {
     exspintdim = exspdim;
   }
-  ierr = PetscDualSpaceSetUp(sp);CHKERRQ(ierr);
-  ierr = PetscDualSpaceGetDimension(sp, &spdim);CHKERRQ(ierr);
-  ierr = PetscDualSpaceGetInteriorDimension(sp, &spintdim);CHKERRQ(ierr);
+  CHKERRQ(PetscDualSpaceSetUp(sp));
+  CHKERRQ(PetscDualSpaceGetDimension(sp, &spdim));
+  CHKERRQ(PetscDualSpaceGetInteriorDimension(sp, &spintdim));
   PetscCheckFalse(spdim != exspdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected dual space dimension %D, got %D", exspdim, spdim);
   PetscCheckFalse(spintdim != exspintdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected dual space interior dimension %D, got %D", exspintdim, spintdim);
   key.dim = dim;
   key.formDegree = formDegree;
-  ierr = PetscDualSpaceGetOrder(sp, &key.order);CHKERRQ(ierr);
-  ierr = PetscDualSpaceLagrangeGetContinuity(sp, &key.continuous);CHKERRQ(ierr);
+  CHKERRQ(PetscDualSpaceGetOrder(sp, &key.order));
+  CHKERRQ(PetscDualSpaceLagrangeGetContinuity(sp, &key.continuous));
   if (tensor == 2) {
     key.tensor = 2;
   } else {
     PetscBool bTensor;
 
-    ierr = PetscDualSpaceLagrangeGetTensor(sp, &bTensor);CHKERRQ(ierr);
+    CHKERRQ(PetscDualSpaceLagrangeGetTensor(sp, &bTensor));
     key.tensor = bTensor;
   }
-  ierr = PetscDualSpaceLagrangeGetTrimmed(sp, &key.trimmed);CHKERRQ(ierr);
-  ierr = PetscInfo(NULL, "After setup:  order %D, trimmed %D, tensor %D, continuous %D\n", key.order, (PetscInt) key.trimmed, key.tensor, (PetscInt) key.continuous);CHKERRQ(ierr);
-  ierr = PetscHashLagPut(lagTable, key, &iter, &missing);CHKERRQ(ierr);
+  CHKERRQ(PetscDualSpaceLagrangeGetTrimmed(sp, &key.trimmed));
+  CHKERRQ(PetscInfo(NULL, "After setup:  order %D, trimmed %D, tensor %D, continuous %D\n", key.order, (PetscInt) key.trimmed, key.tensor, (PetscInt) key.continuous));
+  CHKERRQ(PetscHashLagPut(lagTable, key, &iter, &missing));
   if (missing) {
     DMPolytopeType type;
 
-    ierr = DMPlexGetCellType(K, 0, &type);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "New space: %s, order %D, trimmed %D, tensor %D, continuous %D, form degree %D\n", DMPolytopeTypes[type], order, (PetscInt) trimmed, tensor, (PetscInt) continuous, formDegree);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetCellType(K, 0, &type));
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "New space: %s, order %D, trimmed %D, tensor %D, continuous %D, form degree %D\n", DMPolytopeTypes[type], order, (PetscInt) trimmed, tensor, (PetscInt) continuous, formDegree));
+    CHKERRQ(PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_SELF));
     {
       PetscQuadrature intNodes, allNodes;
       Mat intMat, allMat;
@@ -239,55 +234,55 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
 
       PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *) sp->data;
 
-      ierr = PetscLagNodeIndicesGetData_Internal(lag->allNodeIndices, &nodeIdxDim, &nodeVecDim, &nNodes, &nodeIdx, &nodeVec);CHKERRQ(ierr);
+      CHKERRQ(PetscLagNodeIndicesGetData_Internal(lag->allNodeIndices, &nodeIdxDim, &nodeVecDim, &nNodes, &nodeIdx, &nodeVec));
       PetscCheckFalse(nodeVecDim != Nk,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect nodeVecDim");
       PetscCheckFalse(nNodes != spdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect nNodes");
 
-      ierr = PetscDualSpaceGetAllData(sp, &allNodes, &allMat);CHKERRQ(ierr);
+      CHKERRQ(PetscDualSpaceGetAllData(sp, &allNodes, &allMat));
 
-      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "All nodes:\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-      ierr = PetscQuadratureView(allNodes, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "All node indices:\n");CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "All nodes:\n"));
+      CHKERRQ(PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_SELF));
+      CHKERRQ(PetscQuadratureView(allNodes, PETSC_VIEWER_STDOUT_SELF));
+      CHKERRQ(PetscViewerASCIIPopTab(PETSC_VIEWER_STDOUT_SELF));
+      CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "All node indices:\n"));
       for (i = 0; i < spdim; i++) {
-        ierr = PetscPrintf(PETSC_COMM_SELF, "(");CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "("));
         for (j = 0; j < nodeIdxDim; j++) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, " %D,", nodeIdx[i * nodeIdxDim + j]);CHKERRQ(ierr);
+          CHKERRQ(PetscPrintf(PETSC_COMM_SELF, " %D,", nodeIdx[i * nodeIdxDim + j]));
         }
-        ierr = PetscPrintf(PETSC_COMM_SELF, "): [");CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "): ["));
         for (j = 0; j < nodeVecDim; j++) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, " %g,", (double) nodeVec[i * nodeVecDim + j]);CHKERRQ(ierr);
+          CHKERRQ(PetscPrintf(PETSC_COMM_SELF, " %g,", (double) nodeVec[i * nodeVecDim + j]));
         }
-        ierr = PetscPrintf(PETSC_COMM_SELF, "]\n");CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "]\n"));
       }
 
-      ierr = MatGetInfo(allMat, MAT_LOCAL, &info);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "All matrix: %D nonzeros\n", (PetscInt) info.nz_used);CHKERRQ(ierr);
+      CHKERRQ(MatGetInfo(allMat, MAT_LOCAL, &info));
+      CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "All matrix: %D nonzeros\n", (PetscInt) info.nz_used));
 
-      ierr = PetscDualSpaceGetInteriorData(sp, &intNodes, &intMat);CHKERRQ(ierr);
+      CHKERRQ(PetscDualSpaceGetInteriorData(sp, &intNodes, &intMat));
       if (intMat && intMat != allMat) {
         PetscInt        intNodeIdxDim, intNodeVecDim, intNnodes;
         const PetscInt  *intNodeIdx;
         const PetscReal *intNodeVec;
         PetscBool       same;
 
-        ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "Interior nodes:\n");CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-        ierr = PetscQuadratureView(intNodes, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPopTab(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "Interior nodes:\n"));
+        CHKERRQ(PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_SELF));
+        CHKERRQ(PetscQuadratureView(intNodes, PETSC_VIEWER_STDOUT_SELF));
+        CHKERRQ(PetscViewerASCIIPopTab(PETSC_VIEWER_STDOUT_SELF));
 
-        ierr = MatGetInfo(intMat, MAT_LOCAL, &info);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "Interior matrix: %D nonzeros\n", (PetscInt) info.nz_used);CHKERRQ(ierr);
-        ierr = PetscLagNodeIndicesGetData_Internal(lag->intNodeIndices, &intNodeIdxDim, &intNodeVecDim, &intNnodes, &intNodeIdx, &intNodeVec);CHKERRQ(ierr);
+        CHKERRQ(MatGetInfo(intMat, MAT_LOCAL, &info));
+        CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "Interior matrix: %D nonzeros\n", (PetscInt) info.nz_used));
+        CHKERRQ(PetscLagNodeIndicesGetData_Internal(lag->intNodeIndices, &intNodeIdxDim, &intNodeVecDim, &intNnodes, &intNodeIdx, &intNodeVec));
         PetscCheckFalse(intNodeIdxDim != nodeIdxDim || intNodeVecDim != nodeVecDim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node indices not the same shale as all node indices");
         PetscCheckFalse(intNnodes != spintdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect interior nNodes");
-        ierr = PetscArraycmp(intNodeIdx, nodeIdx, nodeIdxDim * intNnodes, &same);CHKERRQ(ierr);
+        CHKERRQ(PetscArraycmp(intNodeIdx, nodeIdx, nodeIdxDim * intNnodes, &same));
         PetscCheckFalse(!same,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node indices not the same as start of all node indices");
-        ierr = PetscArraycmp(intNodeVec, nodeVec, nodeVecDim * intNnodes, &same);CHKERRQ(ierr);
+        CHKERRQ(PetscArraycmp(intNodeVec, nodeVec, nodeVecDim * intNnodes, &same));
         PetscCheckFalse(!same,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node vectors not the same as start of all node vectors");
       } else if (intMat) {
-        ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "Interior data is the same as all data\n");CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "Interior data is the same as all data\n"));
         PetscCheckFalse(intNodes != allNodes,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior nodes should be the same as all nodes");
         PetscCheckFalse(lag->intNodeIndices != lag->allNodeIndices,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node indices should be the same as all node indices");
       }
@@ -298,23 +293,23 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
       {
         DMPolytopeType ct;
         /* The number of arrangements is no longer based on the number of faces */
-        ierr = DMPlexGetCellType(K, 0, &ct);CHKERRQ(ierr);
+        CHKERRQ(DMPlexGetCellType(K, 0, &ct));
         numFaces = DMPolytopeTypeGetNumArrangments(ct) / 2;
       }
       for (o = -numFaces; o < numFaces; ++o) {
         Mat symMat;
 
-        ierr = PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(sp, o, &symMat);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "Interior node symmetry matrix for orientation %D:\n", o);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-        ierr = MatView(symMat, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPopTab(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-        ierr = MatDestroy(&symMat);CHKERRQ(ierr);
+        CHKERRQ(PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(sp, o, &symMat));
+        CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "Interior node symmetry matrix for orientation %D:\n", o));
+        CHKERRQ(PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_SELF));
+        CHKERRQ(MatView(symMat, PETSC_VIEWER_STDOUT_SELF));
+        CHKERRQ(PetscViewerASCIIPopTab(PETSC_VIEWER_STDOUT_SELF));
+        CHKERRQ(MatDestroy(&symMat));
       }
     }
-    ierr = PetscViewerASCIIPopTab(PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPopTab(PETSC_VIEWER_STDOUT_SELF));
   }
-  ierr = PetscDualSpaceDestroy(&sp);CHKERRQ(ierr);
+  CHKERRQ(PetscDualSpaceDestroy(&sp));
   PetscFunctionReturn(0);
 }
 
@@ -335,17 +330,17 @@ int main (int argc, char **argv)
   continuous = PETSC_FALSE;
   trimmed = PETSC_FALSE;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for PETSCDUALSPACELAGRANGE test","none");CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "The spatial dimension","ex1.c",dim,&dim,NULL,0,3);CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-tensor", "(0) simplex (1) hypercube (2) wedge","ex1.c",tensorCell,&tensorCell,NULL,0,2);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-continuous", "Whether the dual space has continuity","ex1.c",continuous,&continuous,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-trimmed", "Whether the dual space matches a trimmed polynomial space","ex1.c",trimmed,&trimmed,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsRangeInt("-dim", "The spatial dimension","ex1.c",dim,&dim,NULL,0,3));
+  CHKERRQ(PetscOptionsRangeInt("-tensor", "(0) simplex (1) hypercube (2) wedge","ex1.c",tensorCell,&tensorCell,NULL,0,2));
+  CHKERRQ(PetscOptionsBool("-continuous", "Whether the dual space has continuity","ex1.c",continuous,&continuous,NULL));
+  CHKERRQ(PetscOptionsBool("-trimmed", "Whether the dual space matches a trimmed polynomial space","ex1.c",trimmed,&trimmed,NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscHashLagCreate(&lagTable);CHKERRQ(ierr);
+  CHKERRQ(PetscHashLagCreate(&lagTable));
 
   if (tensorCell < 2) {
-    ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, (PetscBool) !tensorCell), &dm);CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, (PetscBool) !tensorCell), &dm));
   } else {
-    ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DM_POLYTOPE_TRI_PRISM, &dm);CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateReferenceCell(PETSC_COMM_SELF, DM_POLYTOPE_TRI_PRISM, &dm));
   }
   ordermin = trimmed ? 1 : 0;
   ordermax = tensorCell == 2 ? 4 : tensorCell == 1 ? 3 : dim + 2;
@@ -356,12 +351,12 @@ int main (int argc, char **argv)
       PetscInt nCopies;
 
       for (nCopies = 1; nCopies <= 3; nCopies++) {
-        ierr = testLagrange(lagTable, dm, dim, order, formDegree, trimmed, (PetscBool) tensorCell, continuous, nCopies);CHKERRQ(ierr);
+        CHKERRQ(testLagrange(lagTable, dm, dim, order, formDegree, trimmed, (PetscBool) tensorCell, continuous, nCopies));
       }
     }
   }
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscHashLagDestroy(&lagTable);CHKERRQ(ierr);
+  CHKERRQ(DMDestroy(&dm));
+  CHKERRQ(PetscHashLagDestroy(&lagTable));
   ierr = PetscFinalize();
   return ierr;
 }

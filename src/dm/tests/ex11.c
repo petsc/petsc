@@ -17,38 +17,38 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   /* Create viewers */
-  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",PETSC_DECIDE,PETSC_DECIDE,600,200,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",PETSC_DECIDE,PETSC_DECIDE,600,200,&viewer));
+  CHKERRQ(PetscViewerDrawGetDraw(viewer,0,&draw));
+  CHKERRQ(PetscDrawSetDoubleBuffer(draw));
 
   /* Read options */
-  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-s",&s,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-periodic_x",&wrap,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-periodic_y",&wrap,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-s",&s,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-periodic_x",&wrap,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-periodic_y",&wrap,NULL));
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,(DMBoundaryType)bx,(DMBoundaryType)by,DMDA_STENCIL_BOX,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,(DMBoundaryType)bx,(DMBoundaryType)by,DMDA_STENCIL_BOX,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da));
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
+  CHKERRQ(DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0));
   for (i=0; i<dof; i++) {
     sprintf(fname,"Field %d",(int)i);
-    ierr = DMDASetFieldName(da,i,fname);CHKERRQ(ierr);
+    CHKERRQ(DMDASetFieldName(da,i,fname));
   }
 
-  ierr = DMView(da,viewer);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
-  ierr = DMGetCoordinates(da,&coors);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(da,&dac);CHKERRQ(ierr);
+  CHKERRQ(DMView(da,viewer));
+  CHKERRQ(DMCreateGlobalVector(da,&global));
+  CHKERRQ(DMCreateLocalVector(da,&local));
+  CHKERRQ(DMGetCoordinates(da,&coors));
+  CHKERRQ(DMGetCoordinateDM(da,&dac));
 
   /* Set values into global vectors */
-  ierr = DMDAVecGetArrayDOFRead(dac,coors,&xy);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayDOF(da,global,&aglobal);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xs,&ys,0,&m,&n,0);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecGetArrayDOFRead(dac,coors,&xy));
+  CHKERRQ(DMDAVecGetArrayDOF(da,global,&aglobal));
+  CHKERRQ(DMDAGetCorners(da,&xs,&ys,0,&m,&n,0));
   for (k=0; k<dof; k++) {
     for (j=ys; j<ys+n; j++) {
       for (i=xs; i<xs+m; i++) {
@@ -56,22 +56,22 @@ int main(int argc,char **argv)
       }
     }
   }
-  ierr = DMDAVecRestoreArrayDOF(da,global,&aglobal);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayDOFRead(dac,coors,&xy);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArrayDOF(da,global,&aglobal));
+  CHKERRQ(DMDAVecRestoreArrayDOFRead(dac,coors,&xy));
+  CHKERRQ(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
+  CHKERRQ(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
 
-  ierr = VecSet(global,0.0);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
-  ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(global,viewer);CHKERRQ(ierr);
+  CHKERRQ(VecSet(global,0.0));
+  CHKERRQ(DMLocalToGlobalBegin(da,local,INSERT_VALUES,global));
+  CHKERRQ(DMLocalToGlobalEnd(da,local,INSERT_VALUES,global));
+  CHKERRQ(VecView(global,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(VecView(global,viewer));
 
   /* Free memory */
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
-  ierr = VecDestroy(&local);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDestroy(&viewer));
+  CHKERRQ(VecDestroy(&global));
+  CHKERRQ(VecDestroy(&local));
+  CHKERRQ(DMDestroy(&da));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -18,12 +18,10 @@
 @*/
 PetscErrorCode TaoALMMGetType(Tao tao, TaoALMMType *type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidPointer(type, 2);
-  ierr = PetscUseMethod(tao,"TaoALMMGetType_C",(Tao,TaoALMMType *),(tao,type));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(tao,"TaoALMMGetType_C",(Tao,TaoALMMType *),(tao,type)));
   PetscFunctionReturn(0);
 }
 
@@ -49,11 +47,9 @@ PetscErrorCode TaoALMMGetType_Private(Tao tao, TaoALMMType *type)
 @*/
 PetscErrorCode TaoALMMSetType(Tao tao, TaoALMMType type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  ierr = PetscTryMethod(tao,"TaoALMMSetType_C",(Tao,TaoALMMType),(tao,type));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(tao,"TaoALMMSetType_C",(Tao,TaoALMMType),(tao,type)));
   PetscFunctionReturn(0);
 }
 
@@ -82,12 +78,10 @@ PetscErrorCode TaoALMMSetType_Private(Tao tao, TaoALMMType type)
 @*/
 PetscErrorCode TaoALMMGetSubsolver(Tao tao, Tao *subsolver)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidPointer(subsolver, 2);
-  ierr = PetscUseMethod(tao,"TaoALMMGetSubsolver_C",(Tao,Tao *),(tao,subsolver));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(tao,"TaoALMMGetSubsolver_C",(Tao,Tao *),(tao,subsolver)));
   PetscFunctionReturn(0);
 }
 
@@ -113,12 +107,10 @@ PetscErrorCode TaoALMMGetSubsolver_Private(Tao tao, Tao *subsolver)
 @*/
 PetscErrorCode TaoALMMSetSubsolver(Tao tao, Tao subsolver)
 {
-   PetscErrorCode ierr;
-
    PetscFunctionBegin;
    PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
    PetscValidHeaderSpecific(subsolver, TAO_CLASSID, 2);
-   ierr = PetscTryMethod(tao,"TaoALMMSetSubsolver_C",(Tao,Tao),(tao,subsolver));CHKERRQ(ierr);
+   CHKERRQ(PetscTryMethod(tao,"TaoALMMSetSubsolver_C",(Tao,Tao),(tao,subsolver)));
    PetscFunctionReturn(0);
 }
 
@@ -126,26 +118,25 @@ PetscErrorCode TaoALMMSetSubsolver_Private(Tao tao, Tao subsolver)
 {
   TAO_ALMM       *auglag = (TAO_ALMM*)tao->data;
   PetscBool      compatible;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (subsolver == auglag->subsolver) PetscFunctionReturn(0);
   if (tao->bounded) {
-    ierr = PetscObjectTypeCompareAny((PetscObject)subsolver, &compatible, TAOSHELL, TAOBNCG, TAOBQNLS, TAOBQNKLS, TAOBQNKTR, TAOBQNKTL, "");CHKERRQ(ierr);
+    CHKERRQ(PetscObjectTypeCompareAny((PetscObject)subsolver, &compatible, TAOSHELL, TAOBNCG, TAOBQNLS, TAOBQNKLS, TAOBQNKTR, TAOBQNKTL, ""));
     PetscCheck(compatible,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Subsolver must be a bound-constrained first-order method");
   } else {
-    ierr = PetscObjectTypeCompareAny((PetscObject)subsolver, &compatible, TAOSHELL, TAOCG, TAOLMVM, TAOBNCG, TAOBQNLS, TAOBQNKLS, TAOBQNKTR, TAOBQNKTL, "");CHKERRQ(ierr);
+    CHKERRQ(PetscObjectTypeCompareAny((PetscObject)subsolver, &compatible, TAOSHELL, TAOCG, TAOLMVM, TAOBNCG, TAOBQNLS, TAOBQNKLS, TAOBQNKTR, TAOBQNKTL, ""));
     PetscCheck(compatible,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Subsolver must be a first-order method");
   }
   PetscCheck(compatible,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Subsolver must be a first-order method");
-  ierr = PetscObjectReference((PetscObject)subsolver);CHKERRQ(ierr);
-  ierr = TaoDestroy(&auglag->subsolver);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectReference((PetscObject)subsolver));
+  CHKERRQ(TaoDestroy(&auglag->subsolver));
   auglag->subsolver = subsolver;
   if (tao->setupcalled) {
-    ierr = TaoSetSolution(auglag->subsolver, auglag->P);CHKERRQ(ierr);
-    ierr = TaoSetObjective(auglag->subsolver, TaoALMMSubsolverObjective_Private, (void*)auglag);CHKERRQ(ierr);
-    ierr = TaoSetObjectiveAndGradient(auglag->subsolver, NULL, TaoALMMSubsolverObjectiveAndGradient_Private, (void*)auglag);CHKERRQ(ierr);
-    ierr = TaoSetVariableBounds(auglag->subsolver, auglag->PL, auglag->PU);CHKERRQ(ierr);
+    CHKERRQ(TaoSetSolution(auglag->subsolver, auglag->P));
+    CHKERRQ(TaoSetObjective(auglag->subsolver, TaoALMMSubsolverObjective_Private, (void*)auglag));
+    CHKERRQ(TaoSetObjectiveAndGradient(auglag->subsolver, NULL, TaoALMMSubsolverObjectiveAndGradient_Private, (void*)auglag));
+    CHKERRQ(TaoSetVariableBounds(auglag->subsolver, auglag->PL, auglag->PU));
   }
   PetscFunctionReturn(0);
 }
@@ -171,12 +162,10 @@ PetscErrorCode TaoALMMSetSubsolver_Private(Tao tao, Tao subsolver)
 @*/
 PetscErrorCode TaoALMMGetMultipliers(Tao tao, Vec *Y)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidPointer(Y, 2);
-  ierr = PetscUseMethod(tao,"TaoALMMGetMultipliers_C",(Tao,Vec *),(tao,Y));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(tao,"TaoALMMGetMultipliers_C",(Tao,Vec *),(tao,Y)));
   PetscFunctionReturn(0);
 }
 
@@ -215,12 +204,10 @@ PetscErrorCode TaoALMMGetMultipliers_Private(Tao tao, Vec *Y)
 @*/
 PetscErrorCode TaoALMMSetMultipliers(Tao tao, Vec Y)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidHeaderSpecific(Y, VEC_CLASSID, 2);
-  ierr = PetscTryMethod(tao,"TaoALMMSetMultipliers_C",(Tao,Vec),(tao,Y));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(tao,"TaoALMMSetMultipliers_C",(Tao,Vec),(tao,Y)));
   PetscFunctionReturn(0);
 }
 
@@ -230,57 +217,56 @@ PetscErrorCode TaoALMMSetMultipliers_Private(Tao tao, Vec Y)
   VecType        Ytype;
   PetscInt       Nuser, Neq, Nineq, N;
   PetscBool      same = PETSC_FALSE;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* no-op if user provides vector from TaoALMMGetMultipliers() */
   if (Y == auglag->Y) PetscFunctionReturn(0);
   /* make sure vector type is same as equality and inequality constraints */
   if (tao->eq_constrained) {
-    ierr = VecGetType(tao->constraints_equality, &Ytype);CHKERRQ(ierr);
+    CHKERRQ(VecGetType(tao->constraints_equality, &Ytype));
   } else {
-    ierr = VecGetType(tao->constraints_inequality, &Ytype);CHKERRQ(ierr);
+    CHKERRQ(VecGetType(tao->constraints_inequality, &Ytype));
   }
-  ierr = PetscObjectTypeCompare((PetscObject)Y, Ytype, &same);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)Y, Ytype, &same));
   PetscCheck(same,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Given vector for multipliers is not the same type as constraint vectors");
   /* make sure global size matches sum of equality and inequality */
   if (tao->eq_constrained) {
-    ierr = VecGetSize(tao->constraints_equality, &Neq);CHKERRQ(ierr);
+    CHKERRQ(VecGetSize(tao->constraints_equality, &Neq));
   } else {
     Neq = 0;
   }
   if (tao->ineq_constrained) {
-    ierr = VecGetSize(tao->constraints_inequality, &Nineq);CHKERRQ(ierr);
+    CHKERRQ(VecGetSize(tao->constraints_inequality, &Nineq));
   } else {
     Nineq = 0;
   }
   N = Neq + Nineq;
-  ierr = VecGetSize(Y, &Nuser);CHKERRQ(ierr);
+  CHKERRQ(VecGetSize(Y, &Nuser));
   PetscCheck(Nuser == N,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Given vector has wrong global size");
   /* if there is only one type of constraint, then we need the local size to match too */
   if (Neq == 0) {
-    ierr = VecGetLocalSize(tao->constraints_inequality, &Nineq);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(Y, &Nuser);CHKERRQ(ierr);
+    CHKERRQ(VecGetLocalSize(tao->constraints_inequality, &Nineq));
+    CHKERRQ(VecGetLocalSize(Y, &Nuser));
     PetscCheck(Nuser == Nineq,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Given vector has wrong local size");
   }
   if (Nineq == 0) {
-    ierr = VecGetLocalSize(tao->constraints_equality, &Neq);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(Y, &Nuser);CHKERRQ(ierr);
+    CHKERRQ(VecGetLocalSize(tao->constraints_equality, &Neq));
+    CHKERRQ(VecGetLocalSize(Y, &Nuser));
     PetscCheck(Nuser == Neq,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Given vector has wrong local size");
   }
   /* if we got here, the given vector is compatible so we can replace the current one */
-  ierr = PetscObjectReference((PetscObject)Y);CHKERRQ(ierr);
-  ierr = VecDestroy(&auglag->Y);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectReference((PetscObject)Y));
+  CHKERRQ(VecDestroy(&auglag->Y));
   auglag->Y = Y;
   /* if there are both types of constraints and the solver has already been set up,
      then we need to regenerate VecScatter objects for the new combined dual vector */
   if (tao->setupcalled && tao->eq_constrained && tao->ineq_constrained) {
-    ierr = VecDestroy(&auglag->C);CHKERRQ(ierr);
-    ierr = VecDuplicate(auglag->Y, &auglag->C);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&auglag->Yscatter[0]);CHKERRQ(ierr);
-    ierr = VecScatterCreate(auglag->Y, auglag->Yis[0], auglag->Ye, NULL, &auglag->Yscatter[0]);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&auglag->Yscatter[1]);CHKERRQ(ierr);
-    ierr = VecScatterCreate(auglag->Y, auglag->Yis[1], auglag->Yi, NULL, &auglag->Yscatter[1]);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&auglag->C));
+    CHKERRQ(VecDuplicate(auglag->Y, &auglag->C));
+    CHKERRQ(VecScatterDestroy(&auglag->Yscatter[0]));
+    CHKERRQ(VecScatterCreate(auglag->Y, auglag->Yis[0], auglag->Ye, NULL, &auglag->Yscatter[0]));
+    CHKERRQ(VecScatterDestroy(&auglag->Yscatter[1]));
+    CHKERRQ(VecScatterCreate(auglag->Y, auglag->Yis[1], auglag->Yi, NULL, &auglag->Yscatter[1]));
   }
   PetscFunctionReturn(0);
 }
@@ -303,11 +289,9 @@ PetscErrorCode TaoALMMSetMultipliers_Private(Tao tao, Vec Y)
 @*/
 PetscErrorCode TaoALMMGetPrimalIS(Tao tao, IS *opt_is, IS *slack_is)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  ierr = PetscUseMethod(tao,"TaoALMMGetPrimalIS_C",(Tao,IS *,IS *),(tao,opt_is,slack_is));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(tao,"TaoALMMGetPrimalIS_C",(Tao,IS *,IS *),(tao,opt_is,slack_is)));
   PetscFunctionReturn(0);
 }
 
@@ -342,11 +326,9 @@ PetscErrorCode TaoALMMGetPrimalIS_Private(Tao tao, IS *opt_is, IS *slack_is)
 @*/
 PetscErrorCode TaoALMMGetDualIS(Tao tao, IS *eq_is, IS *ineq_is)
 {
-   PetscErrorCode ierr;
-
    PetscFunctionBegin;
    PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-   ierr = PetscUseMethod(tao,"TaoALMMGetDualIS_C",(Tao,IS *,IS *),(tao,eq_is,ineq_is));CHKERRQ(ierr);
+   CHKERRQ(PetscUseMethod(tao,"TaoALMMGetDualIS_C",(Tao,IS *,IS *),(tao,eq_is,ineq_is)));
    PetscFunctionReturn(0);
 }
 

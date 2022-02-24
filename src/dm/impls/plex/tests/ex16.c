@@ -4,13 +4,11 @@ static char help[] = "Tests for creation of submeshes\n\n";
 
 PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreate(comm, dm));
+  CHKERRQ(DMSetType(*dm, DMPLEX));
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -18,21 +16,20 @@ PetscErrorCode CreateSubmesh(DM dm, PetscBool start, DM *subdm)
 {
   DMLabel        label, map;
   PetscInt       cStart, cEnd, cStartSub, cEndSub, c;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMCreateLabel(dm, "cells");CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "cells", &label);CHKERRQ(ierr);
-  ierr = DMLabelClearStratum(label, 1);CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  CHKERRQ(DMCreateLabel(dm, "cells"));
+  CHKERRQ(DMGetLabel(dm, "cells", &label));
+  CHKERRQ(DMLabelClearStratum(label, 1));
   if (start) {cStartSub = cStart; cEndSub = cEnd/2;}
   else       {cStartSub = cEnd/2; cEndSub = cEnd;}
-  for (c = cStartSub; c < cEndSub; ++c) {ierr = DMLabelSetValue(label, c, 1);CHKERRQ(ierr);}
-  ierr = DMPlexFilter(dm, label, 1, subdm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *subdm, "Submesh");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*subdm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = DMPlexGetSubpointMap(*subdm, &map);CHKERRQ(ierr);
-  ierr = DMLabelView(map, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  for (c = cStartSub; c < cEndSub; ++c) CHKERRQ(DMLabelSetValue(label, c, 1));
+  CHKERRQ(DMPlexFilter(dm, label, 1, subdm));
+  CHKERRQ(PetscObjectSetName((PetscObject) *subdm, "Submesh"));
+  CHKERRQ(DMViewFromOptions(*subdm, NULL, "-dm_view"));
+  CHKERRQ(DMPlexGetSubpointMap(*subdm, &map));
+  CHKERRQ(DMLabelView(map, PETSC_VIEWER_STDOUT_WORLD));
   PetscFunctionReturn(0);
 }
 
@@ -42,14 +39,14 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = CreateMesh(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
-  ierr = CreateSubmesh(dm, PETSC_TRUE, &subdm);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(subdm);CHKERRQ(ierr);
-  ierr = DMDestroy(&subdm);CHKERRQ(ierr);
-  ierr = CreateSubmesh(dm, PETSC_FALSE, &subdm);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(subdm);CHKERRQ(ierr);
-  ierr = DMDestroy(&subdm);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &dm));
+  CHKERRQ(CreateSubmesh(dm, PETSC_TRUE, &subdm));
+  CHKERRQ(DMSetFromOptions(subdm));
+  CHKERRQ(DMDestroy(&subdm));
+  CHKERRQ(CreateSubmesh(dm, PETSC_FALSE, &subdm));
+  CHKERRQ(DMSetFromOptions(subdm));
+  CHKERRQ(DMDestroy(&subdm));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

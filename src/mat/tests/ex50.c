@@ -16,17 +16,16 @@ static PetscErrorCode CheckValuesAIJ(Mat A)
   PetscReal       v,w;
   PetscScalar     val;
   PetscBool       seqsbaij,mpisbaij,sbaij;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&seqsbaij);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATMPISBAIJ,&mpisbaij);CHKERRQ(ierr);
+  CHKERRQ(MatGetSize(A,&M,&N));
+  CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&seqsbaij));
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATMPISBAIJ,&mpisbaij));
   sbaij = (seqsbaij||mpisbaij) ? PETSC_TRUE : PETSC_FALSE;
   for (i=rstart; i<rend; i++) {
     for (j=(sbaij?i:0); j<N; j++) {
-      ierr = MatGetValue(A,i,j,&val);CHKERRQ(ierr);
+      CHKERRQ(MatGetValue(A,i,j,&val));
       v = MakeValue(i,j,M); w = PetscRealPart(val);
       PetscCheckFalse(PetscAbsReal(v-w) > 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Matrix entry (%" PetscInt_FMT ",%" PetscInt_FMT ") should be %g, got %g",i,j,(double)v,(double)w);
     }
@@ -46,77 +45,77 @@ int main(int argc,char **args)
   /*
       Create a parallel SBAIJ matrix shared by all processors
   */
-  ierr = MatCreateSBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,M,N,PETSC_DECIDE,NULL,PETSC_DECIDE,NULL,&A);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,M,N,PETSC_DECIDE,NULL,PETSC_DECIDE,NULL,&A));
 
   /*
       Set values into the matrix
   */
-  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+  CHKERRQ(MatGetSize(A,&M,&N));
+  CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
   for (i=rstart; i<rend; i++) {
     for (j=0; j<N; j++) {
       PetscReal v = MakeValue(i,j,M);
       if (PetscAbsReal(v) > 0) {
-        ierr = MatSetValue(A,i,j,v,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValue(A,i,j,v,INSERT_VALUES));
       }
     }
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(A,NULL,"-mat_base_view");CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatViewFromOptions(A,NULL,"-mat_base_view"));
 
   /*
       Store the binary matrix to a file
   */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD, "matrix.dat", FILE_MODE_WRITE, &view);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "matrix.dat", FILE_MODE_WRITE, &view));
   for (i=0; i<3; i++) {
-    ierr = MatView(A,view);CHKERRQ(ierr);
+    CHKERRQ(MatView(A,view));
   }
-  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDestroy(&view));
+  CHKERRQ(MatDestroy(&A));
 
   /*
       Now reload the matrix and check its values
   */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",FILE_MODE_READ,&view);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSBAIJ);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",FILE_MODE_READ,&view));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetType(A,MATSBAIJ));
   for (i=0; i<3; i++) {
-    if (i > 0) {ierr = MatZeroEntries(A);CHKERRQ(ierr);}
-    ierr = MatLoad(A,view);CHKERRQ(ierr);
-    ierr = CheckValuesAIJ(A);CHKERRQ(ierr);
+    if (i > 0) CHKERRQ(MatZeroEntries(A));
+    CHKERRQ(MatLoad(A,view));
+    CHKERRQ(CheckValuesAIJ(A));
   }
-  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(A,NULL,"-mat_load_view");CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDestroy(&view));
+  CHKERRQ(MatViewFromOptions(A,NULL,"-mat_load_view"));
+  CHKERRQ(MatDestroy(&A));
 
   /*
       Reload in SEQSBAIJ matrix and check its values
   */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"matrix.dat",FILE_MODE_READ,&view);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,"matrix.dat",FILE_MODE_READ,&view));
+  CHKERRQ(MatCreate(PETSC_COMM_SELF,&A));
+  CHKERRQ(MatSetType(A,MATSEQSBAIJ));
   for (i=0; i<3; i++) {
-    if (i > 0) {ierr = MatZeroEntries(A);CHKERRQ(ierr);}
-    ierr = MatLoad(A,view);CHKERRQ(ierr);
-    ierr = CheckValuesAIJ(A);CHKERRQ(ierr);
+    if (i > 0) CHKERRQ(MatZeroEntries(A));
+    CHKERRQ(MatLoad(A,view));
+    CHKERRQ(CheckValuesAIJ(A));
   }
-  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDestroy(&view));
+  CHKERRQ(MatDestroy(&A));
 
   /*
      Reload in MPISBAIJ matrix and check its values
   */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",FILE_MODE_READ,&view);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",FILE_MODE_READ,&view));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetType(A,MATMPISBAIJ));
   for (i=0; i<3; i++) {
-    if (i > 0) {ierr = MatZeroEntries(A);CHKERRQ(ierr);}
-    ierr = MatLoad(A,view);CHKERRQ(ierr);
-    ierr = CheckValuesAIJ(A);CHKERRQ(ierr);
+    if (i > 0) CHKERRQ(MatZeroEntries(A));
+    CHKERRQ(MatLoad(A,view));
+    CHKERRQ(CheckValuesAIJ(A));
   }
-  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDestroy(&view));
+  CHKERRQ(MatDestroy(&A));
 
   ierr = PetscFinalize();
   return ierr;

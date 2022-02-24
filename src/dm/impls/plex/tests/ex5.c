@@ -322,12 +322,12 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->cohesiveFields = 1;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-debug", "The debugging level", "ex5.c", options->debug, &options->debug, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex5.c", options->dim, &options->dim, NULL,1,3);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex5.c", options->cellSimplex, &options->cellSimplex, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex5.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-test_num", "The particular mesh to test", "ex5.c", options->testNum, &options->testNum, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-cohesive_fields", "The number of cohesive fields", "ex5.c", options->cohesiveFields, &options->cohesiveFields, NULL, 0);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBoundedInt("-debug", "The debugging level", "ex5.c", options->debug, &options->debug, NULL,0));
+  CHKERRQ(PetscOptionsRangeInt("-dim", "The topological mesh dimension", "ex5.c", options->dim, &options->dim, NULL,1,3));
+  CHKERRQ(PetscOptionsBool("-cell_simplex", "Use simplices if true, otherwise hexes", "ex5.c", options->cellSimplex, &options->cellSimplex, NULL));
+  CHKERRQ(PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex5.c", options->testPartition, &options->testPartition, NULL));
+  CHKERRQ(PetscOptionsBoundedInt("-test_num", "The particular mesh to test", "ex5.c", options->testNum, &options->testNum, NULL,0));
+  CHKERRQ(PetscOptionsBoundedInt("-cohesive_fields", "The number of cohesive fields", "ex5.c", options->cohesiveFields, &options->cohesiveFields, NULL, 0));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -337,10 +337,9 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
   DM             idm;
   PetscInt       p;
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
     switch (testNum) {
     case 0:
@@ -353,11 +352,11 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscInt    markerPoints[8]     = {2, 1, 3, 1, 4, 1, 5, 1};
       PetscInt    faultPoints[2]      = {3, 4};
 
-      ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      for (p = 0; p < 4; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
-      for (p = 0; p < 2; ++p) {ierr = DMSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
-      ierr = DMSetLabelValue(*dm, "material", 0, 1);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 1, 2);CHKERRQ(ierr);
+      CHKERRQ(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
+      for (p = 0; p < 4; ++p) CHKERRQ(DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]));
+      for (p = 0; p < 2; ++p) CHKERRQ(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 0, 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 1, 2));
     }
     break;
     case 1:
@@ -370,11 +369,11 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscInt    markerPoints[6]      = {4, 1, 6, 1, 8, 1};
       PetscInt    faultPoints[3]       = {5, 6, 8};
 
-      ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
-      for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
-      ierr = DMSetLabelValue(*dm, "material", 0, 1);CHKERRQ(ierr);ierr = DMSetLabelValue(*dm, "material", 3, 1);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 1, 2);CHKERRQ(ierr);ierr = DMSetLabelValue(*dm, "material", 2, 2);CHKERRQ(ierr);
+      CHKERRQ(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
+      for (p = 0; p < 3; ++p) CHKERRQ(DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]));
+      for (p = 0; p < 3; ++p) CHKERRQ(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 0, 1));CHKERRQ(DMSetLabelValue(*dm, "material", 3, 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 1, 2));CHKERRQ(DMSetLabelValue(*dm, "material", 2, 2));
     }
     break;
     default:
@@ -383,12 +382,12 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
   } else {
     PetscInt numPoints[3] = {0, 0, 0};
 
-    ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-    ierr = DMCreateLabel(*dm, "fault");CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateFromDAG(*dm, 1, numPoints, NULL, NULL, NULL, NULL));
+    CHKERRQ(DMCreateLabel(*dm, "fault"));
   }
-  ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(idm, NULL, "-in_dm_view");CHKERRQ(ierr);
-  ierr = DMDestroy(dm);CHKERRQ(ierr);
+  CHKERRQ(DMPlexInterpolate(*dm, &idm));
+  CHKERRQ(DMViewFromOptions(idm, NULL, "-in_dm_view"));
+  CHKERRQ(DMDestroy(dm));
   *dm  = idm;
   PetscFunctionReturn(0);
 }
@@ -397,10 +396,9 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm)
 {
   PetscInt       depth = 3, testNum  = user->testNum, p;
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
     switch (testNum) {
     case 0:
@@ -413,15 +411,15 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm)
       PetscInt    markerPoints[20]     = {2, 1, 3, 1, 4, 1, 5, 1, 14, 1, 15, 1, 16, 1, 17, 1, 18, 1, 19, 1};
       PetscInt    faultPoints[3]      = {3, 4, 5};
 
-      ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+      CHKERRQ(DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords));
       for (p = 0; p < 10; ++p) {
-        ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
+        CHKERRQ(DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]));
       }
       for (p = 0; p < 3; ++p) {
-        ierr = DMSetLabelValue(dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);
+        CHKERRQ(DMSetLabelValue(dm, "fault", faultPoints[p], 1));
       }
-      ierr = DMSetLabelValue(dm, "material", 0, 1);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(dm, "material", 1, 2);CHKERRQ(ierr);
+      CHKERRQ(DMSetLabelValue(dm, "material", 0, 1));
+      CHKERRQ(DMSetLabelValue(dm, "material", 1, 2));
     }
     break;
     case 1:
@@ -434,15 +432,15 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm)
       PetscInt    markerPoints[14]     = {5, 1, 6, 1, 7, 1, 10, 1, 22, 1, 23, 1, 24, 1};
       PetscInt    faultPoints[4]       = {5, 6, 7, 8};
 
-      ierr = DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
+      CHKERRQ(DMPlexCreateFromDAG(dm, depth, numPoints, coneSize, cones, coneOrientations, vertexCoords));
       for (p = 0; p < 7; ++p) {
-        ierr = DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);
+        CHKERRQ(DMSetLabelValue(dm, "marker", markerPoints[p*2], markerPoints[p*2+1]));
       }
       for (p = 0; p < 4; ++p) {
-        ierr = DMSetLabelValue(dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);
+        CHKERRQ(DMSetLabelValue(dm, "fault", faultPoints[p], 1));
       }
-      ierr = DMSetLabelValue(dm, "material", 0, 1);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(dm, "material", 1, 2);CHKERRQ(ierr);
+      CHKERRQ(DMSetLabelValue(dm, "material", 0, 1));
+      CHKERRQ(DMSetLabelValue(dm, "material", 1, 2));
     }
     break;
     default:
@@ -451,8 +449,8 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm)
   } else {
     PetscInt numPoints[4] = {0, 0, 0, 0};
 
-    ierr = DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-    ierr = DMCreateLabel(dm, "fault");CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateFromDAG(dm, depth, numPoints, NULL, NULL, NULL, NULL));
+    CHKERRQ(DMCreateLabel(dm, "fault"));
   }
   PetscFunctionReturn(0);
 }
@@ -462,10 +460,9 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
   DM             idm;
   PetscInt       p;
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
     switch (testNum) {
     case 0:
@@ -479,12 +476,12 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscInt    markerPoints[12]    = {2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7, 1};
       PetscInt    faultPoints[2]      = {3, 4};
 
-      ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      for (p = 0; p < 6; ++p) {ierr = DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
-      if (testNum == 0) for (p = 0; p < 2; ++p) {ierr = DMSetLabelValue(*dm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
-      if (testNum == 2) for (p = 0; p < 2; ++p) {ierr = DMSetLabelValue(*dm, "pfault", faultPoints[p], 1);CHKERRQ(ierr);}
-      ierr = DMSetLabelValue(*dm, "material", 0, 1);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 1, 2);CHKERRQ(ierr);
+      CHKERRQ(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
+      for (p = 0; p < 6; ++p) CHKERRQ(DMSetLabelValue(*dm, "marker", markerPoints[p*2], markerPoints[p*2+1]));
+      if (testNum == 0) for (p = 0; p < 2; ++p) CHKERRQ(DMSetLabelValue(*dm, "fault", faultPoints[p], 1));
+      if (testNum == 2) for (p = 0; p < 2; ++p) CHKERRQ(DMSetLabelValue(*dm, "pfault", faultPoints[p], 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 0, 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 1, 2));
     }
     break;
     case 1:
@@ -506,18 +503,18 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscInt    faultPoints[3]       = {11, 15, 19};
       PetscInt    fault2Points[2]      = {17, 18};
 
-      ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      for (p = 0; p < 3; ++p) {ierr = DMSetLabelValue(*dm, "fault",  faultPoints[p], 1);CHKERRQ(ierr);}
-      for (p = 0; p < 2; ++p) {ierr = DMSetLabelValue(*dm, "fault2", fault2Points[p], 1);CHKERRQ(ierr);}
-      ierr = DMSetLabelValue(*dm, "material", 0, 1);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 1, 1);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 2, 1);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 3, 1);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 4, 1);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 5, 2);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 6, 2);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 7, 2);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 8, 2);CHKERRQ(ierr);
+      CHKERRQ(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
+      for (p = 0; p < 3; ++p) CHKERRQ(DMSetLabelValue(*dm, "fault",  faultPoints[p], 1));
+      for (p = 0; p < 2; ++p) CHKERRQ(DMSetLabelValue(*dm, "fault2", fault2Points[p], 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 0, 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 1, 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 2, 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 3, 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 4, 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 5, 2));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 6, 2));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 7, 2));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 8, 2));
     }
     break;
     default:
@@ -526,13 +523,13 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
   } else {
     PetscInt numPoints[3] = {0, 0, 0};
 
-    ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-    if (testNum == 2) {ierr = DMCreateLabel(*dm, "pfault");CHKERRQ(ierr);}
-    else              {ierr = DMCreateLabel(*dm, "fault");CHKERRQ(ierr);}
+    CHKERRQ(DMPlexCreateFromDAG(*dm, 1, numPoints, NULL, NULL, NULL, NULL));
+    if (testNum == 2) CHKERRQ(DMCreateLabel(*dm, "pfault"));
+    else              CHKERRQ(DMCreateLabel(*dm, "fault"));
   }
-  ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(idm, NULL, "-in_dm_view");CHKERRQ(ierr);
-  ierr = DMDestroy(dm);CHKERRQ(ierr);
+  CHKERRQ(DMPlexInterpolate(*dm, &idm));
+  CHKERRQ(DMViewFromOptions(idm, NULL, "-in_dm_view"));
+  CHKERRQ(DMDestroy(dm));
   *dm  = idm;
   PetscFunctionReturn(0);
 }
@@ -542,10 +539,9 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
   DM             idm;
   PetscInt       depth = 3, p;
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
     switch (testNum) {
     case 0:
@@ -560,12 +556,12 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
       PetscInt    markerPoints[52]     = {2,1,3,1,4,1,5,1,6,1,7,1,8,1,9,1};
       PetscInt    faultPoints[4]       = {3, 4, 7, 8};
 
-      ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-      for (p = 0; p < 8; ++p) {ierr = DMSetLabelValue(idm, "marker", markerPoints[p*2], markerPoints[p*2+1]);CHKERRQ(ierr);}
-      for (p = 0; p < 4; ++p) {ierr = DMSetLabelValue(idm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
-      ierr = DMSetLabelValue(*dm, "material", 0, 1);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 1, 2);CHKERRQ(ierr);
+      CHKERRQ(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
+      CHKERRQ(DMPlexInterpolate(*dm, &idm));
+      for (p = 0; p < 8; ++p) CHKERRQ(DMSetLabelValue(idm, "marker", markerPoints[p*2], markerPoints[p*2+1]));
+      for (p = 0; p < 4; ++p) CHKERRQ(DMSetLabelValue(idm, "fault", faultPoints[p], 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 0, 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 1, 2));
     }
     break;
     case 1:
@@ -596,16 +592,16 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
                                            2.0,  2.0, -2.0,   2.0, -2.0,  0.0,   2.0, -1.0,  0.0,   3.0,  0.0,  0.0,   2.0,  1.0,  0.0,   2.0,  2.0,  0.0};
       PetscInt    faultPoints[6]       = {20, 21, 22, 23, 24, 25};
 
-      ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-      for (p = 0; p < 6; ++p) {ierr = DMSetLabelValue(idm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
-      ierr = DMSetLabelValue(*dm, "material", 0, 1);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 1, 1);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 2, 1);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 3, 2);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 4, 2);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 5, 2);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 6, 2);CHKERRQ(ierr);
+      CHKERRQ(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
+      CHKERRQ(DMPlexInterpolate(*dm, &idm));
+      for (p = 0; p < 6; ++p) CHKERRQ(DMSetLabelValue(idm, "fault", faultPoints[p], 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 0, 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 1, 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 2, 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 3, 2));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 4, 2));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 5, 2));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 6, 2));
     }
     break;
     case 2:
@@ -623,13 +619,13 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
                                            0.0, -2.0,  2.0,   0.0,  0.0,  2.0,   0.0,  2.0,  2.0,   2.0, -2.0,  2.0,   2.0,  0.0,  2.0,   2.0,  2.0,  2.0};
       PetscInt    faultPoints[4]       = {7, 8, 16, 17};
 
-      ierr = DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords);CHKERRQ(ierr);
-      ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-      for (p = 0; p < 4; ++p) {ierr = DMSetLabelValue(idm, "fault", faultPoints[p], 1);CHKERRQ(ierr);}
-      ierr = DMSetLabelValue(*dm, "material", 0, 1);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 1, 1);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 2, 2);CHKERRQ(ierr);
-      ierr = DMSetLabelValue(*dm, "material", 3, 2);CHKERRQ(ierr);
+      CHKERRQ(DMPlexCreateFromDAG(*dm, 1, numPoints, coneSize, cones, coneOrientations, vertexCoords));
+      CHKERRQ(DMPlexInterpolate(*dm, &idm));
+      for (p = 0; p < 4; ++p) CHKERRQ(DMSetLabelValue(idm, "fault", faultPoints[p], 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 0, 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 1, 1));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 2, 2));
+      CHKERRQ(DMSetLabelValue(*dm, "material", 3, 2));
     }
     break;
     default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
@@ -637,12 +633,12 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
   } else {
     PetscInt numPoints[4] = {0, 0, 0, 0};
 
-    ierr = DMPlexCreateFromDAG(*dm, depth, numPoints, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-    ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-    ierr = DMCreateLabel(idm, "fault");CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateFromDAG(*dm, depth, numPoints, NULL, NULL, NULL, NULL));
+    CHKERRQ(DMPlexInterpolate(*dm, &idm));
+    CHKERRQ(DMCreateLabel(idm, "fault"));
   }
-  ierr = DMViewFromOptions(idm, NULL, "-in_dm_view");CHKERRQ(ierr);
-  ierr = DMDestroy(dm);CHKERRQ(ierr);
+  CHKERRQ(DMViewFromOptions(idm, NULL, "-in_dm_view"));
+  CHKERRQ(DMDestroy(dm));
   *dm  = idm;
   PetscFunctionReturn(0);
 }
@@ -651,16 +647,15 @@ static PetscErrorCode CreateFaultLabel(DM dm)
 {
   DMLabel        label;
   PetscInt       dim, h, pStart, pEnd, pMax, p;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMCreateLabel(dm, "cohesive");CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "cohesive", &label);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(DMCreateLabel(dm, "cohesive"));
+  CHKERRQ(DMGetLabel(dm, "cohesive", &label));
   for (h = 0; h <= dim; ++h) {
-    ierr = DMPlexGetSimplexOrBoxCells(dm, h, NULL, &pMax);CHKERRQ(ierr);
-    ierr = DMPlexGetHeightStratum(dm, h, &pStart, &pEnd);CHKERRQ(ierr);
-    for (p = pMax; p < pEnd; ++p) {ierr = DMLabelSetValue(label, p, 1);CHKERRQ(ierr);}
+    CHKERRQ(DMPlexGetSimplexOrBoxCells(dm, h, NULL, &pMax));
+    CHKERRQ(DMPlexGetHeightStratum(dm, h, &pStart, &pEnd));
+    for (p = pMax; p < pEnd; ++p) CHKERRQ(DMLabelSetValue(label, p, 1));
   }
   PetscFunctionReturn(0);
 }
@@ -670,36 +665,35 @@ static PetscErrorCode CreateDiscretization(DM dm, AppCtx *user)
   PetscFE        fe;
   DMLabel        fault;
   PetscInt       dim, Ncf = user->cohesiveFields, f;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "cohesive", &fault);CHKERRQ(ierr);
-  ierr = DMLabelView(fault, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(DMGetLabel(dm, "cohesive", &fault));
+  CHKERRQ(DMLabelView(fault, PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, dim, user->cellSimplex, "displacement_", PETSC_DETERMINE, &fe);CHKERRQ(ierr);
-  ierr = PetscFESetName(fe, "displacement");CHKERRQ(ierr);
-  ierr = DMAddField(dm, NULL, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, dim, user->cellSimplex, "displacement_", PETSC_DETERMINE, &fe));
+  CHKERRQ(PetscFESetName(fe, "displacement"));
+  CHKERRQ(DMAddField(dm, NULL, (PetscObject) fe));
+  CHKERRQ(PetscFEDestroy(&fe));
 
   if (Ncf > 0) {
-    ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim-1, dim, user->cellSimplex, "faulttraction_", PETSC_DETERMINE, &fe);CHKERRQ(ierr);
-    ierr = PetscFESetName(fe, "fault traction");CHKERRQ(ierr);
-    ierr = DMAddField(dm, fault, (PetscObject) fe);CHKERRQ(ierr);
-    ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+    CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim-1, dim, user->cellSimplex, "faulttraction_", PETSC_DETERMINE, &fe));
+    CHKERRQ(PetscFESetName(fe, "fault traction"));
+    CHKERRQ(DMAddField(dm, fault, (PetscObject) fe));
+    CHKERRQ(PetscFEDestroy(&fe));
   }
   for (f = 1; f < Ncf; ++f) {
     char name[256], opt[256];
 
-    ierr = PetscSNPrintf(name, 256, "fault field %D", f);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(opt,  256, "faultfield_%D_", f);CHKERRQ(ierr);
-    ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim-1, dim, user->cellSimplex, opt, PETSC_DETERMINE, &fe);CHKERRQ(ierr);
-    ierr = PetscFESetName(fe, name);CHKERRQ(ierr);
-    ierr = DMAddField(dm, fault, (PetscObject) fe);CHKERRQ(ierr);
-    ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+    CHKERRQ(PetscSNPrintf(name, 256, "fault field %D", f));
+    CHKERRQ(PetscSNPrintf(opt,  256, "faultfield_%D_", f));
+    CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim-1, dim, user->cellSimplex, opt, PETSC_DETERMINE, &fe));
+    CHKERRQ(PetscFESetName(fe, name));
+    CHKERRQ(DMAddField(dm, fault, (PetscObject) fe));
+    CHKERRQ(PetscFEDestroy(&fe));
   }
 
-  ierr = DMCreateDS(dm);CHKERRQ(ierr);
+  CHKERRQ(DMCreateDS(dm));
   PetscFunctionReturn(0);
 }
 
@@ -709,73 +703,72 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscBool      cellSimplex  = user->cellSimplex, hasFault, hasFault2, hasParallelFault;
   PetscMPIInt    rank, size;
   DMLabel        matLabel;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm, &rank));
+  CHKERRMPI(MPI_Comm_size(comm, &size));
+  CHKERRQ(DMCreate(comm, dm));
+  CHKERRQ(DMSetType(*dm, DMPLEX));
+  CHKERRQ(DMSetDimension(*dm, dim));
   switch (dim) {
   case 2:
     if (cellSimplex) {
-      ierr = CreateSimplex_2D(comm, user->testNum, dm);CHKERRQ(ierr);
+      CHKERRQ(CreateSimplex_2D(comm, user->testNum, dm));
     } else {
-      ierr = CreateQuad_2D(comm, user->testNum, dm);CHKERRQ(ierr);
+      CHKERRQ(CreateQuad_2D(comm, user->testNum, dm));
     }
     break;
   case 3:
     if (cellSimplex) {
-      ierr = CreateSimplex_3D(comm, user, *dm);CHKERRQ(ierr);
+      CHKERRQ(CreateSimplex_3D(comm, user, *dm));
     } else {
-      ierr = CreateHex_3D(comm, user->testNum, dm);CHKERRQ(ierr);
+      CHKERRQ(CreateHex_3D(comm, user->testNum, dm));
     }
     break;
   default:
     SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %d", dim);
   }
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "orig_");CHKERRQ(ierr);
-  ierr = DMPlexDistributeSetDefault(*dm, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMGetLabel(*dm, "material", &matLabel);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, "orig_"));
+  CHKERRQ(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(DMGetLabel(*dm, "material", &matLabel));
   if (matLabel) {
-    ierr = DMPlexLabelComplete(*dm, matLabel);CHKERRQ(ierr);
+    CHKERRQ(DMPlexLabelComplete(*dm, matLabel));
   }
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = DMHasLabel(*dm, "fault", &hasFault);CHKERRQ(ierr);
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  CHKERRQ(DMHasLabel(*dm, "fault", &hasFault));
   if (hasFault) {
     DM      dmHybrid = NULL, dmInterface = NULL;
     DMLabel faultLabel, faultBdLabel, hybridLabel, splitLabel;
 
-    ierr = DMGetLabel(*dm, "fault", &faultLabel);CHKERRQ(ierr);
-    ierr = DMGetLabel(*dm, "faultBd", &faultBdLabel);CHKERRQ(ierr);
-    ierr = DMPlexCreateHybridMesh(*dm, faultLabel, faultBdLabel, &hybridLabel, &splitLabel, &dmInterface, &dmHybrid);CHKERRQ(ierr);
-    ierr = DMLabelView(hybridLabel, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = DMLabelDestroy(&hybridLabel);CHKERRQ(ierr);
-    ierr = DMLabelView(splitLabel, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = DMLabelDestroy(&splitLabel);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(dmInterface, NULL, "-dm_interface_view");CHKERRQ(ierr);
-    ierr = DMDestroy(&dmInterface);CHKERRQ(ierr);
-    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    CHKERRQ(DMGetLabel(*dm, "fault", &faultLabel));
+    CHKERRQ(DMGetLabel(*dm, "faultBd", &faultBdLabel));
+    CHKERRQ(DMPlexCreateHybridMesh(*dm, faultLabel, faultBdLabel, &hybridLabel, &splitLabel, &dmInterface, &dmHybrid));
+    CHKERRQ(DMLabelView(hybridLabel, PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(DMLabelDestroy(&hybridLabel));
+    CHKERRQ(DMLabelView(splitLabel, PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(DMLabelDestroy(&splitLabel));
+    CHKERRQ(DMViewFromOptions(dmInterface, NULL, "-dm_interface_view"));
+    CHKERRQ(DMDestroy(&dmInterface));
+    CHKERRQ(DMDestroy(dm));
     *dm  = dmHybrid;
   }
-  ierr = DMHasLabel(*dm, "fault2", &hasFault2);CHKERRQ(ierr);
+  CHKERRQ(DMHasLabel(*dm, "fault2", &hasFault2));
   if (hasFault2) {
     DM      dmHybrid = NULL;
     DMLabel faultLabel, faultBdLabel, hybridLabel;
 
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "faulted_");CHKERRQ(ierr);
-    ierr = DMViewFromOptions(*dm, NULL, "-dm_view_pre");CHKERRQ(ierr);
-    ierr = DMPlexDistributeSetDefault(*dm, PETSC_FALSE);CHKERRQ(ierr);
-    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
-    ierr = DMGetLabel(*dm, "fault2", &faultLabel);CHKERRQ(ierr);
-    ierr = DMGetLabel(*dm, "fault2Bd", &faultBdLabel);CHKERRQ(ierr);
-    ierr = DMPlexCreateHybridMesh(*dm, faultLabel, faultBdLabel, &hybridLabel, NULL, NULL, &dmHybrid);CHKERRQ(ierr);
-    ierr = DMLabelView(hybridLabel, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = DMLabelDestroy(&hybridLabel);CHKERRQ(ierr);
-    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, "faulted_"));
+    CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view_pre"));
+    CHKERRQ(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
+    CHKERRQ(DMSetFromOptions(*dm));
+    CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+    CHKERRQ(DMGetLabel(*dm, "fault2", &faultLabel));
+    CHKERRQ(DMGetLabel(*dm, "fault2Bd", &faultBdLabel));
+    CHKERRQ(DMPlexCreateHybridMesh(*dm, faultLabel, faultBdLabel, &hybridLabel, NULL, NULL, &dmHybrid));
+    CHKERRQ(DMLabelView(hybridLabel, PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(DMLabelDestroy(&hybridLabel));
+    CHKERRQ(DMDestroy(dm));
     *dm  = dmHybrid;
   }
   if (user->testPartition && size > 1) {
@@ -790,9 +783,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscInt triSizes_p2[2]  = {1, 2};
           PetscInt triPoints_p2[3] = {0, 1, 2};
 
-          ierr = PetscMalloc2(2, &sizes, 3, &points);CHKERRQ(ierr);
-          ierr = PetscArraycpy(sizes,  triSizes_p2, 2);CHKERRQ(ierr);
-          ierr = PetscArraycpy(points, triPoints_p2, 3);CHKERRQ(ierr);break;}
+          CHKERRQ(PetscMalloc2(2, &sizes, 3, &points));
+          CHKERRQ(PetscArraycpy(sizes,  triSizes_p2, 2));
+          CHKERRQ(PetscArraycpy(points, triPoints_p2, 3));break;}
         default:
           SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
         }
@@ -802,16 +795,16 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscInt quadSizes_p2[2]  = {1, 2};
           PetscInt quadPoints_p2[3] = {0, 1, 2};
 
-          ierr = PetscMalloc2(2, &sizes, 3, &points);CHKERRQ(ierr);
-          ierr = PetscArraycpy(sizes,  quadSizes_p2, 2);CHKERRQ(ierr);
-          ierr = PetscArraycpy(points, quadPoints_p2, 3);CHKERRQ(ierr);break;}
+          CHKERRQ(PetscMalloc2(2, &sizes, 3, &points));
+          CHKERRQ(PetscArraycpy(sizes,  quadSizes_p2, 2));
+          CHKERRQ(PetscArraycpy(points, quadPoints_p2, 3));break;}
         case 2: {
           PetscInt quadSizes_p2[2]  = {1, 1};
           PetscInt quadPoints_p2[2] = {0, 1};
 
-          ierr = PetscMalloc2(2, &sizes, 2, &points);CHKERRQ(ierr);
-          ierr = PetscArraycpy(sizes,  quadSizes_p2, 2);CHKERRQ(ierr);
-          ierr = PetscArraycpy(points, quadPoints_p2, 2);CHKERRQ(ierr);break;}
+          CHKERRQ(PetscMalloc2(2, &sizes, 2, &points));
+          CHKERRQ(PetscArraycpy(sizes,  quadSizes_p2, 2));
+          CHKERRQ(PetscArraycpy(points, quadPoints_p2, 2));break;}
         default:
           SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for quadrilateral mesh on 2 procs", user->testNum);
         }
@@ -821,9 +814,9 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscInt tetSizes_p2[2]  = {1, 2};
           PetscInt tetPoints_p2[3] = {0, 1, 2};
 
-          ierr = PetscMalloc2(2, &sizes, 3, &points);CHKERRQ(ierr);
-          ierr = PetscArraycpy(sizes,  tetSizes_p2, 2);CHKERRQ(ierr);
-          ierr = PetscArraycpy(points, tetPoints_p2, 3);CHKERRQ(ierr);break;}
+          CHKERRQ(PetscMalloc2(2, &sizes, 3, &points));
+          CHKERRQ(PetscArraycpy(sizes,  tetSizes_p2, 2));
+          CHKERRQ(PetscArraycpy(points, tetPoints_p2, 3));break;}
         default:
           SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
         }
@@ -833,72 +826,69 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscInt hexSizes_p2[2]  = {1, 2};
           PetscInt hexPoints_p2[3] = {0, 1, 2};
 
-          ierr = PetscMalloc2(2, &sizes, 3, &points);CHKERRQ(ierr);
-          ierr = PetscArraycpy(sizes,  hexSizes_p2, 2);CHKERRQ(ierr);
-          ierr = PetscArraycpy(points, hexPoints_p2, 3);CHKERRQ(ierr);break;}
+          CHKERRQ(PetscMalloc2(2, &sizes, 3, &points));
+          CHKERRQ(PetscArraycpy(sizes,  hexSizes_p2, 2));
+          CHKERRQ(PetscArraycpy(points, hexPoints_p2, 3));break;}
         default:
           SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
         }
       } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test partition");
     }
-    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-    ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
-    ierr = PetscFree2(sizes, points);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetPartitioner(*dm, &part));
+    CHKERRQ(PetscPartitionerSetType(part, PETSCPARTITIONERSHELL));
+    CHKERRQ(PetscPartitionerShellSetPartition(part, size, sizes, points));
+    CHKERRQ(PetscFree2(sizes, points));
   }
   {
     DM pdm = NULL;
 
     /* Distribute mesh over processes */
-    ierr = DMPlexDistribute(*dm, 0, NULL, &pdm);CHKERRQ(ierr);
+    CHKERRQ(DMPlexDistribute(*dm, 0, NULL, &pdm));
     if (pdm) {
-      ierr = DMViewFromOptions(pdm, NULL, "-dm_view");CHKERRQ(ierr);
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      CHKERRQ(DMViewFromOptions(pdm, NULL, "-dm_view"));
+      CHKERRQ(DMDestroy(dm));
       *dm  = pdm;
     }
   }
-  ierr = DMHasLabel(*dm, "pfault", &hasParallelFault);CHKERRQ(ierr);
+  CHKERRQ(DMHasLabel(*dm, "pfault", &hasParallelFault));
   if (hasParallelFault) {
     DM      dmHybrid = NULL;
     DMLabel faultLabel, faultBdLabel, hybridLabel;
 
-    ierr = DMGetLabel(*dm, "pfault", &faultLabel);CHKERRQ(ierr);
-    ierr = DMGetLabel(*dm, "pfaultBd", &faultBdLabel);CHKERRQ(ierr);
-    ierr = DMPlexCreateHybridMesh(*dm, faultLabel, faultBdLabel, &hybridLabel, NULL, NULL, &dmHybrid);CHKERRQ(ierr);
-    ierr = DMLabelView(hybridLabel, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = DMLabelDestroy(&hybridLabel);CHKERRQ(ierr);
-    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    CHKERRQ(DMGetLabel(*dm, "pfault", &faultLabel));
+    CHKERRQ(DMGetLabel(*dm, "pfaultBd", &faultBdLabel));
+    CHKERRQ(DMPlexCreateHybridMesh(*dm, faultLabel, faultBdLabel, &hybridLabel, NULL, NULL, &dmHybrid));
+    CHKERRQ(DMLabelView(hybridLabel, PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(DMLabelDestroy(&hybridLabel));
+    CHKERRQ(DMDestroy(dm));
     *dm  = dmHybrid;
   }
-  ierr = PetscObjectSetName((PetscObject) *dm, "Hybrid Mesh");CHKERRQ(ierr);
-  ierr = CreateFaultLabel(*dm);CHKERRQ(ierr);
-  ierr = CreateDiscretization(*dm, user);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view_pre");CHKERRQ(ierr);
-  ierr = DMPlexDistributeSetDefault(*dm, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetName((PetscObject) *dm, "Hybrid Mesh"));
+  CHKERRQ(CreateFaultLabel(*dm));
+  CHKERRQ(CreateDiscretization(*dm, user));
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view_pre"));
+  CHKERRQ(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TestMesh(DM dm, AppCtx *user)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = DMPlexCheckSymmetry(dm);CHKERRQ(ierr);
-  ierr = DMPlexCheckSkeleton(dm, 0);CHKERRQ(ierr);
-  ierr = DMPlexCheckFaces(dm, 0);CHKERRQ(ierr);
+  CHKERRQ(DMPlexCheckSymmetry(dm));
+  CHKERRQ(DMPlexCheckSkeleton(dm, 0));
+  CHKERRQ(DMPlexCheckFaces(dm, 0));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TestDiscretization(DM dm, AppCtx *user)
 {
   PetscSection   s;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetSection(dm, &s);CHKERRQ(ierr);
-  ierr = PetscObjectViewFromOptions((PetscObject) s, NULL, "-local_section_view");CHKERRQ(ierr);
+  CHKERRQ(DMGetSection(dm, &s));
+  CHKERRQ(PetscObjectViewFromOptions((PetscObject) s, NULL, "-local_section_view"));
   PetscFunctionReturn(0);
 }
 
@@ -993,50 +983,49 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
   PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx);
   PetscInt         dim, Nf, cMax, cEnd, id;
   PetscMPIInt      rank;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRMPI(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetSimplexOrBoxCells(dm, 0, NULL, &cMax);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, NULL, &cEnd);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF, cEnd - cMax, cMax, 1, &cohesiveCells);CHKERRQ(ierr);
-  ierr = DMGetLabel(dm, "cohesive", &fault);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm, &locX);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) locX, "Local Solution");CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm, &locF);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) locF, "Local Residual");CHKERRQ(ierr);
-  ierr = DMCreateMatrix(dm, &J);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) J, "Jacobian");CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank));
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(DMPlexGetSimplexOrBoxCells(dm, 0, NULL, &cMax));
+  CHKERRQ(DMPlexGetHeightStratum(dm, 0, NULL, &cEnd));
+  CHKERRQ(ISCreateStride(PETSC_COMM_SELF, cEnd - cMax, cMax, 1, &cohesiveCells));
+  CHKERRQ(DMGetLabel(dm, "cohesive", &fault));
+  CHKERRQ(DMGetLocalVector(dm, &locX));
+  CHKERRQ(PetscObjectSetName((PetscObject) locX, "Local Solution"));
+  CHKERRQ(DMGetLocalVector(dm, &locF));
+  CHKERRQ(PetscObjectSetName((PetscObject) locF, "Local Residual"));
+  CHKERRQ(DMCreateMatrix(dm, &J));
+  CHKERRQ(PetscObjectSetName((PetscObject) J, "Jacobian"));
 
   /* The initial guess has displacement shifted by one unit in each fault parallel direction across the fault */
-  ierr = DMGetLabel(dm, "material", &material);CHKERRQ(ierr);
+  CHKERRQ(DMGetLabel(dm, "material", &material));
   id   = 1;
   initialGuess[0] = r;
   initialGuess[1] = NULL;
-  ierr = DMProjectFunctionLabelLocal(dm, 0.0, material, 1, &id, PETSC_DETERMINE, NULL, initialGuess, NULL, INSERT_VALUES, locX);CHKERRQ(ierr);
+  CHKERRQ(DMProjectFunctionLabelLocal(dm, 0.0, material, 1, &id, PETSC_DETERMINE, NULL, initialGuess, NULL, INSERT_VALUES, locX));
   id   = 2;
   initialGuess[0] = rp1;
   initialGuess[1] = NULL;
-  ierr = DMProjectFunctionLabelLocal(dm, 0.0, material, 1, &id, PETSC_DETERMINE, NULL, initialGuess, NULL, INSERT_VALUES, locX);CHKERRQ(ierr);
+  CHKERRQ(DMProjectFunctionLabelLocal(dm, 0.0, material, 1, &id, PETSC_DETERMINE, NULL, initialGuess, NULL, INSERT_VALUES, locX));
   id   = 1;
   initialGuess[0] = NULL;
   initialGuess[1] = phi;
-  ierr = DMProjectFunctionLabelLocal(dm, 0.0, fault, 1, &id, PETSC_DETERMINE, NULL, initialGuess, NULL, INSERT_VALUES, locX);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(locX, NULL, "-local_solution_view");CHKERRQ(ierr);
+  CHKERRQ(DMProjectFunctionLabelLocal(dm, 0.0, fault, 1, &id, PETSC_DETERMINE, NULL, initialGuess, NULL, INSERT_VALUES, locX));
+  CHKERRQ(VecViewFromOptions(locX, NULL, "-local_solution_view"));
 
-  ierr = DMGetCellDS(dm, cMax, &probh);CHKERRQ(ierr);
-  ierr = PetscDSGetWeakForm(probh, &wf);CHKERRQ(ierr);
-  ierr = PetscDSGetNumFields(probh, &Nf);CHKERRQ(ierr);
-  ierr = PetscWeakFormSetIndexBdResidual(wf, material, 1, 0, 0, 0, f0_bd_u, 0, NULL);CHKERRQ(ierr);
-  ierr = PetscWeakFormSetIndexBdResidual(wf, material, 2, 0, 0, 0, f0_bd_u, 0, NULL);CHKERRQ(ierr);
-  ierr = PetscWeakFormSetIndexBdJacobian(wf, material, 1, 0, 1, 0, 0, g0_bd_ul, 0, NULL, 0, NULL, 0, NULL);CHKERRQ(ierr);
-  ierr = PetscWeakFormSetIndexBdJacobian(wf, material, 2, 0, 1, 0, 0, g0_bd_ul, 0, NULL, 0, NULL, 0, NULL);CHKERRQ(ierr);
+  CHKERRQ(DMGetCellDS(dm, cMax, &probh));
+  CHKERRQ(PetscDSGetWeakForm(probh, &wf));
+  CHKERRQ(PetscDSGetNumFields(probh, &Nf));
+  CHKERRQ(PetscWeakFormSetIndexBdResidual(wf, material, 1, 0, 0, 0, f0_bd_u, 0, NULL));
+  CHKERRQ(PetscWeakFormSetIndexBdResidual(wf, material, 2, 0, 0, 0, f0_bd_u, 0, NULL));
+  CHKERRQ(PetscWeakFormSetIndexBdJacobian(wf, material, 1, 0, 1, 0, 0, g0_bd_ul, 0, NULL, 0, NULL, 0, NULL));
+  CHKERRQ(PetscWeakFormSetIndexBdJacobian(wf, material, 2, 0, 1, 0, 0, g0_bd_ul, 0, NULL, 0, NULL, 0, NULL));
   if (Nf > 1) {
-    ierr = PetscWeakFormSetIndexBdResidual(wf, fault, 1, 1, 0, 0, f0_bd_l, 0, NULL);CHKERRQ(ierr);
-    ierr = PetscWeakFormSetIndexBdJacobian(wf, fault, 1, 1, 0, 0, 0, g0_bd_lu, 0, NULL, 0, NULL, 0, NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscWeakFormSetIndexBdResidual(wf, fault, 1, 1, 0, 0, f0_bd_l, 0, NULL));
+    CHKERRQ(PetscWeakFormSetIndexBdJacobian(wf, fault, 1, 1, 0, 0, 0, g0_bd_lu, 0, NULL, 0, NULL, 0, NULL));
   }
-  if (!rank) {ierr = PetscDSView(probh, NULL);CHKERRQ(ierr);}
+  if (!rank) CHKERRQ(PetscDSView(probh, NULL));
 
   keys[0].label = NULL;
   keys[0].value = 0;
@@ -1050,17 +1039,17 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
   keys[2].value = 1;
   keys[2].field = 1;
   keys[2].part  = 0;
-  ierr = VecSet(locF, 0.);CHKERRQ(ierr);
-  ierr = DMPlexComputeResidual_Hybrid_Internal(dm, keys, cohesiveCells, 0.0, locX, NULL, 0.0, locF, user);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(locF, NULL, "-local_residual_view");CHKERRQ(ierr);
-  ierr = MatZeroEntries(J);CHKERRQ(ierr);
-  ierr = DMPlexComputeJacobian_Hybrid_Internal(dm, keys, cohesiveCells, 0.0, 0.0, locX, NULL, J, J, user);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(J, NULL, "-local_jacobian_view");CHKERRQ(ierr);
+  CHKERRQ(VecSet(locF, 0.));
+  CHKERRQ(DMPlexComputeResidual_Hybrid_Internal(dm, keys, cohesiveCells, 0.0, locX, NULL, 0.0, locF, user));
+  CHKERRQ(VecViewFromOptions(locF, NULL, "-local_residual_view"));
+  CHKERRQ(MatZeroEntries(J));
+  CHKERRQ(DMPlexComputeJacobian_Hybrid_Internal(dm, keys, cohesiveCells, 0.0, 0.0, locX, NULL, J, J, user));
+  CHKERRQ(MatViewFromOptions(J, NULL, "-local_jacobian_view"));
 
-  ierr = DMRestoreLocalVector(dm, &locX);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &locF);CHKERRQ(ierr);
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
-  ierr = ISDestroy(&cohesiveCells);CHKERRQ(ierr);
+  CHKERRQ(DMRestoreLocalVector(dm, &locX));
+  CHKERRQ(DMRestoreLocalVector(dm, &locF));
+  CHKERRQ(MatDestroy(&J));
+  CHKERRQ(ISDestroy(&cohesiveCells));
   PetscFunctionReturn(0);
 }
 
@@ -1071,12 +1060,12 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = TestMesh(dm, &user);CHKERRQ(ierr);
-  ierr = TestDiscretization(dm, &user);CHKERRQ(ierr);
-  ierr = TestAssembly(dm, &user);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  CHKERRQ(TestMesh(dm, &user));
+  CHKERRQ(TestDiscretization(dm, &user));
+  CHKERRQ(TestAssembly(dm, &user));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

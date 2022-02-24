@@ -11,16 +11,16 @@ int main(int argc,char **argv)
   const PetscInt   dfill[4] = {0,1,0,1},ofill[4] = {0,1,1,0};
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,7,2,1,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMDASetBlockFills(da,dfill,ofill);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,7,2,1,NULL,&da));
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMDASetBlockFills(da,dfill,ofill));
+  CHKERRQ(DMSetUp(da));
+  CHKERRQ(DMCreateMatrix(da,&A));
+  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO));
+  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(DMDestroy(&da));
   ierr = PetscFinalize();
   return ierr;
 }

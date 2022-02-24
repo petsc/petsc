@@ -20,35 +20,33 @@ typedef struct {
 PetscErrorCode EventFunction(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *ctx)
 {
   AppCtx            *app=(AppCtx*)ctx;
-  PetscErrorCode    ierr;
   const PetscScalar *u;
 
   PetscFunctionBegin;
   /* Event for ball height */
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(U,&u));
   fvalue[0] = u[0];
   /* Event for number of bounces */
   fvalue[1] = app->maxbounces - app->nbounces;
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(U,&u));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],PetscReal t,Vec U,PetscBool forwardsolve,void* ctx)
 {
   AppCtx         *app=(AppCtx*)ctx;
-  PetscErrorCode ierr;
   PetscScalar    *u;
 
   PetscFunctionBegin;
   if (event_list[0] == 0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Ball hit the ground at t = %5.2f seconds\n",(double)t);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Ball hit the ground at t = %5.2f seconds\n",(double)t));
     /* Set new initial conditions with .9 attenuation */
-    ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+    CHKERRQ(VecGetArray(U,&u));
     u[0] =  0.0;
     u[1] = -0.9*u[1];
-    ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(U,&u));
   } else if (event_list[0] == 1) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Ball bounced %D times\n",app->nbounces);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Ball bounced %D times\n",app->nbounces));
   }
   app->nbounces++;
   PetscFunctionReturn(0);
@@ -59,20 +57,19 @@ PetscErrorCode PostEventFunction(TS ts,PetscInt nevents,PetscInt event_list[],Pe
 */
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,void *ctx)
 {
-  PetscErrorCode    ierr;
   PetscScalar       *f;
   const PetscScalar *u;
 
   PetscFunctionBegin;
   /*  The next three lines allow us to access the entries of the vectors directly */
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(U,&u));
+  CHKERRQ(VecGetArray(F,&f));
 
   f[0] = u[1];
   f[1] = - 9.8;
 
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(U,&u));
+  CHKERRQ(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -81,25 +78,24 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec U,Vec F,void *ctx)
 */
 static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode    ierr;
   PetscInt          rowcol[] = {0,1};
   PetscScalar       J[2][2];
   const PetscScalar *u;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(U,&u));
 
   J[0][0] = 0.0;     J[0][1] = 1.0;
   J[1][0] = 0.0;     J[1][1] = 0.0;
-  ierr = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES));
 
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(U,&u));
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   if (A != B) {
-    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -109,22 +105,21 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat A,Mat B,void *ctx)
 */
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
 {
-  PetscErrorCode    ierr;
   PetscScalar       *f;
   const PetscScalar *u,*udot;
 
   PetscFunctionBegin;
   /*  The next three lines allow us to access the entries of the vectors directly */
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(U,&u));
+  CHKERRQ(VecGetArrayRead(Udot,&udot));
+  CHKERRQ(VecGetArray(F,&f));
 
   f[0] = udot[0] - u[1];
   f[1] = udot[1] + 9.8;
 
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(U,&u));
+  CHKERRQ(VecRestoreArrayRead(Udot,&udot));
+  CHKERRQ(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -133,27 +128,26 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx
 */
 static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode    ierr;
   PetscInt          rowcol[] = {0,1};
   PetscScalar       J[2][2];
   const PetscScalar *u,*udot;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(U,&u));
+  CHKERRQ(VecGetArrayRead(Udot,&udot));
 
   J[0][0] = a;      J[0][1] = -1.0;
   J[1][0] = 0.0;    J[1][1] = a;
-  ierr = MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES));
 
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(U,&u));
+  CHKERRQ(VecRestoreArrayRead(Udot,&udot));
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   if (A != B) {
-    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -176,120 +170,120 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
 
   app.nbounces = 0;
   app.maxbounces = 10;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex40 options","");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-maxbounces","","",app.maxbounces,&app.maxbounces,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-test_adapthistory","","",hist,&hist,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsInt("-maxbounces","","",app.maxbounces,&app.maxbounces,NULL));
+  CHKERRQ(PetscOptionsBool("-test_adapthistory","","",hist,&hist,NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSROSW);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
+  CHKERRQ(TSSetType(ts,TSROSW));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set ODE routines
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
+  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
   /* Users are advised against the following branching and code duplication.
      For problems without a mass matrix like the one at hand, the RHSFunction
      (and companion RHSJacobian) interface is enough to support both explicit
      and implicit timesteppers. This tutorial example also deals with the
      IFunction/IJacobian interface for demonstration and testing purposes. */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-rhs-form",&rhs_form,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-rhs-form",&rhs_form,NULL));
   if (rhs_form) {
-    ierr = TSSetRHSFunction(ts,NULL,RHSFunction,NULL);CHKERRQ(ierr);
-    ierr = TSSetRHSJacobian(ts,NULL,NULL,RHSJacobian,NULL);CHKERRQ(ierr);
+    CHKERRQ(TSSetRHSFunction(ts,NULL,RHSFunction,NULL));
+    CHKERRQ(TSSetRHSJacobian(ts,NULL,NULL,RHSJacobian,NULL));
   } else {
     Mat A; /* Jacobian matrix */
-    ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-    ierr = MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = MatSetType(A,MATDENSE);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-    ierr = MatSetUp(A);CHKERRQ(ierr);
-    ierr = TSSetIFunction(ts,NULL,IFunction,NULL);CHKERRQ(ierr);
-    ierr = TSSetIJacobian(ts,A,A,IJacobian,NULL);CHKERRQ(ierr);
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+    CHKERRQ(MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE));
+    CHKERRQ(MatSetType(A,MATDENSE));
+    CHKERRQ(MatSetFromOptions(A));
+    CHKERRQ(MatSetUp(A));
+    CHKERRQ(TSSetIFunction(ts,NULL,IFunction,NULL));
+    CHKERRQ(TSSetIJacobian(ts,A,A,IJacobian,NULL));
+    CHKERRQ(MatDestroy(&A));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecCreate(PETSC_COMM_WORLD,&U);CHKERRQ(ierr);
-  ierr = VecSetSizes(U,n,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetUp(U);CHKERRQ(ierr);
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&U));
+  CHKERRQ(VecSetSizes(U,n,PETSC_DETERMINE));
+  CHKERRQ(VecSetUp(U));
+  CHKERRQ(VecGetArray(U,&u));
   u[0] = 0.0;
   u[1] = 20.0;
-  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(U,&u));
+  CHKERRQ(TSSetSolution(ts,U));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  if (hist) {ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);}
-  ierr = TSSetMaxTime(ts,30.0);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,0.1);CHKERRQ(ierr);
+  if (hist) CHKERRQ(TSSetSaveTrajectory(ts));
+  CHKERRQ(TSSetMaxTime(ts,30.0));
+  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  CHKERRQ(TSSetTimeStep(ts,0.1));
   /* The adaptive time step controller could take very large timesteps resulting in
      the same event occurring multiple times in the same interval. A maximum step size
      limit is enforced here to avoid this issue. */
-  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-  ierr = TSAdaptSetStepLimits(adapt,0.0,0.5);CHKERRQ(ierr);
+  CHKERRQ(TSGetAdapt(ts,&adapt));
+  CHKERRQ(TSAdaptSetStepLimits(adapt,0.0,0.5));
 
   /* Set directions and terminate flags for the two events */
   direction[0] = -1;            direction[1] = -1;
   terminate[0] = PETSC_FALSE;   terminate[1] = PETSC_TRUE;
-  ierr = TSSetEventHandler(ts,2,direction,terminate,EventFunction,PostEventFunction,(void*)&app);CHKERRQ(ierr);
+  CHKERRQ(TSSetEventHandler(ts,2,direction,terminate,EventFunction,PostEventFunction,(void*)&app));
 
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  CHKERRQ(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Run timestepping solver
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,U);CHKERRQ(ierr);
+  CHKERRQ(TSSolve(ts,U));
 
   if (hist) { /* replay following history */
     TSTrajectory tj;
     PetscReal    tf,t0,dt;
 
     app.nbounces = 0;
-    ierr = TSGetTime(ts,&tf);CHKERRQ(ierr);
-    ierr = TSSetMaxTime(ts,tf);CHKERRQ(ierr);
-    ierr = TSSetStepNumber(ts,0);CHKERRQ(ierr);
-    ierr = TSRestartStep(ts);CHKERRQ(ierr);
-    ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-    ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-    ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-    ierr = TSAdaptSetType(adapt,TSADAPTHISTORY);CHKERRQ(ierr);
-    ierr = TSGetTrajectory(ts,&tj);CHKERRQ(ierr);
-    ierr = TSAdaptHistorySetTrajectory(adapt,tj,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = TSAdaptHistoryGetStep(adapt,0,&t0,&dt);CHKERRQ(ierr);
+    CHKERRQ(TSGetTime(ts,&tf));
+    CHKERRQ(TSSetMaxTime(ts,tf));
+    CHKERRQ(TSSetStepNumber(ts,0));
+    CHKERRQ(TSRestartStep(ts));
+    CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
+    CHKERRQ(TSSetFromOptions(ts));
+    CHKERRQ(TSGetAdapt(ts,&adapt));
+    CHKERRQ(TSAdaptSetType(adapt,TSADAPTHISTORY));
+    CHKERRQ(TSGetTrajectory(ts,&tj));
+    CHKERRQ(TSAdaptHistorySetTrajectory(adapt,tj,PETSC_FALSE));
+    CHKERRQ(TSAdaptHistoryGetStep(adapt,0,&t0,&dt));
     /* this example fails with single (or smaller) precision */
 #if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL__FP16)
-    ierr = TSAdaptSetType(adapt,TSADAPTBASIC);CHKERRQ(ierr);
-    ierr = TSAdaptSetStepLimits(adapt,0.0,0.5);CHKERRQ(ierr);
-    ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+    CHKERRQ(TSAdaptSetType(adapt,TSADAPTBASIC));
+    CHKERRQ(TSAdaptSetStepLimits(adapt,0.0,0.5));
+    CHKERRQ(TSSetFromOptions(ts));
 #endif
-    ierr = TSSetTime(ts,t0);CHKERRQ(ierr);
-    ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
-    ierr = TSResetTrajectory(ts);CHKERRQ(ierr);
-    ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+    CHKERRQ(TSSetTime(ts,t0));
+    CHKERRQ(TSSetTimeStep(ts,dt));
+    CHKERRQ(TSResetTrajectory(ts));
+    CHKERRQ(VecGetArray(U,&u));
     u[0] = 0.0;
     u[1] = 20.0;
-    ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-    ierr = TSSolve(ts,U);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(U,&u));
+    CHKERRQ(TSSolve(ts,U));
   }
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecDestroy(&U);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&U));
+  CHKERRQ(TSDestroy(&ts));
 
   ierr = PetscFinalize();
   return ierr;

@@ -30,49 +30,49 @@ int main(int argc,char **args)
   PetscReal      norm;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* Form matrix */
-  ierr = GetElasticityMatrix(m,&mat);CHKERRQ(ierr);
+  CHKERRQ(GetElasticityMatrix(m,&mat));
 
   /* Generate vectors */
-  ierr = MatGetSize(mat,&rdim,&cdim);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,rdim);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  CHKERRQ(MatGetSize(mat,&rdim,&cdim));
+  CHKERRQ(MatGetOwnershipRange(mat,&rstart,&rend));
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
+  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,rdim));
+  CHKERRQ(VecSetFromOptions(u));
+  CHKERRQ(VecDuplicate(u,&b));
+  CHKERRQ(VecDuplicate(b,&x));
   for (i=rstart; i<rend; i++) {
     v    = (PetscScalar)(i-rstart + 100*rank);
-    ierr = VecSetValues(u,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(u,1,&i,&v,INSERT_VALUES));
   }
-  ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
+  CHKERRQ(VecAssemblyBegin(u));
+  CHKERRQ(VecAssemblyEnd(u));
 
   /* Compute right-hand-side */
-  ierr = MatMult(mat,u,b);CHKERRQ(ierr);
+  CHKERRQ(MatMult(mat,u,b));
 
   /* Solve linear system */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,mat,mat);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPSetOperators(ksp,mat,mat));
+  CHKERRQ(KSPSetFromOptions(ksp));
+  CHKERRQ(KSPSolve(ksp,b,x));
+  CHKERRQ(KSPGetIterationNumber(ksp,&its));
   /* Check error */
-  ierr = VecAXPY(x,neg1,u);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(x,neg1,u));
+  CHKERRQ(VecNorm(x,NORM_2,&norm));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of residual %g Number of iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of residual %g Number of iterations %D\n",(double)norm,its));
 
   /* Free work space */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = MatDestroy(&mat);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(VecDestroy(&u));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(MatDestroy(&mat));
 
   ierr = PetscFinalize();
   return ierr;
@@ -85,7 +85,6 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
 {
   PetscInt       i,j,k,i1,i2,j_1,j2,k1,k2,h1,h2,shiftx,shifty,shiftz;
   PetscInt       ict,nz,base,r1,r2,N,*rowkeep,nstart;
-  PetscErrorCode ierr;
   IS             iskeep;
   PetscReal      **K,norm;
   Mat            mat,submat = 0,*submatb;
@@ -93,15 +92,15 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
 
   m   /= 2; /* This is done just to be consistent with the old example */
   N    = 3*(2*m+1)*(2*m+1)*(2*m+1);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"m = %D, N=%D\n",m,N);CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,80,NULL,&mat);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"m = %D, N=%D\n",m,N));
+  CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,80,NULL,&mat));
 
   /* Form stiffness for element */
-  ierr = PetscMalloc1(81,&K);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(81,&K));
   for (i=0; i<81; i++) {
-    ierr = PetscMalloc1(81,&K[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(81,&K[i]));
   }
-  ierr = Elastic20Stiff(K);CHKERRQ(ierr);
+  CHKERRQ(Elastic20Stiff(K));
 
   /* Loop over elements and add contribution to stiffness */
   shiftx = 3; shifty = 3*(2*m+1); shiftz = 3*(2*m+1)*(2*m+1);
@@ -119,7 +118,7 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
                 for (j2=0; j2<3; j2++) {
                   for (i2=0; i2<3; i2++) {
                     r2   = base + i2*shiftx + j2*shifty + k2*shiftz;
-                    ierr = AddElement(mat,r1,r2,K,h1,h2);CHKERRQ(ierr);
+                    CHKERRQ(AddElement(mat,r1,r2,K,h1,h2));
                     h2  += 3;
                   }
                 }
@@ -133,38 +132,38 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
   }
 
   for (i=0; i<81; i++) {
-    ierr = PetscFree(K[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(K[i]));
   }
-  ierr = PetscFree(K);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(K));
 
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
 
   /* Exclude any superfluous rows and columns */
   nstart = 3*(2*m+1)*(2*m+1);
   ict    = 0;
-  ierr   = PetscMalloc1(N-nstart,&rowkeep);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(N-nstart,&rowkeep));
   for (i=nstart; i<N; i++) {
-    ierr = MatGetRow(mat,i,&nz,0,0);CHKERRQ(ierr);
+    CHKERRQ(MatGetRow(mat,i,&nz,0,0));
     if (nz) rowkeep[ict++] = i;
-    ierr = MatRestoreRow(mat,i,&nz,0,0);CHKERRQ(ierr);
+    CHKERRQ(MatRestoreRow(mat,i,&nz,0,0));
   }
-  ierr   = ISCreateGeneral(PETSC_COMM_SELF,ict,rowkeep,PETSC_COPY_VALUES,&iskeep);CHKERRQ(ierr);
-  ierr   = MatCreateSubMatrices(mat,1,&iskeep,&iskeep,MAT_INITIAL_MATRIX,&submatb);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,ict,rowkeep,PETSC_COPY_VALUES,&iskeep));
+  CHKERRQ(MatCreateSubMatrices(mat,1,&iskeep,&iskeep,MAT_INITIAL_MATRIX,&submatb));
   submat = *submatb;
-  ierr   = PetscFree(submatb);CHKERRQ(ierr);
-  ierr   = PetscFree(rowkeep);CHKERRQ(ierr);
-  ierr   = ISDestroy(&iskeep);CHKERRQ(ierr);
-  ierr   = MatDestroy(&mat);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(submatb));
+  CHKERRQ(PetscFree(rowkeep));
+  CHKERRQ(ISDestroy(&iskeep));
+  CHKERRQ(MatDestroy(&mat));
 
   /* Convert storage formats -- just to demonstrate conversion to various
      formats (in particular, block diagonal storage).  This is NOT the
      recommended means to solve such a problem.  */
-  ierr = MatConvert(submat,type,MAT_INITIAL_MATRIX,newmat);CHKERRQ(ierr);
-  ierr = MatDestroy(&submat);CHKERRQ(ierr);
+  CHKERRQ(MatConvert(submat,type,MAT_INITIAL_MATRIX,newmat));
+  CHKERRQ(MatDestroy(&submat));
 
-  ierr = MatNorm(*newmat,NORM_1,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix 1 norm = %g\n",(double)norm);CHKERRQ(ierr);
+  CHKERRQ(MatNorm(*newmat,NORM_1,&norm));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"matrix 1 norm = %g\n",(double)norm));
 
   return 0;
 }
@@ -173,7 +172,6 @@ PetscErrorCode AddElement(Mat mat,PetscInt r1,PetscInt r2,PetscReal **K,PetscInt
 {
   PetscScalar    val;
   PetscInt       l1,l2,row,col;
-  PetscErrorCode ierr;
 
   for (l1=0; l1<3; l1++) {
     for (l2=0; l2<3; l2++) {
@@ -183,9 +181,9 @@ PetscErrorCode AddElement(Mat mat,PetscInt r1,PetscInt r2,PetscReal **K,PetscInt
 */
       if (K[h1+l1][h2+l2] != 0.0) {
         row  = r1+l1; col = r2+l2; val = K[h1+l1][h2+l2];
-        ierr = MatSetValues(mat,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValues(mat,1,&row,1,&col,&val,ADD_VALUES));
         row  = r2+l2; col = r1+l1;
-        ierr = MatSetValues(mat,1,&row,1,&col,&val,ADD_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValues(mat,1,&row,1,&col,&val,ADD_VALUES));
       }
     }
   }

@@ -50,13 +50,13 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Example is only for sequential runs");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix and vector data structures; set corresponding routines
@@ -64,21 +64,21 @@ int main(int argc,char **argv)
   /*
      Create vectors for solution and nonlinear function
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,1);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
+  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,1));
+  CHKERRQ(VecSetFromOptions(x));
+  CHKERRQ(VecDuplicate(x,&r));
 
   /*
      Create Jacobian matrix data structure
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
-  ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,1,1);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(J);CHKERRQ(ierr);
-  ierr = MatSetUp(J);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&J));
+  CHKERRQ(MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,1,1));
+  CHKERRQ(MatSetFromOptions(J));
+  CHKERRQ(MatSetUp(J));
 
-  ierr = SNESSetFunction(snes,r,FormFunction,NULL);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,J,J,FormJacobian,NULL);CHKERRQ(ierr);
+  CHKERRQ(SNESSetFunction(snes,r,FormFunction,NULL));
+  CHKERRQ(SNESSetJacobian(snes,J,J,FormJacobian,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -88,10 +88,10 @@ int main(int argc,char **argv)
      KSP and PC contexts from the SNES context, we can then
      directly call any KSP and PC routines to set various options.
   */
-  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-4,PETSC_DEFAULT,PETSC_DEFAULT,20);CHKERRQ(ierr);
+  CHKERRQ(SNESGetKSP(snes,&ksp));
+  CHKERRQ(KSPGetPC(ksp,&pc));
+  CHKERRQ(PCSetType(pc,PCNONE));
+  CHKERRQ(KSPSetTolerances(ksp,1.e-4,PETSC_DEFAULT,PETSC_DEFAULT,20));
 
   /*
      Set SNES/KSP/KSP/PC runtime options, e.g.,
@@ -100,35 +100,34 @@ int main(int argc,char **argv)
      SNESSetFromOptions() is called _after_ any other customization
      routines.
   */
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  CHKERRQ(SNESSetFromOptions(snes));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecSet(x,2.5);CHKERRQ(ierr);
+  CHKERRQ(VecSet(x,2.5));
 
-  ierr = SNESSolve(snes,NULL,x);CHKERRQ(ierr);
+  CHKERRQ(SNESSolve(snes,NULL,x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Output x and f(x)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(r,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(VecView(r,PETSC_VIEWER_STDOUT_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr); ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = MatDestroy(&J);CHKERRQ(ierr); ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x)); CHKERRQ(VecDestroy(&r));
+  CHKERRQ(MatDestroy(&J)); CHKERRQ(SNESDestroy(&snes));
   ierr = PetscFinalize();
   return ierr;
 }
 
 PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *xx;
   PetscScalar       *ff;
 
@@ -139,15 +138,15 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *ctx)
       - You MUST call VecRestoreArray() when you no longer need access to
         the array.
    */
-  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
-  ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(x,&xx));
+  CHKERRQ(VecGetArray(f,&ff));
 
   /* Compute function */
   ff[0] = 8. * PetscExpScalar(-4. * (xx[0] - 2.) * (xx[0] - 2.)) * (xx[0] - 2.) + 2. * xx[0];
 
   /* Restore vectors */
-  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(x,&xx));
+  CHKERRQ(VecRestoreArray(f,&ff));
   return 0;
 }
 
@@ -155,13 +154,12 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
 {
   const PetscScalar *xx;
   PetscScalar       A[1];
-  PetscErrorCode    ierr;
   PetscInt          idx[1] = {0};
 
   /*
      Get pointer to vector data
   */
-  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(x,&xx));
 
   /*
      Compute Jacobian entries and insert into matrix.
@@ -172,21 +170,21 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *dummy)
                 + PetscExpScalar(-4. * (xx[0] - 2.) * (xx[0] - 2.)))
           + 2.;
 
-  ierr  = MatSetValues(B,1,idx,1,idx,A,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(B,1,idx,1,idx,A,INSERT_VALUES));
 
   /*
      Restore vector
   */
-  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(x,&xx));
 
   /*
      Assemble matrix
   */
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   if (jac != B) {
-    ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   }
   return 0;
 }

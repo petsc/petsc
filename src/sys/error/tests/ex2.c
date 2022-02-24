@@ -11,12 +11,12 @@ int main(int argc, char *args[])
   ierr = PetscInitialize(&argc, &args, (char*) 0, help);if (ierr) return ierr;
   if (ierr) return ierr;
   if (!PETSC_RUNNING_ON_VALGRIND) {                         /* PetscCheckPointer always returns TRUE when running on Valgrind */
-    ierr = PetscMalloc(1024 * 1024 * 8,&ptr);CHKERRQ(ierr); /* Almost certainly larger than MMAP_THRESHOLD (128 KiB by default) */
-    if (!PetscCheckPointer(ptr,PETSC_INT)) {ierr = PetscPrintf(PETSC_COMM_SELF,"Mistook valid pointer %p for invalid pointer\n",(void*)ptr);CHKERRQ(ierr);}
-    ierr = PetscFree(ptr);CHKERRQ(ierr);
-    if (PetscCheckPointer(ptr,PETSC_INT)) {ierr = PetscPrintf(PETSC_COMM_SELF,"Mistook NULL pointer for valid pointer\n");CHKERRQ(ierr);}
+    CHKERRQ(PetscMalloc(1024 * 1024 * 8,&ptr)); /* Almost certainly larger than MMAP_THRESHOLD (128 KiB by default) */
+    if (!PetscCheckPointer(ptr,PETSC_INT)) CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Mistook valid pointer %p for invalid pointer\n",(void*)ptr));
+    CHKERRQ(PetscFree(ptr));
+    if (PetscCheckPointer(ptr,PETSC_INT)) CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Mistook NULL pointer for valid pointer\n"));
     ptr = (PetscInt*) ~(PETSC_UINTPTR_T)0xf; /* Pointer will almost certainly be invalid */
-    if (PetscCheckPointer(ptr,PETSC_INT)) {ierr = PetscPrintf(PETSC_COMM_SELF,"Mistook invalid pointer %p for valid\n",(void*)ptr);CHKERRQ(ierr);}
+    if (PetscCheckPointer(ptr,PETSC_INT)) CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Mistook invalid pointer %p for valid\n",(void*)ptr));
   }
   ierr = PetscFinalize();
   return ierr;

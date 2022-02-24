@@ -17,9 +17,9 @@ int main(int argc,char **argv)
   }
   /* To take care of paging effects */
   PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
-  ierr = PetscTime(&x);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&x));
 
-  ierr = PetscTime(&x);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&x));
   PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
   PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
   PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
   PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
   PetscMemcmp(A,B,sizeof(PetscScalar)*10000,&flg);
-  ierr = PetscTime(&y);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&y));
   PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
   PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
   PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
   PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
   PetscMemcmp(A,B,sizeof(PetscScalar)*0,&flg);
-  ierr = PetscTime(&z);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&z));
 
   fprintf(stdout,"%s : \n","PetscMemcmp");
   fprintf(stdout,"    %-15s : %e sec\n","Latency",(z-y)/10.0);

@@ -14,13 +14,12 @@ Input parameters include:\n\
 PetscErrorCode printMumpsMemoryInfo(Mat F)
 {
   PetscInt       maxMem, sumMem;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = MatMumpsGetInfog(F,16,&maxMem);CHKERRQ(ierr);
-  ierr = MatMumpsGetInfog(F,17,&sumMem);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "\n MUMPS INFOG(16) :: Max memory in MB = %d", maxMem);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "\n MUMPS INFOG(17) :: Sum memory in MB = %d \n", sumMem);CHKERRQ(ierr);
+  CHKERRQ(MatMumpsGetInfog(F,16,&maxMem));
+  CHKERRQ(MatMumpsGetInfog(F,17,&sumMem));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "\n MUMPS INFOG(16) :: Max memory in MB = %d", maxMem));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "\n MUMPS INFOG(17) :: Sum memory in MB = %d \n", sumMem));
   PetscFunctionReturn(0);
 }
 #endif
@@ -52,27 +51,27 @@ int main(int argc,char **args)
 #endif
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,5,NULL,5,NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A,5,NULL);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatMPIAIJSetPreallocation(A,5,NULL,5,NULL));
+  CHKERRQ(MatSeqAIJSetPreallocation(A,5,NULL));
+  CHKERRQ(MatSetUp(A));
 
   /*
      Currently, all PETSc parallel matrix formats are partitioned by
      contiguous chunks of rows across the processors.  Determine which
      rows of the matrix are locally owned.
   */
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(A,&Istart,&Iend));
 
   /*
      Set matrix elements for the 2-D, five-point stencil in parallel.
@@ -87,15 +86,15 @@ int main(int argc,char **args)
      would first do all variables for y = h, then y = 2h etc.
 
    */
-  ierr = PetscLogStageRegister("Assembly", &stage);CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
+  CHKERRQ(PetscLogStageRegister("Assembly", &stage));
+  CHKERRQ(PetscLogStagePush(stage));
   for (Ii=Istart; Ii<Iend; Ii++) {
     v = -1.0; i = Ii/n; j = Ii - i*n;
-    if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (j<n-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    v = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
+    if (i>0)   {J = Ii - n; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (i<m-1) {J = Ii + n; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (j>0)   {J = Ii - 1; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (j<n-1) {J = Ii + 1; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    v = 4.0; CHKERRQ(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
   }
 
   /*
@@ -104,12 +103,12 @@ int main(int argc,char **args)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(PetscLogStagePop());
 
   /* A is symmetric. Set symmetric flag to enable ICC/Cholesky preconditioner */
-  ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
 
   /*
      Create parallel vectors.
@@ -127,11 +126,11 @@ int main(int argc,char **args)
         (replacing the PETSC_DECIDE argument in the VecSetSizes() statement
         below).
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,m*n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
+  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,m*n));
+  CHKERRQ(VecSetFromOptions(u));
+  CHKERRQ(VecDuplicate(u,&b));
+  CHKERRQ(VecDuplicate(b,&x));
 
   /*
      Set exact solution; then compute right-hand-side vector.
@@ -139,23 +138,23 @@ int main(int argc,char **args)
      elements of 1.0;  Alternatively, using the runtime option
      -random_sol forms a solution vector with random components.
   */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-random_exact_sol",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-random_exact_sol",&flg,NULL));
   if (flg) {
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-    ierr = VecSetRandom(u,rctx);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
+    CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
+    CHKERRQ(PetscRandomSetFromOptions(rctx));
+    CHKERRQ(VecSetRandom(u,rctx));
+    CHKERRQ(PetscRandomDestroy(&rctx));
   } else {
-    ierr = VecSet(u,1.0);CHKERRQ(ierr);
+    CHKERRQ(VecSet(u,1.0));
   }
-  ierr = MatMult(A,u,b);CHKERRQ(ierr);
+  CHKERRQ(MatMult(A,u,b));
 
   /*
      View the exact solution vector if desired
   */
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-view_exact_sol",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-view_exact_sol",&flg,NULL));
+  if (flg) CHKERRQ(VecView(u,PETSC_VIEWER_STDOUT_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
@@ -164,8 +163,8 @@ int main(int argc,char **args)
   /*
      Create linear solver context
   */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPSetOperators(ksp,A,A));
 
   /*
     Example of how to use external package MUMPS
@@ -176,46 +175,46 @@ int main(int argc,char **args)
 #if defined(PETSC_HAVE_MUMPS)
   flg_mumps    = PETSC_FALSE;
   flg_mumps_ch = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-use_mumps_lu",&flg_mumps,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-use_mumps_ch",&flg_mumps_ch,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-use_mumps_lu",&flg_mumps,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-use_mumps_ch",&flg_mumps_ch,NULL));
   if (flg_mumps || flg_mumps_ch) {
-    ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
+    CHKERRQ(KSPSetType(ksp,KSPPREONLY));
     PetscInt  ival,icntl;
     PetscReal val;
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    CHKERRQ(KSPGetPC(ksp,&pc));
     if (flg_mumps) {
-      ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+      CHKERRQ(PCSetType(pc,PCLU));
     } else if (flg_mumps_ch) {
-      ierr = MatSetOption(A,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr); /* set MUMPS id%SYM=1 */
-      ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
+      CHKERRQ(MatSetOption(A,MAT_SPD,PETSC_TRUE)); /* set MUMPS id%SYM=1 */
+      CHKERRQ(PCSetType(pc,PCCHOLESKY));
     }
-    ierr = PCFactorSetMatSolverType(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
-    ierr = PCFactorSetUpMatSolverType(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
-    ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
+    CHKERRQ(PCFactorSetMatSolverType(pc,MATSOLVERMUMPS));
+    CHKERRQ(PCFactorSetUpMatSolverType(pc)); /* call MatGetFactor() to create F */
+    CHKERRQ(PCFactorGetMatrix(pc,&F));
 
     if (flg_mumps) {
       /* Get memory estimates from MUMPS' MatLUFactorSymbolic(), e.g. INFOG(16), INFOG(17).
          KSPSetUp() below will do nothing inside MatLUFactorSymbolic() */
       MatFactorInfo info;
-      ierr = MatLUFactorSymbolic(F,A,NULL,NULL,&info);CHKERRQ(ierr);
+      CHKERRQ(MatLUFactorSymbolic(F,A,NULL,NULL,&info));
       flg = PETSC_FALSE;
-      ierr = PetscOptionsGetBool(NULL,NULL,"-print_mumps_memory",&flg,NULL);CHKERRQ(ierr);
+      CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-print_mumps_memory",&flg,NULL));
       if (flg) {
-        ierr = printMumpsMemoryInfo(F);CHKERRQ(ierr);
+        CHKERRQ(printMumpsMemoryInfo(F));
       }
     }
 
     /* sequential ordering */
     icntl = 7; ival = 2;
-    ierr = MatMumpsSetIcntl(F,icntl,ival);CHKERRQ(ierr);
+    CHKERRQ(MatMumpsSetIcntl(F,icntl,ival));
 
     /* threshold for row pivot detection */
-    ierr = MatMumpsSetIcntl(F,24,1);CHKERRQ(ierr);
+    CHKERRQ(MatMumpsSetIcntl(F,24,1));
     icntl = 3; val = 1.e-6;
-    ierr = MatMumpsSetCntl(F,icntl,val);CHKERRQ(ierr);
+    CHKERRQ(MatMumpsSetCntl(F,icntl,val));
 
     /* compute determinant of A */
-    ierr = MatMumpsSetIcntl(F,33,1);CHKERRQ(ierr);
+    CHKERRQ(MatMumpsSetIcntl(F,33,1));
   }
 #endif
 
@@ -228,34 +227,34 @@ int main(int argc,char **args)
 #if defined(PETSC_HAVE_SUPERLU) || defined(PETSC_HAVE_SUPERLU_DIST)
   flg_ilu     = PETSC_FALSE;
   flg_superlu = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-use_superlu_lu",&flg_superlu,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-use_superlu_ilu",&flg_ilu,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-use_superlu_lu",&flg_superlu,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-use_superlu_ilu",&flg_ilu,NULL));
   if (flg_superlu || flg_ilu) {
-    ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    CHKERRQ(KSPSetType(ksp,KSPPREONLY));
+    CHKERRQ(KSPGetPC(ksp,&pc));
     if (flg_superlu) {
-      ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+      CHKERRQ(PCSetType(pc,PCLU));
     } else if (flg_ilu) {
-      ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
+      CHKERRQ(PCSetType(pc,PCILU));
     }
     if (size == 1) {
 #if !defined(PETSC_HAVE_SUPERLU)
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This test requires SUPERLU");
 #else
-      ierr = PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
+      CHKERRQ(PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU));
 #endif
     } else {
 #if !defined(PETSC_HAVE_SUPERLU_DIST)
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This test requires SUPERLU_DIST");
 #else
-      ierr = PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU_DIST);CHKERRQ(ierr);
+      CHKERRQ(PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU_DIST));
 #endif
     }
-    ierr = PCFactorSetUpMatSolverType(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
-    ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
+    CHKERRQ(PCFactorSetUpMatSolverType(pc)); /* call MatGetFactor() to create F */
+    CHKERRQ(PCFactorGetMatrix(pc,&F));
 #if defined(PETSC_HAVE_SUPERLU)
     if (size == 1) {
-      ierr = MatSuperluSetILUDropTol(F,1.e-8);CHKERRQ(ierr);
+      CHKERRQ(MatSuperluSetILUDropTol(F,1.e-8));
     }
 #endif
   }
@@ -280,42 +279,42 @@ int main(int argc,char **args)
 #if defined(PETSC_HAVE_STRUMPACK)
   flg_ilu       = PETSC_FALSE;
   flg_strumpack = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-use_strumpack_lu",&flg_strumpack,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-use_strumpack_ilu",&flg_ilu,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-use_strumpack_lu",&flg_strumpack,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-use_strumpack_ilu",&flg_ilu,NULL));
   if (flg_strumpack || flg_ilu) {
-    ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    CHKERRQ(KSPSetType(ksp,KSPPREONLY));
+    CHKERRQ(KSPGetPC(ksp,&pc));
     if (flg_strumpack) {
-      ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+      CHKERRQ(PCSetType(pc,PCLU));
     } else if (flg_ilu) {
-      ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
+      CHKERRQ(PCSetType(pc,PCILU));
     }
 #if !defined(PETSC_HAVE_STRUMPACK)
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This test requires STRUMPACK");
 #endif
-    ierr = PCFactorSetMatSolverType(pc,MATSOLVERSTRUMPACK);CHKERRQ(ierr);
-    ierr = PCFactorSetUpMatSolverType(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
-    ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
+    CHKERRQ(PCFactorSetMatSolverType(pc,MATSOLVERSTRUMPACK));
+    CHKERRQ(PCFactorSetUpMatSolverType(pc)); /* call MatGetFactor() to create F */
+    CHKERRQ(PCFactorGetMatrix(pc,&F));
 #if defined(PETSC_HAVE_STRUMPACK)
     /* Set the fill-reducing reordering.                              */
-    ierr = MatSTRUMPACKSetReordering(F,MAT_STRUMPACK_METIS);CHKERRQ(ierr);
+    CHKERRQ(MatSTRUMPACKSetReordering(F,MAT_STRUMPACK_METIS));
     /* Since this is a simple discretization, the diagonal is always  */
     /* nonzero, and there is no need for the extra MC64 permutation.  */
-    ierr = MatSTRUMPACKSetColPerm(F,PETSC_FALSE);CHKERRQ(ierr);
+    CHKERRQ(MatSTRUMPACKSetColPerm(F,PETSC_FALSE));
     /* The compression tolerance used when doing low-rank compression */
     /* in the preconditioner. This is problem specific!               */
-    ierr = MatSTRUMPACKSetHSSRelTol(F,1.e-3);CHKERRQ(ierr);
+    CHKERRQ(MatSTRUMPACKSetHSSRelTol(F,1.e-3));
     /* Set minimum matrix size for HSS compression to 15 in order to  */
     /* demonstrate preconditioner on small problems. For performance  */
     /* a value of say 500 is better.                                  */
-    ierr = MatSTRUMPACKSetHSSMinSepSize(F,15);CHKERRQ(ierr);
+    CHKERRQ(MatSTRUMPACKSetHSSMinSepSize(F,15));
     /* You can further limit the fill in the preconditioner by        */
     /* setting a maximum rank                                         */
-    ierr = MatSTRUMPACKSetHSSMaxRank(F,100);CHKERRQ(ierr);
+    CHKERRQ(MatSTRUMPACKSetHSSMaxRank(F,100));
     /* Set the size of the diagonal blocks (the leafs) in the HSS     */
     /* approximation. The default value should be better for real     */
     /* problems. This is mostly for illustration on a small problem.  */
-    ierr = MatSTRUMPACKSetHSSLeafSize(F,4);CHKERRQ(ierr);
+    CHKERRQ(MatSTRUMPACKSetHSSLeafSize(F,4));
 #endif
   }
 #endif
@@ -327,52 +326,52 @@ int main(int argc,char **args)
   flg     = PETSC_FALSE;
   flg_ilu = PETSC_FALSE;
   flg_ch  = PETSC_FALSE;
-  ierr    = PetscOptionsGetBool(NULL,NULL,"-use_petsc_lu",&flg,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetBool(NULL,NULL,"-use_petsc_ilu",&flg_ilu,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetBool(NULL,NULL,"-use_petsc_ch",&flg_ch,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-use_petsc_lu",&flg,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-use_petsc_ilu",&flg_ilu,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-use_petsc_ch",&flg_ch,NULL));
   if (flg || flg_ilu || flg_ch) {
     Vec diag;
 
-    ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    CHKERRQ(KSPSetType(ksp,KSPPREONLY));
+    CHKERRQ(KSPGetPC(ksp,&pc));
     if (flg) {
-      ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+      CHKERRQ(PCSetType(pc,PCLU));
     } else if (flg_ilu) {
-      ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
+      CHKERRQ(PCSetType(pc,PCILU));
     } else if (flg_ch) {
-      ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
+      CHKERRQ(PCSetType(pc,PCCHOLESKY));
     }
-    ierr = PCFactorSetMatSolverType(pc,MATSOLVERPETSC);CHKERRQ(ierr);
-    ierr = PCFactorSetUpMatSolverType(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
-    ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
+    CHKERRQ(PCFactorSetMatSolverType(pc,MATSOLVERPETSC));
+    CHKERRQ(PCFactorSetUpMatSolverType(pc)); /* call MatGetFactor() to create F */
+    CHKERRQ(PCFactorGetMatrix(pc,&F));
 
     /* Test MatGetDiagonal() */
-    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-    ierr = VecDuplicate(x,&diag);CHKERRQ(ierr);
-    ierr = MatGetDiagonal(F,diag);CHKERRQ(ierr);
-    /* ierr = VecView(diag,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-    ierr = VecDestroy(&diag);CHKERRQ(ierr);
+    CHKERRQ(KSPSetUp(ksp));
+    CHKERRQ(VecDuplicate(x,&diag));
+    CHKERRQ(MatGetDiagonal(F,diag));
+    /* CHKERRQ(VecView(diag,PETSC_VIEWER_STDOUT_WORLD)); */
+    CHKERRQ(VecDestroy(&diag));
   }
 
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPSetFromOptions(ksp));
 
   /* Get info from matrix factors */
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPSetUp(ksp));
 
 #if defined(PETSC_HAVE_MUMPS)
   if (flg_mumps || flg_mumps_ch) {
     PetscInt  icntl,infog34;
     PetscReal cntl,rinfo12,rinfo13;
     icntl = 3;
-    ierr = MatMumpsGetCntl(F,icntl,&cntl);CHKERRQ(ierr);
+    CHKERRQ(MatMumpsGetCntl(F,icntl,&cntl));
 
     /* compute determinant */
     if (rank == 0) {
-      ierr = MatMumpsGetInfog(F,34,&infog34);CHKERRQ(ierr);
-      ierr = MatMumpsGetRinfog(F,12,&rinfo12);CHKERRQ(ierr);
-      ierr = MatMumpsGetRinfog(F,13,&rinfo13);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Mumps row pivot threshold = %g\n",cntl);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Mumps determinant = (%g, %g) * 2^%D \n",(double)rinfo12,(double)rinfo13,infog34);CHKERRQ(ierr);
+      CHKERRQ(MatMumpsGetInfog(F,34,&infog34));
+      CHKERRQ(MatMumpsGetRinfog(F,12,&rinfo12));
+      CHKERRQ(MatMumpsGetRinfog(F,13,&rinfo13));
+      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  Mumps row pivot threshold = %g\n",cntl));
+      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  Mumps determinant = (%g, %g) * 2^%D \n",(double)rinfo12,(double)rinfo13,infog34));
     }
   }
 #endif
@@ -380,14 +379,14 @@ int main(int argc,char **args)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  CHKERRQ(KSPSolve(ksp,b,x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check solution and clean up
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(x,-1.0,u));
+  CHKERRQ(VecNorm(x,NORM_2,&norm));
+  CHKERRQ(KSPGetIterationNumber(ksp,&its));
 
   /*
      Print convergence information.  PetscPrintf() produces a single
@@ -395,18 +394,18 @@ int main(int argc,char **args)
      An alternative is PetscFPrintf(), which prints to a file.
   */
   if (norm < 1.e-12) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 iterations %D\n",its);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 iterations %D\n",its));
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its));
  }
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(VecDestroy(&u));  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&b));  CHKERRQ(MatDestroy(&A));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

@@ -61,11 +61,10 @@ PetscErrorCode DMPlexInvertCell(DMPolytopeType cellType, PetscInt cone[])
 PetscErrorCode DMPlexReorderCell(DM dm, PetscInt cell, PetscInt cone[])
 {
   DMPolytopeType cellType;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetCellType(dm, cell, &cellType);CHKERRQ(ierr);
-  ierr = DMPlexInvertCell(cellType, cone);CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetCellType(dm, cell, &cellType));
+  CHKERRQ(DMPlexInvertCell(cellType, cone));
   PetscFunctionReturn(0);
 }
 
@@ -85,13 +84,12 @@ PetscErrorCode DMPlexReorderCell(DM dm, PetscInt cell, PetscInt cone[])
 PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(opts, 2);
-  ierr = PetscFree(mesh->triangleOpts);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(opts, &mesh->triangleOpts);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(mesh->triangleOpts));
+  CHKERRQ(PetscStrallocpy(opts, &mesh->triangleOpts));
   PetscFunctionReturn(0);
 }
 
@@ -111,13 +109,12 @@ PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts)
 PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts)
 {
   DM_Plex       *mesh = (DM_Plex*) dm->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(opts, 2);
-  ierr = PetscFree(mesh->tetgenOpts);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(opts, &mesh->tetgenOpts);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(mesh->tetgenOpts));
+  CHKERRQ(PetscStrallocpy(opts, &mesh->tetgenOpts));
   PetscFunctionReturn(0);
 }
 
@@ -149,25 +146,24 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
   const char             *suggestions;
   PetscInt                dim;
   PetscBool               flg;
-  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(boundary, DM_CLASSID, 1);
   PetscValidLogicalCollectiveBool(boundary, interpolate, 3);
-  ierr = DMGetDimension(boundary, &dim);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(((PetscObject) boundary)->options,((PetscObject) boundary)->prefix, "-dm_generator", genname, sizeof(genname), &flg);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(boundary, &dim));
+  CHKERRQ(PetscOptionsGetString(((PetscObject) boundary)->options,((PetscObject) boundary)->prefix, "-dm_generator", genname, sizeof(genname), &flg));
   if (flg) name = genname;
   else {
-    ierr = PetscOptionsGetString(((PetscObject) boundary)->options,((PetscObject) boundary)->prefix, "-dm_plex_generate", genname, sizeof(genname), &flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsGetString(((PetscObject) boundary)->options,((PetscObject) boundary)->prefix, "-dm_plex_generate", genname, sizeof(genname), &flg));
     if (flg) name = genname;
   }
 
   fl = DMGenerateList;
   if (name) {
     while (fl) {
-      ierr = PetscStrcmp(fl->name,name,&flg);CHKERRQ(ierr);
+      CHKERRQ(PetscStrcmp(fl->name,name,&flg));
       if (flg) {
-        ierr = (*fl->generate)(boundary,interpolate,mesh);CHKERRQ(ierr);
+        CHKERRQ((*fl->generate)(boundary,interpolate,mesh));
         PetscFunctionReturn(0);
       }
       fl = fl->next;
@@ -176,7 +172,7 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
   } else {
     while (fl) {
       if (boundary->dim == fl->dim) {
-        ierr = (*fl->generate)(boundary,interpolate,mesh);CHKERRQ(ierr);
+        CHKERRQ((*fl->generate)(boundary,interpolate,mesh));
         PetscFunctionReturn(0);
       }
       fl = fl->next;

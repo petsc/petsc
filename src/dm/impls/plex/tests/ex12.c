@@ -47,17 +47,17 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->partitionBalance = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-overlap", "The cell overlap for partitioning", "ex12.c", options->overlap, &options->overlap, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex12.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-test_redundant", "Use a redundant partition for testing", "ex12.c", options->testRedundant, &options->testRedundant, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-load_balance", "Perform parallel load balancing in a second distribution step", "ex12.c", options->loadBalance, &options->loadBalance, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-partition_balance", "Balance the ownership of shared points", "ex12.c", options->partitionBalance, &options->partitionBalance, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBoundedInt("-overlap", "The cell overlap for partitioning", "ex12.c", options->overlap, &options->overlap, NULL,0));
+  CHKERRQ(PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex12.c", options->testPartition, &options->testPartition, NULL));
+  CHKERRQ(PetscOptionsBool("-test_redundant", "Use a redundant partition for testing", "ex12.c", options->testRedundant, &options->testRedundant, NULL));
+  CHKERRQ(PetscOptionsBool("-load_balance", "Perform parallel load balancing in a second distribution step", "ex12.c", options->loadBalance, &options->loadBalance, NULL));
+  CHKERRQ(PetscOptionsBool("-partition_balance", "Balance the ownership of shared points", "ex12.c", options->partitionBalance, &options->partitionBalance, NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = PetscLogStageRegister("MeshLoad",         &options->stages[STAGE_LOAD]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("MeshDistribute",   &options->stages[STAGE_DISTRIBUTE]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("MeshRefine",       &options->stages[STAGE_REFINE]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("MeshRedistribute", &options->stages[STAGE_REDISTRIBUTE]);CHKERRQ(ierr);
+  CHKERRQ(PetscLogStageRegister("MeshLoad",         &options->stages[STAGE_LOAD]));
+  CHKERRQ(PetscLogStageRegister("MeshDistribute",   &options->stages[STAGE_DISTRIBUTE]));
+  CHKERRQ(PetscLogStageRegister("MeshRefine",       &options->stages[STAGE_REFINE]));
+  CHKERRQ(PetscLogStageRegister("MeshRedistribute", &options->stages[STAGE_REDISTRIBUTE]));
   PetscFunctionReturn(0);
 }
 
@@ -78,27 +78,26 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscInt       dim;
   PetscBool      simplex;
   PetscMPIInt    rank, size;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  ierr = PetscLogStagePush(user->stages[STAGE_LOAD]);CHKERRQ(ierr);
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexDistributeSetDefault(*dm, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
-  ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexIsSimplex(*dm, &simplex);CHKERRQ(ierr);
-  ierr = PetscLogStagePush(user->stages[STAGE_DISTRIBUTE]);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm, &rank));
+  CHKERRMPI(MPI_Comm_size(comm, &size));
+  CHKERRQ(PetscLogStagePush(user->stages[STAGE_LOAD]));
+  CHKERRQ(DMCreate(comm, dm));
+  CHKERRQ(DMSetType(*dm, DMPLEX));
+  CHKERRQ(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-orig_dm_view"));
+  CHKERRQ(PetscLogStagePop());
+  CHKERRQ(DMGetDimension(*dm, &dim));
+  CHKERRQ(DMPlexIsSimplex(*dm, &simplex));
+  CHKERRQ(PetscLogStagePush(user->stages[STAGE_DISTRIBUTE]));
   if (!user->testRedundant) {
     PetscPartitioner part;
 
-    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-    ierr = DMPlexSetPartitionBalance(*dm, user->partitionBalance);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetPartitioner(*dm, &part));
+    CHKERRQ(PetscPartitionerSetFromOptions(part));
+    CHKERRQ(DMPlexSetPartitionBalance(*dm, user->partitionBalance));
     if (user->testPartition) {
       const PetscInt *sizes = NULL;
       const PetscInt *points = NULL;
@@ -116,59 +115,59 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           sizes = quadSizes; points = quadPoints;
         }
       }
-      ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-      ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
+      CHKERRQ(PetscPartitionerSetType(part, PETSCPARTITIONERSHELL));
+      CHKERRQ(PetscPartitionerShellSetPartition(part, size, sizes, points));
     }
-    ierr = DMPlexDistribute(*dm, overlap, NULL, &pdm);CHKERRQ(ierr);
+    CHKERRQ(DMPlexDistribute(*dm, overlap, NULL, &pdm));
   } else {
     PetscSF sf;
 
-    ierr = DMPlexGetRedundantDM(*dm, &sf, &pdm);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetRedundantDM(*dm, &sf, &pdm));
     if (sf) {
       DM test;
 
-      ierr = DMPlexCreate(comm,&test);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject)test, "Test SF-migrated Redundant Mesh");CHKERRQ(ierr);
-      ierr = DMPlexMigrate(*dm, sf, test);CHKERRQ(ierr);
-      ierr = DMViewFromOptions(test, NULL, "-redundant_migrated_dm_view");CHKERRQ(ierr);
-      ierr = DMDestroy(&test);CHKERRQ(ierr);
+      CHKERRQ(DMPlexCreate(comm,&test));
+      CHKERRQ(PetscObjectSetName((PetscObject)test, "Test SF-migrated Redundant Mesh"));
+      CHKERRQ(DMPlexMigrate(*dm, sf, test));
+      CHKERRQ(DMViewFromOptions(test, NULL, "-redundant_migrated_dm_view"));
+      CHKERRQ(DMDestroy(&test));
     }
-    ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
+    CHKERRQ(PetscSFDestroy(&sf));
   }
   if (pdm) {
-    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    CHKERRQ(DMDestroy(dm));
     *dm  = pdm;
   }
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  CHKERRQ(PetscLogStagePop());
+  CHKERRQ(DMSetFromOptions(*dm));
   if (user->loadBalance) {
     PetscPartitioner part;
 
-    ierr = DMViewFromOptions(*dm, NULL, "-prelb_dm_view");CHKERRQ(ierr);
-    ierr = DMPlexSetOptionsPrefix(*dm, "lb_");CHKERRQ(ierr);
-    ierr = PetscLogStagePush(user->stages[STAGE_REDISTRIBUTE]);CHKERRQ(ierr);
-    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) part, "lb_");CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
+    CHKERRQ(DMViewFromOptions(*dm, NULL, "-prelb_dm_view"));
+    CHKERRQ(DMPlexSetOptionsPrefix(*dm, "lb_"));
+    CHKERRQ(PetscLogStagePush(user->stages[STAGE_REDISTRIBUTE]));
+    CHKERRQ(DMPlexGetPartitioner(*dm, &part));
+    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) part, "lb_"));
+    CHKERRQ(PetscPartitionerSetFromOptions(part));
     if (user->testPartition) {
       PetscInt         reSizes_n2[2]  = {2, 2};
       PetscInt         rePoints_n2[4] = {2, 3, 0, 1};
       if (rank) {rePoints_n2[0] = 1; rePoints_n2[1] = 2, rePoints_n2[2] = 0, rePoints_n2[3] = 3;}
 
-      ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-      ierr = PetscPartitionerShellSetPartition(part, size, reSizes_n2, rePoints_n2);CHKERRQ(ierr);
+      CHKERRQ(PetscPartitionerSetType(part, PETSCPARTITIONERSHELL));
+      CHKERRQ(PetscPartitionerShellSetPartition(part, size, reSizes_n2, rePoints_n2));
     }
-    ierr = DMPlexSetPartitionBalance(*dm, user->partitionBalance);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(*dm, overlap, NULL, &pdm);CHKERRQ(ierr);
+    CHKERRQ(DMPlexSetPartitionBalance(*dm, user->partitionBalance));
+    CHKERRQ(DMPlexDistribute(*dm, overlap, NULL, &pdm));
     if (pdm) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      CHKERRQ(DMDestroy(dm));
       *dm  = pdm;
     }
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
+    CHKERRQ(PetscLogStagePop());
   }
-  ierr = PetscLogStagePush(user->stages[STAGE_REFINE]);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  CHKERRQ(PetscLogStagePush(user->stages[STAGE_REFINE]));
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  CHKERRQ(PetscLogStagePop());
   PetscFunctionReturn(0);
 }
 
@@ -179,9 +178,9 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

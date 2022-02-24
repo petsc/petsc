@@ -30,64 +30,64 @@ int main(int argc,char **argv)
   PetscReal      mvidx[2];
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /*
       Create multi-component vector with 4 components
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&v);CHKERRQ(ierr);
-  ierr = VecSetSizes(v,PETSC_DECIDE,n);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(v,4);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(v);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&v));
+  CHKERRQ(VecSetSizes(v,PETSC_DECIDE,n));
+  CHKERRQ(VecSetBlockSize(v,4));
+  CHKERRQ(VecSetFromOptions(v));
 
   /*
       Create double-component vectors
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&s);CHKERRQ(ierr);
-  ierr = VecSetSizes(s,PETSC_DECIDE,n/2);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(s,2);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(s);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&s));
+  CHKERRQ(VecSetSizes(s,PETSC_DECIDE,n/2));
+  CHKERRQ(VecSetBlockSize(s,2));
+  CHKERRQ(VecSetFromOptions(s));
 
   /*
      Set the vector values
   */
-  ierr = VecGetOwnershipRange(v,&start,&end);CHKERRQ(ierr);
+  CHKERRQ(VecGetOwnershipRange(v,&start,&end));
   for (i=start; i<end; i++) {
     value = i;
-    ierr  = VecSetValues(v,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(v,1,&i,&value,INSERT_VALUES));
   }
 
   /*
      Get the components from the large multi-component vector to the small multi-component vector,
      scale the smaller vector and then move values back to the large vector
   */
-  ierr = VecStrideSubSetGather(v,PETSC_DETERMINE,vidx,NULL,s,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecView(s,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecScale(s,100.0);CHKERRQ(ierr);
+  CHKERRQ(VecStrideSubSetGather(v,PETSC_DETERMINE,vidx,NULL,s,INSERT_VALUES));
+  CHKERRQ(VecView(s,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(VecScale(s,100.0));
 
-  ierr = VecStrideSubSetScatter(s,PETSC_DETERMINE,NULL,vidx,v,ADD_VALUES);CHKERRQ(ierr);
-  ierr = VecView(v,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecStrideSubSetScatter(s,PETSC_DETERMINE,NULL,vidx,v,ADD_VALUES));
+  CHKERRQ(VecView(v,PETSC_VIEWER_STDOUT_WORLD));
 
   /*
      Get the components from the large multi-component vector to the small multi-component vector,
      scale the smaller vector and then move values back to the large vector
   */
-  ierr = VecStrideSubSetGather(v,2,vidx,sidx,s,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecView(s,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecScale(s,100.0);CHKERRQ(ierr);
+  CHKERRQ(VecStrideSubSetGather(v,2,vidx,sidx,s,INSERT_VALUES));
+  CHKERRQ(VecView(s,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(VecScale(s,100.0));
 
-  ierr = VecStrideSubSetScatter(s,2,sidx,vidx,v,ADD_VALUES);CHKERRQ(ierr);
-  ierr = VecView(v,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecStrideSubSetScatter(s,2,sidx,vidx,v,ADD_VALUES));
+  CHKERRQ(VecView(v,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = VecStrideMax(v,1,&miidx[0],&mvidx[0]);CHKERRQ(ierr);
-  ierr = VecStrideMin(v,1,&miidx[1],&mvidx[1]);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Min/Max: %" PetscInt_FMT " %g, %" PetscInt_FMT " %g\n",miidx[0],(double)mvidx[0],miidx[1],(double)mvidx[1]);CHKERRQ(ierr);
+  CHKERRQ(VecStrideMax(v,1,&miidx[0],&mvidx[0]));
+  CHKERRQ(VecStrideMin(v,1,&miidx[1],&mvidx[1]));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Min/Max: %" PetscInt_FMT " %g, %" PetscInt_FMT " %g\n",miidx[0],(double)mvidx[0],miidx[1],(double)mvidx[1]));
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = VecDestroy(&v);CHKERRQ(ierr);
-  ierr = VecDestroy(&s);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&v));
+  CHKERRQ(VecDestroy(&s));
   ierr = PetscFinalize();
   return ierr;
 }

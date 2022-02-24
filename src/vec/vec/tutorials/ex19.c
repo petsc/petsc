@@ -24,130 +24,130 @@ int main(int argc,char **argv)
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char*) 0, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL, "-n", &n, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL, "-n_timesteps", &n_timesteps, NULL);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm, &rank));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-n", &n, NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-n_timesteps", &n_timesteps, NULL));
   PetscCheckFalse(n_timesteps < 0,comm, PETSC_ERR_USER_INPUT, "-n_timesteps must be nonnegative");
 
   /* create, initialize and write vectors */
-  ierr = PetscRandomCreate(comm, &rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Open(comm, "ex19.h5", FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomCreate(comm, &rand));
+  CHKERRQ(PetscRandomSetFromOptions(rand));
+  CHKERRQ(PetscViewerHDF5Open(comm, "ex19.h5", FILE_MODE_WRITE, &viewer));
 
-  ierr = VecCreate(comm, &x1);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) x1, "x1");CHKERRQ(ierr);
-  ierr = VecSetSizes(x1, PETSC_DECIDE, n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x1);CHKERRQ(ierr);
-  ierr = VecSetRandom(x1, rand);CHKERRQ(ierr);
-  ierr = VecView(x1, viewer);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(comm, &x1));
+  CHKERRQ(PetscObjectSetName((PetscObject) x1, "x1"));
+  CHKERRQ(VecSetSizes(x1, PETSC_DECIDE, n));
+  CHKERRQ(VecSetFromOptions(x1));
+  CHKERRQ(VecSetRandom(x1, rand));
+  CHKERRQ(VecView(x1, viewer));
 
-  ierr = PetscViewerHDF5PushGroup(viewer, "/testBlockSize");CHKERRQ(ierr);
-  ierr = VecCreate(comm, &x2);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) x2, "x2");CHKERRQ(ierr);
-  ierr = VecSetSizes(x2, PETSC_DECIDE, n);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(x2, 2);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x2);CHKERRQ(ierr);
-  ierr = VecSetRandom(x2, rand);CHKERRQ(ierr);
-  ierr = VecView(x2, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5PushGroup(viewer, "/testBlockSize"));
+  CHKERRQ(VecCreate(comm, &x2));
+  CHKERRQ(PetscObjectSetName((PetscObject) x2, "x2"));
+  CHKERRQ(VecSetSizes(x2, PETSC_DECIDE, n));
+  CHKERRQ(VecSetBlockSize(x2, 2));
+  CHKERRQ(VecSetFromOptions(x2));
+  CHKERRQ(VecSetRandom(x2, rand));
+  CHKERRQ(VecView(x2, viewer));
+  CHKERRQ(PetscViewerHDF5PopGroup(viewer));
 
-  ierr = PetscViewerHDF5PushGroup(viewer, "/testTimestep");CHKERRQ(ierr);
-  ierr = PetscViewerHDF5PushTimestepping(viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5PushGroup(viewer, "/testTimestep"));
+  CHKERRQ(PetscViewerHDF5PushTimestepping(viewer));
 
-  ierr = VecDuplicateVecs(x1, n_timesteps, &x3ts);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicateVecs(x1, n_timesteps, &x3ts));
   for (i=0; i<n_timesteps; i++) {
-    ierr = PetscObjectSetName((PetscObject) x3ts[i], "x3");CHKERRQ(ierr);
-    ierr = VecSetRandom(x3ts[i], rand);CHKERRQ(ierr);
-    ierr = VecView(x3ts[i], viewer);CHKERRQ(ierr);
-    ierr = PetscViewerHDF5IncrementTimestep(viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectSetName((PetscObject) x3ts[i], "x3"));
+    CHKERRQ(VecSetRandom(x3ts[i], rand));
+    CHKERRQ(VecView(x3ts[i], viewer));
+    CHKERRQ(PetscViewerHDF5IncrementTimestep(viewer));
   }
 
-  ierr = PetscViewerHDF5PushGroup(viewer, "testBlockSize");CHKERRQ(ierr);
-  ierr = VecDuplicateVecs(x2, n_timesteps, &x4ts);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5PushGroup(viewer, "testBlockSize"));
+  CHKERRQ(VecDuplicateVecs(x2, n_timesteps, &x4ts));
   for (i=0; i<n_timesteps; i++) {
-    ierr = PetscObjectSetName((PetscObject) x4ts[i], "x4");CHKERRQ(ierr);
-    ierr = VecSetRandom(x4ts[i], rand);CHKERRQ(ierr);
-    ierr = PetscViewerHDF5SetTimestep(viewer, i);CHKERRQ(ierr);
-    ierr = VecView(x4ts[i], viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectSetName((PetscObject) x4ts[i], "x4"));
+    CHKERRQ(VecSetRandom(x4ts[i], rand));
+    CHKERRQ(PetscViewerHDF5SetTimestep(viewer, i));
+    CHKERRQ(VecView(x4ts[i], viewer));
   }
-  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5PopGroup(viewer));
 
-  ierr = PetscViewerHDF5PopTimestepping(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5PopTimestepping(viewer));
+  CHKERRQ(PetscViewerHDF5PopGroup(viewer));
 
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDestroy(&viewer));
+  CHKERRQ(PetscRandomDestroy(&rand));
 
   /* read and compare */
-  ierr = PetscViewerHDF5Open(comm, "ex19.h5", FILE_MODE_READ, &viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5Open(comm, "ex19.h5", FILE_MODE_READ, &viewer));
 
-  ierr = VecDuplicate(x1, &x1r);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) x1r, "x1");CHKERRQ(ierr);
-  ierr = VecLoad(x1r, viewer);CHKERRQ(ierr);
-  ierr = VecEqual(x1, x1r, &equal);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(x1, &x1r));
+  CHKERRQ(PetscObjectSetName((PetscObject) x1r, "x1"));
+  CHKERRQ(VecLoad(x1r, viewer));
+  CHKERRQ(VecEqual(x1, x1r, &equal));
   if (!equal) {
-    ierr = VecView(x1, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = VecView(x1r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(VecView(x1, PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(VecView(x1r, PETSC_VIEWER_STDOUT_WORLD));
     SETERRQ(comm, PETSC_ERR_PLIB, "Error in HDF5 viewer: x1 != x1r");
   }
 
-  ierr = PetscViewerHDF5PushGroup(viewer, "/testBlockSize");CHKERRQ(ierr);
-  ierr = VecDuplicate(x2, &x2r);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) x2r, "x2");CHKERRQ(ierr);
-  ierr = VecLoad(x2r, viewer);CHKERRQ(ierr);
-  ierr = VecEqual(x2, x2r, &equal);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5PushGroup(viewer, "/testBlockSize"));
+  CHKERRQ(VecDuplicate(x2, &x2r));
+  CHKERRQ(PetscObjectSetName((PetscObject) x2r, "x2"));
+  CHKERRQ(VecLoad(x2r, viewer));
+  CHKERRQ(VecEqual(x2, x2r, &equal));
   if (!equal) {
-    ierr = VecView(x2, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = VecView(x2r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(VecView(x2, PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(VecView(x2r, PETSC_VIEWER_STDOUT_WORLD));
     SETERRQ(comm, PETSC_ERR_PLIB, "Error in HDF5 viewer: x2 != x2r");
   }
-  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5PopGroup(viewer));
 
-  ierr = PetscViewerHDF5PushGroup(viewer, "/testTimestep");CHKERRQ(ierr);
-  ierr = PetscViewerHDF5PushTimestepping(viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5PushGroup(viewer, "/testTimestep"));
+  CHKERRQ(PetscViewerHDF5PushTimestepping(viewer));
 
-  ierr = VecDuplicate(x1, &x3r);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) x3r, "x3");CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(x1, &x3r));
+  CHKERRQ(PetscObjectSetName((PetscObject) x3r, "x3"));
   for (i=0; i<n_timesteps; i++) {
-    ierr = PetscViewerHDF5SetTimestep(viewer, i);CHKERRQ(ierr);
-    ierr = VecLoad(x3r, viewer);CHKERRQ(ierr);
-    ierr = VecEqual(x3r, x3ts[i], &equal);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerHDF5SetTimestep(viewer, i));
+    CHKERRQ(VecLoad(x3r, viewer));
+    CHKERRQ(VecEqual(x3r, x3ts[i], &equal));
     if (!equal) {
-      ierr = VecView(x3r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      ierr = VecView(x3ts[i], PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      CHKERRQ(VecView(x3r, PETSC_VIEWER_STDOUT_WORLD));
+      CHKERRQ(VecView(x3ts[i], PETSC_VIEWER_STDOUT_WORLD));
       SETERRQ(comm, PETSC_ERR_PLIB, "Error in HDF5 viewer: x3ts[%" PetscInt_FMT "] != x3r", i);
     }
   }
 
-  ierr = PetscViewerHDF5PushGroup(viewer, "testBlockSize");CHKERRQ(ierr);
-  ierr = VecDuplicate(x2, &x4r);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) x4r, "x4");CHKERRQ(ierr);
-  ierr = PetscViewerHDF5SetTimestep(viewer, 0);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5PushGroup(viewer, "testBlockSize"));
+  CHKERRQ(VecDuplicate(x2, &x4r));
+  CHKERRQ(PetscObjectSetName((PetscObject) x4r, "x4"));
+  CHKERRQ(PetscViewerHDF5SetTimestep(viewer, 0));
   for (i=0; i<n_timesteps; i++) {
-    ierr = VecLoad(x4r, viewer);CHKERRQ(ierr);
-    ierr = VecEqual(x4r, x4ts[i], &equal);CHKERRQ(ierr);
+    CHKERRQ(VecLoad(x4r, viewer));
+    CHKERRQ(VecEqual(x4r, x4ts[i], &equal));
     if (!equal) {
-      ierr = VecView(x4r, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      ierr = VecView(x4ts[i], PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      CHKERRQ(VecView(x4r, PETSC_VIEWER_STDOUT_WORLD));
+      CHKERRQ(VecView(x4ts[i], PETSC_VIEWER_STDOUT_WORLD));
       SETERRQ(comm, PETSC_ERR_PLIB, "Error in HDF5 viewer: x4ts[%" PetscInt_FMT "] != x4r", i);
     }
-    ierr = PetscViewerHDF5IncrementTimestep(viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerHDF5IncrementTimestep(viewer));
   }
-  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5PopGroup(viewer));
 
-  ierr = PetscViewerHDF5PopTimestepping(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5PopTimestepping(viewer));
+  CHKERRQ(PetscViewerHDF5PopGroup(viewer));
 
   /* cleanup */
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(&x1);CHKERRQ(ierr);
-  ierr = VecDestroy(&x2);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(n_timesteps, &x3ts);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(n_timesteps, &x4ts);CHKERRQ(ierr);
-  ierr = VecDestroy(&x1r);CHKERRQ(ierr);
-  ierr = VecDestroy(&x2r);CHKERRQ(ierr);
-  ierr = VecDestroy(&x3r);CHKERRQ(ierr);
-  ierr = VecDestroy(&x4r);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDestroy(&viewer));
+  CHKERRQ(VecDestroy(&x1));
+  CHKERRQ(VecDestroy(&x2));
+  CHKERRQ(VecDestroyVecs(n_timesteps, &x3ts));
+  CHKERRQ(VecDestroyVecs(n_timesteps, &x4ts));
+  CHKERRQ(VecDestroy(&x1r));
+  CHKERRQ(VecDestroy(&x2r));
+  CHKERRQ(VecDestroy(&x3r));
+  CHKERRQ(VecDestroy(&x4r));
   ierr = PetscFinalize();
   return ierr;
 }

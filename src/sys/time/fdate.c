@@ -40,19 +40,17 @@ PetscErrorCode  PetscGetDate(char date[],size_t len)
 #else
   struct timeval tp;
 #endif
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_TIME)
   time(&aclock);
-  ierr = PetscStrncpy(date,asctime(localtime(&aclock)),len);CHKERRQ(ierr);
+  CHKERRQ(PetscStrncpy(date,asctime(localtime(&aclock)),len));
 #else
   gettimeofday(&tp,(struct timezone*)0);
-  ierr = PetscStrncpy(date,asctime(localtime((time_t*)&tp.tv_sec)),len);CHKERRQ(ierr);
+  CHKERRQ(PetscStrncpy(date,asctime(localtime((time_t*)&tp.tv_sec)),len));
 #endif
   /* now strip out the new-line chars at the end of the string */
-  ierr = PetscStrstr(date,"\n",&str);CHKERRQ(ierr);
+  CHKERRQ(PetscStrstr(date,"\n",&str));
   if (str) str[0] = 0;
   PetscFunctionReturn(0);
 }
-

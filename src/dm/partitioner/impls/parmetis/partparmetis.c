@@ -29,54 +29,50 @@ static const char *ptypes[] = {"kway", "rb"};
 static PetscErrorCode PetscPartitionerDestroy_ParMetis(PetscPartitioner part)
 {
   PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *) part->data;
-  PetscErrorCode             ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_free(&p->pcomm);CHKERRMPI(ierr);
-  ierr = PetscFree(part->data);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_free(&p->pcomm));
+  CHKERRQ(PetscFree(part->data));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscPartitionerView_ParMetis_ASCII(PetscPartitioner part, PetscViewer viewer)
 {
   PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *) part->data;
-  PetscErrorCode             ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "ParMetis type: %s\n", ptypes[p->ptype]);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "load imbalance ratio %g\n", (double) p->imbalanceRatio);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "debug flag %D\n", p->debugFlag);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer, "random seed %D\n", p->randomSeed);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIPushTab(viewer));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer, "ParMetis type: %s\n", ptypes[p->ptype]));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer, "load imbalance ratio %g\n", (double) p->imbalanceRatio));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer, "debug flag %D\n", p->debugFlag));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer, "random seed %D\n", p->randomSeed));
+  CHKERRQ(PetscViewerASCIIPopTab(viewer));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscPartitionerView_ParMetis(PetscPartitioner part, PetscViewer viewer)
 {
   PetscBool      iascii;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
-  if (iascii) {ierr = PetscPartitionerView_ParMetis_ASCII(part, viewer);CHKERRQ(ierr);}
+  CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
+  if (iascii) CHKERRQ(PetscPartitionerView_ParMetis_ASCII(part, viewer));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscOptionItems *PetscOptionsObject, PetscPartitioner part)
 {
   PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *) part->data;
-  PetscErrorCode            ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject, "PetscPartitioner ParMetis Options");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-petscpartitioner_parmetis_type", "Partitioning method", "", ptypes, 2, ptypes[p->ptype], &p->ptype, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-petscpartitioner_parmetis_imbalance_ratio", "Load imbalance ratio limit", "", p->imbalanceRatio, &p->imbalanceRatio, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-petscpartitioner_parmetis_debug", "Debugging flag", "", p->debugFlag, &p->debugFlag, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-petscpartitioner_parmetis_seed", "Random seed", "", p->randomSeed, &p->randomSeed, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHead(PetscOptionsObject, "PetscPartitioner ParMetis Options"));
+  CHKERRQ(PetscOptionsEList("-petscpartitioner_parmetis_type", "Partitioning method", "", ptypes, 2, ptypes[p->ptype], &p->ptype, NULL));
+  CHKERRQ(PetscOptionsReal("-petscpartitioner_parmetis_imbalance_ratio", "Load imbalance ratio limit", "", p->imbalanceRatio, &p->imbalanceRatio, NULL));
+  CHKERRQ(PetscOptionsInt("-petscpartitioner_parmetis_debug", "Debugging flag", "", p->debugFlag, &p->debugFlag, NULL));
+  CHKERRQ(PetscOptionsInt("-petscpartitioner_parmetis_seed", "Random seed", "", p->randomSeed, &p->randomSeed, NULL));
+  CHKERRQ(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -101,24 +97,23 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
   PetscInt       v, i, *assignment, *points;
   PetscMPIInt    p, size, rank;
   PetscBool      hasempty = PETSC_FALSE;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) part, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject) part, &comm));
+  CHKERRMPI(MPI_Comm_size(comm, &size));
+  CHKERRMPI(MPI_Comm_rank(comm, &rank));
   /* Calculate vertex distribution */
-  ierr = PetscMalloc4(size+1,&vtxdist,nparts*ncon,&tpwgts,ncon,&ubvec,nvtxs,&assignment);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc4(size+1,&vtxdist,nparts*ncon,&tpwgts,ncon,&ubvec,nvtxs,&assignment));
   vtxdist[0] = 0;
-  ierr = MPI_Allgather(&nvtxs, 1, MPIU_INT, &vtxdist[1], 1, MPIU_INT, comm);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Allgather(&nvtxs, 1, MPIU_INT, &vtxdist[1], 1, MPIU_INT, comm));
   for (p = 2; p <= size; ++p) {
     hasempty = (PetscBool)(hasempty || !vtxdist[p-1] || !vtxdist[p]);
     vtxdist[p] += vtxdist[p-1];
   }
   /* null graph */
   if (vtxdist[size] == 0) {
-    ierr = PetscFree4(vtxdist,tpwgts,ubvec,assignment);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
+    CHKERRQ(PetscFree4(vtxdist,tpwgts,ubvec,assignment));
+    CHKERRQ(ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, partition));
     PetscFunctionReturn(0);
   }
   /* Calculate partition weights */
@@ -129,7 +124,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
     for (p = 0; p < nparts; ++p) {
       PetscInt tpd;
 
-      ierr = PetscSectionGetDof(targetSection,p,&tpd);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionGetDof(targetSection,p,&tpd));
       sumt += tpd;
       tpwgts[p] = tpd;
     }
@@ -149,9 +144,9 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
 
   /* Weight cells */
   if (vertSection) {
-    ierr = PetscMalloc1(nvtxs,&vwgt);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(nvtxs,&vwgt));
     for (v = 0; v < nvtxs; ++v) {
-      ierr = PetscSectionGetDof(vertSection, v, &vwgt[v]);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionGetDof(vertSection, v, &vwgt[v]));
     }
     wgtflag |= 2; /* have weights on graph vertices */
   }
@@ -193,7 +188,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
     if (hasempty) { /* parmetis does not support empty graphs on some of the processes */
       PetscInt cnt;
 
-      ierr = MPI_Comm_split(pm->pcomm,!!nvtxs,rank,&pcomm);CHKERRMPI(ierr);
+      CHKERRMPI(MPI_Comm_split(pm->pcomm,!!nvtxs,rank,&pcomm));
       for (p=0,cnt=0;p<size;p++) {
         if (vtxdist[p+1] != vtxdist[p]) {
           vtxdist[cnt+1] = vtxdist[p+1];
@@ -209,22 +204,22 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
       PetscCheckFalse(err != METIS_OK,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error %d in ParMETIS_V3_PartKway()", err);
     }
     if (hasempty) {
-      ierr = MPI_Comm_free(&pcomm);CHKERRMPI(ierr);
+      CHKERRMPI(MPI_Comm_free(&pcomm));
     }
   }
 
   /* Convert to PetscSection+IS */
-  for (v = 0; v < nvtxs; ++v) {ierr = PetscSectionAddDof(partSection, assignment[v], 1);CHKERRQ(ierr);}
-  ierr = PetscMalloc1(nvtxs, &points);CHKERRQ(ierr);
+  for (v = 0; v < nvtxs; ++v) CHKERRQ(PetscSectionAddDof(partSection, assignment[v], 1));
+  CHKERRQ(PetscMalloc1(nvtxs, &points));
   for (p = 0, i = 0; p < nparts; ++p) {
     for (v = 0; v < nvtxs; ++v) {
       if (assignment[v] == p) points[i++] = v;
     }
   }
   PetscCheckFalse(i != nvtxs,comm, PETSC_ERR_PLIB, "Number of points %D should be %D", i, nvtxs);
-  ierr = ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition);CHKERRQ(ierr);
-  ierr = PetscFree4(vtxdist,tpwgts,ubvec,assignment);CHKERRQ(ierr);
-  ierr = PetscFree(vwgt);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition));
+  CHKERRQ(PetscFree4(vtxdist,tpwgts,ubvec,assignment));
+  CHKERRQ(PetscFree(vwgt));
   PetscFunctionReturn(0);
 #else
   SETERRQ(PetscObjectComm((PetscObject) part), PETSC_ERR_SUP, "Mesh partitioning needs external package support.\nPlease reconfigure with --download-parmetis.");
@@ -261,21 +256,19 @@ M*/
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner part)
 {
   PetscPartitioner_ParMetis *p;
-  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  ierr       = PetscNewLog(part, &p);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(part, &p));
   part->data = p;
 
-  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)part),&p->pcomm);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)part),&p->pcomm));
   p->ptype          = 0;
   p->imbalanceRatio = 1.05;
   p->debugFlag      = 0;
   p->randomSeed     = -1; /* defaults to GLOBAL_SEED=15 from `libparmetis/defs.h` */
 
-  ierr = PetscPartitionerInitialize_ParMetis(part);CHKERRQ(ierr);
-  ierr = PetscCitationsRegister(ParMetisPartitionerCitation, &ParMetisPartitionerCite);CHKERRQ(ierr);
+  CHKERRQ(PetscPartitionerInitialize_ParMetis(part));
+  CHKERRQ(PetscCitationsRegister(ParMetisPartitionerCitation, &ParMetisPartitionerCite));
   PetscFunctionReturn(0);
 }
-

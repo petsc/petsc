@@ -55,7 +55,6 @@ PetscScalar CCmplxIm(CCmplx a)
 
 PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
 {
-  PetscErrorCode ierr;
   PetscInt       i,n;
   PetscInt       sx,nx,sy,ny,sz,nz,dim;
   Vec            Gcoords;
@@ -67,22 +66,22 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
   if (idx==0) {
     PetscFunctionReturn(0);
   } else if (idx==1) { /* dam break */
-    ierr = DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);
+    CHKERRQ(DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0));
   } else if (idx==2) { /* stagnation in a corner */
-    ierr = DMDASetUniformCoordinates(da, -1.0,1.0, 0.0,1.0, -1.0,1.0);CHKERRQ(ierr);
+    CHKERRQ(DMDASetUniformCoordinates(da, -1.0,1.0, 0.0,1.0, -1.0,1.0));
   } else if (idx==3) { /* nautilis */
-    ierr = DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);
+    CHKERRQ(DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0));
   } else if (idx==4) {
-    ierr = DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);
+    CHKERRQ(DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0));
   }
 
-  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
-  ierr = DMGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoordinateDM(da,&cda));
+  CHKERRQ(DMGetCoordinates(da,&Gcoords));
 
-  ierr = VecGetArray(Gcoords,&XX);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&sx,&sy,&sz,&nx,&ny,&nz);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da, &dim, 0,0,0, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(Gcoords,&n);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(Gcoords,&XX));
+  CHKERRQ(DMDAGetCorners(da,&sx,&sy,&sz,&nx,&ny,&nz));
+  CHKERRQ(DMDAGetInfo(da, &dim, 0,0,0, 0,0,0, 0,0,0,0,0,0));
+  CHKERRQ(VecGetLocalSize(Gcoords,&n));
   n    = n / dim;
 
   for (i=0; i<n; i++) {
@@ -192,13 +191,12 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
       XX[dim*i+1] = yy;
     }
   }
-  ierr = VecRestoreArray(Gcoords,&XX);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(Gcoords,&XX));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DAApplyTrilinearMapping(DM da)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j,k;
   PetscInt       sx,nx,sy,ny,sz,nz;
   Vec            Gcoords;
@@ -207,12 +205,12 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
   DM             cda;
 
   PetscFunctionBeginUser;
-  ierr = DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
-  ierr = DMGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
+  CHKERRQ(DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0));
+  CHKERRQ(DMGetCoordinateDM(da,&cda));
+  CHKERRQ(DMGetCoordinates(da,&Gcoords));
 
-  ierr = DMDAVecGetArrayRead(cda,Gcoords,&XX);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&sx,&sy,&sz,&nx,&ny,&nz);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecGetArrayRead(cda,Gcoords,&XX));
+  CHKERRQ(DMDAGetCorners(da,&sx,&sy,&sz,&nx,&ny,&nz));
 
   for (i=sx; i<sx+nx; i++) {
     for (j=sy; j<sy+ny; j++) {
@@ -248,13 +246,12 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
       }
     }
   }
-  ierr = DMDAVecRestoreArrayRead(cda,Gcoords,&XX);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArrayRead(cda,Gcoords,&XX));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DADefineXLinearField2D(DM da,Vec field)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j;
   PetscInt       sx,nx,sy,ny;
   Vec            Gcoords;
@@ -263,13 +260,13 @@ PetscErrorCode DADefineXLinearField2D(DM da,Vec field)
   DM             cda;
 
   PetscFunctionBeginUser;
-  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
-  ierr = DMGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoordinateDM(da,&cda));
+  CHKERRQ(DMGetCoordinates(da,&Gcoords));
 
-  ierr = DMDAVecGetArrayRead(cda,Gcoords,&XX);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,field,&FF);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecGetArrayRead(cda,Gcoords,&XX));
+  CHKERRQ(DMDAVecGetArray(da,field,&FF));
 
-  ierr = DMDAGetCorners(da,&sx,&sy,0,&nx,&ny,0);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(da,&sx,&sy,0,&nx,&ny,0));
 
   for (i=sx; i<sx+nx; i++) {
     for (j=sy; j<sy+ny; j++) {
@@ -277,14 +274,13 @@ PetscErrorCode DADefineXLinearField2D(DM da,Vec field)
     }
   }
 
-  ierr = DMDAVecRestoreArray(da,field,&FF);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayRead(cda,Gcoords,&XX);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArray(da,field,&FF));
+  CHKERRQ(DMDAVecRestoreArrayRead(cda,Gcoords,&XX));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DADefineXLinearField3D(DM da,Vec field)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j,k;
   PetscInt       sx,nx,sy,ny,sz,nz;
   Vec            Gcoords;
@@ -293,13 +289,13 @@ PetscErrorCode DADefineXLinearField3D(DM da,Vec field)
   DM             cda;
 
   PetscFunctionBeginUser;
-  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
-  ierr = DMGetCoordinates(da,&Gcoords);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoordinateDM(da,&cda));
+  CHKERRQ(DMGetCoordinates(da,&Gcoords));
 
-  ierr = DMDAVecGetArrayRead(cda,Gcoords,&XX);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,field,&FF);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecGetArrayRead(cda,Gcoords,&XX));
+  CHKERRQ(DMDAVecGetArray(da,field,&FF));
 
-  ierr = DMDAGetCorners(da,&sx,&sy,&sz,&nx,&ny,&nz);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(da,&sx,&sy,&sz,&nx,&ny,&nz));
 
   for (k=sz; k<sz+nz; k++) {
     for (j=sy; j<sy+ny; j++) {
@@ -316,14 +312,13 @@ PetscErrorCode DADefineXLinearField3D(DM da,Vec field)
     }
   }
 
-  ierr = DMDAVecRestoreArray(da,field,&FF);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayRead(cda,Gcoords,&XX);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArray(da,field,&FF));
+  CHKERRQ(DMDAVecRestoreArrayRead(cda,Gcoords,&XX));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
 {
-  PetscErrorCode ierr;
   DM             dac,daf;
   PetscViewer    vv;
   Vec            ac,af;
@@ -333,78 +328,77 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
   PetscBool      output = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE,mx+1,1, /* 1 dof */1, /* stencil = 1 */NULL,&dac);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
-  ierr = DMSetUp(dac);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE,mx+1,1, /* 1 dof */1, /* stencil = 1 */NULL,&dac));
+  CHKERRQ(DMSetFromOptions(dac));
+  CHKERRQ(DMSetUp(dac));
 
-  ierr = DMRefine(dac,MPI_COMM_NULL,&daf);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(daf,0,&Mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(DMRefine(dac,MPI_COMM_NULL,&daf));
+  CHKERRQ(DMDAGetInfo(daf,0,&Mx,0,0,0,0,0,0,0,0,0,0,0));
   Mx--;
 
-  ierr = DMDASetUniformCoordinates(dac, -1.0,1.0, PETSC_DECIDE,PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = DMDASetUniformCoordinates(daf, -1.0,1.0, PETSC_DECIDE,PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  CHKERRQ(DMDASetUniformCoordinates(dac, -1.0,1.0, PETSC_DECIDE,PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE));
+  CHKERRQ(DMDASetUniformCoordinates(daf, -1.0,1.0, PETSC_DECIDE,PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE));
 
   {
     DM  cdaf,cdac;
     Vec coordsc,coordsf;
 
-    ierr = DMGetCoordinateDM(dac,&cdac);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDM(daf,&cdaf);CHKERRQ(ierr);
+    CHKERRQ(DMGetCoordinateDM(dac,&cdac));
+    CHKERRQ(DMGetCoordinateDM(daf,&cdaf));
 
-    ierr = DMGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
-    ierr = DMGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
+    CHKERRQ(DMGetCoordinates(dac,&coordsc));
+    CHKERRQ(DMGetCoordinates(daf,&coordsf));
 
-    ierr = DMCreateInterpolation(cdac,cdaf,&II,&scale);CHKERRQ(ierr);
-    ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
-    ierr = MatDestroy(&II);CHKERRQ(ierr);
-    ierr = VecDestroy(&scale);CHKERRQ(ierr);
+    CHKERRQ(DMCreateInterpolation(cdac,cdaf,&II,&scale));
+    CHKERRQ(MatInterpolate(II,coordsc,coordsf));
+    CHKERRQ(MatDestroy(&II));
+    CHKERRQ(VecDestroy(&scale));
   }
 
-  ierr = DMCreateInterpolation(dac,daf,&INTERP,NULL);CHKERRQ(ierr);
+  CHKERRQ(DMCreateInterpolation(dac,daf,&INTERP,NULL));
 
-  ierr = DMCreateGlobalVector(dac,&ac);CHKERRQ(ierr);
-  ierr = VecSet(ac,66.99);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(dac,&ac));
+  CHKERRQ(VecSet(ac,66.99));
 
-  ierr = DMCreateGlobalVector(daf,&af);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(daf,&af));
 
-  ierr = MatMult(INTERP,ac, af);CHKERRQ(ierr);
+  CHKERRQ(MatMult(INTERP,ac, af));
 
   {
     Vec       afexact;
     PetscReal nrm;
     PetscInt  N;
 
-    ierr = DMCreateGlobalVector(daf,&afexact);CHKERRQ(ierr);
-    ierr = VecSet(afexact,66.99);CHKERRQ(ierr);
-    ierr = VecAXPY(afexact,-1.0,af);CHKERRQ(ierr); /* af <= af - afinterp */
-    ierr = VecNorm(afexact,NORM_2,&nrm);CHKERRQ(ierr);
-    ierr = VecGetSize(afexact,&N);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%D=>%D, interp err = %1.4e\n",mx,Mx,(double)(nrm/PetscSqrtReal((PetscReal)N)));CHKERRQ(ierr);
-    ierr = VecDestroy(&afexact);CHKERRQ(ierr);
+    CHKERRQ(DMCreateGlobalVector(daf,&afexact));
+    CHKERRQ(VecSet(afexact,66.99));
+    CHKERRQ(VecAXPY(afexact,-1.0,af)); /* af <= af - afinterp */
+    CHKERRQ(VecNorm(afexact,NORM_2,&nrm));
+    CHKERRQ(VecGetSize(afexact,&N));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%D=>%D, interp err = %1.4e\n",mx,Mx,(double)(nrm/PetscSqrtReal((PetscReal)N))));
+    CHKERRQ(VecDestroy(&afexact));
   }
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-output",&output,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-output",&output,NULL));
   if (output) {
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_1D.vtr", &vv);CHKERRQ(ierr);
-    ierr = VecView(ac, vv);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_1D.vtr", &vv));
+    CHKERRQ(VecView(ac, vv));
+    CHKERRQ(PetscViewerDestroy(&vv));
 
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "daf_1D.vtr", &vv);CHKERRQ(ierr);
-    ierr = VecView(af, vv);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIOpen(PETSC_COMM_WORLD, "daf_1D.vtr", &vv));
+    CHKERRQ(VecView(af, vv));
+    CHKERRQ(PetscViewerDestroy(&vv));
   }
 
-  ierr = MatDestroy(&INTERP);CHKERRQ(ierr);
-  ierr = DMDestroy(&dac);CHKERRQ(ierr);
-  ierr = DMDestroy(&daf);CHKERRQ(ierr);
-  ierr = VecDestroy(&ac);CHKERRQ(ierr);
-  ierr = VecDestroy(&af);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&INTERP));
+  CHKERRQ(DMDestroy(&dac));
+  CHKERRQ(DMDestroy(&daf));
+  CHKERRQ(VecDestroy(&ac));
+  CHKERRQ(VecDestroy(&af));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
 {
-  PetscErrorCode ierr;
   DM             dac,daf;
   PetscViewer    vv;
   Vec            ac,af;
@@ -414,79 +408,79 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
   PetscBool      output = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX,mx+1,my+1,PETSC_DECIDE, PETSC_DECIDE,1, /* 1 dof */1, /* stencil = 1 */NULL, NULL,&dac);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
-  ierr = DMSetUp(dac);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX,mx+1,my+1,PETSC_DECIDE, PETSC_DECIDE,1, /* 1 dof */1, /* stencil = 1 */NULL, NULL,&dac));
+  CHKERRQ(DMSetFromOptions(dac));
+  CHKERRQ(DMSetUp(dac));
 
-  ierr = DMRefine(dac,MPI_COMM_NULL,&daf);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(daf,0,&Mx,&My,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(DMRefine(dac,MPI_COMM_NULL,&daf));
+  CHKERRQ(DMDAGetInfo(daf,0,&Mx,&My,0,0,0,0,0,0,0,0,0,0));
   Mx--; My--;
 
-  ierr = DMDASetUniformCoordinates(dac, -1.0,1.0, -1.0,1.0, PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = DMDASetUniformCoordinates(daf, -1.0,1.0, -1.0,1.0, PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  CHKERRQ(DMDASetUniformCoordinates(dac, -1.0,1.0, -1.0,1.0, PETSC_DECIDE,PETSC_DECIDE));
+  CHKERRQ(DMDASetUniformCoordinates(daf, -1.0,1.0, -1.0,1.0, PETSC_DECIDE,PETSC_DECIDE));
 
   /* apply conformal mappings */
   map_id = 0;
-  ierr   = PetscOptionsGetInt(NULL,NULL,"-cmap", &map_id,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-cmap", &map_id,NULL));
   if (map_id >= 1) {
-    ierr = DAApplyConformalMapping(dac,map_id);CHKERRQ(ierr);
+    CHKERRQ(DAApplyConformalMapping(dac,map_id));
   }
 
   {
     DM  cdaf,cdac;
     Vec coordsc,coordsf;
 
-    ierr = DMGetCoordinateDM(dac,&cdac);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDM(daf,&cdaf);CHKERRQ(ierr);
+    CHKERRQ(DMGetCoordinateDM(dac,&cdac));
+    CHKERRQ(DMGetCoordinateDM(daf,&cdaf));
 
-    ierr = DMGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
-    ierr = DMGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
+    CHKERRQ(DMGetCoordinates(dac,&coordsc));
+    CHKERRQ(DMGetCoordinates(daf,&coordsf));
 
-    ierr = DMCreateInterpolation(cdac,cdaf,&II,&scale);CHKERRQ(ierr);
-    ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
-    ierr = MatDestroy(&II);CHKERRQ(ierr);
-    ierr = VecDestroy(&scale);CHKERRQ(ierr);
+    CHKERRQ(DMCreateInterpolation(cdac,cdaf,&II,&scale));
+    CHKERRQ(MatInterpolate(II,coordsc,coordsf));
+    CHKERRQ(MatDestroy(&II));
+    CHKERRQ(VecDestroy(&scale));
   }
 
-  ierr = DMCreateInterpolation(dac,daf,&INTERP,NULL);CHKERRQ(ierr);
+  CHKERRQ(DMCreateInterpolation(dac,daf,&INTERP,NULL));
 
-  ierr = DMCreateGlobalVector(dac,&ac);CHKERRQ(ierr);
-  ierr = DADefineXLinearField2D(dac,ac);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(dac,&ac));
+  CHKERRQ(DADefineXLinearField2D(dac,ac));
 
-  ierr = DMCreateGlobalVector(daf,&af);CHKERRQ(ierr);
-  ierr = MatMult(INTERP,ac, af);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(daf,&af));
+  CHKERRQ(MatMult(INTERP,ac, af));
 
   {
     Vec       afexact;
     PetscReal nrm;
     PetscInt  N;
 
-    ierr = DMCreateGlobalVector(daf,&afexact);CHKERRQ(ierr);
-    ierr = VecZeroEntries(afexact);CHKERRQ(ierr);
-    ierr = DADefineXLinearField2D(daf,afexact);CHKERRQ(ierr);
-    ierr = VecAXPY(afexact,-1.0,af);CHKERRQ(ierr); /* af <= af - afinterp */
-    ierr = VecNorm(afexact,NORM_2,&nrm);CHKERRQ(ierr);
-    ierr = VecGetSize(afexact,&N);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%D x %D]=>[%D x %D], interp err = %1.4e\n",mx,my,Mx,My,(double)(nrm/PetscSqrtReal((PetscReal)N)));CHKERRQ(ierr);
-    ierr = VecDestroy(&afexact);CHKERRQ(ierr);
+    CHKERRQ(DMCreateGlobalVector(daf,&afexact));
+    CHKERRQ(VecZeroEntries(afexact));
+    CHKERRQ(DADefineXLinearField2D(daf,afexact));
+    CHKERRQ(VecAXPY(afexact,-1.0,af)); /* af <= af - afinterp */
+    CHKERRQ(VecNorm(afexact,NORM_2,&nrm));
+    CHKERRQ(VecGetSize(afexact,&N));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"[%D x %D]=>[%D x %D], interp err = %1.4e\n",mx,my,Mx,My,(double)(nrm/PetscSqrtReal((PetscReal)N))));
+    CHKERRQ(VecDestroy(&afexact));
   }
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-output",&output,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-output",&output,NULL));
   if (output) {
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_2D.vtr", &vv);CHKERRQ(ierr);
-    ierr = VecView(ac, vv);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_2D.vtr", &vv));
+    CHKERRQ(VecView(ac, vv));
+    CHKERRQ(PetscViewerDestroy(&vv));
 
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "daf_2D.vtr", &vv);CHKERRQ(ierr);
-    ierr = VecView(af, vv);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIOpen(PETSC_COMM_WORLD, "daf_2D.vtr", &vv));
+    CHKERRQ(VecView(af, vv));
+    CHKERRQ(PetscViewerDestroy(&vv));
   }
 
-  ierr = MatDestroy(&INTERP);CHKERRQ(ierr);
-  ierr = DMDestroy(&dac);CHKERRQ(ierr);
-  ierr = DMDestroy(&daf);CHKERRQ(ierr);
-  ierr = VecDestroy(&ac);CHKERRQ(ierr);
-  ierr = VecDestroy(&af);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&INTERP));
+  CHKERRQ(DMDestroy(&dac));
+  CHKERRQ(DMDestroy(&daf));
+  CHKERRQ(VecDestroy(&ac));
+  CHKERRQ(VecDestroy(&af));
   PetscFunctionReturn(0);
 }
 
@@ -504,83 +498,83 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
   PetscFunctionBeginUser;
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,mx+1, my+1,mz+1,PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE,1, /* 1 dof */
                       1, /* stencil = 1 */NULL,NULL,NULL,&dac);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
-  ierr = DMSetUp(dac);CHKERRQ(ierr);
+  CHKERRQ(DMSetFromOptions(dac));
+  CHKERRQ(DMSetUp(dac));
 
-  ierr = DMRefine(dac,MPI_COMM_NULL,&daf);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(daf,0,&Mx,&My,&Mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(DMRefine(dac,MPI_COMM_NULL,&daf));
+  CHKERRQ(DMDAGetInfo(daf,0,&Mx,&My,&Mz,0,0,0,0,0,0,0,0,0));
   Mx--; My--; Mz--;
 
-  ierr = DMDASetUniformCoordinates(dac, -1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);
-  ierr = DMDASetUniformCoordinates(daf, -1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);
+  CHKERRQ(DMDASetUniformCoordinates(dac, -1.0,1.0, -1.0,1.0, -1.0,1.0));
+  CHKERRQ(DMDASetUniformCoordinates(daf, -1.0,1.0, -1.0,1.0, -1.0,1.0));
 
   /* apply trilinear mappings */
-  /*ierr = DAApplyTrilinearMapping(dac);CHKERRQ(ierr);*/
+  /*CHKERRQ(DAApplyTrilinearMapping(dac));*/
   /* apply conformal mappings */
   map_id = 0;
-  ierr   = PetscOptionsGetInt(NULL,NULL,"-cmap", &map_id,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-cmap", &map_id,NULL));
   if (map_id >= 1) {
-    ierr = DAApplyConformalMapping(dac,map_id);CHKERRQ(ierr);
+    CHKERRQ(DAApplyConformalMapping(dac,map_id));
   }
 
   {
     DM  cdaf,cdac;
     Vec coordsc,coordsf;
 
-    ierr = DMGetCoordinateDM(dac,&cdac);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDM(daf,&cdaf);CHKERRQ(ierr);
+    CHKERRQ(DMGetCoordinateDM(dac,&cdac));
+    CHKERRQ(DMGetCoordinateDM(daf,&cdaf));
 
-    ierr = DMGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
-    ierr = DMGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
+    CHKERRQ(DMGetCoordinates(dac,&coordsc));
+    CHKERRQ(DMGetCoordinates(daf,&coordsf));
 
-    ierr = DMCreateInterpolation(cdac,cdaf,&II,&scale);CHKERRQ(ierr);
-    ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
-    ierr = MatDestroy(&II);CHKERRQ(ierr);
-    ierr = VecDestroy(&scale);CHKERRQ(ierr);
+    CHKERRQ(DMCreateInterpolation(cdac,cdaf,&II,&scale));
+    CHKERRQ(MatInterpolate(II,coordsc,coordsf));
+    CHKERRQ(MatDestroy(&II));
+    CHKERRQ(VecDestroy(&scale));
   }
 
-  ierr = DMCreateInterpolation(dac,daf,&INTERP,NULL);CHKERRQ(ierr);
+  CHKERRQ(DMCreateInterpolation(dac,daf,&INTERP,NULL));
 
-  ierr = DMCreateGlobalVector(dac,&ac);CHKERRQ(ierr);
-  ierr = VecZeroEntries(ac);CHKERRQ(ierr);
-  ierr = DADefineXLinearField3D(dac,ac);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(dac,&ac));
+  CHKERRQ(VecZeroEntries(ac));
+  CHKERRQ(DADefineXLinearField3D(dac,ac));
 
-  ierr = DMCreateGlobalVector(daf,&af);CHKERRQ(ierr);
-  ierr = VecZeroEntries(af);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(daf,&af));
+  CHKERRQ(VecZeroEntries(af));
 
-  ierr = MatMult(INTERP,ac, af);CHKERRQ(ierr);
+  CHKERRQ(MatMult(INTERP,ac, af));
 
   {
     Vec       afexact;
     PetscReal nrm;
     PetscInt  N;
 
-    ierr = DMCreateGlobalVector(daf,&afexact);CHKERRQ(ierr);
-    ierr = VecZeroEntries(afexact);CHKERRQ(ierr);
-    ierr = DADefineXLinearField3D(daf,afexact);CHKERRQ(ierr);
-    ierr = VecAXPY(afexact,-1.0,af);CHKERRQ(ierr); /* af <= af - afinterp */
-    ierr = VecNorm(afexact,NORM_2,&nrm);CHKERRQ(ierr);
-    ierr = VecGetSize(afexact,&N);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%D x %D x %D]=>[%D x %D x %D], interp err = %1.4e\n",mx,my,mz,Mx,My,Mz,(double)(nrm/PetscSqrtReal((PetscReal)N)));CHKERRQ(ierr);
-    ierr = VecDestroy(&afexact);CHKERRQ(ierr);
+    CHKERRQ(DMCreateGlobalVector(daf,&afexact));
+    CHKERRQ(VecZeroEntries(afexact));
+    CHKERRQ(DADefineXLinearField3D(daf,afexact));
+    CHKERRQ(VecAXPY(afexact,-1.0,af)); /* af <= af - afinterp */
+    CHKERRQ(VecNorm(afexact,NORM_2,&nrm));
+    CHKERRQ(VecGetSize(afexact,&N));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"[%D x %D x %D]=>[%D x %D x %D], interp err = %1.4e\n",mx,my,mz,Mx,My,Mz,(double)(nrm/PetscSqrtReal((PetscReal)N))));
+    CHKERRQ(VecDestroy(&afexact));
   }
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-output",&output,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-output",&output,NULL));
   if (output) {
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_3D.vtr", &vv);CHKERRQ(ierr);
-    ierr = VecView(ac, vv);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIOpen(PETSC_COMM_WORLD, "dac_3D.vtr", &vv));
+    CHKERRQ(VecView(ac, vv));
+    CHKERRQ(PetscViewerDestroy(&vv));
 
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "daf_3D.vtr", &vv);CHKERRQ(ierr);
-    ierr = VecView(af, vv);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIOpen(PETSC_COMM_WORLD, "daf_3D.vtr", &vv));
+    CHKERRQ(VecView(af, vv));
+    CHKERRQ(PetscViewerDestroy(&vv));
   }
 
-  ierr = MatDestroy(&INTERP);CHKERRQ(ierr);
-  ierr = DMDestroy(&dac);CHKERRQ(ierr);
-  ierr = DMDestroy(&daf);CHKERRQ(ierr);
-  ierr = VecDestroy(&ac);CHKERRQ(ierr);
-  ierr = VecDestroy(&af);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&INTERP));
+  CHKERRQ(DMDestroy(&dac));
+  CHKERRQ(DMDestroy(&daf));
+  CHKERRQ(VecDestroy(&ac));
+  CHKERRQ(VecDestroy(&af));
   PetscFunctionReturn(0);
 }
 
@@ -590,21 +584,21 @@ int main(int argc,char **argv)
   PetscInt       mx = 2,my = 2,mz = 2,l,nl,dim;
 
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mx", &mx, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-my", &my, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mz", &mz, 0);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mx", &mx, 0));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-my", &my, 0));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mz", &mz, 0));
   nl = 1;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-nl", &nl, 0);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nl", &nl, 0));
   dim = 2;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dim", &dim, 0);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim", &dim, 0));
 
   for (l=0; l<nl; l++) {
     if (dim==1) {
-      ierr = da_test_RefineCoords1D(mx);CHKERRQ(ierr);
+      CHKERRQ(da_test_RefineCoords1D(mx));
     } else if (dim==2) {
-      ierr = da_test_RefineCoords2D(mx,my);CHKERRQ(ierr);
+      CHKERRQ(da_test_RefineCoords2D(mx,my));
     } else if (dim==3) {
-      ierr = da_test_RefineCoords3D(mx,my,mz);CHKERRQ(ierr);
+      CHKERRQ(da_test_RefineCoords3D(mx,my,mz));
     }
     mx = mx * 2;
     my = my * 2;

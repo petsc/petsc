@@ -11,7 +11,6 @@ PetscErrorCode ex1_nonsquare_bs1(void)
 {
   Mat            A,preallocator;
   PetscInt       M,N,m,n,bs;
-  PetscErrorCode ierr;
 
   /*
      Create the Jacobian matrix
@@ -19,26 +18,26 @@ PetscErrorCode ex1_nonsquare_bs1(void)
   PetscFunctionBegin;
   M = 10;
   N = 8;
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(A,1);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetType(A,MATAIJ));
+  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N));
+  CHKERRQ(MatSetBlockSize(A,1));
+  CHKERRQ(MatSetFromOptions(A));
 
   /*
      Get the sizes of the jacobian.
   */
-  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
+  CHKERRQ(MatGetLocalSize(A,&m,&n));
+  CHKERRQ(MatGetBlockSize(A,&bs));
 
   /*
      Create a preallocator matrix with sizes (local and global) matching the jacobian A.
   */
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&preallocator);CHKERRQ(ierr);
-  ierr = MatSetType(preallocator,MATPREALLOCATOR);CHKERRQ(ierr);
-  ierr = MatSetSizes(preallocator,m,n,M,N);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(preallocator,bs);CHKERRQ(ierr);
-  ierr = MatSetUp(preallocator);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&preallocator));
+  CHKERRQ(MatSetType(preallocator,MATPREALLOCATOR));
+  CHKERRQ(MatSetSizes(preallocator,m,n,M,N));
+  CHKERRQ(MatSetBlockSize(preallocator,bs));
+  CHKERRQ(MatSetUp(preallocator));
 
   /*
      Insert non-zero pattern (e.g. perform a sweep over the grid).
@@ -49,30 +48,30 @@ PetscErrorCode ex1_nonsquare_bs1(void)
     PetscScalar vv = 0.0;
 
     ii = 3; jj = 3;
-    ierr = MatSetValues(preallocator,1,&ii,1,&jj,&vv,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(preallocator,1,&ii,1,&jj,&vv,INSERT_VALUES));
 
     ii = 7; jj = 4;
-    ierr = MatSetValues(preallocator,1,&ii,1,&jj,&vv,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(preallocator,1,&ii,1,&jj,&vv,INSERT_VALUES));
 
     ii = 9; jj = 7;
-    ierr = MatSetValue(preallocator,ii,jj,vv,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValue(preallocator,ii,jj,vv,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(preallocator,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(preallocator,MAT_FINAL_ASSEMBLY));
 
   /*
      Push the non-zero pattern defined within preallocator into A.
      Internally this will call MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE).
      The arg fill = PETSC_TRUE will insert zeros in the matrix A automatically.
   */
-  ierr = MatPreallocatorPreallocate(preallocator,PETSC_TRUE,A);CHKERRQ(ierr);
+  CHKERRQ(MatPreallocatorPreallocate(preallocator,PETSC_TRUE,A));
 
   /*
      We no longer require the preallocator object so destroy it.
   */
-  ierr = MatDestroy(&preallocator);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&preallocator));
 
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
   /*
      Insert non-zero values into A.
@@ -82,20 +81,20 @@ PetscErrorCode ex1_nonsquare_bs1(void)
     PetscScalar vv;
 
     ii = 3; jj = 3; vv = 0.3;
-    ierr = MatSetValue(A,ii,jj,vv,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValue(A,ii,jj,vv,INSERT_VALUES));
 
     ii = 7; jj = 4; vv = 3.3;
-    ierr = MatSetValues(A,1,&ii,1,&jj,&vv,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&ii,1,&jj,&vv,INSERT_VALUES));
 
     ii = 9; jj = 7; vv = 4.3;
-    ierr = MatSetValues(A,1,&ii,1,&jj,&vv,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&ii,1,&jj,&vv,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
   PetscFunctionReturn(0);
 }
 
@@ -103,36 +102,35 @@ PetscErrorCode ex2_square_bsvariable(void)
 {
   Mat            A,preallocator;
   PetscInt       M,N,m,n,bs = 1;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-block_size",&bs,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-block_size",&bs,NULL));
 
   /*
      Create the Jacobian matrix.
   */
   M = 10 * bs;
   N = 10 * bs;
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(A,bs);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetType(A,MATAIJ));
+  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N));
+  CHKERRQ(MatSetBlockSize(A,bs));
+  CHKERRQ(MatSetFromOptions(A));
 
   /*
      Get the sizes of the jacobian.
   */
-  ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
+  CHKERRQ(MatGetLocalSize(A,&m,&n));
+  CHKERRQ(MatGetBlockSize(A,&bs));
 
   /*
      Create a preallocator matrix with dimensions matching the jacobian A.
   */
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),&preallocator);CHKERRQ(ierr);
-  ierr = MatSetType(preallocator,MATPREALLOCATOR);CHKERRQ(ierr);
-  ierr = MatSetSizes(preallocator,m,n,M,N);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(preallocator,bs);CHKERRQ(ierr);
-  ierr = MatSetUp(preallocator);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&preallocator));
+  CHKERRQ(MatSetType(preallocator,MATPREALLOCATOR));
+  CHKERRQ(MatSetSizes(preallocator,m,n,M,N));
+  CHKERRQ(MatSetBlockSize(preallocator,bs));
+  CHKERRQ(MatSetUp(preallocator));
 
   /*
      Insert non-zero pattern (e.g. perform a sweep over the grid).
@@ -142,80 +140,80 @@ PetscErrorCode ex2_square_bsvariable(void)
     PetscInt  ii,jj;
     PetscScalar *vv;
 
-    ierr = PetscCalloc1(bs*bs,&vv);CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc1(bs*bs,&vv));
 
     ii = 0; jj = 9;
-    ierr = MatSetValue(preallocator,ii,jj,vv[0],INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValue(preallocator,ii,jj,vv[0],INSERT_VALUES));
 
     ii = 0; jj = 0;
-    ierr = MatSetValuesBlocked(preallocator,1,&ii,1,&jj,vv,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValuesBlocked(preallocator,1,&ii,1,&jj,vv,INSERT_VALUES));
 
     ii = 2; jj = 4;
-    ierr = MatSetValuesBlocked(preallocator,1,&ii,1,&jj,vv,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValuesBlocked(preallocator,1,&ii,1,&jj,vv,INSERT_VALUES));
 
     ii = 4; jj = 2;
-    ierr = MatSetValuesBlocked(preallocator,1,&ii,1,&jj,vv,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValuesBlocked(preallocator,1,&ii,1,&jj,vv,INSERT_VALUES));
 
     ii = 4; jj = 4;
-    ierr = MatSetValuesBlocked(preallocator,1,&ii,1,&jj,vv,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValuesBlocked(preallocator,1,&ii,1,&jj,vv,INSERT_VALUES));
 
     ii = 9; jj = 9;
-    ierr = MatSetValuesBlocked(preallocator,1,&ii,1,&jj,vv,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValuesBlocked(preallocator,1,&ii,1,&jj,vv,INSERT_VALUES));
 
-    ierr = PetscFree(vv);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(vv));
   }
-  ierr = MatAssemblyBegin(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(preallocator,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(preallocator,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(preallocator,MAT_FINAL_ASSEMBLY));
 
   /*
      Push non-zero pattern defined from preallocator into A.
      Internally this will call MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE).
      The arg fill = PETSC_TRUE will insert zeros in the matrix A automatically.
   */
-  ierr = MatPreallocatorPreallocate(preallocator,PETSC_TRUE,A);CHKERRQ(ierr);
+  CHKERRQ(MatPreallocatorPreallocate(preallocator,PETSC_TRUE,A));
 
   /*
      We no longer require the preallocator object so destroy it.
   */
-  ierr = MatDestroy(&preallocator);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&preallocator));
 
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
   {
     PetscInt    ii,jj;
     PetscScalar *vv;
 
-    ierr = PetscCalloc1(bs*bs,&vv);CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc1(bs*bs,&vv));
     for (ii=0; ii<bs*bs; ii++) {
       vv[ii] = (PetscReal)(ii+1);
     }
 
     ii = 0; jj = 9;
-    ierr = MatSetValue(A,ii,jj,33.3,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValue(A,ii,jj,33.3,INSERT_VALUES));
 
     ii = 0; jj = 0;
-    ierr = MatSetValuesBlocked(A,1,&ii,1,&jj,vv,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValuesBlocked(A,1,&ii,1,&jj,vv,INSERT_VALUES));
 
     ii = 2; jj = 4;
-    ierr = MatSetValuesBlocked(A,1,&ii,1,&jj,vv,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValuesBlocked(A,1,&ii,1,&jj,vv,INSERT_VALUES));
 
     ii = 4; jj = 2;
-    ierr = MatSetValuesBlocked(A,1,&ii,1,&jj,vv,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValuesBlocked(A,1,&ii,1,&jj,vv,INSERT_VALUES));
 
     ii = 4; jj = 4;
-    ierr = MatSetValuesBlocked(A,1,&ii,1,&jj,vv,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValuesBlocked(A,1,&ii,1,&jj,vv,INSERT_VALUES));
 
     ii = 9; jj = 9;
-    ierr = MatSetValuesBlocked(A,1,&ii,1,&jj,vv,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValuesBlocked(A,1,&ii,1,&jj,vv,INSERT_VALUES));
 
-    ierr = PetscFree(vv);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(vv));
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
   PetscFunctionReturn(0);
 }
 
@@ -224,13 +222,13 @@ int main(int argc, char **args)
   PetscErrorCode ierr;
   PetscInt testid = 0;
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-test_id",&testid,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-test_id",&testid,NULL));
   switch (testid) {
     case 0:
-      ierr = ex1_nonsquare_bs1();CHKERRQ(ierr);
+      CHKERRQ(ex1_nonsquare_bs1());
       break;
     case 1:
-      ierr = ex2_square_bsvariable();CHKERRQ(ierr);
+      CHKERRQ(ex2_square_bsvariable());
       break;
     default:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Invalid value for -test_id. Must be {0,1}");

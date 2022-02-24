@@ -20,18 +20,17 @@ static PetscErrorCode SNESTRDC_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal
   SNES_NEWTONTRDC             *neP = (SNES_NEWTONTRDC*)snes->data;
   Vec                         x;
   PetscReal                   nrm;
-  PetscErrorCode              ierr;
 
   PetscFunctionBegin;
-  ierr = (*ctx->convtest)(ksp,n,rnorm,reason,ctx->convctx);CHKERRQ(ierr);
+  CHKERRQ((*ctx->convtest)(ksp,n,rnorm,reason,ctx->convctx));
   if (*reason) {
-    ierr = PetscInfo(snes,"Default or user provided convergence test KSP iterations=%" PetscInt_FMT ", rnorm=%g\n",n,(double)rnorm);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(snes,"Default or user provided convergence test KSP iterations=%" PetscInt_FMT ", rnorm=%g\n",n,(double)rnorm));
   }
   /* Determine norm of solution */
-  ierr = KSPBuildSolution(ksp,NULL,&x);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&nrm);CHKERRQ(ierr);
+  CHKERRQ(KSPBuildSolution(ksp,NULL,&x));
+  CHKERRQ(VecNorm(x,NORM_2,&nrm));
   if (nrm >= neP->delta) {
-    ierr    = PetscInfo(snes,"Ending linear iteration early, delta=%g, length=%g\n",(double)neP->delta,(double)nrm);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(snes,"Ending linear iteration early, delta=%g, length=%g\n",(double)neP->delta,(double)nrm));
     *reason = KSP_CONVERGED_STEP_LENGTH;
   }
   PetscFunctionReturn(0);
@@ -40,11 +39,10 @@ static PetscErrorCode SNESTRDC_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal
 static PetscErrorCode SNESTRDC_KSPConverged_Destroy(void *cctx)
 {
   SNES_TRDC_KSPConverged_Ctx *ctx = (SNES_TRDC_KSPConverged_Ctx*)cctx;
-  PetscErrorCode             ierr;
 
   PetscFunctionBegin;
-  ierr = (*ctx->convdestroy)(ctx->convctx);CHKERRQ(ierr);
-  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  CHKERRQ((*ctx->convdestroy)(ctx->convctx));
+  CHKERRQ(PetscFree(ctx));
 
   PetscFunctionReturn(0);
 }
@@ -58,15 +56,14 @@ static PetscErrorCode SNESTRDC_KSPConverged_Destroy(void *cctx)
 static PetscErrorCode SNESTRDC_Converged_Private(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   SNES_NEWTONTRDC  *neP = (SNES_NEWTONTRDC*)snes->data;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   *reason = SNES_CONVERGED_ITERATING;
   if (neP->delta < xnorm * snes->deltatol) {
-    ierr    = PetscInfo(snes,"Diverged due to too small a trust region %g<%g*%g\n",(double)neP->delta,(double)xnorm,(double)snes->deltatol);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(snes,"Diverged due to too small a trust region %g<%g*%g\n",(double)neP->delta,(double)xnorm,(double)snes->deltatol));
     *reason = SNES_DIVERGED_TR_DELTA;
   } else if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
-    ierr    = PetscInfo(snes,"Exceeded maximum number of function evaluations: %" PetscInt_FMT "\n",snes->max_funcs);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(snes,"Exceeded maximum number of function evaluations: %" PetscInt_FMT "\n",snes->max_funcs));
     *reason = SNES_DIVERGED_FUNCTION_COUNT;
   }
   PetscFunctionReturn(0);
@@ -226,12 +223,11 @@ PetscErrorCode  SNESNewtonTRDCGetPostCheck(SNES snes,PetscErrorCode (**func)(SNE
 static PetscErrorCode SNESNewtonTRDCPreCheck(SNES snes,Vec X,Vec Y,PetscBool *changed_Y)
 {
   SNES_NEWTONTRDC  *tr = (SNES_NEWTONTRDC*)snes->data;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   *changed_Y = PETSC_FALSE;
   if (tr->precheck) {
-    ierr = (*tr->precheck)(snes,X,Y,changed_Y,tr->precheckctx);CHKERRQ(ierr);
+    CHKERRQ((*tr->precheck)(snes,X,Y,changed_Y,tr->precheckctx));
     PetscValidLogicalCollectiveBool(snes,*changed_Y,4);
   }
   PetscFunctionReturn(0);
@@ -262,13 +258,12 @@ static PetscErrorCode SNESNewtonTRDCPreCheck(SNES snes,Vec X,Vec Y,PetscBool *ch
 static PetscErrorCode SNESNewtonTRDCPostCheck(SNES snes,Vec X,Vec Y,Vec W,PetscBool *changed_Y,PetscBool *changed_W)
 {
   SNES_NEWTONTRDC  *tr = (SNES_NEWTONTRDC*)snes->data;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   *changed_Y = PETSC_FALSE;
   *changed_W = PETSC_FALSE;
   if (tr->postcheck) {
-    ierr = (*tr->postcheck)(snes,X,Y,W,changed_Y,changed_W,tr->postcheckctx);CHKERRQ(ierr);
+    CHKERRQ((*tr->postcheck)(snes,X,Y,W,changed_Y,changed_W,tr->postcheckctx));
     PetscValidLogicalCollectiveBool(snes,*changed_Y,5);
     PetscValidLogicalCollectiveBool(snes,*changed_W,6);
   }
@@ -287,7 +282,6 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
   Vec                        X,F,Y,G,W,GradF,YNtmp;
   Vec                        YCtmp;
   Mat                        jac;
-  PetscErrorCode             ierr;
   PetscInt                   maxits,i,j,lits,inner_count,bs;
   PetscReal                  rho,fnorm,gnorm,xnorm=0,delta,ynorm,temp_xnorm,temp_ynorm;  /* TRDC inner iteration */
   PetscReal                  inorms[99]; /* need to make it dynamic eventually, fixed max block size of 99 for now */
@@ -313,44 +307,44 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
 
   PetscCheckFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
-  ierr = VecGetBlockSize(YNtmp,&bs);CHKERRQ(ierr);
+  CHKERRQ(VecGetBlockSize(YNtmp,&bs));
 
-  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->iter = 0;
-  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)snes));
 
   /* Set the linear stopping criteria to use the More' trick. From tr.c */
-  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-  ierr = KSPGetConvergenceTest(ksp,&convtest,&convctx,&convdestroy);CHKERRQ(ierr);
+  CHKERRQ(SNESGetKSP(snes,&ksp));
+  CHKERRQ(KSPGetConvergenceTest(ksp,&convtest,&convctx,&convdestroy));
   if (convtest != SNESTRDC_KSPConverged_Private) {
-    ierr                  = PetscNew(&ctx);CHKERRQ(ierr);
+    CHKERRQ(PetscNew(&ctx));
     ctx->snes             = snes;
-    ierr                  = KSPGetAndClearConvergenceTest(ksp,&ctx->convtest,&ctx->convctx,&ctx->convdestroy);CHKERRQ(ierr);
-    ierr                  = KSPSetConvergenceTest(ksp,SNESTRDC_KSPConverged_Private,ctx,SNESTRDC_KSPConverged_Destroy);CHKERRQ(ierr);
-    ierr                  = PetscInfo(snes,"Using Krylov convergence test SNESTRDC_KSPConverged_Private\n");CHKERRQ(ierr);
+    CHKERRQ(KSPGetAndClearConvergenceTest(ksp,&ctx->convtest,&ctx->convctx,&ctx->convdestroy));
+    CHKERRQ(KSPSetConvergenceTest(ksp,SNESTRDC_KSPConverged_Private,ctx,SNESTRDC_KSPConverged_Destroy));
+    CHKERRQ(PetscInfo(snes,"Using Krylov convergence test SNESTRDC_KSPConverged_Private\n"));
   }
 
   if (!snes->vec_func_init_set) {
-    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);          /* F(X) */
+    CHKERRQ(SNESComputeFunction(snes,X,F));          /* F(X) */
   } else snes->vec_func_init_set = PETSC_FALSE;
 
-  ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);             /* fnorm <- || F || */
+  CHKERRQ(VecNorm(F,NORM_2,&fnorm));             /* fnorm <- || F || */
   SNESCheckFunctionNorm(snes,fnorm);
-  ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);             /* xnorm <- || X || */
+  CHKERRQ(VecNorm(X,NORM_2,&xnorm));             /* xnorm <- || X || */
 
-  ierr       = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->norm = fnorm;
-  ierr       = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)snes));
   delta      = xnorm ? neP->delta0*xnorm : neP->delta0;  /* initial trust region size scaled by xnorm */
   deltaM     = xnorm ? neP->deltaM*xnorm : neP->deltaM;  /* maximum trust region size scaled by xnorm */
   neP->delta = delta;
-  ierr       = SNESLogConvergenceHistory(snes,fnorm,0);CHKERRQ(ierr);
-  ierr       = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
+  CHKERRQ(SNESLogConvergenceHistory(snes,fnorm,0));
+  CHKERRQ(SNESMonitor(snes,0,fnorm));
 
   neP->rho_satisfied = PETSC_FALSE;
 
   /* test convergence */
-  ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+  CHKERRQ((*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP));
   if (snes->reason) PetscFunctionReturn(0);
 
   for (i=0; i<maxits; i++) {
@@ -358,106 +352,106 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
     PetscBool changed_w;
 
     /* dogleg method */
-    ierr = SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre);CHKERRQ(ierr);
+    CHKERRQ(SNESComputeJacobian(snes,X,snes->jacobian,snes->jacobian_pre));
     SNESCheckJacobianDomainerror(snes);
-    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian);CHKERRQ(ierr);
-    ierr = KSPSolve(snes->ksp,F,YNtmp);CHKERRQ(ierr);   /* Quasi Newton Solution */
+    CHKERRQ(KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian));
+    CHKERRQ(KSPSolve(snes->ksp,F,YNtmp));   /* Quasi Newton Solution */
     SNESCheckKSPSolve(snes);  /* this is necessary but old tr.c did not have it*/
-    ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
-    ierr = SNESGetJacobian(snes,&jac,NULL,NULL,NULL);CHKERRQ(ierr);
+    CHKERRQ(KSPGetIterationNumber(snes->ksp,&lits));
+    CHKERRQ(SNESGetJacobian(snes,&jac,NULL,NULL,NULL));
 
     /* rescale Jacobian, Newton solution update, and re-calculate delta for multiphase (multivariable)
        for inner iteration and Cauchy direction calculation
     */
     if (bs > 1 && neP->auto_scale_multiphase) {
-      ierr = VecStrideNormAll(YNtmp,NORM_INFINITY,inorms);CHKERRQ(ierr);
+      CHKERRQ(VecStrideNormAll(YNtmp,NORM_INFINITY,inorms));
       for (j=0; j<bs; j++) {
         if (neP->auto_scale_max > 1.0) {
           if (inorms[j] < 1.0/neP->auto_scale_max) {
             inorms[j] = 1.0/neP->auto_scale_max;
           }
         }
-        ierr = VecStrideSet(W,j,inorms[j]);CHKERRQ(ierr);
-        ierr = VecStrideScale(YNtmp,j,1.0/inorms[j]);
-        ierr = VecStrideScale(X,j,1.0/inorms[j]);
+        CHKERRQ(VecStrideSet(W,j,inorms[j]));
+        CHKERRQ(VecStrideScale(YNtmp,j,1.0/inorms[j]));
+        CHKERRQ(VecStrideScale(X,j,1.0/inorms[j]));
       }
-      ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);
+      CHKERRQ(VecNorm(X,NORM_2,&xnorm));
       if (i == 0) {
         delta = neP->delta0*xnorm;
       } else {
         delta = neP->delta*xnorm;
       }
       deltaM = neP->deltaM*xnorm;
-      ierr = MatDiagonalScale(jac,PETSC_NULL,W);CHKERRQ(ierr);
+      CHKERRQ(MatDiagonalScale(jac,PETSC_NULL,W));
     }
 
     /* calculating GradF of minimization function */
-    ierr = MatMultTranspose(jac,F,GradF);CHKERRQ(ierr);  /* grad f = J^T F */
-    ierr = VecNorm(YNtmp,NORM_2,&ynnorm);CHKERRQ(ierr);  /* ynnorm <- || Y_newton || */
+    CHKERRQ(MatMultTranspose(jac,F,GradF));  /* grad f = J^T F */
+    CHKERRQ(VecNorm(YNtmp,NORM_2,&ynnorm));  /* ynnorm <- || Y_newton || */
 
     inner_count = 0;
     neP->rho_satisfied = PETSC_FALSE;
     while (1) {
       if (ynnorm <= delta) {  /* see if the Newton solution is within the trust region */
-        ierr = VecCopy(YNtmp,Y);CHKERRQ(ierr);
+        CHKERRQ(VecCopy(YNtmp,Y));
       } else if (neP->use_cauchy) { /* use Cauchy direction if enabled */
-        ierr = MatMult(jac,GradF,W);CHKERRQ(ierr);
-        ierr = VecDotRealPart(W,W,&gTBg);CHKERRQ(ierr);  /* completes GradF^T J^T J GradF */
-        ierr = VecNorm(GradF,NORM_2,&gfnorm);CHKERRQ(ierr);  /* grad f norm <- || grad f || */
+        CHKERRQ(MatMult(jac,GradF,W));
+        CHKERRQ(VecDotRealPart(W,W,&gTBg));  /* completes GradF^T J^T J GradF */
+        CHKERRQ(VecNorm(GradF,NORM_2,&gfnorm));  /* grad f norm <- || grad f || */
         if (gTBg <= 0.0) {
           auk = PETSC_MAX_REAL;
         } else {
           auk = PetscSqr(gfnorm)/gTBg;
         }
         auk  = PetscMin(delta/gfnorm,auk);
-        ierr = VecCopy(GradF,YCtmp);CHKERRQ(ierr);  /* this could be improved */
-        ierr = VecScale(YCtmp,auk);CHKERRQ(ierr);  /* YCtmp, Cauchy solution*/
-        ierr = VecNorm(YCtmp,NORM_2,&ycnorm);CHKERRQ(ierr);  /* ycnorm <- || Y_cauchy || */
+        CHKERRQ(VecCopy(GradF,YCtmp));  /* this could be improved */
+        CHKERRQ(VecScale(YCtmp,auk));  /* YCtmp, Cauchy solution*/
+        CHKERRQ(VecNorm(YCtmp,NORM_2,&ycnorm));  /* ycnorm <- || Y_cauchy || */
         if (ycnorm >= delta) {  /* see if the Cauchy solution meets the criteria */
-            ierr = VecCopy(YCtmp,Y);CHKERRQ(ierr);
-            ierr = PetscInfo(snes,"DL evaluated. delta: %8.4e, ynnorm: %8.4e, ycnorm: %8.4e\n",(double)delta,(double)ynnorm,(double)ycnorm);CHKERRQ(ierr);
+            CHKERRQ(VecCopy(YCtmp,Y));
+            CHKERRQ(PetscInfo(snes,"DL evaluated. delta: %8.4e, ynnorm: %8.4e, ycnorm: %8.4e\n",(double)delta,(double)ynnorm,(double)ycnorm));
         } else {  /* take ratio, tau, of Cauchy and Newton direction and step */
-          ierr    = VecAXPY(YNtmp,-1.0,YCtmp);CHKERRQ(ierr);  /* YCtmp = A, YNtmp = B */
-          ierr    = VecNorm(YNtmp,NORM_2,&c0);CHKERRQ(ierr);  /* this could be improved */
+          CHKERRQ(VecAXPY(YNtmp,-1.0,YCtmp));  /* YCtmp = A, YNtmp = B */
+          CHKERRQ(VecNorm(YNtmp,NORM_2,&c0));  /* this could be improved */
           c0      = PetscSqr(c0);
-          ierr    = VecDotRealPart(YCtmp,YNtmp,&c1);CHKERRQ(ierr);
+          CHKERRQ(VecDotRealPart(YCtmp,YNtmp,&c1));
           c1      = 2.0*c1;
-          ierr    = VecNorm(YCtmp,NORM_2,&c2);CHKERRQ(ierr);  /* this could be improved */
+          CHKERRQ(VecNorm(YCtmp,NORM_2,&c2));  /* this could be improved */
           c2      = PetscSqr(c2) - PetscSqr(delta);
           tau_pos = (c1 + PetscSqrtReal(PetscSqr(c1) - 4.*c0*c2))/(2.*c0); /* quadratic formula */
           tau_neg = (c1 - PetscSqrtReal(PetscSqr(c1) - 4.*c0*c2))/(2.*c0);
           tau     = PetscMax(tau_pos, tau_neg);  /* can tau_neg > tau_pos? I don't think so, but just in case. */
-          ierr    = PetscInfo(snes,"DL evaluated. tau: %8.4e, ynnorm: %8.4e, ycnorm: %8.4e\n",(double)tau,(double)ynnorm,(double)ycnorm);CHKERRQ(ierr);
-          ierr    = VecWAXPY(W,tau,YNtmp,YCtmp);CHKERRQ(ierr);
-          ierr    = VecAXPY(W,-tau,YCtmp);CHKERRQ(ierr);
-          ierr    = VecCopy(W, Y);CHKERRQ(ierr); /* this could be improved */
+          CHKERRQ(PetscInfo(snes,"DL evaluated. tau: %8.4e, ynnorm: %8.4e, ycnorm: %8.4e\n",(double)tau,(double)ynnorm,(double)ycnorm));
+          CHKERRQ(VecWAXPY(W,tau,YNtmp,YCtmp));
+          CHKERRQ(VecAXPY(W,-tau,YCtmp));
+          CHKERRQ(VecCopy(W, Y)); /* this could be improved */
         }
       } else {
         /* if Cauchy is disabled, only use Newton direction */
         auk = delta/ynnorm;
-        ierr = VecScale(YNtmp,auk);CHKERRQ(ierr);
-        ierr = VecCopy(YNtmp,Y);CHKERRQ(ierr); /* this could be improved (many VecCopy, VecNorm)*/
+        CHKERRQ(VecScale(YNtmp,auk));
+        CHKERRQ(VecCopy(YNtmp,Y)); /* this could be improved (many VecCopy, VecNorm)*/
       }
 
-      ierr = VecNorm(Y,NORM_2,&ynorm);CHKERRQ(ierr);  /* compute the final ynorm  */
+      CHKERRQ(VecNorm(Y,NORM_2,&ynorm));  /* compute the final ynorm  */
       f0 = 0.5*PetscSqr(fnorm);  /* minimizing function f(X) */
-      ierr = MatMult(jac,Y,W);CHKERRQ(ierr);
-      ierr = VecDotRealPart(W,W,&yTHy);CHKERRQ(ierr);  /* completes GradY^T J^T J GradY */
-      ierr = VecDotRealPart(GradF,Y,&gTy);CHKERRQ(ierr);
+      CHKERRQ(MatMult(jac,Y,W));
+      CHKERRQ(VecDotRealPart(W,W,&yTHy));  /* completes GradY^T J^T J GradY */
+      CHKERRQ(VecDotRealPart(GradF,Y,&gTy));
       mp = f0 - gTy + 0.5*yTHy;  /* quadratic model to satisfy, -gTy because our update is X-Y*/
 
       /* scale back solution update */
       if (bs > 1 && neP->auto_scale_multiphase) {
         for (j=0; j<bs; j++) {
-          ierr = VecStrideScale(Y,j,inorms[j]);
+          CHKERRQ(VecStrideScale(Y,j,inorms[j]));
           if (inner_count == 0) {
             /* TRDC inner algorithm does not need scaled X after calculating delta in the outer iteration */
             /* need to scale back X to match Y and provide proper update to the external code */
-            ierr = VecStrideScale(X,j,inorms[j]);
+            CHKERRQ(VecStrideScale(X,j,inorms[j]));
           }
         }
-        if (inner_count == 0) {ierr = VecNorm(X,NORM_2,&temp_xnorm);CHKERRQ(ierr);}  /* only in the first iteration */
-        ierr = VecNorm(Y,NORM_2,&temp_ynorm);CHKERRQ(ierr);
+        if (inner_count == 0) CHKERRQ(VecNorm(X,NORM_2,&temp_xnorm));  /* only in the first iteration */
+        CHKERRQ(VecNorm(Y,NORM_2,&temp_ynorm));
       } else {
         temp_xnorm = xnorm;
         temp_ynorm = ynorm;
@@ -465,13 +459,13 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
       inner_count++;
 
       /* Evaluate the solution to meet the improvement ratio criteria */
-      ierr = SNESNewtonTRDCPreCheck(snes,X,Y,&changed_y);CHKERRQ(ierr);
-      ierr = VecWAXPY(W,-1.0,Y,X);CHKERRQ(ierr);
-      ierr = SNESNewtonTRDCPostCheck(snes,X,Y,W,&changed_y,&changed_w);CHKERRQ(ierr);
-      if (changed_y) {ierr = VecWAXPY(W,-1.0,Y,X);CHKERRQ(ierr);}
-      ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
-      ierr = SNESComputeFunction(snes,W,G);CHKERRQ(ierr); /*  F(X-Y) = G */
-      ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);      /* gnorm <- || g || */
+      CHKERRQ(SNESNewtonTRDCPreCheck(snes,X,Y,&changed_y));
+      CHKERRQ(VecWAXPY(W,-1.0,Y,X));
+      CHKERRQ(SNESNewtonTRDCPostCheck(snes,X,Y,W,&changed_y,&changed_w));
+      if (changed_y) CHKERRQ(VecWAXPY(W,-1.0,Y,X));
+      CHKERRQ(VecCopy(Y,snes->vec_sol_update));
+      CHKERRQ(SNESComputeFunction(snes,W,G)); /*  F(X-Y) = G */
+      CHKERRQ(VecNorm(G,NORM_2,&gnorm));      /* gnorm <- || g || */
       SNESCheckFunctionNorm(snes,gnorm);
       g = 0.5*PetscSqr(gnorm); /* minimizing function g(W) */
       if (f0 == mp) rho = 0.0;
@@ -494,17 +488,17 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
         neP->rho_satisfied = PETSC_TRUE;
         break;  /* the improvement ratio is satisfactory */
       }
-      ierr = PetscInfo(snes,"Trying again in smaller region\n");CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(snes,"Trying again in smaller region\n"));
 
       /* check to see if progress is hopeless */
       neP->itflag = PETSC_FALSE;
       /* both delta, ynorm, and xnorm are either scaled or unscaled */
-      ierr        = SNESTRDC_Converged_Private(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
+      CHKERRQ(SNESTRDC_Converged_Private(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP));
       if (!reason) {
          /* temp_xnorm, temp_ynorm is always unscaled */
          /* also the inner iteration already calculated the Jacobian and solved the matrix */
          /* therefore, it should be passing iteration number of iter+1 instead of iter+0 in the first iteration and after */
-         ierr = (*snes->ops->converged)(snes,snes->iter+1,temp_xnorm,temp_ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
+         CHKERRQ((*snes->ops->converged)(snes,snes->iter+1,temp_xnorm,temp_ynorm,fnorm,&reason,snes->cnvP));
       }
       /* if multiphase state changes, break out inner iteration */
       if (reason == SNES_BREAKOUT_INNER_ITER) {
@@ -521,12 +515,12 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
       if (reason) {
         if (reason < 0) {
             /* We're not progressing, so return with the current iterate */
-            ierr     = SNESMonitor(snes,i+1,fnorm);CHKERRQ(ierr);
+            CHKERRQ(SNESMonitor(snes,i+1,fnorm));
             breakout = PETSC_TRUE;
             break;
         } else if (reason > 0) {
             /* We're converged, so return with the current iterate and update solution */
-            ierr     = SNESMonitor(snes,i+1,fnorm);CHKERRQ(ierr);
+            CHKERRQ(SNESMonitor(snes,i+1,fnorm));
             breakout = PETSC_FALSE;
             break;
         }
@@ -536,37 +530,37 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
     if (!breakout) {
       /* Update function and solution vectors */
       fnorm       = gnorm;
-      ierr        = VecCopy(G,F);CHKERRQ(ierr);
-      ierr        = VecCopy(W,X);CHKERRQ(ierr);
+      CHKERRQ(VecCopy(G,F));
+      CHKERRQ(VecCopy(W,X));
       /* Monitor convergence */
-      ierr        = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)snes));
       snes->iter  = i+1;
       snes->norm  = fnorm;
       snes->xnorm = xnorm;
       snes->ynorm = ynorm;
-      ierr        = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
-      ierr        = SNESLogConvergenceHistory(snes,snes->norm,lits);CHKERRQ(ierr);
-      ierr        = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)snes));
+      CHKERRQ(SNESLogConvergenceHistory(snes,snes->norm,lits));
+      CHKERRQ(SNESMonitor(snes,snes->iter,snes->norm));
       /* Test for convergence, xnorm = || X || */
       neP->itflag = PETSC_TRUE;
-      if (snes->ops->converged != SNESConvergedSkip) {ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);}
-      ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
+      if (snes->ops->converged != SNESConvergedSkip) CHKERRQ(VecNorm(X,NORM_2,&xnorm));
+      CHKERRQ((*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP));
       if (reason) break;
     } else break;
   }
 
-  /* ierr         = PetscFree(inorms);CHKERRQ(ierr); */
+  /* CHKERRQ(PetscFree(inorms)); */
   if (i == maxits) {
-    ierr = PetscInfo(snes,"Maximum number of iterations has been reached: %" PetscInt_FMT "\n",maxits);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(snes,"Maximum number of iterations has been reached: %" PetscInt_FMT "\n",maxits));
     if (!reason) reason = SNES_DIVERGED_MAX_IT;
   }
-  ierr         = PetscObjectSAWsTakeAccess((PetscObject)snes);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)snes));
   snes->reason = reason;
-  ierr         = PetscObjectSAWsGrantAccess((PetscObject)snes);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)snes));
   if (convtest != SNESTRDC_KSPConverged_Private) {
-    ierr       = KSPGetAndClearConvergenceTest(ksp,&ctx->convtest,&ctx->convctx,&ctx->convdestroy);CHKERRQ(ierr);
-    ierr       = PetscFree(ctx);CHKERRQ(ierr);
-    ierr       = KSPSetConvergenceTest(ksp,convtest,convctx,convdestroy);CHKERRQ(ierr);
+    CHKERRQ(KSPGetAndClearConvergenceTest(ksp,&ctx->convtest,&ctx->convctx,&ctx->convdestroy));
+    CHKERRQ(PetscFree(ctx));
+    CHKERRQ(KSPSetConvergenceTest(ksp,convtest,convctx,convdestroy));
   }
   PetscFunctionReturn(0);
 }
@@ -574,28 +568,23 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
 /*------------------------------------------------------------*/
 static PetscErrorCode SNESSetUp_NEWTONTRDC(SNES snes)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = SNESSetWorkVecs(snes,6);CHKERRQ(ierr);
-  ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);
+  CHKERRQ(SNESSetWorkVecs(snes,6));
+  CHKERRQ(SNESSetUpMatrices(snes));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode SNESReset_NEWTONTRDC(SNES snes)
 {
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SNESDestroy_NEWTONTRDC(SNES snes)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = SNESReset_NEWTONTRDC(snes);CHKERRQ(ierr);
-  ierr = PetscFree(snes->data);CHKERRQ(ierr);
+  CHKERRQ(SNESReset_NEWTONTRDC(snes));
+  CHKERRQ(PetscFree(snes->data));
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -603,37 +592,35 @@ static PetscErrorCode SNESDestroy_NEWTONTRDC(SNES snes)
 static PetscErrorCode SNESSetFromOptions_NEWTONTRDC(PetscOptionItems *PetscOptionsObject,SNES snes)
 {
   SNES_NEWTONTRDC  *ctx = (SNES_NEWTONTRDC*)snes->data;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"SNES trust region options for nonlinear equations");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_trdc_tol","Trust region tolerance","SNESSetTrustRegionTolerance",snes->deltatol,&snes->deltatol,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_trdc_eta1","eta1","None",ctx->eta1,&ctx->eta1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_trdc_eta2","eta2","None",ctx->eta2,&ctx->eta2,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_trdc_eta3","eta3","None",ctx->eta3,&ctx->eta3,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_trdc_t1","t1","None",ctx->t1,&ctx->t1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_trdc_t2","t2","None",ctx->t2,&ctx->t2,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_trdc_deltaM","deltaM","None",ctx->deltaM,&ctx->deltaM,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_trdc_delta0","delta0","None",ctx->delta0,&ctx->delta0,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_trdc_auto_scale_max","auto_scale_max","None",ctx->auto_scale_max,&ctx->auto_scale_max,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_trdc_use_cauchy","use_cauchy","use Cauchy step and direction",ctx->use_cauchy,&ctx->use_cauchy,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_trdc_auto_scale_multiphase","auto_scale_multiphase","Auto scaling for proper cauchy direction",ctx->auto_scale_multiphase,&ctx->auto_scale_multiphase,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"SNES trust region options for nonlinear equations"));
+  CHKERRQ(PetscOptionsReal("-snes_trdc_tol","Trust region tolerance","SNESSetTrustRegionTolerance",snes->deltatol,&snes->deltatol,NULL));
+  CHKERRQ(PetscOptionsReal("-snes_trdc_eta1","eta1","None",ctx->eta1,&ctx->eta1,NULL));
+  CHKERRQ(PetscOptionsReal("-snes_trdc_eta2","eta2","None",ctx->eta2,&ctx->eta2,NULL));
+  CHKERRQ(PetscOptionsReal("-snes_trdc_eta3","eta3","None",ctx->eta3,&ctx->eta3,NULL));
+  CHKERRQ(PetscOptionsReal("-snes_trdc_t1","t1","None",ctx->t1,&ctx->t1,NULL));
+  CHKERRQ(PetscOptionsReal("-snes_trdc_t2","t2","None",ctx->t2,&ctx->t2,NULL));
+  CHKERRQ(PetscOptionsReal("-snes_trdc_deltaM","deltaM","None",ctx->deltaM,&ctx->deltaM,NULL));
+  CHKERRQ(PetscOptionsReal("-snes_trdc_delta0","delta0","None",ctx->delta0,&ctx->delta0,NULL));
+  CHKERRQ(PetscOptionsReal("-snes_trdc_auto_scale_max","auto_scale_max","None",ctx->auto_scale_max,&ctx->auto_scale_max,NULL));
+  CHKERRQ(PetscOptionsBool("-snes_trdc_use_cauchy","use_cauchy","use Cauchy step and direction",ctx->use_cauchy,&ctx->use_cauchy,NULL));
+  CHKERRQ(PetscOptionsBool("-snes_trdc_auto_scale_multiphase","auto_scale_multiphase","Auto scaling for proper cauchy direction",ctx->auto_scale_multiphase,&ctx->auto_scale_multiphase,NULL));
+  CHKERRQ(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode SNESView_NEWTONTRDC(SNES snes,PetscViewer viewer)
 {
   SNES_NEWTONTRDC  *tr = (SNES_NEWTONTRDC*)snes->data;
-  PetscErrorCode   ierr;
   PetscBool        iascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Trust region tolerance (-snes_trtol)\n",(double)snes->deltatol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  eta1=%g, eta2=%g, eta3=%g\n",(double)tr->eta1,(double)tr->eta2,(double)tr->eta3);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  delta0=%g, t1=%g, t2=%g, deltaM=%g\n",(double)tr->delta0,(double)tr->t1,(double)tr->t2,(double)tr->deltaM);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Trust region tolerance (-snes_trtol)\n",(double)snes->deltatol));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  eta1=%g, eta2=%g, eta3=%g\n",(double)tr->eta1,(double)tr->eta2,(double)tr->eta3));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  delta0=%g, t1=%g, t2=%g, deltaM=%g\n",(double)tr->delta0,(double)tr->t1,(double)tr->t2,(double)tr->deltaM));
   }
   PetscFunctionReturn(0);
 }
@@ -667,7 +654,6 @@ M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTRDC(SNES snes)
 {
   SNES_NEWTONTRDC  *neP;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   snes->ops->setup          = SNESSetUp_NEWTONTRDC;
@@ -682,7 +668,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTRDC(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  ierr        = PetscNewLog(snes,&neP);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(snes,&neP));
   snes->data  = (void*)neP;
   neP->delta  = 0.0;
   neP->delta0 = 0.1;
@@ -705,8 +691,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTRDC(SNES snes)
   /* for multiphase (multivariable) scaling */
   /* may be used for dynamic allocation of inorms, but it fails snes_tutorials-ex3_13
      on test forced DIVERGED_JACOBIAN_DOMAIN test. I will use static array for now.
-  ierr = VecGetBlockSize(snes->work[0],&neP->bs);CHKERRQ(ierr);
-  ierr = PetscCalloc1(neP->bs,&neP->inorms);CHKERRQ(ierr);
+  CHKERRQ(VecGetBlockSize(snes->work[0],&neP->bs));
+  CHKERRQ(PetscCalloc1(neP->bs,&neP->inorms));
   */
 
   PetscFunctionReturn(0);

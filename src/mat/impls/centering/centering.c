@@ -3,23 +3,22 @@
 
 PetscErrorCode MatMult_Centering(Mat A,Vec xx,Vec yy)
 {
-  PetscErrorCode    ierr;
   PetscScalar       *y;
   const PetscScalar *x;
   PetscScalar       sum,mean;
   PetscInt          i,m=A->rmap->n,size;
 
   PetscFunctionBegin;
-  ierr = VecSum(xx,&sum);CHKERRQ(ierr);
-  ierr = VecGetSize(xx,&size);CHKERRQ(ierr);
+  CHKERRQ(VecSum(xx,&sum));
+  CHKERRQ(VecGetSize(xx,&size));
   mean = sum / (PetscScalar)size;
-  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(xx,&x));
+  CHKERRQ(VecGetArray(yy,&y));
   for (i=0; i<m; i++) {
     y[i] = x[i] - mean;
   }
-  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(xx,&x));
+  CHKERRQ(VecRestoreArray(yy,&y));
   PetscFunctionReturn(0);
 }
 
@@ -52,20 +51,19 @@ PetscErrorCode MatMult_Centering(Mat A,Vec xx,Vec yy)
 @*/
 PetscErrorCode MatCreateCentering(MPI_Comm comm,PetscInt n,PetscInt N,Mat *C)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MatCreate(comm,C);CHKERRQ(ierr);
-  ierr = MatSetSizes(*C,n,n,N,N);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)*C,MATCENTERING);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(comm,C));
+  CHKERRQ(MatSetSizes(*C,n,n,N,N));
+  CHKERRMPI(MPI_Comm_size(comm,&size));
+  CHKERRQ(PetscObjectChangeTypeName((PetscObject)*C,MATCENTERING));
 
   (*C)->ops->mult         = MatMult_Centering;
   (*C)->assembled         = PETSC_TRUE;
   (*C)->preallocated      = PETSC_TRUE;
   (*C)->symmetric         = PETSC_TRUE;
   (*C)->symmetric_eternal = PETSC_TRUE;
-  ierr = MatSetUp(*C);CHKERRQ(ierr);
+  CHKERRQ(MatSetUp(*C));
   PetscFunctionReturn(0);
 }

@@ -18,61 +18,61 @@ int main(int argc,char **args)
   PetscMPIInt    size;
 
   ierr = PetscInitialize(&argc,&args,0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   nnz[0]=2;nnz[1]=1;nnz[2]=1;
-  ierr   = MatCreateSeqSBAIJ(PETSC_COMM_SELF,2,6,6,0,nnz,&mat);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSeqSBAIJ(PETSC_COMM_SELF,2,6,6,0,nnz,&mat));
 
   ind1[0]=0;ind1[1]=1;
   temp[0]=3;temp[1]=2;temp[2]=0;temp[3]=3;
-  ierr   = MatSetValues(mat,2,ind1,2,ind1,temp,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(mat,2,ind1,2,ind1,temp,INSERT_VALUES));
   ind2[0]=4;ind2[1]=5;
   temp[0]=1;temp[1]=1;temp[2]=2;temp[3]=1;
-  ierr   = MatSetValues(mat,2,ind1,2,ind2,temp,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(mat,2,ind1,2,ind2,temp,INSERT_VALUES));
   ind1[0]=2;ind1[1]=3;
   temp[0]=4;temp[1]=1;temp[2]=1;temp[3]=5;
-  ierr   = MatSetValues(mat,2,ind1,2,ind1,temp,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(mat,2,ind1,2,ind1,temp,INSERT_VALUES));
   ind1[0]=4;ind1[1]=5;
   temp[0]=5;temp[1]=1;temp[2]=1;temp[3]=6;
-  ierr   = MatSetValues(mat,2,ind1,2,ind1,temp,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(mat,2,ind1,2,ind1,temp,INSERT_VALUES));
 
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
 
-  ierr   = MatDuplicate(mat,MAT_SHARE_NONZERO_PATTERN,&B);CHKERRQ(ierr);
+  CHKERRQ(MatDuplicate(mat,MAT_SHARE_NONZERO_PATTERN,&B));
   ind1[0]=0;ind1[1]=1;
   temp[0]=3;temp[1]=2;temp[2]=0;temp[3]=3;
-  ierr   = MatSetValues(mat,2,ind1,2,ind1,temp,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(mat,2,ind1,2,ind1,temp,INSERT_VALUES));
   ind2[0]=4;ind2[1]=5;
   temp[0]=1;temp[1]=1;temp[2]=2;temp[3]=1;
-  ierr   = MatSetValues(mat,2,ind1,2,ind2,temp,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(mat,2,ind1,2,ind2,temp,INSERT_VALUES));
   ind1[0]=2;ind1[1]=3;
   temp[0]=4;temp[1]=1;temp[2]=1;temp[3]=5;
-  ierr   = MatSetValues(mat,2,ind1,2,ind1,temp,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(mat,2,ind1,2,ind1,temp,INSERT_VALUES));
   ind1[0]=4;ind1[1]=5;
   temp[0]=5;temp[1]=1;temp[2]=1;temp[3]=6;
-  ierr   = MatSetValues(mat,2,ind1,2,ind1,temp,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(mat,2,ind1,2,ind1,temp,INSERT_VALUES));
 
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"mat: \n");CHKERRQ(ierr);
-  ierr = MatView(mat,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"mat: \n"));
+  CHKERRQ(MatView(mat,PETSC_VIEWER_STDOUT_SELF));
 
   /* begin cholesky factorization */
-  ierr = MatGetOrdering(mat,MATORDERINGNATURAL,&perm,&colp);CHKERRQ(ierr);
-  ierr = ISDestroy(&colp);CHKERRQ(ierr);
+  CHKERRQ(MatGetOrdering(mat,MATORDERINGNATURAL,&perm,&colp));
+  CHKERRQ(ISDestroy(&colp));
 
   info.fill=1.0;
-  ierr = MatGetFactor(mat,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&fact);CHKERRQ(ierr);
-  ierr = MatCholeskyFactorSymbolic(fact,mat,perm,&info);CHKERRQ(ierr);
-  ierr = MatCholeskyFactorNumeric(fact,mat,&info);CHKERRQ(ierr);
+  CHKERRQ(MatGetFactor(mat,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&fact));
+  CHKERRQ(MatCholeskyFactorSymbolic(fact,mat,perm,&info));
+  CHKERRQ(MatCholeskyFactorNumeric(fact,mat,&info));
 
-  ierr = ISDestroy(&perm);CHKERRQ(ierr);
-  ierr = MatDestroy(&mat);CHKERRQ(ierr);
-  ierr = MatDestroy(&fact);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&perm));
+  CHKERRQ(MatDestroy(&mat));
+  CHKERRQ(MatDestroy(&fact));
+  CHKERRQ(MatDestroy(&B));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -331,7 +331,7 @@ struct BlasInterface<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA>
       if (PetscLikely(cerr == CUSOLVER_STATUS_SUCCESS)) break;
       if ((cerr != CUSOLVER_STATUS_NOT_INITIALIZED) && (cerr != CUSOLVER_STATUS_ALLOC_FAILED)) CHKERRCUSOLVER(cerr);
       if (i < 2) {
-        auto ierr = PetscSleep(3);CHKERRQ(ierr);
+        CHKERRQ(PetscSleep(3));
         continue;
       }
       PetscCheck(cerr == CUSOLVER_STATUS_SUCCESS,PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"Unable to initialize cuSolverDn");
@@ -341,12 +341,11 @@ struct BlasInterface<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA>
 
   PETSC_CXX_COMPAT_DECL(PetscErrorCode SetHandleStream(cupmSolverHandle_t &handle, cupmStream_t &stream))
   {
-    cupmStream_t      cupmStream;
-    cupmSolverError_t cerr;
+    cupmStream_t cupmStream;
 
     PetscFunctionBegin;
-    cerr = cusolverDnGetStream(handle,&cupmStream);CHKERRCUSOLVER(cerr);
-    if (cupmStream != stream) {cerr = cusolverDnSetStream(handle,stream);CHKERRCUSOLVER(cerr);}
+    CHKERRCUSOLVER(cusolverDnGetStream(handle,&cupmStream));
+    if (cupmStream != stream) CHKERRCUSOLVER(cusolverDnSetStream(handle,stream));
     PetscFunctionReturn(0);
   }
 
@@ -354,7 +353,7 @@ struct BlasInterface<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA>
   {
     PetscFunctionBegin;
     if (handle) {
-      auto cerr = cusolverDnDestroy(handle);CHKERRCUSOLVER(cerr);
+      CHKERRCUSOLVER(cusolverDnDestroy(handle));
       handle = nullptr;
     }
     PetscFunctionReturn(0);
@@ -418,18 +417,17 @@ struct BlasInterface<DeviceType::HIP> : BlasInterfaceBase<DeviceType::HIP>
   PETSC_CXX_COMPAT_DECL(PetscErrorCode InitializeHandle(cupmSolverHandle_t &handle))
   {
     PetscFunctionBegin;
-    if (!handle) {auto cerr = hipsolverCreate(&handle);CHKERRHIPSOLVER(cerr);}
+    if (!handle) CHKERRHIPSOLVER(hipsolverCreate(&handle));
     PetscFunctionReturn(0);
   }
 
   PETSC_CXX_COMPAT_DECL(PetscErrorCode SetHandleStream(cupmSolverHandle_t &handle, cupmStream_t &stream))
   {
-    cupmStream_t      cupmStream;
-    cupmSolverError_t cerr;
+    cupmStream_t cupmStream;
 
     PetscFunctionBegin;
-    cerr = hipsolverGetStream(handle,&cupmStream);CHKERRHIPSOLVER(cerr);
-    if (cupmStream != stream) {cerr = hipsolverSetStream(handle,stream);CHKERRHIPSOLVER(cerr);}
+    CHKERRHIPSOLVER(hipsolverGetStream(handle,&cupmStream));
+    if (cupmStream != stream) CHKERRHIPSOLVER(hipsolverSetStream(handle,stream));
     PetscFunctionReturn(0);
   }
 
@@ -437,7 +435,7 @@ struct BlasInterface<DeviceType::HIP> : BlasInterfaceBase<DeviceType::HIP>
   {
     PetscFunctionBegin;
     if (handle) {
-      auto cerr = hipsolverDestroy(handle);CHKERRHIPSOLVER(cerr);
+      CHKERRHIPSOLVER(hipsolverDestroy(handle));
       handle = nullptr;
     }
     PetscFunctionReturn(0);

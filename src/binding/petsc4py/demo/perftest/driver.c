@@ -18,11 +18,11 @@ PetscErrorCode FormInitial(PetscReal t, Vec X, void *ctx)
   AppCtx         *app = (AppCtx*) ctx;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(X,&x));
   /**/
   formInitial(&app->nx,&app->ny,&app->nz,app->h,&t,x);
   /**/
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(X,&x));
   PetscFunctionReturn(0);
 }
 
@@ -34,15 +34,15 @@ PetscErrorCode FormFunction(TS ts, PetscReal t, Vec X, Vec Xdot,Vec F, void *ctx
   AppCtx         *app = (AppCtx*) ctx;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(X,&x));
+  CHKERRQ(VecGetArrayRead(Xdot,&xdot));
+  CHKERRQ(VecGetArray(F,&f));
   /**/
   formFunction(&app->nx,&app->ny,&app->nz,app->h,&t,x,xdot,f);
   /**/
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Xdot,&xdot);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(X,&x));
+  CHKERRQ(VecRestoreArrayRead(Xdot,&xdot));
+  CHKERRQ(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -59,46 +59,46 @@ PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
   app->ny = ny; app->h[1] = 1./(ny-1);
   app->nz = nz; app->h[2] = 1./(nz-1);
 
-  ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,nx*ny*nz,nx*ny*nz);CHKERRQ(ierr);
-  ierr = VecSetUp(x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&f);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_SELF,&x));
+  CHKERRQ(VecSetSizes(x,nx*ny*nz,nx*ny*nz));
+  CHKERRQ(VecSetUp(x));
+  CHKERRQ(VecDuplicate(x,&f));
 
-  ierr = TSCreate(PETSC_COMM_SELF,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
-  ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,0.01);CHKERRQ(ierr);
-  ierr = TSSetTime(ts,0.0);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts,1.0);CHKERRQ(ierr);
-  ierr = TSSetMaxSteps(ts,10);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(PETSC_COMM_SELF,&ts));
+  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
+  CHKERRQ(TSSetType(ts,TSTHETA));
+  CHKERRQ(TSThetaSetTheta(ts,1.0));
+  CHKERRQ(TSSetTimeStep(ts,0.01));
+  CHKERRQ(TSSetTime(ts,0.0));
+  CHKERRQ(TSSetMaxTime(ts,1.0));
+  CHKERRQ(TSSetMaxSteps(ts,10));
+  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
 
-  ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,f,FormFunction,app);CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue(NULL,"-snes_mf","1");CHKERRQ(ierr);
+  CHKERRQ(TSSetSolution(ts,x));
+  CHKERRQ(TSSetIFunction(ts,f,FormFunction,app));
+  CHKERRQ(PetscOptionsSetValue(NULL,"-snes_mf","1"));
   {
     SNES snes;
     KSP  ksp;
-    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
+    CHKERRQ(TSGetSNES(ts,&snes));
+    CHKERRQ(SNESGetKSP(snes,&ksp));
+    CHKERRQ(KSPSetType(ksp,KSPCG));
   }
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSSetUp(ts);CHKERRQ(ierr);
+  CHKERRQ(TSSetFromOptions(ts));
+  CHKERRQ(TSSetUp(ts));
 
   *wt = 1e300;
   while (loops-- > 0) {
-    ierr = FormInitial(0.0,x,app);CHKERRQ(ierr);
-    ierr = PetscTime(&t1);CHKERRQ(ierr);
-    ierr = TSSolve(ts,x);CHKERRQ(ierr);
-    ierr = PetscTime(&t2);CHKERRQ(ierr);
+    CHKERRQ(FormInitial(0.0,x,app));
+    CHKERRQ(PetscTime(&t1));
+    CHKERRQ(TSSolve(ts,x));
+    CHKERRQ(PetscTime(&t2));
     *wt = PetscMin(*wt,t2-t1);
   }
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&f);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&f));
+  CHKERRQ(TSDestroy(&ts));
 
   PetscFunctionReturn(0);
 }
@@ -108,7 +108,7 @@ PetscErrorCode GetInt(const char* name, PetscInt *v, PetscInt defv)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   *v = defv;
-  ierr = PetscOptionsGetInt(NULL,NULL,name,v,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,name,v,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -120,19 +120,19 @@ int main(int argc, char *argv[])
 
   ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
 
-  ierr = GetInt("-start",   &start,   12);CHKERRQ(ierr);
-  ierr = GetInt("-step",    &step,    4);CHKERRQ(ierr);
-  ierr = GetInt("-stop",    &stop,    start);CHKERRQ(ierr);
-  ierr = GetInt("-samples", &samples, 1);CHKERRQ(ierr);
+  CHKERRQ(GetInt("-start",   &start,   12));
+  CHKERRQ(GetInt("-step",    &step,    4));
+  CHKERRQ(GetInt("-stop",    &stop,    start));
+  CHKERRQ(GetInt("-samples", &samples, 1));
 
   for (n=start; n<=stop; n+=step) {
     int nx=n+1, ny=n+1, nz=n+1;
-    ierr = RunTest(nx,ny,nz,samples,&wt);CHKERRQ(ierr);
+    CHKERRQ(RunTest(nx,ny,nz,samples,&wt));
     ierr = PetscPrintf(PETSC_COMM_SELF,
                        "Grid  %3d x %3d x %3d -> %f seconds (%2d samples)\n",
                        nx,ny,nz,wt,samples);CHKERRQ(ierr);
   }
 
-  ierr = PetscFinalize();CHKERRQ(ierr);
+  CHKERRQ(PetscFinalize());
   return 0;
 }

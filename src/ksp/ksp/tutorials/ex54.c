@@ -28,33 +28,33 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr  = MPI_Comm_rank(comm, &mype);CHKERRMPI(ierr);
-  ierr  = MPI_Comm_size(comm, &npe);CHKERRMPI(ierr);
-  ierr  = PetscOptionsGetInt(NULL,NULL,"-ne",&ne,NULL);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm, &mype));
+  CHKERRMPI(MPI_Comm_size(comm, &npe));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-ne",&ne,NULL));
   h     = 1./ne;
   /* ne*ne; number of global elements */
-  ierr = PetscOptionsGetReal(NULL,NULL,"-alpha",&soft_alpha,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-alpha",&soft_alpha,NULL));
   M    = (ne+1)*(ne+1); /* global number of nodes */
 
   /* create stiffness matrix (2) */
-  ierr = MatCreate(comm,&Amat);CHKERRQ(ierr);
-  ierr = MatSetSizes(Amat,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
-  ierr = MatSetType(Amat,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetOption(Amat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(Amat);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(Amat,81,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Amat,81,NULL,57,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(comm,&Amat));
+  CHKERRQ(MatSetSizes(Amat,PETSC_DECIDE,PETSC_DECIDE,M,M));
+  CHKERRQ(MatSetType(Amat,MATAIJ));
+  CHKERRQ(MatSetOption(Amat,MAT_SPD,PETSC_TRUE));
+  CHKERRQ(MatSetFromOptions(Amat));
+  CHKERRQ(MatSeqAIJSetPreallocation(Amat,81,NULL));
+  CHKERRQ(MatMPIAIJSetPreallocation(Amat,81,NULL,57,NULL));
 
-  ierr = MatCreate(comm,&Pmat);CHKERRQ(ierr);
-  ierr = MatSetSizes(Pmat,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
-  ierr = MatSetType(Pmat,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(Pmat);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(Pmat,81,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(Pmat,81,NULL,57,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(comm,&Pmat));
+  CHKERRQ(MatSetSizes(Pmat,PETSC_DECIDE,PETSC_DECIDE,M,M));
+  CHKERRQ(MatSetType(Pmat,MATMPIAIJ));
+  CHKERRQ(MatSetFromOptions(Pmat));
+  CHKERRQ(MatSeqAIJSetPreallocation(Pmat,81,NULL));
+  CHKERRQ(MatMPIAIJSetPreallocation(Pmat,81,NULL,57,NULL));
 
   /* vectors */
-  ierr = MatCreateVecs(Amat,&bb,&xx);CHKERRQ(ierr);
-  ierr = VecSet(bb,.0);CHKERRQ(ierr);
+  CHKERRQ(MatCreateVecs(Amat,&bb,&xx));
+  CHKERRQ(VecSet(bb,.0));
   /* generate element matrices -- see ex56.c on how to use different data set */
   {
     DD1[0][0] =  0.66666666666666663;
@@ -88,9 +88,9 @@ int main(int argc,char **args)
     PetscReal *coords;
     PC             pc;
     /* forms the element stiffness for the Laplacian and coordinates */
-    ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
+    CHKERRQ(MatGetOwnershipRange(Amat,&Istart,&Iend));
     m    = Iend-Istart;
-    ierr = PetscMalloc1(2*m,&coords);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(2*m,&coords));
     for (Ii=Istart,ix=0; Ii<Iend; Ii++,ix++) {
       j = Ii/(ne+1); i = Ii%(ne+1);
       /* coords */
@@ -106,105 +106,105 @@ int main(int argc,char **args)
         for (ii=0; ii<4; ii++) {
           for (jj=0; jj<4; jj++) DD[ii][jj] = alpha*DD1[ii][jj];
         }
-        ierr = MatSetValues(Pmat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValues(Pmat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES));
         if (j>0) {
-          ierr = MatSetValues(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+          CHKERRQ(MatSetValues(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES));
         } else {
           /* a BC */
           for (ii=0;ii<4;ii++) {
             for (jj=0;jj<4;jj++) DD[ii][jj] = alpha*DD2[ii][jj];
           }
-          ierr = MatSetValues(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+          CHKERRQ(MatSetValues(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES));
         }
       }
       if (j>0) {
         PetscScalar v  = h*h;
         PetscInt    jj = Ii;
-        ierr = VecSetValues(bb,1,&jj,&v,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(VecSetValues(bb,1,&jj,&v,INSERT_VALUES));
       }
     }
-    ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(bb);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(bb);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(VecAssemblyBegin(bb));
+    CHKERRQ(VecAssemblyEnd(bb));
 
     /* Setup solver */
-    ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+    CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+    CHKERRQ(KSPSetFromOptions(ksp));
 
     /* finish KSP/PC setup */
-    ierr = KSPSetOperators(ksp, Amat, Amat);CHKERRQ(ierr);
+    CHKERRQ(KSPSetOperators(ksp, Amat, Amat));
 
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    ierr = PCSetCoordinates(pc, 2, m, coords);CHKERRQ(ierr);
-    ierr = PetscFree(coords);CHKERRQ(ierr);
+    CHKERRQ(KSPGetPC(ksp,&pc));
+    CHKERRQ(PCSetCoordinates(pc, 2, m, coords));
+    CHKERRQ(PetscFree(coords));
   }
 
   if (!PETSC_TRUE) {
     PetscViewer viewer;
-    ierr = PetscViewerASCIIOpen(comm, "Amat.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = MatView(Amat,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIOpen(comm, "Amat.m", &viewer));
+    CHKERRQ(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB));
+    CHKERRQ(MatView(Amat,viewer));
+    CHKERRQ(PetscViewerPopFormat(viewer));
+    CHKERRQ(PetscViewerDestroy(&viewer));
   }
 
   /* solve */
 #if defined(PETSC_USE_LOG)
-  ierr = PetscLogStageRegister("Solve", &stage);CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
+  CHKERRQ(PetscLogStageRegister("Solve", &stage));
+  CHKERRQ(PetscLogStagePush(stage));
 #endif
-  ierr = VecSet(xx,.0);CHKERRQ(ierr);
+  CHKERRQ(VecSet(xx,.0));
 
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPSetUp(ksp));
 
-  ierr = KSPSolve(ksp,bb,xx);CHKERRQ(ierr);
+  CHKERRQ(KSPSolve(ksp,bb,xx));
 
 #if defined(PETSC_USE_LOG)
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  CHKERRQ(PetscLogStagePop());
 #endif
 
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  CHKERRQ(KSPGetIterationNumber(ksp,&its));
 
   if (!PETSC_TRUE) {
     PetscReal   norm,norm2;
     PetscViewer viewer;
     Vec         res;
-    ierr = PetscViewerASCIIOpen(comm, "rhs.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = VecView(bb,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = VecNorm(bb, NORM_2, &norm2);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIOpen(comm, "rhs.m", &viewer));
+    CHKERRQ(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB));
+    CHKERRQ(VecView(bb,viewer));
+    CHKERRQ(PetscViewerPopFormat(viewer));
+    CHKERRQ(PetscViewerDestroy(&viewer));
+    CHKERRQ(VecNorm(bb, NORM_2, &norm2));
 
-    ierr = PetscViewerASCIIOpen(comm, "solution.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = VecView(xx,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIOpen(comm, "solution.m", &viewer));
+    CHKERRQ(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB));
+    CHKERRQ(VecView(xx,viewer));
+    CHKERRQ(PetscViewerPopFormat(viewer));
+    CHKERRQ(PetscViewerDestroy(&viewer));
 
-    ierr = VecDuplicate(xx, &res);CHKERRQ(ierr);
-    ierr = MatMult(Amat, xx, res);CHKERRQ(ierr);
-    ierr = VecAXPY(bb, -1.0, res);CHKERRQ(ierr);
-    ierr = VecDestroy(&res);CHKERRQ(ierr);
-    ierr = VecNorm(bb,NORM_2,&norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,PETSC_FUNCTION_NAME,norm/norm2,norm2);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(xx, &res));
+    CHKERRQ(MatMult(Amat, xx, res));
+    CHKERRQ(VecAXPY(bb, -1.0, res));
+    CHKERRQ(VecDestroy(&res));
+    CHKERRQ(VecNorm(bb,NORM_2,&norm));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,PETSC_FUNCTION_NAME,norm/norm2,norm2));
 
-    ierr = PetscViewerASCIIOpen(comm, "residual.m", &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = VecView(bb,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIOpen(comm, "residual.m", &viewer));
+    CHKERRQ(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB));
+    CHKERRQ(VecView(bb,viewer));
+    CHKERRQ(PetscViewerPopFormat(viewer));
+    CHKERRQ(PetscViewerDestroy(&viewer));
   }
 
   /* Free work space */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&xx);CHKERRQ(ierr);
-  ierr = VecDestroy(&bb);CHKERRQ(ierr);
-  ierr = MatDestroy(&Amat);CHKERRQ(ierr);
-  ierr = MatDestroy(&Pmat);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(VecDestroy(&xx));
+  CHKERRQ(VecDestroy(&bb));
+  CHKERRQ(MatDestroy(&Amat));
+  CHKERRQ(MatDestroy(&Pmat));
 
   ierr = PetscFinalize();
   return ierr;

@@ -16,15 +16,15 @@ int main(int argc, char **argv)
   PetscBool      inverse = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-nl",&nl,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-explicit_inverse",&inverse,NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nl",&nl,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-explicit_inverse",&inverse,NULL));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  ierr = PetscSFCreate(PETSC_COMM_WORLD, &sfA);CHKERRQ(ierr);
-  ierr = PetscSFCreate(PETSC_COMM_WORLD, &sfB);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(sfA);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(sfB);CHKERRQ(ierr);
+  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD, &sfA));
+  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD, &sfB));
+  CHKERRQ(PetscSFSetFromOptions(sfA));
+  CHKERRQ(PetscSFSetFromOptions(sfB));
 
   n = 4*nl*size;
   m = 2*nl;
@@ -38,10 +38,10 @@ int main(int argc, char **argv)
   nrootsB  = rank == 0 ? n : 0;
   nleavesB = k;
 
-  ierr = PetscMalloc1(nleavesA, &ilocalA);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nleavesA, &iremoteA);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nleavesB, &ilocalB);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nleavesB, &iremoteB);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(nleavesA, &ilocalA));
+  CHKERRQ(PetscMalloc1(nleavesA, &iremoteA));
+  CHKERRQ(PetscMalloc1(nleavesB, &ilocalB));
+  CHKERRQ(PetscMalloc1(nleavesB, &iremoteB));
 
   /* sf A bcast is equivalent to a sparse gather on process 0
      process 0 receives data in the middle [nl,3*nl] of the leaf data array for A */
@@ -59,90 +59,90 @@ int main(int argc, char **argv)
     iremoteB[i].index = rank * 4*nl + nl + i%m;
     ilocalB[i] = 2*nl - i - 1;
   }
-  ierr = PetscSFSetGraph(sfA, nrootsA, nleavesA, ilocalA, PETSC_OWN_POINTER, iremoteA, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(sfB, nrootsB, nleavesB, ilocalB, PETSC_OWN_POINTER, iremoteB, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  ierr = PetscSFSetUp(sfA);CHKERRQ(ierr);
-  ierr = PetscSFSetUp(sfB);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)sfA, "sfA");CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)sfB, "sfB");CHKERRQ(ierr);
-  ierr = PetscSFViewFromOptions(sfA, NULL, "-view");CHKERRQ(ierr);
-  ierr = PetscSFViewFromOptions(sfB, NULL, "-view");CHKERRQ(ierr);
+  CHKERRQ(PetscSFSetGraph(sfA, nrootsA, nleavesA, ilocalA, PETSC_OWN_POINTER, iremoteA, PETSC_OWN_POINTER));
+  CHKERRQ(PetscSFSetGraph(sfB, nrootsB, nleavesB, ilocalB, PETSC_OWN_POINTER, iremoteB, PETSC_OWN_POINTER));
+  CHKERRQ(PetscSFSetUp(sfA));
+  CHKERRQ(PetscSFSetUp(sfB));
+  CHKERRQ(PetscObjectSetName((PetscObject)sfA, "sfA"));
+  CHKERRQ(PetscObjectSetName((PetscObject)sfB, "sfB"));
+  CHKERRQ(PetscSFViewFromOptions(sfA, NULL, "-view"));
+  CHKERRQ(PetscSFViewFromOptions(sfB, NULL, "-view"));
 
-  ierr = PetscSFGetLeafRange(sfA, NULL, &mA);CHKERRQ(ierr);
-  ierr = PetscSFGetLeafRange(sfB, NULL, &mB);CHKERRQ(ierr);
-  ierr = PetscMalloc2(nrootsA, &rdA, nldataA, &ldA);CHKERRQ(ierr);
-  ierr = PetscMalloc2(nrootsB, &rdB, nldataB, &ldB);CHKERRQ(ierr);
+  CHKERRQ(PetscSFGetLeafRange(sfA, NULL, &mA));
+  CHKERRQ(PetscSFGetLeafRange(sfB, NULL, &mB));
+  CHKERRQ(PetscMalloc2(nrootsA, &rdA, nldataA, &ldA));
+  CHKERRQ(PetscMalloc2(nrootsB, &rdB, nldataB, &ldB));
   for (i = 0; i < nrootsA; i++) rdA[i] = m*rank + i;
   for (i = 0; i < nldataA; i++) ldA[i] = -1;
   for (i = 0; i < nldataB; i++) ldB[i] = -1;
 
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BcastB(BcastA)\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "A: root data\n");CHKERRQ(ierr);
-  ierr = PetscIntView(nrootsA, rdA, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sfA, MPIU_INT, rdA, ldA,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfA, MPIU_INT, rdA, ldA,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "A: leaf data (all)\n");CHKERRQ(ierr);
-  ierr = PetscIntView(nldataA, ldA, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sfB, MPIU_INT, ldA, ldB,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfB, MPIU_INT, ldA, ldB,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "B: leaf data (all)\n");CHKERRQ(ierr);
-  ierr = PetscIntView(nldataB, ldB, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BcastB(BcastA)\n"));
+  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "A: root data\n"));
+  CHKERRQ(PetscIntView(nrootsA, rdA, PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscSFBcastBegin(sfA, MPIU_INT, rdA, ldA,MPI_REPLACE));
+  CHKERRQ(PetscSFBcastEnd(sfA, MPIU_INT, rdA, ldA,MPI_REPLACE));
+  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "A: leaf data (all)\n"));
+  CHKERRQ(PetscIntView(nldataA, ldA, PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscSFBcastBegin(sfB, MPIU_INT, ldA, ldB,MPI_REPLACE));
+  CHKERRQ(PetscSFBcastEnd(sfB, MPIU_INT, ldA, ldB,MPI_REPLACE));
+  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "B: leaf data (all)\n"));
+  CHKERRQ(PetscIntView(nldataB, ldB, PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = PetscSFCompose(sfA, sfB, &sfBA);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(sfBA);CHKERRQ(ierr);
-  ierr = PetscSFSetUp(sfBA);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)sfBA, "sfBA");CHKERRQ(ierr);
-  ierr = PetscSFViewFromOptions(sfBA, NULL, "-view");CHKERRQ(ierr);
+  CHKERRQ(PetscSFCompose(sfA, sfB, &sfBA));
+  CHKERRQ(PetscSFSetFromOptions(sfBA));
+  CHKERRQ(PetscSFSetUp(sfBA));
+  CHKERRQ(PetscObjectSetName((PetscObject)sfBA, "sfBA"));
+  CHKERRQ(PetscSFViewFromOptions(sfBA, NULL, "-view"));
 
   for (i = 0; i < nldataB; i++) ldB[i] = -1;
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BcastBA\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BA: root data\n");CHKERRQ(ierr);
-  ierr = PetscIntView(nrootsA, rdA, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscSFBcastBegin(sfBA, MPIU_INT, rdA, ldB,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfBA, MPIU_INT, rdA, ldB,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BA: leaf data (all)\n");CHKERRQ(ierr);
-  ierr = PetscIntView(nldataB, ldB, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BcastBA\n"));
+  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BA: root data\n"));
+  CHKERRQ(PetscIntView(nrootsA, rdA, PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscSFBcastBegin(sfBA, MPIU_INT, rdA, ldB,MPI_REPLACE));
+  CHKERRQ(PetscSFBcastEnd(sfBA, MPIU_INT, rdA, ldB,MPI_REPLACE));
+  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "BA: leaf data (all)\n"));
+  CHKERRQ(PetscIntView(nldataB, ldB, PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = PetscSFCreateInverseSF(sfA, &sfAm);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(sfAm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)sfAm, "sfAm");CHKERRQ(ierr);
-  ierr = PetscSFViewFromOptions(sfAm, NULL, "-view");CHKERRQ(ierr);
-
-  if (!inverse) {
-    ierr = PetscSFComposeInverse(sfA, sfA, &sfAAm);CHKERRQ(ierr);
-  } else {
-    ierr = PetscSFCompose(sfA, sfAm, &sfAAm);CHKERRQ(ierr);
-  }
-  ierr = PetscSFSetFromOptions(sfAAm);CHKERRQ(ierr);
-  ierr = PetscSFSetUp(sfAAm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)sfAAm, "sfAAm");CHKERRQ(ierr);
-  ierr = PetscSFViewFromOptions(sfAAm, NULL, "-view");CHKERRQ(ierr);
-
-  ierr = PetscSFCreateInverseSF(sfB, &sfBm);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(sfBm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)sfBm, "sfBm");CHKERRQ(ierr);
-  ierr = PetscSFViewFromOptions(sfBm, NULL, "-view");CHKERRQ(ierr);
+  CHKERRQ(PetscSFCreateInverseSF(sfA, &sfAm));
+  CHKERRQ(PetscSFSetFromOptions(sfAm));
+  CHKERRQ(PetscObjectSetName((PetscObject)sfAm, "sfAm"));
+  CHKERRQ(PetscSFViewFromOptions(sfAm, NULL, "-view"));
 
   if (!inverse) {
-    ierr = PetscSFComposeInverse(sfB, sfB, &sfBBm);CHKERRQ(ierr);
+    CHKERRQ(PetscSFComposeInverse(sfA, sfA, &sfAAm));
   } else {
-    ierr = PetscSFCompose(sfB, sfBm, &sfBBm);CHKERRQ(ierr);
+    CHKERRQ(PetscSFCompose(sfA, sfAm, &sfAAm));
   }
-  ierr = PetscSFSetFromOptions(sfBBm);CHKERRQ(ierr);
-  ierr = PetscSFSetUp(sfBBm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)sfBBm, "sfBBm");CHKERRQ(ierr);
-  ierr = PetscSFViewFromOptions(sfBBm, NULL, "-view");CHKERRQ(ierr);
+  CHKERRQ(PetscSFSetFromOptions(sfAAm));
+  CHKERRQ(PetscSFSetUp(sfAAm));
+  CHKERRQ(PetscObjectSetName((PetscObject)sfAAm, "sfAAm"));
+  CHKERRQ(PetscSFViewFromOptions(sfAAm, NULL, "-view"));
 
-  ierr = PetscFree2(rdA, ldA);CHKERRQ(ierr);
-  ierr = PetscFree2(rdB, ldB);CHKERRQ(ierr);
+  CHKERRQ(PetscSFCreateInverseSF(sfB, &sfBm));
+  CHKERRQ(PetscSFSetFromOptions(sfBm));
+  CHKERRQ(PetscObjectSetName((PetscObject)sfBm, "sfBm"));
+  CHKERRQ(PetscSFViewFromOptions(sfBm, NULL, "-view"));
 
-  ierr = PetscSFDestroy(&sfA);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfB);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfBA);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfAm);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfBm);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfAAm);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfBBm);CHKERRQ(ierr);
+  if (!inverse) {
+    CHKERRQ(PetscSFComposeInverse(sfB, sfB, &sfBBm));
+  } else {
+    CHKERRQ(PetscSFCompose(sfB, sfBm, &sfBBm));
+  }
+  CHKERRQ(PetscSFSetFromOptions(sfBBm));
+  CHKERRQ(PetscSFSetUp(sfBBm));
+  CHKERRQ(PetscObjectSetName((PetscObject)sfBBm, "sfBBm"));
+  CHKERRQ(PetscSFViewFromOptions(sfBBm, NULL, "-view"));
+
+  CHKERRQ(PetscFree2(rdA, ldA));
+  CHKERRQ(PetscFree2(rdB, ldB));
+
+  CHKERRQ(PetscSFDestroy(&sfA));
+  CHKERRQ(PetscSFDestroy(&sfB));
+  CHKERRQ(PetscSFDestroy(&sfBA));
+  CHKERRQ(PetscSFDestroy(&sfAm));
+  CHKERRQ(PetscSFDestroy(&sfBm));
+  CHKERRQ(PetscSFDestroy(&sfAAm));
+  CHKERRQ(PetscSFDestroy(&sfBBm));
 
   ierr = PetscFinalize();
 

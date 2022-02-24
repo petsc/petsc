@@ -133,21 +133,21 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->constants[2]    = 3.0;
 
   ierr = PetscOptionsBegin(comm, "", "Projection Test Options", "DMPlex");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-use_da", "Flag for DMDA mesh", "ex3.c", options->useDA, &options->useDA, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-shear_coords", "Transform coordinates with a shear", "ex3.c", options->shearCoords, &options->shearCoords, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-non_affine_coords", "Transform coordinates with a non-affine transform", "ex3.c", options->nonaffineCoords, &options->nonaffineCoords, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-qorder", "The quadrature order", "ex3.c", options->qorder, &options->qorder, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-num_comp", "The number of field components", "ex3.c", options->numComponents, &options->numComponents, NULL,PETSC_DEFAULT);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-porder", "The order of polynomials to test", "ex3.c", options->porder, &options->porder, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-convergence", "Check the convergence rate", "ex3.c", options->convergence, &options->convergence, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-conv_refine", "Use refinement for the convergence rate", "ex3.c", options->convRefine, &options->convRefine, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-constraints", "Test local constraints (serial only)", "ex3.c", options->constraints, &options->constraints, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-tree", "Test tree routines", "ex3.c", options->tree, &options->tree, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-tree_cell", "cell to refine in tree test", "ex3.c", options->treeCell, &options->treeCell, NULL,0);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-test_fe_jacobian", "Test finite element Jacobian assembly", "ex3.c", options->testFEjacobian, &options->testFEjacobian, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-test_fv_grad", "Test finite volume gradient reconstruction", "ex3.c", options->testFVgrad, &options->testFVgrad, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-test_injector","Test finite element injection", "ex3.c", options->testInjector, &options->testInjector,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsRealArray("-constants","Set the constant values", "ex3.c", options->constants, &n,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-use_da", "Flag for DMDA mesh", "ex3.c", options->useDA, &options->useDA, NULL));
+  CHKERRQ(PetscOptionsBool("-shear_coords", "Transform coordinates with a shear", "ex3.c", options->shearCoords, &options->shearCoords, NULL));
+  CHKERRQ(PetscOptionsBool("-non_affine_coords", "Transform coordinates with a non-affine transform", "ex3.c", options->nonaffineCoords, &options->nonaffineCoords, NULL));
+  CHKERRQ(PetscOptionsBoundedInt("-qorder", "The quadrature order", "ex3.c", options->qorder, &options->qorder, NULL,0));
+  CHKERRQ(PetscOptionsBoundedInt("-num_comp", "The number of field components", "ex3.c", options->numComponents, &options->numComponents, NULL,PETSC_DEFAULT));
+  CHKERRQ(PetscOptionsBoundedInt("-porder", "The order of polynomials to test", "ex3.c", options->porder, &options->porder, NULL,0));
+  CHKERRQ(PetscOptionsBool("-convergence", "Check the convergence rate", "ex3.c", options->convergence, &options->convergence, NULL));
+  CHKERRQ(PetscOptionsBool("-conv_refine", "Use refinement for the convergence rate", "ex3.c", options->convRefine, &options->convRefine, NULL));
+  CHKERRQ(PetscOptionsBool("-constraints", "Test local constraints (serial only)", "ex3.c", options->constraints, &options->constraints, NULL));
+  CHKERRQ(PetscOptionsBool("-tree", "Test tree routines", "ex3.c", options->tree, &options->tree, NULL));
+  CHKERRQ(PetscOptionsBoundedInt("-tree_cell", "cell to refine in tree test", "ex3.c", options->treeCell, &options->treeCell, NULL,0));
+  CHKERRQ(PetscOptionsBool("-test_fe_jacobian", "Test finite element Jacobian assembly", "ex3.c", options->testFEjacobian, &options->testFEjacobian, NULL));
+  CHKERRQ(PetscOptionsBool("-test_fv_grad", "Test finite volume gradient reconstruction", "ex3.c", options->testFVgrad, &options->testFVgrad, NULL));
+  CHKERRQ(PetscOptionsBool("-test_injector","Test finite element injection", "ex3.c", options->testInjector, &options->testInjector,NULL));
+  CHKERRQ(PetscOptionsRealArray("-constants","Set the constant values", "ex3.c", options->constants, &n,NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -159,21 +159,20 @@ static PetscErrorCode TransformCoordinates(DM dm, AppCtx *user)
   Vec            coordinates;
   PetscScalar   *coords;
   PetscInt       vStart, vEnd, v;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   if (user->nonaffineCoords) {
     /* x' = r^(1/p) (x/r), y' = r^(1/p) (y/r), z' = z */
-    ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-    ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+    CHKERRQ(DMGetCoordinateSection(dm, &coordSection));
+    CHKERRQ(DMGetCoordinatesLocal(dm, &coordinates));
+    CHKERRQ(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+    CHKERRQ(VecGetArray(coordinates, &coords));
     for (v = vStart; v < vEnd; ++v) {
       PetscInt  dof, off;
       PetscReal p = 4.0, r;
 
-      ierr = PetscSectionGetDof(coordSection, v, &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionGetDof(coordSection, v, &dof));
+      CHKERRQ(PetscSectionGetOffset(coordSection, v, &off));
       switch (dof) {
       case 2:
         r             = PetscSqr(PetscRealPart(coords[off+0])) + PetscSqr(PetscRealPart(coords[off+1]));
@@ -188,20 +187,20 @@ static PetscErrorCode TransformCoordinates(DM dm, AppCtx *user)
         break;
       }
     }
-    ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(coordinates, &coords));
   }
   if (user->shearCoords) {
     /* x' = x + m y + m z, y' = y + m z,  z' = z */
-    ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-    ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-    ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+    CHKERRQ(DMGetCoordinateSection(dm, &coordSection));
+    CHKERRQ(DMGetCoordinatesLocal(dm, &coordinates));
+    CHKERRQ(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+    CHKERRQ(VecGetArray(coordinates, &coords));
     for (v = vStart; v < vEnd; ++v) {
       PetscInt  dof, off;
       PetscReal m = 1.0;
 
-      ierr = PetscSectionGetDof(coordSection, v, &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionGetDof(coordSection, v, &dof));
+      CHKERRQ(PetscSectionGetOffset(coordSection, v, &off));
       switch (dof) {
       case 2:
         coords[off+0] = coords[off+0] + m*coords[off+1];
@@ -214,7 +213,7 @@ static PetscErrorCode TransformCoordinates(DM dm, AppCtx *user)
         break;
       }
     }
-    ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(coordinates, &coords));
   }
   PetscFunctionReturn(0);
 }
@@ -223,60 +222,59 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscInt       dim = 2;
   PetscBool      simplex;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   if (user->useDA) {
     switch (dim) {
     case 2:
-      ierr = DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2, 2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, dm);CHKERRQ(ierr);
-      ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-      ierr = DMSetUp(*dm);CHKERRQ(ierr);
-      ierr = DMDASetVertexCoordinates(*dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
+      CHKERRQ(DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2, 2, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, dm));
+      CHKERRQ(DMSetFromOptions(*dm));
+      CHKERRQ(DMSetUp(*dm));
+      CHKERRQ(DMDASetVertexCoordinates(*dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
       break;
     default:
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot create structured mesh of dimension %d", dim);
     }
-    ierr = PetscObjectSetName((PetscObject) *dm, "Hexahedral Mesh");CHKERRQ(ierr);
+    CHKERRQ(PetscObjectSetName((PetscObject) *dm, "Hexahedral Mesh"));
   } else {
-    ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-    ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-    ierr = DMPlexDistributeSetDefault(*dm, PETSC_FALSE);CHKERRQ(ierr);
-    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+    CHKERRQ(DMCreate(comm, dm));
+    CHKERRQ(DMSetType(*dm, DMPLEX));
+    CHKERRQ(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
+    CHKERRQ(DMSetFromOptions(*dm));
 
-    ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
-    ierr = DMPlexIsSimplex(*dm, &simplex);CHKERRQ(ierr);
-    ierr = MPI_Bcast(&simplex, 1, MPIU_BOOL, 0, comm);CHKERRMPI(ierr);
+    CHKERRQ(DMGetDimension(*dm, &dim));
+    CHKERRQ(DMPlexIsSimplex(*dm, &simplex));
+    CHKERRMPI(MPI_Bcast(&simplex, 1, MPIU_BOOL, 0, comm));
     if (user->tree) {
       DM refTree, ncdm = NULL;
 
-      ierr = DMPlexCreateDefaultReferenceTree(comm,dim,simplex,&refTree);CHKERRQ(ierr);
-      ierr = DMViewFromOptions(refTree,NULL,"-reftree_dm_view");CHKERRQ(ierr);
-      ierr = DMPlexSetReferenceTree(*dm,refTree);CHKERRQ(ierr);
-      ierr = DMDestroy(&refTree);CHKERRQ(ierr);
-      ierr = DMPlexTreeRefineCell(*dm,user->treeCell,&ncdm);CHKERRQ(ierr);
+      CHKERRQ(DMPlexCreateDefaultReferenceTree(comm,dim,simplex,&refTree));
+      CHKERRQ(DMViewFromOptions(refTree,NULL,"-reftree_dm_view"));
+      CHKERRQ(DMPlexSetReferenceTree(*dm,refTree));
+      CHKERRQ(DMDestroy(&refTree));
+      CHKERRQ(DMPlexTreeRefineCell(*dm,user->treeCell,&ncdm));
       if (ncdm) {
-        ierr = DMDestroy(dm);CHKERRQ(ierr);
+        CHKERRQ(DMDestroy(dm));
         *dm = ncdm;
-        ierr = DMPlexSetRefinementUniform(*dm, PETSC_FALSE);CHKERRQ(ierr);
+        CHKERRQ(DMPlexSetRefinementUniform(*dm, PETSC_FALSE));
       }
-      ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "tree_");CHKERRQ(ierr);
-      ierr = DMPlexDistributeSetDefault(*dm, PETSC_FALSE);CHKERRQ(ierr);
-      ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-      ierr = DMViewFromOptions(*dm,NULL,"-dm_view");CHKERRQ(ierr);
+      CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, "tree_"));
+      CHKERRQ(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
+      CHKERRQ(DMSetFromOptions(*dm));
+      CHKERRQ(DMViewFromOptions(*dm,NULL,"-dm_view"));
     } else {
-      ierr = DMPlexSetRefinementUniform(*dm, PETSC_TRUE);CHKERRQ(ierr);
+      CHKERRQ(DMPlexSetRefinementUniform(*dm, PETSC_TRUE));
     }
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "dist_");CHKERRQ(ierr);
-    ierr = DMPlexDistributeSetDefault(*dm, PETSC_FALSE);CHKERRQ(ierr);
-    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL);CHKERRQ(ierr);
-    if (simplex) {ierr = PetscObjectSetName((PetscObject) *dm, "Simplicial Mesh");CHKERRQ(ierr);}
-    else         {ierr = PetscObjectSetName((PetscObject) *dm, "Hexahedral Mesh");CHKERRQ(ierr);}
+    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, "dist_"));
+    CHKERRQ(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
+    CHKERRQ(DMSetFromOptions(*dm));
+    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL));
+    if (simplex) CHKERRQ(PetscObjectSetName((PetscObject) *dm, "Simplicial Mesh"));
+    else         CHKERRQ(PetscObjectSetName((PetscObject) *dm, "Hexahedral Mesh"));
   }
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = TransformCoordinates(*dm, user);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm,NULL,"-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(TransformCoordinates(*dm, user));
+  CHKERRQ(DMViewFromOptions(*dm,NULL,"-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -318,8 +316,6 @@ static void symmetric_gradient_inner_product(PetscInt dim, PetscInt Nf, PetscInt
 
 static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   if (user->constraints) {
     /* test local constraints */
@@ -335,7 +331,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
     IS            aIS;
     MPI_Comm      comm = PetscObjectComm((PetscObject)dm);
 
-    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Comm_size(comm,&size));
     PetscCheckFalse(size > 1,comm,PETSC_ERR_SUP,"Local constraint test can only be performed in serial");
 
     /* we are going to test constraints by using them to enforce periodicity
@@ -344,46 +340,46 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 
     /* first create the coordinate section so that it does not clone the
      * constraints */
-    ierr = DMGetCoordinateDM(dm,&coordDM);CHKERRQ(ierr);
+    CHKERRQ(DMGetCoordinateDM(dm,&coordDM));
 
     /* create the constrained-to-anchor section */
-    ierr = DMPlexGetDepthStratum(dm,0,&vStart,&vEnd);CHKERRQ(ierr);
-    ierr = DMPlexGetDepthStratum(dm,1,&fStart,&fEnd);CHKERRQ(ierr);
-    ierr = PetscSectionCreate(PETSC_COMM_SELF,&aSec);CHKERRQ(ierr);
-    ierr = PetscSectionSetChart(aSec,PetscMin(fStart,vStart),PetscMax(fEnd,vEnd));CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetDepthStratum(dm,0,&vStart,&vEnd));
+    CHKERRQ(DMPlexGetDepthStratum(dm,1,&fStart,&fEnd));
+    CHKERRQ(PetscSectionCreate(PETSC_COMM_SELF,&aSec));
+    CHKERRQ(PetscSectionSetChart(aSec,PetscMin(fStart,vStart),PetscMax(fEnd,vEnd)));
 
     /* define the constraints */
-    ierr = PetscOptionsGetInt(NULL,NULL,"-da_grid_x",&edgesx,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(NULL,NULL,"-da_grid_y",&edgesy,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-da_grid_x",&edgesx,NULL));
+    CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-da_grid_y",&edgesy,NULL));
     vertsx = edgesx + 1;
     vertsy = edgesy + 1;
     numConst = vertsy + edgesy;
-    ierr = PetscMalloc1(numConst,&anchors);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(numConst,&anchors));
     offset = 0;
     for (v = vStart + edgesx; v < vEnd; v+= vertsx) {
-      ierr = PetscSectionSetDof(aSec,v,1);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionSetDof(aSec,v,1));
       anchors[offset++] = v - edgesx;
     }
     for (f = fStart + edgesx * vertsy + edgesx * edgesy; f < fEnd; f++) {
-      ierr = PetscSectionSetDof(aSec,f,1);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionSetDof(aSec,f,1));
       anchors[offset++] = f - edgesx * edgesy;
     }
-    ierr = PetscSectionSetUp(aSec);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,numConst,anchors,PETSC_OWN_POINTER,&aIS);CHKERRQ(ierr);
+    CHKERRQ(PetscSectionSetUp(aSec));
+    CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,numConst,anchors,PETSC_OWN_POINTER,&aIS));
 
-    ierr = DMPlexSetAnchors(dm,aSec,aIS);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&aSec);CHKERRQ(ierr);
-    ierr = ISDestroy(&aIS);CHKERRQ(ierr);
+    CHKERRQ(DMPlexSetAnchors(dm,aSec,aIS));
+    CHKERRQ(PetscSectionDestroy(&aSec));
+    CHKERRQ(ISDestroy(&aIS));
   }
-  ierr = DMSetNumFields(dm, 1);CHKERRQ(ierr);
-  ierr = DMSetField(dm, 0, NULL, (PetscObject) user->fe);CHKERRQ(ierr);
-  ierr = DMCreateDS(dm);CHKERRQ(ierr);
+  CHKERRQ(DMSetNumFields(dm, 1));
+  CHKERRQ(DMSetField(dm, 0, NULL, (PetscObject) user->fe));
+  CHKERRQ(DMCreateDS(dm));
   if (user->constraints) {
     /* test getting local constraint matrix that matches section */
     PetscSection aSec;
     IS           aIS;
 
-    ierr = DMPlexGetAnchors(dm,&aSec,&aIS);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetAnchors(dm,&aSec,&aIS));
     if (aSec) {
       PetscDS         ds;
       PetscSection    cSec, section;
@@ -392,61 +388,61 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
       Vec             local;
       const PetscInt *anchors;
 
-      ierr = DMGetLocalSection(dm,&section);CHKERRQ(ierr);
+      CHKERRQ(DMGetLocalSection(dm,&section));
       /* this creates the matrix and preallocates the matrix structure: we
        * just have to fill in the values */
-      ierr = DMGetDefaultConstraints(dm,&cSec,&cMat,NULL);CHKERRQ(ierr);
-      ierr = PetscSectionGetChart(cSec,&cStart,&cEnd);CHKERRQ(ierr);
-      ierr = ISGetIndices(aIS,&anchors);CHKERRQ(ierr);
-      ierr = PetscFEGetNumComponents(user->fe, &numComp);CHKERRQ(ierr);
+      CHKERRQ(DMGetDefaultConstraints(dm,&cSec,&cMat,NULL));
+      CHKERRQ(PetscSectionGetChart(cSec,&cStart,&cEnd));
+      CHKERRQ(ISGetIndices(aIS,&anchors));
+      CHKERRQ(PetscFEGetNumComponents(user->fe, &numComp));
       for (c = cStart; c < cEnd; c++) {
         PetscInt cDof;
 
         /* is this point constrained? (does it have an anchor?) */
-        ierr = PetscSectionGetDof(aSec,c,&cDof);CHKERRQ(ierr);
+        CHKERRQ(PetscSectionGetDof(aSec,c,&cDof));
         if (cDof) {
           PetscInt cOff, a, aDof, aOff, j;
           PetscCheckFalse(cDof != 1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Found %d anchor points: should be just one",cDof);
 
           /* find the anchor point */
-          ierr = PetscSectionGetOffset(aSec,c,&cOff);CHKERRQ(ierr);
+          CHKERRQ(PetscSectionGetOffset(aSec,c,&cOff));
           a    = anchors[cOff];
 
           /* find the constrained dofs (row in constraint matrix) */
-          ierr = PetscSectionGetDof(cSec,c,&cDof);CHKERRQ(ierr);
-          ierr = PetscSectionGetOffset(cSec,c,&cOff);CHKERRQ(ierr);
+          CHKERRQ(PetscSectionGetDof(cSec,c,&cDof));
+          CHKERRQ(PetscSectionGetOffset(cSec,c,&cOff));
 
           /* find the anchor dofs (column in constraint matrix) */
-          ierr = PetscSectionGetDof(section,a,&aDof);CHKERRQ(ierr);
-          ierr = PetscSectionGetOffset(section,a,&aOff);CHKERRQ(ierr);
+          CHKERRQ(PetscSectionGetDof(section,a,&aDof));
+          CHKERRQ(PetscSectionGetOffset(section,a,&aOff));
 
           PetscCheckFalse(cDof != aDof,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Point and anchor have different number of dofs: %d, %d",cDof,aDof);
           PetscCheckFalse(cDof % numComp,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Point dofs not divisible by field components: %d, %d",cDof,numComp);
 
           /* put in a simple equality constraint */
           for (j = 0; j < cDof; j++) {
-            ierr = MatSetValue(cMat,cOff+j,aOff+j,1.,INSERT_VALUES);CHKERRQ(ierr);
+            CHKERRQ(MatSetValue(cMat,cOff+j,aOff+j,1.,INSERT_VALUES));
           }
         }
       }
-      ierr = MatAssemblyBegin(cMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(cMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = ISRestoreIndices(aIS,&anchors);CHKERRQ(ierr);
+      CHKERRQ(MatAssemblyBegin(cMat,MAT_FINAL_ASSEMBLY));
+      CHKERRQ(MatAssemblyEnd(cMat,MAT_FINAL_ASSEMBLY));
+      CHKERRQ(ISRestoreIndices(aIS,&anchors));
 
       /* Now that we have constructed the constraint matrix, any FE matrix
        * that we construct will apply the constraints during construction */
 
-      ierr = DMCreateMatrix(dm,&mass);CHKERRQ(ierr);
+      CHKERRQ(DMCreateMatrix(dm,&mass));
       /* get a dummy local variable to serve as the solution */
-      ierr = DMGetLocalVector(dm,&local);CHKERRQ(ierr);
-      ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
+      CHKERRQ(DMGetLocalVector(dm,&local));
+      CHKERRQ(DMGetDS(dm,&ds));
       /* set the jacobian to be the mass matrix */
-      ierr = PetscDSSetJacobian(ds, 0, 0, simple_mass, NULL,  NULL, NULL);CHKERRQ(ierr);
+      CHKERRQ(PetscDSSetJacobian(ds, 0, 0, simple_mass, NULL,  NULL, NULL));
       /* build the mass matrix */
-      ierr = DMPlexSNESComputeJacobianFEM(dm,local,mass,mass,NULL);CHKERRQ(ierr);
-      ierr = MatView(mass,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      ierr = MatDestroy(&mass);CHKERRQ(ierr);
-      ierr = DMRestoreLocalVector(dm,&local);CHKERRQ(ierr);
+      CHKERRQ(DMPlexSNESComputeJacobianFEM(dm,local,mass,mass,NULL));
+      CHKERRQ(MatView(mass,PETSC_VIEWER_STDOUT_WORLD));
+      CHKERRQ(MatDestroy(&mass));
+      CHKERRQ(DMRestoreLocalVector(dm,&local));
     }
   }
   PetscFunctionReturn(0);
@@ -454,8 +450,6 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
 
 static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
   if (!user->useDA) {
     Vec          local;
@@ -467,47 +461,47 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
     Vec          res = NULL, localX, localRes;
     PetscDS      ds;
 
-    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+    CHKERRQ(DMGetDimension(dm, &dim));
     PetscCheckFalse(user->numComponents != dim,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "The number of components %d must be equal to the dimension %d for this test", user->numComponents, dim);
-    ierr = DMGetDS(dm,&ds);CHKERRQ(ierr);
-    ierr = PetscDSSetJacobian(ds,0,0,NULL,NULL,NULL,symmetric_gradient_inner_product);CHKERRQ(ierr);
-    ierr = DMCreateMatrix(dm,&E);CHKERRQ(ierr);
-    ierr = DMGetLocalVector(dm,&local);CHKERRQ(ierr);
-    ierr = DMPlexSNESComputeJacobianFEM(dm,local,E,E,NULL);CHKERRQ(ierr);
-    ierr = DMPlexCreateRigidBody(dm,0,&sp);CHKERRQ(ierr);
-    ierr = MatNullSpaceGetVecs(sp,&hasConst,&n,&vecs);CHKERRQ(ierr);
-    if (n) {ierr = VecDuplicate(vecs[0],&res);CHKERRQ(ierr);}
-    ierr = DMCreateLocalVector(dm,&localX);CHKERRQ(ierr);
-    ierr = DMCreateLocalVector(dm,&localRes);CHKERRQ(ierr);
+    CHKERRQ(DMGetDS(dm,&ds));
+    CHKERRQ(PetscDSSetJacobian(ds,0,0,NULL,NULL,NULL,symmetric_gradient_inner_product));
+    CHKERRQ(DMCreateMatrix(dm,&E));
+    CHKERRQ(DMGetLocalVector(dm,&local));
+    CHKERRQ(DMPlexSNESComputeJacobianFEM(dm,local,E,E,NULL));
+    CHKERRQ(DMPlexCreateRigidBody(dm,0,&sp));
+    CHKERRQ(MatNullSpaceGetVecs(sp,&hasConst,&n,&vecs));
+    if (n) CHKERRQ(VecDuplicate(vecs[0],&res));
+    CHKERRQ(DMCreateLocalVector(dm,&localX));
+    CHKERRQ(DMCreateLocalVector(dm,&localRes));
     for (i = 0; i < n; i++) { /* also test via matrix-free Jacobian application */
       PetscReal resNorm;
 
-      ierr = VecSet(localRes,0.);CHKERRQ(ierr);
-      ierr = VecSet(localX,0.);CHKERRQ(ierr);
-      ierr = VecSet(local,0.);CHKERRQ(ierr);
-      ierr = VecSet(res,0.);CHKERRQ(ierr);
-      ierr = DMGlobalToLocalBegin(dm,vecs[i],INSERT_VALUES,localX);CHKERRQ(ierr);
-      ierr = DMGlobalToLocalEnd(dm,vecs[i],INSERT_VALUES,localX);CHKERRQ(ierr);
-      ierr = DMSNESComputeJacobianAction(dm,local,localX,localRes,NULL);CHKERRQ(ierr);
-      ierr = DMLocalToGlobalBegin(dm,localRes,ADD_VALUES,res);CHKERRQ(ierr);
-      ierr = DMLocalToGlobalEnd(dm,localRes,ADD_VALUES,res);CHKERRQ(ierr);
-      ierr = VecNorm(res,NORM_2,&resNorm);CHKERRQ(ierr);
+      CHKERRQ(VecSet(localRes,0.));
+      CHKERRQ(VecSet(localX,0.));
+      CHKERRQ(VecSet(local,0.));
+      CHKERRQ(VecSet(res,0.));
+      CHKERRQ(DMGlobalToLocalBegin(dm,vecs[i],INSERT_VALUES,localX));
+      CHKERRQ(DMGlobalToLocalEnd(dm,vecs[i],INSERT_VALUES,localX));
+      CHKERRQ(DMSNESComputeJacobianAction(dm,local,localX,localRes,NULL));
+      CHKERRQ(DMLocalToGlobalBegin(dm,localRes,ADD_VALUES,res));
+      CHKERRQ(DMLocalToGlobalEnd(dm,localRes,ADD_VALUES,res));
+      CHKERRQ(VecNorm(res,NORM_2,&resNorm));
       if (resNorm > PETSC_SMALL) {
-        ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Symmetric gradient action null space vector %D residual: %E\n",i,resNorm);CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)dm),"Symmetric gradient action null space vector %D residual: %E\n",i,resNorm));
       }
     }
-    ierr = VecDestroy(&localRes);CHKERRQ(ierr);
-    ierr = VecDestroy(&localX);CHKERRQ(ierr);
-    ierr = VecDestroy(&res);CHKERRQ(ierr);
-    ierr = MatNullSpaceTest(sp,E,&isNullSpace);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&localRes));
+    CHKERRQ(VecDestroy(&localX));
+    CHKERRQ(VecDestroy(&res));
+    CHKERRQ(MatNullSpaceTest(sp,E,&isNullSpace));
     if (isNullSpace) {
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Symmetric gradient null space: PASS\n");CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)dm),"Symmetric gradient null space: PASS\n"));
     } else {
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Symmetric gradient null space: FAIL\n");CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)dm),"Symmetric gradient null space: FAIL\n"));
     }
-    ierr = MatNullSpaceDestroy(&sp);CHKERRQ(ierr);
-    ierr = MatDestroy(&E);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(dm,&local);CHKERRQ(ierr);
+    CHKERRQ(MatNullSpaceDestroy(&sp));
+    CHKERRQ(MatDestroy(&E));
+    CHKERRQ(DMRestoreLocalVector(dm,&local));
   }
   PetscFunctionReturn(0);
 }
@@ -516,20 +510,19 @@ static PetscErrorCode TestInjector(DM dm, AppCtx *user)
 {
   DM             refTree;
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetReferenceTree(dm,&refTree));
   if (refTree) {
     Mat inj;
 
-    ierr = DMPlexComputeInjectorReferenceTree(refTree,&inj);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)inj,"Reference Tree Injector");CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+    CHKERRQ(DMPlexComputeInjectorReferenceTree(refTree,&inj));
+    CHKERRQ(PetscObjectSetName((PetscObject)inj,"Reference Tree Injector"));
+    CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
     if (rank == 0) {
-      ierr = MatView(inj,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      CHKERRQ(MatView(inj,PETSC_VIEWER_STDOUT_SELF));
     }
-    ierr = MatDestroy(&inj);CHKERRQ(ierr);
+    CHKERRQ(MatDestroy(&inj));
   }
   PetscFunctionReturn(0);
 }
@@ -544,44 +537,43 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   Vec               cellgeom, grad, locGrad;
   const PetscScalar *cgeom;
   PetscReal         allVecMaxDiff = 0., fvTol = 100. * PETSC_MACHINE_EPSILON;
-  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   comm = PetscObjectComm((PetscObject)dm);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm, &dim));
   /* duplicate DM, give dup. a FV discretization */
-  ierr = DMSetBasicAdjacency(dm,PETSC_TRUE,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  CHKERRQ(DMSetBasicAdjacency(dm,PETSC_TRUE,PETSC_FALSE));
+  CHKERRMPI(MPI_Comm_size(comm,&size));
   dmRedist = NULL;
   if (size > 1) {
-    ierr = DMPlexDistributeOverlap(dm,1,NULL,&dmRedist);CHKERRQ(ierr);
+    CHKERRQ(DMPlexDistributeOverlap(dm,1,NULL,&dmRedist));
   }
   if (!dmRedist) {
     dmRedist = dm;
-    ierr = PetscObjectReference((PetscObject)dmRedist);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectReference((PetscObject)dmRedist));
   }
-  ierr = PetscFVCreate(comm,&fv);CHKERRQ(ierr);
-  ierr = PetscFVSetType(fv,PETSCFVLEASTSQUARES);CHKERRQ(ierr);
-  ierr = PetscFVSetNumComponents(fv,user->numComponents);CHKERRQ(ierr);
-  ierr = PetscFVSetSpatialDimension(fv,dim);CHKERRQ(ierr);
-  ierr = PetscFVSetFromOptions(fv);CHKERRQ(ierr);
-  ierr = PetscFVSetUp(fv);CHKERRQ(ierr);
-  ierr = DMPlexConstructGhostCells(dmRedist,NULL,NULL,&dmfv);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmRedist);CHKERRQ(ierr);
-  ierr = DMSetNumFields(dmfv,1);CHKERRQ(ierr);
-  ierr = DMSetField(dmfv, 0, NULL, (PetscObject) fv);CHKERRQ(ierr);
-  ierr = DMCreateDS(dmfv);CHKERRQ(ierr);
-  ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
-  if (refTree) {ierr = DMCopyDisc(dmfv,refTree);CHKERRQ(ierr);}
-  ierr = DMPlexGetGradientDM(dmfv, fv, &dmgrad);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dmfv,0,&cStart,&cEnd);CHKERRQ(ierr);
+  CHKERRQ(PetscFVCreate(comm,&fv));
+  CHKERRQ(PetscFVSetType(fv,PETSCFVLEASTSQUARES));
+  CHKERRQ(PetscFVSetNumComponents(fv,user->numComponents));
+  CHKERRQ(PetscFVSetSpatialDimension(fv,dim));
+  CHKERRQ(PetscFVSetFromOptions(fv));
+  CHKERRQ(PetscFVSetUp(fv));
+  CHKERRQ(DMPlexConstructGhostCells(dmRedist,NULL,NULL,&dmfv));
+  CHKERRQ(DMDestroy(&dmRedist));
+  CHKERRQ(DMSetNumFields(dmfv,1));
+  CHKERRQ(DMSetField(dmfv, 0, NULL, (PetscObject) fv));
+  CHKERRQ(DMCreateDS(dmfv));
+  CHKERRQ(DMPlexGetReferenceTree(dm,&refTree));
+  if (refTree) CHKERRQ(DMCopyDisc(dmfv,refTree));
+  CHKERRQ(DMPlexGetGradientDM(dmfv, fv, &dmgrad));
+  CHKERRQ(DMPlexGetHeightStratum(dmfv,0,&cStart,&cEnd));
   nvecs = dim * (dim+1) / 2;
-  ierr = DMPlexGetGeometryFVM(dmfv,NULL,&cellgeom,NULL);CHKERRQ(ierr);
-  ierr = VecGetDM(cellgeom,&dmCell);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dmgrad,&grad);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dmgrad,&locGrad);CHKERRQ(ierr);
-  ierr = DMPlexGetGhostCellStratum(dmgrad,&cEndInterior,NULL);CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetGeometryFVM(dmfv,NULL,&cellgeom,NULL));
+  CHKERRQ(VecGetDM(cellgeom,&dmCell));
+  CHKERRQ(VecGetArrayRead(cellgeom,&cgeom));
+  CHKERRQ(DMGetGlobalVector(dmgrad,&grad));
+  CHKERRQ(DMGetLocalVector(dmgrad,&locGrad));
+  CHKERRQ(DMPlexGetGhostCellStratum(dmgrad,&cEndInterior,NULL));
   cEndInterior = (cEndInterior < 0) ? cEnd: cEndInterior;
   for (v = 0; v < nvecs; v++) {
     Vec               locX;
@@ -590,13 +582,13 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
     const PetscScalar *gradArray;
     PetscReal         maxDiff, maxDiffGlob;
 
-    ierr = DMGetLocalVector(dmfv,&locX);CHKERRQ(ierr);
+    CHKERRQ(DMGetLocalVector(dmfv,&locX));
     /* get the local projection of the rigid body mode */
     for (c = cStart; c < cEnd; c++) {
       PetscFVCellGeom *cg;
       PetscScalar     cx[3] = {0.,0.,0.};
 
-      ierr = DMPlexPointLocalRead(dmCell, c, cgeom, &cg);CHKERRQ(ierr);
+      CHKERRQ(DMPlexPointLocalRead(dmCell, c, cgeom, &cg));
       if (v < dim) {
         cx[v] = 1.;
       } else {
@@ -605,13 +597,13 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
         cx[(w + 1) % dim] =  cg->centroid[(w + 2) % dim];
         cx[(w + 2) % dim] = -cg->centroid[(w + 1) % dim];
       }
-      ierr = DMPlexVecSetClosure(dmfv,NULL,locX,c,cx,INSERT_ALL_VALUES);CHKERRQ(ierr);
+      CHKERRQ(DMPlexVecSetClosure(dmfv,NULL,locX,c,cx,INSERT_ALL_VALUES));
     }
     /* TODO: this isn't in any header */
-    ierr = DMPlexReconstructGradientsFVM(dmfv,locX,grad);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalBegin(dmgrad,grad,INSERT_VALUES,locGrad);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd(dmgrad,grad,INSERT_VALUES,locGrad);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(locGrad,&gradArray);CHKERRQ(ierr);
+    CHKERRQ(DMPlexReconstructGradientsFVM(dmfv,locX,grad));
+    CHKERRQ(DMGlobalToLocalBegin(dmgrad,grad,INSERT_VALUES,locGrad));
+    CHKERRQ(DMGlobalToLocalEnd(dmgrad,grad,INSERT_VALUES,locGrad));
+    CHKERRQ(VecGetArrayRead(locGrad,&gradArray));
     /* compare computed gradient to exact gradient */
     if (v >= dim) {
       PetscInt w = v - dim;
@@ -625,7 +617,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
       PetscInt    i, j, k;
       PetscReal   FrobDiff = 0.;
 
-      ierr = DMPlexPointLocalRead(dmgrad, c, gradArray, &compGrad);CHKERRQ(ierr);
+      CHKERRQ(DMPlexPointLocalRead(dmgrad, c, gradArray, &compGrad));
 
       for (i = 0, k = 0; i < dim; i++) {
         for (j = 0; j < dim; j++, k++) {
@@ -636,21 +628,21 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
       FrobDiff = PetscSqrtReal(FrobDiff);
       maxDiff  = PetscMax(maxDiff,FrobDiff);
     }
-    ierr = MPI_Allreduce(&maxDiff,&maxDiffGlob,1,MPIU_REAL,MPIU_MAX,comm);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Allreduce(&maxDiff,&maxDiffGlob,1,MPIU_REAL,MPIU_MAX,comm));
     allVecMaxDiff = PetscMax(allVecMaxDiff,maxDiffGlob);
-    ierr = VecRestoreArrayRead(locGrad,&gradArray);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(dmfv,&locX);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArrayRead(locGrad,&gradArray));
+    CHKERRQ(DMRestoreLocalVector(dmfv,&locX));
   }
   if (allVecMaxDiff < fvTol) {
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Finite volume gradient reconstruction: PASS\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)dm),"Finite volume gradient reconstruction: PASS\n"));
   } else {
-    ierr = PetscPrintf(PetscObjectComm((PetscObject)dm),"Finite volume gradient reconstruction: FAIL at tolerance %g with max difference %g\n",fvTol,allVecMaxDiff);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)dm),"Finite volume gradient reconstruction: FAIL at tolerance %g with max difference %g\n",fvTol,allVecMaxDiff));
   }
-  ierr = DMRestoreLocalVector(dmgrad,&locGrad);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dmgrad,&grad);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(cellgeom,&cgeom);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmfv);CHKERRQ(ierr);
-  ierr = PetscFVDestroy(&fv);CHKERRQ(ierr);
+  CHKERRQ(DMRestoreLocalVector(dmgrad,&locGrad));
+  CHKERRQ(DMRestoreGlobalVector(dmgrad,&grad));
+  CHKERRQ(VecRestoreArrayRead(cellgeom,&cgeom));
+  CHKERRQ(DMDestroy(&dmfv));
+  CHKERRQ(PetscFVDestroy(&fv));
   PetscFunctionReturn(0);
 }
 
@@ -660,17 +652,16 @@ static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt
 {
   Vec            u;
   PetscReal      n[3] = {1.0, 1.0, 1.0};
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
+  CHKERRQ(DMGetGlobalVector(dm, &u));
   /* Project function into FE function space */
-  ierr = DMProjectFunction(dm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(u, NULL, "-projection_view");CHKERRQ(ierr);
+  CHKERRQ(DMProjectFunction(dm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, u));
+  CHKERRQ(VecViewFromOptions(u, NULL, "-projection_view"));
   /* Compare approximation to exact in L_2 */
-  ierr = DMComputeL2Diff(dm, 0.0, exactFuncs, exactCtxs, u, error);CHKERRQ(ierr);
-  ierr = DMComputeL2GradientDiff(dm, 0.0, exactFuncDers, exactCtxs, u, n, errorDer);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
+  CHKERRQ(DMComputeL2Diff(dm, 0.0, exactFuncs, exactCtxs, u, error));
+  CHKERRQ(DMComputeL2GradientDiff(dm, 0.0, exactFuncDers, exactCtxs, u, n, errorDer));
+  CHKERRQ(DMRestoreGlobalVector(dm, &u));
   PetscFunctionReturn(0);
 }
 
@@ -681,13 +672,12 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
   void            *exactCtxs[3];
   MPI_Comm         comm;
   PetscReal        error, errorDer, tol = PETSC_SMALL;
-  PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
   exactCtxs[0]       = user;
   exactCtxs[1]       = user;
   exactCtxs[2]       = user;
-  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)dm, &comm));
   /* Setup functions to approximate */
   switch (order) {
   case 0:
@@ -709,12 +699,12 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
   default:
     SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine functions to test for order %d", order);
   }
-  ierr = ComputeError(dm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user);CHKERRQ(ierr);
+  CHKERRQ(ComputeError(dm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user));
   /* Report result */
-  if (error > tol)    {ierr = PetscPrintf(comm, "Function tests FAIL for order %D at tolerance %g error %g\n", order, (double)tol,(double) error);CHKERRQ(ierr);}
-  else                {ierr = PetscPrintf(comm, "Function tests pass for order %D at tolerance %g\n", order, (double)tol);CHKERRQ(ierr);}
-  if (errorDer > tol) {ierr = PetscPrintf(comm, "Function tests FAIL for order %D derivatives at tolerance %g error %g\n", order, (double)tol, (double)errorDer);CHKERRQ(ierr);}
-  else                {ierr = PetscPrintf(comm, "Function tests pass for order %D derivatives at tolerance %g\n", order, (double)tol);CHKERRQ(ierr);}
+  if (error > tol)    CHKERRQ(PetscPrintf(comm, "Function tests FAIL for order %D at tolerance %g error %g\n", order, (double)tol,(double) error));
+  else                CHKERRQ(PetscPrintf(comm, "Function tests pass for order %D at tolerance %g\n", order, (double)tol));
+  if (errorDer > tol) CHKERRQ(PetscPrintf(comm, "Function tests FAIL for order %D derivatives at tolerance %g error %g\n", order, (double)tol, (double)errorDer));
+  else                CHKERRQ(PetscPrintf(comm, "Function tests pass for order %D derivatives at tolerance %g\n", order, (double)tol));
   PetscFunctionReturn(0);
 }
 
@@ -730,24 +720,23 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   MPI_Comm        comm;
   PetscInt        dim;
   PetscReal       error, errorDer, tol = PETSC_SMALL;
-  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   exactCtxs[0]       = user;
   exactCtxs[1]       = user;
   exactCtxs[2]       = user;
-  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMRefine(dm, comm, &rdm);CHKERRQ(ierr);
-  ierr = DMSetCoarseDM(rdm, dm);CHKERRQ(ierr);
-  ierr = DMPlexSetRegularRefinement(rdm, user->convRefine);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)dm,&comm));
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(DMRefine(dm, comm, &rdm));
+  CHKERRQ(DMSetCoarseDM(rdm, dm));
+  CHKERRQ(DMPlexSetRegularRefinement(rdm, user->convRefine));
   if (user->tree) {
     DM refTree;
-    ierr = DMPlexGetReferenceTree(dm,&refTree);CHKERRQ(ierr);
-    ierr = DMPlexSetReferenceTree(rdm,refTree);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetReferenceTree(dm,&refTree));
+    CHKERRQ(DMPlexSetReferenceTree(rdm,refTree));
   }
-  if (user->useDA) {ierr = DMDASetVertexCoordinates(rdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
-  ierr = SetupSection(rdm, user);CHKERRQ(ierr);
+  if (user->useDA) CHKERRQ(DMDASetVertexCoordinates(rdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
+  CHKERRQ(SetupSection(rdm, user));
   /* Setup functions to approximate */
   switch (order) {
   case 0:
@@ -771,29 +760,29 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   }
   idm  = checkRestrict ? rdm :  dm;
   fdm  = checkRestrict ?  dm : rdm;
-  ierr = DMGetGlobalVector(idm, &iu);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(fdm, &fu);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(dm, user);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(rdm, user);CHKERRQ(ierr);
-  ierr = DMCreateInterpolation(dm, rdm, &Interp, &scaling);CHKERRQ(ierr);
+  CHKERRQ(DMGetGlobalVector(idm, &iu));
+  CHKERRQ(DMGetGlobalVector(fdm, &fu));
+  CHKERRQ(DMSetApplicationContext(dm, user));
+  CHKERRQ(DMSetApplicationContext(rdm, user));
+  CHKERRQ(DMCreateInterpolation(dm, rdm, &Interp, &scaling));
   /* Project function into initial FE function space */
-  ierr = DMProjectFunction(idm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, iu);CHKERRQ(ierr);
+  CHKERRQ(DMProjectFunction(idm, 0.0, exactFuncs, exactCtxs, INSERT_ALL_VALUES, iu));
   /* Interpolate function into final FE function space */
-  if (checkRestrict) {ierr = MatRestrict(Interp, iu, fu);CHKERRQ(ierr);ierr = VecPointwiseMult(fu, scaling, fu);CHKERRQ(ierr);}
-  else               {ierr = MatInterpolate(Interp, iu, fu);CHKERRQ(ierr);}
+  if (checkRestrict) {CHKERRQ(MatRestrict(Interp, iu, fu));CHKERRQ(VecPointwiseMult(fu, scaling, fu));}
+  else               CHKERRQ(MatInterpolate(Interp, iu, fu));
   /* Compare approximation to exact in L_2 */
-  ierr = DMComputeL2Diff(fdm, 0.0, exactFuncs, exactCtxs, fu, &error);CHKERRQ(ierr);
-  ierr = DMComputeL2GradientDiff(fdm, 0.0, exactFuncDers, exactCtxs, fu, n, &errorDer);CHKERRQ(ierr);
+  CHKERRQ(DMComputeL2Diff(fdm, 0.0, exactFuncs, exactCtxs, fu, &error));
+  CHKERRQ(DMComputeL2GradientDiff(fdm, 0.0, exactFuncDers, exactCtxs, fu, n, &errorDer));
   /* Report result */
-  if (error > tol)    {ierr = PetscPrintf(comm, "Interpolation tests FAIL for order %D at tolerance %g error %g\n", order, (double)tol, (double)error);CHKERRQ(ierr);}
-  else                {ierr = PetscPrintf(comm, "Interpolation tests pass for order %D at tolerance %g\n", order, (double)tol);CHKERRQ(ierr);}
-  if (errorDer > tol) {ierr = PetscPrintf(comm, "Interpolation tests FAIL for order %D derivatives at tolerance %g error %g\n", order, (double)tol, (double)errorDer);CHKERRQ(ierr);}
-  else                {ierr = PetscPrintf(comm, "Interpolation tests pass for order %D derivatives at tolerance %g\n", order, (double)tol);CHKERRQ(ierr);}
-  ierr = DMRestoreGlobalVector(idm, &iu);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(fdm, &fu);CHKERRQ(ierr);
-  ierr = MatDestroy(&Interp);CHKERRQ(ierr);
-  ierr = VecDestroy(&scaling);CHKERRQ(ierr);
-  ierr = DMDestroy(&rdm);CHKERRQ(ierr);
+  if (error > tol)    CHKERRQ(PetscPrintf(comm, "Interpolation tests FAIL for order %D at tolerance %g error %g\n", order, (double)tol, (double)error));
+  else                CHKERRQ(PetscPrintf(comm, "Interpolation tests pass for order %D at tolerance %g\n", order, (double)tol));
+  if (errorDer > tol) CHKERRQ(PetscPrintf(comm, "Interpolation tests FAIL for order %D derivatives at tolerance %g error %g\n", order, (double)tol, (double)errorDer));
+  else                CHKERRQ(PetscPrintf(comm, "Interpolation tests pass for order %D derivatives at tolerance %g\n", order, (double)tol));
+  CHKERRQ(DMRestoreGlobalVector(idm, &iu));
+  CHKERRQ(DMRestoreGlobalVector(fdm, &fu));
+  CHKERRQ(MatDestroy(&Interp));
+  CHKERRQ(VecDestroy(&scaling));
+  CHKERRQ(DMDestroy(&rdm));
   PetscFunctionReturn(0);
 }
 
@@ -806,64 +795,63 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
   PetscInt         r, c, cStart, cEnd;
   PetscReal        errorOld, errorDerOld, error, errorDer, rel, len, lenOld;
   double           p;
-  PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
   if (!user->convergence) PetscFunctionReturn(0);
   exactCtxs[0] = user;
   exactCtxs[1] = user;
   exactCtxs[2] = user;
-  ierr = PetscObjectReference((PetscObject) odm);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectReference((PetscObject) odm));
   if (!user->convRefine) {
     for (r = 0; r < Nr; ++r) {
-      ierr = DMRefine(odm, PetscObjectComm((PetscObject) dm), &rdm);CHKERRQ(ierr);
-      ierr = DMDestroy(&odm);CHKERRQ(ierr);
+      CHKERRQ(DMRefine(odm, PetscObjectComm((PetscObject) dm), &rdm));
+      CHKERRQ(DMDestroy(&odm));
       odm  = rdm;
     }
-    ierr = SetupSection(odm, user);CHKERRQ(ierr);
+    CHKERRQ(SetupSection(odm, user));
   }
-  ierr = ComputeError(odm, exactFuncs, exactFuncDers, exactCtxs, &errorOld, &errorDerOld, user);CHKERRQ(ierr);
+  CHKERRQ(ComputeError(odm, exactFuncs, exactFuncDers, exactCtxs, &errorOld, &errorDerOld, user));
   if (user->convRefine) {
     for (r = 0; r < Nr; ++r) {
-      ierr = DMRefine(odm, PetscObjectComm((PetscObject) dm), &rdm);CHKERRQ(ierr);
-      if (user->useDA) {ierr = DMDASetVertexCoordinates(rdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
-      ierr = SetupSection(rdm, user);CHKERRQ(ierr);
-      ierr = ComputeError(rdm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user);CHKERRQ(ierr);
+      CHKERRQ(DMRefine(odm, PetscObjectComm((PetscObject) dm), &rdm));
+      if (user->useDA) CHKERRQ(DMDASetVertexCoordinates(rdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
+      CHKERRQ(SetupSection(rdm, user));
+      CHKERRQ(ComputeError(rdm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user));
       p    = PetscLog2Real(errorOld/error);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Function   convergence rate at refinement %D: %.2f\n", r, (double)p);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject) dm), "Function   convergence rate at refinement %D: %.2f\n", r, (double)p));
       p    = PetscLog2Real(errorDerOld/errorDer);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Derivative convergence rate at refinement %D: %.2f\n", r, (double)p);CHKERRQ(ierr);
-      ierr = DMDestroy(&odm);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject) dm), "Derivative convergence rate at refinement %D: %.2f\n", r, (double)p));
+      CHKERRQ(DMDestroy(&odm));
       odm         = rdm;
       errorOld    = error;
       errorDerOld = errorDer;
     }
   } else {
-    /* ierr = ComputeLongestEdge(dm, &lenOld);CHKERRQ(ierr); */
-    ierr = DMPlexGetHeightStratum(odm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+    /* CHKERRQ(ComputeLongestEdge(dm, &lenOld)); */
+    CHKERRQ(DMPlexGetHeightStratum(odm, 0, &cStart, &cEnd));
     lenOld = cEnd - cStart;
     for (c = 0; c < Nr; ++c) {
-      ierr = DMCoarsen(odm, PetscObjectComm((PetscObject) dm), &cdm);CHKERRQ(ierr);
-      if (user->useDA) {ierr = DMDASetVertexCoordinates(cdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);}
-      ierr = SetupSection(cdm, user);CHKERRQ(ierr);
-      ierr = ComputeError(cdm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user);CHKERRQ(ierr);
-      /* ierr = ComputeLongestEdge(cdm, &len);CHKERRQ(ierr); */
-      ierr = DMPlexGetHeightStratum(cdm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+      CHKERRQ(DMCoarsen(odm, PetscObjectComm((PetscObject) dm), &cdm));
+      if (user->useDA) CHKERRQ(DMDASetVertexCoordinates(cdm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
+      CHKERRQ(SetupSection(cdm, user));
+      CHKERRQ(ComputeError(cdm, exactFuncs, exactFuncDers, exactCtxs, &error, &errorDer, user));
+      /* CHKERRQ(ComputeLongestEdge(cdm, &len)); */
+      CHKERRQ(DMPlexGetHeightStratum(cdm, 0, &cStart, &cEnd));
       len  = cEnd - cStart;
       rel  = error/errorOld;
       p    = PetscLogReal(rel) / PetscLogReal(lenOld / len);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Function   convergence rate at coarsening %D: %.2f\n", c, (double)p);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject) dm), "Function   convergence rate at coarsening %D: %.2f\n", c, (double)p));
       rel  = errorDer/errorDerOld;
       p    = PetscLogReal(rel) / PetscLogReal(lenOld / len);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Derivative convergence rate at coarsening %D: %.2f\n", c, (double)p);CHKERRQ(ierr);
-      ierr = DMDestroy(&odm);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject) dm), "Derivative convergence rate at coarsening %D: %.2f\n", c, (double)p));
+      CHKERRQ(DMDestroy(&odm));
       odm         = cdm;
       errorOld    = error;
       errorDerOld = errorDer;
       lenOld      = len;
     }
   }
-  ierr = DMDestroy(&odm);CHKERRQ(ierr);
+  CHKERRQ(DMDestroy(&odm));
   PetscFunctionReturn(0);
 }
 
@@ -876,34 +864,34 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
+  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
   if (!user.useDA) {
-    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-    ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
+    CHKERRQ(DMGetDimension(dm, &dim));
+    CHKERRQ(DMPlexIsSimplex(dm, &simplex));
   }
-  ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  CHKERRQ(DMPlexMetricSetFromOptions(dm));
   user.numComponents = user.numComponents < 0 ? dim : user.numComponents;
-  ierr = PetscFECreateDefault(PETSC_COMM_WORLD, dim, user.numComponents, simplex, NULL, user.qorder, &user.fe);CHKERRQ(ierr);
-  ierr = SetupSection(dm, &user);CHKERRQ(ierr);
-  if (user.testFEjacobian) {ierr = TestFEJacobian(dm, &user);CHKERRQ(ierr);}
-  if (user.testFVgrad) {ierr = TestFVGrad(dm, &user);CHKERRQ(ierr);}
-  if (user.testInjector) {ierr = TestInjector(dm, &user);CHKERRQ(ierr);}
-  ierr = CheckFunctions(dm, user.porder, &user);CHKERRQ(ierr);
+  CHKERRQ(PetscFECreateDefault(PETSC_COMM_WORLD, dim, user.numComponents, simplex, NULL, user.qorder, &user.fe));
+  CHKERRQ(SetupSection(dm, &user));
+  if (user.testFEjacobian) CHKERRQ(TestFEJacobian(dm, &user));
+  if (user.testFVgrad) CHKERRQ(TestFVGrad(dm, &user));
+  if (user.testInjector) CHKERRQ(TestInjector(dm, &user));
+  CHKERRQ(CheckFunctions(dm, user.porder, &user));
   {
     PetscDualSpace dsp;
     PetscInt       k;
 
-    ierr = PetscFEGetDualSpace(user.fe, &dsp);CHKERRQ(ierr);
-    ierr = PetscDualSpaceGetDeRahm(dsp, &k);CHKERRQ(ierr);
+    CHKERRQ(PetscFEGetDualSpace(user.fe, &dsp));
+    CHKERRQ(PetscDualSpaceGetDeRahm(dsp, &k));
     if (dim == 2 && simplex == PETSC_TRUE && user.tree == PETSC_FALSE && k == 0) {
-      ierr = CheckInterpolation(dm, PETSC_FALSE, user.porder, &user);CHKERRQ(ierr);
-      ierr = CheckInterpolation(dm, PETSC_TRUE,  user.porder, &user);CHKERRQ(ierr);
+      CHKERRQ(CheckInterpolation(dm, PETSC_FALSE, user.porder, &user));
+      CHKERRQ(CheckInterpolation(dm, PETSC_TRUE,  user.porder, &user));
     }
   }
-  ierr = CheckConvergence(dm, 3, &user);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&user.fe);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(CheckConvergence(dm, 3, &user));
+  CHKERRQ(PetscFEDestroy(&user.fe));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

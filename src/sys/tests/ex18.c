@@ -9,8 +9,8 @@ int main(int argc,char **argv)
   PetscContainer container;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
-  ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+  CHKERRQ(PetscContainerCreate(PETSC_COMM_SELF,&container));
+  CHKERRQ(PetscContainerDestroy(&container));
   ierr = PetscFinalize();
   return ierr;
 }

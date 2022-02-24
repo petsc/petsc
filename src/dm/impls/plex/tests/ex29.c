@@ -19,65 +19,64 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->overlap = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-overlap", "The cell overlap for partitioning", "ex29.c", options->overlap, &options->overlap, NULL,0);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBoundedInt("-overlap", "The cell overlap for partitioning", "ex29.c", options->overlap, &options->overlap, NULL,0));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("MeshLoad",       &options->stages[STAGE_LOAD]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("MeshDistribute", &options->stages[STAGE_DISTRIBUTE]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("MeshRefine",     &options->stages[STAGE_REFINE]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("MeshOverlap",    &options->stages[STAGE_OVERLAP]);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent));
+  CHKERRQ(PetscLogStageRegister("MeshLoad",       &options->stages[STAGE_LOAD]));
+  CHKERRQ(PetscLogStageRegister("MeshDistribute", &options->stages[STAGE_DISTRIBUTE]));
+  CHKERRQ(PetscLogStageRegister("MeshRefine",     &options->stages[STAGE_REFINE]));
+  CHKERRQ(PetscLogStageRegister("MeshOverlap",    &options->stages[STAGE_OVERLAP]));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
   PetscMPIInt    rank, size;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
-  ierr = PetscLogStagePush(user->stages[STAGE_LOAD]);CHKERRQ(ierr);
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(user->createMeshEvent,0,0,0,0));
+  CHKERRMPI(MPI_Comm_rank(comm, &rank));
+  CHKERRMPI(MPI_Comm_size(comm, &size));
+  CHKERRQ(PetscLogStagePush(user->stages[STAGE_LOAD]));
+  CHKERRQ(DMCreate(comm, dm));
+  CHKERRQ(DMSetType(*dm, DMPLEX));
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(PetscLogStagePop());
   {
     DM               pdm = NULL;
     PetscPartitioner part;
 
-    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetPartitioner(*dm, &part));
+    CHKERRQ(PetscPartitionerSetFromOptions(part));
     /* Distribute mesh over processes */
-    ierr = PetscLogStagePush(user->stages[STAGE_DISTRIBUTE]);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(*dm, 0, NULL, &pdm);CHKERRQ(ierr);
+    CHKERRQ(PetscLogStagePush(user->stages[STAGE_DISTRIBUTE]));
+    CHKERRQ(DMPlexDistribute(*dm, 0, NULL, &pdm));
     if (pdm) {
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      CHKERRQ(DMDestroy(dm));
       *dm  = pdm;
     }
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
+    CHKERRQ(PetscLogStagePop());
   }
-  ierr = PetscLogStagePush(user->stages[STAGE_REFINE]);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "post_");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "");CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  CHKERRQ(PetscLogStagePush(user->stages[STAGE_REFINE]));
+  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, "post_"));
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) *dm, ""));
+  CHKERRQ(PetscLogStagePop());
   if (user->overlap) {
     DM odm = NULL;
     /* Add the level-1 overlap to refined mesh */
-    ierr = PetscLogStagePush(user->stages[STAGE_OVERLAP]);CHKERRQ(ierr);
-    ierr = DMPlexDistributeOverlap(*dm, 1, NULL, &odm);CHKERRQ(ierr);
+    CHKERRQ(PetscLogStagePush(user->stages[STAGE_OVERLAP]));
+    CHKERRQ(DMPlexDistributeOverlap(*dm, 1, NULL, &odm));
     if (odm) {
-      ierr = DMView(odm, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      ierr = DMDestroy(dm);CHKERRQ(ierr);
+      CHKERRQ(DMView(odm, PETSC_VIEWER_STDOUT_WORLD));
+      CHKERRQ(DMDestroy(dm));
       *dm = odm;
     }
-    ierr = PetscLogStagePop();CHKERRQ(ierr);
+    CHKERRQ(PetscLogStagePop());
   }
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(user->createMeshEvent,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  CHKERRQ(PetscLogEventEnd(user->createMeshEvent,0,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -89,14 +88,14 @@ int main(int argc, char **argv)
   PetscPartitioner part;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = DMPlexGetPartitioner(dm, &part);CHKERRQ(ierr);
-  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-  ierr = DMPlexDistribute(dm, user.overlap, NULL, &pdm);CHKERRQ(ierr);
-  if (pdm) {ierr = DMViewFromOptions(pdm, NULL, "-pdm_view");CHKERRQ(ierr);}
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = DMDestroy(&pdm);CHKERRQ(ierr);
+  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  CHKERRQ(DMPlexGetPartitioner(dm, &part));
+  CHKERRQ(PetscPartitionerSetFromOptions(part));
+  CHKERRQ(DMPlexDistribute(dm, user.overlap, NULL, &pdm));
+  if (pdm) CHKERRQ(DMViewFromOptions(pdm, NULL, "-pdm_view"));
+  CHKERRQ(DMDestroy(&dm));
+  CHKERRQ(DMDestroy(&pdm));
   ierr = PetscFinalize();
   return ierr;
 }

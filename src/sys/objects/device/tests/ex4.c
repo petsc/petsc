@@ -7,19 +7,18 @@ static PetscErrorCode TestNestedPetscDeviceContextForkJoin(PetscDeviceContext pa
 {
   const PetscInt      nsub = 4;
   PetscDeviceContext *subsub;
-  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   PetscValidDeviceContext(parCtx,1);
   PetscValidPointer(sub,2);
-  ierr = AssertPetscDeviceContextsValidAndEqual(parCtx,sub[0],"Current global context does not match expected global context");CHKERRQ(ierr);
+  CHKERRQ(AssertPetscDeviceContextsValidAndEqual(parCtx,sub[0],"Current global context does not match expected global context"));
   /* create some children from an active child */
-  ierr = PetscDeviceContextFork(sub[1],nsub,&subsub);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceContextFork(sub[1],nsub,&subsub));
   /* join on a sibling to the parent */
-  ierr = PetscDeviceContextJoin(sub[2],nsub-2,PETSC_DEVICE_CONTEXT_JOIN_SYNC,&subsub);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceContextJoin(sub[2],nsub-2,PETSC_DEVICE_CONTEXT_JOIN_SYNC,&subsub));
   /* join on the grandparent */
-  ierr = PetscDeviceContextJoin(parCtx,nsub-2,PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC,&subsub);CHKERRQ(ierr);
-  ierr = PetscDeviceContextJoin(sub[1],nsub,PETSC_DEVICE_CONTEXT_JOIN_DESTROY,&subsub);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceContextJoin(parCtx,nsub-2,PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC,&subsub));
+  CHKERRQ(PetscDeviceContextJoin(sub[1],nsub,PETSC_DEVICE_CONTEXT_JOIN_DESTROY,&subsub));
   PetscFunctionReturn(0);
 }
 
@@ -28,25 +27,24 @@ static PetscErrorCode TestPetscDeviceContextForkJoin(PetscDeviceContext dctx)
 {
   PetscDeviceContext *sub;
   const PetscInt      n = 10;
-  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   PetscValidDeviceContext(dctx,1);
   /* mostly for valgrind to catch errors */
-  ierr = PetscDeviceContextFork(dctx,n,&sub);CHKERRQ(ierr);
-  ierr = PetscDeviceContextJoin(dctx,n,PETSC_DEVICE_CONTEXT_JOIN_DESTROY,&sub);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceContextFork(dctx,n,&sub));
+  CHKERRQ(PetscDeviceContextJoin(dctx,n,PETSC_DEVICE_CONTEXT_JOIN_DESTROY,&sub));
   /* do it twice */
-  ierr = PetscDeviceContextFork(dctx,n,&sub);CHKERRQ(ierr);
-  ierr = PetscDeviceContextJoin(dctx,n,PETSC_DEVICE_CONTEXT_JOIN_DESTROY,&sub);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceContextFork(dctx,n,&sub));
+  CHKERRQ(PetscDeviceContextJoin(dctx,n,PETSC_DEVICE_CONTEXT_JOIN_DESTROY,&sub));
 
   /* create some children */
-  ierr = PetscDeviceContextFork(dctx,n+1,&sub);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceContextFork(dctx,n+1,&sub));
   /* test forking within nested function */
-  ierr = TestNestedPetscDeviceContextForkJoin(sub[0],sub);CHKERRQ(ierr);
+  CHKERRQ(TestNestedPetscDeviceContextForkJoin(sub[0],sub));
   /* join a subset */
-  ierr = PetscDeviceContextJoin(dctx,n-1,PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC,&sub);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceContextJoin(dctx,n-1,PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC,&sub));
   /* back to the ether from whence they came */
-  ierr = PetscDeviceContextJoin(dctx,n+1,PETSC_DEVICE_CONTEXT_JOIN_DESTROY,&sub);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceContextJoin(dctx,n+1,PETSC_DEVICE_CONTEXT_JOIN_DESTROY,&sub));
   PetscFunctionReturn(0);
 }
 
@@ -57,16 +55,16 @@ int main(int argc, char *argv[])
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
 
-  ierr = PetscDeviceContextCreate(&dctx);CHKERRQ(ierr);
-  ierr = PetscDeviceContextSetFromOptions(PETSC_COMM_WORLD,"local_",dctx);CHKERRQ(ierr);
-  ierr = PetscDeviceContextSetUp(dctx);CHKERRQ(ierr);
-  ierr = TestPetscDeviceContextForkJoin(dctx);CHKERRQ(ierr);
-  ierr = PetscDeviceContextDestroy(&dctx);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceContextCreate(&dctx));
+  CHKERRQ(PetscDeviceContextSetFromOptions(PETSC_COMM_WORLD,"local_",dctx));
+  CHKERRQ(PetscDeviceContextSetUp(dctx));
+  CHKERRQ(TestPetscDeviceContextForkJoin(dctx));
+  CHKERRQ(PetscDeviceContextDestroy(&dctx));
 
-  ierr = PetscDeviceContextGetCurrentContext(&dctx);CHKERRQ(ierr);
-  ierr = TestPetscDeviceContextForkJoin(dctx);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceContextGetCurrentContext(&dctx));
+  CHKERRQ(TestPetscDeviceContextForkJoin(dctx));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"EXIT_SUCCESS\n");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"EXIT_SUCCESS\n"));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -20,12 +20,12 @@ PetscErrorCode FillLocalSubdomain(DM da, Vec gvec)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRQ(DMDAGetLocalInfo(da,&info));
 
   if (info.dim == 3) {
     PetscScalar    ***g;
-    ierr = DMDAVecGetArray(da,gvec,&g);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecGetArray(da,gvec,&g));
     /* loop over ghosts */
     for (k=info.zs; k<info.zs+info.zm; k++) {
       for (j=info.ys; j<info.ys+info.ym; j++) {
@@ -36,11 +36,11 @@ PetscErrorCode FillLocalSubdomain(DM da, Vec gvec)
         }
       }
     }
-    ierr = DMDAVecRestoreArray(da,gvec,&g);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecRestoreArray(da,gvec,&g));
   }
   if (info.dim == 2) {
     PetscScalar    **g;
-    ierr = DMDAVecGetArray(da,gvec,&g);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecGetArray(da,gvec,&g));
     /* loop over ghosts */
     for (j=info.ys; j<info.ys+info.ym; j++) {
       for (i=info.xs; i<info.xs+info.xm; i++) {
@@ -51,7 +51,7 @@ PetscErrorCode FillLocalSubdomain(DM da, Vec gvec)
         }
       }
     }
-    ierr = DMDAVecRestoreArray(da,gvec,&g);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecRestoreArray(da,gvec,&g));
   }
   PetscFunctionReturn(0);
 }
@@ -72,22 +72,22 @@ int main(int argc,char **argv)
   PetscBool      patchis_offproc = PETSC_TRUE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
 
   /* Create distributed array and get vectors */
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   if (dim == 2) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,&da);CHKERRQ(ierr);
+    CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,&da));
   } else if (dim == 3) {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
+    CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,NULL,NULL,NULL,&da));
   }
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
+  CHKERRQ(DMDAGetLocalInfo(da,&info));
 
-  ierr = DMCreateDomainDecomposition(da,NULL,NULL,&iis,&ois,&subda);CHKERRQ(ierr);
-  ierr = DMCreateDomainDecompositionScatters(da,1,subda,&iscat,&oscat,&gscat);CHKERRQ(ierr);
+  CHKERRQ(DMCreateDomainDecomposition(da,NULL,NULL,&iis,&ois,&subda));
+  CHKERRQ(DMCreateDomainDecompositionScatters(da,1,subda,&iscat,&oscat,&gscat));
 
   {
     DMDALocalInfo subinfo;
@@ -97,7 +97,7 @@ int main(int argc,char **argv)
     Vec           largevec;
     VecScatter    patchscat;
 
-    ierr = DMDAGetLocalInfo(subda[0],&subinfo);CHKERRQ(ierr);
+    CHKERRQ(DMDAGetLocalInfo(subda[0],&subinfo));
 
     lower.i = info.xs;
     lower.j = info.ys;
@@ -107,137 +107,136 @@ int main(int argc,char **argv)
     upper.k = info.zs+info.zm;
 
     /* test the patch IS as a thing to scatter to/from */
-    ierr = DMDACreatePatchIS(da,&lower,&upper,&patchis,patchis_offproc);CHKERRQ(ierr);
-    ierr = DMGetGlobalVector(da,&largevec);CHKERRQ(ierr);
+    CHKERRQ(DMDACreatePatchIS(da,&lower,&upper,&patchis,patchis_offproc));
+    CHKERRQ(DMGetGlobalVector(da,&largevec));
 
-    ierr = VecCreate(PETSC_COMM_SELF,&smallvec);CHKERRQ(ierr);
-    ierr = VecSetSizes(smallvec,info.dof*(upper.i - lower.i)*(upper.j - lower.j)*(upper.k - lower.k),PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(smallvec);CHKERRQ(ierr);
-    ierr = VecScatterCreate(smallvec,NULL,largevec,patchis,&patchscat);CHKERRQ(ierr);
+    CHKERRQ(VecCreate(PETSC_COMM_SELF,&smallvec));
+    CHKERRQ(VecSetSizes(smallvec,info.dof*(upper.i - lower.i)*(upper.j - lower.j)*(upper.k - lower.k),PETSC_DECIDE));
+    CHKERRQ(VecSetFromOptions(smallvec));
+    CHKERRQ(VecScatterCreate(smallvec,NULL,largevec,patchis,&patchscat));
 
-    ierr = FillLocalSubdomain(subda[0],smallvec);CHKERRQ(ierr);
-    ierr = VecSet(largevec,0);CHKERRQ(ierr);
+    CHKERRQ(FillLocalSubdomain(subda[0],smallvec));
+    CHKERRQ(VecSet(largevec,0));
 
-    ierr = VecScatterBegin(patchscat,smallvec,largevec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(patchscat,smallvec,largevec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = ISView(patchis,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = VecScatterView(patchscat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(VecScatterBegin(patchscat,smallvec,largevec,ADD_VALUES,SCATTER_FORWARD));
+    CHKERRQ(VecScatterEnd(patchscat,smallvec,largevec,ADD_VALUES,SCATTER_FORWARD));
+    CHKERRQ(ISView(patchis,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(VecScatterView(patchscat,PETSC_VIEWER_STDOUT_WORLD));
 
     for (i = 0; i < size; i++) {
       if (i == rank) {
-        ierr = VecView(smallvec,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+        CHKERRQ(VecView(smallvec,PETSC_VIEWER_STDOUT_SELF));
       }
-      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
+      CHKERRMPI(MPI_Barrier(PETSC_COMM_WORLD));
     }
 
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
-    ierr = VecView(largevec,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRMPI(MPI_Barrier(PETSC_COMM_WORLD));
+    CHKERRQ(VecView(largevec,PETSC_VIEWER_STDOUT_WORLD));
 
-    ierr = VecDestroy(&smallvec);CHKERRQ(ierr);
-    ierr = DMRestoreGlobalVector(da,&largevec);CHKERRQ(ierr);
-    ierr = ISDestroy(&patchis);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&patchscat);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&smallvec));
+    CHKERRQ(DMRestoreGlobalVector(da,&largevec));
+    CHKERRQ(ISDestroy(&patchis));
+    CHKERRQ(VecScatterDestroy(&patchscat));
   }
 
   /* view the various parts */
   {
     for (i = 0; i < size; i++) {
       if (i == rank) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"Processor %d: \n",i);CHKERRQ(ierr);
-        ierr = DMView(subda[0],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Processor %d: \n",i));
+        CHKERRQ(DMView(subda[0],PETSC_VIEWER_STDOUT_SELF));
       }
-      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
+      CHKERRMPI(MPI_Barrier(PETSC_COMM_WORLD));
     }
 
-    ierr = DMGetLocalVector(subda[0],&slvec);CHKERRQ(ierr);
-    ierr = DMGetGlobalVector(subda[0],&sgvec);CHKERRQ(ierr);
-    ierr = DMGetGlobalVector(da,&v);CHKERRQ(ierr);
+    CHKERRQ(DMGetLocalVector(subda[0],&slvec));
+    CHKERRQ(DMGetGlobalVector(subda[0],&sgvec));
+    CHKERRQ(DMGetGlobalVector(da,&v));
 
     /* test filling outer between the big DM and the small ones with the IS scatter*/
-    ierr = VecScatterCreate(v,ois[0],sgvec,NULL,&oscata);CHKERRQ(ierr);
+    CHKERRQ(VecScatterCreate(v,ois[0],sgvec,NULL,&oscata));
 
-    ierr = FillLocalSubdomain(subda[0],sgvec);CHKERRQ(ierr);
+    CHKERRQ(FillLocalSubdomain(subda[0],sgvec));
 
-    ierr = VecScatterBegin(oscata,sgvec,v,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(oscata,sgvec,v,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    CHKERRQ(VecScatterBegin(oscata,sgvec,v,ADD_VALUES,SCATTER_REVERSE));
+    CHKERRQ(VecScatterEnd(oscata,sgvec,v,ADD_VALUES,SCATTER_REVERSE));
 
     /* test the local-to-local scatter */
 
     /* fill up the local subdomain and then add them together */
-    ierr = FillLocalSubdomain(da,v);CHKERRQ(ierr);
+    CHKERRQ(FillLocalSubdomain(da,v));
 
-    ierr = VecScatterBegin(gscat[0],v,slvec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(gscat[0],v,slvec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    CHKERRQ(VecScatterBegin(gscat[0],v,slvec,ADD_VALUES,SCATTER_FORWARD));
+    CHKERRQ(VecScatterEnd(gscat[0],v,slvec,ADD_VALUES,SCATTER_FORWARD));
 
-    ierr = VecView(v,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(VecView(v,PETSC_VIEWER_STDOUT_WORLD));
 
     /* test ghost scattering backwards */
 
-    ierr = VecSet(v,0);CHKERRQ(ierr);
+    CHKERRQ(VecSet(v,0));
 
-    ierr = VecScatterBegin(gscat[0],slvec,v,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(gscat[0],slvec,v,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    CHKERRQ(VecScatterBegin(gscat[0],slvec,v,ADD_VALUES,SCATTER_REVERSE));
+    CHKERRQ(VecScatterEnd(gscat[0],slvec,v,ADD_VALUES,SCATTER_REVERSE));
 
-    ierr = VecView(v,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(VecView(v,PETSC_VIEWER_STDOUT_WORLD));
 
     /* test overlap scattering backwards */
 
-    ierr = DMLocalToGlobalBegin(subda[0],slvec,ADD_VALUES,sgvec);CHKERRQ(ierr);
-    ierr = DMLocalToGlobalEnd(subda[0],slvec,ADD_VALUES,sgvec);CHKERRQ(ierr);
+    CHKERRQ(DMLocalToGlobalBegin(subda[0],slvec,ADD_VALUES,sgvec));
+    CHKERRQ(DMLocalToGlobalEnd(subda[0],slvec,ADD_VALUES,sgvec));
 
-    ierr = VecSet(v,0);CHKERRQ(ierr);
+    CHKERRQ(VecSet(v,0));
 
-    ierr = VecScatterBegin(oscat[0],sgvec,v,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(oscat[0],sgvec,v,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    CHKERRQ(VecScatterBegin(oscat[0],sgvec,v,ADD_VALUES,SCATTER_REVERSE));
+    CHKERRQ(VecScatterEnd(oscat[0],sgvec,v,ADD_VALUES,SCATTER_REVERSE));
 
-    ierr = VecView(v,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(VecView(v,PETSC_VIEWER_STDOUT_WORLD));
 
     /* test interior scattering backwards */
 
-    ierr = VecSet(v,0);CHKERRQ(ierr);
+    CHKERRQ(VecSet(v,0));
 
-    ierr = VecScatterBegin(iscat[0],sgvec,v,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(iscat[0],sgvec,v,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    CHKERRQ(VecScatterBegin(iscat[0],sgvec,v,ADD_VALUES,SCATTER_REVERSE));
+    CHKERRQ(VecScatterEnd(iscat[0],sgvec,v,ADD_VALUES,SCATTER_REVERSE));
 
-    ierr = VecView(v,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(VecView(v,PETSC_VIEWER_STDOUT_WORLD));
 
     /* test matrix allocation */
     for (i = 0; i < size; i++) {
       if (i == rank) {
         Mat m;
-        ierr = PetscPrintf(PETSC_COMM_SELF,"Processor %d: \n",i);CHKERRQ(ierr);
-        ierr = DMSetMatType(subda[0],MATAIJ);CHKERRQ(ierr);
-        ierr = DMCreateMatrix(subda[0],&m);CHKERRQ(ierr);
-        ierr = MatView(m,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-        ierr = MatDestroy(&m);CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Processor %d: \n",i));
+        CHKERRQ(DMSetMatType(subda[0],MATAIJ));
+        CHKERRQ(DMCreateMatrix(subda[0],&m));
+        CHKERRQ(MatView(m,PETSC_VIEWER_STDOUT_SELF));
+        CHKERRQ(MatDestroy(&m));
       }
-      ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
+      CHKERRMPI(MPI_Barrier(PETSC_COMM_WORLD));
     }
-    ierr = DMRestoreLocalVector(subda[0],&slvec);CHKERRQ(ierr);
-    ierr = DMRestoreGlobalVector(subda[0],&sgvec);CHKERRQ(ierr);
-    ierr = DMRestoreGlobalVector(da,&v);CHKERRQ(ierr);
+    CHKERRQ(DMRestoreLocalVector(subda[0],&slvec));
+    CHKERRQ(DMRestoreGlobalVector(subda[0],&sgvec));
+    CHKERRQ(DMRestoreGlobalVector(da,&v));
   }
 
-  ierr = DMDestroy(&subda[0]);CHKERRQ(ierr);
-  ierr = ISDestroy(&ois[0]);CHKERRQ(ierr);
-  ierr = ISDestroy(&iis[0]);CHKERRQ(ierr);
+  CHKERRQ(DMDestroy(&subda[0]));
+  CHKERRQ(ISDestroy(&ois[0]));
+  CHKERRQ(ISDestroy(&iis[0]));
 
-  ierr = VecScatterDestroy(&iscat[0]);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&oscat[0]);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&gscat[0]);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&oscata);CHKERRQ(ierr);
+  CHKERRQ(VecScatterDestroy(&iscat[0]));
+  CHKERRQ(VecScatterDestroy(&oscat[0]));
+  CHKERRQ(VecScatterDestroy(&gscat[0]));
+  CHKERRQ(VecScatterDestroy(&oscata));
 
-  ierr = PetscFree(iscat);CHKERRQ(ierr);
-  ierr = PetscFree(oscat);CHKERRQ(ierr);
-  ierr = PetscFree(gscat);CHKERRQ(ierr);
-  ierr = PetscFree(oscata);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(iscat));
+  CHKERRQ(PetscFree(oscat));
+  CHKERRQ(PetscFree(gscat));
+  CHKERRQ(PetscFree(oscata));
 
-  ierr = PetscFree(subda);CHKERRQ(ierr);
-  ierr = PetscFree(ois);CHKERRQ(ierr);
-  ierr = PetscFree(iis);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(subda));
+  CHKERRQ(PetscFree(ois));
+  CHKERRQ(PetscFree(iis));
 
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  CHKERRQ(DMDestroy(&da));
   ierr = PetscFinalize();
   return ierr;
 }
-

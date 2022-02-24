@@ -13,27 +13,27 @@ int main(int argc,char **argv)
   PetscScalar    one = 1.0;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* create vector */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
+  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,n));
+  CHKERRQ(VecSetFromOptions(x));
 
-  ierr = VecSet(x,one);CHKERRQ(ierr);
-  ierr = VecSetValue(x,0,0.0,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecSetValue(x,n-1,2.0,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecMax(x,&idx,&value);CHKERRQ(ierr);
-  ierr = VecMax(x,NULL,&value2);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Maximum value %g index %" PetscInt_FMT " (no index %g)\n",(double)value,idx,(double)value2);CHKERRQ(ierr);
-  ierr = VecMin(x,&idx,&value);CHKERRQ(ierr);
-  ierr = VecMin(x,NULL,&value2);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Minimum value %g index %" PetscInt_FMT " (no index %g)\n",(double)value,idx,(double)value2);CHKERRQ(ierr);
+  CHKERRQ(VecSet(x,one));
+  CHKERRQ(VecSetValue(x,0,0.0,INSERT_VALUES));
+  CHKERRQ(VecSetValue(x,n-1,2.0,INSERT_VALUES));
+  CHKERRQ(VecAssemblyBegin(x));
+  CHKERRQ(VecAssemblyEnd(x));
+  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(VecMax(x,&idx,&value));
+  CHKERRQ(VecMax(x,NULL,&value2));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Maximum value %g index %" PetscInt_FMT " (no index %g)\n",(double)value,idx,(double)value2));
+  CHKERRQ(VecMin(x,&idx,&value));
+  CHKERRQ(VecMin(x,NULL,&value2));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Minimum value %g index %" PetscInt_FMT " (no index %g)\n",(double)value,idx,(double)value2));
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));
 
   ierr = PetscFinalize();
   return ierr;

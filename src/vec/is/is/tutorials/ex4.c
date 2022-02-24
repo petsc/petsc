@@ -25,33 +25,33 @@ int main(int argc,char **argv)
       Create a local to global mapping. Each processor independently
      creates a mapping
   */
-  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,1,n,indices,PETSC_COPY_VALUES,&mapping);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingSetFromOptions(mapping);CHKERRQ(ierr);
+  CHKERRQ(ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,1,n,indices,PETSC_COPY_VALUES,&mapping));
+  CHKERRQ(ISLocalToGlobalMappingSetFromOptions(mapping));
 
   /*
      Map a set of local indices to their global values
   */
-  ierr = ISLocalToGlobalMappingApply(mapping,m,input,output);CHKERRQ(ierr);
-  ierr = PetscIntView(m,output,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(ISLocalToGlobalMappingApply(mapping,m,input,output));
+  CHKERRQ(PetscIntView(m,output,PETSC_VIEWER_STDOUT_WORLD));
 
   /*
      Map some global indices to local, retaining the ones without a local index by -1
   */
   for (i=0; i<13; i++) inglobals[i] = i;
-  ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_MASK,13,inglobals,NULL,outlocals);CHKERRQ(ierr);
-  ierr = PetscIntView(13,outlocals,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(ISGlobalToLocalMappingApply(mapping,IS_GTOLM_MASK,13,inglobals,NULL,outlocals));
+  CHKERRQ(PetscIntView(13,outlocals,PETSC_VIEWER_STDOUT_WORLD));
 
   /*
      Map some global indices to local, dropping the ones without a local index.
   */
-  ierr = ISGlobalToLocalMappingApply(mapping,IS_GTOLM_DROP,13,inglobals,&m,outlocals);CHKERRQ(ierr);
-  ierr = PetscIntView(m,outlocals,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(ISGlobalToLocalMappingApply(mapping,IS_GTOLM_DROP,13,inglobals,&m,outlocals));
+  CHKERRQ(PetscIntView(m,outlocals,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = ISLocalToGlobalMappingView(mapping,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(ISLocalToGlobalMappingView(mapping,PETSC_VIEWER_STDOUT_WORLD));
   /*
      Free the space used by the local to global mapping
   */
-  ierr = ISLocalToGlobalMappingDestroy(&mapping);CHKERRQ(ierr);
+  CHKERRQ(ISLocalToGlobalMappingDestroy(&mapping));
 
   ierr = PetscFinalize();
   return ierr;

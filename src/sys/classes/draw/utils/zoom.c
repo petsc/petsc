@@ -17,31 +17,31 @@
 @*/
 PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,void*),void *ctx)
 {
-  PetscErrorCode  ierr;
   PetscDrawButton button;
   PetscReal       dpause,xc,yc,scale = 1.0,w,h,xr,xl,yr,yl,xmin,xmax,ymin,ymax;
   PetscBool       isnull;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawIsNull(draw,&isnull));
   if (isnull) PetscFunctionReturn(0);
 
-  ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawCheckResizedWindow(draw));
+  CHKERRQ(PetscDrawClear(draw));
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-  ierr = (*func)(draw,ctx);CHKERRQ(ierr);
+  CHKERRQ((*func)(draw,ctx));
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawFlush(draw));
 
-  ierr = PetscDrawGetPause(draw,&dpause);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawGetPause(draw,&dpause));
   if (dpause >= 0) {
-    ierr = PetscSleep(dpause);CHKERRQ(ierr);
+    CHKERRQ(PetscSleep(dpause));
     goto theend;
   }
   if (dpause != -1) goto theend;
 
-  ierr = PetscDrawGetMouseButton(draw,&button,&xc,&yc,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawGetMouseButton(draw,&button,&xc,&yc,NULL,NULL));
+  CHKERRQ(PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr));
   xmin = xl; xmax = xr; w = xr - xl;
   ymin = yl; ymax = yr; h = yr - yl;
 
@@ -58,16 +58,15 @@ PetscErrorCode  PetscDrawZoom(PetscDraw draw,PetscErrorCode (*func)(PetscDraw,vo
     yl = scale*(yl + h - yc) + yc - h*scale;
     yr = scale*(yr - h - yc) + yc + h*scale;
     w *= scale; h *= scale;
-    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
-    ierr = PetscDrawSetCoordinates(draw,xl,yl,xr,yr);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawClear(draw));
+    CHKERRQ(PetscDrawSetCoordinates(draw,xl,yl,xr,yr));
     ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-    ierr = (*func)(draw,ctx);CHKERRQ(ierr);
+    CHKERRQ((*func)(draw,ctx));
     ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-    ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
-    ierr = PetscDrawGetMouseButton(draw,&button,&xc,&yc,NULL,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawFlush(draw));
+    CHKERRQ(PetscDrawGetMouseButton(draw,&button,&xc,&yc,NULL,NULL));
   }
-  ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax));
 theend:
   PetscFunctionReturn(0);
 }
-

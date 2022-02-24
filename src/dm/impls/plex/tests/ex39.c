@@ -207,8 +207,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm,UserCtx * user)
   user->sol_form       = LINEAR;
 
   ierr = PetscOptionsBegin(comm,"","H-div Test Options","DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-mesh_transform","Method used to perturb the mesh vertices. Options are skew, perturb, skew_perturb,or none","ex39.c",TransformTypes,(PetscEnum) user->mesh_transform,(PetscEnum*) &user->mesh_transform,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-sol_form","Form of the exact solution. Options are Linear or Sinusoidal","ex39.c",SolutionTypes,(PetscEnum) user->sol_form,(PetscEnum*) &user->sol_form,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsEnum("-mesh_transform","Method used to perturb the mesh vertices. Options are skew, perturb, skew_perturb,or none","ex39.c",TransformTypes,(PetscEnum) user->mesh_transform,(PetscEnum*) &user->mesh_transform,NULL));
+  CHKERRQ(PetscOptionsEnum("-sol_form","Form of the exact solution. Options are Linear or Sinusoidal","ex39.c",SolutionTypes,(PetscEnum) user->sol_form,(PetscEnum*) &user->sol_form,NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -217,14 +217,13 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm,UserCtx * user)
 static PetscErrorCode PerturbMesh(DM *mesh,PetscScalar *coordVals,PetscInt npoints,PetscInt dim)
 {
   PetscInt       i,j,k;
-  PetscErrorCode ierr;
   PetscReal      minCoords[3],maxCoords[3],maxPert[3],randVal,amp;
   PetscRandom    ran;
 
   PetscFunctionBegin;
-  ierr = DMGetCoordinateDim(*mesh,&dim);CHKERRQ(ierr);
-  ierr = DMGetLocalBoundingBox(*mesh,minCoords,maxCoords);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ran);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoordinateDim(*mesh,&dim));
+  CHKERRQ(DMGetLocalBoundingBox(*mesh,minCoords,maxCoords));
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&ran));
 
   /* Compute something approximately equal to half an edge length. This is the
    * most we can perturb points and guarantee that there won't be any topology
@@ -235,7 +234,7 @@ static PetscErrorCode PerturbMesh(DM *mesh,PetscScalar *coordVals,PetscInt npoin
     /* For each coordinate of the vertex */
     for (j = 0; j < dim; ++j) {
       /* Generate a random amplitude in [-0.5*maxPert, 0.5*maxPert] */
-      ierr = PetscRandomGetValueReal(ran,&randVal);CHKERRQ(ierr);
+      CHKERRQ(PetscRandomGetValueReal(ran,&randVal));
       amp  = maxPert[j] * (randVal - 0.5);
       /* Add the perturbation to the vertex*/
       coordVals[dim * i + j] += amp;
@@ -250,20 +249,19 @@ static PetscErrorCode PerturbMesh(DM *mesh,PetscScalar *coordVals,PetscInt npoin
 static PetscErrorCode SkewMesh(DM * mesh,PetscScalar * coordVals,PetscInt npoints,PetscInt dim)
 {
   PetscInt       i,j,k,l;
-  PetscErrorCode ierr;
   PetscScalar    * transMat;
   PetscScalar    tmpcoord[3];
   PetscRandom    ran;
   PetscReal      randVal;
 
   PetscFunctionBegin;
-  ierr = PetscCalloc1(dim * dim,&transMat);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ran);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc1(dim * dim,&transMat));
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&ran));
 
   /* Make a matrix representing a skew transformation */
   for (i = 0; i < dim; ++i) {
     for (j = 0; j < dim; ++j) {
-      ierr = PetscRandomGetValueReal(ran,&randVal);CHKERRQ(ierr);
+      CHKERRQ(PetscRandomGetValueReal(ran,&randVal));
       if (i == j) transMat[i * dim + j] = 1.;
       else if (j < i) transMat[i * dim + j] = 2 * (j + i)*randVal;
       else transMat[i * dim + j] = 0;
@@ -278,8 +276,8 @@ static PetscErrorCode SkewMesh(DM * mesh,PetscScalar * coordVals,PetscInt npoint
     }
     for (l = 0; l < dim; ++l) coordVals[dim * i + l] = tmpcoord[l];
   }
-  ierr = PetscFree(transMat);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&ran);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(transMat));
+  CHKERRQ(PetscRandomDestroy(&ran));
   PetscFunctionReturn(0);
 }
 
@@ -287,54 +285,51 @@ static PetscErrorCode SkewMesh(DM * mesh,PetscScalar * coordVals,PetscInt npoint
  * specified by the user options */
 static PetscErrorCode TransformMesh(UserCtx * user,DM * mesh)
 {
-  PetscErrorCode ierr;
   PetscInt       dim,npoints;
   PetscScalar    * coordVals;
   Vec            coords;
 
   PetscFunctionBegin;
-  ierr    = DMGetCoordinates(*mesh,&coords);CHKERRQ(ierr);
-  ierr    = VecGetArray(coords,&coordVals);CHKERRQ(ierr);
-  ierr    = VecGetLocalSize(coords,&npoints);CHKERRQ(ierr);
-  ierr    = DMGetCoordinateDim(*mesh,&dim);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoordinates(*mesh,&coords));
+  CHKERRQ(VecGetArray(coords,&coordVals));
+  CHKERRQ(VecGetLocalSize(coords,&npoints));
+  CHKERRQ(DMGetCoordinateDim(*mesh,&dim));
   npoints = npoints / dim;
 
   switch (user->mesh_transform) {
   case PERTURB:
-    ierr = PerturbMesh(mesh,coordVals,npoints,dim);CHKERRQ(ierr);
+    CHKERRQ(PerturbMesh(mesh,coordVals,npoints,dim));
     break;
   case SKEW:
-    ierr = SkewMesh(mesh,coordVals,npoints,dim);CHKERRQ(ierr);
+    CHKERRQ(SkewMesh(mesh,coordVals,npoints,dim));
     break;
   case SKEW_PERTURB:
-    ierr = SkewMesh(mesh,coordVals,npoints,dim);CHKERRQ(ierr);
-    ierr = PerturbMesh(mesh,coordVals,npoints,dim);CHKERRQ(ierr);
+    CHKERRQ(SkewMesh(mesh,coordVals,npoints,dim));
+    CHKERRQ(PerturbMesh(mesh,coordVals,npoints,dim));
     break;
   default:
     PetscFunctionReturn(-1);
   }
-  ierr = VecRestoreArray(coords,&coordVals);CHKERRQ(ierr);
-  ierr = DMSetCoordinates(*mesh,coords);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(coords,&coordVals));
+  CHKERRQ(DMSetCoordinates(*mesh,coords));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm,UserCtx * user,DM * mesh)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = DMCreate(comm, mesh);CHKERRQ(ierr);
-  ierr = DMSetType(*mesh, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*mesh);CHKERRQ(ierr);
+  CHKERRQ(DMCreate(comm, mesh));
+  CHKERRQ(DMSetType(*mesh, DMPLEX));
+  CHKERRQ(DMSetFromOptions(*mesh));
 
   /* Perform any mesh transformations if specified by user */
   if (user->mesh_transform != NONE) {
-    ierr = TransformMesh(user,mesh);CHKERRQ(ierr);
+    CHKERRQ(TransformMesh(user,mesh));
   }
 
   /* Get any other mesh options from the command line */
-  ierr = DMSetApplicationContext(*mesh,user);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*mesh,NULL,"-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMSetApplicationContext(*mesh,user));
+  CHKERRQ(DMViewFromOptions(*mesh,NULL,"-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -343,44 +338,43 @@ static PetscErrorCode SetupProblem(DM dm,UserCtx * user)
 {
   PetscDS        prob;
   DMLabel        label;
-  PetscErrorCode ierr;
   const PetscInt id=1;
 
   PetscFunctionBegin;
-  ierr = DMGetDS(dm,&prob);CHKERRQ(ierr);
+  CHKERRQ(DMGetDS(dm,&prob));
   /* All of these are independent of the user's choice of solution */
-  ierr = PetscDSSetResidual(prob,1,f0_q,NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(prob,2,f0_w,NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob,0,0,g0_vu,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob,1,0,NULL,g1_qu,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob,1,1,g0_qp,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob,2,0,NULL,g1_wu,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob,2,1,g0_wp,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob,2,2,g0_wd,NULL,NULL,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscDSSetResidual(prob,1,f0_q,NULL));
+  CHKERRQ(PetscDSSetResidual(prob,2,f0_w,NULL));
+  CHKERRQ(PetscDSSetJacobian(prob,0,0,g0_vu,NULL,NULL,NULL));
+  CHKERRQ(PetscDSSetJacobian(prob,1,0,NULL,g1_qu,NULL,NULL));
+  CHKERRQ(PetscDSSetJacobian(prob,1,1,g0_qp,NULL,NULL,NULL));
+  CHKERRQ(PetscDSSetJacobian(prob,2,0,NULL,g1_wu,NULL,NULL));
+  CHKERRQ(PetscDSSetJacobian(prob,2,1,g0_wp,NULL,NULL,NULL));
+  CHKERRQ(PetscDSSetJacobian(prob,2,2,g0_wd,NULL,NULL,NULL));
 
   /* Field 2 is the error between \div{u} and pressure in a higher dimensional
    * space. If all is right this should be machine zero. */
-  ierr = PetscDSSetExactSolution(prob,2,zero_func,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscDSSetExactSolution(prob,2,zero_func,NULL));
 
   switch (user->sol_form) {
   case LINEAR:
-    ierr = PetscDSSetResidual(prob,0,f0_v_linear,NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetBdResidual(prob,0,f0_bd_u_linear,NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetExactSolution(prob,0,linear_u,NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetExactSolution(prob,1,linear_p,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscDSSetResidual(prob,0,f0_v_linear,NULL));
+    CHKERRQ(PetscDSSetBdResidual(prob,0,f0_bd_u_linear,NULL));
+    CHKERRQ(PetscDSSetExactSolution(prob,0,linear_u,NULL));
+    CHKERRQ(PetscDSSetExactSolution(prob,1,linear_p,NULL));
     break;
   case SINUSOIDAL:
-    ierr = PetscDSSetResidual(prob,0,f0_v_sinusoid,NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetBdResidual(prob,0,f0_bd_u_sinusoid,NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetExactSolution(prob,0,sinusoid_u,NULL);CHKERRQ(ierr);
-    ierr = PetscDSSetExactSolution(prob,1,sinusoid_p,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscDSSetResidual(prob,0,f0_v_sinusoid,NULL));
+    CHKERRQ(PetscDSSetBdResidual(prob,0,f0_bd_u_sinusoid,NULL));
+    CHKERRQ(PetscDSSetExactSolution(prob,0,sinusoid_u,NULL));
+    CHKERRQ(PetscDSSetExactSolution(prob,1,sinusoid_p,NULL));
     break;
   default:
     PetscFunctionReturn(-1);
   }
 
-  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
-  ierr = PetscDSAddBoundary(prob,DM_BC_NATURAL,"Boundary Integral",label,1,&id,0,0,NULL,(void (*)(void))NULL,NULL,user,NULL);CHKERRQ(ierr);
+  CHKERRQ(DMGetLabel(dm, "marker", &label));
+  CHKERRQ(PetscDSAddBoundary(prob,DM_BC_NATURAL,"Boundary Integral",label,1,&id,0,0,NULL,(void (*)(void))NULL,NULL,user,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -394,41 +388,41 @@ static PetscErrorCode SetupDiscretization(DM mesh,PetscErrorCode (*setup)(DM,Use
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(mesh, &dim);CHKERRQ(ierr);
-  ierr = DMPlexIsSimplex(mesh, &simplex);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(mesh, &dim));
+  CHKERRQ(DMPlexIsSimplex(mesh, &simplex));
   /* Create FE objects and give them names so that options can be set from
    * command line */
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) mesh),dim,dim,simplex,"velocity_",-1,&fevel);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fevel,"velocity");CHKERRQ(ierr);
+  CHKERRQ(PetscFECreateDefault(PetscObjectComm((PetscObject) mesh),dim,dim,simplex,"velocity_",-1,&fevel));
+  CHKERRQ(PetscObjectSetName((PetscObject) fevel,"velocity"));
 
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) mesh),dim,1,simplex,"pressure_",-1,&fepres);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fepres,"pressure");CHKERRQ(ierr);
+  CHKERRQ(PetscFECreateDefault(PetscObjectComm((PetscObject) mesh),dim,1,simplex,"pressure_",-1,&fepres));
+  CHKERRQ(PetscObjectSetName((PetscObject) fepres,"pressure"));
 
   ierr = PetscFECreateDefault(PetscObjectComm((PetscObject)
                                               mesh),dim,1,simplex,"divErr_",-1,&fedivErr);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fedivErr,"divErr");CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetName((PetscObject) fedivErr,"divErr"));
 
-  ierr = PetscFECopyQuadrature(fevel,fepres);CHKERRQ(ierr);
-  ierr = PetscFECopyQuadrature(fevel,fedivErr);CHKERRQ(ierr);
+  CHKERRQ(PetscFECopyQuadrature(fevel,fepres));
+  CHKERRQ(PetscFECopyQuadrature(fevel,fedivErr));
 
   /* Associate the FE objects with the mesh and setup the system */
-  ierr = DMSetField(mesh,0,NULL,(PetscObject) fevel);CHKERRQ(ierr);
-  ierr = DMSetField(mesh,1,NULL,(PetscObject) fepres);CHKERRQ(ierr);
-  ierr = DMSetField(mesh,2,NULL,(PetscObject) fedivErr);CHKERRQ(ierr);
-  ierr = DMCreateDS(mesh);CHKERRQ(ierr);
-  ierr = (*setup)(mesh,user);CHKERRQ(ierr);
+  CHKERRQ(DMSetField(mesh,0,NULL,(PetscObject) fevel));
+  CHKERRQ(DMSetField(mesh,1,NULL,(PetscObject) fepres));
+  CHKERRQ(DMSetField(mesh,2,NULL,(PetscObject) fedivErr));
+  CHKERRQ(DMCreateDS(mesh));
+  CHKERRQ((*setup)(mesh,user));
 
   while (cdm) {
-    ierr = DMCopyDisc(mesh,cdm);CHKERRQ(ierr);
-    ierr = DMGetCoarseDM(cdm,&cdm);CHKERRQ(ierr);
+    CHKERRQ(DMCopyDisc(mesh,cdm));
+    CHKERRQ(DMGetCoarseDM(cdm,&cdm));
   }
 
   /* The Mesh now owns the fields, so we can destroy the FEs created in this
    * function */
-  ierr = PetscFEDestroy(&fevel);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fepres);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fedivErr);CHKERRQ(ierr);
-  ierr = DMDestroy(&cdm);CHKERRQ(ierr);
+  CHKERRQ(PetscFEDestroy(&fevel));
+  CHKERRQ(PetscFEDestroy(&fepres));
+  CHKERRQ(PetscFEDestroy(&fedivErr));
+  CHKERRQ(DMDestroy(&cdm));
   PetscFunctionReturn(0);
 }
 
@@ -449,50 +443,50 @@ int main(int argc,char **argv)
 
   /* Initialize PETSc */
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD,&user);CHKERRQ(ierr);
+  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD,&user));
 
   /* Set up the system, we need to create a solver and a mesh and then assign
    * the correct spaces into the mesh*/
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD,&user,&mesh);CHKERRQ(ierr);
-  ierr = SNESSetDM(snes,mesh);CHKERRQ(ierr);
-  ierr = SetupDiscretization(mesh,SetupProblem,&user);CHKERRQ(ierr);
-  ierr = DMPlexSetSNESLocalFEM(mesh,&user,&user,&user);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes));
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD,&user,&mesh));
+  CHKERRQ(SNESSetDM(snes,mesh));
+  CHKERRQ(SetupDiscretization(mesh,SetupProblem,&user));
+  CHKERRQ(DMPlexSetSNESLocalFEM(mesh,&user,&user,&user));
+  CHKERRQ(SNESSetFromOptions(snes));
 
   /* Grab field IS so that we can view the solution by field */
-  ierr = DMCreateFieldIS(mesh,NULL,NULL,&fieldIS);CHKERRQ(ierr);
+  CHKERRQ(DMCreateFieldIS(mesh,NULL,NULL,&fieldIS));
 
   /* Create a vector to store the SNES solution, solve the system and grab the
    * solution from SNES */
-  ierr = DMCreateGlobalVector(mesh,&computed);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) computed,"computedSolution");CHKERRQ(ierr);
-  ierr = VecSet(computed,0.0);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,NULL,computed);CHKERRQ(ierr);
-  ierr = SNESGetSolution(snes,&computed);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(computed,NULL,"-computedSolution_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(mesh,&computed));
+  CHKERRQ(PetscObjectSetName((PetscObject) computed,"computedSolution"));
+  CHKERRQ(VecSet(computed,0.0));
+  CHKERRQ(SNESSolve(snes,NULL,computed));
+  CHKERRQ(SNESGetSolution(snes,&computed));
+  CHKERRQ(VecViewFromOptions(computed,NULL,"-computedSolution_view"));
 
   /* Now we pull out the portion of the vector corresponding to the 3rd field
    * which is the error between \div{u} computed in a higher dimensional space
    * and p = \div{u} computed in a low dimension space. We report the L2 norm of
    * this vector which should be zero if the H(div) spaces are implemented
    * correctly. */
-  ierr           = VecGetSubVector(computed,fieldIS[2],&divErr);CHKERRQ(ierr);
-  ierr           = VecNorm(divErr,NORM_2,&divErrNorm);CHKERRQ(ierr);
-  ierr           = VecRestoreSubVector(computed,fieldIS[2],&divErr);CHKERRQ(ierr);
+  CHKERRQ(VecGetSubVector(computed,fieldIS[2],&divErr));
+  CHKERRQ(VecNorm(divErr,NORM_2,&divErrNorm));
+  CHKERRQ(VecRestoreSubVector(computed,fieldIS[2],&divErr));
   exampleSuccess = (PetscBool)(divErrNorm <= errTol);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,stdFormat,divErrNorm,exampleSuccess ? "true" : "false");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,stdFormat,divErrNorm,exampleSuccess ? "true" : "false"));
 
   /* Tear down */
-  ierr = VecDestroy(&divErr);CHKERRQ(ierr);
-  ierr = VecDestroy(&computed);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&divErr));
+  CHKERRQ(VecDestroy(&computed));
   for (i = 0; i < 3; ++i) {
-    ierr = ISDestroy(&fieldIS[i]);CHKERRQ(ierr);
+    CHKERRQ(ISDestroy(&fieldIS[i]));
   }
-  ierr = PetscFree(fieldIS);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  ierr = DMDestroy(&mesh);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(fieldIS));
+  CHKERRQ(SNESDestroy(&snes));
+  CHKERRQ(DMDestroy(&mesh));
   ierr = PetscFinalize();
   return ierr;
 }

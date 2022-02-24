@@ -16,19 +16,19 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
 
   PetscFunctionBegin;
   /* first processor allocates entire array and sends it's address to the others */
-  ierr = PetscSharedMalloc(PetscObjectComm((PetscObject)win),win->map->n*sizeof(PetscScalar),win->map->N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr);
+  CHKERRQ(PetscSharedMalloc(PetscObjectComm((PetscObject)win),win->map->n*sizeof(PetscScalar),win->map->N*sizeof(PetscScalar),(void**)&array));
 
-  ierr = VecCreate(PetscObjectComm((PetscObject)win),v);CHKERRQ(ierr);
-  ierr = VecSetSizes(*v,win->map->n,win->map->N);CHKERRQ(ierr);
-  ierr = VecCreate_MPI_Private(*v,PETSC_FALSE,w->nghost,array);CHKERRQ(ierr);
-  ierr = PetscLayoutReference(win->map,&(*v)->map);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PetscObjectComm((PetscObject)win),v));
+  CHKERRQ(VecSetSizes(*v,win->map->n,win->map->N));
+  CHKERRQ(VecCreate_MPI_Private(*v,PETSC_FALSE,w->nghost,array));
+  CHKERRQ(PetscLayoutReference(win->map,&(*v)->map));
 
   /* New vector should inherit stashing property of parent */
   (*v)->stash.donotstash   = win->stash.donotstash;
   (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
 
-  ierr = PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)*v)->olist);CHKERRQ(ierr);
-  ierr = PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)*v)->qlist);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)*v)->olist));
+  CHKERRQ(PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)*v)->qlist));
 
   (*v)->ops->duplicate = VecDuplicate_Shared;
   (*v)->bstash.bs      = win->bstash.bs;
@@ -41,10 +41,10 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
   PetscScalar    *array;
 
   PetscFunctionBegin;
-  ierr = PetscSplitOwnership(PetscObjectComm((PetscObject)vv),&vv->map->n,&vv->map->N);CHKERRQ(ierr);
-  ierr = PetscSharedMalloc(PetscObjectComm((PetscObject)vv),vv->map->n*sizeof(PetscScalar),vv->map->N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr);
+  CHKERRQ(PetscSplitOwnership(PetscObjectComm((PetscObject)vv),&vv->map->n,&vv->map->N));
+  CHKERRQ(PetscSharedMalloc(PetscObjectComm((PetscObject)vv),vv->map->n*sizeof(PetscScalar),vv->map->N*sizeof(PetscScalar),(void**)&array));
 
-  ierr = VecCreate_MPI_Private(vv,PETSC_FALSE,0,array);CHKERRQ(ierr);
+  CHKERRQ(VecCreate_MPI_Private(vv,PETSC_FALSE,0,array));
   vv->ops->duplicate = VecDuplicate_Shared;
   PetscFunctionReturn(0);
 }
@@ -86,7 +86,7 @@ static PetscErrorCode Petsc_DeleteShared(MPI_Comm comm,PetscInt keyval,void *att
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(attr_val);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(attr_val));
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
@@ -117,10 +117,10 @@ PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void *
   PetscFunctionBegin;
   *result = 0;
 
-  ierr   = MPI_Scan(&llen,&shift,1,MPI_INT,MPI_SUM,comm);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Scan(&llen,&shift,1,MPI_INT,MPI_SUM,comm));
   shift -= llen;
 
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     id = shmget(key,len, 0666 |IPC_CREAT);
     if (id == -1) {
@@ -147,13 +147,12 @@ PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void *
 
 PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)vv),&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)vv),&size));
   PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"No supported for shared memory vector objects on this machine");
-  ierr = VecCreate_Seq(vv);CHKERRQ(ierr);
+  CHKERRQ(VecCreate_Seq(vv));
   PetscFunctionReturn(0);
 }
 
@@ -187,12 +186,9 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 @*/
 PetscErrorCode  VecCreateShared(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecCreate(comm,v);CHKERRQ(ierr);
-  ierr = VecSetSizes(*v,n,N);CHKERRQ(ierr);
-  ierr = VecSetType(*v,VECSHARED);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(comm,v));
+  CHKERRQ(VecSetSizes(*v,n,N));
+  CHKERRQ(VecSetType(*v,VECSHARED));
   PetscFunctionReturn(0);
 }
-

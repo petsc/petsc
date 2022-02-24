@@ -23,9 +23,9 @@ int main(int argc,char **argv)
                  additional help messages in this printout.
   */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscGetVersion(version,sizeof(version));CHKERRQ(ierr);
+  CHKERRQ(PetscGetVersion(version,sizeof(version)));
 
-  ierr = PetscGetVersionNumber(&major,&minor,&subminor,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscGetVersionNumber(&major,&minor,&subminor,NULL));
   PetscCheckFalse(major != PETSC_VERSION_MAJOR,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Library major %d does not equal include %d",(int)major,PETSC_VERSION_MAJOR);
   PetscCheckFalse(minor != PETSC_VERSION_MINOR,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Library minor %d does not equal include %d",(int)minor,PETSC_VERSION_MINOR);
   PetscCheckFalse(subminor != PETSC_VERSION_SUBMINOR,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Library subminor %d does not equal include %d",(int)subminor,PETSC_VERSION_SUBMINOR);

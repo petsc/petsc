@@ -16,8 +16,8 @@ int main(int argc,char **argv)
   char           access_token[512],refresh_token[512];
 
   ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
-  ierr = PetscGoogleDriveAuthorize(PETSC_COMM_WORLD,access_token,refresh_token,sizeof(access_token));CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Your Refresh token is %s\n",refresh_token);CHKERRQ(ierr);
+  CHKERRQ(PetscGoogleDriveAuthorize(PETSC_COMM_WORLD,access_token,refresh_token,sizeof(access_token)));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Your Refresh token is %s\n",refresh_token));
   ierr = PetscFinalize();
   return ierr;
 }
@@ -31,4 +31,3 @@ int main(int argc,char **argv)
      TODO: determine how to run this test without going through the browser
 
 TEST*/
-

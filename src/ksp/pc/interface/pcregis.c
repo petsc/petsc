@@ -81,78 +81,76 @@ PETSC_EXTERN PetscErrorCode PCCreate_H2OPUS(PC);
 @*/
 PetscErrorCode  PCRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (PCRegisterAllCalled) PetscFunctionReturn(0);
   PCRegisterAllCalled = PETSC_TRUE;
 
-  ierr = PCRegister(PCNONE         ,PCCreate_None);CHKERRQ(ierr);
-  ierr = PCRegister(PCJACOBI       ,PCCreate_Jacobi);CHKERRQ(ierr);
-  ierr = PCRegister(PCPBJACOBI     ,PCCreate_PBJacobi);CHKERRQ(ierr);
-  ierr = PCRegister(PCVPBJACOBI    ,PCCreate_VPBJacobi);CHKERRQ(ierr);
-  ierr = PCRegister(PCBJACOBI      ,PCCreate_BJacobi);CHKERRQ(ierr);
-  ierr = PCRegister(PCSOR          ,PCCreate_SOR);CHKERRQ(ierr);
-  ierr = PCRegister(PCLU           ,PCCreate_LU);CHKERRQ(ierr);
-  ierr = PCRegister(PCQR           ,PCCreate_QR);CHKERRQ(ierr);
-  ierr = PCRegister(PCSHELL        ,PCCreate_Shell);CHKERRQ(ierr);
-  ierr = PCRegister(PCMG           ,PCCreate_MG);CHKERRQ(ierr);
-  ierr = PCRegister(PCEISENSTAT    ,PCCreate_Eisenstat);CHKERRQ(ierr);
-  ierr = PCRegister(PCILU          ,PCCreate_ILU);CHKERRQ(ierr);
-  ierr = PCRegister(PCICC          ,PCCreate_ICC);CHKERRQ(ierr);
-  ierr = PCRegister(PCCHOLESKY     ,PCCreate_Cholesky);CHKERRQ(ierr);
-  ierr = PCRegister(PCASM          ,PCCreate_ASM);CHKERRQ(ierr);
-  ierr = PCRegister(PCGASM         ,PCCreate_GASM);CHKERRQ(ierr);
-  ierr = PCRegister(PCKSP          ,PCCreate_KSP);CHKERRQ(ierr);
+  CHKERRQ(PCRegister(PCNONE         ,PCCreate_None));
+  CHKERRQ(PCRegister(PCJACOBI       ,PCCreate_Jacobi));
+  CHKERRQ(PCRegister(PCPBJACOBI     ,PCCreate_PBJacobi));
+  CHKERRQ(PCRegister(PCVPBJACOBI    ,PCCreate_VPBJacobi));
+  CHKERRQ(PCRegister(PCBJACOBI      ,PCCreate_BJacobi));
+  CHKERRQ(PCRegister(PCSOR          ,PCCreate_SOR));
+  CHKERRQ(PCRegister(PCLU           ,PCCreate_LU));
+  CHKERRQ(PCRegister(PCQR           ,PCCreate_QR));
+  CHKERRQ(PCRegister(PCSHELL        ,PCCreate_Shell));
+  CHKERRQ(PCRegister(PCMG           ,PCCreate_MG));
+  CHKERRQ(PCRegister(PCEISENSTAT    ,PCCreate_Eisenstat));
+  CHKERRQ(PCRegister(PCILU          ,PCCreate_ILU));
+  CHKERRQ(PCRegister(PCICC          ,PCCreate_ICC));
+  CHKERRQ(PCRegister(PCCHOLESKY     ,PCCreate_Cholesky));
+  CHKERRQ(PCRegister(PCASM          ,PCCreate_ASM));
+  CHKERRQ(PCRegister(PCGASM         ,PCCreate_GASM));
+  CHKERRQ(PCRegister(PCKSP          ,PCCreate_KSP));
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
-  ierr = PCRegister(PCBJKOKKOS     ,PCCreate_BJKOKKOS);CHKERRQ(ierr);
+  CHKERRQ(PCRegister(PCBJKOKKOS     ,PCCreate_BJKOKKOS));
 #endif
-  ierr = PCRegister(PCCOMPOSITE    ,PCCreate_Composite);CHKERRQ(ierr);
-  ierr = PCRegister(PCREDUNDANT    ,PCCreate_Redundant);CHKERRQ(ierr);
-  ierr = PCRegister(PCNN           ,PCCreate_NN);CHKERRQ(ierr);
-  ierr = PCRegister(PCMAT          ,PCCreate_Mat);CHKERRQ(ierr);
-  ierr = PCRegister(PCFIELDSPLIT   ,PCCreate_FieldSplit);CHKERRQ(ierr);
-  ierr = PCRegister(PCGALERKIN     ,PCCreate_Galerkin);CHKERRQ(ierr);
-  ierr = PCRegister(PCEXOTIC       ,PCCreate_Exotic);CHKERRQ(ierr);
-  ierr = PCRegister(PCCP           ,PCCreate_CP);CHKERRQ(ierr);
-  ierr = PCRegister(PCLSC          ,PCCreate_LSC);CHKERRQ(ierr);
-  ierr = PCRegister(PCREDISTRIBUTE ,PCCreate_Redistribute);CHKERRQ(ierr);
-  ierr = PCRegister(PCSVD          ,PCCreate_SVD);CHKERRQ(ierr);
-  ierr = PCRegister(PCGAMG         ,PCCreate_GAMG);CHKERRQ(ierr);
-  ierr = PCRegister(PCKACZMARZ     ,PCCreate_Kaczmarz);CHKERRQ(ierr);
-  ierr = PCRegister(PCTELESCOPE    ,PCCreate_Telescope);CHKERRQ(ierr);
-  ierr = PCRegister(PCPATCH        ,PCCreate_Patch);CHKERRQ(ierr);
-  ierr = PCRegister(PCHMG          ,PCCreate_HMG);CHKERRQ(ierr);
+  CHKERRQ(PCRegister(PCCOMPOSITE    ,PCCreate_Composite));
+  CHKERRQ(PCRegister(PCREDUNDANT    ,PCCreate_Redundant));
+  CHKERRQ(PCRegister(PCNN           ,PCCreate_NN));
+  CHKERRQ(PCRegister(PCMAT          ,PCCreate_Mat));
+  CHKERRQ(PCRegister(PCFIELDSPLIT   ,PCCreate_FieldSplit));
+  CHKERRQ(PCRegister(PCGALERKIN     ,PCCreate_Galerkin));
+  CHKERRQ(PCRegister(PCEXOTIC       ,PCCreate_Exotic));
+  CHKERRQ(PCRegister(PCCP           ,PCCreate_CP));
+  CHKERRQ(PCRegister(PCLSC          ,PCCreate_LSC));
+  CHKERRQ(PCRegister(PCREDISTRIBUTE ,PCCreate_Redistribute));
+  CHKERRQ(PCRegister(PCSVD          ,PCCreate_SVD));
+  CHKERRQ(PCRegister(PCGAMG         ,PCCreate_GAMG));
+  CHKERRQ(PCRegister(PCKACZMARZ     ,PCCreate_Kaczmarz));
+  CHKERRQ(PCRegister(PCTELESCOPE    ,PCCreate_Telescope));
+  CHKERRQ(PCRegister(PCPATCH        ,PCCreate_Patch));
+  CHKERRQ(PCRegister(PCHMG          ,PCCreate_HMG));
 #if defined(PETSC_HAVE_ML)
-  ierr = PCRegister(PCML           ,PCCreate_ML);CHKERRQ(ierr);
+  CHKERRQ(PCRegister(PCML           ,PCCreate_ML));
 #endif
 #if defined(PETSC_HAVE_SPAI)
-  ierr = PCRegister(PCSPAI         ,PCCreate_SPAI);CHKERRQ(ierr);
+  CHKERRQ(PCRegister(PCSPAI         ,PCCreate_SPAI));
 #endif
 #if defined(PETSC_HAVE_HYPRE)
-  ierr = PCRegister(PCHYPRE        ,PCCreate_HYPRE);CHKERRQ(ierr);
-  ierr = PCRegister(PCPFMG         ,PCCreate_PFMG);CHKERRQ(ierr);
-  ierr = PCRegister(PCSYSPFMG      ,PCCreate_SysPFMG);CHKERRQ(ierr);
+  CHKERRQ(PCRegister(PCHYPRE        ,PCCreate_HYPRE));
+  CHKERRQ(PCRegister(PCPFMG         ,PCCreate_PFMG));
+  CHKERRQ(PCRegister(PCSYSPFMG      ,PCCreate_SysPFMG));
 #endif
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = PCRegister(PCTFS          ,PCCreate_TFS);CHKERRQ(ierr);
+  CHKERRQ(PCRegister(PCTFS          ,PCCreate_TFS));
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
-  ierr = PCRegister(PCCHOWILUVIENNACL,PCCreate_CHOWILUVIENNACL);CHKERRQ(ierr);
-  ierr = PCRegister(PCROWSCALINGVIENNACL,PCCreate_ROWSCALINGVIENNACL);CHKERRQ(ierr);
-  ierr = PCRegister(PCSAVIENNACL   ,PCCreate_SAVIENNACL);CHKERRQ(ierr);
+  CHKERRQ(PCRegister(PCCHOWILUVIENNACL,PCCreate_CHOWILUVIENNACL));
+  CHKERRQ(PCRegister(PCROWSCALINGVIENNACL,PCCreate_ROWSCALINGVIENNACL));
+  CHKERRQ(PCRegister(PCSAVIENNACL   ,PCCreate_SAVIENNACL));
 #endif
 #if defined(PETSC_HAVE_PARMS)
-  ierr = PCRegister(PCPARMS        ,PCCreate_PARMS);CHKERRQ(ierr);
+  CHKERRQ(PCRegister(PCPARMS        ,PCCreate_PARMS));
 #endif
-  ierr = PCRegister(PCBDDC         ,PCCreate_BDDC);CHKERRQ(ierr);
-  ierr = PCRegister(PCLMVM         ,PCCreate_LMVM);CHKERRQ(ierr);
-  ierr = PCRegister(PCDEFLATION    ,PCCreate_Deflation);CHKERRQ(ierr);
+  CHKERRQ(PCRegister(PCBDDC         ,PCCreate_BDDC));
+  CHKERRQ(PCRegister(PCLMVM         ,PCCreate_LMVM));
+  CHKERRQ(PCRegister(PCDEFLATION    ,PCCreate_Deflation));
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
-  ierr = PCRegister(PCHPDDM        ,PCCreate_HPDDM);CHKERRQ(ierr);
+  CHKERRQ(PCRegister(PCHPDDM        ,PCCreate_HPDDM));
 #endif
 #if defined(PETSC_HAVE_H2OPUS)
-  ierr = PCRegister(PCH2OPUS       ,PCCreate_H2OPUS);CHKERRQ(ierr);
+  CHKERRQ(PCRegister(PCH2OPUS       ,PCCreate_H2OPUS));
 #endif
   PetscFunctionReturn(0);
 }

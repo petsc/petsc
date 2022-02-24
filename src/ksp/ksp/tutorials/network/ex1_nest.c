@@ -57,7 +57,6 @@ typedef struct {
 
 PetscErrorCode read_data(PetscInt *pnnode,PetscInt *pnbranch,Node **pnode,Branch **pbranch,PetscInt **pedgelist)
 {
-  PetscErrorCode    ierr;
   PetscInt          nnode, nbranch, i;
   Branch            *branch;
   Node              *node;
@@ -67,8 +66,8 @@ PetscErrorCode read_data(PetscInt *pnnode,PetscInt *pnbranch,Node **pnode,Branch
   nnode   = 4;
   nbranch = 6;
 
-  ierr = PetscCalloc1(nnode,&node);CHKERRQ(ierr);
-  ierr = PetscCalloc1(nbranch,&branch);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc1(nnode,&node));
+  CHKERRQ(PetscCalloc1(nbranch,&branch));
 
   for (i = 0; i < nnode; i++) {
     node[i].id  = i;
@@ -99,7 +98,7 @@ PetscErrorCode read_data(PetscInt *pnnode,PetscInt *pnbranch,Node **pnode,Branch
       edgelist[2*i + 1] = to node
   */
 
-  ierr = PetscCalloc1(2*nbranch, &edgelist);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc1(2*nbranch, &edgelist));
 
   for (i = 0; i < nbranch; i++) {
     switch (i) {
@@ -143,7 +142,6 @@ PetscErrorCode read_data(PetscInt *pnnode,PetscInt *pnbranch,Node **pnode,Branch
 
 PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
 {
-  PetscErrorCode    ierr;
   Vec               localb;
   Branch            *branch;
   Node              *node;
@@ -161,91 +159,91 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
   Mat               **mats;
 
   PetscFunctionBegin;
-  ierr = DMGetLocalVector(networkdm,&localb);CHKERRQ(ierr);
-  ierr = VecSet(b,0.0);CHKERRQ(ierr);
-  ierr = VecSet(localb,0.0);CHKERRQ(ierr);
+  CHKERRQ(DMGetLocalVector(networkdm,&localb));
+  CHKERRQ(VecSet(b,0.0));
+  CHKERRQ(VecSet(localb,0.0));
 
-  ierr = VecGetArray(localb,&barr);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(localb,&barr));
 
   /* Get nested submatrices */
-  ierr = MatNestGetSubMats(A,NULL,NULL,&mats);CHKERRQ(ierr);
+  CHKERRQ(MatNestGetSubMats(A,NULL,NULL,&mats));
   e11 = mats[0][0];  /* edges */
   c12 = mats[0][1];  /* couplings */
   c21 = mats[1][0];  /* couplings */
   v22 = mats[1][1];  /* vertices */
 
   /* Get vertices and edge range */
-  ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
-  ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
+  CHKERRQ(DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd));
+  CHKERRQ(DMNetworkGetVertexRange(networkdm,&vStart,&vEnd));
 
   for (e = 0; e < eEnd; e++) {
-    ierr = DMNetworkGetComponent(networkdm,e,0,&key,(void**)&branch,NULL);CHKERRQ(ierr);
-    ierr = DMNetworkGetEdgeOffset(networkdm,e,&lofst);CHKERRQ(ierr);
+    CHKERRQ(DMNetworkGetComponent(networkdm,e,0,&key,(void**)&branch,NULL));
+    CHKERRQ(DMNetworkGetEdgeOffset(networkdm,e,&lofst));
 
-    ierr = DMNetworkGetConnectedVertices(networkdm,e,&cone);CHKERRQ(ierr);
-    ierr = DMNetworkGetVertexOffset(networkdm,cone[0],&lofst_fr);CHKERRQ(ierr);
-    ierr = DMNetworkGetVertexOffset(networkdm,cone[1],&lofst_to);CHKERRQ(ierr);
+    CHKERRQ(DMNetworkGetConnectedVertices(networkdm,e,&cone));
+    CHKERRQ(DMNetworkGetVertexOffset(networkdm,cone[0],&lofst_fr));
+    CHKERRQ(DMNetworkGetVertexOffset(networkdm,cone[1],&lofst_to));
 
     /* These are edge-edge and go to e11 */
     row[0] = lofst;
     col[0] = lofst;     val[0] =  1;
-    ierr = MatSetValuesLocal(e11,1,row,1,col,val,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValuesLocal(e11,1,row,1,col,val,INSERT_VALUES));
 
     /* These are edge-vertex and go to c12 */
     col[0] = lofst_to;  val[0] =  1;
     col[1] = lofst_fr;  val[1] = -1;
-    ierr = MatSetValuesLocal(c12,1,row,2,col,val,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValuesLocal(c12,1,row,2,col,val,INSERT_VALUES));
 
     /* These are edge-vertex and go to c12 */
     /* from node */
-    ierr = DMNetworkGetComponent(networkdm,cone[0],0,&key,(void**)&node,NULL);CHKERRQ(ierr);
+    CHKERRQ(DMNetworkGetComponent(networkdm,cone[0],0,&key,(void**)&node,NULL));
 
     if (!node->gr) {
       row[0] = lofst_fr;
       col[0] = lofst;   val[0] =  1;
-      ierr = MatSetValuesLocal(c21,1,row,1,col,val,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValuesLocal(c21,1,row,1,col,val,INSERT_VALUES));
     }
 
     /* to node */
-    ierr = DMNetworkGetComponent(networkdm,cone[1],0,&key,(void**)&node,NULL);CHKERRQ(ierr);
+    CHKERRQ(DMNetworkGetComponent(networkdm,cone[1],0,&key,(void**)&node,NULL));
 
     if (!node->gr) {
       row[0] = lofst_to;
       col[0] = lofst;   val[0] =  -1;
-      ierr = MatSetValuesLocal(c21,1,row,1,col,val,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValuesLocal(c21,1,row,1,col,val,INSERT_VALUES));
     }
 
     /* TODO: this is not a nested vector. Need to implement nested vector */
-    ierr = DMNetworkGetLocalVecOffset(networkdm,e,ALL_COMPONENTS,&lofst);CHKERRQ(ierr);
+    CHKERRQ(DMNetworkGetLocalVecOffset(networkdm,e,ALL_COMPONENTS,&lofst));
     barr[lofst] = branch->bat;
   }
 
   for (v = vStart; v < vEnd; v++) {
-    ierr = DMNetworkIsGhostVertex(networkdm,v,&ghost);CHKERRQ(ierr);
+    CHKERRQ(DMNetworkIsGhostVertex(networkdm,v,&ghost));
     if (!ghost) {
-      ierr = DMNetworkGetComponent(networkdm,v,0,&key,(void**)&node,NULL);CHKERRQ(ierr);
-      ierr = DMNetworkGetVertexOffset(networkdm,v,&lofst);CHKERRQ(ierr);
+      CHKERRQ(DMNetworkGetComponent(networkdm,v,0,&key,(void**)&node,NULL));
+      CHKERRQ(DMNetworkGetVertexOffset(networkdm,v,&lofst));
 
       if (node->gr) {
         row[0] = lofst;
         col[0] = lofst;   val[0] =  1;
-        ierr = MatSetValuesLocal(v22,1,row,1,col,val,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValuesLocal(v22,1,row,1,col,val,INSERT_VALUES));
       } else {
         /* TODO: this is not a nested vector. Need to implement nested vector */
-        ierr = DMNetworkGetLocalVecOffset(networkdm,v,ALL_COMPONENTS,&lofst);CHKERRQ(ierr);
+        CHKERRQ(DMNetworkGetLocalVecOffset(networkdm,v,ALL_COMPONENTS,&lofst));
         barr[lofst] -= node->inj;
       }
     }
   }
 
-  ierr = VecRestoreArray(localb,&barr);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(localb,&barr));
 
-  ierr = DMLocalToGlobalBegin(networkdm,localb,ADD_VALUES,b);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(networkdm,localb,ADD_VALUES,b);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(networkdm,&localb);CHKERRQ(ierr);
+  CHKERRQ(DMLocalToGlobalBegin(networkdm,localb,ADD_VALUES,b));
+  CHKERRQ(DMLocalToGlobalEnd(networkdm,localb,ADD_VALUES,b));
+  CHKERRQ(DMRestoreLocalVector(networkdm,&localb));
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -265,71 +263,71 @@ int main(int argc,char ** argv)
   Branch            *branch;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* "read" data only for processor 0 */
   if (rank == 0) {
-    ierr = read_data(&nnode, &nbranch, &node, &branch, &edgelist);CHKERRQ(ierr);
+    CHKERRQ(read_data(&nnode, &nbranch, &node, &branch, &edgelist));
   }
 
-  ierr = DMNetworkCreate(PETSC_COMM_WORLD,&networkdm);CHKERRQ(ierr);
-  ierr = DMNetworkRegisterComponent(networkdm,"nstr",sizeof(Node),&componentkey[0]);CHKERRQ(ierr);
-  ierr = DMNetworkRegisterComponent(networkdm,"bsrt",sizeof(Branch),&componentkey[1]);CHKERRQ(ierr);
+  CHKERRQ(DMNetworkCreate(PETSC_COMM_WORLD,&networkdm));
+  CHKERRQ(DMNetworkRegisterComponent(networkdm,"nstr",sizeof(Node),&componentkey[0]));
+  CHKERRQ(DMNetworkRegisterComponent(networkdm,"bsrt",sizeof(Branch),&componentkey[1]));
 
   /* Set number of nodes/edges, add edge connectivity */
-  ierr = DMNetworkSetNumSubNetworks(networkdm,PETSC_DECIDE,1);CHKERRQ(ierr);
-  ierr = DMNetworkAddSubnetwork(networkdm,"",nbranch,edgelist,NULL);CHKERRQ(ierr);
+  CHKERRQ(DMNetworkSetNumSubNetworks(networkdm,PETSC_DECIDE,1));
+  CHKERRQ(DMNetworkAddSubnetwork(networkdm,"",nbranch,edgelist,NULL));
 
   /* Set up the network layout */
-  ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);
+  CHKERRQ(DMNetworkLayoutSetUp(networkdm));
 
   /* Add network components (physical parameters of nodes and branches) and num of variables */
   if (rank == 0) {
-    ierr = DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd);CHKERRQ(ierr);
+    CHKERRQ(DMNetworkGetEdgeRange(networkdm,&eStart,&eEnd));
     for (i = eStart; i < eEnd; i++) {
-      ierr = DMNetworkAddComponent(networkdm,i,componentkey[1],&branch[i-eStart],1);CHKERRQ(ierr);
+      CHKERRQ(DMNetworkAddComponent(networkdm,i,componentkey[1],&branch[i-eStart],1));
     }
 
-    ierr = DMNetworkGetVertexRange(networkdm,&vStart,&vEnd);CHKERRQ(ierr);
+    CHKERRQ(DMNetworkGetVertexRange(networkdm,&vStart,&vEnd));
     for (i = vStart; i < vEnd; i++) {
-      ierr = DMNetworkAddComponent(networkdm,i,componentkey[0],&node[i-vStart],1);CHKERRQ(ierr);
+      CHKERRQ(DMNetworkAddComponent(networkdm,i,componentkey[0],&node[i-vStart],1));
     }
   }
 
   /* Network partitioning and distribution of data */
-  ierr = DMSetUp(networkdm);CHKERRQ(ierr);
-  ierr = DMNetworkDistribute(&networkdm,0);CHKERRQ(ierr);
+  CHKERRQ(DMSetUp(networkdm));
+  CHKERRQ(DMNetworkDistribute(&networkdm,0));
 
-  ierr = DMNetworkAssembleGraphStructures(networkdm);CHKERRQ(ierr);
+  CHKERRQ(DMNetworkAssembleGraphStructures(networkdm));
 
   /* We don't use these data structures anymore since they have been copied to networkdm */
   if (rank == 0) {
-    ierr = PetscFree(edgelist);CHKERRQ(ierr);
-    ierr = PetscFree(node);CHKERRQ(ierr);
-    ierr = PetscFree(branch);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(edgelist));
+    CHKERRQ(PetscFree(node));
+    CHKERRQ(PetscFree(branch));
   }
 
-  ierr = DMCreateGlobalVector(networkdm,&x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(networkdm,&x));
+  CHKERRQ(VecDuplicate(x,&b));
 
-  ierr = DMSetMatType(networkdm, MATNEST);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(networkdm,&A);CHKERRQ(ierr);
+  CHKERRQ(DMSetMatType(networkdm, MATNEST));
+  CHKERRQ(DMCreateMatrix(networkdm,&A));
 
   /* Assembly system of equations */
-  ierr = FormOperator(networkdm,A,b);CHKERRQ(ierr);
+  CHKERRQ(FormOperator(networkdm,A,b));
 
-  ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp, A, A);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp, b, x);CHKERRQ(ierr);
-  ierr = VecView(x, 0);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD, &ksp));
+  CHKERRQ(KSPSetOperators(ksp, A, A));
+  CHKERRQ(KSPSetFromOptions(ksp));
+  CHKERRQ(KSPSolve(ksp, b, x));
+  CHKERRQ(VecView(x, 0));
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = DMDestroy(&networkdm);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(DMDestroy(&networkdm));
   ierr = PetscFinalize();
   return ierr;
 }
@@ -348,4 +346,3 @@ int main(int argc,char ** argv)
       args: -petscpartitioner_type simple -ksp_converged_reason
 
 TEST*/
-

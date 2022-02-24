@@ -15,74 +15,74 @@ int main(int argc,char **args)
   PetscScalar    value[3];
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
 
   /* Create and assemble matrix. */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatSetUp(A));
+  CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
 
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=rstart; i<rend; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
     if (i == 0) {
-      ierr = MatSetValues(A,1,&i,2,col+1,value+1,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&i,2,col+1,value+1,INSERT_VALUES));
     } else if (i == N-1) {
-      ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&i,2,col,value,INSERT_VALUES));
     } else {
-      ierr   = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&i,3,col,value,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
 
   /* Create vectors */
-  ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
+  CHKERRQ(MatCreateVecs(A,&x,&b));
+  CHKERRQ(VecDuplicate(x,&u));
 
   /* Set exact solution; then compute right-hand-side vector. */
-  ierr = VecSet(u,1.0);CHKERRQ(ierr);
-  ierr = MatMult(A,u,b);CHKERRQ(ierr);
+  CHKERRQ(VecSet(u,1.0));
+  CHKERRQ(MatMult(A,u,b));
 
   /* Create the linear solver and set various options. */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-5,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPGetPC(ksp,&pc));
+  CHKERRQ(PCSetType(pc,PCJACOBI));
+  CHKERRQ(KSPSetTolerances(ksp,1.e-5,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
+  CHKERRQ(KSPSetOperators(ksp,A,A));
+  CHKERRQ(KSPSetFromOptions(ksp));
 
   num_numfac = 1;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-num_numfac",&num_numfac,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-num_numfac",&num_numfac,NULL));
   while (num_numfac--) {
     /* An example on how to update matrix A for repeated numerical factorization and solve. */
     PetscScalar one=1.0;
     PetscInt    i = 0;
-    ierr = MatSetValues(A,1,&i,1,&i,&one,ADD_VALUES);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&i,1,&i,&one,ADD_VALUES));
+    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
     /* Update b */
-    ierr = MatMult(A,u,b);CHKERRQ(ierr);
+    CHKERRQ(MatMult(A,u,b));
 
     /* Solve the linear system */
-    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+    CHKERRQ(KSPSolve(ksp,b,x));
 
     /* Check the solution and clean up */
-    ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
-    ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+    CHKERRQ(VecAXPY(x,-1.0,u));
+    CHKERRQ(VecNorm(x,NORM_2,&norm));
+    CHKERRQ(KSPGetIterationNumber(ksp,&its));
     if (norm > 100*PETSC_MACHINE_EPSILON) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its));
     }
   }
 
   /* Free work space. */
-  ierr = VecDestroy(&x);CHKERRQ(ierr); ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr); ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x)); CHKERRQ(VecDestroy(&u));
+  CHKERRQ(VecDestroy(&b)); CHKERRQ(MatDestroy(&A));
+  CHKERRQ(KSPDestroy(&ksp));
 
   ierr = PetscFinalize();
   return ierr;

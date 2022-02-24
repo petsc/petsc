@@ -10,13 +10,12 @@ static PetscErrorCode VecMergedDot_Private(Vec U,Vec W,Vec R,PetscInt normtype,P
   const PetscScalar *PETSC_RESTRICT PU, *PETSC_RESTRICT PW, *PETSC_RESTRICT PR;
   PetscScalar       sumru = 0.0, sumwu = 0.0, sumuu = 0.0;
   PetscInt          j, n;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(U,(const PetscScalar**)&PU);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(W,(const PetscScalar**)&PW);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(R,(const PetscScalar**)&PR);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(U,&n);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(U,(const PetscScalar**)&PU));
+  CHKERRQ(VecGetArrayRead(W,(const PetscScalar**)&PW));
+  CHKERRQ(VecGetArrayRead(R,(const PetscScalar**)&PR));
+  CHKERRQ(VecGetLocalSize(U,&n));
 
   if (normtype==KSP_NORM_PRECONDITIONED) {
     PetscPragmaSIMD
@@ -45,9 +44,9 @@ static PetscErrorCode VecMergedDot_Private(Vec U,Vec W,Vec R,PetscInt normtype,P
   *wu = sumwu;
   *uu = sumuu;
 
-  ierr = VecRestoreArrayRead(U,(const PetscScalar**)&PU);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(W,(const PetscScalar**)&PW);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(R,(const PetscScalar**)&PR);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(U,(const PetscScalar**)&PU));
+  CHKERRQ(VecRestoreArrayRead(W,(const PetscScalar**)&PW));
+  CHKERRQ(VecRestoreArrayRead(R,(const PetscScalar**)&PR));
   PetscFunctionReturn(0);
 }
 
@@ -57,13 +56,12 @@ static PetscErrorCode VecMergedDot2_Private(Vec N,Vec M,Vec W,PetscScalar *wm,Pe
   const PetscScalar *PETSC_RESTRICT PN, *PETSC_RESTRICT PM, *PETSC_RESTRICT PW;
   PetscScalar       sumwm = 0.0, sumnm = 0.0;
   PetscInt          j, n;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(W,(const PetscScalar**)&PW);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(N,(const PetscScalar**)&PN);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(M,(const PetscScalar**)&PM);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(N,&n);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(W,(const PetscScalar**)&PW));
+  CHKERRQ(VecGetArrayRead(N,(const PetscScalar**)&PN));
+  CHKERRQ(VecGetArrayRead(M,(const PetscScalar**)&PM));
+  CHKERRQ(VecGetLocalSize(N,&n));
 
   PetscPragmaSIMD
   for (j=0; j<n; j++) {
@@ -74,9 +72,9 @@ static PetscErrorCode VecMergedDot2_Private(Vec N,Vec M,Vec W,PetscScalar *wm,Pe
   *wm = sumwm;
   *nm = sumnm;
 
-  ierr = VecRestoreArrayRead(W,(const PetscScalar**)&PW);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(N,(const PetscScalar**)&PN);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(M,(const PetscScalar**)&PM);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(W,(const PetscScalar**)&PW));
+  CHKERRQ(VecRestoreArrayRead(N,(const PetscScalar**)&PN));
+  CHKERRQ(VecRestoreArrayRead(M,(const PetscScalar**)&PM));
   PetscFunctionReturn(0);
 }
 
@@ -87,31 +85,30 @@ static PetscErrorCode VecMergedOpsShort_Private(Vec vx,Vec vr,Vec vz,Vec vw,Vec 
   PetscScalar       *PETSC_RESTRICT pp, *PETSC_RESTRICT pq;
   PetscScalar       *PETSC_RESTRICT pc, *PETSC_RESTRICT pd, *PETSC_RESTRICT pg0, *PETSC_RESTRICT ph0, *PETSC_RESTRICT pg1,*PETSC_RESTRICT ph1,*PETSC_RESTRICT ps,*PETSC_RESTRICT pa1,*PETSC_RESTRICT pb1, *PETSC_RESTRICT pe,*PETSC_RESTRICT pf,*PETSC_RESTRICT pm,*PETSC_RESTRICT pn, *PETSC_RESTRICT pu;
   PetscInt          j, n;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(vx,(PetscScalar**)&px);CHKERRQ(ierr);
-  ierr = VecGetArray(vr,(PetscScalar**)&pr);CHKERRQ(ierr);
-  ierr = VecGetArray(vz,(PetscScalar**)&pz);CHKERRQ(ierr);
-  ierr = VecGetArray(vw,(PetscScalar**)&pw);CHKERRQ(ierr);
-  ierr = VecGetArray(vp,(PetscScalar**)&pp);CHKERRQ(ierr);
-  ierr = VecGetArray(vq,(PetscScalar**)&pq);CHKERRQ(ierr);
-  ierr = VecGetArray(vc,(PetscScalar**)&pc);CHKERRQ(ierr);
-  ierr = VecGetArray(vd,(PetscScalar**)&pd);CHKERRQ(ierr);
-  ierr = VecGetArray(vg0,(PetscScalar**)&pg0);CHKERRQ(ierr);
-  ierr = VecGetArray(vh0,(PetscScalar**)&ph0);CHKERRQ(ierr);
-  ierr = VecGetArray(vg1,(PetscScalar**)&pg1);CHKERRQ(ierr);
-  ierr = VecGetArray(vh1,(PetscScalar**)&ph1);CHKERRQ(ierr);
-  ierr = VecGetArray(vs,(PetscScalar**)&ps);CHKERRQ(ierr);
-  ierr = VecGetArray(va1,(PetscScalar**)&pa1);CHKERRQ(ierr);
-  ierr = VecGetArray(vb1,(PetscScalar**)&pb1);CHKERRQ(ierr);
-  ierr = VecGetArray(ve,(PetscScalar**)&pe);CHKERRQ(ierr);
-  ierr = VecGetArray(vf,(PetscScalar**)&pf);CHKERRQ(ierr);
-  ierr = VecGetArray(vm,(PetscScalar**)&pm);CHKERRQ(ierr);
-  ierr = VecGetArray(vn,(PetscScalar**)&pn);CHKERRQ(ierr);
-  ierr = VecGetArray(vu,(PetscScalar**)&pu);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(vx,(PetscScalar**)&px));
+  CHKERRQ(VecGetArray(vr,(PetscScalar**)&pr));
+  CHKERRQ(VecGetArray(vz,(PetscScalar**)&pz));
+  CHKERRQ(VecGetArray(vw,(PetscScalar**)&pw));
+  CHKERRQ(VecGetArray(vp,(PetscScalar**)&pp));
+  CHKERRQ(VecGetArray(vq,(PetscScalar**)&pq));
+  CHKERRQ(VecGetArray(vc,(PetscScalar**)&pc));
+  CHKERRQ(VecGetArray(vd,(PetscScalar**)&pd));
+  CHKERRQ(VecGetArray(vg0,(PetscScalar**)&pg0));
+  CHKERRQ(VecGetArray(vh0,(PetscScalar**)&ph0));
+  CHKERRQ(VecGetArray(vg1,(PetscScalar**)&pg1));
+  CHKERRQ(VecGetArray(vh1,(PetscScalar**)&ph1));
+  CHKERRQ(VecGetArray(vs,(PetscScalar**)&ps));
+  CHKERRQ(VecGetArray(va1,(PetscScalar**)&pa1));
+  CHKERRQ(VecGetArray(vb1,(PetscScalar**)&pb1));
+  CHKERRQ(VecGetArray(ve,(PetscScalar**)&pe));
+  CHKERRQ(VecGetArray(vf,(PetscScalar**)&pf));
+  CHKERRQ(VecGetArray(vm,(PetscScalar**)&pm));
+  CHKERRQ(VecGetArray(vn,(PetscScalar**)&pn));
+  CHKERRQ(VecGetArray(vu,(PetscScalar**)&pu));
 
-  ierr = VecGetLocalSize(vx,&n);CHKERRQ(ierr);
+  CHKERRQ(VecGetLocalSize(vx,&n));
   for (j=0; j<15; j++) lambda[j] = 0.0;
 
   if (normtype==KSP_NORM_PRECONDITIONED) {
@@ -267,26 +264,26 @@ static PetscErrorCode VecMergedOpsShort_Private(Vec vx,Vec vr,Vec vz,Vec vw,Vec 
 
   }
 
-  ierr = VecRestoreArray(vx,(PetscScalar**)&px);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vr,(PetscScalar**)&pr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vz,(PetscScalar**)&pz);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vw,(PetscScalar**)&pw);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vp,(PetscScalar**)&pp);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vq,(PetscScalar**)&pq);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vc,(PetscScalar**)&pc);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vd,(PetscScalar**)&pd);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vg0,(PetscScalar**)&pg0);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vh0,(PetscScalar**)&ph0);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vg1,(PetscScalar**)&pg1);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vh1,(PetscScalar**)&ph1);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vs,(PetscScalar**)&ps);CHKERRQ(ierr);
-  ierr = VecRestoreArray(va1,(PetscScalar**)&pa1);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vb1,(PetscScalar**)&pb1);CHKERRQ(ierr);
-  ierr = VecRestoreArray(ve,(PetscScalar**)&pe);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vf,(PetscScalar**)&pf);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vm,(PetscScalar**)&pm);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vn,(PetscScalar**)&pn);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vu,(PetscScalar**)&pu);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(vx,(PetscScalar**)&px));
+  CHKERRQ(VecRestoreArray(vr,(PetscScalar**)&pr));
+  CHKERRQ(VecRestoreArray(vz,(PetscScalar**)&pz));
+  CHKERRQ(VecRestoreArray(vw,(PetscScalar**)&pw));
+  CHKERRQ(VecRestoreArray(vp,(PetscScalar**)&pp));
+  CHKERRQ(VecRestoreArray(vq,(PetscScalar**)&pq));
+  CHKERRQ(VecRestoreArray(vc,(PetscScalar**)&pc));
+  CHKERRQ(VecRestoreArray(vd,(PetscScalar**)&pd));
+  CHKERRQ(VecRestoreArray(vg0,(PetscScalar**)&pg0));
+  CHKERRQ(VecRestoreArray(vh0,(PetscScalar**)&ph0));
+  CHKERRQ(VecRestoreArray(vg1,(PetscScalar**)&pg1));
+  CHKERRQ(VecRestoreArray(vh1,(PetscScalar**)&ph1));
+  CHKERRQ(VecRestoreArray(vs,(PetscScalar**)&ps));
+  CHKERRQ(VecRestoreArray(va1,(PetscScalar**)&pa1));
+  CHKERRQ(VecRestoreArray(vb1,(PetscScalar**)&pb1));
+  CHKERRQ(VecRestoreArray(ve,(PetscScalar**)&pe));
+  CHKERRQ(VecRestoreArray(vf,(PetscScalar**)&pf));
+  CHKERRQ(VecRestoreArray(vm,(PetscScalar**)&pm));
+  CHKERRQ(VecRestoreArray(vn,(PetscScalar**)&pn));
+  CHKERRQ(VecRestoreArray(vu,(PetscScalar**)&pu));
   PetscFunctionReturn(0);
 }
 
@@ -297,31 +294,30 @@ static PetscErrorCode VecMergedOps_Private(Vec vx,Vec vr,Vec vz,Vec vw,Vec vp,Ve
   PetscScalar       *PETSC_RESTRICT pp, *PETSC_RESTRICT pq;
   PetscScalar       *PETSC_RESTRICT pc,  *PETSC_RESTRICT pd, *PETSC_RESTRICT pg0,  *PETSC_RESTRICT ph0,  *PETSC_RESTRICT pg1, *PETSC_RESTRICT ph1,*PETSC_RESTRICT ps, *PETSC_RESTRICT pa1,*PETSC_RESTRICT pb1,*PETSC_RESTRICT pe,*PETSC_RESTRICT pf, *PETSC_RESTRICT pm,*PETSC_RESTRICT pn, *PETSC_RESTRICT pu;
   PetscInt          j, n;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(vx,(PetscScalar**)&px);CHKERRQ(ierr);
-  ierr = VecGetArray(vr,(PetscScalar**)&pr);CHKERRQ(ierr);
-  ierr = VecGetArray(vz,(PetscScalar**)&pz);CHKERRQ(ierr);
-  ierr = VecGetArray(vw,(PetscScalar**)&pw);CHKERRQ(ierr);
-  ierr = VecGetArray(vp,(PetscScalar**)&pp);CHKERRQ(ierr);
-  ierr = VecGetArray(vq,(PetscScalar**)&pq);CHKERRQ(ierr);
-  ierr = VecGetArray(vc,(PetscScalar**)&pc);CHKERRQ(ierr);
-  ierr = VecGetArray(vd,(PetscScalar**)&pd);CHKERRQ(ierr);
-  ierr = VecGetArray(vg0,(PetscScalar**)&pg0);CHKERRQ(ierr);
-  ierr = VecGetArray(vh0,(PetscScalar**)&ph0);CHKERRQ(ierr);
-  ierr = VecGetArray(vg1,(PetscScalar**)&pg1);CHKERRQ(ierr);
-  ierr = VecGetArray(vh1,(PetscScalar**)&ph1);CHKERRQ(ierr);
-  ierr = VecGetArray(vs,(PetscScalar**)&ps);CHKERRQ(ierr);
-  ierr = VecGetArray(va1,(PetscScalar**)&pa1);CHKERRQ(ierr);
-  ierr = VecGetArray(vb1,(PetscScalar**)&pb1);CHKERRQ(ierr);
-  ierr = VecGetArray(ve,(PetscScalar**)&pe);CHKERRQ(ierr);
-  ierr = VecGetArray(vf,(PetscScalar**)&pf);CHKERRQ(ierr);
-  ierr = VecGetArray(vm,(PetscScalar**)&pm);CHKERRQ(ierr);
-  ierr = VecGetArray(vn,(PetscScalar**)&pn);CHKERRQ(ierr);
-  ierr = VecGetArray(vu,(PetscScalar**)&pu);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(vx,(PetscScalar**)&px));
+  CHKERRQ(VecGetArray(vr,(PetscScalar**)&pr));
+  CHKERRQ(VecGetArray(vz,(PetscScalar**)&pz));
+  CHKERRQ(VecGetArray(vw,(PetscScalar**)&pw));
+  CHKERRQ(VecGetArray(vp,(PetscScalar**)&pp));
+  CHKERRQ(VecGetArray(vq,(PetscScalar**)&pq));
+  CHKERRQ(VecGetArray(vc,(PetscScalar**)&pc));
+  CHKERRQ(VecGetArray(vd,(PetscScalar**)&pd));
+  CHKERRQ(VecGetArray(vg0,(PetscScalar**)&pg0));
+  CHKERRQ(VecGetArray(vh0,(PetscScalar**)&ph0));
+  CHKERRQ(VecGetArray(vg1,(PetscScalar**)&pg1));
+  CHKERRQ(VecGetArray(vh1,(PetscScalar**)&ph1));
+  CHKERRQ(VecGetArray(vs,(PetscScalar**)&ps));
+  CHKERRQ(VecGetArray(va1,(PetscScalar**)&pa1));
+  CHKERRQ(VecGetArray(vb1,(PetscScalar**)&pb1));
+  CHKERRQ(VecGetArray(ve,(PetscScalar**)&pe));
+  CHKERRQ(VecGetArray(vf,(PetscScalar**)&pf));
+  CHKERRQ(VecGetArray(vm,(PetscScalar**)&pm));
+  CHKERRQ(VecGetArray(vn,(PetscScalar**)&pn));
+  CHKERRQ(VecGetArray(vu,(PetscScalar**)&pu));
 
-  ierr = VecGetLocalSize(vx,&n);CHKERRQ(ierr);
+  CHKERRQ(VecGetLocalSize(vx,&n));
   for (j=0; j<15; j++) lambda[j] = 0.0;
 
   if (normtype==KSP_NORM_PRECONDITIONED) {
@@ -483,26 +479,26 @@ static PetscErrorCode VecMergedOps_Private(Vec vx,Vec vr,Vec vz,Vec vw,Vec vp,Ve
     lambda[12] = lambda[10];
   }
 
-  ierr = VecRestoreArray(vx,(PetscScalar**)&px);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vr,(PetscScalar**)&pr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vz,(PetscScalar**)&pz);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vw,(PetscScalar**)&pw);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vp,(PetscScalar**)&pp);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vq,(PetscScalar**)&pq);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vc,(PetscScalar**)&pc);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vd,(PetscScalar**)&pd);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vg0,(PetscScalar**)&pg0);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vh0,(PetscScalar**)&ph0);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vg1,(PetscScalar**)&pg1);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vh1,(PetscScalar**)&ph1);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vs,(PetscScalar**)&ps);CHKERRQ(ierr);
-  ierr = VecRestoreArray(va1,(PetscScalar**)&pa1);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vb1,(PetscScalar**)&pb1);CHKERRQ(ierr);
-  ierr = VecRestoreArray(ve,(PetscScalar**)&pe);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vf,(PetscScalar**)&pf);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vm,(PetscScalar**)&pm);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vn,(PetscScalar**)&pn);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vu,(PetscScalar**)&pu);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(vx,(PetscScalar**)&px));
+  CHKERRQ(VecRestoreArray(vr,(PetscScalar**)&pr));
+  CHKERRQ(VecRestoreArray(vz,(PetscScalar**)&pz));
+  CHKERRQ(VecRestoreArray(vw,(PetscScalar**)&pw));
+  CHKERRQ(VecRestoreArray(vp,(PetscScalar**)&pp));
+  CHKERRQ(VecRestoreArray(vq,(PetscScalar**)&pq));
+  CHKERRQ(VecRestoreArray(vc,(PetscScalar**)&pc));
+  CHKERRQ(VecRestoreArray(vd,(PetscScalar**)&pd));
+  CHKERRQ(VecRestoreArray(vg0,(PetscScalar**)&pg0));
+  CHKERRQ(VecRestoreArray(vh0,(PetscScalar**)&ph0));
+  CHKERRQ(VecRestoreArray(vg1,(PetscScalar**)&pg1));
+  CHKERRQ(VecRestoreArray(vh1,(PetscScalar**)&ph1));
+  CHKERRQ(VecRestoreArray(vs,(PetscScalar**)&ps));
+  CHKERRQ(VecRestoreArray(va1,(PetscScalar**)&pa1));
+  CHKERRQ(VecRestoreArray(vb1,(PetscScalar**)&pb1));
+  CHKERRQ(VecRestoreArray(ve,(PetscScalar**)&pe));
+  CHKERRQ(VecRestoreArray(vf,(PetscScalar**)&pf));
+  CHKERRQ(VecRestoreArray(vm,(PetscScalar**)&pm));
+  CHKERRQ(VecRestoreArray(vn,(PetscScalar**)&pn));
+  CHKERRQ(VecRestoreArray(vu,(PetscScalar**)&pu));
   PetscFunctionReturn(0);
 }
 
@@ -514,11 +510,9 @@ static PetscErrorCode VecMergedOps_Private(Vec vx,Vec vr,Vec vz,Vec vw,Vec vp,Ve
 */
 static  PetscErrorCode KSPSetUp_PIPECG2(KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   /* get work vectors needed by PIPECG2 */
-  ierr = KSPSetWorkVecs(ksp,20);CHKERRQ(ierr);
+  CHKERRQ(KSPSetWorkVecs(ksp,20));
   PetscFunctionReturn(0);
 }
 
@@ -527,7 +521,6 @@ static  PetscErrorCode KSPSetUp_PIPECG2(KSP ksp)
 */
 static PetscErrorCode  KSPSolve_PIPECG2(KSP ksp)
 {
-  PetscErrorCode ierr;
   PetscInt       i,n;
   PetscScalar    alpha[2],beta[2],gamma[2],delta[2],lambda[15];
   PetscScalar    dps = 0.0,alphaold=0.0;
@@ -541,7 +534,7 @@ static PetscErrorCode  KSPSolve_PIPECG2(KSP ksp)
 
   PetscFunctionBegin;
   pcomm = PetscObjectComm((PetscObject)ksp);
-  ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
+  CHKERRQ(PCGetDiagonalScale(ksp->pc,&diagonalscale));
   PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   X = ksp->vec_sol;
@@ -566,65 +559,65 @@ static PetscErrorCode  KSPSolve_PIPECG2(KSP ksp)
   A1 = ksp->work[17];
   B1 = ksp->work[18];
 
-  ierr = PetscMemzero(alpha,2*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(beta,2*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(gamma,2*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(delta,2*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(lambda,15*sizeof(PetscScalar));CHKERRQ(ierr);
+  CHKERRQ(PetscMemzero(alpha,2*sizeof(PetscScalar)));
+  CHKERRQ(PetscMemzero(beta,2*sizeof(PetscScalar)));
+  CHKERRQ(PetscMemzero(gamma,2*sizeof(PetscScalar)));
+  CHKERRQ(PetscMemzero(delta,2*sizeof(PetscScalar)));
+  CHKERRQ(PetscMemzero(lambda,15*sizeof(PetscScalar)));
 
-  ierr = VecGetLocalSize(B,&n);CHKERRQ(ierr);
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
+  CHKERRQ(VecGetLocalSize(B,&n));
+  CHKERRQ(PCGetOperators(ksp->pc,&Amat,&Pmat));
 
   ksp->its = 0;
   if (!ksp->guess_zero) {
-    ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);             /*  r <- b - Ax  */
-    ierr = VecAYPX(R,-1.0,B);CHKERRQ(ierr);
+    CHKERRQ(KSP_MatMult(ksp,Amat,X,R));             /*  r <- b - Ax  */
+    CHKERRQ(VecAYPX(R,-1.0,B));
   } else {
-    ierr = VecCopy(B,R);CHKERRQ(ierr);                          /*  r <- b (x is 0) */
+    CHKERRQ(VecCopy(B,R));                          /*  r <- b (x is 0) */
   }
 
-  ierr = KSP_PCApply(ksp,R,U);CHKERRQ(ierr);                    /*  u <- Br  */
-  ierr = KSP_MatMult(ksp,Amat,U,W);CHKERRQ(ierr);               /*  w <- Au  */
+  CHKERRQ(KSP_PCApply(ksp,R,U));                    /*  u <- Br  */
+  CHKERRQ(KSP_MatMult(ksp,Amat,U,W));               /*  w <- Au  */
 
-  ierr = VecMergedDot_Private(U,W,R,ksp->normtype,&gamma[0],&delta[0],&dps);CHKERRQ(ierr);     /*  gamma  <- r'*u , delta <- w'*u , dp <- u'*u or r'*r or r'*u depending on ksp_norm_type  */
+  CHKERRQ(VecMergedDot_Private(U,W,R,ksp->normtype,&gamma[0],&delta[0],&dps));     /*  gamma  <- r'*u , delta <- w'*u , dp <- u'*u or r'*r or r'*u depending on ksp_norm_type  */
   lambda[10]= gamma[0];
   lambda[11]= delta[0];
   lambda[12] = dps;
 
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
-  ierr = MPI_Iallreduce(MPI_IN_PLACE,&lambda[10],3,MPIU_SCALAR,MPIU_SUM,pcomm,&req);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Iallreduce(MPI_IN_PLACE,&lambda[10],3,MPIU_SCALAR,MPIU_SUM,pcomm,&req));
 #else
-  ierr = MPIU_Allreduce(MPI_IN_PLACE,&lambda[10],3,MPIU_SCALAR,MPIU_SUM,pcomm);CHKERRMPI(ierr);
+  CHKERRMPI(MPIU_Allreduce(MPI_IN_PLACE,&lambda[10],3,MPIU_SCALAR,MPIU_SUM,pcomm));
   req  = MPI_REQUEST_NULL;
 #endif
 
-  ierr = KSP_PCApply(ksp,W,M);CHKERRQ(ierr);                    /*  m <- Bw  */
-  ierr = KSP_MatMult(ksp,Amat,M,N);CHKERRQ(ierr);               /*  n <- Am  */
+  CHKERRQ(KSP_PCApply(ksp,W,M));                    /*  m <- Bw  */
+  CHKERRQ(KSP_MatMult(ksp,Amat,M,N));               /*  n <- Am  */
 
-  ierr = KSP_PCApply(ksp,N,G[0]);CHKERRQ(ierr);                 /*  g <- Bn  */
-  ierr = KSP_MatMult(ksp,Amat,G[0],H[0]);CHKERRQ(ierr);         /*  h <- Ag  */
+  CHKERRQ(KSP_PCApply(ksp,N,G[0]));                 /*  g <- Bn  */
+  CHKERRQ(KSP_MatMult(ksp,Amat,G[0],H[0]));         /*  h <- Ag  */
 
-  ierr = KSP_PCApply(ksp,H[0],E);CHKERRQ(ierr);                 /*  e <- Bh  */
-  ierr = KSP_MatMult(ksp,Amat,E,F);CHKERRQ(ierr);               /*  f <- Ae  */
+  CHKERRQ(KSP_PCApply(ksp,H[0],E));                 /*  e <- Bh  */
+  CHKERRQ(KSP_MatMult(ksp,Amat,E,F));               /*  f <- Ae  */
 
-  ierr = MPI_Wait(&req,&stat);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Wait(&req,&stat));
 
   gamma[0] = lambda[10];
   delta[0] = lambda[11];
   dp = PetscSqrtReal(PetscAbsScalar(lambda[12]));
 
-  ierr = VecMergedDot2_Private(N,M,W,&lambda[1],&lambda[6]);CHKERRQ(ierr);     /*  lambda_1 <- w'*m , lambda_4 <- n'*m  */
-  ierr = MPIU_Allreduce(MPI_IN_PLACE,&lambda[1],1,MPIU_SCALAR,MPIU_SUM,pcomm);CHKERRMPI(ierr);
-  ierr = MPIU_Allreduce(MPI_IN_PLACE,&lambda[6],1,MPIU_SCALAR,MPIU_SUM,pcomm);CHKERRMPI(ierr);
+  CHKERRQ(VecMergedDot2_Private(N,M,W,&lambda[1],&lambda[6]));     /*  lambda_1 <- w'*m , lambda_4 <- n'*m  */
+  CHKERRMPI(MPIU_Allreduce(MPI_IN_PLACE,&lambda[1],1,MPIU_SCALAR,MPIU_SUM,pcomm));
+  CHKERRMPI(MPIU_Allreduce(MPI_IN_PLACE,&lambda[6],1,MPIU_SCALAR,MPIU_SUM,pcomm));
 
   lambda[5] = PetscConj(lambda[1]);
   lambda[13] = PetscConj(lambda[11]);
 
-  ierr       = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
-  ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
+  CHKERRQ(KSPLogResidualHistory(ksp,dp));
+  CHKERRQ(KSPMonitor(ksp,0,dp));
   ksp->rnorm = dp;
 
-  ierr       = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
+  CHKERRQ((*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP)); /* test for convergence */
   if (ksp->reason) PetscFunctionReturn(0);
 
   for (i=2; i<ksp->max_it; i+=2) {
@@ -638,7 +631,7 @@ static PetscErrorCode  KSPSolve_PIPECG2(KSP ksp)
       beta[1]  = gamma[1] / gamma[0];
       alpha[1] = gamma[1] / (delta[1] - beta[1] / alpha[0] * gamma[1]);
 
-      ierr = VecMergedOpsShort_Private(X,R,Z,W,P,Q,C,D,G[0],H[0],G[1],H[1],S,A1,B1,E,F,M,N,U,ksp->normtype,beta[0],alpha[0],beta[1],alpha[1],lambda);CHKERRQ(ierr);
+      CHKERRQ(VecMergedOpsShort_Private(X,R,Z,W,P,Q,C,D,G[0],H[0],G[1],H[1],S,A1,B1,E,F,M,N,U,ksp->normtype,beta[0],alpha[0],beta[1],alpha[1],lambda));
     } else {
       beta[0]  = gamma[1] / gamma[0];
       alpha[0] = gamma[1] / (delta[1] - beta[0] / alpha[1] * gamma[1]);
@@ -653,26 +646,26 @@ static PetscErrorCode  KSPSolve_PIPECG2(KSP ksp)
       beta[1]  = gamma[1] / gamma[0];
       alpha[1] = gamma[1] / (delta[1] - beta[1] / alpha[0] * gamma[1]);
 
-      ierr =  VecMergedOps_Private(X,R,Z,W,P,Q,C,D,G[0],H[0],G[1],H[1],S,A1,B1,E,F,M,N,U,ksp->normtype,beta[0],alpha[0],beta[1],alpha[1],lambda,alphaold);CHKERRQ(ierr);
+      CHKERRQ(VecMergedOps_Private(X,R,Z,W,P,Q,C,D,G[0],H[0],G[1],H[1],S,A1,B1,E,F,M,N,U,ksp->normtype,beta[0],alpha[0],beta[1],alpha[1],lambda,alphaold));
     }
 
     gamma[0] = gamma[1];
     delta[0] = delta[1];
 
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
-    ierr = MPI_Iallreduce(MPI_IN_PLACE,lambda,15,MPIU_SCALAR,MPIU_SUM,pcomm,&req);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Iallreduce(MPI_IN_PLACE,lambda,15,MPIU_SCALAR,MPIU_SUM,pcomm,&req));
 #else
-    ierr = MPIU_Allreduce(MPI_IN_PLACE,lambda,15,MPIU_SCALAR,MPIU_SUM,pcomm);CHKERRMPI(ierr);
+    CHKERRMPI(MPIU_Allreduce(MPI_IN_PLACE,lambda,15,MPIU_SCALAR,MPIU_SUM,pcomm));
     req  = MPI_REQUEST_NULL;
 #endif
 
-    ierr = KSP_PCApply(ksp,N,G[0]);CHKERRQ(ierr);                       /*  g <- Bn  */
-    ierr = KSP_MatMult(ksp,Amat,G[0],H[0]);CHKERRQ(ierr);               /*  h <- Ag  */
+    CHKERRQ(KSP_PCApply(ksp,N,G[0]));                       /*  g <- Bn  */
+    CHKERRQ(KSP_MatMult(ksp,Amat,G[0],H[0]));               /*  h <- Ag  */
 
-    ierr = KSP_PCApply(ksp,H[0],E);CHKERRQ(ierr);               /*  e <- Bh  */
-    ierr = KSP_MatMult(ksp,Amat,E,F);CHKERRQ(ierr);             /*  f <- Ae */
+    CHKERRQ(KSP_PCApply(ksp,H[0],E));               /*  e <- Bh  */
+    CHKERRQ(KSP_MatMult(ksp,Amat,E,F));             /*  f <- Ae */
 
-    ierr = MPI_Wait(&req,&stat);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Wait(&req,&stat));
 
     gamma[1] = lambda[10];
     delta[1] = lambda[11];
@@ -684,9 +677,9 @@ static PetscErrorCode  KSPSolve_PIPECG2(KSP ksp)
     if (i > 0) {
       if (ksp->normtype == KSP_NORM_NONE) dp = 0.0;
       ksp->rnorm = dp;
-      ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
-      ierr = KSPMonitor(ksp,i,dp);CHKERRQ(ierr);
-      ierr = (*ksp->converged)(ksp,i,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+      CHKERRQ(KSPLogResidualHistory(ksp,dp));
+      CHKERRQ(KSPMonitor(ksp,i,dp));
+      CHKERRQ((*ksp->converged)(ksp,i,dp,&ksp->reason,ksp->cnvP));
       if (ksp->reason) break;
     }
   }
@@ -718,13 +711,11 @@ static PetscErrorCode  KSPSolve_PIPECG2(KSP ksp)
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG2(KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2));
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2));
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2));
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
 
   ksp->ops->setup          = KSPSetUp_PIPECG2;
   ksp->ops->solve          = KSPSolve_PIPECG2;

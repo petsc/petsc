@@ -39,65 +39,65 @@ int main(int argc,char **argv)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* Create a DMDA and an associated vector */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,100,90,PETSC_DECIDE,PETSC_DECIDE,ndof,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
-  ierr = VecSet(global,-1.0);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = VecScale(local,rank+1);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(da,local,ADD_VALUES,global);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(da,local,ADD_VALUES,global);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,100,90,PETSC_DECIDE,PETSC_DECIDE,ndof,1,NULL,NULL,&da));
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
+  CHKERRQ(DMCreateGlobalVector(da,&global));
+  CHKERRQ(DMCreateLocalVector(da,&local));
+  CHKERRQ(VecSet(global,-1.0));
+  CHKERRQ(DMGlobalToLocalBegin(da,global,INSERT_VALUES,local));
+  CHKERRQ(DMGlobalToLocalEnd(da,global,INSERT_VALUES,local));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRQ(VecScale(local,rank+1));
+  CHKERRQ(DMLocalToGlobalBegin(da,local,ADD_VALUES,global));
+  CHKERRQ(DMLocalToGlobalEnd(da,local,ADD_VALUES,global));
 
   /* Create the HDF5 viewer for writing */
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"hdf5output.h5",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetFromOptions(viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5Open(PETSC_COMM_WORLD,"hdf5output.h5",FILE_MODE_WRITE,&viewer));
+  CHKERRQ(PetscViewerSetFromOptions(viewer));
 
   /* Write the Vec without one extra dimension for BS */
-  ierr = PetscViewerHDF5SetBaseDimension2(viewer, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) global, "noBsDim");CHKERRQ(ierr);
-  ierr = VecView(global,viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5SetBaseDimension2(viewer, PETSC_FALSE));
+  CHKERRQ(PetscObjectSetName((PetscObject) global, "noBsDim"));
+  CHKERRQ(VecView(global,viewer));
 
   /* Write the Vec with one extra, 1-sized, dimension for BS */
-  ierr = PetscViewerHDF5SetBaseDimension2(viewer, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) global, "bsDim");CHKERRQ(ierr);
-  ierr = VecView(global,viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5SetBaseDimension2(viewer, PETSC_TRUE));
+  CHKERRQ(PetscObjectSetName((PetscObject) global, "bsDim"));
+  CHKERRQ(VecView(global,viewer));
 
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
-  ierr = VecDuplicate(global,&global2);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDestroy(&viewer));
+  CHKERRMPI(MPI_Barrier(PETSC_COMM_WORLD));
+  CHKERRQ(VecDuplicate(global,&global2));
 
   /* Create the HDF5 viewer for reading */
-  ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"hdf5output.h5",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetFromOptions(viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5Open(PETSC_COMM_WORLD,"hdf5output.h5",FILE_MODE_READ,&viewer));
+  CHKERRQ(PetscViewerSetFromOptions(viewer));
 
   /* Load the Vec without the BS dim and compare */
-  ierr = PetscObjectSetName((PetscObject) global2, "noBsDim");CHKERRQ(ierr);
-  ierr = VecLoad(global2,viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetName((PetscObject) global2, "noBsDim"));
+  CHKERRQ(VecLoad(global2,viewer));
 
-  ierr = VecEqual(global,global2,&flg);CHKERRQ(ierr);
+  CHKERRQ(VecEqual(global,global2,&flg));
   if (!flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: Vectors are not equal\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error: Vectors are not equal\n"));
   }
 
   /* Load the Vec with one extra, 1-sized, BS dim and compare */
-  ierr = PetscObjectSetName((PetscObject) global2, "bsDim");CHKERRQ(ierr);
-  ierr = VecLoad(global2,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetName((PetscObject) global2, "bsDim"));
+  CHKERRQ(VecLoad(global2,viewer));
+  CHKERRQ(PetscViewerDestroy(&viewer));
 
-  ierr = VecEqual(global,global2,&flg);CHKERRQ(ierr);
+  CHKERRQ(VecEqual(global,global2,&flg));
   if (!flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: Vectors are not equal\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Error: Vectors are not equal\n"));
   }
 
   /* clean up and exit */
-  ierr = VecDestroy(&local);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
-  ierr = VecDestroy(&global2);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&local));
+  CHKERRQ(VecDestroy(&global));
+  CHKERRQ(VecDestroy(&global2));
+  CHKERRQ(DMDestroy(&da));
 
   ierr = PetscFinalize();
   return ierr;

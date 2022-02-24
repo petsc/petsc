@@ -20,7 +20,6 @@ static PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,Mat
   PetscScalar       *x;
   const Mat         *v;
   const PetscScalar *b;
-  PetscErrorCode    ierr;
   PetscInt          n = A->cmap->n,i,mbs = n/A->rmap->bs,j,bs = A->rmap->bs;
   const PetscInt    *idx;
   IS                row,col;
@@ -39,24 +38,24 @@ static PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,Mat
   }
 
   if (!a->diags) {
-    ierr = PetscMalloc1(mbs,&a->diags);CHKERRQ(ierr);
-    ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(mbs,&a->diags));
+    CHKERRQ(MatFactorInfoInitialize(&info));
     for (i=0; i<mbs; i++) {
-      ierr = MatGetOrdering(a->a[a->diag[i]], MATORDERINGND,&row,&col);CHKERRQ(ierr);
-      ierr = MatCholeskyFactorSymbolic(a->diags[i],a->a[a->diag[i]],row,&info);CHKERRQ(ierr);
-      ierr = MatCholeskyFactorNumeric(a->diags[i],a->a[a->diag[i]],&info);CHKERRQ(ierr);
-      ierr = ISDestroy(&row);CHKERRQ(ierr);
-      ierr = ISDestroy(&col);CHKERRQ(ierr);
+      CHKERRQ(MatGetOrdering(a->a[a->diag[i]], MATORDERINGND,&row,&col));
+      CHKERRQ(MatCholeskyFactorSymbolic(a->diags[i],a->a[a->diag[i]],row,&info));
+      CHKERRQ(MatCholeskyFactorNumeric(a->diags[i],a->a[a->diag[i]],&info));
+      CHKERRQ(ISDestroy(&row));
+      CHKERRQ(ISDestroy(&col));
     }
-    ierr = VecDuplicate(bb,&a->workb);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(bb,&a->workb));
   }
   diag = a->diags;
 
-  ierr = VecSet(xx,0.0);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  CHKERRQ(VecSet(xx,0.0));
+  CHKERRQ(VecGetArray(xx,&x));
   /* copy right hand side because it must be modified during iteration */
-  ierr = VecCopy(bb,a->workb);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(a->workb,&b);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(bb,a->workb));
+  CHKERRQ(VecGetArrayRead(a->workb,&b));
 
   /* need to add code for when initial guess is zero, see MatSOR_SeqAIJ */
   while (its--) {
@@ -67,27 +66,27 @@ static PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,Mat
         idx = a->j + a->i[i] + 1;
         v   = a->a + a->i[i] + 1;
 
-        ierr = VecSet(left,0.0);CHKERRQ(ierr);
+        CHKERRQ(VecSet(left,0.0));
         for (j=0; j<n; j++) {
-          ierr = VecPlaceArray(right,x + idx[j]*bs);CHKERRQ(ierr);
-          ierr = MatMultAdd(v[j],right,left,left);CHKERRQ(ierr);
-          ierr = VecResetArray(right);CHKERRQ(ierr);
+          CHKERRQ(VecPlaceArray(right,x + idx[j]*bs));
+          CHKERRQ(MatMultAdd(v[j],right,left,left));
+          CHKERRQ(VecResetArray(right));
         }
-        ierr = VecPlaceArray(right,b + i*bs);CHKERRQ(ierr);
-        ierr = VecAYPX(left,-1.0,right);CHKERRQ(ierr);
-        ierr = VecResetArray(right);CHKERRQ(ierr);
+        CHKERRQ(VecPlaceArray(right,b + i*bs));
+        CHKERRQ(VecAYPX(left,-1.0,right));
+        CHKERRQ(VecResetArray(right));
 
-        ierr = VecPlaceArray(right,x + i*bs);CHKERRQ(ierr);
-        ierr = MatSolve(diag[i],left,right);CHKERRQ(ierr);
+        CHKERRQ(VecPlaceArray(right,x + i*bs));
+        CHKERRQ(MatSolve(diag[i],left,right));
 
         /* now adjust right hand side, see MatSOR_SeqSBAIJ */
         for (j=0; j<n; j++) {
-          ierr = MatMultTranspose(v[j],right,left);CHKERRQ(ierr);
-          ierr = VecPlaceArray(middle,b + idx[j]*bs);CHKERRQ(ierr);
-          ierr = VecAXPY(middle,-1.0,left);CHKERRQ(ierr);
-          ierr = VecResetArray(middle);CHKERRQ(ierr);
+          CHKERRQ(MatMultTranspose(v[j],right,left));
+          CHKERRQ(VecPlaceArray(middle,b + idx[j]*bs));
+          CHKERRQ(VecAXPY(middle,-1.0,left));
+          CHKERRQ(VecResetArray(middle));
         }
-        ierr = VecResetArray(right);CHKERRQ(ierr);
+        CHKERRQ(VecResetArray(right));
 
       }
     }
@@ -98,25 +97,25 @@ static PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,Mat
         idx = a->j + a->i[i] + 1;
         v   = a->a + a->i[i] + 1;
 
-        ierr = VecSet(left,0.0);CHKERRQ(ierr);
+        CHKERRQ(VecSet(left,0.0));
         for (j=0; j<n; j++) {
-          ierr = VecPlaceArray(right,x + idx[j]*bs);CHKERRQ(ierr);
-          ierr = MatMultAdd(v[j],right,left,left);CHKERRQ(ierr);
-          ierr = VecResetArray(right);CHKERRQ(ierr);
+          CHKERRQ(VecPlaceArray(right,x + idx[j]*bs));
+          CHKERRQ(MatMultAdd(v[j],right,left,left));
+          CHKERRQ(VecResetArray(right));
         }
-        ierr = VecPlaceArray(right,b + i*bs);CHKERRQ(ierr);
-        ierr = VecAYPX(left,-1.0,right);CHKERRQ(ierr);
-        ierr = VecResetArray(right);CHKERRQ(ierr);
+        CHKERRQ(VecPlaceArray(right,b + i*bs));
+        CHKERRQ(VecAYPX(left,-1.0,right));
+        CHKERRQ(VecResetArray(right));
 
-        ierr = VecPlaceArray(right,x + i*bs);CHKERRQ(ierr);
-        ierr = MatSolve(diag[i],left,right);CHKERRQ(ierr);
-        ierr = VecResetArray(right);CHKERRQ(ierr);
+        CHKERRQ(VecPlaceArray(right,x + i*bs));
+        CHKERRQ(MatSolve(diag[i],left,right));
+        CHKERRQ(VecResetArray(right));
 
       }
     }
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(a->workb,&b);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(xx,&x));
+  CHKERRQ(VecRestoreArrayRead(a->workb,&b));
   PetscFunctionReturn(0);
 }
 
@@ -126,7 +125,6 @@ static PetscErrorCode MatSOR_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType fl
   PetscScalar       *x;
   const Mat         *v;
   const PetscScalar *b;
-  PetscErrorCode    ierr;
   PetscInt          n = A->cmap->n,i,mbs = n/A->rmap->bs,j,bs = A->rmap->bs;
   const PetscInt    *idx;
   IS                row,col;
@@ -142,21 +140,21 @@ static PetscErrorCode MatSOR_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType fl
   PetscCheckFalse(fshift,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for fshift");
 
   if (!a->diags) {
-    ierr = PetscMalloc1(mbs,&a->diags);CHKERRQ(ierr);
-    ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(mbs,&a->diags));
+    CHKERRQ(MatFactorInfoInitialize(&info));
     for (i=0; i<mbs; i++) {
-      ierr = MatGetOrdering(a->a[a->diag[i]], MATORDERINGND,&row,&col);CHKERRQ(ierr);
-      ierr = MatLUFactorSymbolic(a->diags[i],a->a[a->diag[i]],row,col,&info);CHKERRQ(ierr);
-      ierr = MatLUFactorNumeric(a->diags[i],a->a[a->diag[i]],&info);CHKERRQ(ierr);
-      ierr = ISDestroy(&row);CHKERRQ(ierr);
-      ierr = ISDestroy(&col);CHKERRQ(ierr);
+      CHKERRQ(MatGetOrdering(a->a[a->diag[i]], MATORDERINGND,&row,&col));
+      CHKERRQ(MatLUFactorSymbolic(a->diags[i],a->a[a->diag[i]],row,col,&info));
+      CHKERRQ(MatLUFactorNumeric(a->diags[i],a->a[a->diag[i]],&info));
+      CHKERRQ(ISDestroy(&row));
+      CHKERRQ(ISDestroy(&col));
     }
   }
   diag = a->diags;
 
-  ierr = VecSet(xx,0.0);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
+  CHKERRQ(VecSet(xx,0.0));
+  CHKERRQ(VecGetArray(xx,&x));
+  CHKERRQ(VecGetArrayRead(bb,&b));
 
   /* need to add code for when initial guess is zero, see MatSOR_SeqAIJ */
   while (its--) {
@@ -167,21 +165,21 @@ static PetscErrorCode MatSOR_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType fl
         idx = a->j + a->i[i];
         v   = a->a + a->i[i];
 
-        ierr = VecSet(left,0.0);CHKERRQ(ierr);
+        CHKERRQ(VecSet(left,0.0));
         for (j=0; j<n; j++) {
           if (idx[j] != i) {
-            ierr = VecPlaceArray(right,x + idx[j]*bs);CHKERRQ(ierr);
-            ierr = MatMultAdd(v[j],right,left,left);CHKERRQ(ierr);
-            ierr = VecResetArray(right);CHKERRQ(ierr);
+            CHKERRQ(VecPlaceArray(right,x + idx[j]*bs));
+            CHKERRQ(MatMultAdd(v[j],right,left,left));
+            CHKERRQ(VecResetArray(right));
           }
         }
-        ierr = VecPlaceArray(right,b + i*bs);CHKERRQ(ierr);
-        ierr = VecAYPX(left,-1.0,right);CHKERRQ(ierr);
-        ierr = VecResetArray(right);CHKERRQ(ierr);
+        CHKERRQ(VecPlaceArray(right,b + i*bs));
+        CHKERRQ(VecAYPX(left,-1.0,right));
+        CHKERRQ(VecResetArray(right));
 
-        ierr = VecPlaceArray(right,x + i*bs);CHKERRQ(ierr);
-        ierr = MatSolve(diag[i],left,right);CHKERRQ(ierr);
-        ierr = VecResetArray(right);CHKERRQ(ierr);
+        CHKERRQ(VecPlaceArray(right,x + i*bs));
+        CHKERRQ(MatSolve(diag[i],left,right));
+        CHKERRQ(VecResetArray(right));
       }
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
@@ -191,27 +189,27 @@ static PetscErrorCode MatSOR_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType fl
         idx = a->j + a->i[i];
         v   = a->a + a->i[i];
 
-        ierr = VecSet(left,0.0);CHKERRQ(ierr);
+        CHKERRQ(VecSet(left,0.0));
         for (j=0; j<n; j++) {
           if (idx[j] != i) {
-            ierr = VecPlaceArray(right,x + idx[j]*bs);CHKERRQ(ierr);
-            ierr = MatMultAdd(v[j],right,left,left);CHKERRQ(ierr);
-            ierr = VecResetArray(right);CHKERRQ(ierr);
+            CHKERRQ(VecPlaceArray(right,x + idx[j]*bs));
+            CHKERRQ(MatMultAdd(v[j],right,left,left));
+            CHKERRQ(VecResetArray(right));
           }
         }
-        ierr = VecPlaceArray(right,b + i*bs);CHKERRQ(ierr);
-        ierr = VecAYPX(left,-1.0,right);CHKERRQ(ierr);
-        ierr = VecResetArray(right);CHKERRQ(ierr);
+        CHKERRQ(VecPlaceArray(right,b + i*bs));
+        CHKERRQ(VecAYPX(left,-1.0,right));
+        CHKERRQ(VecResetArray(right));
 
-        ierr = VecPlaceArray(right,x + i*bs);CHKERRQ(ierr);
-        ierr = MatSolve(diag[i],left,right);CHKERRQ(ierr);
-        ierr = VecResetArray(right);CHKERRQ(ierr);
+        CHKERRQ(VecPlaceArray(right,x + i*bs));
+        CHKERRQ(MatSolve(diag[i],left,right));
+        CHKERRQ(VecResetArray(right));
 
       }
     }
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(xx,&x));
+  CHKERRQ(VecRestoreArrayRead(bb,&b));
   PetscFunctionReturn(0);
 }
 
@@ -221,7 +219,6 @@ static PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[]
   PetscInt       *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,lastcol = -1;
   PetscInt       *imax=a->imax,*ai=a->i,*ailen=a->ilen;
   PetscInt       *aj  =a->j,nonew=a->nonew,bs=A->rmap->bs,brow,bcol;
-  PetscErrorCode ierr;
   PetscInt       ridx,cidx;
   PetscBool      roworiented=a->roworiented;
   MatScalar      value;
@@ -275,9 +272,9 @@ static PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[]
       A->nonzerostate++;
 noinsert1:;
       if (!*(ap+i)) {
-        ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,bs,bs,0,NULL,ap+i);CHKERRQ(ierr);
+        CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_SELF,bs,bs,0,NULL,ap+i));
       }
-      ierr = MatSetValues(ap[i],1,&ridx,1,&cidx,&value,is);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(ap[i],1,&ridx,1,&cidx,&value,is));
       low  = i;
     }
     ailen[brow] = nrow;
@@ -298,22 +295,22 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
 
   PetscFunctionBegin;
   /* force binary viewer to load .info file if it has not yet done so */
-  ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_SELF,&tmpA);CHKERRQ(ierr);
-  ierr = MatSetType(tmpA,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatLoad_SeqAIJ(tmpA,viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerSetUp(viewer));
+  CHKERRQ(MatCreate(PETSC_COMM_SELF,&tmpA));
+  CHKERRQ(MatSetType(tmpA,MATSEQAIJ));
+  CHKERRQ(MatLoad_SeqAIJ(tmpA,viewer));
 
-  ierr = MatGetLocalSize(tmpA,&m,&n);CHKERRQ(ierr);
+  CHKERRQ(MatGetLocalSize(tmpA,&m,&n));
   ierr = PetscOptionsBegin(PETSC_COMM_SELF,NULL,"Options for loading BlockMat matrix 1","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-matload_symmetric","Store the matrix as symmetric","MatLoad",flg,&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,NULL));
+  CHKERRQ(PetscOptionsBool("-matload_symmetric","Store the matrix as symmetric","MatLoad",flg,&flg,NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* Determine number of nonzero blocks for each block row */
   a    = (Mat_SeqAIJ*) tmpA->data;
   mbs  = m/bs;
-  ierr = PetscMalloc3(mbs,&lens,bs,&ii,bs,&ilens);CHKERRQ(ierr);
-  ierr = PetscArrayzero(lens,mbs);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc3(mbs,&lens,bs,&ii,bs,&ilens));
+  CHKERRQ(PetscArrayzero(lens,mbs));
 
   for (i=0; i<mbs; i++) {
     for (j=0; j<bs; j++) {
@@ -342,16 +339,16 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
   }
 
   if (newmat->rmap->n < 0 && newmat->rmap->N < 0 && newmat->cmap->n < 0 && newmat->cmap->N < 0) {
-    ierr = MatSetSizes(newmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+    CHKERRQ(MatSetSizes(newmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE));
   }
-  ierr = MatBlockMatSetPreallocation(newmat,bs,0,lens);CHKERRQ(ierr);
+  CHKERRQ(MatBlockMatSetPreallocation(newmat,bs,0,lens));
   if (flg) {
-    ierr = MatSetOption(newmat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    CHKERRQ(MatSetOption(newmat,MAT_SYMMETRIC,PETSC_TRUE));
   }
   amat = (Mat_BlockMat*)(newmat)->data;
 
   /* preallocate the submatrices */
-  ierr = PetscMalloc1(bs,&llens);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(bs,&llens));
   for (i=0; i<mbs; i++) { /* loops for block rows */
     for (j=0; j<bs; j++) {
       ii[j]    = a->j + a->i[i*bs + j];
@@ -368,7 +365,7 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
     while (PETSC_TRUE) {  /* loops over blocks in block row */
       notdone = PETSC_FALSE;
       nextcol = 1000000000;
-      ierr    = PetscArrayzero(llens,bs);CHKERRQ(ierr);
+      CHKERRQ(PetscArrayzero(llens,bs));
       for (j=0; j<bs; j++) { /* loop over rows in block */
         while ((ilens[j] > 0 && ii[j][0]/bs <= currentcol)) { /* loop over columns in row */
           ii[j]++;
@@ -383,7 +380,7 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
       PetscCheckFalse(cnt >= amat->maxnz,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of blocks found greater than expected %" PetscInt_FMT,cnt);
       if (!flg || currentcol >= i) {
         amat->j[cnt] = currentcol;
-        ierr         = MatCreateSeqAIJ(PETSC_COMM_SELF,bs,bs,0,llens,amat->a+cnt++);CHKERRQ(ierr);
+        CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_SELF,bs,bs,0,llens,amat->a+cnt++));
       }
 
       if (!notdone) break;
@@ -392,34 +389,33 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
     amat->ilen[i] = lens[i];
   }
 
-  ierr = PetscFree3(lens,ii,ilens);CHKERRQ(ierr);
-  ierr = PetscFree(llens);CHKERRQ(ierr);
+  CHKERRQ(PetscFree3(lens,ii,ilens));
+  CHKERRQ(PetscFree(llens));
 
   /* copy over the matrix, one row at a time */
   for (i=0; i<m; i++) {
-    ierr = MatGetRow(tmpA,i,&ncols,&cols,&values);CHKERRQ(ierr);
-    ierr = MatSetValues(newmat,1,&i,ncols,cols,values,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatRestoreRow(tmpA,i,&ncols,&cols,&values);CHKERRQ(ierr);
+    CHKERRQ(MatGetRow(tmpA,i,&ncols,&cols,&values));
+    CHKERRQ(MatSetValues(newmat,1,&i,ncols,cols,values,INSERT_VALUES));
+    CHKERRQ(MatRestoreRow(tmpA,i,&ncols,&cols,&values));
   }
-  ierr = MatAssemblyBegin(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(newmat,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(newmat,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatView_BlockMat(Mat A,PetscViewer viewer)
 {
   Mat_BlockMat      *a = (Mat_BlockMat*)A->data;
-  PetscErrorCode    ierr;
   const char        *name;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetName((PetscObject)A,&name);CHKERRQ(ierr);
-  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetName((PetscObject)A,&name));
+  CHKERRQ(PetscViewerGetFormat(viewer,&format));
   if (format == PETSC_VIEWER_ASCII_FACTOR_INFO || format == PETSC_VIEWER_ASCII_INFO) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Nonzero block matrices = %" PetscInt_FMT " \n",a->nz);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Nonzero block matrices = %" PetscInt_FMT " \n",a->nz));
     if (A->symmetric) {
-      ierr = PetscViewerASCIIPrintf(viewer,"Only upper triangular part of symmetric matrix is stored\n");CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Only upper triangular part of symmetric matrix is stored\n"));
     }
   }
   PetscFunctionReturn(0);
@@ -427,34 +423,32 @@ static PetscErrorCode MatView_BlockMat(Mat A,PetscViewer viewer)
 
 static PetscErrorCode MatDestroy_BlockMat(Mat mat)
 {
-  PetscErrorCode ierr;
   Mat_BlockMat   *bmat = (Mat_BlockMat*)mat->data;
   PetscInt       i;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(&bmat->right);CHKERRQ(ierr);
-  ierr = VecDestroy(&bmat->left);CHKERRQ(ierr);
-  ierr = VecDestroy(&bmat->middle);CHKERRQ(ierr);
-  ierr = VecDestroy(&bmat->workb);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&bmat->right));
+  CHKERRQ(VecDestroy(&bmat->left));
+  CHKERRQ(VecDestroy(&bmat->middle));
+  CHKERRQ(VecDestroy(&bmat->workb));
   if (bmat->diags) {
     for (i=0; i<mat->rmap->n/mat->rmap->bs; i++) {
-      ierr = MatDestroy(&bmat->diags[i]);CHKERRQ(ierr);
+      CHKERRQ(MatDestroy(&bmat->diags[i]));
     }
   }
   if (bmat->a) {
     for (i=0; i<bmat->nz; i++) {
-      ierr = MatDestroy(&bmat->a[i]);CHKERRQ(ierr);
+      CHKERRQ(MatDestroy(&bmat->a[i]));
     }
   }
-  ierr = MatSeqXAIJFreeAIJ(mat,(PetscScalar**)&bmat->a,&bmat->j,&bmat->i);CHKERRQ(ierr);
-  ierr = PetscFree(mat->data);CHKERRQ(ierr);
+  CHKERRQ(MatSeqXAIJFreeAIJ(mat,(PetscScalar**)&bmat->a,&bmat->j,&bmat->i));
+  CHKERRQ(PetscFree(mat->data));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatMult_BlockMat(Mat A,Vec x,Vec y)
 {
   Mat_BlockMat   *bmat = (Mat_BlockMat*)A->data;
-  PetscErrorCode ierr;
   PetscScalar    *xx,*yy;
   PetscInt       *aj,i,*ii,jrow,m = A->rmap->n/A->rmap->bs,bs = A->rmap->bs,n,j;
   Mat            *aa;
@@ -463,34 +457,33 @@ static PetscErrorCode MatMult_BlockMat(Mat A,Vec x,Vec y)
   /*
      Standard CSR multiply except each entry is a Mat
   */
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(x,&xx));
 
-  ierr = VecSet(y,0.0);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+  CHKERRQ(VecSet(y,0.0));
+  CHKERRQ(VecGetArray(y,&yy));
   aj   = bmat->j;
   aa   = bmat->a;
   ii   = bmat->i;
   for (i=0; i<m; i++) {
     jrow = ii[i];
-    ierr = VecPlaceArray(bmat->left,yy + bs*i);CHKERRQ(ierr);
+    CHKERRQ(VecPlaceArray(bmat->left,yy + bs*i));
     n    = ii[i+1] - jrow;
     for (j=0; j<n; j++) {
-      ierr = VecPlaceArray(bmat->right,xx + bs*aj[jrow]);CHKERRQ(ierr);
-      ierr = MatMultAdd(aa[jrow],bmat->right,bmat->left,bmat->left);CHKERRQ(ierr);
-      ierr = VecResetArray(bmat->right);CHKERRQ(ierr);
+      CHKERRQ(VecPlaceArray(bmat->right,xx + bs*aj[jrow]));
+      CHKERRQ(MatMultAdd(aa[jrow],bmat->right,bmat->left,bmat->left));
+      CHKERRQ(VecResetArray(bmat->right));
       jrow++;
     }
-    ierr = VecResetArray(bmat->left);CHKERRQ(ierr);
+    CHKERRQ(VecResetArray(bmat->left));
   }
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(x,&xx));
+  CHKERRQ(VecRestoreArray(y,&yy));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatMult_BlockMat_Symmetric(Mat A,Vec x,Vec y)
 {
   Mat_BlockMat   *bmat = (Mat_BlockMat*)A->data;
-  PetscErrorCode ierr;
   PetscScalar    *xx,*yy;
   PetscInt       *aj,i,*ii,jrow,m = A->rmap->n/A->rmap->bs,bs = A->rmap->bs,n,j;
   Mat            *aa;
@@ -499,41 +492,41 @@ PetscErrorCode MatMult_BlockMat_Symmetric(Mat A,Vec x,Vec y)
   /*
      Standard CSR multiply except each entry is a Mat
   */
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(x,&xx));
 
-  ierr = VecSet(y,0.0);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+  CHKERRQ(VecSet(y,0.0));
+  CHKERRQ(VecGetArray(y,&yy));
   aj   = bmat->j;
   aa   = bmat->a;
   ii   = bmat->i;
   for (i=0; i<m; i++) {
     jrow = ii[i];
     n    = ii[i+1] - jrow;
-    ierr = VecPlaceArray(bmat->left,yy + bs*i);CHKERRQ(ierr);
-    ierr = VecPlaceArray(bmat->middle,xx + bs*i);CHKERRQ(ierr);
+    CHKERRQ(VecPlaceArray(bmat->left,yy + bs*i));
+    CHKERRQ(VecPlaceArray(bmat->middle,xx + bs*i));
     /* if we ALWAYS required a diagonal entry then could remove this if test */
     if (aj[jrow] == i) {
-      ierr = VecPlaceArray(bmat->right,xx + bs*aj[jrow]);CHKERRQ(ierr);
-      ierr = MatMultAdd(aa[jrow],bmat->right,bmat->left,bmat->left);CHKERRQ(ierr);
-      ierr = VecResetArray(bmat->right);CHKERRQ(ierr);
+      CHKERRQ(VecPlaceArray(bmat->right,xx + bs*aj[jrow]));
+      CHKERRQ(MatMultAdd(aa[jrow],bmat->right,bmat->left,bmat->left));
+      CHKERRQ(VecResetArray(bmat->right));
       jrow++;
       n--;
     }
     for (j=0; j<n; j++) {
-      ierr = VecPlaceArray(bmat->right,xx + bs*aj[jrow]);CHKERRQ(ierr);            /* upper triangular part */
-      ierr = MatMultAdd(aa[jrow],bmat->right,bmat->left,bmat->left);CHKERRQ(ierr);
-      ierr = VecResetArray(bmat->right);CHKERRQ(ierr);
+      CHKERRQ(VecPlaceArray(bmat->right,xx + bs*aj[jrow]));            /* upper triangular part */
+      CHKERRQ(MatMultAdd(aa[jrow],bmat->right,bmat->left,bmat->left));
+      CHKERRQ(VecResetArray(bmat->right));
 
-      ierr = VecPlaceArray(bmat->right,yy + bs*aj[jrow]);CHKERRQ(ierr);            /* lower triangular part */
-      ierr = MatMultTransposeAdd(aa[jrow],bmat->middle,bmat->right,bmat->right);CHKERRQ(ierr);
-      ierr = VecResetArray(bmat->right);CHKERRQ(ierr);
+      CHKERRQ(VecPlaceArray(bmat->right,yy + bs*aj[jrow]));            /* lower triangular part */
+      CHKERRQ(MatMultTransposeAdd(aa[jrow],bmat->middle,bmat->right,bmat->right));
+      CHKERRQ(VecResetArray(bmat->right));
       jrow++;
     }
-    ierr = VecResetArray(bmat->left);CHKERRQ(ierr);
-    ierr = VecResetArray(bmat->middle);CHKERRQ(ierr);
+    CHKERRQ(VecResetArray(bmat->left));
+    CHKERRQ(VecResetArray(bmat->middle));
   }
-  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(x,&xx));
+  CHKERRQ(VecRestoreArray(y,&yy));
   PetscFunctionReturn(0);
 }
 
@@ -561,12 +554,11 @@ static PetscErrorCode MatMultTransposeAdd_BlockMat(Mat A,Vec x,Vec y,Vec z)
 static PetscErrorCode MatMarkDiagonal_BlockMat(Mat A)
 {
   Mat_BlockMat   *a = (Mat_BlockMat*)A->data;
-  PetscErrorCode ierr;
   PetscInt       i,j,mbs = A->rmap->n/A->rmap->bs;
 
   PetscFunctionBegin;
   if (!a->diag) {
-    ierr = PetscMalloc1(mbs,&a->diag);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(mbs,&a->diag));
   }
   for (i=0; i<mbs; i++) {
     a->diag[i] = a->i[i+1];
@@ -584,7 +576,6 @@ static PetscErrorCode MatCreateSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,MatReu
 {
   Mat_BlockMat   *a = (Mat_BlockMat*)A->data;
   Mat_SeqAIJ     *c;
-  PetscErrorCode ierr;
   PetscInt       i,k,first,step,lensi,nrows,ncols;
   PetscInt       *j_new,*i_new,*aj = a->j,*ailen = a->ilen;
   PetscScalar    *a_new;
@@ -592,33 +583,33 @@ static PetscErrorCode MatCreateSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,MatReu
   PetscBool      stride,equal;
 
   PetscFunctionBegin;
-  ierr = ISEqual(isrow,iscol,&equal);CHKERRQ(ierr);
+  CHKERRQ(ISEqual(isrow,iscol,&equal));
   PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only for identical column and row indices");
-  ierr = PetscObjectTypeCompare((PetscObject)iscol,ISSTRIDE,&stride);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)iscol,ISSTRIDE,&stride));
   PetscCheckFalse(!stride,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only for stride indices");
-  ierr = ISStrideGetInfo(iscol,&first,&step);CHKERRQ(ierr);
+  CHKERRQ(ISStrideGetInfo(iscol,&first,&step));
   PetscCheckFalse(step != A->rmap->bs,PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only select one entry from each block");
 
-  ierr  = ISGetLocalSize(isrow,&nrows);CHKERRQ(ierr);
+  CHKERRQ(ISGetLocalSize(isrow,&nrows));
   ncols = nrows;
 
   /* create submatrix */
   if (scall == MAT_REUSE_MATRIX) {
     PetscInt n_cols,n_rows;
     C    = *B;
-    ierr = MatGetSize(C,&n_rows,&n_cols);CHKERRQ(ierr);
+    CHKERRQ(MatGetSize(C,&n_rows,&n_cols));
     PetscCheckFalse(n_rows != nrows || n_cols != ncols,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Reused submatrix wrong size");
-    ierr = MatZeroEntries(C);CHKERRQ(ierr);
+    CHKERRQ(MatZeroEntries(C));
   } else {
-    ierr = MatCreate(PetscObjectComm((PetscObject)A),&C);CHKERRQ(ierr);
-    ierr = MatSetSizes(C,nrows,ncols,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+    CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&C));
+    CHKERRQ(MatSetSizes(C,nrows,ncols,PETSC_DETERMINE,PETSC_DETERMINE));
     if (A->symmetric) {
-      ierr = MatSetType(C,MATSEQSBAIJ);CHKERRQ(ierr);
+      CHKERRQ(MatSetType(C,MATSEQSBAIJ));
     } else {
-      ierr = MatSetType(C,MATSEQAIJ);CHKERRQ(ierr);
+      CHKERRQ(MatSetType(C,MATSEQAIJ));
     }
-    ierr = MatSeqAIJSetPreallocation(C,0,ailen);CHKERRQ(ierr);
-    ierr = MatSeqSBAIJSetPreallocation(C,1,0,ailen);CHKERRQ(ierr);
+    CHKERRQ(MatSeqAIJSetPreallocation(C,0,ailen));
+    CHKERRQ(MatSeqSBAIJSetPreallocation(C,1,0,ailen));
   }
   c = (Mat_SeqAIJ*)C->data;
 
@@ -631,14 +622,14 @@ static PetscErrorCode MatCreateSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,MatReu
     lensi = ailen[i];
     for (k=0; k<lensi; k++) {
       *j_new++ = *aj++;
-      ierr     = MatGetValue(*aa++,first,first,a_new++);CHKERRQ(ierr);
+      CHKERRQ(MatGetValue(*aa++,first,first,a_new++));
     }
     i_new[i+1] = i_new[i] + lensi;
     c->ilen[i] = lensi;
   }
 
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
   *B   = C;
   PetscFunctionReturn(0);
 }
@@ -646,7 +637,6 @@ static PetscErrorCode MatCreateSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,MatReu
 static PetscErrorCode MatAssemblyEnd_BlockMat(Mat A,MatAssemblyType mode)
 {
   Mat_BlockMat   *a = (Mat_BlockMat*)A->data;
-  PetscErrorCode ierr;
   PetscInt       fshift = 0,i,j,*ai = a->i,*aj = a->j,*imax = a->imax;
   PetscInt       m      = a->mbs,*ip,N,*ailen = a->ilen,rmax = 0;
   Mat            *aa    = a->a,*ap;
@@ -681,30 +671,29 @@ static PetscErrorCode MatAssemblyEnd_BlockMat(Mat A,MatAssemblyType mode)
   a->nz = ai[m];
   for (i=0; i<a->nz; i++) {
     PetscAssert(aa[i],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Null matrix at location %" PetscInt_FMT " column %" PetscInt_FMT " nz %" PetscInt_FMT,i,aj[i],a->nz);
-    ierr = MatAssemblyBegin(aa[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(aa[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(aa[i],MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(aa[i],MAT_FINAL_ASSEMBLY));
   }
-  ierr = PetscInfo(A,"Matrix size: %" PetscInt_FMT " X %" PetscInt_FMT "; storage space: %" PetscInt_FMT " unneeded,%" PetscInt_FMT " used\n",m,A->cmap->n/A->cmap->bs,fshift,a->nz);CHKERRQ(ierr);
-  ierr = PetscInfo(A,"Number of mallocs during MatSetValues() is %" PetscInt_FMT "\n",a->reallocs);CHKERRQ(ierr);
-  ierr = PetscInfo(A,"Maximum nonzeros in any row is %" PetscInt_FMT "\n",rmax);CHKERRQ(ierr);
+  CHKERRQ(PetscInfo(A,"Matrix size: %" PetscInt_FMT " X %" PetscInt_FMT "; storage space: %" PetscInt_FMT " unneeded,%" PetscInt_FMT " used\n",m,A->cmap->n/A->cmap->bs,fshift,a->nz));
+  CHKERRQ(PetscInfo(A,"Number of mallocs during MatSetValues() is %" PetscInt_FMT "\n",a->reallocs));
+  CHKERRQ(PetscInfo(A,"Maximum nonzeros in any row is %" PetscInt_FMT "\n",rmax));
 
   A->info.mallocs    += a->reallocs;
   a->reallocs         = 0;
   A->info.nz_unneeded = (double)fshift;
   a->rmax             = rmax;
-  ierr                = MatMarkDiagonal_BlockMat(A);CHKERRQ(ierr);
+  CHKERRQ(MatMarkDiagonal_BlockMat(A));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatSetOption_BlockMat(Mat A,MatOption opt,PetscBool flg)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   if (opt == MAT_SYMMETRIC && flg) {
     A->ops->sor  = MatSOR_BlockMat_Symmetric;
     A->ops->mult = MatMult_BlockMat_Symmetric;
   } else {
-    ierr = PetscInfo(A,"Unused matrix option %s\n",MatOptions[opt]);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(A,"Unused matrix option %s\n",MatOptions[opt]));
   }
   PetscFunctionReturn(0);
 }
@@ -889,25 +878,22 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
 @*/
 PetscErrorCode  MatBlockMatSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const PetscInt nnz[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscTryMethod(B,"MatBlockMatSetPreallocation_C",(Mat,PetscInt,PetscInt,const PetscInt[]),(B,bs,nz,nnz));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(B,"MatBlockMatSetPreallocation_C",(Mat,PetscInt,PetscInt,const PetscInt[]),(B,bs,nz,nnz)));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,PetscInt nz,PetscInt *nnz)
 {
   Mat_BlockMat   *bmat = (Mat_BlockMat*)A->data;
-  PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin;
-  ierr = PetscLayoutSetBlockSize(A->rmap,bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(A->cmap,bs);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
-  ierr = PetscLayoutGetBlockSize(A->rmap,&bs);CHKERRQ(ierr);
+  CHKERRQ(PetscLayoutSetBlockSize(A->rmap,bs));
+  CHKERRQ(PetscLayoutSetBlockSize(A->cmap,bs));
+  CHKERRQ(PetscLayoutSetUp(A->rmap));
+  CHKERRQ(PetscLayoutSetUp(A->cmap));
+  CHKERRQ(PetscLayoutGetBlockSize(A->rmap,&bs));
 
   if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 5;
   PetscCheckFalse(nz < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nz cannot be less than 0: value %" PetscInt_FMT,nz);
@@ -919,13 +905,13 @@ static PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,Pe
   }
   bmat->mbs = A->rmap->n/bs;
 
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,bs,NULL,&bmat->right);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,1,bs,NULL,&bmat->middle);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,bs,&bmat->left);CHKERRQ(ierr);
+  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,bs,NULL,&bmat->right));
+  CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,1,bs,NULL,&bmat->middle));
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,bs,&bmat->left));
 
   if (!bmat->imax) {
-    ierr = PetscMalloc2(A->rmap->n,&bmat->imax,A->rmap->n,&bmat->ilen);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)A,2*A->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc2(A->rmap->n,&bmat->imax,A->rmap->n,&bmat->ilen));
+    CHKERRQ(PetscLogObjectMemory((PetscObject)A,2*A->rmap->n*sizeof(PetscInt)));
   }
   if (PetscLikely(nnz)) {
     nz = 0;
@@ -936,12 +922,12 @@ static PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,Pe
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently requires block row by row preallocation");
 
   /* bmat->ilen will count nonzeros in each row so far. */
-  ierr = PetscArrayzero(bmat->ilen,bmat->mbs);CHKERRQ(ierr);
+  CHKERRQ(PetscArrayzero(bmat->ilen,bmat->mbs));
 
   /* allocate the matrix space */
-  ierr       = MatSeqXAIJFreeAIJ(A,(PetscScalar**)&bmat->a,&bmat->j,&bmat->i);CHKERRQ(ierr);
-  ierr       = PetscMalloc3(nz,&bmat->a,nz,&bmat->j,A->rmap->n+1,&bmat->i);CHKERRQ(ierr);
-  ierr       = PetscLogObjectMemory((PetscObject)A,(A->rmap->n+1)*sizeof(PetscInt)+nz*(sizeof(PetscScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
+  CHKERRQ(MatSeqXAIJFreeAIJ(A,(PetscScalar**)&bmat->a,&bmat->j,&bmat->i));
+  CHKERRQ(PetscMalloc3(nz,&bmat->a,nz,&bmat->j,A->rmap->n+1,&bmat->i));
+  CHKERRQ(PetscLogObjectMemory((PetscObject)A,(A->rmap->n+1)*sizeof(PetscInt)+nz*(sizeof(PetscScalar)+sizeof(PetscInt))));
   bmat->i[0] = 0;
   for (i=1; i<bmat->mbs+1; i++) {
     bmat->i[i] = bmat->i[i-1] + bmat->imax[i-1];
@@ -953,7 +939,7 @@ static PetscErrorCode  MatBlockMatSetPreallocation_BlockMat(Mat A,PetscInt bs,Pe
   bmat->nz            = 0;
   bmat->maxnz         = nz;
   A->info.nz_unneeded = (double)bmat->maxnz;
-  ierr                = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
@@ -970,18 +956,17 @@ M*/
 PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
 {
   Mat_BlockMat   *b;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr    = PetscNewLog(A,&b);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(A,&b));
   A->data = (void*)b;
-  ierr    = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
+  CHKERRQ(PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps)));
 
   A->assembled    = PETSC_TRUE;
   A->preallocated = PETSC_FALSE;
-  ierr            = PetscObjectChangeTypeName((PetscObject)A,MATBLOCKMAT);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectChangeTypeName((PetscObject)A,MATBLOCKMAT));
 
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatBlockMatSetPreallocation_C",MatBlockMatSetPreallocation_BlockMat);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatBlockMatSetPreallocation_C",MatBlockMatSetPreallocation_BlockMat));
   PetscFunctionReturn(0);
 }
 
@@ -1013,12 +998,10 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
 @*/
 PetscErrorCode  MatCreateBlockMat(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt bs,PetscInt nz,PetscInt *nnz, Mat *A)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatCreate(comm,A);CHKERRQ(ierr);
-  ierr = MatSetSizes(*A,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(*A,MATBLOCKMAT);CHKERRQ(ierr);
-  ierr = MatBlockMatSetPreallocation(*A,bs,nz,nnz);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(comm,A));
+  CHKERRQ(MatSetSizes(*A,m,n,PETSC_DETERMINE,PETSC_DETERMINE));
+  CHKERRQ(MatSetType(*A,MATBLOCKMAT));
+  CHKERRQ(MatBlockMatSetPreallocation(*A,bs,nz,nnz));
   PetscFunctionReturn(0);
 }

@@ -5,51 +5,50 @@
 
 PetscErrorCode PCMGFCycle_Private(PC pc,PC_MG_Levels **mglevels,PetscBool transpose,PetscBool matapp)
 {
-  PetscErrorCode ierr;
   PetscInt       i,l = mglevels[0]->levels;
 
   PetscFunctionBegin;
   if (!transpose) {
     /* restrict the RHS through all levels to coarsest. */
     for (i=l-1; i>0; i--) {
-      if (mglevels[i]->eventinterprestrict) {ierr = PetscLogEventBegin(mglevels[i]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
-      if (matapp) { ierr = MatMatRestrict(mglevels[i]->restrct,mglevels[i]->B,&mglevels[i-1]->B);CHKERRQ(ierr); }
-      else { ierr = MatRestrict(mglevels[i]->restrct,mglevels[i]->b,mglevels[i-1]->b);CHKERRQ(ierr); }
-      if (mglevels[i]->eventinterprestrict) {ierr = PetscLogEventEnd(mglevels[i]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
+      if (mglevels[i]->eventinterprestrict) CHKERRQ(PetscLogEventBegin(mglevels[i]->eventinterprestrict,0,0,0,0));
+      if (matapp) CHKERRQ(MatMatRestrict(mglevels[i]->restrct,mglevels[i]->B,&mglevels[i-1]->B));
+      else CHKERRQ(MatRestrict(mglevels[i]->restrct,mglevels[i]->b,mglevels[i-1]->b));
+      if (mglevels[i]->eventinterprestrict) CHKERRQ(PetscLogEventEnd(mglevels[i]->eventinterprestrict,0,0,0,0));
     }
 
     /* work our way up through the levels */
     if (matapp) {
       if (!mglevels[0]->X) {
-        ierr = MatDuplicate(mglevels[0]->B,MAT_DO_NOT_COPY_VALUES,&mglevels[0]->X);CHKERRQ(ierr);
+        CHKERRQ(MatDuplicate(mglevels[0]->B,MAT_DO_NOT_COPY_VALUES,&mglevels[0]->X));
       } else {
-        ierr = MatZeroEntries(mglevels[0]->X);CHKERRQ(ierr);
+        CHKERRQ(MatZeroEntries(mglevels[0]->X));
       }
     } else {
-      ierr = VecZeroEntries(mglevels[0]->x);CHKERRQ(ierr);
+      CHKERRQ(VecZeroEntries(mglevels[0]->x));
     }
     for (i=0; i<l-1; i++) {
-      ierr = PCMGMCycle_Private(pc,&mglevels[i],transpose,matapp,NULL);CHKERRQ(ierr);
-      if (mglevels[i+1]->eventinterprestrict) {ierr = PetscLogEventBegin(mglevels[i+1]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
-      if (matapp) { ierr = MatMatInterpolate(mglevels[i+1]->interpolate,mglevels[i]->X,&mglevels[i+1]->X);CHKERRQ(ierr); }
-      else { ierr = MatInterpolate(mglevels[i+1]->interpolate,mglevels[i]->x,mglevels[i+1]->x);CHKERRQ(ierr); }
-      if (mglevels[i+1]->eventinterprestrict) {ierr = PetscLogEventEnd(mglevels[i+1]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
+      CHKERRQ(PCMGMCycle_Private(pc,&mglevels[i],transpose,matapp,NULL));
+      if (mglevels[i+1]->eventinterprestrict) CHKERRQ(PetscLogEventBegin(mglevels[i+1]->eventinterprestrict,0,0,0,0));
+      if (matapp) CHKERRQ(MatMatInterpolate(mglevels[i+1]->interpolate,mglevels[i]->X,&mglevels[i+1]->X));
+      else CHKERRQ(MatInterpolate(mglevels[i+1]->interpolate,mglevels[i]->x,mglevels[i+1]->x));
+      if (mglevels[i+1]->eventinterprestrict) CHKERRQ(PetscLogEventEnd(mglevels[i+1]->eventinterprestrict,0,0,0,0));
     }
-    ierr = PCMGMCycle_Private(pc,&mglevels[l-1],transpose,matapp,NULL);CHKERRQ(ierr);
+    CHKERRQ(PCMGMCycle_Private(pc,&mglevels[l-1],transpose,matapp,NULL));
   } else {
-    ierr = PCMGMCycle_Private(pc,&mglevels[l-1],transpose,matapp,NULL);CHKERRQ(ierr);
+    CHKERRQ(PCMGMCycle_Private(pc,&mglevels[l-1],transpose,matapp,NULL));
     for (i=l-2; i>=0; i--) {
-      if (mglevels[i+1]->eventinterprestrict) {ierr = PetscLogEventBegin(mglevels[i+1]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
-      if (matapp) { ierr = MatMatRestrict(mglevels[i+1]->interpolate,mglevels[i+1]->X,&mglevels[i]->X);CHKERRQ(ierr); }
-      else { ierr = MatRestrict(mglevels[i+1]->interpolate,mglevels[i+1]->x,mglevels[i]->x);CHKERRQ(ierr); }
-      if (mglevels[i+1]->eventinterprestrict) {ierr = PetscLogEventEnd(mglevels[i+1]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
-      ierr = PCMGMCycle_Private(pc,&mglevels[i],transpose,matapp,NULL);CHKERRQ(ierr);
+      if (mglevels[i+1]->eventinterprestrict) CHKERRQ(PetscLogEventBegin(mglevels[i+1]->eventinterprestrict,0,0,0,0));
+      if (matapp) CHKERRQ(MatMatRestrict(mglevels[i+1]->interpolate,mglevels[i+1]->X,&mglevels[i]->X));
+      else CHKERRQ(MatRestrict(mglevels[i+1]->interpolate,mglevels[i+1]->x,mglevels[i]->x));
+      if (mglevels[i+1]->eventinterprestrict) CHKERRQ(PetscLogEventEnd(mglevels[i+1]->eventinterprestrict,0,0,0,0));
+      CHKERRQ(PCMGMCycle_Private(pc,&mglevels[i],transpose,matapp,NULL));
     }
     for (i=1; i<l; i++) {
-      if (mglevels[i]->eventinterprestrict) {ierr = PetscLogEventBegin(mglevels[i]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
-      if (matapp) { ierr = MatMatInterpolate(mglevels[i]->restrct,mglevels[i-1]->B,&mglevels[i]->B);CHKERRQ(ierr); }
-      else { ierr = MatInterpolate(mglevels[i]->restrct,mglevels[i-1]->b,mglevels[i]->b);CHKERRQ(ierr); }
-      if (mglevels[i]->eventinterprestrict) {ierr = PetscLogEventEnd(mglevels[i]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
+      if (mglevels[i]->eventinterprestrict) CHKERRQ(PetscLogEventBegin(mglevels[i]->eventinterprestrict,0,0,0,0));
+      if (matapp) CHKERRQ(MatMatInterpolate(mglevels[i]->restrct,mglevels[i-1]->B,&mglevels[i]->B));
+      else CHKERRQ(MatInterpolate(mglevels[i]->restrct,mglevels[i-1]->b,mglevels[i]->b));
+      if (mglevels[i]->eventinterprestrict) CHKERRQ(PetscLogEventEnd(mglevels[i]->eventinterprestrict,0,0,0,0));
     }
   }
   PetscFunctionReturn(0);
@@ -57,51 +56,50 @@ PetscErrorCode PCMGFCycle_Private(PC pc,PC_MG_Levels **mglevels,PetscBool transp
 
 PetscErrorCode PCMGKCycle_Private(PC pc,PC_MG_Levels **mglevels,PetscBool transpose,PetscBool matapp)
 {
-  PetscErrorCode ierr;
   PetscInt       i,l = mglevels[0]->levels;
 
   PetscFunctionBegin;
   /* restrict the RHS through all levels to coarsest. */
   for (i=l-1; i>0; i--) {
-    if (mglevels[i]->eventinterprestrict) {ierr = PetscLogEventBegin(mglevels[i]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
-    if (matapp) { ierr = MatMatRestrict(mglevels[i]->restrct,mglevels[i]->B,&mglevels[i-1]->B);CHKERRQ(ierr); }
-    else { ierr = MatRestrict(mglevels[i]->restrct,mglevels[i]->b,mglevels[i-1]->b);CHKERRQ(ierr); }
-    if (mglevels[i]->eventinterprestrict) {ierr = PetscLogEventEnd(mglevels[i]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
+    if (mglevels[i]->eventinterprestrict) CHKERRQ(PetscLogEventBegin(mglevels[i]->eventinterprestrict,0,0,0,0));
+    if (matapp) CHKERRQ(MatMatRestrict(mglevels[i]->restrct,mglevels[i]->B,&mglevels[i-1]->B));
+    else CHKERRQ(MatRestrict(mglevels[i]->restrct,mglevels[i]->b,mglevels[i-1]->b));
+    if (mglevels[i]->eventinterprestrict) CHKERRQ(PetscLogEventEnd(mglevels[i]->eventinterprestrict,0,0,0,0));
   }
 
   /* work our way up through the levels */
   if (matapp) {
     if (!mglevels[0]->X) {
-      ierr = MatDuplicate(mglevels[0]->B,MAT_DO_NOT_COPY_VALUES,&mglevels[0]->X);CHKERRQ(ierr);
+      CHKERRQ(MatDuplicate(mglevels[0]->B,MAT_DO_NOT_COPY_VALUES,&mglevels[0]->X));
     } else {
-      ierr = MatZeroEntries(mglevels[0]->X);CHKERRQ(ierr);
+      CHKERRQ(MatZeroEntries(mglevels[0]->X));
     }
   } else {
-    ierr = VecZeroEntries(mglevels[0]->x);CHKERRQ(ierr);
+    CHKERRQ(VecZeroEntries(mglevels[0]->x));
   }
   for (i=0; i<l-1; i++) {
-    if (mglevels[i]->eventsmoothsolve) {ierr = PetscLogEventBegin(mglevels[i]->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
+    if (mglevels[i]->eventsmoothsolve) CHKERRQ(PetscLogEventBegin(mglevels[i]->eventsmoothsolve,0,0,0,0));
     if (matapp) {
-      ierr = KSPMatSolve(mglevels[i]->smoothd,mglevels[i]->B,mglevels[i]->X);CHKERRQ(ierr);
-      ierr = KSPCheckSolve(mglevels[i]->smoothd,pc,NULL);CHKERRQ(ierr);
+      CHKERRQ(KSPMatSolve(mglevels[i]->smoothd,mglevels[i]->B,mglevels[i]->X));
+      CHKERRQ(KSPCheckSolve(mglevels[i]->smoothd,pc,NULL));
     } else {
-      ierr = KSPSolve(mglevels[i]->smoothd,mglevels[i]->b,mglevels[i]->x);CHKERRQ(ierr);
-      ierr = KSPCheckSolve(mglevels[i]->smoothd,pc,mglevels[i]->x);CHKERRQ(ierr);
+      CHKERRQ(KSPSolve(mglevels[i]->smoothd,mglevels[i]->b,mglevels[i]->x));
+      CHKERRQ(KSPCheckSolve(mglevels[i]->smoothd,pc,mglevels[i]->x));
     }
-    if (mglevels[i]->eventsmoothsolve) {ierr = PetscLogEventEnd(mglevels[i]->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
-    if (mglevels[i+1]->eventinterprestrict) {ierr = PetscLogEventBegin(mglevels[i+1]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
-    if (matapp) { ierr = MatMatInterpolate(mglevels[i+1]->interpolate,mglevels[i]->X,&mglevels[i+1]->X);CHKERRQ(ierr); }
-    else { ierr = MatInterpolate(mglevels[i+1]->interpolate,mglevels[i]->x,mglevels[i+1]->x);CHKERRQ(ierr); }
-    if (mglevels[i+1]->eventinterprestrict) {ierr = PetscLogEventEnd(mglevels[i+1]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
+    if (mglevels[i]->eventsmoothsolve) CHKERRQ(PetscLogEventEnd(mglevels[i]->eventsmoothsolve,0,0,0,0));
+    if (mglevels[i+1]->eventinterprestrict) CHKERRQ(PetscLogEventBegin(mglevels[i+1]->eventinterprestrict,0,0,0,0));
+    if (matapp) CHKERRQ(MatMatInterpolate(mglevels[i+1]->interpolate,mglevels[i]->X,&mglevels[i+1]->X));
+    else CHKERRQ(MatInterpolate(mglevels[i+1]->interpolate,mglevels[i]->x,mglevels[i+1]->x));
+    if (mglevels[i+1]->eventinterprestrict) CHKERRQ(PetscLogEventEnd(mglevels[i+1]->eventinterprestrict,0,0,0,0));
   }
-  if (mglevels[l-1]->eventsmoothsolve) {ierr = PetscLogEventBegin(mglevels[l-1]->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
+  if (mglevels[l-1]->eventsmoothsolve) CHKERRQ(PetscLogEventBegin(mglevels[l-1]->eventsmoothsolve,0,0,0,0));
   if (matapp) {
-    ierr = KSPMatSolve(mglevels[l-1]->smoothd,mglevels[l-1]->B,mglevels[l-1]->X);CHKERRQ(ierr);
-    ierr = KSPCheckSolve(mglevels[l-1]->smoothd,pc,NULL);CHKERRQ(ierr);
+    CHKERRQ(KSPMatSolve(mglevels[l-1]->smoothd,mglevels[l-1]->B,mglevels[l-1]->X));
+    CHKERRQ(KSPCheckSolve(mglevels[l-1]->smoothd,pc,NULL));
   } else {
-    ierr = KSPSolve(mglevels[l-1]->smoothd,mglevels[l-1]->b,mglevels[l-1]->x);CHKERRQ(ierr);
-    ierr = KSPCheckSolve(mglevels[l-1]->smoothd,pc,mglevels[l-1]->x);CHKERRQ(ierr);
+    CHKERRQ(KSPSolve(mglevels[l-1]->smoothd,mglevels[l-1]->b,mglevels[l-1]->x));
+    CHKERRQ(KSPCheckSolve(mglevels[l-1]->smoothd,pc,mglevels[l-1]->x));
   }
-  if (mglevels[l-1]->eventsmoothsolve) {ierr = PetscLogEventEnd(mglevels[l-1]->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
+  if (mglevels[l-1]->eventsmoothsolve) CHKERRQ(PetscLogEventEnd(mglevels[l-1]->eventsmoothsolve,0,0,0,0));
   PetscFunctionReturn(0);
 }

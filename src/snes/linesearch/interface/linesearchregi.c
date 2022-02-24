@@ -19,18 +19,15 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch);
 @*/
 PetscErrorCode SNESLineSearchRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (SNESLineSearchRegisterAllCalled) PetscFunctionReturn(0);
   SNESLineSearchRegisterAllCalled = PETSC_TRUE;
-  ierr = SNESLineSearchRegister(SNESLINESEARCHSHELL,     SNESLineSearchCreate_Shell);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegister(SNESLINESEARCHBASIC,     SNESLineSearchCreate_Basic);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegister(SNESLINESEARCHL2,        SNESLineSearchCreate_L2);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegister(SNESLINESEARCHBT,        SNESLineSearchCreate_BT);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegister(SNESLINESEARCHNLEQERR,   SNESLineSearchCreate_NLEQERR);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegister(SNESLINESEARCHCP,        SNESLineSearchCreate_CP);CHKERRQ(ierr);
-  ierr = SNESLineSearchRegister(SNESLINESEARCHNCGLINEAR, SNESLineSearchCreate_NCGLinear);CHKERRQ(ierr);
+  CHKERRQ(SNESLineSearchRegister(SNESLINESEARCHSHELL,     SNESLineSearchCreate_Shell));
+  CHKERRQ(SNESLineSearchRegister(SNESLINESEARCHBASIC,     SNESLineSearchCreate_Basic));
+  CHKERRQ(SNESLineSearchRegister(SNESLINESEARCHL2,        SNESLineSearchCreate_L2));
+  CHKERRQ(SNESLineSearchRegister(SNESLINESEARCHBT,        SNESLineSearchCreate_BT));
+  CHKERRQ(SNESLineSearchRegister(SNESLINESEARCHNLEQERR,   SNESLineSearchCreate_NLEQERR));
+  CHKERRQ(SNESLineSearchRegister(SNESLINESEARCHCP,        SNESLineSearchCreate_CP));
+  CHKERRQ(SNESLineSearchRegister(SNESLINESEARCHNCGLINEAR, SNESLineSearchCreate_NCGLinear));
   PetscFunctionReturn(0);
 }
-

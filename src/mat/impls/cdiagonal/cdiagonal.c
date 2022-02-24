@@ -18,16 +18,15 @@ static PetscErrorCode MatAXPY_ConstantDiagonal(Mat Y, PetscScalar a, Mat X, MatS
 static PetscErrorCode MatGetRow_ConstantDiagonal(Mat A, PetscInt row, PetscInt *ncols, PetscInt *cols[], PetscScalar *vals[])
 {
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal*)A->data;
-  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   if (ncols) *ncols = 1;
   if (cols) {
-    ierr = PetscMalloc1(1,cols);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(1,cols));
     (*cols)[0] = row;
   }
   if (vals) {
-    ierr = PetscMalloc1(1,vals);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(1,vals));
     (*vals)[0] = ctx->diag;
   }
   PetscFunctionReturn(0);
@@ -35,15 +34,13 @@ static PetscErrorCode MatGetRow_ConstantDiagonal(Mat A, PetscInt row, PetscInt *
 
 static PetscErrorCode MatRestoreRow_ConstantDiagonal(Mat A, PetscInt row, PetscInt *ncols, PetscInt *cols[], PetscScalar *vals[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (ncols) *ncols = 0;
   if (cols) {
-    ierr = PetscFree(*cols);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(*cols));
   }
   if (vals) {
-    ierr = PetscFree(*vals);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(*vals));
   }
   PetscFunctionReturn(0);
 }
@@ -51,37 +48,34 @@ static PetscErrorCode MatRestoreRow_ConstantDiagonal(Mat A, PetscInt row, PetscI
 static PetscErrorCode MatMultTranspose_ConstantDiagonal(Mat A, Vec x, Vec y)
 {
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal*)A->data;
-  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  ierr = VecAXPBY(y,ctx->diag,0.0,x);CHKERRQ(ierr);
+  CHKERRQ(VecAXPBY(y,ctx->diag,0.0,x));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatMultAdd_ConstantDiagonal(Mat mat,Vec v1,Vec v2,Vec v3)
 {
-  PetscErrorCode       ierr;
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal*)mat->data;
 
   PetscFunctionBegin;
   if (v2 == v3) {
-    ierr = VecAXPBY(v3,ctx->diag,1.0,v1);CHKERRQ(ierr);
+    CHKERRQ(VecAXPBY(v3,ctx->diag,1.0,v1));
   } else {
-    ierr = VecAXPBYPCZ(v3,ctx->diag,1.0,0.0,v1,v2);CHKERRQ(ierr);
+    CHKERRQ(VecAXPBYPCZ(v3,ctx->diag,1.0,0.0,v1,v2));
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatMultTransposeAdd_ConstantDiagonal(Mat mat,Vec v1,Vec v2,Vec v3)
 {
-  PetscErrorCode       ierr;
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal*)mat->data;
 
   PetscFunctionBegin;
   if (v2 == v3) {
-    ierr = VecAXPBY(v3,ctx->diag,1.0,v1);CHKERRQ(ierr);
+    CHKERRQ(VecAXPBY(v3,ctx->diag,1.0,v1));
   } else {
-    ierr = VecAXPBYPCZ(v3,ctx->diag,1.0,0.0,v1,v2);CHKERRQ(ierr);
+    CHKERRQ(VecAXPBYPCZ(v3,ctx->diag,1.0,0.0,v1,v2));
   }
   PetscFunctionReturn(0);
 }
@@ -99,28 +93,26 @@ static PetscErrorCode MatNorm_ConstantDiagonal(Mat A,NormType type,PetscReal *nr
 static PetscErrorCode MatCreateSubMatrices_ConstantDiagonal(Mat A,PetscInt n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 
 {
-  PetscErrorCode ierr;
   Mat            B;
 
   PetscFunctionBegin;
-  ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  ierr = MatCreateSubMatrices(B,n,irow,icol,scall,submat);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  CHKERRQ(MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B));
+  CHKERRQ(MatCreateSubMatrices(B,n,irow,icol,scall,submat));
+  CHKERRQ(MatDestroy(&B));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatDuplicate_ConstantDiagonal(Mat A, MatDuplicateOption op, Mat *B)
 {
-  PetscErrorCode       ierr;
   Mat_ConstantDiagonal *actx = (Mat_ConstantDiagonal*)A->data;
 
   PetscFunctionBegin;
-  ierr = MatCreate(PetscObjectComm((PetscObject)A),B);CHKERRQ(ierr);
-  ierr = MatSetSizes(*B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetBlockSizesFromMats(*B,A,A);CHKERRQ(ierr);
-  ierr = MatSetType(*B,MATCONSTANTDIAGONAL);CHKERRQ(ierr);
-  ierr = PetscLayoutReference(A->rmap,&(*B)->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutReference(A->cmap,&(*B)->cmap);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),B));
+  CHKERRQ(MatSetSizes(*B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N));
+  CHKERRQ(MatSetBlockSizesFromMats(*B,A,A));
+  CHKERRQ(MatSetType(*B,MATCONSTANTDIAGONAL));
+  CHKERRQ(PetscLayoutReference(A->rmap,&(*B)->rmap));
+  CHKERRQ(PetscLayoutReference(A->cmap,&(*B)->cmap));
   if (op == MAT_COPY_VALUES) {
     Mat_ConstantDiagonal *bctx = (Mat_ConstantDiagonal*)(*B)->data;
     bctx->diag = actx->diag;
@@ -137,30 +129,27 @@ static PetscErrorCode MatMissingDiagonal_ConstantDiagonal(Mat mat,PetscBool *mis
 
 static PetscErrorCode MatDestroy_ConstantDiagonal(Mat mat)
 {
-  PetscErrorCode       ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFree(mat->data);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(mat->data));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatView_ConstantDiagonal(Mat J,PetscViewer viewer)
 {
-  PetscErrorCode       ierr;
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal*)J->data;
   PetscBool            iascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     PetscViewerFormat    format;
 
-    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerGetFormat(viewer,&format));
     if (format == PETSC_VIEWER_ASCII_FACTOR_INFO || format == PETSC_VIEWER_ASCII_INFO) PetscFunctionReturn(0);
 #if defined(PETSC_USE_COMPLEX)
-    ierr = PetscViewerASCIIPrintf(viewer,"Diagonal value: %g + i %g\n",(double)PetscRealPart(ctx->diag),(double)PetscImaginaryPart(ctx->diag));CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Diagonal value: %g + i %g\n",(double)PetscRealPart(ctx->diag),(double)PetscImaginaryPart(ctx->diag)));
 #else
-    ierr = PetscViewerASCIIPrintf(viewer,"Diagonal value: %g\n",(double)(ctx->diag));CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Diagonal value: %g\n",(double)(ctx->diag)));
 #endif
   }
   PetscFunctionReturn(0);
@@ -174,21 +163,19 @@ static PetscErrorCode MatAssemblyEnd_ConstantDiagonal(Mat J,MatAssemblyType mt)
 
 static PetscErrorCode MatMult_ConstantDiagonal(Mat J,Vec x,Vec y)
 {
-  PetscErrorCode       ierr;
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal*)J->data;
 
   PetscFunctionBegin;
-  ierr = VecAXPBY(y,ctx->diag,0.0,x);CHKERRQ(ierr);
+  CHKERRQ(VecAXPBY(y,ctx->diag,0.0,x));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatGetDiagonal_ConstantDiagonal(Mat J,Vec x)
 {
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal*)J->data;
-  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  ierr = VecSet(x,ctx->diag);CHKERRQ(ierr);
+  CHKERRQ(VecSet(x,ctx->diag));
   PetscFunctionReturn(0);
 }
 
@@ -221,13 +208,12 @@ static PetscErrorCode MatZeroEntries_ConstantDiagonal(Mat Y)
 
 PetscErrorCode MatSOR_ConstantDiagonal(Mat matin,Vec x,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec y)
 {
-  PetscErrorCode       ierr;
   Mat_ConstantDiagonal *ctx  = (Mat_ConstantDiagonal*)matin->data;
 
   PetscFunctionBegin;
   if (ctx->diag == 0.0) matin->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
   else matin->factorerrortype = MAT_FACTOR_NOERROR;
-  ierr = VecAXPBY(y,1.0/ctx->diag,0.0,x);CHKERRQ(ierr);
+  CHKERRQ(VecAXPBY(y,1.0/ctx->diag,0.0,x));
   PetscFunctionReturn(0);
 }
 
@@ -283,24 +269,21 @@ PetscErrorCode MatGetInfo_ConstantDiagonal(Mat A,MatInfoType flag,MatInfo *info)
 @*/
 PetscErrorCode  MatCreateConstantDiagonal(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscScalar diag,Mat *J)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatCreate(comm,J);CHKERRQ(ierr);
-  ierr = MatSetSizes(*J,m,n,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(*J,MATCONSTANTDIAGONAL);CHKERRQ(ierr);
-  ierr = MatShift(*J,diag);CHKERRQ(ierr);
-  ierr = MatSetUp(*J);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(comm,J));
+  CHKERRQ(MatSetSizes(*J,m,n,M,N));
+  CHKERRQ(MatSetType(*J,MATCONSTANTDIAGONAL));
+  CHKERRQ(MatShift(*J,diag));
+  CHKERRQ(MatSetUp(*J));
   PetscFunctionReturn(0);
 }
 
 PETSC_EXTERN PetscErrorCode  MatCreate_ConstantDiagonal(Mat A)
 {
-  PetscErrorCode       ierr;
   Mat_ConstantDiagonal *ctx;
 
   PetscFunctionBegin;
-  ierr = PetscNew(&ctx);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(&ctx));
   ctx->diag = 0.0;
   A->data   = (void*)ctx;
 
@@ -328,7 +311,7 @@ PETSC_EXTERN PetscErrorCode  MatCreate_ConstantDiagonal(Mat A)
   A->ops->getinfo          = MatGetInfo_ConstantDiagonal;
   A->ops->axpy             = MatAXPY_ConstantDiagonal;
 
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATCONSTANTDIAGONAL);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectChangeTypeName((PetscObject)A,MATCONSTANTDIAGONAL));
   PetscFunctionReturn(0);
 }
 
@@ -361,10 +344,9 @@ static PetscErrorCode MatFactorSymbolic_Cholesky_ConstantDiagonal(Mat fact,Mat A
 PETSC_INTERN PetscErrorCode MatGetFactor_constantdiagonal_petsc(Mat A,MatFactorType ftype,Mat *B)
 {
   PetscInt       n = A->rmap->n, N = A->rmap->N;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreateConstantDiagonal(PetscObjectComm((PetscObject)A),n,n,N,N,0,B);CHKERRQ(ierr);
+  CHKERRQ(MatCreateConstantDiagonal(PetscObjectComm((PetscObject)A),n,n,N,N,0,B));
 
   (*B)->factortype = ftype;
   (*B)->ops->ilufactorsymbolic      = MatFactorSymbolic_LU_ConstantDiagonal;
@@ -378,7 +360,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_constantdiagonal_petsc(Mat A,MatFactorT
   (*B)->ops->sor         = NULL;
   (*B)->ops->zeroentries = NULL;
 
-  ierr = PetscFree((*B)->solvertype);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(MATSOLVERPETSC,&(*B)->solvertype);CHKERRQ(ierr);
+  CHKERRQ(PetscFree((*B)->solvertype));
+  CHKERRQ(PetscStrallocpy(MATSOLVERPETSC,&(*B)->solvertype));
   PetscFunctionReturn(0);
 }

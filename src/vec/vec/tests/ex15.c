@@ -12,45 +12,45 @@ int main(int argc,char **argv)
   Vec            x;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must be run with one processor");
 
   /* create vector */
-  ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,n,n);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(x,bs);CHKERRQ(ierr);
-  ierr = VecSetType(x,VECSEQ);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_SELF,&x));
+  CHKERRQ(VecSetSizes(x,n,n));
+  CHKERRQ(VecSetBlockSize(x,bs));
+  CHKERRQ(VecSetType(x,VECSEQ));
 
   for (i=0; i<6; i++) values[i] = 4.0*i;
   indices[0] = 0;
   indices[1] = 2;
 
-  ierr = VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+  CHKERRQ(VecSetValuesBlocked(x,2,indices,values,INSERT_VALUES));
+  CHKERRQ(VecAssemblyBegin(x));
+  CHKERRQ(VecAssemblyEnd(x));
 
   /*
       Resulting vector should be 0 4 8  0 0 0 12 16 20
   */
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
   /* test insertion with negative indices */
-  ierr = VecSetOption(x,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(VecSetOption(x,VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE));
   for (i=0; i<6; i++) values[i] = -4.0*i;
   indices[0] = -1;
   indices[1] = 2;
 
-  ierr = VecSetValuesBlocked(x,2,indices,values,ADD_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+  CHKERRQ(VecSetValuesBlocked(x,2,indices,values,ADD_VALUES));
+  CHKERRQ(VecAssemblyBegin(x));
+  CHKERRQ(VecAssemblyEnd(x));
 
   /*
       Resulting vector should be 0 4 8  0 0 0 0 0 0
   */
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));
 
   ierr = PetscFinalize();
   return ierr;

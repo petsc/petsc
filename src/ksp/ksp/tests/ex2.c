@@ -31,75 +31,75 @@ int main(int argc,char **args)
   PetscScalar    v;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* create stiffness matrix C = [1 2; 2 3] */
-  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
-  ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-  ierr = MatSetUp(C);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
+  CHKERRQ(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N));
+  CHKERRQ(MatSetFromOptions(C));
+  CHKERRQ(MatSetUp(C));
   if (rank == 0) {
     rowidx = 0; colidx = 0; v = 1.0;
-    ierr   = MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES));
     rowidx = 0; colidx = 1; v = 2.0;
-    ierr   = MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES));
 
     rowidx = 1; colidx = 0; v = 2.0;
-    ierr   = MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES));
     rowidx = 1; colidx = 1; v = 3.0;
-    ierr   = MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(C,1,&rowidx,1,&colidx,&v,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   /* create right hand side and solution */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,N);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&r);CHKERRQ(ierr);
-  ierr = VecSet(u,0.0);CHKERRQ(ierr);
-  ierr = VecSet(b,1.0);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
+  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,N));
+  CHKERRQ(VecSetFromOptions(u));
+  CHKERRQ(VecDuplicate(u,&b));
+  CHKERRQ(VecDuplicate(u,&r));
+  CHKERRQ(VecSet(u,0.0));
+  CHKERRQ(VecSet(b,1.0));
 
   /* solve linear system C*u = b */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPSetOperators(ksp,C,C));
+  CHKERRQ(KSPSetFromOptions(ksp));
+  CHKERRQ(KSPSolve(ksp,b,u));
 
   /* check residual r = C*u - b */
-  ierr = MatMult(C,u,r);CHKERRQ(ierr);
-  ierr = VecAXPY(r,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(r,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"|| C*u - b|| = %g\n",(double)norm);CHKERRQ(ierr);
+  CHKERRQ(MatMult(C,u,r));
+  CHKERRQ(VecAXPY(r,-1.0,b));
+  CHKERRQ(VecNorm(r,NORM_2,&norm));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"|| C*u - b|| = %g\n",(double)norm));
 
   /* solve C^T*u = b twice */
-  ierr = KSPSolveTranspose(ksp,b,u);CHKERRQ(ierr);
+  CHKERRQ(KSPSolveTranspose(ksp,b,u));
   /* check residual r = C^T*u - b */
-  ierr = MatMultTranspose(C,u,r);CHKERRQ(ierr);
-  ierr = VecAXPY(r,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(r,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"|| C^T*u - b|| =  %g\n",(double)norm);CHKERRQ(ierr);
+  CHKERRQ(MatMultTranspose(C,u,r));
+  CHKERRQ(VecAXPY(r,-1.0,b));
+  CHKERRQ(VecNorm(r,NORM_2,&norm));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"|| C^T*u - b|| =  %g\n",(double)norm));
 
-  ierr = KSPSolveTranspose(ksp,b,u);CHKERRQ(ierr);
-  ierr = MatMultTranspose(C,u,r);CHKERRQ(ierr);
-  ierr = VecAXPY(r,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(r,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"|| C^T*u - b|| =  %g\n",(double)norm);CHKERRQ(ierr);
+  CHKERRQ(KSPSolveTranspose(ksp,b,u));
+  CHKERRQ(MatMultTranspose(C,u,r));
+  CHKERRQ(VecAXPY(r,-1.0,b));
+  CHKERRQ(VecNorm(r,NORM_2,&norm));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"|| C^T*u - b|| =  %g\n",(double)norm));
 
   /* solve C*u = b again */
-  ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
-  ierr = MatMult(C,u,r);CHKERRQ(ierr);
-  ierr = VecAXPY(r,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(r,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"|| C*u - b|| = %g\n",(double)norm);CHKERRQ(ierr);
+  CHKERRQ(KSPSolve(ksp,b,u));
+  CHKERRQ(MatMult(C,u,r));
+  CHKERRQ(VecAXPY(r,-1.0,b));
+  CHKERRQ(VecNorm(r,NORM_2,&norm));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"|| C*u - b|| = %g\n",(double)norm));
 
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(VecDestroy(&u));
+  CHKERRQ(VecDestroy(&r));
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(MatDestroy(&C));
   ierr = PetscFinalize();
   return ierr;
 }

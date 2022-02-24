@@ -17,58 +17,58 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* create two vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,size*bs*n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
+  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,size*bs*n));
+  CHKERRQ(VecSetFromOptions(x));
 
   /* create two index sets */
   if (rank < size-1) m = n + 2;
   else m = n;
 
-  ierr = PetscMalloc1(m,&blks);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(m,&blks));
   blks[0] = n*rank;
   for (i=1; i<m; i++) blks[i] = blks[i-1] + 1;
-  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,m,blks,PETSC_COPY_VALUES,&is1);CHKERRQ(ierr);
-  ierr = PetscFree(blks);CHKERRQ(ierr);
+  CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,m,blks,PETSC_COPY_VALUES,&is1));
+  CHKERRQ(PetscFree(blks));
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF,bs*m,&y);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,bs*m,0,1,&is2);CHKERRQ(ierr);
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,bs*m,&y));
+  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,bs*m,0,1,&is2));
 
   /* each processor inserts the entire vector */
   /* this is redundant but tests assembly */
   for (i=0; i<bs*n*size; i++) {
     value = (PetscScalar) i;
-    ierr  = VecSetValues(x,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(x,1,&i,&value,INSERT_VALUES));
   }
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecAssemblyBegin(x));
+  CHKERRQ(VecAssemblyEnd(x));
+  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRQ(ierr);
-  ierr = VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  CHKERRQ(VecScatterCreate(x,is1,y,is2,&ctx));
+  CHKERRQ(VecScatterBegin(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterEnd(ctx,x,y,INSERT_VALUES,SCATTER_FORWARD));
 
-  ierr = PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"----\n");CHKERRQ(ierr);
-  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-  ierr = VecView(y,sviewer);CHKERRQ(ierr); fflush(stdout);
-  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"----\n"));
+  CHKERRQ(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+  CHKERRQ(VecView(y,sviewer)); fflush(stdout);
+  CHKERRQ(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+  CHKERRQ(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
+  CHKERRQ(VecScatterDestroy(&ctx));
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = ISDestroy(&is1);CHKERRQ(ierr);
-  ierr = ISDestroy(&is2);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
+  CHKERRQ(ISDestroy(&is1));
+  CHKERRQ(ISDestroy(&is2));
 
   ierr = PetscFinalize();
   return ierr;

@@ -13,49 +13,49 @@ int main(int argc, char ** argv)
   PetscBool      flg;
 
   ierr = PetscInitialize(&argc, &argv, (char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must use 2 processors");
 
-  ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
-  ierr = MatSetType(A, MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatSetSizes(A, 1, 1, 2, 2);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocationCSR(A, ia, ja, a);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD, &A));
+  CHKERRQ(MatSetType(A, MATMPIAIJ));
+  CHKERRQ(MatSetSizes(A, 1, 1, 2, 2));
+  CHKERRQ(MatMPIAIJSetPreallocationCSR(A, ia, ja, a));
 
-  ierr = PetscCalloc1(4 * lda,&data);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc1(4 * lda,&data));
   for (i = 0; i < 4; ++i) data[lda * i] = i * 1.0;
 
-  ierr = MatCreateDense(PETSC_COMM_WORLD, 1, PETSC_DECIDE, 2, 4, data, &B);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(B,"b_");CHKERRQ(ierr);
-  ierr = MatSetFromOptions(B);CHKERRQ(ierr);
-  ierr = MatDenseSetLDA(B, lda);CHKERRQ(ierr);
+  CHKERRQ(MatCreateDense(PETSC_COMM_WORLD, 1, PETSC_DECIDE, 2, 4, data, &B));
+  CHKERRQ(MatSetOptionsPrefix(B,"b_"));
+  CHKERRQ(MatSetFromOptions(B));
+  CHKERRQ(MatDenseSetLDA(B, lda));
 
   /* Test MatMatMult() */
-  ierr = MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C);CHKERRQ(ierr);
-  ierr = MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C);CHKERRQ(ierr);
+  CHKERRQ(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+  CHKERRQ(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
 
-  ierr = MatMatMultEqual(A,B,C,10,&flg);CHKERRQ(ierr);
+  CHKERRQ(MatMatMultEqual(A,B,C,10,&flg));
   PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatMatMult() for C");
 
   /* Test user-provided mpidense matrix product */
-  ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
-  ierr = MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C1);CHKERRQ(ierr);
-  ierr = MatMatMultEqual(A,B,C1,10,&flg);CHKERRQ(ierr);
+  CHKERRQ(MatDuplicate(C,MAT_COPY_VALUES,&C1));
+  CHKERRQ(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C1));
+  CHKERRQ(MatMatMultEqual(A,B,C1,10,&flg));
   PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatMatMult() for C1");
 
-  ierr = MatDestroy(&C1);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&C1));
+  CHKERRQ(MatDestroy(&C));
 
   /* Test MatTransposeMatMult() */
-  ierr = MatTransposeMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C);CHKERRQ(ierr);
-  ierr = MatTransposeMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C);CHKERRQ(ierr);
+  CHKERRQ(MatTransposeMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+  CHKERRQ(MatTransposeMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
 
-  ierr = MatTransposeMatMultEqual(A,B,C,10,&flg);CHKERRQ(ierr);
+  CHKERRQ(MatTransposeMatMultEqual(A,B,C,10,&flg));
   PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatTransposeMatMult()");
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&C));
 
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscFree(data);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&B));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(PetscFree(data));
 
   ierr = PetscFinalize();
   return ierr;

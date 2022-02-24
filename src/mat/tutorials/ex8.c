@@ -6,10 +6,8 @@ static char help[] = "Shows how to add a new MatOperation to AIJ MatType\n\n";
 
 static PetscErrorCode MatScaleUserImpl_SeqAIJ(Mat inA,PetscScalar alpha)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatScale(inA,alpha);CHKERRQ(ierr);
+  CHKERRQ(MatScale(inA,alpha));
   PetscFunctionReturn(0);
 }
 
@@ -17,13 +15,12 @@ extern PetscErrorCode MatScaleUserImpl(Mat,PetscScalar);
 
 static PetscErrorCode MatScaleUserImpl_MPIAIJ(Mat A,PetscScalar aa)
 {
-  PetscErrorCode ierr;
   Mat            AA,AB;
 
   PetscFunctionBegin;
-  ierr = MatMPIAIJGetSeqAIJ(A,&AA,&AB,NULL);CHKERRQ(ierr);
-  ierr = MatScaleUserImpl(AA,aa);CHKERRQ(ierr);
-  ierr = MatScaleUserImpl(AB,aa);CHKERRQ(ierr);
+  CHKERRQ(MatMPIAIJGetSeqAIJ(A,&AA,&AB,NULL));
+  CHKERRQ(MatScaleUserImpl(AA,aa));
+  CHKERRQ(MatScaleUserImpl(AB,aa));
   PetscFunctionReturn(0);
 }
 
@@ -32,19 +29,18 @@ static PetscErrorCode MatScaleUserImpl_MPIAIJ(Mat A,PetscScalar aa)
    functionality for SeqAIJ and MPIAIJ matrix-types */
 PetscErrorCode RegisterMatScaleUserImpl(Mat mat)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat), &size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)mat), &size));
   if (size == 1) { /* SeqAIJ Matrix */
-    ierr = PetscObjectComposeFunction((PetscObject)mat,"MatScaleUserImpl_C",MatScaleUserImpl_SeqAIJ);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectComposeFunction((PetscObject)mat,"MatScaleUserImpl_C",MatScaleUserImpl_SeqAIJ));
   } else { /* MPIAIJ Matrix */
     Mat AA,AB;
-    ierr = MatMPIAIJGetSeqAIJ(mat,&AA,&AB,NULL);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)mat,"MatScaleUserImpl_C",MatScaleUserImpl_MPIAIJ);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)AA,"MatScaleUserImpl_C",MatScaleUserImpl_SeqAIJ);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)AB,"MatScaleUserImpl_C",MatScaleUserImpl_SeqAIJ);CHKERRQ(ierr);
+    CHKERRQ(MatMPIAIJGetSeqAIJ(mat,&AA,&AB,NULL));
+    CHKERRQ(PetscObjectComposeFunction((PetscObject)mat,"MatScaleUserImpl_C",MatScaleUserImpl_MPIAIJ));
+    CHKERRQ(PetscObjectComposeFunction((PetscObject)AA,"MatScaleUserImpl_C",MatScaleUserImpl_SeqAIJ));
+    CHKERRQ(PetscObjectComposeFunction((PetscObject)AB,"MatScaleUserImpl_C",MatScaleUserImpl_SeqAIJ));
   }
   PetscFunctionReturn(0);
 }
@@ -56,13 +52,11 @@ PetscErrorCode RegisterMatScaleUserImpl(Mat mat)
    called */
 PetscErrorCode MatScaleUserImpl(Mat mat,PetscScalar a)
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscScalar);
+  PetscErrorCode (*f)(Mat,PetscScalar);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatScaleUserImpl_C",&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(mat,a);CHKERRQ(ierr);
-  }
+  CHKERRQ(PetscObjectQueryFunction((PetscObject)mat,"MatScaleUserImpl_C",&f));
+  if (f) CHKERRQ((*f)(mat,a));
   PetscFunctionReturn(0);
 }
 
@@ -77,42 +71,42 @@ int main(int argc,char **args)
   PetscMPIInt    rank,size;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   n    = 2*size;
 
   /* create the matrix */
-  ierr = MatCreate(PETSC_COMM_WORLD,&mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
-  ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetUp(mat);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&mat));
+  CHKERRQ(MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  CHKERRQ(MatSetType(mat,MATAIJ));
+  CHKERRQ(MatSetUp(mat));
 
   /* register user defined MatScaleUser() operation for both SeqAIJ
      and MPIAIJ types */
-  ierr = RegisterMatScaleUserImpl(mat);CHKERRQ(ierr);
+  CHKERRQ(RegisterMatScaleUserImpl(mat));
 
   /* assemble the matrix */
   for (i=0; i<m; i++) {
     for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  Ii = j + n*i;
-      if (i>0)   {J = Ii - n; ierr = MatSetValues(mat,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (i<m-1) {J = Ii + n; ierr = MatSetValues(mat,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (j>0)   {J = Ii - 1; ierr = MatSetValues(mat,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      if (j<n-1) {J = Ii + 1; ierr = MatSetValues(mat,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-      v = 4.0; ierr = MatSetValues(mat,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
+      if (i>0)   {J = Ii - n; CHKERRQ(MatSetValues(mat,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      if (i<m-1) {J = Ii + n; CHKERRQ(MatSetValues(mat,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      if (j>0)   {J = Ii - 1; CHKERRQ(MatSetValues(mat,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      if (j<n-1) {J = Ii + 1; CHKERRQ(MatSetValues(mat,1,&Ii,1,&J,&v,INSERT_VALUES));}
+      v = 4.0; CHKERRQ(MatSetValues(mat,1,&Ii,1,&Ii,&v,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
 
   /* check the matrix before and after scaling by -1.0 */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrix _before_ MatScaleUserImpl() operation\n");CHKERRQ(ierr);
-  ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatScaleUserImpl(mat,none);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrix _after_ MatScaleUserImpl() operation\n");CHKERRQ(ierr);
-  ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Matrix _before_ MatScaleUserImpl() operation\n"));
+  CHKERRQ(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(MatScaleUserImpl(mat,none));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Matrix _after_ MatScaleUserImpl() operation\n"));
+  CHKERRQ(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = MatDestroy(&mat);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&mat));
   ierr = PetscFinalize();
   return ierr;
 }

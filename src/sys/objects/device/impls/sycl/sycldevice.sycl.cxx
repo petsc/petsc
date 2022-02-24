@@ -65,20 +65,20 @@ public:
 
     PetscFunctionBegin;
     PetscCheckFalse(!devInitialized_,PETSC_COMM_SELF,PETSC_ERR_COR,"Device %d being viewed before it was initialized or configured",id_);
-    ierr = PetscObjectTypeCompare(reinterpret_cast<PetscObject>(viewer),PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-    ierr = PetscObjectGetComm(reinterpret_cast<PetscObject>(viewer),&comm);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectTypeCompare(reinterpret_cast<PetscObject>(viewer),PETSCVIEWERASCII,&iascii));
+    CHKERRQ(PetscObjectGetComm(reinterpret_cast<PetscObject>(viewer),&comm));
     if (iascii) {
       PetscViewer sviewer;
 
-      ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-      ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(sviewer,"[%d] device: %s\n",rank,syclDevice_.get_info<sycl::info::device::name>().c_str());CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPushTab(sviewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(sviewer,"-> Device vendor: %s\n",syclDevice_.get_info<sycl::info::device::vendor>().c_str());CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(sviewer);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(sviewer);CHKERRQ(ierr);
-      ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      CHKERRMPI(MPI_Comm_rank(comm,&rank));
+      CHKERRQ(PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
+      CHKERRQ(PetscViewerASCIIPrintf(sviewer,"[%d] device: %s\n",rank,syclDevice_.get_info<sycl::info::device::name>().c_str()));
+      CHKERRQ(PetscViewerASCIIPushTab(sviewer));
+      CHKERRQ(PetscViewerASCIIPrintf(sviewer,"-> Device vendor: %s\n",syclDevice_.get_info<sycl::info::device::vendor>().c_str()));
+      CHKERRQ(PetscViewerASCIIPopTab(sviewer));
+      CHKERRQ(PetscViewerFlush(sviewer));
+      CHKERRQ(PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer));
+      CHKERRQ(PetscViewerFlush(viewer));
     }
     PetscFunctionReturn(0);
   }
@@ -110,7 +110,7 @@ private:
     auto Q = sycl::queue(syclDevice_);
     dbuf   = sycl::malloc_device<int>(bufSize,Q);
     Q.memcpy(dbuf,hbuf,sizeof(int)*bufSize).wait();
-    ierr = PetscPushSignalHandler(SyclSignalHandler,nullptr);CHKERRABORT(PETSC_COMM_SELF,ierr);
+    CHKERRABORT(PETSC_COMM_SELF,PetscPushSignalHandler(SyclSignalHandler,nullptr));
     MPISyclAwareJumpBufferSet = true;
     if (setjmp(MPISyclAwareJumpBuffer)) {
       // if a segv was triggered in the MPI_Allreduce below, it is very likely due to MPI not being GPU-aware
@@ -118,7 +118,7 @@ private:
       PetscStackPop;
     } else if (!MPI_Allreduce(dbuf,dbuf+1,1,MPI_INT,MPI_SUM,PETSC_COMM_SELF)) awareness = true;
     MPISyclAwareJumpBufferSet = false;
-    ierr = PetscPopSignalHandler();CHKERRABORT(PETSC_COMM_SELF,ierr);
+    CHKERRABORT(PETSC_COMM_SELF,PetscPopSignalHandler());
     sycl::free(dbuf,Q);
     PetscFunctionReturn(awareness);
   }
@@ -134,12 +134,12 @@ PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, Pets
   PetscFunctionBegin;
   if (initialized_) PetscFunctionReturn(0);
   initialized_ = true;
-  ierr = PetscRegisterFinalize(finalize_);CHKERRQ(ierr);
+  CHKERRQ(PetscRegisterFinalize(finalize_));
 
   ierr = PetscOptionsBegin(comm,nullptr,"PetscDevice SYCL Options","Sys");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-device_enable_sycl","How (or whether) to initialize a device","SyclDevice::initialize()",PetscDeviceInitTypes,3,PetscDeviceInitTypes[initType],&initType,nullptr);CHKERRQ(ierr);
-  ierr = PetscOptionsRangeInt("-device_select_sycl","Which sycl device to use? Pass -2 for host, PETSC_DECIDE (-1) to let PETSc decide, 0 and up for GPUs","PetscDeviceCreate",id,&id,nullptr,-2,std::numeric_limits<decltype(ngpus)>::max());CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-device_view_sycl","Display device information and assignments (forces eager initialization)",nullptr,view,&view,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsEList("-device_enable_sycl","How (or whether) to initialize a device","SyclDevice::initialize()",PetscDeviceInitTypes,3,PetscDeviceInitTypes[initType],&initType,nullptr));
+  CHKERRQ(PetscOptionsRangeInt("-device_select_sycl","Which sycl device to use? Pass -2 for host, PETSC_DECIDE (-1) to let PETSc decide, 0 and up for GPUs","PetscDeviceCreate",id,&id,nullptr,-2,std::numeric_limits<decltype(ngpus)>::max()));
+  CHKERRQ(PetscOptionsBool("-device_view_sycl","Display device information and assignments (forces eager initialization)",nullptr,view,&view,&flg));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   // post-process the options and lay the groundwork for initialization if needs be
@@ -150,11 +150,11 @@ PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, Pets
 
   if (initType == PETSC_DEVICE_INIT_NONE) id = PETSC_SYCL_DEVICE_NONE; /* user wants to disable all sycl devices */
   else {
-    ierr = PetscDeviceCheckDeviceCount_Internal(ngpus);CHKERRQ(ierr);
+    CHKERRQ(PetscDeviceCheckDeviceCount_Internal(ngpus));
     if (id == PETSC_DECIDE) { /* petsc will choose a GPU device if any, otherwise a CPU device */
       if (ngpus) {
         PetscMPIInt rank;
-        ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+        CHKERRMPI(MPI_Comm_rank(comm,&rank));
         id   = rank % ngpus;
       } else id = PETSC_SYCL_DEVICE_HOST;
     }
@@ -169,12 +169,12 @@ PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, Pets
 
   if (initType == PETSC_DEVICE_INIT_EAGER) {
     devices_[defaultDevice_] = new DeviceInternal(defaultDevice_);
-    ierr = devices_[defaultDevice_]->initialize();CHKERRQ(ierr);
+    CHKERRQ(devices_[defaultDevice_]->initialize());
     if (view) {
       PetscViewer viewer;
-      ierr = PetscLogInitialize();CHKERRQ(ierr);
-      ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
-      ierr = devices_[defaultDevice_]->view(viewer);CHKERRQ(ierr);
+      CHKERRQ(PetscLogInitialize());
+      CHKERRQ(PetscViewerASCIIGetStdout(comm,&viewer));
+      CHKERRQ(devices_[defaultDevice_]->view(viewer));
     }
   }
 
@@ -205,7 +205,7 @@ PetscErrorCode Device::getDevice(PetscDevice device, PetscInt id) const noexcept
   if (devices_[id]) {
     PetscCheckFalse(id != devices_[id]->id(),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Entry %" PetscInt_FMT " contains device with mismatching id %" PetscInt_FMT,id,devices_[id]->id());
   } else devices_[id] = new DeviceInternal(id);
-  ierr = devices_[id]->initialize();CHKERRQ(ierr);
+  CHKERRQ(devices_[id]->initialize());
   device->deviceId           = devices_[id]->id(); // technically id = devices_[id]->id_ here
   device->ops->createcontext = create_;
   device->ops->configure     = this->configureDevice;
@@ -225,7 +225,7 @@ PetscErrorCode Device::viewDevice(PetscDevice device, PetscViewer viewer) noexce
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = devices_[device->deviceId]->view(viewer);CHKERRQ(ierr);
+  CHKERRQ(devices_[device->deviceId]->view(viewer));
   PetscFunctionReturn(0);
 }
 

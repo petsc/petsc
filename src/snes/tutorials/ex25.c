@@ -44,25 +44,25 @@ int main(int argc,char **argv)
   /*
       Set the DMDA (grid structure) for the grids.
   */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,5,5,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,NULL);CHKERRQ(ierr);
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-  ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,5,5,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da));
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
+  CHKERRQ(DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,NULL));
+  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes));
+  CHKERRQ(SNESSetDM(snes,da));
+  CHKERRQ(DMDestroy(&da));
 
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  CHKERRQ(SNESSetFromOptions(snes));
 
-  ierr    = SNESSolve(snes,0,0);CHKERRQ(ierr);
-  ierr    = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr    = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
+  CHKERRQ(SNESSolve(snes,0,0));
+  CHKERRQ(SNESGetIterationNumber(snes,&its));
+  CHKERRQ(SNESGetLinearSolveIterations(snes,&lits));
   litspit = ((PetscReal)lits)/((PetscReal)its);
-  ierr    = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its);CHKERRQ(ierr);
-  ierr    = PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %D\n",lits);CHKERRQ(ierr);
-  ierr    = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / SNES = %e\n",(double)litspit);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n",its));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Number of Linear iterations = %D\n",lits));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / SNES = %e\n",(double)litspit));
 
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  CHKERRQ(SNESDestroy(&snes));
   ierr = PetscFinalize();
   return ierr;
 }

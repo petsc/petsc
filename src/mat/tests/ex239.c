@@ -13,20 +13,20 @@ int main(int argc, char** argv)
   PetscReal      nrm = 1;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = MatCreateDenseCUDA(comm,global_size,global_size,global_size,global_size,NULL,&cuda_matrix);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(cuda_matrix,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(cuda_matrix,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatCreateDenseCUDA(comm,global_size,global_size,global_size,global_size,NULL,&cuda_matrix));
+  CHKERRQ(MatAssemblyBegin(cuda_matrix,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(cuda_matrix,MAT_FINAL_ASSEMBLY));
 
-  ierr = VecCreateSeqCUDA(comm,global_size,&input);CHKERRQ(ierr);
-  ierr = VecDuplicate(input,&output);CHKERRQ(ierr);
-  ierr = VecSet(input,1.);CHKERRQ(ierr);
-  ierr = VecSet(output,2.);CHKERRQ(ierr);
-  ierr = MatMult(cuda_matrix,input,output);CHKERRQ(ierr);
-  ierr = VecNorm(output,NORM_2,&nrm);CHKERRQ(ierr);
+  CHKERRQ(VecCreateSeqCUDA(comm,global_size,&input));
+  CHKERRQ(VecDuplicate(input,&output));
+  CHKERRQ(VecSet(input,1.));
+  CHKERRQ(VecSet(output,2.));
+  CHKERRQ(MatMult(cuda_matrix,input,output));
+  CHKERRQ(VecNorm(output,NORM_2,&nrm));
   PetscCheckFalse(nrm > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PETSc generated wrong result. Should be 0, but is %g",(double)nrm);
-  ierr = VecDestroy(&input);CHKERRQ(ierr);
-  ierr = VecDestroy(&output);CHKERRQ(ierr);
-  ierr = MatDestroy(&cuda_matrix);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&input));
+  CHKERRQ(VecDestroy(&output));
+  CHKERRQ(MatDestroy(&cuda_matrix));
   ierr = PetscFinalize();
   return ierr;
 }

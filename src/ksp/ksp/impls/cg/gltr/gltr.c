@@ -22,11 +22,9 @@ static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 @*/
 PetscErrorCode  KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscUseMethod(ksp,"KSPGLTRGetMinEig_C",(KSP,PetscReal*),(ksp,e_min));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(ksp,"KSPGLTRGetMinEig_C",(KSP,PetscReal*),(ksp,e_min)));
   PetscFunctionReturn(0);
 }
 
@@ -44,11 +42,9 @@ PetscErrorCode  KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 @*/
 PetscErrorCode  KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscUseMethod(ksp,"KSPGLTRGetLambda_C",(KSP,PetscReal*),(ksp,lambda));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(ksp,"KSPGLTRGetLambda_C",(KSP,PetscReal*),(ksp,lambda)));
   PetscFunctionReturn(0);
 }
 
@@ -61,7 +57,6 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   PetscReal    *t_soln, *t_diag, *t_offd, *e_valu, *e_vect, *e_rwrk;
   PetscBLASInt *e_iblk, *e_splt, *e_iwrk;
 
-  PetscErrorCode ierr;
   Mat            Qmat, Mmat;
   Vec            r, z, p, d;
   PC             pc;
@@ -85,7 +80,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   /* Check the arguments and parameters.                                     */
   /***************************************************************************/
 
-  ierr = PCGetDiagonalScale(ksp->pc, &diagonalscale);CHKERRQ(ierr);
+  CHKERRQ(PCGetDiagonalScale(ksp->pc, &diagonalscale));
   PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
   PetscCheckFalse(cg->radius < 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
 
@@ -100,9 +95,9 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   d  = ksp->vec_sol;
   pc = ksp->pc;
 
-  ierr = PCGetOperators(pc, &Qmat, &Mmat);CHKERRQ(ierr);
+  CHKERRQ(PCGetOperators(pc, &Qmat, &Mmat));
 
-  ierr            = VecGetSize(d, &max_cg_its);CHKERRQ(ierr);
+  CHKERRQ(VecGetSize(d, &max_cg_its));
   max_cg_its      = PetscMin(max_cg_its, ksp->max_it);
   max_lanczos_its = cg->max_lanczos_its;
   max_newton_its  = cg->max_newton_its;
@@ -114,7 +109,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
   cg->o_fcn = 0.0;
 
-  ierr       = VecSet(d, 0.0);CHKERRQ(ierr);            /* d = 0             */
+  CHKERRQ(VecSet(d, 0.0));            /* d = 0             */
   cg->norm_d = 0.0;
 
   cg->e_min  = 0.0;
@@ -128,8 +123,8 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   /* infinite values need be performed only once.                            */
   /***************************************************************************/
 
-  ierr = VecCopy(ksp->vec_rhs, r);CHKERRQ(ierr);        /* r = -grad         */
-  ierr = VecDot(r, r, &rr);CHKERRQ(ierr);               /* rr = r^T r        */
+  CHKERRQ(VecCopy(ksp->vec_rhs, r));        /* r = -grad         */
+  CHKERRQ(VecDot(r, r, &rr));               /* rr = r^T r        */
   KSPCheckDot(ksp,rr);
 
   /***************************************************************************/
@@ -138,8 +133,8 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   /* performed only once.                                                    */
   /***************************************************************************/
 
-  ierr = KSP_PCApply(ksp, r, z);CHKERRQ(ierr);          /* z = inv(M) r      */
-  ierr = VecDot(r, z, &rz);CHKERRQ(ierr);               /* rz = r^T inv(M) r */
+  CHKERRQ(KSP_PCApply(ksp, r, z));          /* z = inv(M) r      */
+  CHKERRQ(VecDot(r, z, &rz));               /* rz = r^T inv(M) r */
   if (PetscIsInfOrNanScalar(rz)) {
     /*************************************************************************/
     /* The preconditioner contains not-a-number or an infinite value.        */
@@ -147,7 +142,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_NANORINF;
-    ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: bad preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: bad preconditioner: rz=%g\n", (double)rz));
 
     if (cg->radius) {
       if (r2 >= rr) {
@@ -158,15 +153,15 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
         cg->norm_d = cg->radius;
       }
 
-      ierr = VecAXPY(d, alpha, r);CHKERRQ(ierr);        /* d = d + alpha r   */
+      CHKERRQ(VecAXPY(d, alpha, r));        /* d = d + alpha r   */
 
       /***********************************************************************/
       /* Compute objective function.                                         */
       /***********************************************************************/
 
-      ierr      = KSP_MatMult(ksp, Qmat, d, z);CHKERRQ(ierr);
-      ierr      = VecAYPX(z, -0.5, ksp->vec_rhs);CHKERRQ(ierr);
-      ierr      = VecDot(d, z, &cg->o_fcn);CHKERRQ(ierr);
+      CHKERRQ(KSP_MatMult(ksp, Qmat, d, z));
+      CHKERRQ(VecAYPX(z, -0.5, ksp->vec_rhs));
+      CHKERRQ(VecDot(d, z, &cg->o_fcn));
       cg->o_fcn = -cg->o_fcn;
       ++ksp->its;
     }
@@ -182,7 +177,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-    ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: indefinite preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: indefinite preconditioner: rz=%g\n", (double)rz));
 
     if (cg->radius) {
       if (r2 >= rr) {
@@ -193,15 +188,15 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
         cg->norm_d = cg->radius;
       }
 
-      ierr = VecAXPY(d, alpha, r);CHKERRQ(ierr);        /* d = d + alpha r   */
+      CHKERRQ(VecAXPY(d, alpha, r));        /* d = d + alpha r   */
 
       /***********************************************************************/
       /* Compute objective function.                                         */
       /***********************************************************************/
 
-      ierr      = KSP_MatMult(ksp, Qmat, d, z);CHKERRQ(ierr);
-      ierr      = VecAYPX(z, -0.5, ksp->vec_rhs);CHKERRQ(ierr);
-      ierr      = VecDot(d, z, &cg->o_fcn);CHKERRQ(ierr);
+      CHKERRQ(KSP_MatMult(ksp, Qmat, d, z));
+      CHKERRQ(VecAYPX(z, -0.5, ksp->vec_rhs));
+      CHKERRQ(VecDot(d, z, &cg->o_fcn));
       cg->o_fcn = -cg->o_fcn;
       ++ksp->its;
     }
@@ -219,7 +214,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
   switch (ksp->normtype) {
   case KSP_NORM_PRECONDITIONED:
-    ierr = VecNorm(z, NORM_2, &norm_r);CHKERRQ(ierr);   /* norm_r = |z|      */
+    CHKERRQ(VecNorm(z, NORM_2, &norm_r));   /* norm_r = |z|      */
     break;
 
   case KSP_NORM_UNPRECONDITIONED:
@@ -235,25 +230,25 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     break;
   }
 
-  ierr       = KSPLogResidualHistory(ksp, norm_r);CHKERRQ(ierr);
-  ierr       = KSPMonitor(ksp, ksp->its, norm_r);CHKERRQ(ierr);
+  CHKERRQ(KSPLogResidualHistory(ksp, norm_r));
+  CHKERRQ(KSPMonitor(ksp, ksp->its, norm_r));
   ksp->rnorm = norm_r;
 
-  ierr = (*ksp->converged)(ksp, ksp->its, norm_r, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
+  CHKERRQ((*ksp->converged)(ksp, ksp->its, norm_r, &ksp->reason, ksp->cnvP));
 
   /***************************************************************************/
   /* Compute the first direction and update the iteration.                   */
   /***************************************************************************/
 
-  ierr = VecCopy(z, p);CHKERRQ(ierr);                   /* p = z             */
-  ierr = KSP_MatMult(ksp, Qmat, p, z);CHKERRQ(ierr);    /* z = Q * p         */
+  CHKERRQ(VecCopy(z, p));                   /* p = z             */
+  CHKERRQ(KSP_MatMult(ksp, Qmat, p, z));    /* z = Q * p         */
   ++ksp->its;
 
   /***************************************************************************/
   /* Check the matrix for numerical problems.                                */
   /***************************************************************************/
 
-  ierr = VecDot(p, z, &kappa);CHKERRQ(ierr);            /* kappa = p^T Q p   */
+  CHKERRQ(VecDot(p, z, &kappa));            /* kappa = p^T Q p   */
   if (PetscIsInfOrNanScalar(kappa)) {
     /*************************************************************************/
     /* The matrix produced not-a-number or an infinite value.  In this case, */
@@ -262,7 +257,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_NANORINF;
-    ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: bad matrix: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: bad matrix: kappa=%g\n", (double)kappa));
 
     if (cg->radius) {
       if (r2 >= rr) {
@@ -273,15 +268,15 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
         cg->norm_d = cg->radius;
       }
 
-      ierr = VecAXPY(d, alpha, r);CHKERRQ(ierr);        /* d = d + alpha r   */
+      CHKERRQ(VecAXPY(d, alpha, r));        /* d = d + alpha r   */
 
       /***********************************************************************/
       /* Compute objective function.                                         */
       /***********************************************************************/
 
-      ierr      = KSP_MatMult(ksp, Qmat, d, z);CHKERRQ(ierr);
-      ierr      = VecAYPX(z, -0.5, ksp->vec_rhs);CHKERRQ(ierr);
-      ierr      = VecDot(d, z, &cg->o_fcn);CHKERRQ(ierr);
+      CHKERRQ(KSP_MatMult(ksp, Qmat, d, z));
+      CHKERRQ(VecAYPX(z, -0.5, ksp->vec_rhs));
+      CHKERRQ(VecDot(d, z, &cg->o_fcn));
       cg->o_fcn = -cg->o_fcn;
       ++ksp->its;
     }
@@ -303,7 +298,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     break;
 
   default:
-    ierr = VecDot(p, p, &norm_p);CHKERRQ(ierr);
+    CHKERRQ(VecDot(p, p, &norm_p));
     break;
   }
 
@@ -325,7 +320,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_BREAKDOWN;
-    ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: breakdown: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: breakdown: kappa=%g\n", (double)kappa));
 
     if (cg->radius && norm_p > 0.0) {
       /***********************************************************************/
@@ -336,7 +331,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       step       = PetscSqrtReal(r2 / norm_p);
       cg->norm_d = cg->radius;
 
-      ierr = VecAXPY(d, step, p);CHKERRQ(ierr); /* d = d + step p    */
+      CHKERRQ(VecAXPY(d, step, p)); /* d = d + step p    */
 
       /***********************************************************************/
       /* Update objective function.                                          */
@@ -357,15 +352,15 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
         cg->norm_d = cg->radius;
       }
 
-      ierr = VecAXPY(d, alpha, r);CHKERRQ(ierr);        /* d = d + alpha r   */
+      CHKERRQ(VecAXPY(d, alpha, r));        /* d = d + alpha r   */
 
       /***********************************************************************/
       /* Compute objective function.                                         */
       /***********************************************************************/
 
-      ierr      = KSP_MatMult(ksp, Qmat, d, z);CHKERRQ(ierr);
-      ierr      = VecAYPX(z, -0.5, ksp->vec_rhs);CHKERRQ(ierr);
-      ierr      = VecDot(d, z, &cg->o_fcn);CHKERRQ(ierr);
+      CHKERRQ(KSP_MatMult(ksp, Qmat, d, z));
+      CHKERRQ(VecAYPX(z, -0.5, ksp->vec_rhs));
+      CHKERRQ(VecDot(d, z, &cg->o_fcn));
       cg->o_fcn = -cg->o_fcn;
       ++ksp->its;
     }
@@ -403,7 +398,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-      ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: negative curvature: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: negative curvature: kappa=%g\n", (double)kappa));
 
       if (cg->radius && norm_p > 0.0) {
         /*********************************************************************/
@@ -413,7 +408,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
         step       = (PetscSqrtReal(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
         cg->norm_d = cg->radius;
 
-        ierr = VecAXPY(d, step, p);CHKERRQ(ierr);       /* d = d + step p    */
+        CHKERRQ(VecAXPY(d, step, p));       /* d = d + step p    */
 
         /*********************************************************************/
         /* Update objective function.                                        */
@@ -441,7 +436,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_CONVERGED_CG_CONSTRAINED;
-      ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: constrained step: radius=%g\n", (double)cg->radius);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: constrained step: radius=%g\n", (double)cg->radius));
 
       if (norm_p > 0.0) {
         /*********************************************************************/
@@ -451,7 +446,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
         step       = (PetscSqrtReal(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
         cg->norm_d = cg->radius;
 
-        ierr = VecAXPY(d, step, p);CHKERRQ(ierr);       /* d = d + step p    */
+        CHKERRQ(VecAXPY(d, step, p));       /* d = d + step p    */
 
         /*********************************************************************/
         /* Update objective function.                                        */
@@ -470,9 +465,9 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     /* Now we can update the direction and residual.                         */
     /*************************************************************************/
 
-    ierr = VecAXPY(d, alpha, p);CHKERRQ(ierr);          /* d = d + alpha p   */
-    ierr = VecAXPY(r, -alpha, z);CHKERRQ(ierr);         /* r = r - alpha Q p */
-    ierr = KSP_PCApply(ksp, r, z);CHKERRQ(ierr);        /* z = inv(M) r      */
+    CHKERRQ(VecAXPY(d, alpha, p));          /* d = d + alpha p   */
+    CHKERRQ(VecAXPY(r, -alpha, z));         /* r = r - alpha Q p */
+    CHKERRQ(KSP_PCApply(ksp, r, z));        /* z = inv(M) r      */
 
     switch (cg->dtype) {
     case GLTR_PRECONDITIONED_DIRECTION:
@@ -480,7 +475,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       break;
 
     default:
-      ierr = VecDot(d, d, &norm_d);CHKERRQ(ierr);
+      CHKERRQ(VecDot(d, d, &norm_d));
       break;
     }
     cg->norm_d = PetscSqrtReal(norm_d);
@@ -496,14 +491,14 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     rzm1 = rz;
-    ierr = VecDot(r, z, &rz);CHKERRQ(ierr);             /* rz = r^T z        */
+    CHKERRQ(VecDot(r, z, &rz));             /* rz = r^T z        */
     if (rz < 0.0) {
       /***********************************************************************/
       /* The preconditioner is indefinite.                                   */
       /***********************************************************************/
 
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-      ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: cg indefinite preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: cg indefinite preconditioner: rz=%g\n", (double)rz));
       break;
     }
 
@@ -516,11 +511,11 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
     switch (ksp->normtype) {
     case KSP_NORM_PRECONDITIONED:
-      ierr = VecNorm(z, NORM_2, &norm_r);CHKERRQ(ierr); /* norm_r = |z|      */
+      CHKERRQ(VecNorm(z, NORM_2, &norm_r)); /* norm_r = |z|      */
       break;
 
     case KSP_NORM_UNPRECONDITIONED:
-      ierr = VecNorm(r, NORM_2, &norm_r);CHKERRQ(ierr); /* norm_r = |r|      */
+      CHKERRQ(VecNorm(r, NORM_2, &norm_r)); /* norm_r = |r|      */
       break;
 
     case KSP_NORM_NATURAL:
@@ -532,17 +527,17 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       break;
     }
 
-    ierr       = KSPLogResidualHistory(ksp, norm_r);CHKERRQ(ierr);
-    ierr       = KSPMonitor(ksp, ksp->its, norm_r);CHKERRQ(ierr);
+    CHKERRQ(KSPLogResidualHistory(ksp, norm_r));
+    CHKERRQ(KSPMonitor(ksp, ksp->its, norm_r));
     ksp->rnorm = norm_r;
 
-    ierr = (*ksp->converged)(ksp, ksp->its, norm_r, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
+    CHKERRQ((*ksp->converged)(ksp, ksp->its, norm_r, &ksp->reason, ksp->cnvP));
     if (ksp->reason) {
       /***********************************************************************/
       /* The method has converged.                                           */
       /***********************************************************************/
 
-      ierr = PetscInfo(ksp, "KSPCGSolve_GLTR: cg truncated step: rnorm=%g, radius=%g\n", (double)norm_r, (double)cg->radius);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: cg truncated step: rnorm=%g, radius=%g\n", (double)norm_r, (double)cg->radius));
       break;
     }
 
@@ -557,7 +552,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: breakdown: beta=%g\n", (double)beta);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: breakdown: beta=%g\n", (double)beta));
       break;
     }
 
@@ -567,7 +562,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
     if (ksp->its >= max_cg_its) {
       ksp->reason = KSP_DIVERGED_ITS;
-      ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: iterlim: its=%D\n", ksp->its);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: iterlim: its=%D\n", ksp->its));
       break;
     }
 
@@ -576,7 +571,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     cg->beta[l_size] = beta;
-    ierr             = VecAYPX(p, beta, z);CHKERRQ(ierr); /* p = z + beta p    */
+    CHKERRQ(VecAYPX(p, beta, z)); /* p = z + beta p    */
 
     switch (cg->dtype) {
     case GLTR_PRECONDITIONED_DIRECTION:
@@ -585,8 +580,8 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       break;
 
     default:
-      ierr = VecDot(d, p, &dMp);CHKERRQ(ierr);
-      ierr = VecDot(p, p, &norm_p);CHKERRQ(ierr);
+      CHKERRQ(VecDot(d, p, &dMp));
+      CHKERRQ(VecDot(p, p, &norm_p));
       break;
     }
 
@@ -594,8 +589,8 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     /* Compute the new direction and update the iteration.                   */
     /*************************************************************************/
 
-    ierr = KSP_MatMult(ksp, Qmat, p, z);CHKERRQ(ierr);  /* z = Q * p         */
-    ierr = VecDot(p, z, &kappa);CHKERRQ(ierr);          /* kappa = p^T Q p   */
+    CHKERRQ(KSP_MatMult(ksp, Qmat, p, z));  /* z = Q * p         */
+    CHKERRQ(VecDot(p, z, &kappa));          /* kappa = p^T Q p   */
     ++ksp->its;
 
     /*************************************************************************/
@@ -619,7 +614,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-      ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: cg breakdown: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: cg breakdown: kappa=%g\n", (double)kappa));
 
       if (cg->radius && norm_p > 0.0) {
         /*********************************************************************/
@@ -629,7 +624,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
         step       = (PetscSqrtReal(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
         cg->norm_d = cg->radius;
 
-        ierr = VecAXPY(d, step, p);CHKERRQ(ierr);       /* d = d + step p    */
+        CHKERRQ(VecAXPY(d, step, p));       /* d = d + step p    */
 
         /*********************************************************************/
         /* Update objective function.                                        */
@@ -678,7 +673,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
     if (PetscAbsReal(kappa) <= 0.0) {
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: lanczos breakdown: kappa=%g\n", (double)kappa);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: lanczos breakdown: kappa=%g\n", (double)kappa));
       break;
     }
 
@@ -689,22 +684,22 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     alpha             = rz / kappa;
     cg->alpha[l_size] = alpha;
 
-    ierr = VecAXPY(r, -alpha, z);CHKERRQ(ierr);         /* r = r - alpha Q p */
-    ierr = KSP_PCApply(ksp, r, z);CHKERRQ(ierr);        /* z = inv(M) r      */
+    CHKERRQ(VecAXPY(r, -alpha, z));         /* r = r - alpha Q p */
+    CHKERRQ(KSP_PCApply(ksp, r, z));        /* z = inv(M) r      */
 
     /*************************************************************************/
     /* Check that the preconditioner appears positive semidefinite.          */
     /*************************************************************************/
 
     rzm1 = rz;
-    ierr = VecDot(r, z, &rz);CHKERRQ(ierr);             /* rz = r^T z        */
+    CHKERRQ(VecDot(r, z, &rz));             /* rz = r^T z        */
     if (rz < 0.0) {
       /***********************************************************************/
       /* The preconditioner is indefinite.                                   */
       /***********************************************************************/
 
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-      ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: lanczos indefinite preconditioner: rz=%g\n", (double)rz);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: lanczos indefinite preconditioner: rz=%g\n", (double)rz));
       break;
     }
 
@@ -717,11 +712,11 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
     switch (ksp->normtype) {
     case KSP_NORM_PRECONDITIONED:
-      ierr = VecNorm(z, NORM_2, &norm_r);CHKERRQ(ierr); /* norm_r = |z|      */
+      CHKERRQ(VecNorm(z, NORM_2, &norm_r)); /* norm_r = |z|      */
       break;
 
     case KSP_NORM_UNPRECONDITIONED:
-      ierr = VecNorm(r, NORM_2, &norm_r);CHKERRQ(ierr); /* norm_r = |r|      */
+      CHKERRQ(VecNorm(r, NORM_2, &norm_r)); /* norm_r = |r|      */
       break;
 
     case KSP_NORM_NATURAL:
@@ -733,8 +728,8 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       break;
     }
 
-    ierr       = KSPLogResidualHistory(ksp, norm_r);CHKERRQ(ierr);
-    ierr       = KSPMonitor(ksp, ksp->its, norm_r);CHKERRQ(ierr);
+    CHKERRQ(KSPLogResidualHistory(ksp, norm_r));
+    CHKERRQ(KSPMonitor(ksp, ksp->its, norm_r));
     ksp->rnorm = norm_r;
 
     /*************************************************************************/
@@ -748,7 +743,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       /***********************************************************************/
 
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: breakdown: beta=%g\n",(double) beta);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: breakdown: beta=%g\n",(double) beta));
       break;
     }
 
@@ -757,14 +752,14 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     cg->beta[l_size] = beta;
-    ierr             = VecAYPX(p, beta, z);CHKERRQ(ierr); /* p = z + beta p    */
+    CHKERRQ(VecAYPX(p, beta, z)); /* p = z + beta p    */
 
     /*************************************************************************/
     /* Compute the new direction and update the iteration.                   */
     /*************************************************************************/
 
-    ierr = KSP_MatMult(ksp, Qmat, p, z);CHKERRQ(ierr);  /* z = Q * p         */
-    ierr = VecDot(p, z, &kappa);CHKERRQ(ierr);          /* kappa = p^T Q p   */
+    CHKERRQ(KSP_MatMult(ksp, Qmat, p, z));  /* z = Q * p         */
+    CHKERRQ(VecDot(p, z, &kappa));          /* kappa = p^T Q p   */
     ++ksp->its;
 
     /*************************************************************************/
@@ -790,8 +785,8 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
   if (t_size > cg->alloced) {
     if (cg->alloced) {
-      ierr         = PetscFree(cg->rwork);CHKERRQ(ierr);
-      ierr         = PetscFree(cg->iwork);CHKERRQ(ierr);
+      CHKERRQ(PetscFree(cg->rwork));
+      CHKERRQ(PetscFree(cg->iwork));
       cg->alloced += cg->init_alloc;
     } else {
       cg->alloced = cg->init_alloc;
@@ -802,7 +797,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     }
 
     cg->alloced = PetscMin(cg->alloced, t_size);
-    ierr        = PetscMalloc2(10*cg->alloced, &cg->rwork,5*cg->alloced, &cg->iwork);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc2(10*cg->alloced, &cg->rwork,5*cg->alloced, &cg->iwork));
   }
 
   /***************************************************************************/
@@ -837,7 +832,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     /* Steihaug-Toint direction.                                             */
     /*************************************************************************/
 
-    ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute eigenvalue.\n");CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute eigenvalue.\n"));
     ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
     PetscFunctionReturn(0);
   }
@@ -884,7 +879,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     /* direction.                                                            */
     /*************************************************************************/
 
-    ierr = PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute step.\n");CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute step.\n"));
     ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
     PetscFunctionReturn(0);
   }
@@ -918,7 +913,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
         /* Steihaug-Toint direction.                                         */
         /*********************************************************************/
 
-        ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute eigenvector.\n");CHKERRQ(ierr);
+        CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute eigenvector.\n"));
         ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
         PetscFunctionReturn(0);
       }
@@ -1009,7 +1004,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       /* Compute the update.                                                 */
       /***********************************************************************/
 
-      ierr = PetscArraycpy(e_rwrk, t_soln, t_size);CHKERRQ(ierr);
+      CHKERRQ(PetscArraycpy(e_rwrk, t_soln, t_size));
 
       PetscStackCallBLAS("LAPACKpttrs",LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, e_rwrk, &nldb, &info));
 
@@ -1019,7 +1014,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
         /* direction.                                                        */
         /*********************************************************************/
 
-        ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute step.\n");CHKERRQ(ierr);
+        CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute step.\n"));
         ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
         PetscFunctionReturn(0);
       }
@@ -1050,7 +1045,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
         /* direction.                                                        */
         /*********************************************************************/
 
-        ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: factorization failed.\n");CHKERRQ(ierr);
+        CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: factorization failed.\n"));
         ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
         PetscFunctionReturn(0);
       }
@@ -1070,7 +1065,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
         /* direction.                                                        */
         /*********************************************************************/
 
-        ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute step.\n");CHKERRQ(ierr);
+        CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute step.\n"));
         ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
         PetscFunctionReturn(0);
       }
@@ -1089,7 +1084,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       /* Newton method failed to converge in iteration limit.                */
       /***********************************************************************/
 
-      ierr        = PetscInfo(ksp, "KSPCGSolve_GLTR: failed to converge.\n");CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to converge.\n"));
       ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
       PetscFunctionReturn(0);
     }
@@ -1117,22 +1112,22 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   /* Start conjugate gradient method from the beginning                      */
   /***************************************************************************/
 
-  ierr = VecCopy(ksp->vec_rhs, r);CHKERRQ(ierr);        /* r = -grad         */
-  ierr = KSP_PCApply(ksp, r, z);CHKERRQ(ierr);          /* z = inv(M) r      */
+  CHKERRQ(VecCopy(ksp->vec_rhs, r));        /* r = -grad         */
+  CHKERRQ(KSP_PCApply(ksp, r, z));          /* z = inv(M) r      */
 
   /***************************************************************************/
   /* Accumulate Q * s                                                        */
   /***************************************************************************/
 
-  ierr = VecCopy(z, d);CHKERRQ(ierr);
-  ierr = VecScale(d, sigma * t_soln[0] / cg->norm_r[0]);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(z, d));
+  CHKERRQ(VecScale(d, sigma * t_soln[0] / cg->norm_r[0]));
 
   /***************************************************************************/
   /* Compute the first direction.                                            */
   /***************************************************************************/
 
-  ierr = VecCopy(z, p);CHKERRQ(ierr);                   /* p = z             */
-  ierr = KSP_MatMult(ksp, Qmat, p, z);CHKERRQ(ierr);    /* z = Q * p         */
+  CHKERRQ(VecCopy(z, p));                   /* p = z             */
+  CHKERRQ(KSP_MatMult(ksp, Qmat, p, z));    /* z = Q * p         */
   ++ksp->its;
 
   for (i = 0; i < l_size - 1; ++i) {
@@ -1143,22 +1138,22 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     alpha = cg->alpha[i];
     if (alpha >= 0.0) sigma = -sigma;
 
-    ierr = VecAXPY(r, -alpha, z);CHKERRQ(ierr);         /* r = r - alpha Q p */
-    ierr = KSP_PCApply(ksp, r, z);CHKERRQ(ierr);        /* z = inv(M) r      */
+    CHKERRQ(VecAXPY(r, -alpha, z));         /* r = r - alpha Q p */
+    CHKERRQ(KSP_PCApply(ksp, r, z));        /* z = inv(M) r      */
 
     /*************************************************************************/
     /* Accumulate Q * s                                                      */
     /*************************************************************************/
 
-    ierr = VecAXPY(d, sigma * t_soln[i+1] / cg->norm_r[i+1], z);CHKERRQ(ierr);
+    CHKERRQ(VecAXPY(d, sigma * t_soln[i+1] / cg->norm_r[i+1], z));
 
     /*************************************************************************/
     /* Update p.                                                             */
     /*************************************************************************/
 
     beta = cg->beta[i];
-    ierr = VecAYPX(p, beta, z);CHKERRQ(ierr);          /* p = z + beta p    */
-    ierr = KSP_MatMult(ksp, Qmat, p, z);CHKERRQ(ierr);  /* z = Q * p         */
+    CHKERRQ(VecAYPX(p, beta, z));          /* p = z + beta p    */
+    CHKERRQ(KSP_MatMult(ksp, Qmat, p, z));  /* z = Q * p         */
     ++ksp->its;
   }
 
@@ -1169,14 +1164,14 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   alpha = cg->alpha[i];
   if (alpha >= 0.0) sigma = -sigma;
 
-  ierr = VecAXPY(r, -alpha, z);CHKERRQ(ierr);           /* r = r - alpha Q p */
-  ierr = KSP_PCApply(ksp, r, z);CHKERRQ(ierr);          /* z = inv(M) r      */
+  CHKERRQ(VecAXPY(r, -alpha, z));           /* r = r - alpha Q p */
+  CHKERRQ(KSP_PCApply(ksp, r, z));          /* z = inv(M) r      */
 
   /***************************************************************************/
   /* Accumulate Q * s                                                        */
   /***************************************************************************/
 
-  ierr = VecAXPY(d, sigma * t_soln[i+1] / cg->norm_r[i+1], z);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(d, sigma * t_soln[i+1] / cg->norm_r[i+1], z));
 
   /***************************************************************************/
   /* Set the termination reason.                                             */
@@ -1191,7 +1186,6 @@ static PetscErrorCode KSPCGSetUp_GLTR(KSP ksp)
 {
   KSPCG_GLTR     *cg = (KSPCG_GLTR*)ksp->data;
   PetscInt       max_its;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /***************************************************************************/
@@ -1205,16 +1199,16 @@ static PetscErrorCode KSPCGSetUp_GLTR(KSP ksp)
   /* workspace for Lanczos matrix.                                           */
   /***************************************************************************/
 
-  ierr = KSPSetWorkVecs(ksp, 3);CHKERRQ(ierr);
+  CHKERRQ(KSPSetWorkVecs(ksp, 3));
   if (cg->diag) {
-    ierr = PetscArrayzero(cg->diag, max_its);CHKERRQ(ierr);
-    ierr = PetscArrayzero(cg->offd, max_its);CHKERRQ(ierr);
-    ierr = PetscArrayzero(cg->alpha, max_its);CHKERRQ(ierr);
-    ierr = PetscArrayzero(cg->beta, max_its);CHKERRQ(ierr);
-    ierr = PetscArrayzero(cg->norm_r, max_its);CHKERRQ(ierr);
+    CHKERRQ(PetscArrayzero(cg->diag, max_its));
+    CHKERRQ(PetscArrayzero(cg->offd, max_its));
+    CHKERRQ(PetscArrayzero(cg->alpha, max_its));
+    CHKERRQ(PetscArrayzero(cg->beta, max_its));
+    CHKERRQ(PetscArrayzero(cg->norm_r, max_its));
   } else {
-    ierr = PetscCalloc5(max_its,&cg->diag,max_its,&cg->offd,max_its,&cg->alpha,max_its,&cg->beta,max_its,&cg->norm_r);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)ksp, 5*max_its*sizeof(PetscReal));CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc5(max_its,&cg->diag,max_its,&cg->offd,max_its,&cg->alpha,max_its,&cg->beta,max_its,&cg->norm_r));
+    CHKERRQ(PetscLogObjectMemory((PetscObject)ksp, 5*max_its*sizeof(PetscReal)));
   }
   PetscFunctionReturn(0);
 }
@@ -1222,32 +1216,31 @@ static PetscErrorCode KSPCGSetUp_GLTR(KSP ksp)
 static PetscErrorCode KSPCGDestroy_GLTR(KSP ksp)
 {
   KSPCG_GLTR     *cg = (KSPCG_GLTR*)ksp->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /***************************************************************************/
   /* Free memory allocated for the data.                                     */
   /***************************************************************************/
 
-  ierr = PetscFree5(cg->diag,cg->offd,cg->alpha,cg->beta,cg->norm_r);CHKERRQ(ierr);
+  CHKERRQ(PetscFree5(cg->diag,cg->offd,cg->alpha,cg->beta,cg->norm_r));
   if (cg->alloced) {
-    ierr = PetscFree2(cg->rwork,cg->iwork);CHKERRQ(ierr);
+    CHKERRQ(PetscFree2(cg->rwork,cg->iwork));
   }
 
   /***************************************************************************/
   /* Clear composed functions                                                */
   /***************************************************************************/
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetRadius_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetNormD_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetObjFcn_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetMinEig_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetLambda_C",NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetRadius_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetNormD_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetObjFcn_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetMinEig_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetLambda_C",NULL));
 
   /***************************************************************************/
   /* Destroy KSP object.                                                     */
   /***************************************************************************/
-  ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroyDefault(ksp));
   PetscFunctionReturn(0);
 }
 
@@ -1298,24 +1291,23 @@ static PetscErrorCode  KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda)
 
 static PetscErrorCode KSPCGSetFromOptions_GLTR(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
-  PetscErrorCode ierr;
   KSPCG_GLTR       *cg = (KSPCG_GLTR*)ksp->data;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"KSP GLTR options");CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"KSP GLTR options"));
 
-  ierr = PetscOptionsReal("-ksp_cg_radius", "Trust Region Radius", "KSPCGSetRadius", cg->radius, &cg->radius, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsReal("-ksp_cg_radius", "Trust Region Radius", "KSPCGSetRadius", cg->radius, &cg->radius, NULL));
 
-  ierr = PetscOptionsEList("-ksp_cg_dtype", "Norm used for direction", "", DType_Table, GLTR_DIRECTION_TYPES, DType_Table[cg->dtype], &cg->dtype, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsEList("-ksp_cg_dtype", "Norm used for direction", "", DType_Table, GLTR_DIRECTION_TYPES, DType_Table[cg->dtype], &cg->dtype, NULL));
 
-  ierr = PetscOptionsReal("-ksp_cg_gltr_init_pert", "Initial perturbation", "", cg->init_pert, &cg->init_pert, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ksp_cg_gltr_eigen_tol", "Eigenvalue tolerance", "", cg->eigen_tol, &cg->eigen_tol, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ksp_cg_gltr_newton_tol", "Newton tolerance", "", cg->newton_tol, &cg->newton_tol, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsReal("-ksp_cg_gltr_init_pert", "Initial perturbation", "", cg->init_pert, &cg->init_pert, NULL));
+  CHKERRQ(PetscOptionsReal("-ksp_cg_gltr_eigen_tol", "Eigenvalue tolerance", "", cg->eigen_tol, &cg->eigen_tol, NULL));
+  CHKERRQ(PetscOptionsReal("-ksp_cg_gltr_newton_tol", "Newton tolerance", "", cg->newton_tol, &cg->newton_tol, NULL));
 
-  ierr = PetscOptionsInt("-ksp_cg_gltr_max_lanczos_its", "Maximum Lanczos Iters", "", cg->max_lanczos_its, &cg->max_lanczos_its, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-ksp_cg_gltr_max_newton_its", "Maximum Newton Iters", "", cg->max_newton_its, &cg->max_newton_its, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsInt("-ksp_cg_gltr_max_lanczos_its", "Maximum Lanczos Iters", "", cg->max_lanczos_its, &cg->max_lanczos_its, NULL));
+  CHKERRQ(PetscOptionsInt("-ksp_cg_gltr_max_newton_its", "Maximum Newton Iters", "", cg->max_newton_its, &cg->max_newton_its, NULL));
 
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -1365,11 +1357,10 @@ M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
 {
-  PetscErrorCode ierr;
   KSPCG_GLTR       *cg;
 
   PetscFunctionBegin;
-  ierr       = PetscNewLog(ksp,&cg);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(ksp,&cg));
   cg->radius = 0.0;
   cg->dtype  = GLTR_UNPRECONDITIONED_DIRECTION;
 
@@ -1384,10 +1375,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
   cg->max_newton_its  = 10;
 
   ksp->data = (void*) cg;
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
-  ierr      = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,3));
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2));
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2));
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
 
   /***************************************************************************/
   /* Sets the functions that are associated with this data structure         */
@@ -1402,10 +1393,10 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->view           = NULL;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetRadius_C",KSPCGSetRadius_GLTR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetNormD_C", KSPCGGetNormD_GLTR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetObjFcn_C",KSPCGGetObjFcn_GLTR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetMinEig_C",KSPGLTRGetMinEig_GLTR);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetLambda_C",KSPGLTRGetLambda_GLTR);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPCGSetRadius_C",KSPCGSetRadius_GLTR));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetNormD_C", KSPCGGetNormD_GLTR));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPCGGetObjFcn_C",KSPCGGetObjFcn_GLTR));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetMinEig_C",KSPGLTRGetMinEig_GLTR));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ksp,"KSPGLTRGetLambda_C",KSPGLTRGetLambda_GLTR));
   PetscFunctionReturn(0);
 }

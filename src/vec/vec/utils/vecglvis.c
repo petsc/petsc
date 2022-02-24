@@ -4,11 +4,10 @@
 static PetscErrorCode PetscViewerGLVisVecInfoDestroy_Private(void *ptr)
 {
   PetscViewerGLVisVecInfo info = (PetscViewerGLVisVecInfo)ptr;
-  PetscErrorCode          ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscFree(info->fec_type);CHKERRQ(ierr);
-  ierr = PetscFree(info);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(info->fec_type));
+  CHKERRQ(PetscFree(info));
   PetscFunctionReturn(0);
 }
 
@@ -23,63 +22,62 @@ PetscErrorCode VecView_GLVis(Vec U,PetscViewer viewer)
   void                   *userctx;
   PetscInt               i,nfields,*spacedim;
   PetscBool              pause = PETSC_FALSE;
-  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerGLVisGetStatus_Private(viewer,&sockstatus);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerGLVisGetStatus_Private(viewer,&sockstatus));
   if (sockstatus == PETSCVIEWERGLVIS_DISABLED) PetscFunctionReturn(0);
   /* if the user did not customize the viewer through the API, we need extra data that can be attached to the Vec */
-  ierr = PetscViewerGLVisGetFields_Private(viewer,&nfields,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerGLVisGetFields_Private(viewer,&nfields,NULL,NULL,NULL,NULL,NULL));
   if (!nfields) {
     PetscObject dm;
 
-    ierr = PetscObjectQuery((PetscObject)U, "__PETSc_dm",&dm);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectQuery((PetscObject)U, "__PETSc_dm",&dm));
     if (dm) {
-      ierr = PetscViewerGLVisSetDM_Private(viewer,dm);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerGLVisSetDM_Private(viewer,dm));
     } else SETERRQ(PetscObjectComm((PetscObject)U),PETSC_ERR_SUP,"You need to provide a DM or use PetscViewerGLVisSetFields()");
   }
-  ierr = PetscViewerGLVisGetFields_Private(viewer,&nfields,&fec_type,&spacedim,&g2lfields,(PetscObject**)&Ufield,&userctx);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerGLVisGetFields_Private(viewer,&nfields,&fec_type,&spacedim,&g2lfields,(PetscObject**)&Ufield,&userctx));
   if (!nfields) PetscFunctionReturn(0);
 
-  ierr = PetscViewerGLVisGetType_Private(viewer,&socktype);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerGLVisGetType_Private(viewer,&socktype));
 
   for (i=0;i<nfields;i++) {
     PetscObject    fdm;
     PetscContainer container;
 
     /* attach visualization info to the vector */
-    ierr = PetscObjectQuery((PetscObject)Ufield[i],"_glvis_info_container",(PetscObject*)&container);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectQuery((PetscObject)Ufield[i],"_glvis_info_container",(PetscObject*)&container));
     if (!container) {
       PetscViewerGLVisVecInfo info;
 
-      ierr = PetscNew(&info);CHKERRQ(ierr);
-      ierr = PetscStrallocpy(fec_type[i],&info->fec_type);CHKERRQ(ierr);
-      ierr = PetscContainerCreate(PetscObjectComm((PetscObject)U),&container);CHKERRQ(ierr);
-      ierr = PetscContainerSetPointer(container,(void*)info);CHKERRQ(ierr);
-      ierr = PetscContainerSetUserDestroy(container,PetscViewerGLVisVecInfoDestroy_Private);CHKERRQ(ierr);
-      ierr = PetscObjectCompose((PetscObject)Ufield[i],"_glvis_info_container",(PetscObject)container);CHKERRQ(ierr);
-      ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+      CHKERRQ(PetscNew(&info));
+      CHKERRQ(PetscStrallocpy(fec_type[i],&info->fec_type));
+      CHKERRQ(PetscContainerCreate(PetscObjectComm((PetscObject)U),&container));
+      CHKERRQ(PetscContainerSetPointer(container,(void*)info));
+      CHKERRQ(PetscContainerSetUserDestroy(container,PetscViewerGLVisVecInfoDestroy_Private));
+      CHKERRQ(PetscObjectCompose((PetscObject)Ufield[i],"_glvis_info_container",(PetscObject)container));
+      CHKERRQ(PetscContainerDestroy(&container));
     }
     /* attach the mesh to the viz vectors */
-    ierr = PetscObjectQuery((PetscObject)Ufield[i], "__PETSc_dm",&fdm);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectQuery((PetscObject)Ufield[i], "__PETSc_dm",&fdm));
     if (!fdm) {
       PetscObject dm;
 
-      ierr = PetscViewerGLVisGetDM_Private(viewer,&dm);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerGLVisGetDM_Private(viewer,&dm));
       if (!dm) {
-        ierr = PetscObjectQuery((PetscObject)U, "__PETSc_dm",&dm);CHKERRQ(ierr);
+        CHKERRQ(PetscObjectQuery((PetscObject)U, "__PETSc_dm",&dm));
       }
       PetscCheckFalse(!dm,PetscObjectComm((PetscObject)U),PETSC_ERR_SUP,"Mesh not present");
-      ierr = PetscObjectCompose((PetscObject)Ufield[i], "__PETSc_dm",dm);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectCompose((PetscObject)Ufield[i], "__PETSc_dm",dm));
     }
   }
 
   /* user-provided sampling */
   if (g2lfields) {
-    ierr = (*g2lfields)((PetscObject)U,nfields,(PetscObject*)Ufield,userctx);CHKERRQ(ierr);
+    CHKERRQ((*g2lfields)((PetscObject)U,nfields,(PetscObject*)Ufield,userctx));
   } else {
     PetscCheckFalse(nfields > 1,PetscObjectComm((PetscObject)U),PETSC_ERR_SUP,"Don't know how to sample %" PetscInt_FMT " fields",nfields);
-    ierr = VecCopy(U,Ufield[0]);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(U,Ufield[0]));
   }
 
   /* TODO callback to user routine to disable/enable subdomains */
@@ -87,30 +85,30 @@ PetscErrorCode VecView_GLVis(Vec U,PetscViewer viewer)
     PetscObject dm;
     PetscViewer view;
 
-    ierr = PetscObjectQuery((PetscObject)Ufield[i], "__PETSc_dm",&dm);CHKERRQ(ierr);
-    ierr = PetscViewerGLVisGetWindow_Private(viewer,i,&view);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectQuery((PetscObject)Ufield[i], "__PETSc_dm",&dm));
+    CHKERRQ(PetscViewerGLVisGetWindow_Private(viewer,i,&view));
     if (!view) continue; /* socket window has been closed */
     if (socktype == PETSC_VIEWER_GLVIS_SOCKET) {
       PetscMPIInt size,rank;
       const char *name;
 
-      ierr = MPI_Comm_size(PetscObjectComm(dm),&size);CHKERRMPI(ierr);
-      ierr = MPI_Comm_rank(PetscObjectComm(dm),&rank);CHKERRMPI(ierr);
-      ierr = PetscObjectGetName((PetscObject)Ufield[i],&name);CHKERRQ(ierr);
+      CHKERRMPI(MPI_Comm_size(PetscObjectComm(dm),&size));
+      CHKERRMPI(MPI_Comm_rank(PetscObjectComm(dm),&rank));
+      CHKERRQ(PetscObjectGetName((PetscObject)Ufield[i],&name));
 
-      ierr = PetscGLVisCollectiveBegin(PetscObjectComm(dm),&view);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(view,"parallel %d %d\nsolution\n",size,rank);CHKERRQ(ierr);
-      ierr = PetscObjectView(dm,view);CHKERRQ(ierr);
-      ierr = VecView(Ufield[i],view);CHKERRQ(ierr);
-      ierr = PetscViewerGLVisInitWindow_Private(view,PETSC_FALSE,spacedim[i],name);CHKERRQ(ierr);
-      ierr = PetscGLVisCollectiveEnd(PetscObjectComm(dm),&view);CHKERRQ(ierr);
+      CHKERRQ(PetscGLVisCollectiveBegin(PetscObjectComm(dm),&view));
+      CHKERRQ(PetscViewerASCIIPrintf(view,"parallel %d %d\nsolution\n",size,rank));
+      CHKERRQ(PetscObjectView(dm,view));
+      CHKERRQ(VecView(Ufield[i],view));
+      CHKERRQ(PetscViewerGLVisInitWindow_Private(view,PETSC_FALSE,spacedim[i],name));
+      CHKERRQ(PetscGLVisCollectiveEnd(PetscObjectComm(dm),&view));
       if (view) pause = PETSC_TRUE; /* at least one window is connected */
     } else {
-      ierr = PetscObjectView(dm,view);CHKERRQ(ierr);
-      ierr = VecView(Ufield[i],view);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectView(dm,view));
+      CHKERRQ(VecView(Ufield[i],view));
     }
-    ierr = PetscViewerGLVisRestoreWindow_Private(viewer,i,&view);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerGLVisRestoreWindow_Private(viewer,i,&view));
   }
-  if (pause) {ierr = PetscViewerGLVisPause_Private(viewer);CHKERRQ(ierr);}
+  if (pause) CHKERRQ(PetscViewerGLVisPause_Private(viewer));
   PetscFunctionReturn(0);
 }

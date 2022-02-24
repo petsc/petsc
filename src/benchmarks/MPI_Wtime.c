@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   fprintf(stdout,"%-15s : %e sec\n","MPI_Wtick",y);
 
   x    = MPI_Wtime();
-  ierr = PetscSleep(10);CHKERRQ(ierr);
+  CHKERRQ(PetscSleep(10));
   y    = MPI_Wtime();
   fprintf(stdout,"%-15s : %e sec - Slept for 10 sec \n","MPI_Wtime",(y-x));
 

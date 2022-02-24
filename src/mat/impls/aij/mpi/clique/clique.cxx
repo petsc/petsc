@@ -19,24 +19,23 @@ PetscErrorCode MatConvertToSparseElemental(Mat A,MatReuse reuse,Mat_SparseElemen
 
 PetscErrorCode MatView_SparseElemental(Mat A,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-  PetscBool      iascii;
+  PetscBool iascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     PetscViewerFormat format;
-    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerGetFormat(viewer,&format));
     if (format == PETSC_VIEWER_ASCII_INFO) {
-      ierr = PetscViewerASCIIPrintf(viewer,"SparseElemental run parameters:\n");CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"SparseElemental run parameters:\n"));
     } else if (format == PETSC_VIEWER_DEFAULT) { /* matrix A is factored matrix, remove this block */
       Mat Aaij;
-      ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)viewer),"SparseElemental matrix\n");CHKERRQ(ierr);
-      ierr = MatComputeOperator(A,MATAIJ,&Aaij);CHKERRQ(ierr);
-      ierr = MatView(Aaij,viewer);CHKERRQ(ierr);
-      ierr = MatDestroy(&Aaij);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIUseTabs(viewer,PETSC_FALSE));
+      CHKERRQ(PetscViewerASCIIUseTabs(viewer,PETSC_TRUE));
+      CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)viewer),"SparseElemental matrix\n"));
+      CHKERRQ(MatComputeOperator(A,MATAIJ,&Aaij));
+      CHKERRQ(MatView(Aaij,viewer));
+      CHKERRQ(MatDestroy(&Aaij));
     }
   }
   PetscFunctionReturn(0);
@@ -44,10 +43,8 @@ PetscErrorCode MatView_SparseElemental(Mat A,PetscViewer viewer)
 
 PetscErrorCode MatDestroy_SparseElemental(Mat A)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -105,9 +102,7 @@ static PetscErrorCode MatGetFactor_aij_sparseelemental(Mat A,MatFactorType ftype
 
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SparseElemental(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatSolverTypeRegister(MATSOLVERSPARSEELEMENTAL,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_aij_sparseelemental);CHKERRQ(ierr);
+  CHKERRQ(MatSolverTypeRegister(MATSOLVERSPARSEELEMENTAL,MATMPIAIJ,MAT_FACTOR_LU,MatGetFactor_aij_sparseelemental));
   PetscFunctionReturn(0);
 }

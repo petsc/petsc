@@ -13,48 +13,48 @@ int main(int argc,char **args)
   PetscReal      omega = 1.0,norm;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetReal(NULL,NULL,"-omega",&omega,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-omega",&omega,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
-  ierr = MatCreate(PETSC_COMM_SELF,&C);CHKERRQ(ierr);
-  ierr = MatSetSizes(C,n,n,n,n);CHKERRQ(ierr);
-  ierr = MatSetType(C,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSetUp(C);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&b);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&u);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&e);CHKERRQ(ierr);
-  ierr = VecSet(u,1.0);CHKERRQ(ierr);
-  ierr = VecSet(x,0.0);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_SELF,&C));
+  CHKERRQ(MatSetSizes(C,n,n,n,n));
+  CHKERRQ(MatSetType(C,MATSEQDENSE));
+  CHKERRQ(MatSetUp(C));
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&b));
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&x));
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&u));
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&e));
+  CHKERRQ(VecSet(u,1.0));
+  CHKERRQ(VecSet(x,0.0));
 
   v[0] = -1.; v[1] = 2.; v[2] = -1.;
   for (i=1; i<n-1; i++) {
     midx[0] = i-1; midx[1] = i; midx[2] = i+1;
-    ierr    = MatSetValues(C,1,&i,3,midx,v,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(C,1,&i,3,midx,v,INSERT_VALUES));
   }
   i    = 0; midx[0] = 0; midx[1] = 1;
   v[0] = 2.0; v[1] = -1.;
-  ierr = MatSetValues(C,1,&i,2,midx,v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(C,1,&i,2,midx,v,INSERT_VALUES));
   i    = n-1; midx[0] = n-2; midx[1] = n-1;
   v[0] = -1.0; v[1] = 2.;
-  ierr = MatSetValues(C,1,&i,2,midx,v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(C,1,&i,2,midx,v,INSERT_VALUES));
 
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
-  ierr = MatMult(C,u,b);CHKERRQ(ierr);
+  CHKERRQ(MatMult(C,u,b));
 
   for (i=0; i<n; i++) {
-    ierr = MatSOR(C,b,omega,SOR_FORWARD_SWEEP,0.0,1,1,x);CHKERRQ(ierr);
-    ierr = VecWAXPY(e,-1.0,x,u);CHKERRQ(ierr);
-    ierr = VecNorm(e,NORM_2,&norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"2-norm of error %g\n",(double)norm);CHKERRQ(ierr);
+    CHKERRQ(MatSOR(C,b,omega,SOR_FORWARD_SWEEP,0.0,1,1,x));
+    CHKERRQ(VecWAXPY(e,-1.0,x,u));
+    CHKERRQ(VecNorm(e,NORM_2,&norm));
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"2-norm of error %g\n",(double)norm));
   }
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&e);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&C));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(VecDestroy(&u));
+  CHKERRQ(VecDestroy(&e));
   ierr = PetscFinalize();
   return ierr;
 }

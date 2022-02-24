@@ -70,37 +70,35 @@ static PetscErrorCode TSAlpha_StageVecs(TS ts,Vec X)
   PetscReal      Alpha_f = th->Alpha_f;
   PetscReal      Gamma   = th->Gamma;
   PetscReal      Beta    = th->Beta;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* A1 = ... */
-  ierr = VecWAXPY(A1,-1.0,X0,X1);CHKERRQ(ierr);
-  ierr = VecAXPY (A1,-dt,V0);CHKERRQ(ierr);
-  ierr = VecAXPBY(A1,-(1-2*Beta)/(2*Beta),1/(dt*dt*Beta),A0);CHKERRQ(ierr);
+  CHKERRQ(VecWAXPY(A1,-1.0,X0,X1));
+  CHKERRQ(VecAXPY (A1,-dt,V0));
+  CHKERRQ(VecAXPBY(A1,-(1-2*Beta)/(2*Beta),1/(dt*dt*Beta),A0));
   /* V1 = ... */
-  ierr = VecWAXPY(V1,(1.0-Gamma)/Gamma,A0,A1);CHKERRQ(ierr);
-  ierr = VecAYPX (V1,dt*Gamma,V0);CHKERRQ(ierr);
+  CHKERRQ(VecWAXPY(V1,(1.0-Gamma)/Gamma,A0,A1));
+  CHKERRQ(VecAYPX (V1,dt*Gamma,V0));
   /* Xa = X0 + Alpha_f*(X1-X0) */
-  ierr = VecWAXPY(Xa,-1.0,X0,X1);CHKERRQ(ierr);
-  ierr = VecAYPX (Xa,Alpha_f,X0);CHKERRQ(ierr);
+  CHKERRQ(VecWAXPY(Xa,-1.0,X0,X1));
+  CHKERRQ(VecAYPX (Xa,Alpha_f,X0));
   /* Va = V0 + Alpha_f*(V1-V0) */
-  ierr = VecWAXPY(Va,-1.0,V0,V1);CHKERRQ(ierr);
-  ierr = VecAYPX (Va,Alpha_f,V0);CHKERRQ(ierr);
+  CHKERRQ(VecWAXPY(Va,-1.0,V0,V1));
+  CHKERRQ(VecAYPX (Va,Alpha_f,V0));
   /* Aa = A0 + Alpha_m*(A1-A0) */
-  ierr = VecWAXPY(Aa,-1.0,A0,A1);CHKERRQ(ierr);
-  ierr = VecAYPX (Aa,Alpha_m,A0);CHKERRQ(ierr);
+  CHKERRQ(VecWAXPY(Aa,-1.0,A0,A1));
+  CHKERRQ(VecAYPX (Aa,Alpha_m,A0));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSAlpha_SNESSolve(TS ts,Vec b,Vec x)
 {
   PetscInt       nits,lits;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SNESSolve(ts->snes,b,x);CHKERRQ(ierr);
-  ierr = SNESGetIterationNumber(ts->snes,&nits);CHKERRQ(ierr);
-  ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
+  CHKERRQ(SNESSolve(ts->snes,b,x));
+  CHKERRQ(SNESGetIterationNumber(ts->snes,&nits));
+  CHKERRQ(SNESGetLinearSolveIterations(ts->snes,&lits));
   ts->snes_its += nits; ts->ksp_its += lits;
   PetscFunctionReturn(0);
 }
@@ -119,75 +117,74 @@ static PetscErrorCode TSAlpha_Restart(TS ts,PetscBool *initok)
   Vec            X0 = ts->vec_sol, X1, X2 = th->X1;
   Vec            V0 = ts->vec_dot, V1, V2 = th->V1;
   PetscBool      stageok;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(X0,&X1);CHKERRQ(ierr);
-  ierr = VecDuplicate(V0,&V1);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(X0,&X1));
+  CHKERRQ(VecDuplicate(V0,&V1));
 
   /* Setup backward Euler with halved time step */
-  ierr = TSAlpha2GetParams(ts,&alpha_m,&alpha_f,&gamma,&beta);CHKERRQ(ierr);
-  ierr = TSAlpha2SetParams(ts,1,1,1,0.5);CHKERRQ(ierr);
-  ierr = TSGetTimeStep(ts,&time_step);CHKERRQ(ierr);
+  CHKERRQ(TSAlpha2GetParams(ts,&alpha_m,&alpha_f,&gamma,&beta));
+  CHKERRQ(TSAlpha2SetParams(ts,1,1,1,0.5));
+  CHKERRQ(TSGetTimeStep(ts,&time_step));
   ts->time_step = time_step/2;
-  ierr = TSAlpha_StageTime(ts);CHKERRQ(ierr);
+  CHKERRQ(TSAlpha_StageTime(ts));
   th->stage_time = ts->ptime;
-  ierr = VecZeroEntries(th->A0);CHKERRQ(ierr);
+  CHKERRQ(VecZeroEntries(th->A0));
 
   /* First BE step, (t0,X0,V0) -> (t1,X1,V1) */
   th->stage_time += ts->time_step;
-  ierr = VecCopy(X0,th->X0);CHKERRQ(ierr);
-  ierr = VecCopy(V0,th->V0);CHKERRQ(ierr);
-  ierr = TSPreStage(ts,th->stage_time);CHKERRQ(ierr);
-  ierr = VecCopy(th->X0,X1);CHKERRQ(ierr);
-  ierr = TSAlpha_SNESSolve(ts,NULL,X1);CHKERRQ(ierr);
-  ierr = VecCopy(th->V1,V1);CHKERRQ(ierr);
-  ierr = TSPostStage(ts,th->stage_time,0,&X1);CHKERRQ(ierr);
-  ierr = TSAdaptCheckStage(ts->adapt,ts,th->stage_time,X1,&stageok);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(X0,th->X0));
+  CHKERRQ(VecCopy(V0,th->V0));
+  CHKERRQ(TSPreStage(ts,th->stage_time));
+  CHKERRQ(VecCopy(th->X0,X1));
+  CHKERRQ(TSAlpha_SNESSolve(ts,NULL,X1));
+  CHKERRQ(VecCopy(th->V1,V1));
+  CHKERRQ(TSPostStage(ts,th->stage_time,0,&X1));
+  CHKERRQ(TSAdaptCheckStage(ts->adapt,ts,th->stage_time,X1,&stageok));
   if (!stageok) goto finally;
 
   /* Second BE step, (t1,X1,V1) -> (t2,X2,V2) */
   th->stage_time += ts->time_step;
-  ierr = VecCopy(X1,th->X0);CHKERRQ(ierr);
-  ierr = VecCopy(V1,th->V0);CHKERRQ(ierr);
-  ierr = TSPreStage(ts,th->stage_time);CHKERRQ(ierr);
-  ierr = VecCopy(th->X0,X2);CHKERRQ(ierr);
-  ierr = TSAlpha_SNESSolve(ts,NULL,X2);CHKERRQ(ierr);
-  ierr = VecCopy(th->V1,V2);CHKERRQ(ierr);
-  ierr = TSPostStage(ts,th->stage_time,0,&X2);CHKERRQ(ierr);
-  ierr = TSAdaptCheckStage(ts->adapt,ts,th->stage_time,X1,&stageok);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(X1,th->X0));
+  CHKERRQ(VecCopy(V1,th->V0));
+  CHKERRQ(TSPreStage(ts,th->stage_time));
+  CHKERRQ(VecCopy(th->X0,X2));
+  CHKERRQ(TSAlpha_SNESSolve(ts,NULL,X2));
+  CHKERRQ(VecCopy(th->V1,V2));
+  CHKERRQ(TSPostStage(ts,th->stage_time,0,&X2));
+  CHKERRQ(TSAdaptCheckStage(ts->adapt,ts,th->stage_time,X1,&stageok));
   if (!stageok) goto finally;
 
   /* Compute A0 ~ dV/dt at t0 with backward differences */
-  ierr = VecZeroEntries(th->A0);CHKERRQ(ierr);
-  ierr = VecAXPY(th->A0,-3/ts->time_step,V0);CHKERRQ(ierr);
-  ierr = VecAXPY(th->A0,+4/ts->time_step,V1);CHKERRQ(ierr);
-  ierr = VecAXPY(th->A0,-1/ts->time_step,V2);CHKERRQ(ierr);
+  CHKERRQ(VecZeroEntries(th->A0));
+  CHKERRQ(VecAXPY(th->A0,-3/ts->time_step,V0));
+  CHKERRQ(VecAXPY(th->A0,+4/ts->time_step,V1));
+  CHKERRQ(VecAXPY(th->A0,-1/ts->time_step,V2));
 
   /* Rough, lower-order estimate LTE of the initial step */
   if (th->vec_lte_work[0]) {
-    ierr = VecZeroEntries(th->vec_lte_work[0]);CHKERRQ(ierr);
-    ierr = VecAXPY(th->vec_lte_work[0],+2,X2);CHKERRQ(ierr);
-    ierr = VecAXPY(th->vec_lte_work[0],-4,X1);CHKERRQ(ierr);
-    ierr = VecAXPY(th->vec_lte_work[0],+2,X0);CHKERRQ(ierr);
+    CHKERRQ(VecZeroEntries(th->vec_lte_work[0]));
+    CHKERRQ(VecAXPY(th->vec_lte_work[0],+2,X2));
+    CHKERRQ(VecAXPY(th->vec_lte_work[0],-4,X1));
+    CHKERRQ(VecAXPY(th->vec_lte_work[0],+2,X0));
   }
   if (th->vec_lte_work[1]) {
-    ierr = VecZeroEntries(th->vec_lte_work[1]);CHKERRQ(ierr);
-    ierr = VecAXPY(th->vec_lte_work[1],+2,V2);CHKERRQ(ierr);
-    ierr = VecAXPY(th->vec_lte_work[1],-4,V1);CHKERRQ(ierr);
-    ierr = VecAXPY(th->vec_lte_work[1],+2,V0);CHKERRQ(ierr);
+    CHKERRQ(VecZeroEntries(th->vec_lte_work[1]));
+    CHKERRQ(VecAXPY(th->vec_lte_work[1],+2,V2));
+    CHKERRQ(VecAXPY(th->vec_lte_work[1],-4,V1));
+    CHKERRQ(VecAXPY(th->vec_lte_work[1],+2,V0));
   }
 
  finally:
   /* Revert TSAlpha to the initial state (t0,X0,V0) */
   if (initok) *initok = stageok;
-  ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);
-  ierr = TSAlpha2SetParams(ts,alpha_m,alpha_f,gamma,beta);CHKERRQ(ierr);
-  ierr = VecCopy(ts->vec_sol,th->X0);CHKERRQ(ierr);
-  ierr = VecCopy(ts->vec_dot,th->V0);CHKERRQ(ierr);
+  CHKERRQ(TSSetTimeStep(ts,time_step));
+  CHKERRQ(TSAlpha2SetParams(ts,alpha_m,alpha_f,gamma,beta));
+  CHKERRQ(VecCopy(ts->vec_sol,th->X0));
+  CHKERRQ(VecCopy(ts->vec_dot,th->V0));
 
-  ierr = VecDestroy(&X1);CHKERRQ(ierr);
-  ierr = VecDestroy(&V1);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&X1));
+  CHKERRQ(VecDestroy(&V1));
   PetscFunctionReturn(0);
 }
 
@@ -197,43 +194,42 @@ static PetscErrorCode TSStep_Alpha(TS ts)
   PetscInt       rejections = 0;
   PetscBool      stageok,accept = PETSC_TRUE;
   PetscReal      next_time_step = ts->time_step;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscCitationsRegister(citation,&cited);CHKERRQ(ierr);
+  CHKERRQ(PetscCitationsRegister(citation,&cited));
 
   if (!ts->steprollback) {
-    if (th->vec_sol_prev) { ierr = VecCopy(th->X0,th->vec_sol_prev);CHKERRQ(ierr); }
-    if (th->vec_dot_prev) { ierr = VecCopy(th->V0,th->vec_dot_prev);CHKERRQ(ierr); }
-    ierr = VecCopy(ts->vec_sol,th->X0);CHKERRQ(ierr);
-    ierr = VecCopy(ts->vec_dot,th->V0);CHKERRQ(ierr);
-    ierr = VecCopy(th->A1,th->A0);CHKERRQ(ierr);
+    if (th->vec_sol_prev) CHKERRQ(VecCopy(th->X0,th->vec_sol_prev));
+    if (th->vec_dot_prev) CHKERRQ(VecCopy(th->V0,th->vec_dot_prev));
+    CHKERRQ(VecCopy(ts->vec_sol,th->X0));
+    CHKERRQ(VecCopy(ts->vec_dot,th->V0));
+    CHKERRQ(VecCopy(th->A1,th->A0));
   }
 
   th->status = TS_STEP_INCOMPLETE;
   while (!ts->reason && th->status != TS_STEP_COMPLETE) {
 
     if (ts->steprestart) {
-      ierr = TSAlpha_Restart(ts,&stageok);CHKERRQ(ierr);
+      CHKERRQ(TSAlpha_Restart(ts,&stageok));
       if (!stageok) goto reject_step;
     }
 
-    ierr = TSAlpha_StageTime(ts);CHKERRQ(ierr);
-    ierr = VecCopy(th->X0,th->X1);CHKERRQ(ierr);
-    ierr = TSPreStage(ts,th->stage_time);CHKERRQ(ierr);
-    ierr = TSAlpha_SNESSolve(ts,NULL,th->X1);CHKERRQ(ierr);
-    ierr = TSPostStage(ts,th->stage_time,0,&th->Xa);CHKERRQ(ierr);
-    ierr = TSAdaptCheckStage(ts->adapt,ts,th->stage_time,th->Xa,&stageok);CHKERRQ(ierr);
+    CHKERRQ(TSAlpha_StageTime(ts));
+    CHKERRQ(VecCopy(th->X0,th->X1));
+    CHKERRQ(TSPreStage(ts,th->stage_time));
+    CHKERRQ(TSAlpha_SNESSolve(ts,NULL,th->X1));
+    CHKERRQ(TSPostStage(ts,th->stage_time,0,&th->Xa));
+    CHKERRQ(TSAdaptCheckStage(ts->adapt,ts,th->stage_time,th->Xa,&stageok));
     if (!stageok) goto reject_step;
 
     th->status = TS_STEP_PENDING;
-    ierr = VecCopy(th->X1,ts->vec_sol);CHKERRQ(ierr);
-    ierr = VecCopy(th->V1,ts->vec_dot);CHKERRQ(ierr);
-    ierr = TSAdaptChoose(ts->adapt,ts,ts->time_step,NULL,&next_time_step,&accept);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(th->X1,ts->vec_sol));
+    CHKERRQ(VecCopy(th->V1,ts->vec_dot));
+    CHKERRQ(TSAdaptChoose(ts->adapt,ts,ts->time_step,NULL,&next_time_step,&accept));
     th->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
     if (!accept) {
-      ierr = VecCopy(th->X0,ts->vec_sol);CHKERRQ(ierr);
-      ierr = VecCopy(th->V0,ts->vec_dot);CHKERRQ(ierr);
+      CHKERRQ(VecCopy(th->X0,ts->vec_sol));
+      CHKERRQ(VecCopy(th->V0,ts->vec_dot));
       ts->time_step = next_time_step;
       goto reject_step;
     }
@@ -246,7 +242,7 @@ static PetscErrorCode TSStep_Alpha(TS ts)
     ts->reject++; accept = PETSC_FALSE;
     if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
       ts->reason = TS_DIVERGED_STEP_REJECTED;
-      ierr = PetscInfo(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections));
     }
 
   }
@@ -261,7 +257,6 @@ static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts,NormType wnormtype,PetscInt *or
   Vec            Y = th->vec_lte_work[0]; /* Y = X + LTE  */
   Vec            Z = th->vec_lte_work[1]; /* Z = V + LTE  */
   PetscReal      enormX,enormV,enormXa,enormVa,enormXr,enormVr;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!th->vec_sol_prev) {*wlte = -1; PetscFunctionReturn(0);}
@@ -270,8 +265,8 @@ static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts,NormType wnormtype,PetscInt *or
   if (!th->vec_lte_work[1]) {*wlte = -1; PetscFunctionReturn(0);}
   if (ts->steprestart) {
     /* th->vec_lte_prev is set to the LTE in TSAlpha_Restart() */
-    ierr = VecAXPY(Y,1,X);CHKERRQ(ierr);
-    ierr = VecAXPY(Z,1,V);CHKERRQ(ierr);
+    CHKERRQ(VecAXPY(Y,1,X));
+    CHKERRQ(VecAXPY(Z,1,V));
   } else {
     /* Compute LTE using backward differences with non-constant time step */
     PetscReal   h = ts->time_step, h_prev = ts->ptime - ts->ptime_prev;
@@ -280,14 +275,14 @@ static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts,NormType wnormtype,PetscInt *or
     scal[0] = +1/a;   scal[1] = -1/(a-1); scal[2] = +1/(a*(a-1));
     vecX[0] = th->X1; vecX[1] = th->X0;   vecX[2] = th->vec_sol_prev;
     vecV[0] = th->V1; vecV[1] = th->V0;   vecV[2] = th->vec_dot_prev;
-    ierr = VecCopy(X,Y);CHKERRQ(ierr);
-    ierr = VecMAXPY(Y,3,scal,vecX);CHKERRQ(ierr);
-    ierr = VecCopy(V,Z);CHKERRQ(ierr);
-    ierr = VecMAXPY(Z,3,scal,vecV);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(X,Y));
+    CHKERRQ(VecMAXPY(Y,3,scal,vecX));
+    CHKERRQ(VecCopy(V,Z));
+    CHKERRQ(VecMAXPY(Z,3,scal,vecV));
   }
   /* XXX ts->atol and ts->vatol are not appropriate for computing enormV */
-  ierr = TSErrorWeightedNorm(ts,X,Y,wnormtype,&enormX,&enormXa,&enormXr);CHKERRQ(ierr);
-  ierr = TSErrorWeightedNorm(ts,V,Z,wnormtype,&enormV,&enormVa,&enormVr);CHKERRQ(ierr);
+  CHKERRQ(TSErrorWeightedNorm(ts,X,Y,wnormtype,&enormX,&enormXa,&enormXr));
+  CHKERRQ(TSErrorWeightedNorm(ts,V,Z,wnormtype,&enormV,&enormVa,&enormVr));
   if (wnormtype == NORM_2)
     *wlte = PetscSqrtReal(PetscSqr(enormX)/2 + PetscSqr(enormV)/2);
   else
@@ -299,11 +294,10 @@ static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts,NormType wnormtype,PetscInt *or
 static PetscErrorCode TSRollBack_Alpha(TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecCopy(th->X0,ts->vec_sol);CHKERRQ(ierr);
-  ierr = VecCopy(th->V0,ts->vec_dot);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(th->X0,ts->vec_sol));
+  CHKERRQ(VecCopy(th->V0,ts->vec_dot));
   PetscFunctionReturn(0);
 }
 
@@ -315,13 +309,13 @@ static PetscErrorCode TSInterpolate_Alpha(TS ts,PetscReal t,Vec X,Vec V)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecCopy(ts->vec_dot,V);CHKERRQ(ierr);
-  ierr = VecAXPY(V,dt*(1-th->Gamma),th->A0);CHKERRQ(ierr);
-  ierr = VecAXPY(V,dt*th->Gamma,th->A1);CHKERRQ(ierr);
-  ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
-  ierr = VecAXPY(X,dt,V);CHKERRQ(ierr);
-  ierr = VecAXPY(X,dt*dt*((PetscReal)0.5-th->Beta),th->A0);CHKERRQ(ierr);
-  ierr = VecAXPY(X,dt*dt*th->Beta,th->A1);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(ts->vec_dot,V));
+  CHKERRQ(VecAXPY(V,dt*(1-th->Gamma),th->A0));
+  CHKERRQ(VecAXPY(V,dt*th->Gamma,th->A1));
+  CHKERRQ(VecCopy(ts->vec_sol,X));
+  CHKERRQ(VecAXPY(X,dt,V));
+  CHKERRQ(VecAXPY(X,dt*dt*((PetscReal)0.5-th->Beta),th->A0));
+  CHKERRQ(VecAXPY(X,dt*dt*th->Beta,th->A1));
   PetscFunctionReturn(0);
 }
 */
@@ -331,13 +325,12 @@ static PetscErrorCode SNESTSFormFunction_Alpha(PETSC_UNUSED SNES snes,Vec X,Vec 
   TS_Alpha       *th = (TS_Alpha*)ts->data;
   PetscReal      ta = th->stage_time;
   Vec            Xa = th->Xa, Va = th->Va, Aa = th->Aa;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSAlpha_StageVecs(ts,X);CHKERRQ(ierr);
+  CHKERRQ(TSAlpha_StageVecs(ts,X));
   /* F = Function(ta,Xa,Va,Aa) */
-  ierr = TSComputeI2Function(ts,ta,Xa,Va,Aa,F);CHKERRQ(ierr);
-  ierr = VecScale(F,th->scale_F);CHKERRQ(ierr);
+  CHKERRQ(TSComputeI2Function(ts,ta,Xa,Va,Aa,F));
+  CHKERRQ(VecScale(F,th->scale_F));
   PetscFunctionReturn(0);
 }
 
@@ -347,47 +340,43 @@ static PetscErrorCode SNESTSFormJacobian_Alpha(PETSC_UNUSED SNES snes,PETSC_UNUS
   PetscReal      ta = th->stage_time;
   Vec            Xa = th->Xa, Va = th->Va, Aa = th->Aa;
   PetscReal      dVdX = th->shift_V, dAdX = th->shift_A;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* J,P = Jacobian(ta,Xa,Va,Aa) */
-  ierr = TSComputeI2Jacobian(ts,ta,Xa,Va,Aa,dVdX,dAdX,J,P);CHKERRQ(ierr);
+  CHKERRQ(TSComputeI2Jacobian(ts,ta,Xa,Va,Aa,dVdX,dAdX,J,P));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSReset_Alpha(TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(&th->X0);CHKERRQ(ierr);
-  ierr = VecDestroy(&th->Xa);CHKERRQ(ierr);
-  ierr = VecDestroy(&th->X1);CHKERRQ(ierr);
-  ierr = VecDestroy(&th->V0);CHKERRQ(ierr);
-  ierr = VecDestroy(&th->Va);CHKERRQ(ierr);
-  ierr = VecDestroy(&th->V1);CHKERRQ(ierr);
-  ierr = VecDestroy(&th->A0);CHKERRQ(ierr);
-  ierr = VecDestroy(&th->Aa);CHKERRQ(ierr);
-  ierr = VecDestroy(&th->A1);CHKERRQ(ierr);
-  ierr = VecDestroy(&th->vec_sol_prev);CHKERRQ(ierr);
-  ierr = VecDestroy(&th->vec_dot_prev);CHKERRQ(ierr);
-  ierr = VecDestroy(&th->vec_lte_work[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&th->vec_lte_work[1]);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&th->X0));
+  CHKERRQ(VecDestroy(&th->Xa));
+  CHKERRQ(VecDestroy(&th->X1));
+  CHKERRQ(VecDestroy(&th->V0));
+  CHKERRQ(VecDestroy(&th->Va));
+  CHKERRQ(VecDestroy(&th->V1));
+  CHKERRQ(VecDestroy(&th->A0));
+  CHKERRQ(VecDestroy(&th->Aa));
+  CHKERRQ(VecDestroy(&th->A1));
+  CHKERRQ(VecDestroy(&th->vec_sol_prev));
+  CHKERRQ(VecDestroy(&th->vec_dot_prev));
+  CHKERRQ(VecDestroy(&th->vec_lte_work[0]));
+  CHKERRQ(VecDestroy(&th->vec_lte_work[1]));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSDestroy_Alpha(TS ts)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = TSReset_Alpha(ts);CHKERRQ(ierr);
-  ierr = PetscFree(ts->data);CHKERRQ(ierr);
+  CHKERRQ(TSReset_Alpha(ts));
+  CHKERRQ(PetscFree(ts->data));
 
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2SetRadius_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2SetParams_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2GetParams_C",NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2SetRadius_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2SetParams_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2GetParams_C",NULL));
   PetscFunctionReturn(0);
 }
 
@@ -395,52 +384,50 @@ static PetscErrorCode TSSetUp_Alpha(TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
   PetscBool      match;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(ts->vec_sol,&th->X0);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&th->Xa);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&th->X1);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&th->V0);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&th->Va);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&th->V1);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&th->A0);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&th->Aa);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&th->A1);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(ts->vec_sol,&th->X0));
+  CHKERRQ(VecDuplicate(ts->vec_sol,&th->Xa));
+  CHKERRQ(VecDuplicate(ts->vec_sol,&th->X1));
+  CHKERRQ(VecDuplicate(ts->vec_sol,&th->V0));
+  CHKERRQ(VecDuplicate(ts->vec_sol,&th->Va));
+  CHKERRQ(VecDuplicate(ts->vec_sol,&th->V1));
+  CHKERRQ(VecDuplicate(ts->vec_sol,&th->A0));
+  CHKERRQ(VecDuplicate(ts->vec_sol,&th->Aa));
+  CHKERRQ(VecDuplicate(ts->vec_sol,&th->A1));
 
-  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
-  ierr = TSAdaptCandidatesClear(ts->adapt);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)ts->adapt,TSADAPTNONE,&match);CHKERRQ(ierr);
+  CHKERRQ(TSGetAdapt(ts,&ts->adapt));
+  CHKERRQ(TSAdaptCandidatesClear(ts->adapt));
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)ts->adapt,TSADAPTNONE,&match));
   if (!match) {
-    ierr = VecDuplicate(ts->vec_sol,&th->vec_sol_prev);CHKERRQ(ierr);
-    ierr = VecDuplicate(ts->vec_sol,&th->vec_dot_prev);CHKERRQ(ierr);
-    ierr = VecDuplicate(ts->vec_sol,&th->vec_lte_work[0]);CHKERRQ(ierr);
-    ierr = VecDuplicate(ts->vec_sol,&th->vec_lte_work[1]);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(ts->vec_sol,&th->vec_sol_prev));
+    CHKERRQ(VecDuplicate(ts->vec_sol,&th->vec_dot_prev));
+    CHKERRQ(VecDuplicate(ts->vec_sol,&th->vec_lte_work[0]));
+    CHKERRQ(VecDuplicate(ts->vec_sol,&th->vec_lte_work[1]));
   }
 
-  ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
+  CHKERRQ(TSGetSNES(ts,&ts->snes));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSSetFromOptions_Alpha(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"Generalized-Alpha ODE solver options");CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"Generalized-Alpha ODE solver options"));
   {
     PetscBool flg;
     PetscReal radius = 1;
-    ierr = PetscOptionsReal("-ts_alpha_radius","Spectral radius (high-frequency dissipation)","TSAlpha2SetRadius",radius,&radius,&flg);CHKERRQ(ierr);
-    if (flg) {ierr = TSAlpha2SetRadius(ts,radius);CHKERRQ(ierr);}
-    ierr = PetscOptionsReal("-ts_alpha_alpha_m","Algorithmic parameter alpha_m","TSAlpha2SetParams",th->Alpha_m,&th->Alpha_m,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_alpha_alpha_f","Algorithmic parameter alpha_f","TSAlpha2SetParams",th->Alpha_f,&th->Alpha_f,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_alpha_gamma","Algorithmic parameter gamma","TSAlpha2SetParams",th->Gamma,&th->Gamma,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_alpha_beta","Algorithmic parameter beta","TSAlpha2SetParams",th->Beta,&th->Beta,NULL);CHKERRQ(ierr);
-    ierr = TSAlpha2SetParams(ts,th->Alpha_m,th->Alpha_f,th->Gamma,th->Beta);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsReal("-ts_alpha_radius","Spectral radius (high-frequency dissipation)","TSAlpha2SetRadius",radius,&radius,&flg));
+    if (flg) CHKERRQ(TSAlpha2SetRadius(ts,radius));
+    CHKERRQ(PetscOptionsReal("-ts_alpha_alpha_m","Algorithmic parameter alpha_m","TSAlpha2SetParams",th->Alpha_m,&th->Alpha_m,NULL));
+    CHKERRQ(PetscOptionsReal("-ts_alpha_alpha_f","Algorithmic parameter alpha_f","TSAlpha2SetParams",th->Alpha_f,&th->Alpha_f,NULL));
+    CHKERRQ(PetscOptionsReal("-ts_alpha_gamma","Algorithmic parameter gamma","TSAlpha2SetParams",th->Gamma,&th->Gamma,NULL));
+    CHKERRQ(PetscOptionsReal("-ts_alpha_beta","Algorithmic parameter beta","TSAlpha2SetParams",th->Beta,&th->Beta,NULL));
+    CHKERRQ(TSAlpha2SetParams(ts,th->Alpha_m,th->Alpha_f,th->Gamma,th->Beta));
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -448,12 +435,11 @@ static PetscErrorCode TSView_Alpha(TS ts,PetscViewer viewer)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
   PetscBool      iascii;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Alpha_m=%g, Alpha_f=%g, Gamma=%g, Beta=%g\n",(double)th->Alpha_m,(double)th->Alpha_f,(double)th->Gamma,(double)th->Beta);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Alpha_m=%g, Alpha_f=%g, Gamma=%g, Beta=%g\n",(double)th->Alpha_m,(double)th->Alpha_f,(double)th->Gamma,(double)th->Beta));
   }
   PetscFunctionReturn(0);
 }
@@ -461,7 +447,6 @@ static PetscErrorCode TSView_Alpha(TS ts,PetscViewer viewer)
 static PetscErrorCode TSAlpha2SetRadius_Alpha(TS ts,PetscReal radius)
 {
   PetscReal      alpha_m,alpha_f,gamma,beta;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheckFalse(radius < 0 || radius > 1,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"Radius %g not in range [0,1]",(double)radius);
@@ -469,7 +454,7 @@ static PetscErrorCode TSAlpha2SetRadius_Alpha(TS ts,PetscReal radius)
   alpha_f = 1/(1+radius);
   gamma   = (PetscReal)0.5 + alpha_m - alpha_f;
   beta    = (PetscReal)0.5 * (1 + alpha_m - alpha_f); beta *= beta;
-  ierr = TSAlpha2SetParams(ts,alpha_m,alpha_f,gamma,beta);CHKERRQ(ierr);
+  CHKERRQ(TSAlpha2SetParams(ts,alpha_m,alpha_f,gamma,beta));
   PetscFunctionReturn(0);
 }
 
@@ -516,7 +501,6 @@ M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
 {
   TS_Alpha       *th;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ts->ops->reset          = TSReset_Alpha;
@@ -534,7 +518,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
 
   ts->usessnes = PETSC_TRUE;
 
-  ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(ts,&th));
   ts->data = (void*)th;
 
   th->Alpha_m = 0.5;
@@ -543,9 +527,9 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
   th->Beta    = 0.25;
   th->order   = 2;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2SetRadius_C",TSAlpha2SetRadius_Alpha);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2SetParams_C",TSAlpha2SetParams_Alpha);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2GetParams_C",TSAlpha2GetParams_Alpha);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2SetRadius_C",TSAlpha2SetRadius_Alpha));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2SetParams_C",TSAlpha2SetParams_Alpha));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSAlpha2GetParams_C",TSAlpha2GetParams_Alpha));
   PetscFunctionReturn(0);
 }
 
@@ -575,13 +559,11 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
 @*/
 PetscErrorCode TSAlpha2SetRadius(TS ts,PetscReal radius)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveReal(ts,radius,2);
   PetscCheckFalse(radius < 0 || radius > 1,((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Radius %g not in range [0,1]",(double)radius);
-  ierr = PetscTryMethod(ts,"TSAlpha2SetRadius_C",(TS,PetscReal),(ts,radius));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ts,"TSAlpha2SetRadius_C",(TS,PetscReal),(ts,radius)));
   PetscFunctionReturn(0);
 }
 
@@ -623,15 +605,13 @@ PetscErrorCode TSAlpha2SetRadius(TS ts,PetscReal radius)
 @*/
 PetscErrorCode TSAlpha2SetParams(TS ts,PetscReal alpha_m,PetscReal alpha_f,PetscReal gamma,PetscReal beta)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveReal(ts,alpha_m,2);
   PetscValidLogicalCollectiveReal(ts,alpha_f,3);
   PetscValidLogicalCollectiveReal(ts,gamma,4);
   PetscValidLogicalCollectiveReal(ts,beta,5);
-  ierr = PetscTryMethod(ts,"TSAlpha2SetParams_C",(TS,PetscReal,PetscReal,PetscReal,PetscReal),(ts,alpha_m,alpha_f,gamma,beta));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ts,"TSAlpha2SetParams_C",(TS,PetscReal,PetscReal,PetscReal,PetscReal),(ts,alpha_m,alpha_f,gamma,beta)));
   PetscFunctionReturn(0);
 }
 
@@ -662,14 +642,12 @@ PetscErrorCode TSAlpha2SetParams(TS ts,PetscReal alpha_m,PetscReal alpha_f,Petsc
 @*/
 PetscErrorCode TSAlpha2GetParams(TS ts,PetscReal *alpha_m,PetscReal *alpha_f,PetscReal *gamma,PetscReal *beta)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (alpha_m) PetscValidRealPointer(alpha_m,2);
   if (alpha_f) PetscValidRealPointer(alpha_f,3);
   if (gamma)   PetscValidRealPointer(gamma,4);
   if (beta)    PetscValidRealPointer(beta,5);
-  ierr = PetscUseMethod(ts,"TSAlpha2GetParams_C",(TS,PetscReal*,PetscReal*,PetscReal*,PetscReal*),(ts,alpha_m,alpha_f,gamma,beta));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(ts,"TSAlpha2GetParams_C",(TS,PetscReal*,PetscReal*,PetscReal*,PetscReal*),(ts,alpha_m,alpha_f,gamma,beta)));
   PetscFunctionReturn(0);
 }

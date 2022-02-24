@@ -12,43 +12,42 @@ static PetscErrorCode redistribute_vec(DM dist_dm, PetscSF sf, Vec *v)
     PetscSection   section, dist_section;
     Vec            dist_v;
     PetscMPIInt    rank, size, p;
-    PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    ierr = VecGetDM(*v, &dm);CHKERRQ(ierr);
-    ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(dm, NULL, "-rd_dm_view");CHKERRQ(ierr);
-    ierr = DMViewFromOptions(dist_dm, NULL, "-rd2_dm_view");CHKERRQ(ierr);
+    CHKERRQ(VecGetDM(*v, &dm));
+    CHKERRQ(DMGetLocalSection(dm, &section));
+    CHKERRQ(DMViewFromOptions(dm, NULL, "-rd_dm_view"));
+    CHKERRQ(DMViewFromOptions(dist_dm, NULL, "-rd2_dm_view"));
 
-    ierr = DMClone(dm, &dist_v_dm);CHKERRQ(ierr);
-    ierr = VecCreate(PetscObjectComm((PetscObject) *v), &dist_v);CHKERRQ(ierr);
-    ierr = VecSetDM(dist_v, dist_v_dm);CHKERRQ(ierr);
-    ierr = PetscSectionCreate(PetscObjectComm((PetscObject) *v), &dist_section);CHKERRQ(ierr);
-    ierr = DMSetLocalSection(dist_v_dm, dist_section);CHKERRQ(ierr);
+    CHKERRQ(DMClone(dm, &dist_v_dm));
+    CHKERRQ(VecCreate(PetscObjectComm((PetscObject) *v), &dist_v));
+    CHKERRQ(VecSetDM(dist_v, dist_v_dm));
+    CHKERRQ(PetscSectionCreate(PetscObjectComm((PetscObject) *v), &dist_section));
+    CHKERRQ(DMSetLocalSection(dist_v_dm, dist_section));
 
-    ierr = PetscObjectViewFromOptions((PetscObject) section, NULL, "-rd_section_view");CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRMPI(ierr);
-    ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRMPI(ierr);
+    CHKERRQ(PetscObjectViewFromOptions((PetscObject) section, NULL, "-rd_section_view"));
+    CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank));
+    CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size));
     for (p = 0; p < size; ++p) {
       if (p == rank) {
-        ierr = PetscObjectViewFromOptions((PetscObject) *v, NULL, "-rd_vec_view");CHKERRQ(ierr);}
-      ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+        CHKERRQ(PetscObjectViewFromOptions((PetscObject) *v, NULL, "-rd_vec_view"));}
+      CHKERRQ(PetscBarrier((PetscObject) dm));
+      CHKERRQ(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
     }
-    ierr = DMPlexDistributeField(dm, sf, section, *v, dist_section, dist_v);CHKERRQ(ierr);
+    CHKERRQ(DMPlexDistributeField(dm, sf, section, *v, dist_section, dist_v));
     for (p = 0; p < size; ++p) {
       if (p == rank) {
-        ierr = PetscObjectViewFromOptions((PetscObject) dist_section, NULL, "-rd2_section_view");CHKERRQ(ierr);
-        ierr = PetscObjectViewFromOptions((PetscObject) dist_v, NULL, "-rd2_vec_view");CHKERRQ(ierr);
+        CHKERRQ(PetscObjectViewFromOptions((PetscObject) dist_section, NULL, "-rd2_section_view"));
+        CHKERRQ(PetscObjectViewFromOptions((PetscObject) dist_v, NULL, "-rd2_vec_view"));
       }
-      ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      CHKERRQ(PetscBarrier((PetscObject) dm));
+      CHKERRQ(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
     }
 
-    ierr = PetscSectionDestroy(&dist_section);CHKERRQ(ierr);
-    ierr = DMDestroy(&dist_v_dm);CHKERRQ(ierr);
+    CHKERRQ(PetscSectionDestroy(&dist_section));
+    CHKERRQ(DMDestroy(&dist_v_dm));
 
-    ierr = VecDestroy(v);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(v));
     *v   = dist_v;
     PetscFunctionReturn(0);
 }
@@ -63,41 +62,40 @@ static PetscErrorCode dm_view_geometry(DM dm, Vec cell_geom, Vec face_geom)
     PetscInt           f, start_face, end_face;
     PetscInt           supportSize, offset;
     PetscMPIInt        rank;
-    PetscErrorCode     ierr;
 
     PetscFunctionBegin;
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
     /* cells */
-    ierr = DMPlexGetHeightStratum(dm, 0, &start_cell, &end_cell);CHKERRQ(ierr);
-    ierr = VecGetDM(cell_geom, &cell_dm);CHKERRQ(ierr);
-    ierr = DMGetLocalSection(cell_dm, &cell_section);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(cell_geom, &cell_array);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetHeightStratum(dm, 0, &start_cell, &end_cell));
+    CHKERRQ(VecGetDM(cell_geom, &cell_dm));
+    CHKERRQ(DMGetLocalSection(cell_dm, &cell_section));
+    CHKERRQ(VecGetArrayRead(cell_geom, &cell_array));
 
     for (c = start_cell; c < end_cell; ++c) {
       const PetscFVCellGeom *geom;
-      ierr = PetscSectionGetOffset(cell_section, c, &offset);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionGetOffset(cell_section, c, &offset));
       geom = (PetscFVCellGeom*)&cell_array[offset];
-      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "rank %d c %D centroid %g,%g,%g vol %g\n", rank, c, (double)geom->centroid[0], (double)geom->centroid[1], (double)geom->centroid[2], (double)geom->volume);CHKERRQ(ierr);
+      CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "rank %d c %D centroid %g,%g,%g vol %g\n", rank, c, (double)geom->centroid[0], (double)geom->centroid[1], (double)geom->centroid[2], (double)geom->volume));
     }
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(cell_geom, &cell_array);CHKERRQ(ierr);
+    CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
+    CHKERRQ(VecRestoreArrayRead(cell_geom, &cell_array));
 
     /* faces */
-    ierr = DMPlexGetHeightStratum(dm, 1, &start_face, &end_face);CHKERRQ(ierr);
-    ierr = VecGetDM(face_geom, &face_dm);CHKERRQ(ierr);
-    ierr = DMGetLocalSection(face_dm, &face_section);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(face_geom, &face_array);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetHeightStratum(dm, 1, &start_face, &end_face));
+    CHKERRQ(VecGetDM(face_geom, &face_dm));
+    CHKERRQ(DMGetLocalSection(face_dm, &face_section));
+    CHKERRQ(VecGetArrayRead(face_geom, &face_array));
     for (f = start_face; f < end_face; ++f) {
-       ierr = DMPlexGetSupport(dm, f, &cells);CHKERRQ(ierr);
-       ierr = DMPlexGetSupportSize(dm, f, &supportSize);CHKERRQ(ierr);
+       CHKERRQ(DMPlexGetSupport(dm, f, &cells));
+       CHKERRQ(DMPlexGetSupportSize(dm, f, &supportSize));
        if (supportSize > 1) {
-          ierr = PetscSectionGetOffset(face_section, f, &offset);CHKERRQ(ierr);
-          ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "rank %d f %D cells %D,%D normal %g,%g,%g centroid %g,%g,%g\n", rank, f, cells[0], cells[1], (double) PetscRealPart(face_array[offset+0]), (double) PetscRealPart(face_array[offset+1]), (double) PetscRealPart(face_array[offset+2]), (double) PetscRealPart(face_array[offset+3]), (double) PetscRealPart(face_array[offset+4]), (double) PetscRealPart(face_array[offset+5]));CHKERRQ(ierr);
+          CHKERRQ(PetscSectionGetOffset(face_section, f, &offset));
+          CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "rank %d f %D cells %D,%D normal %g,%g,%g centroid %g,%g,%g\n", rank, f, cells[0], cells[1], (double) PetscRealPart(face_array[offset+0]), (double) PetscRealPart(face_array[offset+1]), (double) PetscRealPart(face_array[offset+2]), (double) PetscRealPart(face_array[offset+3]), (double) PetscRealPart(face_array[offset+4]), (double) PetscRealPart(face_array[offset+5])));
        }
     }
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(cell_geom, &cell_array);CHKERRQ(ierr);
+    CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
+    CHKERRQ(VecRestoreArrayRead(cell_geom, &cell_array));
     PetscFunctionReturn(0);
 }
 
@@ -111,32 +109,32 @@ int main(int argc, char **argv)
   PetscErrorCode   ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
-  ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
-  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dm));
+  CHKERRQ(DMSetType(dm, DMPLEX));
+  CHKERRQ(DMSetFromOptions(dm));
+  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
 
-  ierr = DMPlexComputeGeometryFVM(dm, &cell_geom, &face_geom);CHKERRQ(ierr);
-  ierr = dm_view_geometry(dm, cell_geom, face_geom);CHKERRQ(ierr);
+  CHKERRQ(DMPlexComputeGeometryFVM(dm, &cell_geom, &face_geom));
+  CHKERRQ(dm_view_geometry(dm, cell_geom, face_geom));
 
   /* redistribute */
-  ierr = DMPlexGetPartitioner(dm, &part);CHKERRQ(ierr);
-  ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, NULL, "-overlap2", &overlap2, NULL);CHKERRQ(ierr);
-  ierr = DMPlexDistribute(dm, overlap2, &redist_sf, &redist_dm);CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetPartitioner(dm, &part));
+  CHKERRQ(PetscPartitionerSetFromOptions(part));
+  CHKERRQ(PetscOptionsGetInt(NULL, NULL, "-overlap2", &overlap2, NULL));
+  CHKERRQ(DMPlexDistribute(dm, overlap2, &redist_sf, &redist_dm));
   if (redist_dm) {
-    ierr = redistribute_vec(redist_dm, redist_sf, &cell_geom);CHKERRQ(ierr);
-    ierr = redistribute_vec(redist_dm, redist_sf, &face_geom);CHKERRQ(ierr);
-    ierr = PetscObjectViewFromOptions((PetscObject) redist_sf, NULL, "-rd2_sf_view");CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "redistributed:\n");CHKERRQ(ierr);
-    ierr = dm_view_geometry(redist_dm, cell_geom, face_geom);CHKERRQ(ierr);
+    CHKERRQ(redistribute_vec(redist_dm, redist_sf, &cell_geom));
+    CHKERRQ(redistribute_vec(redist_dm, redist_sf, &face_geom));
+    CHKERRQ(PetscObjectViewFromOptions((PetscObject) redist_sf, NULL, "-rd2_sf_view"));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "redistributed:\n"));
+    CHKERRQ(dm_view_geometry(redist_dm, cell_geom, face_geom));
   }
 
-  ierr = VecDestroy(&cell_geom);CHKERRQ(ierr);
-  ierr = VecDestroy(&face_geom);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&redist_sf);CHKERRQ(ierr);
-  ierr = DMDestroy(&redist_dm);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&cell_geom));
+  CHKERRQ(VecDestroy(&face_geom));
+  CHKERRQ(PetscSFDestroy(&redist_sf));
+  CHKERRQ(DMDestroy(&redist_dm));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

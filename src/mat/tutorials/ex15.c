@@ -21,19 +21,19 @@ int main(int argc, char **args)
 
   ierr = PetscInitialize(&argc, &args, (char*) 0, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  ierr = MatCreate(comm, &A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A, 3, NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A, 3, NULL, 2, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-test_vertex_weights",&set_vweights,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-test_use_edge_weights",&use_edge_weights,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL));
+  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  CHKERRQ(MatCreate(comm, &A));
+  CHKERRQ(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatSeqAIJSetPreallocation(A, 3, NULL));
+  CHKERRQ(MatMPIAIJSetPreallocation(A, 3, NULL, 2, NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test_vertex_weights",&set_vweights,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test_use_edge_weights",&use_edge_weights,NULL));
   /* Create a linear mesh */
-  ierr = MatGetOwnershipRange(A, &start, &end);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(A, &start, &end));
   if (set_vweights) {
-    ierr = PetscMalloc1(end-start,&vweights);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(end-start,&vweights));
     for (r = start; r < end; ++r)
       vweights[r-start] = rank+1;
   }
@@ -45,7 +45,7 @@ int main(int argc, char **args)
       cols[0] = r;   cols[1] = r+1;
       vals[0] = 1.0; vals[1] = use_edge_weights? 2.0: 1.0;
 
-      ierr = MatSetValues(A, 1, &r, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A, 1, &r, 2, cols, vals, INSERT_VALUES));
     } else if (r == N-1) {
       PetscInt    cols[2];
       PetscScalar vals[2];
@@ -53,7 +53,7 @@ int main(int argc, char **args)
       cols[0] = r-1; cols[1] = r;
       vals[0] = use_edge_weights? 3.0:1.0; vals[1] = 1.0;
 
-      ierr = MatSetValues(A, 1, &r, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A, 1, &r, 2, cols, vals, INSERT_VALUES));
     } else {
       PetscInt    cols[3];
       PetscScalar vals[3];
@@ -64,30 +64,30 @@ int main(int argc, char **args)
       vals[1] = 1.0;
       vals[2] = use_edge_weights? (cols[2]==N-1? 3.0:5.0):1.0;
 
-      ierr = MatSetValues(A, 1, &r, 3, cols, vals, INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A, 1, &r, 3, cols, vals, INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
-  ierr = MatPartitioningCreate(comm, &part);CHKERRQ(ierr);
-  ierr = MatPartitioningSetAdjacency(part, A);CHKERRQ(ierr);
+  CHKERRQ(MatPartitioningCreate(comm, &part));
+  CHKERRQ(MatPartitioningSetAdjacency(part, A));
   if (set_vweights) {
-    ierr = MatPartitioningSetVertexWeights(part,vweights);CHKERRQ(ierr);
+    CHKERRQ(MatPartitioningSetVertexWeights(part,vweights));
   }
   if (use_edge_weights) {
-    ierr = MatPartitioningSetUseEdgeWeights(part,use_edge_weights);CHKERRQ(ierr);
+    CHKERRQ(MatPartitioningSetUseEdgeWeights(part,use_edge_weights));
 
-    ierr = MatPartitioningGetUseEdgeWeights(part,&use_edge_weights);CHKERRQ(ierr);
+    CHKERRQ(MatPartitioningGetUseEdgeWeights(part,&use_edge_weights));
     PetscCheckFalse(!use_edge_weights,comm,PETSC_ERR_ARG_INCOMP, "use_edge_weights flag does not setup correctly ");
   }
-  ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
-  ierr = MatPartitioningApply(part, &is);CHKERRQ(ierr);
-  ierr = ISView(is, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
+  CHKERRQ(MatPartitioningSetFromOptions(part));
+  CHKERRQ(MatPartitioningApply(part, &is));
+  CHKERRQ(ISView(is, PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(ISDestroy(&is));
+  CHKERRQ(MatPartitioningDestroy(&part));
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -27,22 +27,22 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   fd = PETSC_VIEWER_SOCKET_WORLD;
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr = VecLoad(b,fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&b));
+  CHKERRQ(VecLoad(b,fd));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatLoad(A,fd));
+  CHKERRQ(VecDuplicate(b,&x));
 
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  ierr = VecView(x,fd);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPSetOperators(ksp,A,A));
+  CHKERRQ(KSPSetFromOptions(ksp));
+  CHKERRQ(KSPSetUp(ksp));
+  CHKERRQ(KSPSolve(ksp,b,x));
+  CHKERRQ(VecView(x,fd));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(KSPDestroy(&ksp));
 
   ierr = PetscFinalize();
   return ierr;

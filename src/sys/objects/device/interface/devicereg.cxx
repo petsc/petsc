@@ -32,12 +32,10 @@ PetscErrorCode PetscDeviceFinalizePackage(void)
 @*/
 PetscErrorCode PetscDeviceInitializePackage(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (PetscLikely(PetscDevicePackageInitialized)) PetscFunctionReturn(0);
   PetscCheck(PetscDeviceConfiguredFor_Internal(PETSC_DEVICE_DEFAULT),PETSC_COMM_SELF,PETSC_ERR_SUP,"PETSc is not configured with device support (PETSC_DEVICE_DEFAULT = '%s')",PetscDeviceTypes[PETSC_DEVICE_DEFAULT]);
   PetscDevicePackageInitialized = PETSC_TRUE;
-  ierr = PetscRegisterFinalize(PetscDeviceFinalizePackage);CHKERRQ(ierr);
+  CHKERRQ(PetscRegisterFinalize(PetscDeviceFinalizePackage));
   PetscFunctionReturn(0);
 }

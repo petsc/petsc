@@ -27,22 +27,20 @@ PetscBool         PetscSFRegisterAllCalled;
 @*/
 PetscErrorCode  PetscSFRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (PetscSFRegisterAllCalled) PetscFunctionReturn(0);
   PetscSFRegisterAllCalled = PETSC_TRUE;
-  ierr = PetscSFRegister(PETSCSFBASIC,  PetscSFCreate_Basic);CHKERRQ(ierr);
+  CHKERRQ(PetscSFRegister(PETSCSFBASIC,  PetscSFCreate_Basic));
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
-  ierr = PetscSFRegister(PETSCSFWINDOW, PetscSFCreate_Window);CHKERRQ(ierr);
+  CHKERRQ(PetscSFRegister(PETSCSFWINDOW, PetscSFCreate_Window));
 #endif
-  ierr = PetscSFRegister(PETSCSFALLGATHERV,PetscSFCreate_Allgatherv);CHKERRQ(ierr);
-  ierr = PetscSFRegister(PETSCSFALLGATHER, PetscSFCreate_Allgather);CHKERRQ(ierr);
-  ierr = PetscSFRegister(PETSCSFGATHERV,   PetscSFCreate_Gatherv);CHKERRQ(ierr);
-  ierr = PetscSFRegister(PETSCSFGATHER,    PetscSFCreate_Gather);CHKERRQ(ierr);
-  ierr = PetscSFRegister(PETSCSFALLTOALL,  PetscSFCreate_Alltoall);CHKERRQ(ierr);
+  CHKERRQ(PetscSFRegister(PETSCSFALLGATHERV,PetscSFCreate_Allgatherv));
+  CHKERRQ(PetscSFRegister(PETSCSFALLGATHER, PetscSFCreate_Allgather));
+  CHKERRQ(PetscSFRegister(PETSCSFGATHERV,   PetscSFCreate_Gatherv));
+  CHKERRQ(PetscSFRegister(PETSCSFGATHER,    PetscSFCreate_Gather));
+  CHKERRQ(PetscSFRegister(PETSCSFALLTOALL,  PetscSFCreate_Alltoall));
 #if defined(PETSC_HAVE_MPI_NEIGHBORHOOD_COLLECTIVES)
-  ierr = PetscSFRegister(PETSCSFNEIGHBOR,  PetscSFCreate_Neighbor);CHKERRQ(ierr);
+  CHKERRQ(PetscSFRegister(PETSCSFNEIGHBOR,  PetscSFCreate_Neighbor));
 #endif
   PetscFunctionReturn(0);
 }
@@ -75,10 +73,8 @@ $     -sf_type my_impl
 @*/
 PetscErrorCode  PetscSFRegister(const char name[],PetscErrorCode (*create)(PetscSF))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscSFInitializePackage();CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&PetscSFList,name,create);CHKERRQ(ierr);
+  CHKERRQ(PetscSFInitializePackage());
+  CHKERRQ(PetscFunctionListAdd(&PetscSFList,name,create));
   PetscFunctionReturn(0);
 }

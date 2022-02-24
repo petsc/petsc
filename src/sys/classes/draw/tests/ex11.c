@@ -11,15 +11,15 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
 
-  ierr = PetscDrawCreate(PETSC_COMM_SELF,0,"Title",0,0,256,256,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawCreate(PETSC_COMM_SELF,0,"Title",0,0,256,256,&draw));
+  CHKERRQ(PetscDrawSetFromOptions(draw));
 
-  ierr = PetscDrawStringBoxed(draw,.5,.5,PETSC_DRAW_BLUE,PETSC_DRAW_RED,"Greetings",NULL,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawStringBoxed(draw,.5,.5,PETSC_DRAW_BLUE,PETSC_DRAW_RED,"Greetings",NULL,NULL));
 
-  ierr = PetscDrawStringBoxed(draw,.25,.75,PETSC_DRAW_BLUE,PETSC_DRAW_RED,"How\nare\nyou?",NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscDrawStringBoxed(draw,.25,.25,PETSC_DRAW_GREEN,PETSC_DRAW_RED,"Long line followed by a very\nshort line",NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawStringBoxed(draw,.25,.75,PETSC_DRAW_BLUE,PETSC_DRAW_RED,"How\nare\nyou?",NULL,NULL));
+  CHKERRQ(PetscDrawStringBoxed(draw,.25,.25,PETSC_DRAW_GREEN,PETSC_DRAW_RED,"Long line followed by a very\nshort line",NULL,NULL));
+  CHKERRQ(PetscDrawFlush(draw));
+  CHKERRQ(PetscDrawDestroy(&draw));
   ierr = PetscFinalize();
   return ierr;
 }

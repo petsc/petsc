@@ -30,114 +30,113 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
   PetscInt           d, numCellsNew, numVerticesNew;
   PetscInt           numCornersNew, fStart, fEnd;
   PetscMPIInt        numProcs;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
 
   /* Check for FEM adjacency flags */
-  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &numProcs);CHKERRMPI(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject) dm, &comm));
+  CHKERRMPI(MPI_Comm_size(comm, &numProcs));
   if (bdLabel) {
-    ierr = PetscObjectGetName((PetscObject) bdLabel, &bdLabelName);CHKERRQ(ierr);
-    ierr = PetscStrcmp(bdLabelName, bdName, &flg);CHKERRQ(ierr);
-    PetscCheckFalse(flg,comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
+    CHKERRQ(PetscObjectGetName((PetscObject) bdLabel, &bdLabelName));
+    CHKERRQ(PetscStrcmp(bdLabelName, bdName, &flg));
+    PetscCheck(!flg,comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
   }
-  PetscCheckFalse(rgLabel,comm, PETSC_ERR_ARG_WRONG, "Cannot currently preserve cell tags with Pragmatic");
+  PetscCheck(!rgLabel,comm, PETSC_ERR_ARG_WRONG, "Cannot currently preserve cell tags with Pragmatic");
 #if 0
   /* Check for overlap by looking for cell in the SF */
   if (!overlapped) {
-    ierr = DMPlexDistributeOverlap(odm, 1, NULL, &dm);CHKERRQ(ierr);
-    if (!dm) {dm = odm; ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);}
+    CHKERRQ(DMPlexDistributeOverlap(odm, 1, NULL, &dm));
+    if (!dm) {dm = odm; CHKERRQ(PetscObjectReference((PetscObject) dm));}
   }
 #endif
 
   /* Get mesh information */
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexUninterpolate(dm, &udm);CHKERRQ(ierr);
-  ierr = DMPlexGetMaxSizes(udm, &maxConeSize, NULL);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  CHKERRQ(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+  CHKERRQ(DMPlexUninterpolate(dm, &udm));
+  CHKERRQ(DMPlexGetMaxSizes(udm, &maxConeSize, NULL));
   numCells = cEnd - cStart;
   if (numCells == 0) {
     PetscMPIInt rank;
 
-    ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Comm_rank(comm, &rank));
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot perform mesh adaptation because process %d does not own any cells.", rank);
   }
   numVertices = vEnd - vStart;
-  ierr = PetscCalloc5(numVertices, &x, numVertices, &y, numVertices, &z, numVertices*PetscSqr(dim), &metric, numCells*maxConeSize, &cells);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc5(numVertices, &x, numVertices, &y, numVertices, &z, numVertices*PetscSqr(dim), &metric, numCells*maxConeSize, &cells));
 
   /* Get cell offsets */
   for (c = 0, coff = 0; c < numCells; ++c) {
     const PetscInt *cone;
     PetscInt        coneSize, cl;
 
-    ierr = DMPlexGetConeSize(udm, c, &coneSize);CHKERRQ(ierr);
-    ierr = DMPlexGetCone(udm, c, &cone);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetConeSize(udm, c, &coneSize));
+    CHKERRQ(DMPlexGetCone(udm, c, &cone));
     for (cl = 0; cl < coneSize; ++cl) cells[coff++] = cone[cl] - vStart;
   }
 
   /* Get local-to-global vertex map */
-  ierr = PetscCalloc1(numVertices, &l2gv);CHKERRQ(ierr);
-  ierr = DMPlexGetVertexNumbering(udm, &globalVertexNum);CHKERRQ(ierr);
-  ierr = ISGetIndices(globalVertexNum, &gV);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc1(numVertices, &l2gv));
+  CHKERRQ(DMPlexGetVertexNumbering(udm, &globalVertexNum));
+  CHKERRQ(ISGetIndices(globalVertexNum, &gV));
   for (v = 0, numLocVertices = 0; v < numVertices; ++v) {
     if (gV[v] >= 0) ++numLocVertices;
     l2gv[v] = gV[v] < 0 ? -(gV[v]+1) : gV[v];
   }
-  ierr = ISRestoreIndices(globalVertexNum, &gV);CHKERRQ(ierr);
-  ierr = DMDestroy(&udm);CHKERRQ(ierr);
+  CHKERRQ(ISRestoreIndices(globalVertexNum, &gV));
+  CHKERRQ(DMDestroy(&udm));
 
   /* Get vertex coordinate arrays */
-  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetLocalSection(cdm, &coordSection);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoordinateDM(dm, &cdm));
+  CHKERRQ(DMGetLocalSection(cdm, &coordSection));
+  CHKERRQ(DMGetCoordinatesLocal(dm, &coordinates));
+  CHKERRQ(VecGetArrayRead(coordinates, &coords));
   for (v = vStart; v < vEnd; ++v) {
-    ierr = PetscSectionGetOffset(coordSection, v, &off);CHKERRQ(ierr);
+    CHKERRQ(PetscSectionGetOffset(coordSection, v, &off));
     x[v-vStart] = PetscRealPart(coords[off+0]);
     if (dim > 1) y[v-vStart] = PetscRealPart(coords[off+1]);
     if (dim > 2) z[v-vStart] = PetscRealPart(coords[off+2]);
   }
-  ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(coordinates, &coords));
 
   /* Get boundary mesh */
-  ierr = DMLabelCreate(PETSC_COMM_SELF, bdName, &bdLabelFull);CHKERRQ(ierr);
-  ierr = DMPlexMarkBoundaryFaces(dm, 1, bdLabelFull);CHKERRQ(ierr);
-  ierr = DMLabelGetStratumIS(bdLabelFull, 1, &bdIS);CHKERRQ(ierr);
-  ierr = DMLabelGetStratumSize(bdLabelFull, 1, &numBdFaces);CHKERRQ(ierr);
-  ierr = ISGetIndices(bdIS, &bdFacesFull);CHKERRQ(ierr);
+  CHKERRQ(DMLabelCreate(PETSC_COMM_SELF, bdName, &bdLabelFull));
+  CHKERRQ(DMPlexMarkBoundaryFaces(dm, 1, bdLabelFull));
+  CHKERRQ(DMLabelGetStratumIS(bdLabelFull, 1, &bdIS));
+  CHKERRQ(DMLabelGetStratumSize(bdLabelFull, 1, &numBdFaces));
+  CHKERRQ(ISGetIndices(bdIS, &bdFacesFull));
   for (f = 0, bdSize = 0; f < numBdFaces; ++f) {
     PetscInt *closure = NULL;
     PetscInt  closureSize, cl;
 
-    ierr = DMPlexGetTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure));
     for (cl = 0; cl < closureSize*2; cl += 2) {
       if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) ++bdSize;
     }
-    ierr = DMPlexRestoreTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    CHKERRQ(DMPlexRestoreTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure));
   }
-  ierr = PetscMalloc2(bdSize, &bdFaces, numBdFaces, &bdFaceIds);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc2(bdSize, &bdFaces, numBdFaces, &bdFaceIds));
   for (f = 0, bdSize = 0; f < numBdFaces; ++f) {
     PetscInt *closure = NULL;
     PetscInt  closureSize, cl;
 
-    ierr = DMPlexGetTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure));
     for (cl = 0; cl < closureSize*2; cl += 2) {
       if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) bdFaces[bdSize++] = closure[cl] - vStart;
     }
-    ierr = DMPlexRestoreTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-    if (bdLabel) {ierr = DMLabelGetValue(bdLabel, bdFacesFull[f], &bdFaceIds[f]);CHKERRQ(ierr);}
+    CHKERRQ(DMPlexRestoreTransitiveClosure(dm, bdFacesFull[f], PETSC_TRUE, &closureSize, &closure));
+    if (bdLabel) CHKERRQ(DMLabelGetValue(bdLabel, bdFacesFull[f], &bdFaceIds[f]));
     else         {bdFaceIds[f] = 1;}
   }
-  ierr = ISDestroy(&bdIS);CHKERRQ(ierr);
-  ierr = DMLabelDestroy(&bdLabelFull);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&bdIS));
+  CHKERRQ(DMLabelDestroy(&bdLabelFull));
 
   /* Get metric */
-  ierr = VecViewFromOptions(vertexMetric, NULL, "-adapt_metric_view");CHKERRQ(ierr);
-  ierr = VecGetArrayRead(vertexMetric, &met);CHKERRQ(ierr);
-  ierr = DMPlexMetricIsIsotropic(dm, &isotropic);CHKERRQ(ierr);
-  ierr = DMPlexMetricIsUniform(dm, &uniform);CHKERRQ(ierr);
+  CHKERRQ(VecViewFromOptions(vertexMetric, NULL, "-adapt_metric_view"));
+  CHKERRQ(VecGetArrayRead(vertexMetric, &met));
+  CHKERRQ(DMPlexMetricIsIsotropic(dm, &isotropic));
+  CHKERRQ(DMPlexMetricIsUniform(dm, &uniform));
   Nd = PetscSqr(dim);
   for (v = 0; v < vEnd-vStart; ++v) {
     for (i = 0; i < dim; ++i) {
@@ -151,11 +150,11 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
       }
     }
   }
-  ierr = VecRestoreArrayRead(vertexMetric, &met);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(vertexMetric, &met));
 
 #if 0
   /* Destroy overlap mesh */
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(DMDestroy(&dm));
 #endif
   /* Send to Pragmatic and remesh */
   switch (dim) {
@@ -170,37 +169,37 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
   pragmatic_set_boundary(&numBdFaces, bdFaces, bdFaceIds);
   pragmatic_set_metric(metric);
   pragmatic_adapt(((DM_Plex *) dm->data)->remeshBd ? 1 : 0);
-  ierr = PetscFree(l2gv);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(l2gv));
 
   /* Retrieve mesh from Pragmatic and create new plex */
   pragmatic_get_info_mpi(&numVerticesNew, &numCellsNew);
-  ierr = PetscMalloc1(numVerticesNew*dim, &coordsNew);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(numVerticesNew*dim, &coordsNew));
   switch (dim) {
   case 2:
     numCornersNew = 3;
-    ierr = PetscMalloc2(numVerticesNew, &xNew[0], numVerticesNew, &xNew[1]);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc2(numVerticesNew, &xNew[0], numVerticesNew, &xNew[1]));
     pragmatic_get_coords_2d_mpi(xNew[0], xNew[1]);
     break;
   case 3:
     numCornersNew = 4;
-    ierr = PetscMalloc3(numVerticesNew, &xNew[0], numVerticesNew, &xNew[1], numVerticesNew, &xNew[2]);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc3(numVerticesNew, &xNew[0], numVerticesNew, &xNew[1], numVerticesNew, &xNew[2]));
     pragmatic_get_coords_3d_mpi(xNew[0], xNew[1], xNew[2]);
     break;
   default:
     SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %D", dim);
   }
   for (v = 0; v < numVerticesNew; ++v) {for (d = 0; d < dim; ++d) coordsNew[v*dim+d] = xNew[d][v];}
-  ierr = PetscMalloc1(numCellsNew*(dim+1), &cellsNew);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(numCellsNew*(dim+1), &cellsNew));
   pragmatic_get_elements(cellsNew);
-  ierr = DMPlexCreateFromCellListParallelPetsc(comm, dim, numCellsNew, numVerticesNew, PETSC_DECIDE, numCornersNew, PETSC_TRUE, cellsNew, dim, coordsNew, NULL, NULL, dmNew);CHKERRQ(ierr);
+  CHKERRQ(DMPlexCreateFromCellListParallelPetsc(comm, dim, numCellsNew, numVerticesNew, PETSC_DECIDE, numCornersNew, PETSC_TRUE, cellsNew, dim, coordsNew, NULL, NULL, dmNew));
 
   /* Rebuild boundary label */
   pragmatic_get_boundaryTags(&bdTags);
-  ierr = DMCreateLabel(*dmNew, bdLabel ? bdLabelName : bdName);CHKERRQ(ierr);
-  ierr = DMGetLabel(*dmNew, bdLabel ? bdLabelName : bdName, &bdLabelNew);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(*dmNew, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(*dmNew, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(*dmNew, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  CHKERRQ(DMCreateLabel(*dmNew, bdLabel ? bdLabelName : bdName));
+  CHKERRQ(DMGetLabel(*dmNew, bdLabel ? bdLabelName : bdName, &bdLabelNew));
+  CHKERRQ(DMPlexGetHeightStratum(*dmNew, 0, &cStart, &cEnd));
+  CHKERRQ(DMPlexGetHeightStratum(*dmNew, 1, &fStart, &fEnd));
+  CHKERRQ(DMPlexGetDepthStratum(*dmNew, 0, &vStart, &vEnd));
   for (c = cStart; c < cEnd; ++c) {
 
     /* Only for simplicial meshes */
@@ -213,23 +212,23 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
         const PetscInt *cone;
 
         /* Mark face opposite to this vertex: This pattern is specified in DMPlexGetRawFaces_Internal() */
-        ierr = DMPlexGetCone(*dmNew, c, &cone);CHKERRQ(ierr);
-        ierr = DMLabelSetValue(bdLabelNew, cone[perm[dim][d]], bdTags[coff+d]);CHKERRQ(ierr);
+        CHKERRQ(DMPlexGetCone(*dmNew, c, &cone));
+        CHKERRQ(DMLabelSetValue(bdLabelNew, cone[perm[dim][d]], bdTags[coff+d]));
       }
     }
   }
 
   /* Clean up */
   switch (dim) {
-  case 2: ierr = PetscFree2(xNew[0], xNew[1]);CHKERRQ(ierr);
+  case 2: CHKERRQ(PetscFree2(xNew[0], xNew[1]));
   break;
-  case 3: ierr = PetscFree3(xNew[0], xNew[1], xNew[2]);CHKERRQ(ierr);
+  case 3: CHKERRQ(PetscFree3(xNew[0], xNew[1], xNew[2]));
   break;
   }
-  ierr = PetscFree(cellsNew);CHKERRQ(ierr);
-  ierr = PetscFree5(x, y, z, metric, cells);CHKERRQ(ierr);
-  ierr = PetscFree2(bdFaces, bdFaceIds);CHKERRQ(ierr);
-  ierr = PetscFree(coordsNew);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(cellsNew));
+  CHKERRQ(PetscFree5(x, y, z, metric, cells));
+  CHKERRQ(PetscFree2(bdFaces, bdFaceIds));
+  CHKERRQ(PetscFree(coordsNew));
   pragmatic_finalize();
   PetscFunctionReturn(0);
 }

@@ -2,43 +2,37 @@
 
 static PetscErrorCode PetscSpaceSetFromOptions_WXY(PetscOptionItems *PetscOptionsObject,PetscSpace sp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"PetscSpace WXY options");CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"PetscSpace WXY options"));
+  CHKERRQ(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer v)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscViewerASCIIPrintf(v, "WXY space of degree %" PetscInt_FMT "\n", sp->degree);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIPrintf(v, "WXY space of degree %" PetscInt_FMT "\n", sp->degree));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscSpaceView_WXY(PetscSpace sp, PetscViewer viewer)
 {
   PetscBool      iascii;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
-  if (iascii) {ierr = PetscSpacePolynomialView_Ascii(sp, viewer);CHKERRQ(ierr);}
+  CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
+  if (iascii) CHKERRQ(PetscSpacePolynomialView_Ascii(sp, viewer));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscSpaceDestroy_WXY(PetscSpace sp)
 {
   PetscSpace_WXY *wxy = (PetscSpace_WXY *) sp->data;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(wxy);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(wxy));
   PetscFunctionReturn(0);
 }
 
@@ -70,9 +64,8 @@ static PetscErrorCode PetscSpaceEvaluate_WXY(PetscSpace sp, PetscInt npoints, co
 
   PetscFunctionBegin;
   if (!wxy->setupCalled) {
-    PetscErrorCode ierr;
-    ierr = PetscSpaceSetUp(sp);CHKERRQ(ierr);
-    ierr = PetscSpaceEvaluate(sp, npoints, points, B, D, H);CHKERRQ(ierr);
+    CHKERRQ(PetscSpaceSetUp(sp));
+    CHKERRQ(PetscSpaceEvaluate(sp, npoints, points, B, D, H));
     PetscFunctionReturn(0);
   }
   PetscCheck((sp->Nc == 3) && (sp->Nv == 3), PETSC_COMM_SELF, PETSC_ERR_PLIB, "WXY space must have 3 variables and 3 components");
@@ -394,14 +387,13 @@ M*/
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_WXY(PetscSpace sp)
 {
   PetscSpace_WXY *wxy;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  ierr     = PetscNewLog(sp,&wxy);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(sp,&wxy));
   sp->data = wxy;
   sp->degree = 2;
 
-  ierr = PetscSpaceInitialize_WXY(sp);CHKERRQ(ierr);
+  CHKERRQ(PetscSpaceInitialize_WXY(sp));
   PetscFunctionReturn(0);
 }

@@ -27,56 +27,56 @@ int main(int argc,char **argv)
   IS             is;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /*
      Create an index set with 5 entries. Each processor creates
    its own index set with its own list of integers.
   */
-  ierr = PetscMalloc1(5,&indices);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(5,&indices));
   indices[0] = rank + 1;
   indices[1] = rank + 2;
   indices[2] = rank + 3;
   indices[3] = rank + 4;
   indices[4] = rank + 5;
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,5,indices,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,5,indices,PETSC_COPY_VALUES,&is));
   /*
      Note that ISCreateGeneral() has made a copy of the indices
      so we may (and generally should) free indices[]
   */
-  ierr = PetscFree(indices);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(indices));
 
   /*
      Print the index set to stdout
   */
-  ierr = ISView(is,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  CHKERRQ(ISView(is,PETSC_VIEWER_STDOUT_SELF));
 
   /*
      Get the number of indices in the set
   */
-  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
+  CHKERRQ(ISGetLocalSize(is,&n));
 
   /*
      Get the indices in the index set
   */
-  ierr = ISGetIndices(is,&nindices);CHKERRQ(ierr);
+  CHKERRQ(ISGetIndices(is,&nindices));
   /*
      Now any code that needs access to the list of integers
    has access to it here through indices[].
    */
-  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] First index %" PetscInt_FMT "\n",rank,nindices[0]);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"[%d] First index %" PetscInt_FMT "\n",rank,nindices[0]));
 
   /*
      Once we no longer need access to the indices they should
      returned to the system
   */
-  ierr = ISRestoreIndices(is,&nindices);CHKERRQ(ierr);
+  CHKERRQ(ISRestoreIndices(is,&nindices));
 
   /*
      One should destroy any PETSc object once one is completely
     done with it.
   */
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&is));
   ierr = PetscFinalize();
   return ierr;
 }

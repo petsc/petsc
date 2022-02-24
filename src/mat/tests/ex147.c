@@ -24,8 +24,8 @@ int main(int argc,char **args)
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers. Your current scalar type is complex");
 #endif
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   PetscRandomCreate(PETSC_COMM_WORLD,&rnd);
   D     =4;
@@ -52,9 +52,9 @@ int main(int argc,char **args)
 /*    printf("The value n is  %d from process %d\n",n,rank); */
 /*    printf("The value n1 is  %d from process %d\n",n1,rank); */
   /* Creating data vector and accompanying array with VeccreateMPIWithArray */
-  ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)in1,&fin);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)out,&fout);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)in2,&fout1);CHKERRQ(ierr);
+  CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)in1,&fin));
+  CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)out,&fout));
+  CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,N,(PetscScalar*)in2,&fout1));
 
 /*    VecGetSize(fin,&size); */
 /*    printf("The size is %d\n",size); */
@@ -81,7 +81,7 @@ int main(int argc,char **args)
   VecRestoreArray(fout,&y_arr);
 
 /*    a = 1.0/(PetscReal)N_factor; */
-/*    ierr = VecScale(fout1,a);CHKERRQ(ierr); */
+/*    CHKERRQ(VecScale(fout1,a)); */
 
   VecAssemblyBegin(fout1);
   VecAssemblyEnd(fout1);
@@ -90,9 +90,9 @@ int main(int argc,char **args)
 
   fftw_destroy_plan(fplan);
   fftw_destroy_plan(bplan);
-  fftw_free(in1); ierr = VecDestroy(&fin);CHKERRQ(ierr);
-  fftw_free(out); ierr = VecDestroy(&fout);CHKERRQ(ierr);
-  fftw_free(in2); ierr = VecDestroy(&fout1);CHKERRQ(ierr);
+  fftw_free(in1); CHKERRQ(VecDestroy(&fin));
+  fftw_free(out); CHKERRQ(VecDestroy(&fout));
+  fftw_free(in2); CHKERRQ(VecDestroy(&fout1));
 
   ierr = PetscFinalize();
   return ierr;

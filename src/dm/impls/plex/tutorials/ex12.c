@@ -138,8 +138,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionBegin;
   options->fname[0] = '\0';
   ierr = PetscOptionsBegin(comm, "", "DMPlex View/Load Test Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-fname", "The output mesh file", "ex12.c", options->fname, options->fname, sizeof(options->fname), &flg);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-shell", "Use DMShell to wrap sections", "ex12.c", options->shell, &options->shell, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsString("-fname", "The output mesh file", "ex12.c", options->fname, options->fname, sizeof(options->fname), &flg));
+  CHKERRQ(PetscOptionsBool("-shell", "Use DMShell to wrap sections", "ex12.c", options->shell, &options->shell, NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -157,19 +157,19 @@ int main(int argc, char **argv)
   PetscErrorCode     ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
+  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCheckFalse(size < 3,PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Example only works with three or more processes");
 
   /* Save */
   mycolor = (PetscMPIInt)(rank >= 2);
-  ierr = MPI_Comm_split(PETSC_COMM_WORLD, mycolor, rank, &comm);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_split(PETSC_COMM_WORLD, mycolor, rank, &comm));
   if (mycolor == 0) {
     DM           dm;
     PetscViewer  viewer;
 
-    ierr = PetscViewerHDF5Open(comm, user.fname, FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerHDF5Open(comm, user.fname, FILE_MODE_WRITE, &viewer));
     /* Save exampleDMPlex */
     {
       DM              pdm;
@@ -177,23 +177,23 @@ int main(int argc, char **argv)
       PetscSF         sf;
       PetscInt        overlap = 1;
 
-      ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_FALSE, faces, NULL, NULL, NULL, PETSC_TRUE, &dm);CHKERRQ(ierr);
-      ierr = DMPlexDistribute(dm, overlap, &sf, &pdm);CHKERRQ(ierr);
+      CHKERRQ(DMPlexCreateBoxMesh(comm, 2, PETSC_FALSE, faces, NULL, NULL, NULL, PETSC_TRUE, &dm));
+      CHKERRQ(DMPlexDistribute(dm, overlap, &sf, &pdm));
       if (pdm) {
-        ierr = DMDestroy(&dm);CHKERRQ(ierr);
+        CHKERRQ(DMDestroy(&dm));
         dm = pdm;
       }
-      ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject)dm, exampleDMPlexName);CHKERRQ(ierr);
-      ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-      ierr = DMPlexTopologyView(dm, viewer);CHKERRQ(ierr);
-      ierr = DMPlexLabelsView(dm, viewer);CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+      CHKERRQ(PetscSFDestroy(&sf));
+      CHKERRQ(PetscObjectSetName((PetscObject)dm, exampleDMPlexName));
+      CHKERRQ(PetscViewerPushFormat(viewer, format));
+      CHKERRQ(DMPlexTopologyView(dm, viewer));
+      CHKERRQ(DMPlexLabelsView(dm, viewer));
+      CHKERRQ(PetscViewerPopFormat(viewer));
     }
     /* Save coordinates */
-    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-    ierr = DMPlexCoordinatesView(dm, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerPushFormat(viewer, format));
+    CHKERRQ(DMPlexCoordinatesView(dm, viewer));
+    CHKERRQ(PetscViewerPopFormat(viewer));
     /* Save exampleVec */
     {
       PetscInt      pStart = -1, pEnd = -1;
@@ -204,82 +204,82 @@ int main(int argc, char **argv)
       PetscScalar  *array = NULL;
 
       /* Create section */
-      ierr = PetscSectionCreate(comm, &section);CHKERRQ(ierr);
-      ierr = PetscSectionSetNumFields(section, 2);CHKERRQ(ierr);
-      ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-      ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionCreate(comm, &section));
+      CHKERRQ(PetscSectionSetNumFields(section, 2));
+      CHKERRQ(DMPlexGetChart(dm, &pStart, &pEnd));
+      CHKERRQ(PetscSectionSetChart(section, pStart, pEnd));
       switch (rank) {
       case 0:
-        ierr = PetscSectionSetDof(section, 3, 2);CHKERRQ(ierr);
-        ierr = PetscSectionSetDof(section, 12, 3);CHKERRQ(ierr);
-        ierr = PetscSectionSetDof(section, 25, 2);CHKERRQ(ierr);
-        ierr = PetscSectionSetConstraintDof(section, 12, 1);CHKERRQ(ierr);
-        ierr = PetscSectionSetFieldDof(section, 3, 0, 2);CHKERRQ(ierr);
-        ierr = PetscSectionSetFieldDof(section, 12, 0, 2);CHKERRQ(ierr);
-        ierr = PetscSectionSetFieldDof(section, 12, 1, 1);CHKERRQ(ierr);
-        ierr = PetscSectionSetFieldDof(section, 25, 1, 2);CHKERRQ(ierr);
-        ierr = PetscSectionSetFieldConstraintDof(section, 12, 1, 1);CHKERRQ(ierr);
+        CHKERRQ(PetscSectionSetDof(section, 3, 2));
+        CHKERRQ(PetscSectionSetDof(section, 12, 3));
+        CHKERRQ(PetscSectionSetDof(section, 25, 2));
+        CHKERRQ(PetscSectionSetConstraintDof(section, 12, 1));
+        CHKERRQ(PetscSectionSetFieldDof(section, 3, 0, 2));
+        CHKERRQ(PetscSectionSetFieldDof(section, 12, 0, 2));
+        CHKERRQ(PetscSectionSetFieldDof(section, 12, 1, 1));
+        CHKERRQ(PetscSectionSetFieldDof(section, 25, 1, 2));
+        CHKERRQ(PetscSectionSetFieldConstraintDof(section, 12, 1, 1));
         break;
       case 1:
-        ierr = PetscSectionSetDof(section, 0, 2);CHKERRQ(ierr);
-        ierr = PetscSectionSetDof(section, 1, 1);CHKERRQ(ierr);
-        ierr = PetscSectionSetDof(section, 8, 3);CHKERRQ(ierr);
-        ierr = PetscSectionSetDof(section, 20, 2);CHKERRQ(ierr);
-        ierr = PetscSectionSetConstraintDof(section, 8, 1);CHKERRQ(ierr);
-        ierr = PetscSectionSetFieldDof(section, 0, 0, 2);CHKERRQ(ierr);
-        ierr = PetscSectionSetFieldDof(section, 8, 0, 2);CHKERRQ(ierr);
-        ierr = PetscSectionSetFieldDof(section, 1, 1, 1);CHKERRQ(ierr);
-        ierr = PetscSectionSetFieldDof(section, 8, 1, 1);CHKERRQ(ierr);
-        ierr = PetscSectionSetFieldDof(section, 20, 1, 2);CHKERRQ(ierr);
-        ierr = PetscSectionSetFieldConstraintDof(section, 8, 1, 1);CHKERRQ(ierr);
+        CHKERRQ(PetscSectionSetDof(section, 0, 2));
+        CHKERRQ(PetscSectionSetDof(section, 1, 1));
+        CHKERRQ(PetscSectionSetDof(section, 8, 3));
+        CHKERRQ(PetscSectionSetDof(section, 20, 2));
+        CHKERRQ(PetscSectionSetConstraintDof(section, 8, 1));
+        CHKERRQ(PetscSectionSetFieldDof(section, 0, 0, 2));
+        CHKERRQ(PetscSectionSetFieldDof(section, 8, 0, 2));
+        CHKERRQ(PetscSectionSetFieldDof(section, 1, 1, 1));
+        CHKERRQ(PetscSectionSetFieldDof(section, 8, 1, 1));
+        CHKERRQ(PetscSectionSetFieldDof(section, 20, 1, 2));
+        CHKERRQ(PetscSectionSetFieldConstraintDof(section, 8, 1, 1));
         break;
       }
-      ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionSetUp(section));
       {
         const PetscInt indices[] = {2};
         const PetscInt indices1[] = {0};
 
         switch (rank) {
         case 0:
-          ierr = PetscSectionSetConstraintIndices(section, 12, indices);CHKERRQ(ierr);
-          ierr = PetscSectionSetFieldConstraintIndices(section, 12, 1, indices1);CHKERRQ(ierr);
+          CHKERRQ(PetscSectionSetConstraintIndices(section, 12, indices));
+          CHKERRQ(PetscSectionSetFieldConstraintIndices(section, 12, 1, indices1));
           break;
         case 1:
-          ierr = PetscSectionSetConstraintIndices(section, 8, indices);CHKERRQ(ierr);
-          ierr = PetscSectionSetFieldConstraintIndices(section, 8, 1, indices1);CHKERRQ(ierr);
+          CHKERRQ(PetscSectionSetConstraintIndices(section, 8, indices));
+          CHKERRQ(PetscSectionSetFieldConstraintIndices(section, 8, 1, indices1));
           break;
         }
       }
       if (user.shell) {
         PetscSF  sf;
 
-        ierr = DMShellCreate(comm, &sdm);CHKERRQ(ierr);
-        ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
-        ierr = DMSetPointSF(sdm, sf);CHKERRQ(ierr);
+        CHKERRQ(DMShellCreate(comm, &sdm));
+        CHKERRQ(DMGetPointSF(dm, &sf));
+        CHKERRQ(DMSetPointSF(sdm, sf));
       }
       else {
-        ierr = DMClone(dm, &sdm);CHKERRQ(ierr);
+        CHKERRQ(DMClone(dm, &sdm));
       }
-      ierr = PetscObjectSetName((PetscObject)sdm, exampleSectionDMName);CHKERRQ(ierr);
-      ierr = DMSetLocalSection(sdm, section);CHKERRQ(ierr);
-      ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
-      ierr = DMPlexSectionView(dm, viewer, sdm);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectSetName((PetscObject)sdm, exampleSectionDMName));
+      CHKERRQ(DMSetLocalSection(sdm, section));
+      CHKERRQ(PetscSectionDestroy(&section));
+      CHKERRQ(DMPlexSectionView(dm, viewer, sdm));
       /* Create global vector */
-      ierr = DMGetGlobalSection(sdm, &gsection);CHKERRQ(ierr);
-      ierr = PetscSectionGetIncludesConstraints(gsection, &includesConstraints);CHKERRQ(ierr);
+      CHKERRQ(DMGetGlobalSection(sdm, &gsection));
+      CHKERRQ(PetscSectionGetIncludesConstraints(gsection, &includesConstraints));
       if (user.shell) {
         PetscInt  n = -1;
 
-        ierr = VecCreate(comm, &vec);CHKERRQ(ierr);
-        if (includesConstraints) {ierr = PetscSectionGetStorageSize(gsection, &n);CHKERRQ(ierr);}
-        else {ierr = PetscSectionGetConstrainedStorageSize(gsection, &n);CHKERRQ(ierr);}
-        ierr = VecSetSizes(vec, n, PETSC_DECIDE);CHKERRQ(ierr);
-        ierr = VecSetUp(vec);CHKERRQ(ierr);
+        CHKERRQ(VecCreate(comm, &vec));
+        if (includesConstraints) CHKERRQ(PetscSectionGetStorageSize(gsection, &n));
+        else CHKERRQ(PetscSectionGetConstrainedStorageSize(gsection, &n));
+        CHKERRQ(VecSetSizes(vec, n, PETSC_DECIDE));
+        CHKERRQ(VecSetUp(vec));
       } else {
-        ierr = DMGetGlobalVector(sdm, &vec);CHKERRQ(ierr);
+        CHKERRQ(DMGetGlobalVector(sdm, &vec));
       }
-      ierr = PetscObjectSetName((PetscObject)vec, exampleVecName);CHKERRQ(ierr);
-      ierr = VecGetArrayWrite(vec, &array);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectSetName((PetscObject)vec, exampleVecName));
+      CHKERRQ(VecGetArrayWrite(vec, &array));
       if (includesConstraints) {
         switch (rank) {
         case 0:
@@ -310,75 +310,75 @@ int main(int argc, char **argv)
           break;
         }
       }
-      ierr = VecRestoreArrayWrite(vec, &array);CHKERRQ(ierr);
-      ierr = DMPlexGlobalVectorView(dm, viewer, sdm, vec);CHKERRQ(ierr);
+      CHKERRQ(VecRestoreArrayWrite(vec, &array));
+      CHKERRQ(DMPlexGlobalVectorView(dm, viewer, sdm, vec));
       if (user.shell) {
-        ierr = VecDestroy(&vec);CHKERRQ(ierr);
+        CHKERRQ(VecDestroy(&vec));
       } else {
-        ierr = DMRestoreGlobalVector(sdm, &vec);CHKERRQ(ierr);
+        CHKERRQ(DMRestoreGlobalVector(sdm, &vec));
       }
-      ierr = DMDestroy(&sdm);CHKERRQ(ierr);
+      CHKERRQ(DMDestroy(&sdm));
     }
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = DMDestroy(&dm);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerDestroy(&viewer));
+    CHKERRQ(DMDestroy(&dm));
   }
-  ierr = MPI_Comm_free(&comm);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_free(&comm));
   /* Load */
   mycolor = (PetscMPIInt)(rank >= 3);
-  ierr = MPI_Comm_split(PETSC_COMM_WORLD, mycolor, rank, &comm);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_split(PETSC_COMM_WORLD, mycolor, rank, &comm));
   if (mycolor == 0) {
     DM           dm;
     PetscSF      sfXC;
     PetscViewer  viewer;
 
-    ierr = PetscViewerHDF5Open(comm, user.fname, FILE_MODE_READ, &viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerHDF5Open(comm, user.fname, FILE_MODE_READ, &viewer));
     /* Load exampleDMPlex */
     {
       PetscSF  sfXB, sfBC;
 
-      ierr = DMCreate(comm, &dm);CHKERRQ(ierr);
-      ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject)dm, exampleDMPlexName);CHKERRQ(ierr);
+      CHKERRQ(DMCreate(comm, &dm));
+      CHKERRQ(DMSetType(dm, DMPLEX));
+      CHKERRQ(PetscObjectSetName((PetscObject)dm, exampleDMPlexName));
       /* sfXB: X -> B                         */
       /* X: set of globalPointNumbers, [0, N) */
       /* B: loaded naive in-memory plex       */
-      ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-      ierr = DMPlexTopologyLoad(dm, viewer, &sfXB);CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject)dm, exampleDMPlexName);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerPushFormat(viewer, format));
+      CHKERRQ(DMPlexTopologyLoad(dm, viewer, &sfXB));
+      CHKERRQ(PetscViewerPopFormat(viewer));
+      CHKERRQ(PetscObjectSetName((PetscObject)dm, exampleDMPlexName));
       {
         DM               distributedDM;
         PetscInt         overlap = 1;
         PetscPartitioner part;
 
-        ierr = DMPlexGetPartitioner(dm, &part);CHKERRQ(ierr);
-        ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
+        CHKERRQ(DMPlexGetPartitioner(dm, &part));
+        CHKERRQ(PetscPartitionerSetFromOptions(part));
         /* sfBC: B -> C                    */
         /* B: loaded naive in-memory plex  */
         /* C: redistributed good in-memory */
-        ierr = DMPlexDistribute(dm, overlap, &sfBC, &distributedDM);CHKERRQ(ierr);
+        CHKERRQ(DMPlexDistribute(dm, overlap, &sfBC, &distributedDM));
         if (distributedDM) {
-          ierr = DMDestroy(&dm);CHKERRQ(ierr);
+          CHKERRQ(DMDestroy(&dm));
           dm = distributedDM;
         }
-        ierr = PetscObjectSetName((PetscObject)dm, exampleDMPlexName);CHKERRQ(ierr);
+        CHKERRQ(PetscObjectSetName((PetscObject)dm, exampleDMPlexName));
       }
       /* sfXC: X -> C */
-      ierr = PetscSFCompose(sfXB, sfBC, &sfXC);CHKERRQ(ierr);
-      ierr = PetscSFDestroy(&sfXB);CHKERRQ(ierr);
-      ierr = PetscSFDestroy(&sfBC);CHKERRQ(ierr);
+      CHKERRQ(PetscSFCompose(sfXB, sfBC, &sfXC));
+      CHKERRQ(PetscSFDestroy(&sfXB));
+      CHKERRQ(PetscSFDestroy(&sfBC));
     }
     /* Load labels */
-    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-    ierr = DMPlexLabelsLoad(dm, viewer, sfXC);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerPushFormat(viewer, format));
+    CHKERRQ(DMPlexLabelsLoad(dm, viewer, sfXC));
+    CHKERRQ(PetscViewerPopFormat(viewer));
     /* Load coordinates */
-    ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
-    ierr = DMPlexCoordinatesLoad(dm, viewer, sfXC);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)dm, "Load: DM (with coordinates)");CHKERRQ(ierr);
-    ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)dm, exampleDMPlexName);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerPushFormat(viewer, format));
+    CHKERRQ(DMPlexCoordinatesLoad(dm, viewer, sfXC));
+    CHKERRQ(PetscViewerPopFormat(viewer));
+    CHKERRQ(PetscObjectSetName((PetscObject)dm, "Load: DM (with coordinates)"));
+    CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
+    CHKERRQ(PetscObjectSetName((PetscObject)dm, exampleDMPlexName));
     /* Load exampleVec */
     {
       DM            sdm;
@@ -391,87 +391,87 @@ int main(int argc, char **argv)
       if (user.shell) {
         PetscSF  sf;
 
-        ierr = DMShellCreate(comm, &sdm);CHKERRQ(ierr);
-        ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
-        ierr = DMSetPointSF(sdm, sf);CHKERRQ(ierr);
+        CHKERRQ(DMShellCreate(comm, &sdm));
+        CHKERRQ(DMGetPointSF(dm, &sf));
+        CHKERRQ(DMSetPointSF(sdm, sf));
       } else {
-        ierr = DMClone(dm, &sdm);CHKERRQ(ierr);
+        CHKERRQ(DMClone(dm, &sdm));
       }
-      ierr = PetscObjectSetName((PetscObject)sdm, exampleSectionDMName);CHKERRQ(ierr);
-      ierr = PetscSectionCreate(comm, &section);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectSetName((PetscObject)sdm, exampleSectionDMName));
+      CHKERRQ(PetscSectionCreate(comm, &section));
       {
         PetscInt      pStart = -1, pEnd = -1, p = -1;
         PetscInt     *pinds = NULL;
 
-        ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-        ierr = PetscMalloc1(pEnd - pStart, &pinds);CHKERRQ(ierr);
+        CHKERRQ(DMPlexGetChart(dm, &pStart, &pEnd));
+        CHKERRQ(PetscMalloc1(pEnd - pStart, &pinds));
         for (p = 0; p < pEnd - pStart; ++p) pinds[p] = p;
         if (rank == 2) {pinds[10] = 20; pinds[20] = 10;}
-        ierr = ISCreateGeneral(comm, pEnd - pStart, pinds, PETSC_OWN_POINTER, &perm);CHKERRQ(ierr);
+        CHKERRQ(ISCreateGeneral(comm, pEnd - pStart, pinds, PETSC_OWN_POINTER, &perm));
       }
-      ierr = PetscSectionSetPermutation(section, perm);CHKERRQ(ierr);
-      ierr = ISDestroy(&perm);CHKERRQ(ierr);
-      ierr = DMSetLocalSection(sdm, section);CHKERRQ(ierr);
-      ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
-      ierr = DMPlexSectionLoad(dm, viewer, sdm, sfXC, &gsf, &lsf);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionSetPermutation(section, perm));
+      CHKERRQ(ISDestroy(&perm));
+      CHKERRQ(DMSetLocalSection(sdm, section));
+      CHKERRQ(PetscSectionDestroy(&section));
+      CHKERRQ(DMPlexSectionLoad(dm, viewer, sdm, sfXC, &gsf, &lsf));
       /* Load as local vector */
-      ierr = DMGetLocalSection(sdm, &section);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject)section, "Load: local section");CHKERRQ(ierr);
-      ierr = PetscSectionView(section, PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
-      ierr = PetscSectionGetIncludesConstraints(section, &includesConstraints);CHKERRQ(ierr);
+      CHKERRQ(DMGetLocalSection(sdm, &section));
+      CHKERRQ(PetscObjectSetName((PetscObject)section, "Load: local section"));
+      CHKERRQ(PetscSectionView(section, PETSC_VIEWER_STDOUT_(comm)));
+      CHKERRQ(PetscSectionGetIncludesConstraints(section, &includesConstraints));
       if (user.shell) {
         PetscInt  m = -1;
 
-        ierr = VecCreate(comm, &vec);CHKERRQ(ierr);
-        if (includesConstraints) {ierr = PetscSectionGetStorageSize(section, &m);CHKERRQ(ierr);}
-        else {ierr = PetscSectionGetConstrainedStorageSize(section, &m);CHKERRQ(ierr);}
-        ierr = VecSetSizes(vec, m, PETSC_DECIDE);CHKERRQ(ierr);
-        ierr = VecSetUp(vec);CHKERRQ(ierr);
+        CHKERRQ(VecCreate(comm, &vec));
+        if (includesConstraints) CHKERRQ(PetscSectionGetStorageSize(section, &m));
+        else CHKERRQ(PetscSectionGetConstrainedStorageSize(section, &m));
+        CHKERRQ(VecSetSizes(vec, m, PETSC_DECIDE));
+        CHKERRQ(VecSetUp(vec));
       } else {
-        ierr = DMGetLocalVector(sdm, &vec);CHKERRQ(ierr);
+        CHKERRQ(DMGetLocalVector(sdm, &vec));
       }
-      ierr = PetscObjectSetName((PetscObject)vec, exampleVecName);CHKERRQ(ierr);
-      ierr = VecSet(vec, constraintValue);CHKERRQ(ierr);
-      ierr = DMPlexLocalVectorLoad(dm, viewer, sdm, lsf, vec);CHKERRQ(ierr);
-      ierr = PetscSFDestroy(&lsf);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectSetName((PetscObject)vec, exampleVecName));
+      CHKERRQ(VecSet(vec, constraintValue));
+      CHKERRQ(DMPlexLocalVectorLoad(dm, viewer, sdm, lsf, vec));
+      CHKERRQ(PetscSFDestroy(&lsf));
       if (user.shell) {
-        ierr = VecView(vec, PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
-        ierr = VecDestroy(&vec);CHKERRQ(ierr);
+        CHKERRQ(VecView(vec, PETSC_VIEWER_STDOUT_(comm)));
+        CHKERRQ(VecDestroy(&vec));
       } else {
-        ierr = DMRestoreLocalVector(sdm, &vec);CHKERRQ(ierr);
+        CHKERRQ(DMRestoreLocalVector(sdm, &vec));
       }
       /* Load as global vector */
-      ierr = DMGetGlobalSection(sdm, &gsection);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject)gsection, "Load: global section");CHKERRQ(ierr);
-      ierr = PetscSectionView(gsection, PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
-      ierr = PetscSectionGetIncludesConstraints(gsection, &includesConstraints);CHKERRQ(ierr);
+      CHKERRQ(DMGetGlobalSection(sdm, &gsection));
+      CHKERRQ(PetscObjectSetName((PetscObject)gsection, "Load: global section"));
+      CHKERRQ(PetscSectionView(gsection, PETSC_VIEWER_STDOUT_(comm)));
+      CHKERRQ(PetscSectionGetIncludesConstraints(gsection, &includesConstraints));
       if (user.shell) {
         PetscInt  m = -1;
 
-        ierr = VecCreate(comm, &vec);CHKERRQ(ierr);
-        if (includesConstraints) {ierr = PetscSectionGetStorageSize(gsection, &m);CHKERRQ(ierr);}
-        else {ierr = PetscSectionGetConstrainedStorageSize(gsection, &m);CHKERRQ(ierr);}
-        ierr = VecSetSizes(vec, m, PETSC_DECIDE);CHKERRQ(ierr);
-        ierr = VecSetUp(vec);CHKERRQ(ierr);
+        CHKERRQ(VecCreate(comm, &vec));
+        if (includesConstraints) CHKERRQ(PetscSectionGetStorageSize(gsection, &m));
+        else CHKERRQ(PetscSectionGetConstrainedStorageSize(gsection, &m));
+        CHKERRQ(VecSetSizes(vec, m, PETSC_DECIDE));
+        CHKERRQ(VecSetUp(vec));
       } else {
-        ierr = DMGetGlobalVector(sdm, &vec);CHKERRQ(ierr);
+        CHKERRQ(DMGetGlobalVector(sdm, &vec));
       }
-      ierr = PetscObjectSetName((PetscObject)vec, exampleVecName);CHKERRQ(ierr);
-      ierr = DMPlexGlobalVectorLoad(dm, viewer, sdm, gsf, vec);CHKERRQ(ierr);
-      ierr = PetscSFDestroy(&gsf);CHKERRQ(ierr);
-      ierr = VecView(vec, PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+      CHKERRQ(PetscObjectSetName((PetscObject)vec, exampleVecName));
+      CHKERRQ(DMPlexGlobalVectorLoad(dm, viewer, sdm, gsf, vec));
+      CHKERRQ(PetscSFDestroy(&gsf));
+      CHKERRQ(VecView(vec, PETSC_VIEWER_STDOUT_(comm)));
       if (user.shell) {
-        ierr = VecDestroy(&vec);CHKERRQ(ierr);
+        CHKERRQ(VecDestroy(&vec));
       } else {
-        ierr = DMRestoreGlobalVector(sdm, &vec);CHKERRQ(ierr);
+        CHKERRQ(DMRestoreGlobalVector(sdm, &vec));
       }
-      ierr = DMDestroy(&sdm);CHKERRQ(ierr);
+      CHKERRQ(DMDestroy(&sdm));
     }
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = PetscSFDestroy(&sfXC);CHKERRQ(ierr);
-    ierr = DMDestroy(&dm);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerDestroy(&viewer));
+    CHKERRQ(PetscSFDestroy(&sfXC));
+    CHKERRQ(DMDestroy(&dm));
   }
-  ierr = MPI_Comm_free(&comm);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_free(&comm));
 
   /* Finalize */
   ierr = PetscFinalize();

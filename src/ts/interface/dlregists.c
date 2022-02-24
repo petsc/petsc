@@ -11,11 +11,9 @@ static PetscBool TSPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  TSFinalizePackage(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&TSList);CHKERRQ(ierr);
-  ierr = PetscFunctionListDestroy(&TSTrajectoryList);CHKERRQ(ierr);
+  CHKERRQ(PetscFunctionListDestroy(&TSList));
+  CHKERRQ(PetscFunctionListDestroy(&TSTrajectoryList));
   TSPackageInitialized = PETSC_FALSE;
   TSRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -34,42 +32,41 @@ PetscErrorCode  TSInitializePackage(void)
 {
   char           logList[256];
   PetscBool      opt,pkg,cls;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (TSPackageInitialized) PetscFunctionReturn(0);
   TSPackageInitialized = PETSC_TRUE;
   /* Inialize subpackages */
-  ierr = TSAdaptInitializePackage();CHKERRQ(ierr);
-  ierr = TSGLLEInitializePackage();CHKERRQ(ierr);
-  ierr = TSRKInitializePackage();CHKERRQ(ierr);
-  ierr = TSGLEEInitializePackage();CHKERRQ(ierr);
-  ierr = TSARKIMEXInitializePackage();CHKERRQ(ierr);
-  ierr = TSRosWInitializePackage();CHKERRQ(ierr);
-  ierr = TSSSPInitializePackage();CHKERRQ(ierr);
-  ierr = TSGLLEAdaptInitializePackage();CHKERRQ(ierr);
-  ierr = TSBasicSymplecticInitializePackage();CHKERRQ(ierr);
+  CHKERRQ(TSAdaptInitializePackage());
+  CHKERRQ(TSGLLEInitializePackage());
+  CHKERRQ(TSRKInitializePackage());
+  CHKERRQ(TSGLEEInitializePackage());
+  CHKERRQ(TSARKIMEXInitializePackage());
+  CHKERRQ(TSRosWInitializePackage());
+  CHKERRQ(TSSSPInitializePackage());
+  CHKERRQ(TSGLLEAdaptInitializePackage());
+  CHKERRQ(TSBasicSymplecticInitializePackage());
   /* Register Classes */
-  ierr = PetscClassIdRegister("TS",&TS_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("DMTS",&DMTS_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("TSTrajectory",&TSTRAJECTORY_CLASSID);CHKERRQ(ierr);
+  CHKERRQ(PetscClassIdRegister("TS",&TS_CLASSID));
+  CHKERRQ(PetscClassIdRegister("DMTS",&DMTS_CLASSID));
+  CHKERRQ(PetscClassIdRegister("TSTrajectory",&TSTRAJECTORY_CLASSID));
 
   /* Register Constructors */
-  ierr = TSRegisterAll();CHKERRQ(ierr);
-  ierr = TSTrajectoryRegisterAll();CHKERRQ(ierr);
+  CHKERRQ(TSRegisterAll());
+  CHKERRQ(TSTrajectoryRegisterAll());
   /* Register Events */
-  ierr = PetscLogEventRegister("TSStep",          TS_CLASSID,&TS_Step);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TSFunctionEval",  TS_CLASSID,&TS_FunctionEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TSJacobianEval",  TS_CLASSID,&TS_JacobianEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TSForwardStep",   TS_CLASSID,&TS_ForwardStep);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TSAdjointStep",   TS_CLASSID,&TS_AdjointStep);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TSTrajectorySet", TSTRAJECTORY_CLASSID,&TSTrajectory_Set);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TSTrajectoryGet", TSTRAJECTORY_CLASSID,&TSTrajectory_Get);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TSTrajGetVecs",   TSTRAJECTORY_CLASSID,&TSTrajectory_GetVecs);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TSTrajSetUp", TSTRAJECTORY_CLASSID,&TSTrajectory_SetUp);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TSTrajDiskWrite", TSTRAJECTORY_CLASSID,&TSTrajectory_DiskWrite);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TSTrajDiskRead",  TSTRAJECTORY_CLASSID,&TSTrajectory_DiskRead);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TSPseudoCmptTStp",TS_CLASSID,&TS_PseudoComputeTimeStep);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventRegister("TSStep",          TS_CLASSID,&TS_Step));
+  CHKERRQ(PetscLogEventRegister("TSFunctionEval",  TS_CLASSID,&TS_FunctionEval));
+  CHKERRQ(PetscLogEventRegister("TSJacobianEval",  TS_CLASSID,&TS_JacobianEval));
+  CHKERRQ(PetscLogEventRegister("TSForwardStep",   TS_CLASSID,&TS_ForwardStep));
+  CHKERRQ(PetscLogEventRegister("TSAdjointStep",   TS_CLASSID,&TS_AdjointStep));
+  CHKERRQ(PetscLogEventRegister("TSTrajectorySet", TSTRAJECTORY_CLASSID,&TSTrajectory_Set));
+  CHKERRQ(PetscLogEventRegister("TSTrajectoryGet", TSTRAJECTORY_CLASSID,&TSTrajectory_Get));
+  CHKERRQ(PetscLogEventRegister("TSTrajGetVecs",   TSTRAJECTORY_CLASSID,&TSTrajectory_GetVecs));
+  CHKERRQ(PetscLogEventRegister("TSTrajSetUp", TSTRAJECTORY_CLASSID,&TSTrajectory_SetUp));
+  CHKERRQ(PetscLogEventRegister("TSTrajDiskWrite", TSTRAJECTORY_CLASSID,&TSTrajectory_DiskWrite));
+  CHKERRQ(PetscLogEventRegister("TSTrajDiskRead",  TSTRAJECTORY_CLASSID,&TSTrajectory_DiskRead));
+  CHKERRQ(PetscLogEventRegister("TSPseudoCmptTStp",TS_CLASSID,&TS_PseudoComputeTimeStep));
   /* Process Info */
   {
     PetscClassId  classids[4];
@@ -78,25 +75,25 @@ PetscErrorCode  TSInitializePackage(void)
     classids[1] = DMTS_CLASSID;
     classids[2] = TSADAPT_CLASSID;
     classids[3] = TSTRAJECTORY_CLASSID;
-    ierr = PetscInfoProcessClass("ts", 1, classids);CHKERRQ(ierr);
-    ierr = PetscInfoProcessClass("dm", 1, &classids[1]);CHKERRQ(ierr);
-    ierr = PetscInfoProcessClass("tsadapt", 1, &classids[2]);CHKERRQ(ierr);
-    ierr = PetscInfoProcessClass("tstrajectory", 1, &classids[3]);CHKERRQ(ierr);
+    CHKERRQ(PetscInfoProcessClass("ts", 1, classids));
+    CHKERRQ(PetscInfoProcessClass("dm", 1, &classids[1]));
+    CHKERRQ(PetscInfoProcessClass("tsadapt", 1, &classids[2]));
+    CHKERRQ(PetscInfoProcessClass("tstrajectory", 1, &classids[3]));
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
   if (opt) {
-    ierr = PetscStrInList("ts",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventExcludeClass(TS_CLASSID);CHKERRQ(ierr);}
-    ierr = PetscStrInList("dm",logList,',',&cls);CHKERRQ(ierr);
-    if (pkg || cls) {ierr = PetscLogEventExcludeClass(DMTS_CLASSID);CHKERRQ(ierr);}
-    ierr = PetscStrInList("tsadapt",logList,',',&cls);CHKERRQ(ierr);
-    if (pkg || cls) {ierr = PetscLogEventExcludeClass(TSADAPT_CLASSID);CHKERRQ(ierr);}
-    ierr = PetscStrInList("tstrajectory",logList,',',&cls);CHKERRQ(ierr);
-    if (pkg || cls) {ierr = PetscLogEventExcludeClass(TSTRAJECTORY_CLASSID);CHKERRQ(ierr);}
+    CHKERRQ(PetscStrInList("ts",logList,',',&pkg));
+    if (pkg) CHKERRQ(PetscLogEventExcludeClass(TS_CLASSID));
+    CHKERRQ(PetscStrInList("dm",logList,',',&cls));
+    if (pkg || cls) CHKERRQ(PetscLogEventExcludeClass(DMTS_CLASSID));
+    CHKERRQ(PetscStrInList("tsadapt",logList,',',&cls));
+    if (pkg || cls) CHKERRQ(PetscLogEventExcludeClass(TSADAPT_CLASSID));
+    CHKERRQ(PetscStrInList("tstrajectory",logList,',',&cls));
+    if (pkg || cls) CHKERRQ(PetscLogEventExcludeClass(TSTRAJECTORY_CLASSID));
   }
   /* Register package finalizer */
-  ierr = PetscRegisterFinalize(TSFinalizePackage);CHKERRQ(ierr);
+  CHKERRQ(PetscRegisterFinalize(TSFinalizePackage));
   PetscFunctionReturn(0);
 }
 
@@ -110,10 +107,8 @@ PetscErrorCode  TSInitializePackage(void)
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void); /*prototype*/
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = TSInitializePackage();CHKERRQ(ierr);
+  CHKERRQ(TSInitializePackage());
   PetscFunctionReturn(0);
 }
 #endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

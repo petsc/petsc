@@ -52,71 +52,71 @@ int main(int argc,char **argv)
 
   /* Initialize TAO and PETSc */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Incorrect number of processors");
 
   /* Initialize problem parameters */
   user.n = 2; user.alpha = 99.0; user.chained = PETSC_FALSE;
   /* Check for command line arguments to override defaults */
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&user.n,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-alpha",&user.alpha,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-chained",&user.chained,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-test_lmvm",&test_lmvm,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&user.n,&flg));
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-alpha",&user.alpha,&flg));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-chained",&user.chained,&flg));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test_lmvm",&test_lmvm,&flg));
 
   /* Allocate vectors for the solution and gradient */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,user.n,&x);CHKERRQ(ierr);
-  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,2,user.n,user.n,1,NULL,&H);CHKERRQ(ierr);
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,user.n,&x));
+  CHKERRQ(MatCreateSeqBAIJ(PETSC_COMM_SELF,2,user.n,user.n,1,NULL,&H));
 
   /* The TAO code begins here */
 
   /* Create TAO solver with desired solution method */
-  ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,TAOBQNLS);CHKERRQ(ierr);
+  CHKERRQ(TaoCreate(PETSC_COMM_SELF,&tao));
+  CHKERRQ(TaoSetType(tao,TAOBQNLS));
 
   /* Set solution vec and an initial guess */
-  ierr = VecSet(x, zero);CHKERRQ(ierr);
-  ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
+  CHKERRQ(VecSet(x, zero));
+  CHKERRQ(TaoSetSolution(tao,x));
 
   /* Set routines for function, gradient, hessian evaluation */
-  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,&user);CHKERRQ(ierr);
-  ierr = TaoSetHessian(tao,H,H,FormHessian,&user);CHKERRQ(ierr);
+  CHKERRQ(TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,&user));
+  CHKERRQ(TaoSetHessian(tao,H,H,FormHessian,&user));
 
   /* Check for TAO command line options */
-  ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
+  CHKERRQ(TaoSetFromOptions(tao));
 
   /* Solve the problem */
-  ierr = TaoSetTolerances(tao, 1.e-5, 0.0, 0.0);CHKERRQ(ierr);
-  ierr = TaoSetMaximumIterations(tao, 5);CHKERRQ(ierr);
-  ierr = TaoSetRecycleHistory(tao, PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(TaoSetTolerances(tao, 1.e-5, 0.0, 0.0));
+  CHKERRQ(TaoSetMaximumIterations(tao, 5));
+  CHKERRQ(TaoSetRecycleHistory(tao, PETSC_TRUE));
   reason = TAO_CONTINUE_ITERATING;
   flg = PETSC_FALSE;
-  ierr = TaoGetRecycleHistory(tao, &flg);CHKERRQ(ierr);
-  if (flg) {ierr = PetscPrintf(PETSC_COMM_SELF, "Recycle: enabled\n");CHKERRQ(ierr);}
+  CHKERRQ(TaoGetRecycleHistory(tao, &flg));
+  if (flg) CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "Recycle: enabled\n"));
   while (reason != TAO_CONVERGED_GATOL) {
-    ierr = TaoSolve(tao);CHKERRQ(ierr);
-    ierr = TaoGetConvergedReason(tao, &reason);CHKERRQ(ierr);
-    ierr = TaoGetIterationNumber(tao, &its);CHKERRQ(ierr);
+    CHKERRQ(TaoSolve(tao));
+    CHKERRQ(TaoGetConvergedReason(tao, &reason));
+    CHKERRQ(TaoGetIterationNumber(tao, &its));
     recycled_its += its;
-    ierr = PetscPrintf(PETSC_COMM_SELF, "-----------------------\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "-----------------------\n"));
   }
 
   /* Disable recycling and solve again! */
-  ierr = TaoSetMaximumIterations(tao, 100);CHKERRQ(ierr);
-  ierr = TaoSetRecycleHistory(tao, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = VecSet(x, zero);CHKERRQ(ierr);
-  ierr = TaoGetRecycleHistory(tao, &flg);CHKERRQ(ierr);
-  if (!flg) {ierr = PetscPrintf(PETSC_COMM_SELF, "Recycle: disabled\n");CHKERRQ(ierr);}
-  ierr = TaoSolve(tao);CHKERRQ(ierr);
-  ierr = TaoGetConvergedReason(tao, &reason);CHKERRQ(ierr);
+  CHKERRQ(TaoSetMaximumIterations(tao, 100));
+  CHKERRQ(TaoSetRecycleHistory(tao, PETSC_FALSE));
+  CHKERRQ(VecSet(x, zero));
+  CHKERRQ(TaoGetRecycleHistory(tao, &flg));
+  if (!flg) CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "Recycle: disabled\n"));
+  CHKERRQ(TaoSolve(tao));
+  CHKERRQ(TaoGetConvergedReason(tao, &reason));
   PetscCheck(reason == TAO_CONVERGED_GATOL,PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "Solution failed to converge!");
-  ierr = TaoGetIterationNumber(tao, &oneshot_its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "-----------------------\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "recycled its: %D | oneshot its: %D\n", recycled_its, oneshot_its);CHKERRQ(ierr);
+  CHKERRQ(TaoGetIterationNumber(tao, &oneshot_its));
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "-----------------------\n"));
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "recycled its: %D | oneshot its: %D\n", recycled_its, oneshot_its));
   PetscCheck(recycled_its == oneshot_its,PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "Recycled solution does not match oneshot solution!");
 
-  ierr = TaoDestroy(&tao);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = MatDestroy(&H);CHKERRQ(ierr);
+  CHKERRQ(TaoDestroy(&tao));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(MatDestroy(&H));
 
   ierr = PetscFinalize();
   return ierr;
@@ -144,15 +144,14 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f, Vec G,void *ptr)
 {
   AppCtx            *user = (AppCtx *) ptr;
   PetscInt          i,nn=user->n/2;
-  PetscErrorCode    ierr;
   PetscReal         ff=0,t1,t2,alpha=user->alpha;
   PetscScalar       *g;
   const PetscScalar *x;
 
   PetscFunctionBeginUser;
   /* Get pointers to vector data */
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayWrite(G,&g);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(X,&x));
+  CHKERRQ(VecGetArrayWrite(G,&g));
 
   /* Compute G(X) */
   if (user->chained) {
@@ -173,11 +172,11 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f, Vec G,void *ptr)
   }
 
   /* Restore vectors */
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayWrite(G,&g);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(X,&x));
+  CHKERRQ(VecRestoreArrayWrite(G,&g));
   *f   = ff;
 
-  ierr = PetscLogFlops(15.0*nn);CHKERRQ(ierr);
+  CHKERRQ(PetscLogFlops(15.0*nn));
   PetscFunctionReturn(0);
 }
 
@@ -199,7 +198,6 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f, Vec G,void *ptr)
 PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
 {
   AppCtx            *user = (AppCtx*)ptr;
-  PetscErrorCode    ierr;
   PetscInt          i, ind[2];
   PetscReal         alpha=user->alpha;
   PetscReal         v[2][2];
@@ -208,11 +206,11 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
 
   PetscFunctionBeginUser;
   /* Zero existing matrix entries */
-  ierr = MatAssembled(H,&assembled);CHKERRQ(ierr);
-  if (assembled || user->chained) {ierr = MatZeroEntries(H);CHKERRQ(ierr);}
+  CHKERRQ(MatAssembled(H,&assembled));
+  if (assembled || user->chained) CHKERRQ(MatZeroEntries(H));
 
   /* Get a pointer to vector data */
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(X,&x));
 
   /* Compute H(X) entries */
   if (user->chained) {
@@ -223,7 +221,7 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
       v[1][0] = 2*alpha*(-2*x[i]);
       v[1][1] = 2*alpha*t1;
       ind[0] = i; ind[1] = i+1;
-      ierr = MatSetValues(H,2,ind,2,ind,v[0],ADD_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(H,2,ind,2,ind,v[0],ADD_VALUES));
     }
   } else {
     for (i=0; i<user->n/2; i++) {
@@ -231,15 +229,15 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat H, Mat Hpre, void *ptr)
       v[0][0] = -4*alpha*(x[2*i+1]-3*x[2*i]*x[2*i]) + 2;
       v[1][0] = v[0][1] = -4.0*alpha*x[2*i];
       ind[0]=2*i; ind[1]=2*i+1;
-      ierr = MatSetValues(H,2,ind,2,ind,v[0],INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(H,2,ind,2,ind,v[0],INSERT_VALUES));
     }
   }
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(X,&x));
 
   /* Assemble matrix */
-  ierr = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscLogFlops(9.0*user->n/2.0);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(PetscLogFlops(9.0*user->n/2.0));
   PetscFunctionReturn(0);
 }
 

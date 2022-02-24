@@ -8,10 +8,10 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
   /* To take care of paging effects */
-  ierr = PetscGetCPUTime(&y);CHKERRQ(ierr);
+  CHKERRQ(PetscGetCPUTime(&y));
 
   for (i=0; i<2; i++) {
-    ierr = PetscGetCPUTime(&x);CHKERRQ(ierr);
+    CHKERRQ(PetscGetCPUTime(&x));
 
     /*
        Do some work for at least 1 ms. Most CPU timers
@@ -19,7 +19,7 @@ int main(int argc,char **argv)
      */
 
     for (j=0; j<20000*(i+1); j++) A[j]=i+j;
-    ierr = PetscGetCPUTime(&y);CHKERRQ(ierr);
+    CHKERRQ(PetscGetCPUTime(&y));
     fprintf(stdout,"%-15s : %e sec\n","PetscGetCPUTime",(y-x)/10.0);
   }
 

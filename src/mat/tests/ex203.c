@@ -11,11 +11,10 @@ struct _n_User {
 static PetscErrorCode MatGetDiagonal_User(Mat A,Vec X)
 {
   User           user;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A,&user);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(user->B,X);CHKERRQ(ierr);
+  CHKERRQ(MatShellGetContext(A,&user));
+  CHKERRQ(MatGetDiagonal(user->B,X));
   PetscFunctionReturn(0);
 }
 
@@ -30,39 +29,39 @@ int main(int argc,char **args)
   PetscErrorCode    ierr;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,NULL,&A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = MatSetValues(A,2,inds,2,inds,avals,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_WORLD,2,&X);CHKERRQ(ierr);
-  ierr = VecSetValues(X,2,inds,xvals,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,NULL,&A));
+  CHKERRQ(MatSetUp(A));
+  CHKERRQ(MatSetValues(A,2,inds,2,inds,avals,INSERT_VALUES));
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(VecCreateSeq(PETSC_COMM_WORLD,2,&X));
+  CHKERRQ(VecSetValues(X,2,inds,xvals,INSERT_VALUES));
+  CHKERRQ(VecAssemblyBegin(X));
+  CHKERRQ(VecAssemblyEnd(X));
+  CHKERRQ(VecDuplicate(X,&Y));
 
-  ierr    = PetscNew(&user);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(&user));
   user->B = A;
 
-  ierr = MatCreateShell(PETSC_COMM_WORLD,2,2,2,2,user,&S);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(S,MATOP_GET_DIAGONAL,(void (*)(void))MatGetDiagonal_User);CHKERRQ(ierr);
-  ierr = MatSetUp(S);CHKERRQ(ierr);
+  CHKERRQ(MatCreateShell(PETSC_COMM_WORLD,2,2,2,2,user,&S));
+  CHKERRQ(MatShellSetOperation(S,MATOP_GET_DIAGONAL,(void (*)(void))MatGetDiagonal_User));
+  CHKERRQ(MatSetUp(S));
 
-  ierr = MatShift(S,42);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(S,Y);CHKERRQ(ierr);
-  ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDiagonalSet(S,X,ADD_VALUES);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(S,Y);CHKERRQ(ierr);
-  ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatScale(S,42);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(S,Y);CHKERRQ(ierr);
-  ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(MatShift(S,42));
+  CHKERRQ(MatGetDiagonal(S,Y));
+  CHKERRQ(VecView(Y,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(MatDiagonalSet(S,X,ADD_VALUES));
+  CHKERRQ(MatGetDiagonal(S,Y));
+  CHKERRQ(VecView(Y,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(MatScale(S,42));
+  CHKERRQ(MatGetDiagonal(S,Y));
+  CHKERRQ(VecView(Y,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&S);CHKERRQ(ierr);
-  ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&Y);CHKERRQ(ierr);
-  ierr = PetscFree(user);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&S));
+  CHKERRQ(VecDestroy(&X));
+  CHKERRQ(VecDestroy(&Y));
+  CHKERRQ(PetscFree(user));
   ierr = PetscFinalize();
   return ierr;
 }

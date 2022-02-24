@@ -14,38 +14,37 @@ int main(int argc,char **args)
   Vec            xtmp;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
-  ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,3,3);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-  ierr = MatSetUp(C);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_WORLD,3,&xtmp);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
+  CHKERRQ(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,3,3));
+  CHKERRQ(MatSetFromOptions(C));
+  CHKERRQ(MatSetUp(C));
+  CHKERRQ(VecCreateSeq(PETSC_COMM_WORLD,3,&xtmp));
   i    = 0; j = 0; v = 4;
-  ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES));
   i    = 0; j = 2; v = 1;
-  ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES));
   i    = 1; j = 0; v = 1;
-  ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES));
   i    = 1; j = 1; v = 4;
-  ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES));
   i    = 2; j = 1; v = 1;
-  ierr = MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(C,1,&i,1,&j,&v,INSERT_VALUES));
 
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PCCreate(PETSC_COMM_WORLD,&pc);CHKERRQ(ierr);
-  ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
-  ierr = PCSetOperators(pc,C,C);CHKERRQ(ierr);
-  ierr = PCSetUp(pc);CHKERRQ(ierr);
-  ierr = PCFactorGetMatrix(pc,&A);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(MatView(C,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PCCreate(PETSC_COMM_WORLD,&pc));
+  CHKERRQ(PCSetFromOptions(pc));
+  CHKERRQ(PCSetOperators(pc,C,C));
+  CHKERRQ(PCSetUp(pc));
+  CHKERRQ(PCFactorGetMatrix(pc,&A));
+  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = PCDestroy(&pc);CHKERRQ(ierr);
-  ierr = VecDestroy(&xtmp);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  CHKERRQ(PCDestroy(&pc));
+  CHKERRQ(VecDestroy(&xtmp));
+  CHKERRQ(MatDestroy(&C));
 
   ierr = PetscFinalize();
   return ierr;
 }
-

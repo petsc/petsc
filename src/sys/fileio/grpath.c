@@ -41,7 +41,6 @@
 @*/
 PetscErrorCode  PetscGetRealPath(const char path[],char rpath[])
 {
-  PetscErrorCode ierr;
   char           tmp3[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
 #if !defined(PETSC_HAVE_REALPATH) && defined(PETSC_HAVE_READLINK)
@@ -55,52 +54,52 @@ PetscErrorCode  PetscGetRealPath(const char path[],char rpath[])
   PetscCheckFalse(!realpath(path,rpath),PETSC_COMM_SELF,PETSC_ERR_LIB,"realpath()");
 #elif defined(PETSC_HAVE_READLINK)
   /* Algorithm: we move through the path, replacing links with the real paths.   */
-  ierr = PetscStrcpy(rpath,path);CHKERRQ(ierr);
-  ierr = PetscStrlen(rpath,&N);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcpy(rpath,path));
+  CHKERRQ(PetscStrlen(rpath,&N));
   while (N) {
-    ierr    = PetscStrncpy(tmp1,rpath,N);CHKERRQ(ierr);
+    CHKERRQ(PetscStrncpy(tmp1,rpath,N));
     tmp1[N] = 0;
     n       = readlink(tmp1,tmp3,PETSC_MAX_PATH_LEN);
     if (n > 0) {
       tmp3[n] = 0; /* readlink does not automatically add 0 to string end */
       if (tmp3[0] != '/') {
-        ierr    = PetscStrchr(tmp1,'/',&tmp2);CHKERRQ(ierr);
-        ierr    = PetscStrlen(tmp1,&len1);CHKERRQ(ierr);
-        ierr    = PetscStrlen(tmp2,&len2);CHKERRQ(ierr);
+        CHKERRQ(PetscStrchr(tmp1,'/',&tmp2));
+        CHKERRQ(PetscStrlen(tmp1,&len1));
+        CHKERRQ(PetscStrlen(tmp2,&len2));
         m       = len1 - len2;
-        ierr    = PetscStrncpy(tmp4,tmp1,m);CHKERRQ(ierr);
+        CHKERRQ(PetscStrncpy(tmp4,tmp1,m));
         tmp4[m] = 0;
-        ierr    = PetscStrlen(tmp4,&len);CHKERRQ(ierr);
-        ierr    = PetscStrlcat(tmp4,"/",PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-        ierr    = PetscStrlcat(tmp4,tmp3,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-        ierr    = PetscGetRealPath(tmp4,rpath);CHKERRQ(ierr);
-        ierr    = PetscStrlcat(rpath,path+N,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+        CHKERRQ(PetscStrlen(tmp4,&len));
+        CHKERRQ(PetscStrlcat(tmp4,"/",PETSC_MAX_PATH_LEN));
+        CHKERRQ(PetscStrlcat(tmp4,tmp3,PETSC_MAX_PATH_LEN));
+        CHKERRQ(PetscGetRealPath(tmp4,rpath));
+        CHKERRQ(PetscStrlcat(rpath,path+N,PETSC_MAX_PATH_LEN));
       } else {
-        ierr = PetscGetRealPath(tmp3,tmp1);CHKERRQ(ierr);
-        ierr = PetscStrncpy(rpath,tmp1,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-        ierr = PetscStrlcat(rpath,path+N,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+        CHKERRQ(PetscGetRealPath(tmp3,tmp1));
+        CHKERRQ(PetscStrncpy(rpath,tmp1,PETSC_MAX_PATH_LEN));
+        CHKERRQ(PetscStrlcat(rpath,path+N,PETSC_MAX_PATH_LEN));
       }
       PetscFunctionReturn(0);
     }
-    ierr = PetscStrchr(tmp1,'/',&tmp2);CHKERRQ(ierr);
+    CHKERRQ(PetscStrchr(tmp1,'/',&tmp2));
     if (tmp2) {
-      ierr = PetscStrlen(tmp1,&len1);CHKERRQ(ierr);
-      ierr = PetscStrlen(tmp2,&len2);CHKERRQ(ierr);
+      CHKERRQ(PetscStrlen(tmp1,&len1));
+      CHKERRQ(PetscStrlen(tmp2,&len2));
       N    = len1 - len2;
     } else {
-      ierr = PetscStrlen(tmp1,&N);CHKERRQ(ierr);
+      CHKERRQ(PetscStrlen(tmp1,&N));
     }
   }
-  ierr = PetscStrncpy(rpath,path,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  CHKERRQ(PetscStrncpy(rpath,path,PETSC_MAX_PATH_LEN));
 #else /* Just punt */
-  ierr = PetscStrcpy(rpath,path);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcpy(rpath,path));
 #endif
 
   /* remove garbage some automounters put at the beginning of the path */
-  ierr = PetscStrncmp("/tmp_mnt/",rpath,9,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscStrncmp("/tmp_mnt/",rpath,9,&flg));
   if (flg) {
-    ierr = PetscStrcpy(tmp3,rpath + 8);CHKERRQ(ierr);
-    ierr = PetscStrcpy(rpath,tmp3);CHKERRQ(ierr);
+    CHKERRQ(PetscStrcpy(tmp3,rpath + 8));
+    CHKERRQ(PetscStrcpy(rpath,tmp3));
   }
   PetscFunctionReturn(0);
 }

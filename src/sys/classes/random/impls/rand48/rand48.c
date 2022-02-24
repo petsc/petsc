@@ -56,10 +56,8 @@ M*/
 
 PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rand48(PetscRandom r)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscMemcpy(r->ops,&PetscRandomOps_Values,sizeof(PetscRandomOps_Values));CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)r,PETSCRAND48);CHKERRQ(ierr);
+  CHKERRQ(PetscMemcpy(r->ops,&PetscRandomOps_Values,sizeof(PetscRandomOps_Values)));
+  CHKERRQ(PetscObjectChangeTypeName((PetscObject)r,PETSCRAND48));
   PetscFunctionReturn(0);
 }

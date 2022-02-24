@@ -15,21 +15,21 @@ int main(int argc,char **argv)
   PetscScalar    *array;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-iter",&iter,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-iter",&iter,NULL));
 
   for (i=0; i<iter; i++) {
-    ierr = PetscTime(&v0);CHKERRQ(ierr);
-    ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-    ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+    CHKERRQ(PetscTime(&v0));
+    CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
+    CHKERRQ(VecSetSizes(x,PETSC_DECIDE,n));
+    CHKERRQ(VecSetFromOptions(x));
     /* make sure the vector's array exists */
-    ierr = VecGetArrayAndMemType(x,&array,&memtype);CHKERRQ(ierr);
-    ierr = VecRestoreArrayAndMemType(x,&array);CHKERRQ(ierr);
-    ierr = WaitForCUDA();CHKERRQ(ierr);
-    ierr = PetscTime(&v1);CHKERRQ(ierr);
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Iteration %" PetscInt_FMT ": Time= %g\n",i,(double)(v1-v0));CHKERRQ(ierr);
+    CHKERRQ(VecGetArrayAndMemType(x,&array,&memtype));
+    CHKERRQ(VecRestoreArrayAndMemType(x,&array));
+    CHKERRQ(WaitForCUDA());
+    CHKERRQ(PetscTime(&v1));
+    CHKERRQ(VecDestroy(&x));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Iteration %" PetscInt_FMT ": Time= %g\n",i,(double)(v1-v0)));
   }
   ierr = PetscFinalize();
   return ierr;

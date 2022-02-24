@@ -27,7 +27,6 @@ extern PetscErrorCode KSPDGMRESSetEigen_DGMRES(KSP,PetscInt);
 */
 static PetscErrorCode KSPSetUp_AGMRES(KSP ksp)
 {
-  PetscErrorCode  ierr;
   PetscInt        hes;
   PetscInt        nloc;
   KSP_AGMRES      *agmres = (KSP_AGMRES*)ksp->data;
@@ -44,31 +43,31 @@ static PetscErrorCode KSPSetUp_AGMRES(KSP ksp)
   /* Preallocate space to compute later the eigenvalues in GMRES */
   ksp->calc_sings = PETSC_TRUE;
   agmres->max_k   = N; /* Set the augmented size to be allocated in KSPSetup_GMRES */
-  ierr            = KSPSetUp_DGMRES(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPSetUp_DGMRES(ksp));
   agmres->max_k   = max_k;
   hes             = (N + 1) * (N + 1);
 
   /* Data for the Newton basis GMRES */
-  ierr = PetscCalloc4(max_k,&agmres->Rshift,max_k,&agmres->Ishift,hes,&agmres->Rloc,(N+1)*4,&agmres->wbufptr);CHKERRQ(ierr);
-  ierr = PetscMalloc3(N+1,&agmres->tau,lwork,&agmres->work,N+1,&agmres->nrs);CHKERRQ(ierr);
-  ierr = PetscCalloc4(N+1,&agmres->Scale,N+1,&agmres->sgn,N+1,&agmres->tloc,N+1,&agmres->temp);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc4(max_k,&agmres->Rshift,max_k,&agmres->Ishift,hes,&agmres->Rloc,(N+1)*4,&agmres->wbufptr));
+  CHKERRQ(PetscMalloc3(N+1,&agmres->tau,lwork,&agmres->work,N+1,&agmres->nrs));
+  CHKERRQ(PetscCalloc4(N+1,&agmres->Scale,N+1,&agmres->sgn,N+1,&agmres->tloc,N+1,&agmres->temp));
 
   /* Allocate space for the vectors in the orthogonalized basis*/
-  ierr = VecGetLocalSize(agmres->vecs[0], &nloc);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nloc*(N+1), &agmres->Qloc);CHKERRQ(ierr);
+  CHKERRQ(VecGetLocalSize(agmres->vecs[0], &nloc));
+  CHKERRQ(PetscMalloc1(nloc*(N+1), &agmres->Qloc));
 
   /* Init the ring of processors for the roddec orthogonalization */
-  ierr = KSPAGMRESRoddecInitNeighboor(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPAGMRESRoddecInitNeighboor(ksp));
 
   if (agmres->neig < 1) PetscFunctionReturn(0);
 
   /* Allocate space for the deflation */
-  ierr = PetscMalloc1(N, &agmres->select);CHKERRQ(ierr);
-  ierr = VecDuplicateVecs(VEC_V(0), N, &agmres->TmpU);CHKERRQ(ierr);
-  ierr = PetscMalloc2(N*N, &agmres->MatEigL, N*N, &agmres->MatEigR);CHKERRQ(ierr);
-  /*  ierr = PetscMalloc6(N*N, &agmres->Q, N*N, &agmres->Z, N, &agmres->wr, N, &agmres->wi, N, &agmres->beta, N, &agmres->modul);CHKERRQ(ierr); */
-  ierr = PetscMalloc3(N*N, &agmres->Q, N*N, &agmres->Z, N, &agmres->beta);CHKERRQ(ierr);
-  ierr = PetscMalloc2((N+1),&agmres->perm,(2*neig*N),&agmres->iwork);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(N, &agmres->select));
+  CHKERRQ(VecDuplicateVecs(VEC_V(0), N, &agmres->TmpU));
+  CHKERRQ(PetscMalloc2(N*N, &agmres->MatEigL, N*N, &agmres->MatEigR));
+  /*  CHKERRQ(PetscMalloc6(N*N, &agmres->Q, N*N, &agmres->Z, N, &agmres->wr, N, &agmres->wi, N, &agmres->beta, N, &agmres->modul)); */
+  CHKERRQ(PetscMalloc3(N*N, &agmres->Q, N*N, &agmres->Z, N, &agmres->beta));
+  CHKERRQ(PetscMalloc2((N+1),&agmres->perm,(2*neig*N),&agmres->iwork));
   PetscFunctionReturn(0);
 }
 
@@ -78,18 +77,17 @@ static PetscErrorCode KSPSetUp_AGMRES(KSP ksp)
 static PetscErrorCode KSPBuildSolution_AGMRES(KSP ksp,Vec ptr, Vec *result)
 {
   KSP_AGMRES     *agmres = (KSP_AGMRES*)ksp->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!ptr) {
     if (!agmres->sol_temp) {
-      ierr = VecDuplicate(ksp->vec_sol,&agmres->sol_temp);CHKERRQ(ierr);
-      ierr = VecCopy(ksp->vec_sol,agmres->sol_temp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent((PetscObject)ksp,(PetscObject)agmres->sol_temp);CHKERRQ(ierr);
+      CHKERRQ(VecDuplicate(ksp->vec_sol,&agmres->sol_temp));
+      CHKERRQ(VecCopy(ksp->vec_sol,agmres->sol_temp));
+      CHKERRQ(PetscLogObjectParent((PetscObject)ksp,(PetscObject)agmres->sol_temp));
     }
     ptr = agmres->sol_temp;
   } else {
-    ierr = VecCopy(ksp->vec_sol, ptr);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(ksp->vec_sol, ptr));
   }
   if (result) *result = ptr;
   PetscFunctionReturn(0);
@@ -102,7 +100,6 @@ static PetscErrorCode KSPBuildSolution_AGMRES(KSP ksp,Vec ptr, Vec *result)
 */
 PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
 {
-  PetscErrorCode  ierr;
   KSP_AGMRES      *agmres = (KSP_AGMRES*)(ksp->data);
   KSP             kspgmres;
   Mat             Amat, Pmat;
@@ -116,27 +113,27 @@ PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
   /* Perform one cycle of classical GMRES (with the Arnoldi process) to get the Hessenberg matrix
    We assume here that the ksp is AGMRES and that the operators for the
    linear system have been set in this ksp */
-  ierr = KSPCreate(PetscObjectComm((PetscObject)ksp), &kspgmres);CHKERRQ(ierr);
-  if (!ksp->pc) { ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr); }
-  ierr = PCGetOperators(ksp->pc, &Amat, &Pmat);CHKERRQ(ierr);
-  ierr = KSPSetOperators(kspgmres, Amat, Pmat);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(kspgmres);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,((PetscObject)ksp)->prefix, "-ksp_view", &flg);CHKERRQ(ierr);
-  if (flg) { ierr = PetscOptionsClearValue(NULL,"-ksp_view");CHKERRQ(ierr); }
-  ierr = KSPSetType(kspgmres, KSPGMRES);CHKERRQ(ierr);
-  ierr = KSPGMRESSetRestart(kspgmres, max_k);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-  ierr = KSPSetPC(kspgmres, pc);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PetscObjectComm((PetscObject)ksp), &kspgmres));
+  if (!ksp->pc) CHKERRQ(KSPGetPC(ksp,&ksp->pc));
+  CHKERRQ(PCGetOperators(ksp->pc, &Amat, &Pmat));
+  CHKERRQ(KSPSetOperators(kspgmres, Amat, Pmat));
+  CHKERRQ(KSPSetFromOptions(kspgmres));
+  CHKERRQ(PetscOptionsHasName(NULL,((PetscObject)ksp)->prefix, "-ksp_view", &flg));
+  if (flg) CHKERRQ(PetscOptionsClearValue(NULL,"-ksp_view"));
+  CHKERRQ(KSPSetType(kspgmres, KSPGMRES));
+  CHKERRQ(KSPGMRESSetRestart(kspgmres, max_k));
+  CHKERRQ(KSPGetPC(ksp, &pc));
+  CHKERRQ(KSPSetPC(kspgmres, pc));
   /* Copy common options */
   kspgmres->pc_side = ksp->pc_side;
   /* Setup KSP context */
-  ierr = KSPSetComputeEigenvalues(kspgmres, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = KSPSetUp(kspgmres);CHKERRQ(ierr);
+  CHKERRQ(KSPSetComputeEigenvalues(kspgmres, PETSC_TRUE));
+  CHKERRQ(KSPSetUp(kspgmres));
 
   kspgmres->max_it = max_k; /* Restrict the maximum number of iterations to one cycle of GMRES */
   kspgmres->rtol   = ksp->rtol;
 
-  ierr = KSPSolve(kspgmres, ksp->vec_rhs, ksp->vec_sol);CHKERRQ(ierr);
+  CHKERRQ(KSPSolve(kspgmres, ksp->vec_rhs, ksp->vec_sol));
 
   ksp->guess_zero = PETSC_FALSE;
   ksp->rnorm      = kspgmres->rnorm;
@@ -146,16 +143,16 @@ PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
     PetscFunctionReturn(0);
   } else ksp->reason = KSP_CONVERGED_ITERATING;
   /* Now, compute the Shifts values */
-  ierr = PetscMalloc2(max_k,&Rshift,max_k,&Ishift);CHKERRQ(ierr);
-  ierr = KSPComputeEigenvalues(kspgmres, max_k, Rshift, Ishift, &m);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc2(max_k,&Rshift,max_k,&Ishift));
+  CHKERRQ(KSPComputeEigenvalues(kspgmres, max_k, Rshift, Ishift, &m));
   PetscCheckFalse(m < max_k,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Unable to compute the Shifts for the Newton basis");
   else {
-    ierr = KSPAGMRESLejaOrdering(Rshift, Ishift, agmres->Rshift, agmres->Ishift, max_k);CHKERRQ(ierr);
+    CHKERRQ(KSPAGMRESLejaOrdering(Rshift, Ishift, agmres->Rshift, agmres->Ishift, max_k));
 
     agmres->HasShifts = PETSC_TRUE;
   }
   /* Restore KSP view options */
-  if (flg) { ierr = PetscOptionsSetValue(NULL,"-ksp_view", "");CHKERRQ(ierr); }
+  if (flg) CHKERRQ(PetscOptionsSetValue(NULL,"-ksp_view", ""));
   PetscFunctionReturn(0);
 }
 
@@ -172,7 +169,6 @@ PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
 */
 static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
 {
-  PetscErrorCode ierr;
   KSP_AGMRES     *agmres = (KSP_AGMRES*)(ksp->data);
   PetscInt       max_k   = agmres->max_k; /* size of the (non augmented) Krylov subspace */
   PetscInt       Neig    = 0;
@@ -182,39 +178,39 @@ static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
   /* Perform one cycle of dgmres to find the eigenvalues and compute the first approximations of the eigenvectors */
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(KSP_AGMRESComputeShifts, ksp, 0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(KSP_AGMRESComputeShifts, ksp, 0,0,0));
   /* Send the size of the augmented basis to DGMRES */
   ksp->max_it             = max_k; /* set this to have DGMRES performing only one cycle */
   ksp->ops->buildsolution = KSPBuildSolution_DGMRES;
-  ierr                    = KSPSolve_DGMRES(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPSolve_DGMRES(ksp));
   ksp->guess_zero         = PETSC_FALSE;
   if (ksp->reason == KSP_CONVERGED_RTOL) {
-    ierr = PetscLogEventEnd(KSP_AGMRESComputeShifts, ksp, 0,0,0);CHKERRQ(ierr);
+    CHKERRQ(PetscLogEventEnd(KSP_AGMRESComputeShifts, ksp, 0,0,0));
     PetscFunctionReturn(0);
   } else ksp->reason = KSP_CONVERGED_ITERATING;
 
   if ((agmres->r == 0) && (agmres->neig > 0)) {  /* Compute the eigenvalues for the shifts and the eigenvectors (to augment the Newton basis) */
     agmres->HasSchur = PETSC_FALSE;
-    ierr             = KSPDGMRESComputeDeflationData_DGMRES (ksp, &Neig);CHKERRQ (ierr);
+    CHKERRQ (KSPDGMRESComputeDeflationData_DGMRES (ksp, &Neig));
     Neig             = max_k;
   } else { /* From DGMRES, compute only the eigenvalues needed as Shifts for the Newton Basis */
-    ierr =  KSPDGMRESComputeSchurForm_DGMRES(ksp, &Neig);CHKERRQ(ierr);
+    CHKERRQ(KSPDGMRESComputeSchurForm_DGMRES(ksp, &Neig));
   }
 
   /* It may happen that the Ritz values from one cycle of GMRES are not accurate enough to provide a good stability. In this case, another cycle of GMRES is performed.  The two sets of values thus generated are sorted and the most accurate are kept as shifts */
-  ierr = PetscOptionsHasName(NULL,NULL, "-ksp_agmres_ImproveShifts", &flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHasName(NULL,NULL, "-ksp_agmres_ImproveShifts", &flg));
   if (!flg) {
-    ierr = KSPAGMRESLejaOrdering(agmres->wr, agmres->wi, agmres->Rshift, agmres->Ishift, max_k);CHKERRQ(ierr);
+    CHKERRQ(KSPAGMRESLejaOrdering(agmres->wr, agmres->wi, agmres->Rshift, agmres->Ishift, max_k));
   } else { /* Perform another cycle of DGMRES to find another set of eigenvalues */
     PetscInt    i;
     PetscScalar *wr, *wi,*Rshift, *Ishift;
-    ierr = PetscMalloc4(2*max_k, &wr, 2*max_k, &wi, 2*max_k, &Rshift, 2*max_k, &Ishift);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc4(2*max_k, &wr, 2*max_k, &wi, 2*max_k, &Rshift, 2*max_k, &Ishift));
     for (i = 0; i < max_k; i++) {
       wr[i] = agmres->wr[i];
       wi[i] = agmres->wi[i];
     }
 
-    ierr = KSPSolve_DGMRES(ksp);CHKERRQ(ierr);
+    CHKERRQ(KSPSolve_DGMRES(ksp));
 
     ksp->guess_zero = PETSC_FALSE;
     if (ksp->reason == KSP_CONVERGED_RTOL) PetscFunctionReturn(0);
@@ -222,28 +218,28 @@ static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
     if (agmres->neig > 0) { /* Compute the eigenvalues for the shifts) and the eigenvectors (to augment the Newton basis */
       agmres->HasSchur = PETSC_FALSE;
 
-      ierr = KSPDGMRESComputeDeflationData_DGMRES(ksp, &Neig);CHKERRQ(ierr);
+      CHKERRQ(KSPDGMRESComputeDeflationData_DGMRES(ksp, &Neig));
       Neig = max_k;
     } else { /* From DGMRES, compute only the eigenvalues needed as Shifts for the Newton Basis */
-      ierr =  KSPDGMRESComputeSchurForm_DGMRES(ksp, &Neig);CHKERRQ(ierr);
+      CHKERRQ(KSPDGMRESComputeSchurForm_DGMRES(ksp, &Neig));
     }
     for (i = 0; i < max_k; i++) {
       wr[max_k+i] = agmres->wr[i];
       wi[max_k+i] = agmres->wi[i];
     }
-    ierr = KSPAGMRESLejaOrdering(wr, wi, Rshift, Ishift, 2*max_k);CHKERRQ(ierr);
+    CHKERRQ(KSPAGMRESLejaOrdering(wr, wi, Rshift, Ishift, 2*max_k));
     for (i = 0; i< max_k; i++) {
       agmres->Rshift[i] = Rshift[i];
       agmres->Ishift[i] = Ishift[i];
     }
-    ierr = PetscFree(Rshift);CHKERRQ(ierr);
-    ierr = PetscFree(wr);CHKERRQ(ierr);
-    ierr = PetscFree(Ishift);CHKERRQ(ierr);
-    ierr = PetscFree(wi);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(Rshift));
+    CHKERRQ(PetscFree(wr));
+    CHKERRQ(PetscFree(Ishift));
+    CHKERRQ(PetscFree(wi));
   }
   agmres->HasShifts = PETSC_TRUE;
   ksp->max_it       = max_it;
-  ierr              = PetscLogEventEnd(KSP_AGMRESComputeShifts, ksp, 0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventEnd(KSP_AGMRESComputeShifts, ksp, 0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -259,7 +255,6 @@ static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
 */
 static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
 {
-  PetscErrorCode ierr;
   KSP_AGMRES     *agmres = (KSP_AGMRES*)ksp->data;
   PetscReal      *Rshift = agmres->Rshift;
   PetscReal      *Ishift = agmres->Ishift;
@@ -269,27 +264,27 @@ static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
   PetscInt       j       = 1;
 
   PetscFunctionBegin;
-  ierr     = PetscLogEventBegin(KSP_AGMRESBuildBasis, ksp, 0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(KSP_AGMRESBuildBasis, ksp, 0,0,0));
   Scale[0] = 1.0;
   while (j <= max_k) {
     if (Ishift[j-1] == 0) {
       if ((ksp->pc_side == PC_LEFT) && agmres->r && agmres->DeflPrecond) {
         /* Apply the precond-matrix operators */
-        ierr = KSP_PCApplyBAorAB(ksp, VEC_V(j-1), VEC_TMP, VEC_TMP_MATOP);CHKERRQ(ierr);
+        CHKERRQ(KSP_PCApplyBAorAB(ksp, VEC_V(j-1), VEC_TMP, VEC_TMP_MATOP));
         /* Then apply deflation as a preconditioner */
-        ierr = KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_TMP, VEC_V(j));CHKERRQ(ierr);
+        CHKERRQ(KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_TMP, VEC_V(j)));
       } else if ((ksp->pc_side == PC_RIGHT) && agmres->r && agmres->DeflPrecond) {
-        ierr = KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_V(j-1), VEC_TMP);CHKERRQ(ierr);
-        ierr = KSP_PCApplyBAorAB(ksp, VEC_TMP, VEC_V(j), VEC_TMP_MATOP);CHKERRQ(ierr);
+        CHKERRQ(KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_V(j-1), VEC_TMP));
+        CHKERRQ(KSP_PCApplyBAorAB(ksp, VEC_TMP, VEC_V(j), VEC_TMP_MATOP));
       } else {
-        ierr = KSP_PCApplyBAorAB(ksp, VEC_V(j-1), VEC_V(j), VEC_TMP_MATOP);CHKERRQ(ierr);
+        CHKERRQ(KSP_PCApplyBAorAB(ksp, VEC_V(j-1), VEC_V(j), VEC_TMP_MATOP));
       }
-      ierr = VecAXPY(VEC_V(j), -Rshift[j-1], VEC_V(j-1));CHKERRQ(ierr);
+      CHKERRQ(VecAXPY(VEC_V(j), -Rshift[j-1], VEC_V(j-1)));
 #if defined(KSP_AGMRES_NONORM)
       Scale[j] = 1.0;
 #else
-      ierr     = VecScale(VEC_V(j), Scale[j-1]);CHKERRQ(ierr); /* This step can be postponed until all vectors are built */
-      ierr     = VecNorm(VEC_V(j), NORM_2, &(Scale[j]));CHKERRQ(ierr);
+      CHKERRQ(VecScale(VEC_V(j), Scale[j-1])); /* This step can be postponed until all vectors are built */
+      CHKERRQ(VecNorm(VEC_V(j), NORM_2, &(Scale[j])));
       Scale[j] = 1.0/Scale[j];
 #endif
 
@@ -298,42 +293,42 @@ static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
     } else {
       if ((ksp->pc_side == PC_LEFT) && agmres->r && agmres->DeflPrecond) {
         /* Apply the precond-matrix operators */
-        ierr = KSP_PCApplyBAorAB(ksp, VEC_V(j-1), VEC_TMP, VEC_TMP_MATOP);CHKERRQ(ierr);
+        CHKERRQ(KSP_PCApplyBAorAB(ksp, VEC_V(j-1), VEC_TMP, VEC_TMP_MATOP));
         /* Then apply deflation as a preconditioner */
-        ierr = KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_TMP, VEC_V(j));CHKERRQ(ierr);
+        CHKERRQ(KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_TMP, VEC_V(j)));
       } else if ((ksp->pc_side == PC_RIGHT) && agmres->r && agmres->DeflPrecond) {
-        ierr = KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_V(j-1), VEC_TMP);CHKERRQ(ierr);
-        ierr = KSP_PCApplyBAorAB(ksp, VEC_TMP, VEC_V(j), VEC_TMP_MATOP);CHKERRQ(ierr);
+        CHKERRQ(KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_V(j-1), VEC_TMP));
+        CHKERRQ(KSP_PCApplyBAorAB(ksp, VEC_TMP, VEC_V(j), VEC_TMP_MATOP));
       } else {
-        ierr = KSP_PCApplyBAorAB(ksp, VEC_V(j-1), VEC_V(j), VEC_TMP_MATOP);CHKERRQ(ierr);
+        CHKERRQ(KSP_PCApplyBAorAB(ksp, VEC_V(j-1), VEC_V(j), VEC_TMP_MATOP));
       }
-      ierr = VecAXPY(VEC_V(j), -Rshift[j-1], VEC_V(j-1));CHKERRQ(ierr);
+      CHKERRQ(VecAXPY(VEC_V(j), -Rshift[j-1], VEC_V(j-1)));
 #if defined(KSP_AGMRES_NONORM)
       Scale[j] = 1.0;
 #else
-      ierr     = VecScale(VEC_V(j), Scale[j-1]);CHKERRQ(ierr);
-      ierr     = VecNorm(VEC_V(j), NORM_2, &(Scale[j]));CHKERRQ(ierr);
+      CHKERRQ(VecScale(VEC_V(j), Scale[j-1]));
+      CHKERRQ(VecNorm(VEC_V(j), NORM_2, &(Scale[j])));
       Scale[j] = 1.0/Scale[j];
 #endif
       agmres->matvecs += 1;
       j++;
       if ((ksp->pc_side == PC_LEFT) && agmres->r && agmres->DeflPrecond) {
         /* Apply the precond-matrix operators */
-        ierr = KSP_PCApplyBAorAB(ksp, VEC_V(j-1), VEC_TMP, VEC_TMP_MATOP);CHKERRQ(ierr);
+        CHKERRQ(KSP_PCApplyBAorAB(ksp, VEC_V(j-1), VEC_TMP, VEC_TMP_MATOP));
         /* Then apply deflation as a preconditioner */
-        ierr = KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_TMP, VEC_V(j));CHKERRQ(ierr);
+        CHKERRQ(KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_TMP, VEC_V(j)));
       } else if ((ksp->pc_side == PC_RIGHT) && agmres->r && agmres->DeflPrecond) {
-        ierr = KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_V(j-1), VEC_TMP);CHKERRQ(ierr);
-        ierr = KSP_PCApplyBAorAB(ksp, VEC_TMP, VEC_V(j), VEC_TMP_MATOP);CHKERRQ(ierr);
+        CHKERRQ(KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_V(j-1), VEC_TMP));
+        CHKERRQ(KSP_PCApplyBAorAB(ksp, VEC_TMP, VEC_V(j), VEC_TMP_MATOP));
       } else {
-        ierr = KSP_PCApplyBAorAB(ksp, VEC_V(j-1), VEC_V(j), VEC_TMP_MATOP);CHKERRQ(ierr);
+        CHKERRQ(KSP_PCApplyBAorAB(ksp, VEC_V(j-1), VEC_V(j), VEC_TMP_MATOP));
       }
-      ierr = VecAXPY(VEC_V(j), -Rshift[j-2], VEC_V(j-1));CHKERRQ(ierr);
-      ierr = VecAXPY(VEC_V(j), Scale[j-2]*Ishift[j-2]*Ishift[j-2], VEC_V(j-2));CHKERRQ(ierr);
+      CHKERRQ(VecAXPY(VEC_V(j), -Rshift[j-2], VEC_V(j-1)));
+      CHKERRQ(VecAXPY(VEC_V(j), Scale[j-2]*Ishift[j-2]*Ishift[j-2], VEC_V(j-2)));
 #if defined(KSP_AGMRES_NONORM)
       Scale[j] = 1.0;
 #else
-      ierr     = VecNorm(VEC_V(j), NORM_2, &(Scale[j]));CHKERRQ(ierr);
+      CHKERRQ(VecNorm(VEC_V(j), NORM_2, &(Scale[j])));
       Scale[j] = 1.0/Scale[j];
 #endif
       agmres->matvecs += 1;
@@ -342,18 +337,18 @@ static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
   }
   /* Augment the subspace with the eigenvectors*/
   while (j <= KspSize) {
-    ierr = KSP_PCApplyBAorAB(ksp, agmres->U[j - max_k - 1], VEC_V(j), VEC_TMP_MATOP);CHKERRQ(ierr);
+    CHKERRQ(KSP_PCApplyBAorAB(ksp, agmres->U[j - max_k - 1], VEC_V(j), VEC_TMP_MATOP));
 #if defined(KSP_AGMRES_NONORM)
     Scale[j] = 1.0;
 #else
-    ierr     = VecScale(VEC_V(j), Scale[j-1]);CHKERRQ(ierr);
-    ierr     = VecNorm(VEC_V(j), NORM_2, &(Scale[j]));CHKERRQ(ierr);
+    CHKERRQ(VecScale(VEC_V(j), Scale[j-1]));
+    CHKERRQ(VecNorm(VEC_V(j), NORM_2, &(Scale[j])));
     Scale[j] = 1.0/Scale[j];
 #endif
     agmres->matvecs += 1;
     j++;
   }
-  ierr = PetscLogEventEnd(KSP_AGMRESBuildBasis, ksp, 0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventEnd(KSP_AGMRESBuildBasis, ksp, 0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -373,14 +368,13 @@ static PetscErrorCode KSPAGMRESBuildHessenberg(KSP ksp)
   PetscScalar    *Rshift = agmres->Rshift;
   PetscScalar    *Ishift = agmres->Ishift;
   PetscScalar    *Scale  = agmres->Scale;
-  PetscErrorCode ierr;
   PetscInt       i       = 0, j = 0;
   const PetscInt max_k   = agmres->max_k;
   PetscInt       KspSize = KSPSIZE;
   PetscInt       N       = MAXKSPSIZE+1;
 
   PetscFunctionBegin;
-  ierr = PetscArrayzero(agmres->hh_origin, (N+1)*N);CHKERRQ(ierr);
+  CHKERRQ(PetscArrayzero(agmres->hh_origin, (N+1)*N));
   while (j < max_k) {
     /* Real shifts */
     if (Ishift[j] == 0) {
@@ -415,7 +409,6 @@ static PetscErrorCode KSPAGMRESBuildHessenberg(KSP ksp)
 static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp,PetscInt it)
 {
   KSP_AGMRES     *agmres = (KSP_AGMRES*)ksp->data;
-  PetscErrorCode ierr;
   const PetscInt max_k = agmres->max_k;       /* Size of the non-augmented Krylov basis */
   PetscInt       i, j;
   PetscInt       r = agmres->r;           /* current number of augmented eigenvectors */
@@ -427,11 +420,11 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp,PetscInt it)
   PetscBLASInt   info, nrhs = 1;
 
   PetscFunctionBegin;
-  ierr = PetscBLASIntCast(KSPSIZE,&KspSize);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(4 * (KspSize+1),&lwork);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(KspSize+1,&lC);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(MAXKSPSIZE + 1,&N);CHKERRQ(ierr);
-  ierr = PetscBLASIntCast(N + 1,&ldH);CHKERRQ(ierr);
+  CHKERRQ(PetscBLASIntCast(KSPSIZE,&KspSize));
+  CHKERRQ(PetscBLASIntCast(4 * (KspSize+1),&lwork));
+  CHKERRQ(PetscBLASIntCast(KspSize+1,&lC));
+  CHKERRQ(PetscBLASIntCast(MAXKSPSIZE + 1,&N));
+  CHKERRQ(PetscBLASIntCast(N + 1,&ldH));
   /* Save a copy of the Hessenberg matrix */
   for (j = 0; j < N-1; j++) {
     for (i = 0; i < N; i++) {
@@ -442,7 +435,7 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp,PetscInt it)
   PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&lC, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->work, &lwork, &info));
   PetscCheckFalse(info,PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XGEQRF INFO=%d", info);
   /* Update the right hand side of the least square problem */
-  ierr = PetscArrayzero(agmres->nrs, N);CHKERRQ(ierr);
+  CHKERRQ(PetscArrayzero(agmres->nrs, N));
 
   agmres->nrs[0] = ksp->rnorm;
   PetscStackCallBLAS("LAPACKormqr",LAPACKormqr_("L", "T", &lC, &nrhs, &KspSize, agmres->hh_origin, &ldH, agmres->tau, agmres->nrs, &N, agmres->work, &lwork, &info));
@@ -452,17 +445,17 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp,PetscInt it)
   PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U", "N", "N", &KspSize, &nrhs, agmres->hh_origin, &ldH, agmres->nrs, &N, &info));
   PetscCheckFalse(info,PetscObjectComm((PetscObject)ksp), PETSC_ERR_LIB,"Error in LAPACK routine XTRTRS INFO=%d",info);
   /* Accumulate the correction to the solution of the preconditioned problem in VEC_TMP */
-  ierr = VecZeroEntries(VEC_TMP);CHKERRQ(ierr);
-  ierr = VecMAXPY(VEC_TMP, max_k, agmres->nrs, &VEC_V(0));CHKERRQ(ierr);
-  if (!agmres->DeflPrecond) { ierr = VecMAXPY(VEC_TMP, r, &agmres->nrs[max_k], agmres->U);CHKERRQ(ierr); }
+  CHKERRQ(VecZeroEntries(VEC_TMP));
+  CHKERRQ(VecMAXPY(VEC_TMP, max_k, agmres->nrs, &VEC_V(0)));
+  if (!agmres->DeflPrecond) CHKERRQ(VecMAXPY(VEC_TMP, r, &agmres->nrs[max_k], agmres->U));
 
   if ((ksp->pc_side == PC_RIGHT) && agmres->r && agmres->DeflPrecond) {
-    ierr = KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_TMP, VEC_TMP_MATOP);CHKERRQ(ierr);
-    ierr = VecCopy(VEC_TMP_MATOP, VEC_TMP);CHKERRQ(ierr);
+    CHKERRQ(KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_TMP, VEC_TMP_MATOP));
+    CHKERRQ(VecCopy(VEC_TMP_MATOP, VEC_TMP));
   }
-  ierr = KSPUnwindPreconditioner(ksp, VEC_TMP, VEC_TMP_MATOP);CHKERRQ(ierr);
+  CHKERRQ(KSPUnwindPreconditioner(ksp, VEC_TMP, VEC_TMP_MATOP));
   /* add the solution to the previous one */
-  ierr = VecAXPY(ksp->vec_sol, 1.0, VEC_TMP);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(ksp->vec_sol, 1.0, VEC_TMP));
   PetscFunctionReturn(0);
 }
 
@@ -483,7 +476,6 @@ static PetscErrorCode KSPAGMRESCycle(PetscInt *itcount,KSP ksp)
 {
   KSP_AGMRES     *agmres = (KSP_AGMRES*)(ksp->data);
   PetscReal      res;
-  PetscErrorCode ierr;
   PetscInt       KspSize = KSPSIZE;
 
   PetscFunctionBegin;
@@ -492,27 +484,27 @@ static PetscErrorCode KSPAGMRESCycle(PetscInt *itcount,KSP ksp)
   if (!res) {
     if (itcount) *itcount = 0;
     ksp->reason = KSP_CONVERGED_ATOL;
-    ierr        = PetscInfo(ksp,"Converged due to zero residual norm on entry\n");CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(ksp,"Converged due to zero residual norm on entry\n"));
     PetscFunctionReturn(0);
   }
-  ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  CHKERRQ((*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP));
   /* Build the Krylov basis with Newton polynomials */
-  ierr = KSPAGMRESBuildBasis(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPAGMRESBuildBasis(ksp));
   /* QR Factorize the basis with RODDEC */
-  ierr = KSPAGMRESRoddec(ksp, KspSize+1);CHKERRQ(ierr);
+  CHKERRQ(KSPAGMRESRoddec(ksp, KspSize+1));
 
   /* Recover a (partial) Hessenberg matrix for the Arnoldi-like relation */
-  ierr = KSPAGMRESBuildHessenberg(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPAGMRESBuildHessenberg(ksp));
   /* Solve the least square problem and unwind the preconditioner */
-  ierr = KSPAGMRESBuildSoln(ksp, KspSize);CHKERRQ(ierr);
+  CHKERRQ(KSPAGMRESBuildSoln(ksp, KspSize));
 
   res        = ksp->rnorm;
   ksp->its  += KspSize;
   agmres->it = KspSize-1;
   /*  Test for the convergence */
-  ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  ierr = KSPLogResidualHistory(ksp,res);CHKERRQ(ierr);
-  ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
+  CHKERRQ((*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP));
+  CHKERRQ(KSPLogResidualHistory(ksp,res));
+  CHKERRQ(KSPMonitor(ksp,ksp->its,res));
 
   *itcount = KspSize;
   PetscFunctionReturn(0);
@@ -520,7 +512,6 @@ static PetscErrorCode KSPAGMRESCycle(PetscInt *itcount,KSP ksp)
 
 static PetscErrorCode KSPSolve_AGMRES(KSP ksp)
 {
-  PetscErrorCode ierr;
   PetscInt       its;
   KSP_AGMRES     *agmres    = (KSP_AGMRES*)ksp->data;
   PetscBool      guess_zero = ksp->guess_zero;
@@ -528,30 +519,30 @@ static PetscErrorCode KSPSolve_AGMRES(KSP ksp)
   PetscInt       test;
 
   PetscFunctionBegin;
-  ierr     = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->its = 0;
-  ierr     = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)ksp));
 
   if (!agmres->HasShifts) { /* Compute Shifts for the Newton basis */
-    ierr = KSPComputeShifts_DGMRES(ksp);CHKERRQ(ierr);
+    CHKERRQ(KSPComputeShifts_DGMRES(ksp));
   }
   /* NOTE: At this step, the initial guess is not equal to zero since one cycle of the classical GMRES is performed to compute the shifts */
-  ierr = (*ksp->converged)(ksp,0,ksp->rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  CHKERRQ((*ksp->converged)(ksp,0,ksp->rnorm,&ksp->reason,ksp->cnvP));
   while (!ksp->reason) {
-    ierr = KSPInitialResidual(ksp,ksp->vec_sol,VEC_TMP,VEC_TMP_MATOP,VEC_V(0),ksp->vec_rhs);CHKERRQ(ierr);
+    CHKERRQ(KSPInitialResidual(ksp,ksp->vec_sol,VEC_TMP,VEC_TMP_MATOP,VEC_V(0),ksp->vec_rhs));
     if ((ksp->pc_side == PC_LEFT) && agmres->r && agmres->DeflPrecond) {
-      ierr = KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_V(0), VEC_TMP);CHKERRQ(ierr);
-      ierr = VecCopy(VEC_TMP, VEC_V(0));CHKERRQ(ierr);
+      CHKERRQ(KSPDGMRESApplyDeflation_DGMRES(ksp, VEC_V(0), VEC_TMP));
+      CHKERRQ(VecCopy(VEC_TMP, VEC_V(0)));
 
       agmres->matvecs += 1;
     }
-    ierr    = VecNormalize(VEC_V(0),&(ksp->rnorm));CHKERRQ(ierr);
+    CHKERRQ(VecNormalize(VEC_V(0),&(ksp->rnorm)));
     KSPCheckNorm(ksp,ksp->rnorm);
     res_old = ksp->rnorm; /* Record the residual norm to test if deflation is needed */
 
     ksp->ops->buildsolution = KSPBuildSolution_AGMRES;
 
-    ierr     = KSPAGMRESCycle(&its,ksp);CHKERRQ(ierr);
+    CHKERRQ(KSPAGMRESCycle(&its,ksp));
     if (ksp->its >= ksp->max_it) {
       if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
       break;
@@ -564,7 +555,7 @@ static PetscErrorCode KSPSolve_AGMRES(KSP ksp)
         if (!agmres->force && ((test > agmres->bgv*(ksp->max_it-ksp->its)) && ((agmres->r + 1) < agmres->max_neig))) {
           agmres->neig += 1; /* Augment the number of eigenvalues to deflate if the convergence is too slow */
         }
-        ierr = KSPDGMRESComputeDeflationData_DGMRES(ksp,&agmres->neig);CHKERRQ(ierr);
+        CHKERRQ(KSPDGMRESComputeDeflationData_DGMRES(ksp,&agmres->neig));
       }
     }
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
@@ -575,30 +566,29 @@ static PetscErrorCode KSPSolve_AGMRES(KSP ksp)
 
 static PetscErrorCode KSPDestroy_AGMRES(KSP ksp)
 {
-  PetscErrorCode ierr;
   KSP_AGMRES     *agmres = (KSP_AGMRES*)ksp->data;
 
   PetscFunctionBegin;
-  ierr = PetscFree(agmres->hh_origin);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(agmres->hh_origin));
 
-  ierr = PetscFree(agmres->Qloc);CHKERRQ(ierr);
-  ierr = PetscFree4(agmres->Rshift,agmres->Ishift,agmres->Rloc,agmres->wbufptr);CHKERRQ(ierr);
-  ierr = PetscFree3(agmres->tau,agmres->work,agmres->nrs);CHKERRQ(ierr);
-  ierr = PetscFree4(agmres->Scale,agmres->sgn,agmres->tloc,agmres->temp);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(agmres->Qloc));
+  CHKERRQ(PetscFree4(agmres->Rshift,agmres->Ishift,agmres->Rloc,agmres->wbufptr));
+  CHKERRQ(PetscFree3(agmres->tau,agmres->work,agmres->nrs));
+  CHKERRQ(PetscFree4(agmres->Scale,agmres->sgn,agmres->tloc,agmres->temp));
 
-  ierr = PetscFree(agmres->select);CHKERRQ(ierr);
-  ierr = PetscFree(agmres->wr);CHKERRQ(ierr);
-  ierr = PetscFree(agmres->wi);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(agmres->select));
+  CHKERRQ(PetscFree(agmres->wr));
+  CHKERRQ(PetscFree(agmres->wi));
   if (agmres->neig) {
-    ierr = VecDestroyVecs(MAXKSPSIZE,&agmres->TmpU);CHKERRQ(ierr);
-    ierr = PetscFree(agmres->perm);CHKERRQ(ierr);
-    ierr = PetscFree(agmres->MatEigL);CHKERRQ(ierr);
-    ierr = PetscFree(agmres->MatEigR);CHKERRQ(ierr);
-    ierr = PetscFree(agmres->Q);CHKERRQ(ierr);
-    ierr = PetscFree(agmres->Z);CHKERRQ(ierr);
-    ierr = PetscFree(agmres->beta);CHKERRQ(ierr);
+    CHKERRQ(VecDestroyVecs(MAXKSPSIZE,&agmres->TmpU));
+    CHKERRQ(PetscFree(agmres->perm));
+    CHKERRQ(PetscFree(agmres->MatEigL));
+    CHKERRQ(PetscFree(agmres->MatEigR));
+    CHKERRQ(PetscFree(agmres->Q));
+    CHKERRQ(PetscFree(agmres->Z));
+    CHKERRQ(PetscFree(agmres->beta));
   }
-  ierr = KSPDestroy_DGMRES(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy_DGMRES(ksp));
   PetscFunctionReturn(0);
 }
 
@@ -607,7 +597,6 @@ static PetscErrorCode KSPView_AGMRES(KSP ksp,PetscViewer viewer)
   KSP_AGMRES     *agmres = (KSP_AGMRES*)ksp->data;
   const char     *cstr   = "RODDEC ORTHOGONOLIZATION";
   char           ritzvec[25];
-  PetscErrorCode ierr;
   PetscBool      iascii,isstring;
 #if defined(KSP_AGMRES_NONORM)
   const char *Nstr = "SCALING FACTORS : NO";
@@ -616,57 +605,56 @@ static PetscErrorCode KSPView_AGMRES(KSP ksp,PetscViewer viewer)
 #endif
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
 
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer, " restart=%d using %s\n", agmres->max_k, cstr);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, " %s\n", Nstr);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, " Number of matvecs : %D\n", agmres->matvecs);CHKERRQ(ierr);
-    if (agmres->force) {ierr = PetscViewerASCIIPrintf (viewer, " Adaptive strategy is used: FALSE\n");CHKERRQ(ierr);}
+    CHKERRQ(PetscViewerASCIIPrintf(viewer, " restart=%d using %s\n", agmres->max_k, cstr));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer, " %s\n", Nstr));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer, " Number of matvecs : %D\n", agmres->matvecs));
+    if (agmres->force) CHKERRQ(PetscViewerASCIIPrintf (viewer, " Adaptive strategy is used: FALSE\n"));
     else PetscViewerASCIIPrintf(viewer, " Adaptive strategy is used: TRUE\n");
     if (agmres->DeflPrecond) {
-      ierr = PetscViewerASCIIPrintf(viewer, " STRATEGY OF DEFLATION: PRECONDITIONER \n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "  Frequency of extracted eigenvalues = %D\n", agmres->neig);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "  Total number of extracted eigenvalues = %D\n", agmres->r);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "  Maximum number of eigenvalues set to be extracted = %D\n", agmres->max_neig);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer, " STRATEGY OF DEFLATION: PRECONDITIONER \n"));
+      CHKERRQ(PetscViewerASCIIPrintf(viewer, "  Frequency of extracted eigenvalues = %D\n", agmres->neig));
+      CHKERRQ(PetscViewerASCIIPrintf(viewer, "  Total number of extracted eigenvalues = %D\n", agmres->r));
+      CHKERRQ(PetscViewerASCIIPrintf(viewer, "  Maximum number of eigenvalues set to be extracted = %D\n", agmres->max_neig));
     } else {
       if (agmres->ritz) sprintf(ritzvec, "Ritz vectors");
       else sprintf(ritzvec, "Harmonic Ritz vectors");
-      ierr = PetscViewerASCIIPrintf(viewer, " STRATEGY OF DEFLATION: AUGMENT\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer," augmented vectors  %d at frequency %d with %s\n", agmres->r, agmres->neig, ritzvec);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer, " STRATEGY OF DEFLATION: AUGMENT\n"));
+      CHKERRQ(PetscViewerASCIIPrintf(viewer," augmented vectors  %d at frequency %d with %s\n", agmres->r, agmres->neig, ritzvec));
     }
-    ierr = PetscViewerASCIIPrintf(viewer, " Minimum relaxation parameter for the adaptive strategy(smv)  = %g\n", agmres->smv);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, " Maximum relaxation parameter for the adaptive strategy(bgv)  = %g\n", agmres->bgv);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer, " Minimum relaxation parameter for the adaptive strategy(smv)  = %g\n", agmres->smv));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer, " Maximum relaxation parameter for the adaptive strategy(bgv)  = %g\n", agmres->bgv));
   } else if (isstring) {
-    ierr = PetscViewerStringSPrintf(viewer,"%s restart %D",cstr,agmres->max_k);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerStringSPrintf(viewer,"%s restart %D",cstr,agmres->max_k));
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode KSPSetFromOptions_AGMRES(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
-  PetscErrorCode ierr;
   PetscInt       neig;
   KSP_AGMRES     *agmres = (KSP_AGMRES*)ksp->data;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = KSPSetFromOptions_DGMRES(PetscOptionsObject,ksp);CHKERRQ(ierr);  /* Set common options from DGMRES and GMRES */
-  ierr = PetscOptionsHead(PetscOptionsObject,"KSP AGMRES Options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-ksp_agmres_eigen", "Number of eigenvalues to deflate", "KSPDGMRESSetEigen", agmres->neig, &neig, &flg);CHKERRQ(ierr);
+  CHKERRQ(KSPSetFromOptions_DGMRES(PetscOptionsObject,ksp));  /* Set common options from DGMRES and GMRES */
+  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"KSP AGMRES Options"));
+  CHKERRQ(PetscOptionsInt("-ksp_agmres_eigen", "Number of eigenvalues to deflate", "KSPDGMRESSetEigen", agmres->neig, &neig, &flg));
   if (flg) {
-    ierr      = KSPDGMRESSetEigen_DGMRES(ksp, neig);CHKERRQ(ierr);
+    CHKERRQ(KSPDGMRESSetEigen_DGMRES(ksp, neig));
     agmres->r = 0;
   } else agmres->neig = 0;
-  ierr = PetscOptionsInt("-ksp_agmres_maxeigen", "Maximum number of eigenvalues to deflate", "KSPDGMRESSetMaxEigen", agmres->max_neig, &neig, &flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsInt("-ksp_agmres_maxeigen", "Maximum number of eigenvalues to deflate", "KSPDGMRESSetMaxEigen", agmres->max_neig, &neig, &flg));
   if (flg) agmres->max_neig = neig+EIG_OFFSET;
   else agmres->max_neig = agmres->neig+EIG_OFFSET;
-  ierr                = PetscOptionsBool("-ksp_agmres_DeflPrecond", "Determine if the deflation should be applied as a preconditioner -- similar to KSP DGMRES", "KSPGMRESDeflPrecond",agmres->DeflPrecond,&agmres->DeflPrecond,NULL);CHKERRQ(ierr);
-  ierr                = PetscOptionsBool("-ksp_agmres_ritz", "Compute the Ritz vectors instead of the Harmonic Ritz vectors ", "KSPGMRESHarmonic",agmres->ritz,&agmres->ritz ,&flg);CHKERRQ(ierr);
-  ierr                = PetscOptionsReal("-ksp_agmres_MinRatio", "Relaxation parameter in the adaptive strategy; smallest multiple of the remaining number of steps allowed", "KSPGMRESSetMinRatio", agmres->smv, &agmres->smv, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ksp_agmres_MaxRatio", "Relaxation parameter in the adaptive strategy; Largest multiple of the remaining number of steps allowed", "KSPGMRESSetMaxRatio",agmres->bgv,&agmres->bgv, &flg);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-ksp_agmres_DeflPrecond", "Determine if the deflation should be applied as a preconditioner -- similar to KSP DGMRES", "KSPGMRESDeflPrecond",agmres->DeflPrecond,&agmres->DeflPrecond,NULL));
+  CHKERRQ(PetscOptionsBool("-ksp_agmres_ritz", "Compute the Ritz vectors instead of the Harmonic Ritz vectors ", "KSPGMRESHarmonic",agmres->ritz,&agmres->ritz ,&flg));
+  CHKERRQ(PetscOptionsReal("-ksp_agmres_MinRatio", "Relaxation parameter in the adaptive strategy; smallest multiple of the remaining number of steps allowed", "KSPGMRESSetMinRatio", agmres->smv, &agmres->smv, NULL));
+  CHKERRQ(PetscOptionsReal("-ksp_agmres_MaxRatio", "Relaxation parameter in the adaptive strategy; Largest multiple of the remaining number of steps allowed", "KSPGMRESSetMaxRatio",agmres->bgv,&agmres->bgv, &flg));
+  CHKERRQ(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -715,14 +703,13 @@ Mathematics, 62(9), pp. 1171-1186, 2012
 PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
 {
   KSP_AGMRES     *agmres;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr      = PetscNewLog(ksp,&agmres);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(ksp,&agmres));
   ksp->data = (void*)agmres;
 
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,3));
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2));
   ksp->ops->buildsolution                = KSPBuildSolution_AGMRES;
   ksp->ops->setup                        = KSPSetUp_AGMRES;
   ksp->ops->solve                        = KSPSolve_AGMRES;
@@ -733,21 +720,21 @@ PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
   ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
 
-  ierr = PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetPreAllocateVectors_C",KSPGMRESSetPreAllocateVectors_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetOrthogonalization_C",KSPGMRESSetOrthogonalization_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetRestart_C",KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetHapTol_C",KSPGMRESSetHapTol_GMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetCGSRefinementType_C",KSPGMRESSetCGSRefinementType_GMRES);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetPreAllocateVectors_C",KSPGMRESSetPreAllocateVectors_GMRES));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetOrthogonalization_C",KSPGMRESSetOrthogonalization_GMRES));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetRestart_C",KSPGMRESSetRestart_GMRES));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetHapTol_C",KSPGMRESSetHapTol_GMRES));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject) ksp,"KSPGMRESSetCGSRefinementType_C",KSPGMRESSetCGSRefinementType_GMRES));
   /* -- New functions defined in DGMRES -- */
-  ierr = PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESSetEigen_C",KSPDGMRESSetEigen_DGMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESComputeSchurForm_C",KSPDGMRESComputeSchurForm_DGMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESComputeDeflationData_C",KSPDGMRESComputeDeflationData_DGMRES);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESApplyDeflation_C",KSPDGMRESApplyDeflation_DGMRES);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESSetEigen_C",KSPDGMRESSetEigen_DGMRES));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESComputeSchurForm_C",KSPDGMRESComputeSchurForm_DGMRES));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESComputeDeflationData_C",KSPDGMRESComputeDeflationData_DGMRES));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject) ksp, "KSPDGMRESApplyDeflation_C",KSPDGMRESApplyDeflation_DGMRES));
 
-  ierr = PetscLogEventRegister("AGMRESCompDefl",   KSP_CLASSID, &KSP_AGMRESComputeDeflationData);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("AGMRESBuildBasis", KSP_CLASSID, &KSP_AGMRESBuildBasis);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("AGMRESCompShifts", KSP_CLASSID, &KSP_AGMRESComputeShifts);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("AGMRESOrthog",     KSP_CLASSID, &KSP_AGMRESRoddec);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventRegister("AGMRESCompDefl",   KSP_CLASSID, &KSP_AGMRESComputeDeflationData));
+  CHKERRQ(PetscLogEventRegister("AGMRESBuildBasis", KSP_CLASSID, &KSP_AGMRESBuildBasis));
+  CHKERRQ(PetscLogEventRegister("AGMRESCompShifts", KSP_CLASSID, &KSP_AGMRESComputeShifts));
+  CHKERRQ(PetscLogEventRegister("AGMRESOrthog",     KSP_CLASSID, &KSP_AGMRESRoddec));
 
   agmres->haptol         = 1.0e-30;
   agmres->q_preallocate  = 0;
@@ -774,6 +761,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
   agmres->r           = 0;
   agmres->HasSchur    = PETSC_FALSE;
   agmres->DeflPrecond = PETSC_FALSE;
-  ierr = PetscObjectGetNewTag((PetscObject)ksp,&agmres->tag);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetNewTag((PetscObject)ksp,&agmres->tag));
   PetscFunctionReturn(0);
 }

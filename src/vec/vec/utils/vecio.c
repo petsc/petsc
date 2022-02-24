@@ -13,7 +13,6 @@
 
 PetscErrorCode VecView_Binary(Vec vec,PetscViewer viewer)
 {
-  PetscErrorCode    ierr;
   PetscBool         skipHeader;
   PetscLayout       map;
   PetscInt          tr[2],n,s,N;
@@ -21,20 +20,20 @@ PetscErrorCode VecView_Binary(Vec vec,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCheckSameComm(vec,1,viewer,2);
-  ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerSetUp(viewer));
+  CHKERRQ(PetscViewerBinaryGetSkipHeader(viewer,&skipHeader));
 
-  ierr = VecGetLayout(vec,&map);CHKERRQ(ierr);
-  ierr = PetscLayoutGetLocalSize(map,&n);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRange(map,&s,NULL);CHKERRQ(ierr);
-  ierr = PetscLayoutGetSize(map,&N);CHKERRQ(ierr);
+  CHKERRQ(VecGetLayout(vec,&map));
+  CHKERRQ(PetscLayoutGetLocalSize(map,&n));
+  CHKERRQ(PetscLayoutGetRange(map,&s,NULL));
+  CHKERRQ(PetscLayoutGetSize(map,&N));
 
   tr[0] = VEC_FILE_CLASSID; tr[1] = N;
-  if (!skipHeader) {ierr = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);}
+  if (!skipHeader) CHKERRQ(PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT));
 
-  ierr = VecGetArrayRead(vec,&xarray);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryWriteAll(viewer,xarray,n,s,N,PETSC_SCALAR);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(vec,&xarray);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(vec,&xarray));
+  CHKERRQ(PetscViewerBinaryWriteAll(viewer,xarray,n,s,N,PETSC_SCALAR));
+  CHKERRQ(VecRestoreArrayRead(vec,&xarray));
 
   { /* write to the viewer's .info file */
     FILE             *info;
@@ -42,43 +41,42 @@ PetscErrorCode VecView_Binary(Vec vec,PetscViewer viewer)
     PetscViewerFormat format;
     const char        *name,*pre;
 
-    ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)vec),&rank);CHKERRMPI(ierr);
+    CHKERRQ(PetscViewerBinaryGetInfoPointer(viewer,&info));
+    CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)vec),&rank));
 
-    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerGetFormat(viewer,&format));
     if (format == PETSC_VIEWER_BINARY_MATLAB) {
-      ierr = PetscObjectGetName((PetscObject)vec,&name);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectGetName((PetscObject)vec,&name));
       if (rank == 0 && info) {
-        ierr = PetscFPrintf(PETSC_COMM_SELF,info,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n");CHKERRQ(ierr);
-        ierr = PetscFPrintf(PETSC_COMM_SELF,info,"#$$ Set.%s = PetscBinaryRead(fd);\n",name);CHKERRQ(ierr);
-        ierr = PetscFPrintf(PETSC_COMM_SELF,info,"#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n");CHKERRQ(ierr);
+        CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,info,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n"));
+        CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,info,"#$$ Set.%s = PetscBinaryRead(fd);\n",name));
+        CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,info,"#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n"));
       }
     }
 
-    ierr = PetscObjectGetOptionsPrefix((PetscObject)vec,&pre);CHKERRQ(ierr);
-    if (rank == 0 && info) {ierr = PetscFPrintf(PETSC_COMM_SELF,info,"-%svecload_block_size %" PetscInt_FMT "\n",pre?pre:"",PetscAbs(vec->map->bs));CHKERRQ(ierr);}
+    CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject)vec,&pre));
+    if (rank == 0 && info) CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,info,"-%svecload_block_size %" PetscInt_FMT "\n",pre?pre:"",PetscAbs(vec->map->bs)));
   }
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
 {
-  PetscErrorCode ierr;
   PetscBool      skipHeader,flg;
   PetscInt       tr[2],rows,N,n,s,bs;
   PetscScalar    *array;
   PetscLayout    map;
 
   PetscFunctionBegin;
-  ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerSetUp(viewer));
+  CHKERRQ(PetscViewerBinaryGetSkipHeader(viewer,&skipHeader));
 
-  ierr = VecGetLayout(vec,&map);CHKERRQ(ierr);
-  ierr = PetscLayoutGetSize(map,&N);CHKERRQ(ierr);
+  CHKERRQ(VecGetLayout(vec,&map));
+  CHKERRQ(PetscLayoutGetSize(map,&N));
 
   /* read vector header */
   if (!skipHeader) {
-    ierr = PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT));
     PetscCheckFalse(tr[0] != VEC_FILE_CLASSID,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Not a vector next in file");
     PetscCheckFalse(tr[1] < 0,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Vector size (%" PetscInt_FMT ") in file is negative",tr[1]);
     PetscCheckFalse(N >= 0 && N != tr[1],PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Vector in file different size (%" PetscInt_FMT ") than input vector (%" PetscInt_FMT ")",tr[1],N);
@@ -89,23 +87,23 @@ PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
   }
 
   /* set vector size, blocksize, and type if not already set; block size first so that local sizes will be compatible. */
-  ierr = PetscLayoutGetBlockSize(map,&bs);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(((PetscObject)viewer)->options,((PetscObject)vec)->prefix,"-vecload_block_size",&bs,&flg);CHKERRQ(ierr);
-  if (flg) {ierr = VecSetBlockSize(vec,bs);CHKERRQ(ierr);}
-  ierr = PetscLayoutGetLocalSize(map,&n);CHKERRQ(ierr);
-  if (N < 0) {ierr = VecSetSizes(vec,n,rows);CHKERRQ(ierr);}
-  ierr = VecSetUp(vec);CHKERRQ(ierr);
+  CHKERRQ(PetscLayoutGetBlockSize(map,&bs));
+  CHKERRQ(PetscOptionsGetInt(((PetscObject)viewer)->options,((PetscObject)vec)->prefix,"-vecload_block_size",&bs,&flg));
+  if (flg) CHKERRQ(VecSetBlockSize(vec,bs));
+  CHKERRQ(PetscLayoutGetLocalSize(map,&n));
+  if (N < 0) CHKERRQ(VecSetSizes(vec,n,rows));
+  CHKERRQ(VecSetUp(vec));
 
   /* get vector sizes and check global size */
-  ierr = VecGetSize(vec,&N);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(vec,&s,NULL);CHKERRQ(ierr);
+  CHKERRQ(VecGetSize(vec,&N));
+  CHKERRQ(VecGetLocalSize(vec,&n));
+  CHKERRQ(VecGetOwnershipRange(vec,&s,NULL));
   PetscCheckFalse(N != rows,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Vector in file different size (%" PetscInt_FMT ") than input vector (%" PetscInt_FMT ")",rows,N);
 
   /* read vector values */
-  ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryReadAll(viewer,array,n,s,N,PETSC_SCALAR);CHKERRQ(ierr);
-  ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(vec,&array));
+  CHKERRQ(PetscViewerBinaryReadAll(viewer,array,n,s,N,PETSC_SCALAR));
+  CHKERRQ(VecRestoreArray(vec,&array));
   PetscFunctionReturn(0);
 }
 
@@ -115,7 +113,6 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
   hid_t          scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   PetscScalar    *x,*arr;
   const char     *vecname;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheckFalse(!((PetscObject)xin)->name,PetscObjectComm((PetscObject)xin), PETSC_ERR_SUP, "Vec name must be set with PetscObjectSetName() before VecLoad()");
@@ -128,16 +125,16 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 #else
   scalartype = H5T_NATIVE_DOUBLE;
 #endif
-  ierr = PetscObjectGetName((PetscObject)xin, &vecname);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Load(viewer,vecname,xin->map,scalartype,(void**)&x);CHKERRQ(ierr);
-  ierr = VecSetUp(xin);CHKERRQ(ierr); /* VecSetSizes might have not been called so ensure ops->create has been called */
+  CHKERRQ(PetscObjectGetName((PetscObject)xin, &vecname));
+  CHKERRQ(PetscViewerHDF5Load(viewer,vecname,xin->map,scalartype,(void**)&x));
+  CHKERRQ(VecSetUp(xin)); /* VecSetSizes might have not been called so ensure ops->create has been called */
   if (!xin->ops->replacearray) {
-    ierr = VecGetArray(xin,&arr);CHKERRQ(ierr);
-    ierr = PetscArraycpy(arr,x,xin->map->n);CHKERRQ(ierr);
-    ierr = PetscFree(x);CHKERRQ(ierr);
-    ierr = VecRestoreArray(xin,&arr);CHKERRQ(ierr);
+    CHKERRQ(VecGetArray(xin,&arr));
+    CHKERRQ(PetscArraycpy(arr,x,xin->map->n));
+    CHKERRQ(PetscFree(x));
+    CHKERRQ(VecRestoreArray(xin,&arr));
   } else {
-    ierr = VecReplaceArray(xin,x);CHKERRQ(ierr);
+    CHKERRQ(VecReplaceArray(xin,x));
   }
   PetscFunctionReturn(0);
 }
@@ -152,7 +149,6 @@ PetscErrorCode VecLoad_HDF5(Vec xin, PetscViewer viewer)
 PetscErrorCode VecLoad_ADIOS(Vec xin, PetscViewer viewer)
 {
   PetscViewer_ADIOS *adios = (PetscViewer_ADIOS*)viewer->data;
-  PetscErrorCode    ierr;
   PetscScalar       *x;
   PetscInt          Nfile,N,rstart,n;
   uint64_t          N_t,rstart_t;
@@ -161,29 +157,27 @@ PetscErrorCode VecLoad_ADIOS(Vec xin, PetscViewer viewer)
   ADIOS_SELECTION   *sel;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetName((PetscObject) xin, &vecname);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetName((PetscObject) xin, &vecname));
 
   v    = adios_inq_var(adios->adios_fp, vecname);
   PetscCheckFalse(v->ndim != 1,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file is not of dimension 1 (%" PetscInt_FMT ")", v->ndim);
   Nfile = (PetscInt) v->dims[0];
 
   /* Set Vec sizes,blocksize,and type if not already set */
-  if ((xin)->map->n < 0 && (xin)->map->N < 0) {
-    ierr = VecSetSizes(xin, PETSC_DECIDE, Nfile);CHKERRQ(ierr);
-  }
+  if ((xin)->map->n < 0 && (xin)->map->N < 0) CHKERRQ(VecSetSizes(xin, PETSC_DECIDE, Nfile));
   /* If sizes and type already set,check if the vector global size is correct */
-  ierr = VecGetSize(xin, &N);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
+  CHKERRQ(VecGetSize(xin, &N));
+  CHKERRQ(VecGetLocalSize(xin, &n));
   PetscCheckFalse(N != Nfile,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%" PetscInt_FMT ") then input vector (%" PetscInt_FMT ")", Nfile, N);
 
-  ierr = VecGetOwnershipRange(xin,&rstart,NULL);CHKERRQ(ierr);
+  CHKERRQ(VecGetOwnershipRange(xin,&rstart,NULL));
   rstart_t = rstart;
   N_t  = n;
   sel  = adios_selection_boundingbox (v->ndim, &rstart_t, &N_t);
-  ierr = VecGetArray(xin,&x);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(xin,&x));
   adios_schedule_read(adios->adios_fp, sel, vecname, 0, 1, x);
   adios_perform_reads (adios->adios_fp, 1);
-  ierr = VecRestoreArray(xin,&x);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(xin,&x));
   adios_selection_delete(sel);
 
   PetscFunctionReturn(0);
@@ -192,7 +186,6 @@ PetscErrorCode VecLoad_ADIOS(Vec xin, PetscViewer viewer)
 
 PetscErrorCode  VecLoad_Default(Vec newvec, PetscViewer viewer)
 {
-  PetscErrorCode ierr;
   PetscBool      isbinary;
 #if defined(PETSC_HAVE_HDF5)
   PetscBool      ishdf5;
@@ -202,34 +195,34 @@ PetscErrorCode  VecLoad_Default(Vec newvec, PetscViewer viewer)
 #endif
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
 #if defined(PETSC_HAVE_HDF5)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5));
 #endif
 #if defined(PETSC_HAVE_ADIOS)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS,&isadios);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERADIOS,&isadios));
 #endif
 
 #if defined(PETSC_HAVE_HDF5)
   if (ishdf5) {
     if (!((PetscObject)newvec)->name) {
-      ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
+      CHKERRQ(PetscLogEventEnd(VEC_Load,viewer,0,0,0));
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Since HDF5 format gives ASCII name for each object in file; must use VecLoad() after setting name of Vec with PetscObjectSetName()");
     }
-    ierr = VecLoad_HDF5(newvec, viewer);CHKERRQ(ierr);
+    CHKERRQ(VecLoad_HDF5(newvec, viewer));
   } else
 #endif
 #if defined(PETSC_HAVE_ADIOS)
   if (isadios) {
     if (!((PetscObject)newvec)->name) {
-      ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
+      CHKERRQ(PetscLogEventEnd(VEC_Load,viewer,0,0,0));
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Since ADIOS format gives ASCII name for each object in file; must use VecLoad() after setting name of Vec with PetscObjectSetName()");
     }
-    ierr = VecLoad_ADIOS(newvec, viewer);CHKERRQ(ierr);
+    CHKERRQ(VecLoad_ADIOS(newvec, viewer));
   } else
 #endif
   {
-    ierr = VecLoad_Binary(newvec, viewer);CHKERRQ(ierr);
+    CHKERRQ(VecLoad_Binary(newvec, viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -252,14 +245,13 @@ PetscErrorCode VecChop(Vec v, PetscReal tol)
 {
   PetscScalar    *a;
   PetscInt       n, i;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
-  ierr = VecGetArray(v, &a);CHKERRQ(ierr);
+  CHKERRQ(VecGetLocalSize(v, &n));
+  CHKERRQ(VecGetArray(v, &a));
   for (i = 0; i < n; ++i) {
     if (PetscAbsScalar(a[i]) < tol) a[i] = 0.0;
   }
-  ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(v, &a));
   PetscFunctionReturn(0);
 }

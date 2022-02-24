@@ -9,51 +9,47 @@
 
 PetscErrorCode VecHYPRE_IJVectorCreate(PetscLayout map,VecHYPRE_IJVector *ij)
 {
-  PetscErrorCode    ierr;
   VecHYPRE_IJVector nij;
 
   PetscFunctionBegin;
-  ierr = PetscNew(&nij);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
-  ierr = HYPRE_IJVectorCreate(map->comm,map->rstart,map->rend-1,&nij->ij);CHKERRQ(ierr);
-  ierr = HYPRE_IJVectorSetObjectType(nij->ij,HYPRE_PARCSR);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(&nij));
+  CHKERRQ(PetscLayoutSetUp(map));
+  CHKERRQ(HYPRE_IJVectorCreate(map->comm,map->rstart,map->rend-1,&nij->ij));
+  CHKERRQ(HYPRE_IJVectorSetObjectType(nij->ij,HYPRE_PARCSR));
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
-  ierr = HYPRE_IJVectorInitialize_v2(nij->ij,HYPRE_MEMORY_DEVICE);CHKERRQ(ierr);
+  CHKERRQ(HYPRE_IJVectorInitialize_v2(nij->ij,HYPRE_MEMORY_DEVICE));
 #else
-  ierr = HYPRE_IJVectorInitialize(nij->ij);CHKERRQ(ierr);
+  CHKERRQ(HYPRE_IJVectorInitialize(nij->ij));
 #endif
-  ierr = HYPRE_IJVectorAssemble(nij->ij);CHKERRQ(ierr);
+  CHKERRQ(HYPRE_IJVectorAssemble(nij->ij));
   *ij  = nij;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode VecHYPRE_IJVectorDestroy(VecHYPRE_IJVector *ij)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!*ij) PetscFunctionReturn(0);
   PetscCheckFalse((*ij)->pvec,PetscObjectComm((PetscObject)((*ij)->pvec)),PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPopVec()");
   PetscStackCallStandard(HYPRE_IJVectorDestroy,(*ij)->ij);
-  ierr = PetscFree(*ij);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(*ij));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode VecHYPRE_IJVectorCopy(Vec v,VecHYPRE_IJVector ij)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *array;
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
-  ierr = HYPRE_IJVectorInitialize_v2(ij->ij,HYPRE_MEMORY_DEVICE);CHKERRQ(ierr);
+  CHKERRQ(HYPRE_IJVectorInitialize_v2(ij->ij,HYPRE_MEMORY_DEVICE));
 #else
-  ierr = HYPRE_IJVectorInitialize(ij->ij);CHKERRQ(ierr);
+  CHKERRQ(HYPRE_IJVectorInitialize(ij->ij));
 #endif
-  ierr = VecGetArrayRead(v,&array);CHKERRQ(ierr);
-  ierr = HYPRE_IJVectorSetValues(ij->ij,v->map->n,NULL,(HYPRE_Complex*)array);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(v,&array);CHKERRQ(ierr);
-  ierr = HYPRE_IJVectorAssemble(ij->ij);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(v,&array));
+  CHKERRQ(HYPRE_IJVectorSetValues(ij->ij,v->map->n,NULL,(HYPRE_Complex*)array));
+  CHKERRQ(VecRestoreArrayRead(v,&array));
+  CHKERRQ(HYPRE_IJVectorAssemble(ij->ij));
   PetscFunctionReturn(0);
 }
 
@@ -78,7 +74,6 @@ PetscErrorCode VecHYPRE_IJVectorCopy(Vec v,VecHYPRE_IJVector ij)
 */
 static inline PetscErrorCode VecGetArrayForHYPRE(Vec v, int rw, HYPRE_MemoryLocation hmem, PetscScalar **ptr, PetscErrorCode(**res)(Vec,PetscScalar**))
 {
-  PetscErrorCode ierr;
   PetscMemType   mtype;
   MPI_Comm       comm;
 
@@ -88,34 +83,34 @@ static inline PetscErrorCode VecGetArrayForHYPRE(Vec v, int rw, HYPRE_MemoryLoca
 #endif
   *ptr = NULL;
   *res = NULL;
-  ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)v,&comm));
   switch (rw) {
   case 0: /* read */
     if (hmem == HYPRE_MEMORY_HOST) {
-      ierr = VecGetArrayRead(v,(const PetscScalar**)ptr);CHKERRQ(ierr);
+      CHKERRQ(VecGetArrayRead(v,(const PetscScalar**)ptr));
       *res = (PetscErrorCode(*)(Vec,PetscScalar**))VecRestoreArrayRead;
     } else {
-      ierr = VecGetArrayReadAndMemType(v,(const PetscScalar**)ptr,&mtype);CHKERRQ(ierr);
+      CHKERRQ(VecGetArrayReadAndMemType(v,(const PetscScalar**)ptr,&mtype));
       PetscCheck(PetscMemTypeDevice(mtype),comm,PETSC_ERR_ARG_WRONG,"HYPRE_MEMORY_DEVICE expects a device vector. You need to enable PETSc device support, for example, in some cases, -vec_type cuda");
       *res = (PetscErrorCode(*)(Vec,PetscScalar**))VecRestoreArrayReadAndMemType;
     }
     break;
   case 1: /* write */
     if (hmem == HYPRE_MEMORY_HOST) {
-      ierr = VecGetArrayWrite(v,ptr);CHKERRQ(ierr);
+      CHKERRQ(VecGetArrayWrite(v,ptr));
       *res = VecRestoreArrayWrite;
     } else {
-      ierr = VecGetArrayWriteAndMemType(v,(PetscScalar**)ptr,&mtype);CHKERRQ(ierr);
+      CHKERRQ(VecGetArrayWriteAndMemType(v,(PetscScalar**)ptr,&mtype));
       PetscCheck(PetscMemTypeDevice(mtype),comm,PETSC_ERR_ARG_WRONG,"HYPRE_MEMORY_DEVICE expects a device vector. You need to enable PETSc device support, for example, in some cases, -vec_type cuda");
       *res = VecRestoreArrayWriteAndMemType;
     }
     break;
   case 2: /* read/write */
     if (hmem == HYPRE_MEMORY_HOST) {
-      ierr = VecGetArray(v,ptr);CHKERRQ(ierr);
+      CHKERRQ(VecGetArray(v,ptr));
       *res = VecRestoreArray;
     } else {
-      ierr = VecGetArrayAndMemType(v,(PetscScalar**)ptr,&mtype);CHKERRQ(ierr);
+      CHKERRQ(VecGetArrayAndMemType(v,(PetscScalar**)ptr,&mtype));
       PetscCheck(PetscMemTypeDevice(mtype),comm,PETSC_ERR_ARG_WRONG,"HYPRE_MEMORY_DEVICE expects a device vector. You need to enable PETSc device support, for example, in some cases, -vec_type cuda");
       *res = VecRestoreArrayAndMemType;
     }
@@ -134,13 +129,12 @@ static inline PetscErrorCode VecGetArrayForHYPRE(Vec v, int rw, HYPRE_MemoryLoca
 PetscErrorCode VecHYPRE_IJVectorPushVecRead(VecHYPRE_IJVector ij, Vec v)
 {
   HYPRE_Complex  *pv;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,2);
   PetscCheckFalse(ij->pvec,PetscObjectComm((PetscObject)v),PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPopVec()");
   PetscCheckFalse(ij->hv,PetscObjectComm((PetscObject)v),PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPopVec()");
-  ierr = VecGetArrayForHYPRE(v,0,VecHYPRE_IJVectorMemoryLocation(ij->ij),(PetscScalar**)&pv,&ij->restore);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayForHYPRE(v,0,VecHYPRE_IJVectorMemoryLocation(ij->ij),(PetscScalar**)&pv,&ij->restore));
   VecHYPRE_ParVectorReplacePointer(ij->ij,pv,ij->hv);
   ij->pvec = v;
   PetscFunctionReturn(0);
@@ -152,13 +146,12 @@ PetscErrorCode VecHYPRE_IJVectorPushVecRead(VecHYPRE_IJVector ij, Vec v)
 PetscErrorCode VecHYPRE_IJVectorPushVecWrite(VecHYPRE_IJVector ij, Vec v)
 {
   HYPRE_Complex  *pv;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,2);
   PetscCheckFalse(ij->pvec,PetscObjectComm((PetscObject)v),PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPopVec()");
   PetscCheckFalse(ij->hv,PetscObjectComm((PetscObject)v),PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPopVec()");
-  ierr = VecGetArrayForHYPRE(v,1,VecHYPRE_IJVectorMemoryLocation(ij->ij),(PetscScalar**)&pv,&ij->restore);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayForHYPRE(v,1,VecHYPRE_IJVectorMemoryLocation(ij->ij),(PetscScalar**)&pv,&ij->restore));
   VecHYPRE_ParVectorReplacePointer(ij->ij,pv,ij->hv);
   ij->pvec = v;
   PetscFunctionReturn(0);
@@ -170,13 +163,12 @@ PetscErrorCode VecHYPRE_IJVectorPushVecWrite(VecHYPRE_IJVector ij, Vec v)
 PetscErrorCode VecHYPRE_IJVectorPushVec(VecHYPRE_IJVector ij, Vec v)
 {
   HYPRE_Complex  *pv;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,2);
   PetscCheckFalse(ij->pvec,PetscObjectComm((PetscObject)v),PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPopVec()");
   PetscCheckFalse(ij->hv,PetscObjectComm((PetscObject)v),PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPopVec()");
-  ierr = VecGetArrayForHYPRE(v,2,VecHYPRE_IJVectorMemoryLocation(ij->ij),(PetscScalar**)&pv,&ij->restore);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayForHYPRE(v,2,VecHYPRE_IJVectorMemoryLocation(ij->ij),(PetscScalar**)&pv,&ij->restore));
   VecHYPRE_ParVectorReplacePointer(ij->ij,pv,ij->hv);
   ij->pvec = v;
   PetscFunctionReturn(0);
@@ -186,13 +178,12 @@ PetscErrorCode VecHYPRE_IJVectorPushVec(VecHYPRE_IJVector ij, Vec v)
 PetscErrorCode VecHYPRE_IJVectorPopVec(VecHYPRE_IJVector ij)
 {
   HYPRE_Complex  *pv;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheckFalse(!ij->pvec,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPushVec()");
   PetscCheckFalse(!ij->restore,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Forgot to call VecHYPRE_IJVectorPushVec()");
   VecHYPRE_ParVectorReplacePointer(ij->ij,ij->hv,pv);
-  ierr = (*ij->restore)(ij->pvec,(PetscScalar**)&pv);CHKERRQ(ierr);
+  CHKERRQ((*ij->restore)(ij->pvec,(PetscScalar**)&pv));
   ij->hv = NULL;
   ij->pvec = NULL;
   ij->restore = NULL;

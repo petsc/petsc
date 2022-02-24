@@ -9,20 +9,19 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscLogEventRegister("Event2",0,&event2);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("Event1",0,&event1);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("Event3",0,&event3);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventRegister("Event2",0,&event2));
+  CHKERRQ(PetscLogEventRegister("Event1",0,&event1));
+  CHKERRQ(PetscLogEventRegister("Event3",0,&event3));
 
-  ierr = PetscLogEventBegin(event1,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscSleep(1.0);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(event2,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscSleep(1.0);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(event3,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscSleep(1.0);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(event3,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(event2,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(event1,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(event1,0,0,0,0));
+  CHKERRQ(PetscSleep(1.0));
+  CHKERRQ(PetscLogEventBegin(event2,0,0,0,0));
+  CHKERRQ(PetscSleep(1.0));
+  CHKERRQ(PetscLogEventBegin(event3,0,0,0,0));
+  CHKERRQ(PetscSleep(1.0));
+  CHKERRQ(PetscLogEventEnd(event3,0,0,0,0));
+  CHKERRQ(PetscLogEventEnd(event2,0,0,0,0));
+  CHKERRQ(PetscLogEventEnd(event1,0,0,0,0));
   ierr = PetscFinalize();
   return ierr;
 }
-

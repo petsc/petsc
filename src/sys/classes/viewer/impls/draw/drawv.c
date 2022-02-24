@@ -4,35 +4,33 @@
 
 static PetscErrorCode PetscViewerDestroy_Draw(PetscViewer v)
 {
-  PetscErrorCode   ierr;
   PetscInt         i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)v->data;
 
   PetscFunctionBegin;
   PetscCheckFalse(vdraw->singleton_made,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Destroying PetscViewer without first restoring singleton");
   for (i=0; i<vdraw->draw_max; i++) {
-    ierr = PetscDrawAxisDestroy(&vdraw->drawaxis[i]);CHKERRQ(ierr);
-    ierr = PetscDrawLGDestroy(&vdraw->drawlg[i]);CHKERRQ(ierr);
-    ierr = PetscDrawDestroy(&vdraw->draw[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawAxisDestroy(&vdraw->drawaxis[i]));
+    CHKERRQ(PetscDrawLGDestroy(&vdraw->drawlg[i]));
+    CHKERRQ(PetscDrawDestroy(&vdraw->draw[i]));
   }
-  ierr = PetscFree(vdraw->display);CHKERRQ(ierr);
-  ierr = PetscFree(vdraw->title);CHKERRQ(ierr);
-  ierr = PetscFree3(vdraw->draw,vdraw->drawlg,vdraw->drawaxis);CHKERRQ(ierr);
-  ierr = PetscFree(vdraw->bounds);CHKERRQ(ierr);
-  ierr = PetscFree(vdraw->drawtype);CHKERRQ(ierr);
-  ierr = PetscFree(v->data);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(vdraw->display));
+  CHKERRQ(PetscFree(vdraw->title));
+  CHKERRQ(PetscFree3(vdraw->draw,vdraw->drawlg,vdraw->drawaxis));
+  CHKERRQ(PetscFree(vdraw->bounds));
+  CHKERRQ(PetscFree(vdraw->drawtype));
+  CHKERRQ(PetscFree(v->data));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
 {
-  PetscErrorCode   ierr;
   PetscInt         i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)v->data;
 
   PetscFunctionBegin;
   for (i=0; i<vdraw->draw_max; i++) {
-    if (vdraw->draw[i]) {ierr = PetscDrawFlush(vdraw->draw[i]);CHKERRQ(ierr);}
+    if (vdraw->draw[i]) CHKERRQ(PetscDrawFlush(vdraw->draw[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -58,14 +56,13 @@ static PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
 PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt windownumber,PetscDraw *draw)
 {
   PetscViewer_Draw *vdraw;
-  PetscErrorCode   ierr;
   PetscBool        isdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveInt(viewer,windownumber,2);
   if (draw) PetscValidPointer(draw,3);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
   PetscCheckFalse(!isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   PetscCheckFalse(windownumber < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   vdraw = (PetscViewer_Draw*)viewer->data;
@@ -80,27 +77,27 @@ PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt windownumber,
 
     vdraw->draw_max = 2*windownumber;
 
-    ierr = PetscCalloc3(vdraw->draw_max,&vdraw->draw,vdraw->draw_max,&vdraw->drawlg,vdraw->draw_max,&vdraw->drawaxis);CHKERRQ(ierr);
-    ierr = PetscArraycpy(vdraw->draw,tdraw,draw_max);CHKERRQ(ierr);
-    ierr = PetscArraycpy(vdraw->drawlg,drawlg,draw_max);CHKERRQ(ierr);
-    ierr = PetscArraycpy(vdraw->drawaxis,drawaxis,draw_max);CHKERRQ(ierr);
-    ierr = PetscFree3(tdraw,drawlg,drawaxis);CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc3(vdraw->draw_max,&vdraw->draw,vdraw->draw_max,&vdraw->drawlg,vdraw->draw_max,&vdraw->drawaxis));
+    CHKERRQ(PetscArraycpy(vdraw->draw,tdraw,draw_max));
+    CHKERRQ(PetscArraycpy(vdraw->drawlg,drawlg,draw_max));
+    CHKERRQ(PetscArraycpy(vdraw->drawaxis,drawaxis,draw_max));
+    CHKERRQ(PetscFree3(tdraw,drawlg,drawaxis));
   }
 
   if (!vdraw->draw[windownumber]) {
     char *title = vdraw->title, tmp_str[128];
     if (windownumber) {
-      ierr = PetscSNPrintf(tmp_str,sizeof(tmp_str),"%s:%" PetscInt_FMT,vdraw->title?vdraw->title:"",windownumber);CHKERRQ(ierr);
+      CHKERRQ(PetscSNPrintf(tmp_str,sizeof(tmp_str),"%s:%" PetscInt_FMT,vdraw->title?vdraw->title:"",windownumber));
       title = tmp_str;
     }
-    ierr = PetscDrawCreate(PetscObjectComm((PetscObject)viewer),vdraw->display,title,PETSC_DECIDE,PETSC_DECIDE,vdraw->w,vdraw->h,&vdraw->draw[windownumber]);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)viewer,(PetscObject)vdraw->draw[windownumber]);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawCreate(PetscObjectComm((PetscObject)viewer),vdraw->display,title,PETSC_DECIDE,PETSC_DECIDE,vdraw->w,vdraw->h,&vdraw->draw[windownumber]));
+    CHKERRQ(PetscLogObjectParent((PetscObject)viewer,(PetscObject)vdraw->draw[windownumber]));
     if (vdraw->drawtype) {
-      ierr = PetscDrawSetType(vdraw->draw[windownumber],vdraw->drawtype);CHKERRQ(ierr);
+      CHKERRQ(PetscDrawSetType(vdraw->draw[windownumber],vdraw->drawtype));
     }
-    ierr = PetscDrawSetPause(vdraw->draw[windownumber],vdraw->pause);CHKERRQ(ierr);
-    ierr = PetscDrawSetOptionsPrefix(vdraw->draw[windownumber],((PetscObject)viewer)->prefix);CHKERRQ(ierr);
-    ierr = PetscDrawSetFromOptions(vdraw->draw[windownumber]);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawSetPause(vdraw->draw[windownumber],vdraw->pause));
+    CHKERRQ(PetscDrawSetOptionsPrefix(vdraw->draw[windownumber],((PetscObject)viewer)->prefix));
+    CHKERRQ(PetscDrawSetFromOptions(vdraw->draw[windownumber]));
   }
   if (draw) *draw = vdraw->draw[windownumber];
   if (draw) PetscValidHeaderSpecific(*draw,PETSC_DRAW_CLASSID,3);
@@ -123,13 +120,12 @@ PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt windownumber,
 PetscErrorCode  PetscViewerDrawBaseAdd(PetscViewer viewer,PetscInt windownumber)
 {
   PetscViewer_Draw *vdraw;
-  PetscErrorCode   ierr;
   PetscBool        isdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveInt(viewer,windownumber,2);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
   PetscCheckFalse(!isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   vdraw = (PetscViewer_Draw*)viewer->data;
 
@@ -154,13 +150,12 @@ PetscErrorCode  PetscViewerDrawBaseAdd(PetscViewer viewer,PetscInt windownumber)
 PetscErrorCode  PetscViewerDrawBaseSet(PetscViewer viewer,PetscInt windownumber)
 {
   PetscViewer_Draw *vdraw;
-  PetscErrorCode   ierr;
   PetscBool        isdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveInt(viewer,windownumber,2);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
   PetscCheckFalse(!isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   vdraw = (PetscViewer_Draw*)viewer->data;
 
@@ -189,7 +184,6 @@ PetscErrorCode  PetscViewerDrawBaseSet(PetscViewer viewer,PetscInt windownumber)
 @*/
 PetscErrorCode  PetscViewerDrawGetDrawLG(PetscViewer viewer,PetscInt windownumber,PetscDrawLG *drawlg)
 {
-  PetscErrorCode   ierr;
   PetscBool        isdraw;
   PetscViewer_Draw *vdraw;
 
@@ -197,18 +191,18 @@ PetscErrorCode  PetscViewerDrawGetDrawLG(PetscViewer viewer,PetscInt windownumbe
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveInt(viewer,windownumber,2);
   PetscValidPointer(drawlg,3);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
   PetscCheckFalse(!isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   PetscCheckFalse(windownumber < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   vdraw = (PetscViewer_Draw*)viewer->data;
 
   if (windownumber+vdraw->draw_base >= vdraw->draw_max || !vdraw->draw[windownumber+vdraw->draw_base]) {
-    ierr = PetscViewerDrawGetDraw(viewer,windownumber,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerDrawGetDraw(viewer,windownumber,NULL));
   }
   if (!vdraw->drawlg[windownumber+vdraw->draw_base]) {
-    ierr = PetscDrawLGCreate(vdraw->draw[windownumber+vdraw->draw_base],1,&vdraw->drawlg[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)viewer,(PetscObject)vdraw->drawlg[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
-    ierr = PetscDrawLGSetFromOptions(vdraw->drawlg[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawLGCreate(vdraw->draw[windownumber+vdraw->draw_base],1,&vdraw->drawlg[windownumber+vdraw->draw_base]));
+    CHKERRQ(PetscLogObjectParent((PetscObject)viewer,(PetscObject)vdraw->drawlg[windownumber+vdraw->draw_base]));
+    CHKERRQ(PetscDrawLGSetFromOptions(vdraw->drawlg[windownumber+vdraw->draw_base]));
   }
   *drawlg = vdraw->drawlg[windownumber+vdraw->draw_base];
   PetscFunctionReturn(0);
@@ -234,7 +228,6 @@ PetscErrorCode  PetscViewerDrawGetDrawLG(PetscViewer viewer,PetscInt windownumbe
 @*/
 PetscErrorCode  PetscViewerDrawGetDrawAxis(PetscViewer viewer,PetscInt windownumber,PetscDrawAxis *drawaxis)
 {
-  PetscErrorCode   ierr;
   PetscBool        isdraw;
   PetscViewer_Draw *vdraw;
 
@@ -242,17 +235,17 @@ PetscErrorCode  PetscViewerDrawGetDrawAxis(PetscViewer viewer,PetscInt windownum
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveInt(viewer,windownumber,2);
   PetscValidPointer(drawaxis,3);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
   PetscCheckFalse(!isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   PetscCheckFalse(windownumber < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   vdraw = (PetscViewer_Draw*)viewer->data;
 
   if (windownumber+vdraw->draw_base >= vdraw->draw_max || !vdraw->draw[windownumber+vdraw->draw_base]) {
-    ierr = PetscViewerDrawGetDraw(viewer,windownumber,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerDrawGetDraw(viewer,windownumber,NULL));
   }
   if (!vdraw->drawaxis[windownumber+vdraw->draw_base]) {
-    ierr = PetscDrawAxisCreate(vdraw->draw[windownumber+vdraw->draw_base],&vdraw->drawaxis[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)viewer,(PetscObject)vdraw->drawaxis[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawAxisCreate(vdraw->draw[windownumber+vdraw->draw_base],&vdraw->drawaxis[windownumber+vdraw->draw_base]));
+    CHKERRQ(PetscLogObjectParent((PetscObject)viewer,(PetscObject)vdraw->drawaxis[windownumber+vdraw->draw_base]));
   }
   *drawaxis = vdraw->drawaxis[windownumber+vdraw->draw_base];
   PetscFunctionReturn(0);
@@ -260,13 +253,12 @@ PetscErrorCode  PetscViewerDrawGetDrawAxis(PetscViewer viewer,PetscInt windownum
 
 PetscErrorCode  PetscViewerDrawResize(PetscViewer v,int w,int h)
 {
-  PetscErrorCode   ierr;
   PetscViewer_Draw *vdraw;
   PetscBool        isdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw));
   if (!isdraw) PetscFunctionReturn(0);
   vdraw = (PetscViewer_Draw*)v->data;
 
@@ -277,18 +269,17 @@ PetscErrorCode  PetscViewerDrawResize(PetscViewer v,int w,int h)
 
 PetscErrorCode  PetscViewerDrawSetInfo(PetscViewer v,const char display[],const char title[],int x,int y,int w,int h)
 {
-  PetscErrorCode   ierr;
   PetscViewer_Draw *vdraw;
   PetscBool        isdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw));
   if (!isdraw) PetscFunctionReturn(0);
   vdraw = (PetscViewer_Draw*)v->data;
 
-  ierr = PetscStrallocpy(display,&vdraw->display);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(title,&vdraw->title);CHKERRQ(ierr);
+  CHKERRQ(PetscStrallocpy(display,&vdraw->display));
+  CHKERRQ(PetscStrallocpy(title,&vdraw->title));
   if (w >= 1) vdraw->w = w;
   if (h >= 1) vdraw->h = h;
   PetscFunctionReturn(0);
@@ -296,30 +287,28 @@ PetscErrorCode  PetscViewerDrawSetInfo(PetscViewer v,const char display[],const 
 
 PetscErrorCode  PetscViewerDrawSetDrawType(PetscViewer v,PetscDrawType drawtype)
 {
-  PetscErrorCode   ierr;
   PetscViewer_Draw *vdraw;
   PetscBool        isdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw));
   if (!isdraw) PetscFunctionReturn(0);
   vdraw = (PetscViewer_Draw*)v->data;
 
-  ierr = PetscFree(vdraw->drawtype);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(drawtype,(char**)&vdraw->drawtype);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(vdraw->drawtype));
+  CHKERRQ(PetscStrallocpy(drawtype,(char**)&vdraw->drawtype));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscViewerDrawGetDrawType(PetscViewer v,PetscDrawType *drawtype)
 {
-  PetscErrorCode   ierr;
   PetscViewer_Draw *vdraw;
   PetscBool        isdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw));
   PetscCheckFalse(!isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   vdraw = (PetscViewer_Draw*)v->data;
 
@@ -329,30 +318,28 @@ PetscErrorCode PetscViewerDrawGetDrawType(PetscViewer v,PetscDrawType *drawtype)
 
 PetscErrorCode PetscViewerDrawSetTitle(PetscViewer v,const char title[])
 {
-  PetscErrorCode   ierr;
   PetscViewer_Draw *vdraw;
   PetscBool        isdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw));
   if (!isdraw) PetscFunctionReturn(0);
   vdraw = (PetscViewer_Draw*)v->data;
 
-  ierr = PetscFree(vdraw->title);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(title,&vdraw->title);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(vdraw->title));
+  CHKERRQ(PetscStrallocpy(title,&vdraw->title));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v,const char *title[])
 {
-  PetscErrorCode   ierr;
   PetscViewer_Draw *vdraw;
   PetscBool        isdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw));
   PetscCheckFalse(!isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   vdraw = (PetscViewer_Draw*)v->data;
 
@@ -407,12 +394,10 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v,const char *title[])
 @*/
 PetscErrorCode  PetscViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscViewer *viewer)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscViewerCreate(comm,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*viewer,PETSCVIEWERDRAW);CHKERRQ(ierr);
-  ierr = PetscViewerDrawSetInfo(*viewer,display,title,x,y,w,h);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerCreate(comm,viewer));
+  CHKERRQ(PetscViewerSetType(*viewer,PETSCVIEWERDRAW));
+  CHKERRQ(PetscViewerDrawSetInfo(*viewer,display,title,x,y,w,h));
   PetscFunctionReturn(0);
 }
 
@@ -420,7 +405,6 @@ PetscErrorCode  PetscViewerDrawOpen(MPI_Comm comm,const char display[],const cha
 
 PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer,MPI_Comm comm,PetscViewer *sviewer)
 {
-  PetscErrorCode   ierr;
   PetscMPIInt      rank;
   PetscInt         i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data,*svdraw;
@@ -429,34 +413,34 @@ PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer,MPI_Comm comm,Pet
   PetscCheckFalse(vdraw->singleton_made,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Trying to get SubViewer without first restoring previous");
   /* only processor zero can use the PetscViewer draw singleton */
   if (sviewer) *sviewer = NULL;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank));
   if (rank == 0) {
     PetscMPIInt flg;
     PetscDraw   draw,sdraw;
 
-    ierr = MPI_Comm_compare(PETSC_COMM_SELF,comm,&flg);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Comm_compare(PETSC_COMM_SELF,comm,&flg));
     PetscCheckFalse(flg != MPI_IDENT && flg != MPI_CONGRUENT,PETSC_COMM_SELF,PETSC_ERR_SUP,"PetscViewerGetSubViewer() for PETSCVIEWERDRAW requires a singleton MPI_Comm");
-    ierr = PetscViewerCreate(comm,sviewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(*sviewer,PETSCVIEWERDRAW);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerCreate(comm,sviewer));
+    CHKERRQ(PetscViewerSetType(*sviewer,PETSCVIEWERDRAW));
     svdraw = (PetscViewer_Draw*)(*sviewer)->data;
     (*sviewer)->format = viewer->format;
     for (i=0; i<vdraw->draw_max; i++) { /* XXX this is wrong if svdraw->draw_max (initially 5) < vdraw->draw_max */
-      if (vdraw->draw[i]) {ierr = PetscDrawGetSingleton(vdraw->draw[i],&svdraw->draw[i]);CHKERRQ(ierr);}
+      if (vdraw->draw[i]) CHKERRQ(PetscDrawGetSingleton(vdraw->draw[i],&svdraw->draw[i]));
     }
-    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-    ierr = PetscViewerDrawGetDraw(*sviewer,0,&sdraw);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerDrawGetDraw(viewer,0,&draw));
+    CHKERRQ(PetscViewerDrawGetDraw(*sviewer,0,&sdraw));
     if (draw->savefilename) {
-      ierr = PetscDrawSetSave(sdraw,draw->savefilename);CHKERRQ(ierr);
+      CHKERRQ(PetscDrawSetSave(sdraw,draw->savefilename));
       sdraw->savefilecount = draw->savefilecount;
       sdraw->savesinglefile = draw->savesinglefile;
       sdraw->savemoviefps = draw->savemoviefps;
       sdraw->saveonclear = draw->saveonclear;
       sdraw->saveonflush = draw->saveonflush;
     }
-    if (draw->savefinalfilename) {ierr = PetscDrawSetSaveFinalImage(sdraw,draw->savefinalfilename);CHKERRQ(ierr);}
+    if (draw->savefinalfilename) CHKERRQ(PetscDrawSetSaveFinalImage(sdraw,draw->savefinalfilename));
   } else {
     PetscDraw draw;
-    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerDrawGetDraw(viewer,0,&draw));
   }
   vdraw->singleton_made = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -464,38 +448,37 @@ PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer,MPI_Comm comm,Pet
 
 PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer,MPI_Comm comm,PetscViewer *sviewer)
 {
-  PetscErrorCode   ierr;
   PetscMPIInt      rank;
   PetscInt         i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data,*svdraw;
 
   PetscFunctionBegin;
   PetscCheckFalse(!vdraw->singleton_made,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Trying to restore a singleton that was not gotten");
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank));
   if (rank == 0) {
     PetscDraw draw,sdraw;
 
-    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-    ierr = PetscViewerDrawGetDraw(*sviewer,0,&sdraw);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerDrawGetDraw(viewer,0,&draw));
+    CHKERRQ(PetscViewerDrawGetDraw(*sviewer,0,&sdraw));
     if (draw->savefilename) {
       draw->savefilecount = sdraw->savefilecount;
-      ierr = MPI_Bcast(&draw->savefilecount,1,MPIU_INT,0,PetscObjectComm((PetscObject)draw));CHKERRMPI(ierr);
+      CHKERRMPI(MPI_Bcast(&draw->savefilecount,1,MPIU_INT,0,PetscObjectComm((PetscObject)draw)));
     }
     svdraw = (PetscViewer_Draw*)(*sviewer)->data;
     for (i=0; i<vdraw->draw_max; i++) {
       if (vdraw->draw[i] && svdraw->draw[i]) {
-        ierr = PetscDrawRestoreSingleton(vdraw->draw[i],&svdraw->draw[i]);CHKERRQ(ierr);
+        CHKERRQ(PetscDrawRestoreSingleton(vdraw->draw[i],&svdraw->draw[i]));
       }
     }
-    ierr = PetscFree3(svdraw->draw,svdraw->drawlg,svdraw->drawaxis);CHKERRQ(ierr);
-    ierr = PetscFree((*sviewer)->data);CHKERRQ(ierr);
-    ierr = PetscHeaderDestroy(sviewer);CHKERRQ(ierr);
+    CHKERRQ(PetscFree3(svdraw->draw,svdraw->drawlg,svdraw->drawaxis));
+    CHKERRQ(PetscFree((*sviewer)->data));
+    CHKERRQ(PetscHeaderDestroy(sviewer));
   } else {
     PetscDraw draw;
 
-    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerDrawGetDraw(viewer,0,&draw));
     if (draw->savefilename) {
-      ierr = MPI_Bcast(&draw->savefilecount,1,MPIU_INT,0,PetscObjectComm((PetscObject)draw));CHKERRMPI(ierr);
+      CHKERRMPI(MPI_Bcast(&draw->savefilecount,1,MPIU_INT,0,PetscObjectComm((PetscObject)draw)));
     }
   }
 
@@ -505,24 +488,22 @@ PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer,MPI_Comm comm
 
 PetscErrorCode PetscViewerSetFromOptions_Draw(PetscOptionItems *PetscOptionsObject,PetscViewer v)
 {
-  PetscErrorCode ierr;
   PetscReal      bounds[16];
   PetscInt       nbounds = 16;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"Draw PetscViewer Options");CHKERRQ(ierr);
-  ierr = PetscOptionsRealArray("-draw_bounds","Bounds to put on plots axis","PetscViewerDrawSetBounds",bounds,&nbounds,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"Draw PetscViewer Options"));
+  CHKERRQ(PetscOptionsRealArray("-draw_bounds","Bounds to put on plots axis","PetscViewerDrawSetBounds",bounds,&nbounds,&flg));
   if (flg) {
-    ierr = PetscViewerDrawSetBounds(v,nbounds/2,bounds);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerDrawSetBounds(v,nbounds/2,bounds));
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscViewerView_Draw(PetscViewer viewer,PetscViewer v)
 {
-  PetscErrorCode   ierr;
   PetscDraw        draw;
   PetscInt         i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
@@ -532,8 +513,8 @@ PetscErrorCode PetscViewerView_Draw(PetscViewer viewer,PetscViewer v)
       exists so this will not actually call the viewer on any draws. */
   for (i=0; i<vdraw->draw_base; i++) {
     if (vdraw->draw[i]) {
-      ierr = PetscViewerDrawGetDraw(viewer,i,&draw);CHKERRQ(ierr);
-      ierr = PetscDrawView(draw,v);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerDrawGetDraw(viewer,i,&draw));
+      CHKERRQ(PetscDrawView(draw,v));
     }
   }
   PetscFunctionReturn(0);
@@ -552,11 +533,10 @@ PetscErrorCode PetscViewerView_Draw(PetscViewer viewer,PetscViewer v)
 M*/
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
 {
-  PetscErrorCode   ierr;
   PetscViewer_Draw *vdraw;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(viewer,&vdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(viewer,&vdraw));
   viewer->data = (void*)vdraw;
 
   viewer->ops->flush            = PetscViewerFlush_Draw;
@@ -572,7 +552,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
   vdraw->w         = PETSC_DECIDE;
   vdraw->h         = PETSC_DECIDE;
 
-  ierr = PetscCalloc3(vdraw->draw_max,&vdraw->draw,vdraw->draw_max,&vdraw->drawlg,vdraw->draw_max,&vdraw->drawaxis);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc3(vdraw->draw_max,&vdraw->draw,vdraw->draw_max,&vdraw->drawlg,vdraw->draw_max,&vdraw->drawaxis));
   vdraw->singleton_made = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -592,19 +572,18 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
 @*/
 PetscErrorCode  PetscViewerDrawClear(PetscViewer viewer)
 {
-  PetscErrorCode   ierr;
   PetscViewer_Draw *vdraw;
   PetscBool        isdraw;
   PetscInt         i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
   if (!isdraw) PetscFunctionReturn(0);
   vdraw = (PetscViewer_Draw*)viewer->data;
 
   for (i=0; i<vdraw->draw_max; i++) {
-    if (vdraw->draw[i]) {ierr = PetscDrawClear(vdraw->draw[i]);CHKERRQ(ierr);}
+    if (vdraw->draw[i]) CHKERRQ(PetscDrawClear(vdraw->draw[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -627,7 +606,6 @@ PetscErrorCode  PetscViewerDrawClear(PetscViewer viewer)
 @*/
 PetscErrorCode  PetscViewerDrawGetPause(PetscViewer viewer,PetscReal *pause)
 {
-  PetscErrorCode   ierr;
   PetscViewer_Draw *vdraw;
   PetscBool        isdraw;
   PetscInt         i;
@@ -635,19 +613,19 @@ PetscErrorCode  PetscViewerDrawGetPause(PetscViewer viewer,PetscReal *pause)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
   if (!isdraw) {*pause = 0.0; PetscFunctionReturn(0);}
   vdraw = (PetscViewer_Draw*)viewer->data;
 
   for (i=0; i<vdraw->draw_max; i++) {
     if (vdraw->draw[i]) {
-      ierr = PetscDrawGetPause(vdraw->draw[i],pause);CHKERRQ(ierr);
+      CHKERRQ(PetscDrawGetPause(vdraw->draw[i],pause));
       PetscFunctionReturn(0);
     }
   }
   /* none exist yet so create one and get its pause */
-  ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawGetPause(draw,pause);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDrawGetDraw(viewer,0,&draw));
+  CHKERRQ(PetscDrawGetPause(draw,pause));
   PetscFunctionReturn(0);
 }
 
@@ -667,20 +645,19 @@ PetscErrorCode  PetscViewerDrawGetPause(PetscViewer viewer,PetscReal *pause)
 @*/
 PetscErrorCode  PetscViewerDrawSetPause(PetscViewer viewer,PetscReal pause)
 {
-  PetscErrorCode   ierr;
   PetscViewer_Draw *vdraw;
   PetscBool        isdraw;
   PetscInt         i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
   if (!isdraw) PetscFunctionReturn(0);
   vdraw = (PetscViewer_Draw*)viewer->data;
 
   vdraw->pause = pause;
   for (i=0; i<vdraw->draw_max; i++) {
-    if (vdraw->draw[i]) {ierr = PetscDrawSetPause(vdraw->draw[i],pause);CHKERRQ(ierr);}
+    if (vdraw->draw[i]) CHKERRQ(PetscDrawSetPause(vdraw->draw[i],pause));
   }
   PetscFunctionReturn(0);
 }
@@ -701,13 +678,12 @@ PetscErrorCode  PetscViewerDrawSetPause(PetscViewer viewer,PetscReal pause)
 @*/
 PetscErrorCode  PetscViewerDrawSetHold(PetscViewer viewer,PetscBool hold)
 {
-  PetscErrorCode   ierr;
   PetscViewer_Draw *vdraw;
   PetscBool        isdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
   if (!isdraw) PetscFunctionReturn(0);
   vdraw = (PetscViewer_Draw*)viewer->data;
 
@@ -733,13 +709,12 @@ PetscErrorCode  PetscViewerDrawSetHold(PetscViewer viewer,PetscBool hold)
 @*/
 PetscErrorCode  PetscViewerDrawGetHold(PetscViewer viewer,PetscBool *hold)
 {
-  PetscErrorCode   ierr;
   PetscViewer_Draw *vdraw;
   PetscBool        isdraw;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
   if (!isdraw) {*hold = PETSC_FALSE; PetscFunctionReturn(0);}
   vdraw = (PetscViewer_Draw*)viewer->data;
 
@@ -826,18 +801,17 @@ PetscErrorCode  PetscViewerDrawSetBounds(PetscViewer viewer,PetscInt nbounds,con
 {
   PetscViewer_Draw *vdraw;
   PetscBool        isdraw;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
   if (!isdraw) PetscFunctionReturn(0);
   vdraw = (PetscViewer_Draw*)viewer->data;
 
   vdraw->nbounds = nbounds;
-  ierr = PetscFree(vdraw->bounds);CHKERRQ(ierr);
-  ierr = PetscMalloc1(2*nbounds,&vdraw->bounds);CHKERRQ(ierr);
-  ierr = PetscArraycpy(vdraw->bounds,bounds,2*nbounds);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(vdraw->bounds));
+  CHKERRQ(PetscMalloc1(2*nbounds,&vdraw->bounds));
+  CHKERRQ(PetscArraycpy(vdraw->bounds,bounds,2*nbounds));
   PetscFunctionReturn(0);
 }
 
@@ -861,11 +835,10 @@ PetscErrorCode  PetscViewerDrawGetBounds(PetscViewer viewer,PetscInt *nbounds,co
 {
   PetscViewer_Draw *vdraw;
   PetscBool        isdraw;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
   if (!isdraw) {if (nbounds) *nbounds = 0; if (bounds) *bounds = NULL; PetscFunctionReturn(0);}
   vdraw = (PetscViewer_Draw*)viewer->data;
 

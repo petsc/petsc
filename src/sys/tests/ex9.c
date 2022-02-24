@@ -8,8 +8,8 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
-  ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
-  ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
+  CHKERRQ(PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1));
+  CHKERRQ(PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1));
   ierr = PetscFinalize();
   return ierr;
 }

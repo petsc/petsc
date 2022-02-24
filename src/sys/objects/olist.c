@@ -3,7 +3,7 @@
          Provides a general mechanism to maintain a linked list of PETSc objects.
      This is used to allow PETSc objects to carry a list of "composed" objects
 */
-#include <petscsys.h>
+#include <petsc/private/petscimpl.h>
 
 struct _n_PetscObjectList {
   char            name[256];
@@ -34,17 +34,16 @@ struct _n_PetscObjectList {
 PetscErrorCode  PetscObjectListRemoveReference(PetscObjectList *fl,const char name[])
 {
   PetscObjectList nlist;
-  PetscErrorCode  ierr;
   PetscBool       match;
 
   PetscFunctionBegin;
+  PetscValidPointer(fl,1);
+  PetscValidCharPointer(name,2);
   nlist = *fl;
   while (nlist) {
-    ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
+    CHKERRQ(PetscStrcmp(name,nlist->name,&match));
     if (match) { /* found it in the list */
-      if (!nlist->skipdereference) {
-        ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
-      }
+      if (!nlist->skipdereference) CHKERRQ(PetscObjectDereference(nlist->obj));
       nlist->skipdereference = PETSC_TRUE;
       PetscFunctionReturn(0);
     }
@@ -74,23 +73,21 @@ PetscErrorCode  PetscObjectListRemoveReference(PetscObjectList *fl,const char na
 PetscErrorCode  PetscObjectListAdd(PetscObjectList *fl,const char name[],PetscObject obj)
 {
   PetscObjectList olist,nlist,prev;
-  PetscErrorCode  ierr;
   PetscBool       match;
 
   PetscFunctionBegin;
+  PetscValidPointer(fl,1);
   if (!obj) { /* this means remove from list if it is there */
     nlist = *fl; prev = NULL;
     while (nlist) {
-      ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
+      CHKERRQ(PetscStrcmp(name,nlist->name,&match));
       if (match) {  /* found it already in the list */
         /* Remove it first to prevent circular derefs */
         if (prev) prev->next = nlist->next;
         else if (nlist->next) *fl = nlist->next;
         else *fl = NULL;
-        if (!nlist->skipdereference) {
-          ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
-        }
-        ierr = PetscFree(nlist);CHKERRQ(ierr);
+        if (!nlist->skipdereference) CHKERRQ(PetscObjectDereference(nlist->obj));
+        CHKERRQ(PetscFree(nlist));
         PetscFunctionReturn(0);
       }
       prev  = nlist;
@@ -101,12 +98,10 @@ PetscErrorCode  PetscObjectListAdd(PetscObjectList *fl,const char name[],PetscOb
   /* look for it already in list */
   nlist = *fl;
   while (nlist) {
-    ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
+    CHKERRQ(PetscStrcmp(name,nlist->name,&match));
     if (match) {  /* found it in the list */
-      ierr = PetscObjectReference(obj);CHKERRQ(ierr);
-      if (!nlist->skipdereference) {
-        ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
-      }
+      CHKERRQ(PetscObjectReference(obj));
+      if (!nlist->skipdereference) CHKERRQ(PetscObjectDereference(nlist->obj));
       nlist->skipdereference = PETSC_FALSE;
       nlist->obj             = obj;
       PetscFunctionReturn(0);
@@ -115,19 +110,17 @@ PetscErrorCode  PetscObjectListAdd(PetscObjectList *fl,const char name[],PetscOb
   }
 
   /* add it to list, because it was not already there */
-  ierr        = PetscNew(&olist);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(&olist));
   olist->next = NULL;
   olist->obj  = obj;
 
-  ierr = PetscObjectReference(obj);CHKERRQ(ierr);
-  ierr = PetscStrcpy(olist->name,name);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectReference(obj));
+  CHKERRQ(PetscStrcpy(olist->name,name));
 
   if (!*fl) *fl = olist;
   else { /* go to end of list */
     nlist = *fl;
-    while (nlist->next) {
-      nlist = nlist->next;
-    }
+    while (nlist->next) nlist = nlist->next;
     nlist->next = olist;
   }
   PetscFunctionReturn(0);
@@ -146,16 +139,15 @@ PetscErrorCode  PetscObjectListAdd(PetscObjectList *fl,const char name[],PetscOb
 @*/
 PetscErrorCode  PetscObjectListDestroy(PetscObjectList *ifl)
 {
-  PetscObjectList tmp,fl = *ifl;
-  PetscErrorCode  ierr;
+  PetscObjectList tmp,fl;
 
   PetscFunctionBegin;
+  PetscValidPointer(ifl,1);
+  fl = *ifl;
   while (fl) {
     tmp = fl->next;
-    if (!fl->skipdereference) {
-      ierr = PetscObjectDereference(fl->obj);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(fl);CHKERRQ(ierr);
+    if (!fl->skipdereference) CHKERRQ(PetscObjectDereference(fl->obj));
+    CHKERRQ(PetscFree(fl));
     fl   = tmp;
   }
   *ifl = NULL;
@@ -184,13 +176,12 @@ PetscErrorCode  PetscObjectListDestroy(PetscObjectList *ifl)
 @*/
 PetscErrorCode  PetscObjectListFind(PetscObjectList fl,const char name[],PetscObject *obj)
 {
-  PetscErrorCode ierr;
-  PetscBool      match;
-
   PetscFunctionBegin;
+  PetscValidPointer(obj,3);
   *obj = NULL;
   while (fl) {
-    ierr = PetscStrcmp(name,fl->name,&match);CHKERRQ(ierr);
+    PetscBool match;
+    CHKERRQ(PetscStrcmp(name,fl->name,&match));
     if (match) {
       *obj = fl->obj;
       break;
@@ -224,6 +215,8 @@ PetscErrorCode  PetscObjectListFind(PetscObjectList fl,const char name[],PetscOb
 PetscErrorCode  PetscObjectListReverseFind(PetscObjectList fl,PetscObject obj,char **name,PetscBool *skipdereference)
 {
   PetscFunctionBegin;
+  PetscValidPointer(name,3);
+  if (skipdereference) PetscValidBoolPointer(skipdereference,4);
   *name = NULL;
   while (fl) {
     if (fl->obj == obj) {
@@ -252,12 +245,11 @@ PetscErrorCode  PetscObjectListReverseFind(PetscObjectList fl,PetscObject obj,ch
 @*/
 PetscErrorCode  PetscObjectListDuplicate(PetscObjectList fl,PetscObjectList *nl)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
+  PetscValidPointer(nl,2);
   while (fl) {
-    ierr = PetscObjectListAdd(nl,fl->name,fl->obj);CHKERRQ(ierr);
-    fl   = fl->next;
+    CHKERRQ(PetscObjectListAdd(nl,fl->name,fl->obj));
+    fl = fl->next;
   }
   PetscFunctionReturn(0);
 }

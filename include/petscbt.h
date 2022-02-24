@@ -99,17 +99,15 @@ static inline char PetscBTLookupClear(PetscBT array, PetscInt index)
 
 static inline PetscErrorCode PetscBTView(PetscInt m, const PetscBT bt, PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (m < 1) PetscFunctionReturn(0);
-  if (!viewer) {ierr = PetscViewerASCIIGetStdout(PETSC_COMM_SELF,&viewer);CHKERRQ(ierr);}
-  ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
+  if (!viewer) CHKERRQ(PetscViewerASCIIGetStdout(PETSC_COMM_SELF,&viewer));
+  CHKERRQ(PetscViewerASCIIPushSynchronized(viewer));
   for (PetscInt i = 0; i < m; ++i) {
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%" PetscInt_FMT " %d\n",i,(int)PetscBTLookup(bt,i));CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIISynchronizedPrintf(viewer,"%" PetscInt_FMT " %d\n",i,(int)PetscBTLookup(bt,i)));
   }
-  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerFlush(viewer));
+  CHKERRQ(PetscViewerASCIIPopSynchronized(viewer));
   PetscFunctionReturn(0);
 }
 #endif /* PETSCBT_H */

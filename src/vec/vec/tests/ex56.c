@@ -31,14 +31,14 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,size,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetType(x, VECVIENNACL);CHKERRQ(ierr);
-  ierr = VecSet(x, 42.0);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
+  CHKERRQ(VecSetSizes(x,size,PETSC_DECIDE));
+  CHKERRQ(VecSetType(x, VECVIENNACL));
+  CHKERRQ(VecSet(x, 42.0));
 
-  ierr = VecViennaCLGetCLContext(x, &clctxptr);CHKERRQ(ierr);
-  ierr = VecViennaCLGetCLQueue(x, &clqueueptr);CHKERRQ(ierr);
-  ierr = VecViennaCLGetCLMem(x, &clmemptr);CHKERRQ(ierr);
+  CHKERRQ(VecViennaCLGetCLContext(x, &clctxptr));
+  CHKERRQ(VecViennaCLGetCLQueue(x, &clqueueptr));
+  CHKERRQ(VecViennaCLGetCLMem(x, &clmemptr));
 
   const cl_context       ctx   = ((const cl_context)clctxptr);
   const cl_command_queue queue = ((const cl_command_queue)clqueueptr);
@@ -56,12 +56,12 @@ int main(int argc,char **argv)
   clFinish(queue);
 
   // let petsc know that device data is altered
-  ierr = VecViennaCLRestoreCLMem(x);CHKERRQ(ierr);
+  CHKERRQ(VecViennaCLRestoreCLMem(x));
 
   // 'x' should contain 84 as all its entries
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));
   clReleaseContext(ctx);
   clReleaseCommandQueue(queue);
   clReleaseMemObject(mem);

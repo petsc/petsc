@@ -30,37 +30,36 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
   PetscSFNode       *remotePointsNew;
   PetscInt          *ranks, *ranksNew;
   PetscMPIInt        size;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(sfPoint, PETSCSF_CLASSID, 2);
   if (processRanks) {PetscValidPointer(processRanks, 3);}
   if (sfProcess)    {PetscValidPointer(sfProcess, 4);}
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRMPI(ierr);
-  ierr = PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numLeaves, &ranks);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size));
+  CHKERRQ(PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints));
+  CHKERRQ(PetscMalloc1(numLeaves, &ranks));
   for (l = 0; l < numLeaves; ++l) {
     ranks[l] = remotePoints[l].rank;
   }
-  ierr = PetscSortRemoveDupsInt(&numLeaves, ranks);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numLeaves, &ranksNew);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numLeaves, &localPointsNew);CHKERRQ(ierr);
-  ierr = PetscMalloc1(numLeaves, &remotePointsNew);CHKERRQ(ierr);
+  CHKERRQ(PetscSortRemoveDupsInt(&numLeaves, ranks));
+  CHKERRQ(PetscMalloc1(numLeaves, &ranksNew));
+  CHKERRQ(PetscMalloc1(numLeaves, &localPointsNew));
+  CHKERRQ(PetscMalloc1(numLeaves, &remotePointsNew));
   for (l = 0; l < numLeaves; ++l) {
     ranksNew[l]              = ranks[l];
     localPointsNew[l]        = l;
     remotePointsNew[l].index = 0;
     remotePointsNew[l].rank  = ranksNew[l];
   }
-  ierr = PetscFree(ranks);CHKERRQ(ierr);
-  if (processRanks) {ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm), numLeaves, ranksNew, PETSC_OWN_POINTER, processRanks);CHKERRQ(ierr);}
-  else              {ierr = PetscFree(ranksNew);CHKERRQ(ierr);}
+  CHKERRQ(PetscFree(ranks));
+  if (processRanks) CHKERRQ(ISCreateGeneral(PetscObjectComm((PetscObject)dm), numLeaves, ranksNew, PETSC_OWN_POINTER, processRanks));
+  else              CHKERRQ(PetscFree(ranksNew));
   if (sfProcess) {
-    ierr = PetscSFCreate(PetscObjectComm((PetscObject)dm), sfProcess);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) *sfProcess, "Process SF");CHKERRQ(ierr);
-    ierr = PetscSFSetFromOptions(*sfProcess);CHKERRQ(ierr);
-    ierr = PetscSFSetGraph(*sfProcess, size, numLeaves, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER);CHKERRQ(ierr);
+    CHKERRQ(PetscSFCreate(PetscObjectComm((PetscObject)dm), sfProcess));
+    CHKERRQ(PetscObjectSetName((PetscObject) *sfProcess, "Process SF"));
+    CHKERRQ(PetscSFSetFromOptions(*sfProcess));
+    CHKERRQ(PetscSFSetGraph(*sfProcess, size, numLeaves, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER));
   }
   PetscFunctionReturn(0);
 }
@@ -85,23 +84,22 @@ PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
   DMPlexTransform tr;
   PetscInt       *fpoints;
   PetscInt        pStart, pEnd, p, vStart, vEnd, v;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexTransformCreate(PetscObjectComm((PetscObject) dm), &tr);CHKERRQ(ierr);
-  ierr = DMPlexTransformSetUp(tr);CHKERRQ(ierr);
-  ierr = PetscMalloc1(pEnd-pStart, &fpoints);CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetChart(dm, &pStart, &pEnd));
+  CHKERRQ(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+  CHKERRQ(DMPlexTransformCreate(PetscObjectComm((PetscObject) dm), &tr));
+  CHKERRQ(DMPlexTransformSetUp(tr));
+  CHKERRQ(PetscMalloc1(pEnd-pStart, &fpoints));
   for (p = 0; p < pEnd-pStart; ++p) fpoints[p] = -1;
   for (v = vStart; v < vEnd; ++v) {
     PetscInt vNew = -1; /* quiet overzealous may be used uninitialized check */
 
-    ierr = DMPlexTransformGetTargetPoint(tr, DM_POLYTOPE_POINT, DM_POLYTOPE_POINT, p, 0, &vNew);CHKERRQ(ierr);
+    CHKERRQ(DMPlexTransformGetTargetPoint(tr, DM_POLYTOPE_POINT, DM_POLYTOPE_POINT, p, 0, &vNew));
     fpoints[v-pStart] = vNew;
   }
-  ierr = DMPlexTransformDestroy(&tr);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, pEnd-pStart, fpoints, PETSC_OWN_POINTER, fpointIS);CHKERRQ(ierr);
+  CHKERRQ(DMPlexTransformDestroy(&tr));
+  CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF, pEnd-pStart, fpoints, PETSC_OWN_POINTER, fpointIS));
   PetscFunctionReturn(0);
 }
 
@@ -119,13 +117,12 @@ PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
 PetscErrorCode DMPlexSetTransformType(DM dm, DMPlexTransformType type)
 {
   DM_Plex        *mesh = (DM_Plex*) dm->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
   if (type) PetscValidCharPointer(type, 2);
-  ierr = PetscFree(mesh->transformType);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(type, &mesh->transformType);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(mesh->transformType));
+  CHKERRQ(PetscStrallocpy(type, &mesh->transformType));
   PetscFunctionReturn(0);
 }
 
@@ -300,11 +297,10 @@ PetscErrorCode DMPlexGetRefinementFunction(DM dm, PetscErrorCode (**refinementFu
 PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *rdm)
 {
   PetscBool      isUniform;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetRefinementUniform(dm, &isUniform);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-initref_dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetRefinementUniform(dm, &isUniform));
+  CHKERRQ(DMViewFromOptions(dm, NULL, "-initref_dm_view"));
   if (isUniform) {
     DMPlexTransform     tr;
     DM                  cdm, rcdm;
@@ -312,34 +308,34 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *rdm)
     const char         *prefix;
     PetscOptions       options;
 
-    ierr = DMPlexTransformCreate(PetscObjectComm((PetscObject) dm), &tr);CHKERRQ(ierr);
-    ierr = DMPlexTransformSetDM(tr, dm);CHKERRQ(ierr);
-    ierr = DMPlexGetTransformType(dm, &trType);CHKERRQ(ierr);
-    if (trType) {ierr = DMPlexTransformSetType(tr, trType);CHKERRQ(ierr);}
-    ierr = PetscObjectGetOptionsPrefix((PetscObject) dm, &prefix);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) tr,  prefix);CHKERRQ(ierr);
-    ierr = PetscObjectGetOptions((PetscObject) dm, &options);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptions((PetscObject) tr, options);CHKERRQ(ierr);
-    ierr = DMPlexTransformSetFromOptions(tr);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptions((PetscObject) tr, NULL);CHKERRQ(ierr);
-    ierr = DMPlexTransformSetUp(tr);CHKERRQ(ierr);
-    ierr = PetscObjectViewFromOptions((PetscObject) tr, NULL, "-dm_plex_transform_view");CHKERRQ(ierr);
-    ierr = DMPlexTransformApply(tr, dm, rdm);CHKERRQ(ierr);
-    ierr = DMPlexSetRegularRefinement(*rdm, PETSC_TRUE);CHKERRQ(ierr);
-    ierr = DMCopyDisc(dm, *rdm);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDM(*rdm, &rcdm);CHKERRQ(ierr);
-    ierr = DMCopyDisc(cdm, rcdm);CHKERRQ(ierr);
-    ierr = DMPlexTransformCreateDiscLabels(tr, *rdm);CHKERRQ(ierr);
-    ierr = DMPlexTransformDestroy(&tr);CHKERRQ(ierr);
+    CHKERRQ(DMPlexTransformCreate(PetscObjectComm((PetscObject) dm), &tr));
+    CHKERRQ(DMPlexTransformSetDM(tr, dm));
+    CHKERRQ(DMPlexGetTransformType(dm, &trType));
+    if (trType) CHKERRQ(DMPlexTransformSetType(tr, trType));
+    CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject) dm, &prefix));
+    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) tr,  prefix));
+    CHKERRQ(PetscObjectGetOptions((PetscObject) dm, &options));
+    CHKERRQ(PetscObjectSetOptions((PetscObject) tr, options));
+    CHKERRQ(DMPlexTransformSetFromOptions(tr));
+    CHKERRQ(PetscObjectSetOptions((PetscObject) tr, NULL));
+    CHKERRQ(DMPlexTransformSetUp(tr));
+    CHKERRQ(PetscObjectViewFromOptions((PetscObject) tr, NULL, "-dm_plex_transform_view"));
+    CHKERRQ(DMPlexTransformApply(tr, dm, rdm));
+    CHKERRQ(DMPlexSetRegularRefinement(*rdm, PETSC_TRUE));
+    CHKERRQ(DMCopyDisc(dm, *rdm));
+    CHKERRQ(DMGetCoordinateDM(dm, &cdm));
+    CHKERRQ(DMGetCoordinateDM(*rdm, &rcdm));
+    CHKERRQ(DMCopyDisc(cdm, rcdm));
+    CHKERRQ(DMPlexTransformCreateDiscLabels(tr, *rdm));
+    CHKERRQ(DMPlexTransformDestroy(&tr));
   } else {
-    ierr = DMPlexRefine_Internal(dm, NULL, NULL, NULL, rdm);CHKERRQ(ierr);
+    CHKERRQ(DMPlexRefine_Internal(dm, NULL, NULL, NULL, rdm));
   }
   if (*rdm) {
     ((DM_Plex *) (*rdm)->data)->printFEM = ((DM_Plex *) dm->data)->printFEM;
     ((DM_Plex *) (*rdm)->data)->printL2  = ((DM_Plex *) dm->data)->printL2;
   }
-  ierr = DMViewFromOptions(dm, NULL, "-postref_dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMViewFromOptions(dm, NULL, "-postref_dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -348,46 +344,45 @@ PetscErrorCode DMRefineHierarchy_Plex(DM dm, PetscInt nlevels, DM rdm[])
   DM             cdm = dm;
   PetscInt       r;
   PetscBool      isUniform, localized;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetRefinementUniform(dm, &isUniform);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetRefinementUniform(dm, &isUniform));
+  CHKERRQ(DMGetCoordinatesLocalized(dm, &localized));
   if (isUniform) {
     for (r = 0; r < nlevels; ++r) {
       DMPlexTransform tr;
       DM              codm, rcodm;
       const char     *prefix;
 
-      ierr = DMPlexTransformCreate(PetscObjectComm((PetscObject) cdm), &tr);CHKERRQ(ierr);
-      ierr = PetscObjectGetOptionsPrefix((PetscObject) cdm, &prefix);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject) tr,   prefix);CHKERRQ(ierr);
-      ierr = DMPlexTransformSetDM(tr, cdm);CHKERRQ(ierr);
-      ierr = DMPlexTransformSetFromOptions(tr);CHKERRQ(ierr);
-      ierr = DMPlexTransformSetUp(tr);CHKERRQ(ierr);
-      ierr = DMPlexTransformApply(tr, cdm, &rdm[r]);CHKERRQ(ierr);
-      ierr = DMSetCoarsenLevel(rdm[r], cdm->leveldown);CHKERRQ(ierr);
-      ierr = DMSetRefineLevel(rdm[r], cdm->levelup+1);CHKERRQ(ierr);
-      ierr = DMCopyDisc(cdm, rdm[r]);CHKERRQ(ierr);
-      ierr = DMGetCoordinateDM(dm, &codm);CHKERRQ(ierr);
-      ierr = DMGetCoordinateDM(rdm[r], &rcodm);CHKERRQ(ierr);
-      ierr = DMCopyDisc(codm, rcodm);CHKERRQ(ierr);
-      ierr = DMPlexTransformCreateDiscLabels(tr, rdm[r]);CHKERRQ(ierr);
-      ierr = DMSetCoarseDM(rdm[r], cdm);CHKERRQ(ierr);
-      ierr = DMPlexSetRegularRefinement(rdm[r], PETSC_TRUE);CHKERRQ(ierr);
+      CHKERRQ(DMPlexTransformCreate(PetscObjectComm((PetscObject) cdm), &tr));
+      CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject) cdm, &prefix));
+      CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) tr,   prefix));
+      CHKERRQ(DMPlexTransformSetDM(tr, cdm));
+      CHKERRQ(DMPlexTransformSetFromOptions(tr));
+      CHKERRQ(DMPlexTransformSetUp(tr));
+      CHKERRQ(DMPlexTransformApply(tr, cdm, &rdm[r]));
+      CHKERRQ(DMSetCoarsenLevel(rdm[r], cdm->leveldown));
+      CHKERRQ(DMSetRefineLevel(rdm[r], cdm->levelup+1));
+      CHKERRQ(DMCopyDisc(cdm, rdm[r]));
+      CHKERRQ(DMGetCoordinateDM(dm, &codm));
+      CHKERRQ(DMGetCoordinateDM(rdm[r], &rcodm));
+      CHKERRQ(DMCopyDisc(codm, rcodm));
+      CHKERRQ(DMPlexTransformCreateDiscLabels(tr, rdm[r]));
+      CHKERRQ(DMSetCoarseDM(rdm[r], cdm));
+      CHKERRQ(DMPlexSetRegularRefinement(rdm[r], PETSC_TRUE));
       if (rdm[r]) {
         ((DM_Plex *) (rdm[r])->data)->printFEM = ((DM_Plex *) dm->data)->printFEM;
         ((DM_Plex *) (rdm[r])->data)->printL2  = ((DM_Plex *) dm->data)->printL2;
       }
       cdm  = rdm[r];
-      ierr = DMPlexTransformDestroy(&tr);CHKERRQ(ierr);
+      CHKERRQ(DMPlexTransformDestroy(&tr));
     }
   } else {
     for (r = 0; r < nlevels; ++r) {
-      ierr = DMRefine(cdm, PetscObjectComm((PetscObject) dm), &rdm[r]);CHKERRQ(ierr);
-      ierr = DMCopyDisc(cdm, rdm[r]);CHKERRQ(ierr);
-      if (localized) {ierr = DMLocalizeCoordinates(rdm[r]);CHKERRQ(ierr);}
-      ierr = DMSetCoarseDM(rdm[r], cdm);CHKERRQ(ierr);
+      CHKERRQ(DMRefine(cdm, PetscObjectComm((PetscObject) dm), &rdm[r]));
+      CHKERRQ(DMCopyDisc(cdm, rdm[r]));
+      if (localized) CHKERRQ(DMLocalizeCoordinates(rdm[r]));
+      CHKERRQ(DMSetCoarseDM(rdm[r], cdm));
       if (rdm[r]) {
         ((DM_Plex *) (rdm[r])->data)->printFEM = ((DM_Plex *) dm->data)->printFEM;
         ((DM_Plex *) (rdm[r])->data)->printL2  = ((DM_Plex *) dm->data)->printL2;

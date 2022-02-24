@@ -17,58 +17,58 @@ int main(int argc,char **argv)
   PetscMPIInt       size,rank;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size == 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Must run with 2 or more processes");
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* Create a mpiaij matrix for checking */
-  ierr = MatCreateAIJ(PETSC_COMM_WORLD,5,5,PETSC_DECIDE,PETSC_DECIDE,0,NULL,0,NULL,&A);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
+  CHKERRQ(MatCreateAIJ(PETSC_COMM_WORLD,5,5,PETSC_DECIDE,PETSC_DECIDE,0,NULL,0,NULL,&A));
+  CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_FALSE));
+  CHKERRQ(MatSetUp(A));
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
+  CHKERRQ(PetscRandomSetFromOptions(rctx));
 
   for (i=5*rank; i<5*rank+5; i++) {
     for (j=0; j<5*size; j++) {
-      ierr   = PetscRandomGetValue(rctx,&value);CHKERRQ(ierr);
+      CHKERRQ(PetscRandomGetValue(rctx,&value));
       column = (PetscInt) (5*size*PetscRealPart(value));
-      ierr   = PetscRandomGetValue(rctx,&value);CHKERRQ(ierr);
-      ierr   = MatSetValues(A,1,&i,1,&column,&value,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(PetscRandomGetValue(rctx,&value));
+      CHKERRQ(MatSetValues(A,1,&i,1,&column,&value,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  ierr = MatMPIAIJGetSeqAIJ(A,&AA,&AB,&garray);CHKERRQ(ierr);
-  ierr = MatGetRowIJ(AA,0,PETSC_FALSE,PETSC_FALSE,&nd,(const PetscInt**)&di,(const PetscInt**)&dj,&done);CHKERRQ(ierr);
-  ierr = MatSeqAIJGetArray(AA,&da);CHKERRQ(ierr);
-  ierr = MatGetRowIJ(AB,0,PETSC_FALSE,PETSC_FALSE,&nd,(const PetscInt**)&oi,(const PetscInt**)&oj,&done);CHKERRQ(ierr);
-  ierr = MatSeqAIJGetArray(AB,&oa);CHKERRQ(ierr);
+  CHKERRQ(MatMPIAIJGetSeqAIJ(A,&AA,&AB,&garray));
+  CHKERRQ(MatGetRowIJ(AA,0,PETSC_FALSE,PETSC_FALSE,&nd,(const PetscInt**)&di,(const PetscInt**)&dj,&done));
+  CHKERRQ(MatSeqAIJGetArray(AA,&da));
+  CHKERRQ(MatGetRowIJ(AB,0,PETSC_FALSE,PETSC_FALSE,&nd,(const PetscInt**)&oi,(const PetscInt**)&oj,&done));
+  CHKERRQ(MatSeqAIJGetArray(AB,&oa));
 
-  ierr = PetscMalloc1(oi[5],&ooj);CHKERRQ(ierr);
-  ierr = PetscArraycpy(ooj,oj,oi[5]);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(oi[5],&ooj));
+  CHKERRQ(PetscArraycpy(ooj,oj,oi[5]));
   /* modify the column entries in the non-diagonal portion back to global numbering */
   for (i=0; i<oi[5]; i++) {
     ooj[i] = garray[ooj[i]];
   }
 
-  ierr = MatCreateMPIAIJWithSplitArrays(PETSC_COMM_WORLD,5,5,PETSC_DETERMINE,PETSC_DETERMINE,di,dj,da,oi,ooj,oa,&B);CHKERRQ(ierr);
-  ierr = MatSetUp(B);CHKERRQ(ierr);
-  ierr = MatEqual(A,B,&equal);CHKERRQ(ierr);
+  CHKERRQ(MatCreateMPIAIJWithSplitArrays(PETSC_COMM_WORLD,5,5,PETSC_DETERMINE,PETSC_DETERMINE,di,dj,da,oi,ooj,oa,&B));
+  CHKERRQ(MatSetUp(B));
+  CHKERRQ(MatEqual(A,B,&equal));
 
-  ierr = MatRestoreRowIJ(AA,0,PETSC_FALSE,PETSC_FALSE,&nd,(const PetscInt**)&di,(const PetscInt**)&dj,&done);CHKERRQ(ierr);
-  ierr = MatSeqAIJRestoreArray(AA,&da);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(AB,0,PETSC_FALSE,PETSC_FALSE,&nd,(const PetscInt**)&oi,(const PetscInt**)&oj,&done);CHKERRQ(ierr);
-  ierr = MatSeqAIJRestoreArray(AB,&oa);CHKERRQ(ierr);
+  CHKERRQ(MatRestoreRowIJ(AA,0,PETSC_FALSE,PETSC_FALSE,&nd,(const PetscInt**)&di,(const PetscInt**)&dj,&done));
+  CHKERRQ(MatSeqAIJRestoreArray(AA,&da));
+  CHKERRQ(MatRestoreRowIJ(AB,0,PETSC_FALSE,PETSC_FALSE,&nd,(const PetscInt**)&oi,(const PetscInt**)&oj,&done));
+  CHKERRQ(MatSeqAIJRestoreArray(AB,&oa));
 
   PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Likely a bug in MatCreateMPIAIJWithSplitArrays()");
 
   /* Free spaces */
-  ierr = PetscFree(ooj);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = PetscFree(oj);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(ooj));
+  CHKERRQ(PetscRandomDestroy(&rctx));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&B));
+  CHKERRQ(PetscFree(oj));
   ierr = PetscFinalize();
   return ierr;
 }

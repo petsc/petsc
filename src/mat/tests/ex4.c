@@ -14,96 +14,96 @@ int main(int argc,char **argv)
   PetscBool      allA = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON));
+  CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_COMMON));
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(mat);CHKERRQ(ierr);
-  ierr = MatSetUp(mat);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&mat));
+  CHKERRQ(MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m,n));
+  CHKERRQ(MatSetFromOptions(mat));
+  CHKERRQ(MatSetUp(mat));
+  CHKERRQ(MatGetOwnershipRange(mat,&rstart,&rend));
   for (i=rstart; i<rend; i++) {
     value = (PetscReal)i+1; tmp = i % 5;
-    ierr  = MatSetValues(mat,1,&tmp,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(mat,1,&tmp,1,&i,&value,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Original matrix\n");CHKERRQ(ierr);
-  ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Original matrix\n"));
+  CHKERRQ(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Test MatCreateSubMatrix_XXX_All(), i.e., submatrix = A */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-test_all",&allA,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test_all",&allA,NULL));
   if (allA) {
-    ierr   = ISCreateStride(PETSC_COMM_SELF,m,0,1,&irow);CHKERRQ(ierr);
-    ierr   = ISCreateStride(PETSC_COMM_SELF,n,0,1,&icol);CHKERRQ(ierr);
-    ierr   = MatCreateSubMatrices(mat,1,&irow,&icol,MAT_INITIAL_MATRIX,&submatrices);CHKERRQ(ierr);
-    ierr   = MatCreateSubMatrices(mat,1,&irow,&icol,MAT_REUSE_MATRIX,&submatrices);CHKERRQ(ierr);
+    CHKERRQ(ISCreateStride(PETSC_COMM_SELF,m,0,1,&irow));
+    CHKERRQ(ISCreateStride(PETSC_COMM_SELF,n,0,1,&icol));
+    CHKERRQ(MatCreateSubMatrices(mat,1,&irow,&icol,MAT_INITIAL_MATRIX,&submatrices));
+    CHKERRQ(MatCreateSubMatrices(mat,1,&irow,&icol,MAT_REUSE_MATRIX,&submatrices));
     submat = *submatrices;
 
     /* sviewer will cause the submatrices (one per processor) to be printed in the correct order */
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"\nSubmatrices with all\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"--------------------\n");CHKERRQ(ierr);
-    ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-    ierr = MatView(submat,sviewer);CHKERRQ(ierr);
-    ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-    ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"\nSubmatrices with all\n"));
+    CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"--------------------\n"));
+    CHKERRQ(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+    CHKERRQ(MatView(submat,sviewer));
+    CHKERRQ(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+    CHKERRQ(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
 
-    ierr = ISDestroy(&irow);CHKERRQ(ierr);
-    ierr = ISDestroy(&icol);CHKERRQ(ierr);
+    CHKERRQ(ISDestroy(&irow));
+    CHKERRQ(ISDestroy(&icol));
 
     /* test getting a reference on a submat */
-    ierr = PetscObjectReference((PetscObject)submat);CHKERRQ(ierr);
-    ierr = MatDestroySubMatrices(1,&submatrices);CHKERRQ(ierr);
-    ierr = MatDestroy(&submat);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectReference((PetscObject)submat));
+    CHKERRQ(MatDestroySubMatrices(1,&submatrices));
+    CHKERRQ(MatDestroy(&submat));
   }
 
   /* Form submatrix with rows 2-4 and columns 4-8 */
-  ierr   = ISCreateStride(PETSC_COMM_SELF,3,2,1,&irow);CHKERRQ(ierr);
-  ierr   = ISCreateStride(PETSC_COMM_SELF,5,4,1,&icol);CHKERRQ(ierr);
-  ierr   = MatCreateSubMatrices(mat,1,&irow,&icol,MAT_INITIAL_MATRIX,&submatrices);CHKERRQ(ierr);
+  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,3,2,1,&irow));
+  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,5,4,1,&icol));
+  CHKERRQ(MatCreateSubMatrices(mat,1,&irow,&icol,MAT_INITIAL_MATRIX,&submatrices));
   submat = *submatrices;
 
   /* Test reuse submatrices */
-  ierr = MatCreateSubMatrices(mat,1,&irow,&icol,MAT_REUSE_MATRIX,&submatrices);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSubMatrices(mat,1,&irow,&icol,MAT_REUSE_MATRIX,&submatrices));
 
   /* sviewer will cause the submatrices (one per processor) to be printed in the correct order */
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"\nSubmatrices\n");CHKERRQ(ierr);
-  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-  ierr = MatView(submat,sviewer);CHKERRQ(ierr);
-  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)submat);CHKERRQ(ierr);
-  ierr = MatDestroySubMatrices(1,&submatrices);CHKERRQ(ierr);
-  ierr = MatDestroy(&submat);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"\nSubmatrices\n"));
+  CHKERRQ(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+  CHKERRQ(MatView(submat,sviewer));
+  CHKERRQ(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+  CHKERRQ(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscObjectReference((PetscObject)submat));
+  CHKERRQ(MatDestroySubMatrices(1,&submatrices));
+  CHKERRQ(MatDestroy(&submat));
 
   /* Form submatrix with rows 2-4 and all columns */
-  ierr   = ISDestroy(&icol);CHKERRQ(ierr);
-  ierr   = ISCreateStride(PETSC_COMM_SELF,10,0,1,&icol);CHKERRQ(ierr);
-  ierr   = MatCreateSubMatrices(mat,1,&irow,&icol,MAT_INITIAL_MATRIX,&submatrices);CHKERRQ(ierr);
-  ierr   = MatCreateSubMatrices(mat,1,&irow,&icol,MAT_REUSE_MATRIX,&submatrices);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&icol));
+  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,10,0,1,&icol));
+  CHKERRQ(MatCreateSubMatrices(mat,1,&irow,&icol,MAT_INITIAL_MATRIX,&submatrices));
+  CHKERRQ(MatCreateSubMatrices(mat,1,&irow,&icol,MAT_REUSE_MATRIX,&submatrices));
   submat = *submatrices;
 
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"\nSubmatrices with allcolumns\n");CHKERRQ(ierr);
-  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-  ierr = MatView(submat,sviewer);CHKERRQ(ierr);
-  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"\nSubmatrices with allcolumns\n"));
+  CHKERRQ(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+  CHKERRQ(MatView(submat,sviewer));
+  CHKERRQ(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sviewer));
+  CHKERRQ(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
 
   /* Test MatDuplicate */
-  ierr = MatDuplicate(submat,MAT_COPY_VALUES,&submat1);CHKERRQ(ierr);
-  ierr = MatDestroy(&submat1);CHKERRQ(ierr);
+  CHKERRQ(MatDuplicate(submat,MAT_COPY_VALUES,&submat1));
+  CHKERRQ(MatDestroy(&submat1));
 
   /* Zero the original matrix */
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Original zeroed matrix\n");CHKERRQ(ierr);
-  ierr = MatZeroEntries(mat);CHKERRQ(ierr);
-  ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Original zeroed matrix\n"));
+  CHKERRQ(MatZeroEntries(mat));
+  CHKERRQ(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = ISDestroy(&irow);CHKERRQ(ierr);
-  ierr = ISDestroy(&icol);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)submat);CHKERRQ(ierr);
-  ierr = MatDestroySubMatrices(1,&submatrices);CHKERRQ(ierr);
-  ierr = MatDestroy(&submat);CHKERRQ(ierr);
-  ierr = MatDestroy(&mat);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&irow));
+  CHKERRQ(ISDestroy(&icol));
+  CHKERRQ(PetscObjectReference((PetscObject)submat));
+  CHKERRQ(MatDestroySubMatrices(1,&submatrices));
+  CHKERRQ(MatDestroy(&submat));
+  CHKERRQ(MatDestroy(&mat));
   ierr = PetscFinalize();
   return ierr;
 }

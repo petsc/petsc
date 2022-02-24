@@ -36,16 +36,15 @@ PetscClassId PETSC_DRAWBAR_CLASSID = 0;
 PetscErrorCode  PetscDrawBarCreate(PetscDraw draw,PetscDrawBar *bar)
 {
   PetscDrawBar   h;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidPointer(bar,2);
 
-  ierr = PetscHeaderCreate(h,PETSC_DRAWBAR_CLASSID,"DrawBar","Bar Graph","Draw",PetscObjectComm((PetscObject)draw),PetscDrawBarDestroy,NULL);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)h);CHKERRQ(ierr);
+  CHKERRQ(PetscHeaderCreate(h,PETSC_DRAWBAR_CLASSID,"DrawBar","Bar Graph","Draw",PetscObjectComm((PetscObject)draw),PetscDrawBarDestroy,NULL));
+  CHKERRQ(PetscLogObjectParent((PetscObject)draw,(PetscObject)h));
 
-  ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectReference((PetscObject)draw));
   h->win = draw;
 
   h->view        = NULL;
@@ -55,7 +54,7 @@ PetscErrorCode  PetscDrawBarCreate(PetscDraw draw,PetscDrawBar *bar)
   h->ymax        = 0.;
   h->numBins     = 0;
 
-  ierr = PetscDrawAxisCreate(draw,&h->axis);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawAxisCreate(draw,&h->axis));
   h->axis->xticks = NULL;
 
   *bar = h;
@@ -83,20 +82,18 @@ PetscErrorCode  PetscDrawBarCreate(PetscDraw draw,PetscDrawBar *bar)
 @*/
 PetscErrorCode  PetscDrawBarSetData(PetscDrawBar bar,PetscInt bins,const PetscReal data[],const char *const *labels)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar,PETSC_DRAWBAR_CLASSID,1);
 
   if (bar->numBins != bins) {
-    ierr = PetscFree(bar->values);CHKERRQ(ierr);
-    ierr = PetscMalloc1(bins, &bar->values);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(bar->values));
+    CHKERRQ(PetscMalloc1(bins, &bar->values));
     bar->numBins = bins;
   }
-  ierr = PetscArraycpy(bar->values,data,bins);CHKERRQ(ierr);
+  CHKERRQ(PetscArraycpy(bar->values,data,bins));
   bar->numBins = bins;
   if (labels) {
-    ierr = PetscStrArrayallocpy(labels,&bar->labels);CHKERRQ(ierr);
+    CHKERRQ(PetscStrArrayallocpy(labels,&bar->labels));
   }
   PetscFunctionReturn(0);
 }
@@ -115,18 +112,16 @@ PetscErrorCode  PetscDrawBarSetData(PetscDrawBar bar,PetscInt bins,const PetscRe
 @*/
 PetscErrorCode  PetscDrawBarDestroy(PetscDrawBar *bar)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!*bar) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*bar,PETSC_DRAWBAR_CLASSID,1);
   if (--((PetscObject)(*bar))->refct > 0) PetscFunctionReturn(0);
 
-  ierr = PetscFree((*bar)->values);CHKERRQ(ierr);
-  ierr = PetscStrArrayDestroy(&(*bar)->labels);CHKERRQ(ierr);
-  ierr = PetscDrawAxisDestroy(&(*bar)->axis);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&(*bar)->win);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(bar);CHKERRQ(ierr);
+  CHKERRQ(PetscFree((*bar)->values));
+  CHKERRQ(PetscStrArrayDestroy(&(*bar)->labels));
+  CHKERRQ(PetscDrawAxisDestroy(&(*bar)->axis));
+  CHKERRQ(PetscDrawDestroy(&(*bar)->win));
+  CHKERRQ(PetscHeaderDestroy(bar));
   PetscFunctionReturn(0);
 }
 
@@ -150,14 +145,14 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
   PetscReal      xmin,xmax,ymin,ymax,*values,binLeft,binRight;
   PetscInt       numValues,i,bcolor,color,idx,*perm,nplot;
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
   char           **labels;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar,PETSC_DRAWBAR_CLASSID,1);
-  ierr = PetscDrawIsNull(bar->win,&isnull);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawIsNull(bar->win,&isnull));
   if (isnull) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)bar),&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)bar),&rank));
 
   if (bar->numBins < 1) PetscFunctionReturn(0);
 
@@ -185,9 +180,9 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
   labels = bar->labels;
 
   if (bar->sort) {
-    ierr = PetscMalloc1(numValues,&perm);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(numValues,&perm));
     for (i=0; i<numValues;i++) perm[i] = i;
-    ierr = PetscSortRealWithPermutation(numValues,values,perm);CHKERRQ(ierr);
+    CHKERRQ(PetscSortRealWithPermutation(numValues,values,perm));
     if (bar->sorttolerance) {
       for (i=0; i<numValues;i++) {
         if (values[perm[numValues - i - 1]] < bar->sorttolerance) {
@@ -199,11 +194,11 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
   }
 
   draw = bar->win;
-  ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawCheckResizedWindow(draw));
+  CHKERRQ(PetscDrawClear(draw));
 
-  ierr = PetscDrawAxisSetLimits(bar->axis,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
-  ierr = PetscDrawAxisDraw(bar->axis);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawAxisSetLimits(bar->axis,xmin,xmax,ymin,ymax));
+  CHKERRQ(PetscDrawAxisDraw(bar->axis));
 
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   if (rank == 0) { /* Draw bins */
@@ -211,24 +206,24 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
       idx = (bar->sort ? perm[numValues - i - 1] : i);
       binLeft  = xmin + i;
       binRight = xmin + i + 1;
-      ierr = PetscDrawRectangle(draw,binLeft,ymin,binRight,values[idx],bcolor,bcolor,bcolor,bcolor);CHKERRQ(ierr);
-      ierr = PetscDrawLine(draw,binLeft,ymin,binLeft,values[idx],PETSC_DRAW_BLACK);CHKERRQ(ierr);
-      ierr = PetscDrawLine(draw,binRight,ymin,binRight,values[idx],PETSC_DRAW_BLACK);CHKERRQ(ierr);
-      ierr = PetscDrawLine(draw,binLeft,values[idx],binRight,values[idx],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      CHKERRQ(PetscDrawRectangle(draw,binLeft,ymin,binRight,values[idx],bcolor,bcolor,bcolor,bcolor));
+      CHKERRQ(PetscDrawLine(draw,binLeft,ymin,binLeft,values[idx],PETSC_DRAW_BLACK));
+      CHKERRQ(PetscDrawLine(draw,binRight,ymin,binRight,values[idx],PETSC_DRAW_BLACK));
+      CHKERRQ(PetscDrawLine(draw,binLeft,values[idx],binRight,values[idx],PETSC_DRAW_BLACK));
       if (labels) {
         PetscReal h;
-        ierr = PetscDrawStringGetSize(draw,NULL,&h);CHKERRQ(ierr);
-        ierr = PetscDrawStringCentered(draw,.5*(binLeft+binRight),ymin - 1.5*h,bcolor,labels[idx]);CHKERRQ(ierr);
+        CHKERRQ(PetscDrawStringGetSize(draw,NULL,&h));
+        CHKERRQ(PetscDrawStringCentered(draw,.5*(binLeft+binRight),ymin - 1.5*h,bcolor,labels[idx]));
       }
       if (color == PETSC_DRAW_ROTATE) bcolor++;
       if (bcolor > PETSC_DRAW_BASIC_COLORS-1) bcolor = PETSC_DRAW_BLACK+1;
     }
   }
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-  if (bar->sort) {ierr = PetscFree(perm);CHKERRQ(ierr);}
+  if (bar->sort) CHKERRQ(PetscFree(perm));
 
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
-  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawFlush(draw));
+  CHKERRQ(PetscDrawPause(draw));
   PetscFunctionReturn(0);
 }
 
@@ -246,11 +241,9 @@ PetscErrorCode  PetscDrawBarDraw(PetscDrawBar bar)
 @*/
 PetscErrorCode  PetscDrawBarSave(PetscDrawBar bar)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar,PETSC_DRAWBAR_CLASSID,1);
-  ierr = PetscDrawSave(bar->win);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawSave(bar->win));
   PetscFunctionReturn(0);
 }
 
@@ -389,17 +382,16 @@ PetscErrorCode  PetscDrawBarGetDraw(PetscDrawBar bar,PetscDraw *draw)
 @*/
 PetscErrorCode  PetscDrawBarSetFromOptions(PetscDrawBar bar)
 {
-  PetscErrorCode ierr;
   PetscBool      set;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar,PETSC_DRAWBAR_CLASSID,1);
 
-  ierr = PetscOptionsHasName(((PetscObject)bar)->options,((PetscObject)bar)->prefix,"-bar_sort",&set);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHasName(((PetscObject)bar)->options,((PetscObject)bar)->prefix,"-bar_sort",&set));
   if (set) {
     PetscReal tol = bar->sorttolerance;
-    ierr = PetscOptionsGetReal(((PetscObject)bar)->options,((PetscObject)bar)->prefix,"-bar_sort",&tol,NULL);CHKERRQ(ierr);
-    ierr = PetscDrawBarSort(bar,PETSC_TRUE,tol);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsGetReal(((PetscObject)bar)->options,((PetscObject)bar)->prefix,"-bar_sort",&tol,NULL));
+    CHKERRQ(PetscDrawBarSort(bar,PETSC_TRUE,tol));
   }
   PetscFunctionReturn(0);
 }

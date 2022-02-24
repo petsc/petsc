@@ -12,51 +12,51 @@ int main(int argc,char **args)
   PetscRandom    rdm;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-its",&its,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_size",&m,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-its",&its,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mat_size",&m,NULL));
   M    = m*bs;
-  ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,27,NULL,&A);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,M,M,27,NULL,&A));
+  CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE));
 
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,&rdm);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,M,&x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF,&rdm));
+  CHKERRQ(PetscRandomSetFromOptions(rdm));
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,M,&x));
+  CHKERRQ(VecDuplicate(x,&y));
 
   /* For each block row insert at most 27 blocks */
-  ierr = PetscMalloc1(bs*bs,&vals);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(bs*bs,&vals));
   for (i=0; i<m; i++) {
     row = i;
     for (j=0; j<27; j++) {
-      ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
+      CHKERRQ(PetscRandomGetValue(rdm,&rval));
       col  = (PetscInt)(PetscRealPart(rval)*m);
       for (k=0; k<bs; k++) {
         for (l=0; l<bs; l++) {
-          ierr = PetscRandomGetValue(rdm,&rval);CHKERRQ(ierr);
+          CHKERRQ(PetscRandomGetValue(rdm,&rval));
           vals[k*bs + l] = rval;
         }
       }
-      ierr = MatSetValuesBlocked(A,1,&row,1,&col,vals,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValuesBlocked(A,1,&row,1,&col,vals,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscFree(vals);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(PetscFree(vals));
 
   /* Time MatMult(), MatMultAdd() */
   for (i=0; i<its; i++) {
-    ierr  = VecSetRandom(x,rdm);CHKERRQ(ierr);
-    ierr  = MatMult(A,x,y);CHKERRQ(ierr);
-    ierr  = VecSetRandom(x,rdm);CHKERRQ(ierr);
-    ierr  = VecSetRandom(y,rdm);CHKERRQ(ierr);
-    ierr  = MatMultAdd(A,x,y,y);CHKERRQ(ierr);
+    CHKERRQ(VecSetRandom(x,rdm));
+    CHKERRQ(MatMult(A,x,y));
+    CHKERRQ(VecSetRandom(x,rdm));
+    CHKERRQ(VecSetRandom(y,rdm));
+    CHKERRQ(MatMultAdd(A,x,y,y));
   }
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
+  CHKERRQ(PetscRandomDestroy(&rdm));
   ierr = PetscFinalize();
   return ierr;
 }

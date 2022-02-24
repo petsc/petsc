@@ -51,12 +51,11 @@ PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *re, PetscScalar *im, PetscScal
 {
   PetscInt       *spos;
   PetscScalar    *n_cmpl,temp;
-  PetscErrorCode ierr;
   PetscInt       i, pos, j;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc1(m, &n_cmpl);CHKERRQ(ierr);
-  ierr = PetscMalloc1(m, &spos);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(m, &n_cmpl));
+  CHKERRQ(PetscMalloc1(m, &spos));
   /* Check the proper order of complex conjugate pairs */
   j = 0;
   while (j  < m) {
@@ -71,7 +70,7 @@ PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *re, PetscScalar *im, PetscScal
   }
 
   for (i = 0; i < m; i++) n_cmpl[i] = PetscSqrtReal(re[i]*re[i]+im[i]*im[i]);
-  ierr = KSPAGMRESLejafmaxarray(n_cmpl, 0, m, &pos);CHKERRQ(ierr);
+  CHKERRQ(KSPAGMRESLejafmaxarray(n_cmpl, 0, m, &pos));
   j = 0;
   if (im[pos] >= 0.0) {
     rre[0] = re[pos];
@@ -86,7 +85,7 @@ PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *re, PetscScalar *im, PetscScal
       spos[j] = pos + 1;
       j++;
     }
-    ierr = KSPAGMRESLejaCfpdMax(re, im, spos, j, m, &pos);CHKERRQ(ierr);
+    CHKERRQ(KSPAGMRESLejaCfpdMax(re, im, spos, j, m, &pos));
     if (im[pos] < 0) pos--;
 
     if ((im[pos] >= 0) && (j < m)) {
@@ -96,7 +95,7 @@ PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *re, PetscScalar *im, PetscScal
       j++;
     }
   }
-  ierr = PetscFree(spos);CHKERRQ(ierr);
-  ierr = PetscFree(n_cmpl);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(spos));
+  CHKERRQ(PetscFree(n_cmpl));
   PetscFunctionReturn(0);
 }

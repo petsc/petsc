@@ -10,12 +10,12 @@ int main(int argc,char **args)
   PetscViewer    viewer;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscViewerCreate(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetFromOptions(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerCreate(PETSC_COMM_WORLD,&viewer));
+  CHKERRQ(PetscViewerSetFromOptions(viewer));
+  CHKERRQ(PetscViewerDestroy(&viewer));
 
-  ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"stdout",&viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIOpen(PETSC_COMM_WORLD,"stdout",&viewer));
+  CHKERRQ(PetscViewerDestroy(&viewer));
   ierr = PetscFinalize();
   return ierr;
 }

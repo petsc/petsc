@@ -5,16 +5,15 @@ static PetscErrorCode VecTaggerDestroy_AndOr(VecTagger tagger)
 {
   VecTagger_AndOr *andOr = (VecTagger_AndOr *) tagger->data;
   PetscInt        i;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   for (i = 0; i < andOr->nsubs; i++) {
-    ierr = VecTaggerDestroy(&andOr->subs[i]);CHKERRQ(ierr);
+    CHKERRQ(VecTaggerDestroy(&andOr->subs[i]));
   }
   if (andOr->mode == PETSC_OWN_POINTER) {
-    ierr = PetscFree(andOr->subs);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(andOr->subs));
   }
-  ierr = PetscFree(tagger->data);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(tagger->data));
   PetscFunctionReturn(0);
 }
 
@@ -39,7 +38,6 @@ PetscErrorCode VecTaggerSetSubs_AndOr(VecTagger tagger, PetscInt nsubs, VecTagge
 {
   PetscInt        i;
   VecTagger_AndOr *andOr = (VecTagger_AndOr *) tagger->data;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
@@ -47,20 +45,20 @@ PetscErrorCode VecTaggerSetSubs_AndOr(VecTagger tagger, PetscInt nsubs, VecTagge
   if (nsubs == andOr->nsubs && subs == andOr->subs && mode != PETSC_COPY_VALUES) PetscFunctionReturn(0);
   if (subs) {
     for (i = 0; i < nsubs; i++) {
-      ierr = PetscObjectReference((PetscObject)subs[i]);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectReference((PetscObject)subs[i]));
     }
   }
   for (i = 0; i < andOr->nsubs; i++) {
-    ierr = VecTaggerDestroy(&(andOr->subs[i]));CHKERRQ(ierr);
+    CHKERRQ(VecTaggerDestroy(&(andOr->subs[i])));
   }
   if (andOr->mode == PETSC_OWN_POINTER && andOr->subs != subs) {
-    ierr = PetscFree(andOr->subs);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(andOr->subs));
   }
   andOr->nsubs = nsubs;
   if (subs) {
     if (mode == PETSC_COPY_VALUES) {
       andOr->mode = PETSC_OWN_POINTER;
-      ierr = PetscMalloc1(nsubs,&(andOr->subs));CHKERRQ(ierr);
+      CHKERRQ(PetscMalloc1(nsubs,&(andOr->subs)));
       for (i = 0; i < nsubs; i++) {
         andOr->subs[i] = subs[i];
       }
@@ -68,7 +66,7 @@ PetscErrorCode VecTaggerSetSubs_AndOr(VecTagger tagger, PetscInt nsubs, VecTagge
       andOr->subs = subs;
       andOr->mode = mode;
       for (i = 0; i < nsubs; i++) {
-        ierr = PetscObjectDereference((PetscObject)subs[i]);CHKERRQ(ierr);
+        CHKERRQ(PetscObjectDereference((PetscObject)subs[i]));
       }
     }
   } else {
@@ -77,18 +75,18 @@ PetscErrorCode VecTaggerSetSubs_AndOr(VecTagger tagger, PetscInt nsubs, VecTagge
     const char *prefix;
     char       tprefix[128];
 
-    ierr = VecTaggerGetBlockSize(tagger,&bs);CHKERRQ(ierr);
-    ierr = PetscObjectGetOptionsPrefix((PetscObject)tagger,&prefix);CHKERRQ(ierr);
+    CHKERRQ(VecTaggerGetBlockSize(tagger,&bs));
+    CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject)tagger,&prefix));
     andOr->mode = PETSC_OWN_POINTER;
-    ierr = PetscMalloc1(nsubs,&(andOr->subs));CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(nsubs,&(andOr->subs)));
     for (i = 0; i < nsubs; i++) {
       VecTagger sub;
 
-      ierr = PetscSNPrintf(tprefix,128,"sub_%" PetscInt_FMT "_",i);CHKERRQ(ierr);
-      ierr = VecTaggerCreate(comm,&sub);CHKERRQ(ierr);
-      ierr = VecTaggerSetBlockSize(sub,bs);CHKERRQ(ierr);
-      ierr = PetscObjectSetOptionsPrefix((PetscObject)sub,prefix);CHKERRQ(ierr);
-      ierr = PetscObjectAppendOptionsPrefix((PetscObject)sub,tprefix);CHKERRQ(ierr);
+      CHKERRQ(PetscSNPrintf(tprefix,128,"sub_%" PetscInt_FMT "_",i));
+      CHKERRQ(VecTaggerCreate(comm,&sub));
+      CHKERRQ(VecTaggerSetBlockSize(sub,bs));
+      CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)sub,prefix));
+      CHKERRQ(PetscObjectAppendOptionsPrefix((PetscObject)sub,tprefix));
       andOr->subs[i] = sub;
     }
   }
@@ -103,23 +101,22 @@ static PetscErrorCode VecTaggerSetFromOptions_AndOr(PetscOptionItems *PetscOptio
   char           funcstring[BUFSIZ];
   char           descstring[BUFSIZ];
   VecTagger      *subs;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetType((PetscObject)tagger,&name);CHKERRQ(ierr);
-  ierr = VecTaggerGetSubs_AndOr(tagger,&nsubs,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetType((PetscObject)tagger,&name));
+  CHKERRQ(VecTaggerGetSubs_AndOr(tagger,&nsubs,NULL));
   nsubsOrig = nsubs;
-  ierr = PetscSNPrintf(headstring,sizeof(headstring),"VecTagger %s options",name);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(funcstring,sizeof(funcstring),"VecTagger%sSetSubs()",name);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(descstring,sizeof(descstring),"number of sub tags in %s tag",name);CHKERRQ(ierr);
-  ierr = PetscOptionsHead(PetscOptionsObject,headstring);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-vec_tagger_num_subs",descstring,funcstring,nsubs,&nsubs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  CHKERRQ(PetscSNPrintf(headstring,sizeof(headstring),"VecTagger %s options",name));
+  CHKERRQ(PetscSNPrintf(funcstring,sizeof(funcstring),"VecTagger%sSetSubs()",name));
+  CHKERRQ(PetscSNPrintf(descstring,sizeof(descstring),"number of sub tags in %s tag",name));
+  CHKERRQ(PetscOptionsHead(PetscOptionsObject,headstring));
+  CHKERRQ(PetscOptionsInt("-vec_tagger_num_subs",descstring,funcstring,nsubs,&nsubs,NULL));
+  CHKERRQ(PetscOptionsTail());
   if (nsubs != nsubsOrig) {
-    ierr = VecTaggerSetSubs_AndOr(tagger,nsubs,NULL,PETSC_OWN_POINTER);CHKERRQ(ierr);
-    ierr = VecTaggerGetSubs_AndOr(tagger,NULL,&subs);CHKERRQ(ierr);
+    CHKERRQ(VecTaggerSetSubs_AndOr(tagger,nsubs,NULL,PETSC_OWN_POINTER));
+    CHKERRQ(VecTaggerGetSubs_AndOr(tagger,NULL,&subs));
     for (i = 0; i < nsubs; i++) {
-      ierr = VecTaggerSetFromOptions(subs[i]);CHKERRQ(ierr);
+      CHKERRQ(VecTaggerSetFromOptions(subs[i]));
     }
   }
   PetscFunctionReturn(0);
@@ -129,13 +126,12 @@ static PetscErrorCode VecTaggerSetUp_AndOr (VecTagger tagger)
 {
   PetscInt        nsubs, i;
   VecTagger       *subs;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = VecTaggerGetSubs_AndOr(tagger,&nsubs,&subs);CHKERRQ(ierr);
+  CHKERRQ(VecTaggerGetSubs_AndOr(tagger,&nsubs,&subs));
   PetscCheckFalse(!nsubs,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_WRONGSTATE,"Must set sub taggers before calling setup.");
   for (i = 0; i < nsubs; i++) {
-    ierr = VecTaggerSetUp(subs[i]);CHKERRQ(ierr);
+    CHKERRQ(VecTaggerSetUp(subs[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -143,23 +139,22 @@ static PetscErrorCode VecTaggerSetUp_AndOr (VecTagger tagger)
 static PetscErrorCode VecTaggerView_AndOr(VecTagger tagger, PetscViewer viewer)
 {
   PetscBool       iascii;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     PetscInt i, nsubs;
     VecTagger *subs;
     const char *name;
 
-    ierr = VecTaggerGetSubs_AndOr(tagger,&nsubs,&subs);CHKERRQ(ierr);
-    ierr = PetscObjectGetType((PetscObject)tagger,&name);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer," %s of %" PetscInt_FMT " subtags:\n",name,nsubs);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    CHKERRQ(VecTaggerGetSubs_AndOr(tagger,&nsubs,&subs));
+    CHKERRQ(PetscObjectGetType((PetscObject)tagger,&name));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer," %s of %" PetscInt_FMT " subtags:\n",name,nsubs));
+    CHKERRQ(PetscViewerASCIIPushTab(viewer));
     for (i = 0; i < nsubs; i++) {
-      ierr = VecTaggerView(subs[i],viewer);CHKERRQ(ierr);
+      CHKERRQ(VecTaggerView(subs[i],viewer));
     }
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPopTab(viewer));
   }
   PetscFunctionReturn(0);
 }
@@ -167,7 +162,6 @@ static PetscErrorCode VecTaggerView_AndOr(VecTagger tagger, PetscViewer viewer)
 PetscErrorCode VecTaggerCreate_AndOr(VecTagger tagger)
 {
   VecTagger_AndOr    *andOr;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   tagger->ops->destroy          = VecTaggerDestroy_AndOr;
@@ -175,7 +169,7 @@ PetscErrorCode VecTaggerCreate_AndOr(VecTagger tagger)
   tagger->ops->setup            = VecTaggerSetUp_AndOr;
   tagger->ops->view             = VecTaggerView_AndOr;
   tagger->ops->computeis        = VecTaggerComputeIS_FromBoxes;
-  ierr = PetscNewLog(tagger,&andOr);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(tagger,&andOr));
   tagger->data = andOr;
   PetscFunctionReturn(0);
 }

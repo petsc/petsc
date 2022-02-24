@@ -162,37 +162,37 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   /* TaoLineSearchRegister() also has the same memory leak */
   /* TaoRegister() also has the same memory leak */
-  ierr = TSGLLEAdaptRegister("dummy",TSGLLEAdaptCreate_Dummy);CHKERRQ(ierr);
-  ierr = TSGLLERegister("dummy",TSGLLECreate_Dummy);CHKERRQ(ierr);
-  ierr = TSRKRegister("dummy",0,0,A,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = TSGLEERegister("dummy",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = TSARKIMEXRegister("dummy",0,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = TSRosWRegister("dummy",0,1,A,Gamma,b,0,0,0);CHKERRQ(ierr);
-  ierr = TSBasicSymplecticRegister("dummy",0,0,c,d);CHKERRQ(ierr);
-  ierr = TSAdaptRegister("dummy",TSAdaptCreate_Dummy);CHKERRQ(ierr);
-  ierr = TSRegister("dummy",TSCreate_Dummy);CHKERRQ(ierr);
+  CHKERRQ(TSGLLEAdaptRegister("dummy",TSGLLEAdaptCreate_Dummy));
+  CHKERRQ(TSGLLERegister("dummy",TSGLLECreate_Dummy));
+  CHKERRQ(TSRKRegister("dummy",0,0,A,0,0,0,0,0));
+  CHKERRQ(TSGLEERegister("dummy",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0));
+  CHKERRQ(TSARKIMEXRegister("dummy",0,0,0,0,0,0,0,0,0,0,0,0,0));
+  CHKERRQ(TSRosWRegister("dummy",0,1,A,Gamma,b,0,0,0));
+  CHKERRQ(TSBasicSymplecticRegister("dummy",0,0,c,d));
+  CHKERRQ(TSAdaptRegister("dummy",TSAdaptCreate_Dummy));
+  CHKERRQ(TSRegister("dummy",TSCreate_Dummy));
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = CharacteristicRegister("dummy",CharacteristicCreate_Dummy);CHKERRQ(ierr);
+  CHKERRQ(CharacteristicRegister("dummy",CharacteristicCreate_Dummy));
 #endif
-  ierr = SNESLineSearchRegister("dummy",SNESLineSearchCreate_Dummy);CHKERRQ(ierr);
-  ierr = SNESRegister("dummy",SNESCreate_Dummy);CHKERRQ(ierr);
-  ierr = KSPGuessRegister("dummy",KSPGuessCreate_Dummy);CHKERRQ(ierr);
-  ierr = KSPRegister("dummy",KSPCreate_Dummy);CHKERRQ(ierr);
-  ierr = PCRegister("dummy",PCCreate_Dummy);CHKERRQ(ierr);
-  ierr = DMRegister("dummy",DMCreate_Dummy);CHKERRQ(ierr);
-  ierr = MatOrderingRegister("dummy",MatOrderingCreate_Dummy);CHKERRQ(ierr);
-  ierr = MatPartitioningRegister("dummy",MatPartitioningCreate_Dummy);CHKERRQ(ierr);
-  ierr = MatRegister("dummy",MatCreate_Dummy);CHKERRQ(ierr);
-  ierr = PFRegister("dummy",PFCreate_Dummy);CHKERRQ(ierr);
-  ierr = VecScatterRegister("dummy",VecScatterCreate_Dummy);CHKERRQ(ierr);
-  ierr = VecRegister("dummy",VecCreate_Dummy);CHKERRQ(ierr);
-  ierr = PetscSFRegister("dummy",PetscSFCreate_Dummy);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRegister("dummy",ISLocalToGlobalMappingCreate_Dummy);CHKERRQ(ierr);
-  ierr = ISRegister("dummy",ISCreate_Dummy);CHKERRQ(ierr);
-  ierr = AORegister("dummy",AOCreate_Dummy);CHKERRQ(ierr);
-  ierr = PetscDrawRegister("dummy",PetscDrawCreate_Dummy);CHKERRQ(ierr);
-  ierr = PetscViewerRegister("dummy",PetscViewerCreate_Dummy);CHKERRQ(ierr);
-  ierr = PetscRandomRegister("dummy",PetscRandomCreate_Dummy);CHKERRQ(ierr);
+  CHKERRQ(SNESLineSearchRegister("dummy",SNESLineSearchCreate_Dummy));
+  CHKERRQ(SNESRegister("dummy",SNESCreate_Dummy));
+  CHKERRQ(KSPGuessRegister("dummy",KSPGuessCreate_Dummy));
+  CHKERRQ(KSPRegister("dummy",KSPCreate_Dummy));
+  CHKERRQ(PCRegister("dummy",PCCreate_Dummy));
+  CHKERRQ(DMRegister("dummy",DMCreate_Dummy));
+  CHKERRQ(MatOrderingRegister("dummy",MatOrderingCreate_Dummy));
+  CHKERRQ(MatPartitioningRegister("dummy",MatPartitioningCreate_Dummy));
+  CHKERRQ(MatRegister("dummy",MatCreate_Dummy));
+  CHKERRQ(PFRegister("dummy",PFCreate_Dummy));
+  CHKERRQ(VecScatterRegister("dummy",VecScatterCreate_Dummy));
+  CHKERRQ(VecRegister("dummy",VecCreate_Dummy));
+  CHKERRQ(PetscSFRegister("dummy",PetscSFCreate_Dummy));
+  CHKERRQ(ISLocalToGlobalMappingRegister("dummy",ISLocalToGlobalMappingCreate_Dummy));
+  CHKERRQ(ISRegister("dummy",ISCreate_Dummy));
+  CHKERRQ(AORegister("dummy",AOCreate_Dummy));
+  CHKERRQ(PetscDrawRegister("dummy",PetscDrawCreate_Dummy));
+  CHKERRQ(PetscViewerRegister("dummy",PetscViewerCreate_Dummy));
+  CHKERRQ(PetscRandomRegister("dummy",PetscRandomCreate_Dummy));
   ierr = PetscFinalize();
   return ierr;
 }

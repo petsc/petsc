@@ -108,14 +108,12 @@ typedef struct
 
 static PetscErrorCode CreateMesh(MPI_Comm comm,UserCtx *user,DM *mesh)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = DMCreate(comm, mesh);CHKERRQ(ierr);
-  ierr = DMSetType(*mesh, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*mesh);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(*mesh,user);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*mesh,NULL,"-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreate(comm, mesh));
+  CHKERRQ(DMSetType(*mesh, DMPLEX));
+  CHKERRQ(DMSetFromOptions(*mesh));
+  CHKERRQ(DMSetApplicationContext(*mesh,user));
+  CHKERRQ(DMViewFromOptions(*mesh,NULL,"-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -127,24 +125,23 @@ static PetscErrorCode SetupProblem(DM dm,UserCtx *user)
   PetscWeakForm  wf;
   const PetscInt id = 1;
   PetscInt       bd;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  CHKERRQ(DMGetDS(dm, &ds));
   /* All of these are independent of the user's choice of solution */
-  ierr = PetscDSSetResidual(ds,0,f0_v,f1_v);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(ds,1,f0_q_linear,NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(ds,0,0,g0_vu,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(ds,0,1,NULL,NULL,g2_vp,NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(ds,1,0,NULL,g1_qu,NULL,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscDSSetResidual(ds,0,f0_v,f1_v));
+  CHKERRQ(PetscDSSetResidual(ds,1,f0_q_linear,NULL));
+  CHKERRQ(PetscDSSetJacobian(ds,0,0,g0_vu,NULL,NULL,NULL));
+  CHKERRQ(PetscDSSetJacobian(ds,0,1,NULL,NULL,g2_vp,NULL));
+  CHKERRQ(PetscDSSetJacobian(ds,1,0,NULL,g1_qu,NULL,NULL));
 
-  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
-  ierr = PetscDSAddBoundary(ds,DM_BC_NATURAL,"Boundary Integral",label,1,&id,0,0,NULL,(void (*)(void))NULL,NULL,user,&bd);CHKERRQ(ierr);
-  ierr = PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, 0, f0_bd_u_linear, 0, NULL);CHKERRQ(ierr);
+  CHKERRQ(DMGetLabel(dm, "marker", &label));
+  CHKERRQ(PetscDSAddBoundary(ds,DM_BC_NATURAL,"Boundary Integral",label,1,&id,0,0,NULL,(void (*)(void))NULL,NULL,user,&bd));
+  CHKERRQ(PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+  CHKERRQ(PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, 0, f0_bd_u_linear, 0, NULL));
 
-  ierr = PetscDSSetExactSolution(ds,0,linear_u,NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetExactSolution(ds,1,linear_divu,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscDSSetExactSolution(ds,0,linear_u,NULL));
+  CHKERRQ(PetscDSSetExactSolution(ds,1,linear_divu,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -155,54 +152,53 @@ static PetscErrorCode SetupDiscretization(DM mesh,DM mesh_sum,PetscErrorCode (*s
   PetscFE        u,divu,u_sum,divu_sum;
   PetscInt       dim;
   PetscBool      simplex;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(mesh, &dim);CHKERRQ(ierr);
-  ierr = DMPlexIsSimplex(mesh, &simplex);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(mesh, &dim));
+  CHKERRQ(DMPlexIsSimplex(mesh, &simplex));
   /* Create FE objects and give them names so that options can be set from
    * command line. Each field gets 2 instances (i.e. velocity and velocity_sum)created twice so that we can compare between approaches. */
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject)mesh),dim,dim,simplex,"velocity_",-1,&u);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)u,"velocity");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject)mesh_sum),dim,dim,simplex,"velocity_sum_",-1,&u_sum);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)u_sum,"velocity_sum");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject)mesh),dim,1,simplex,"divu_",-1,&divu);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)divu,"divu");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject)mesh_sum),dim,1,simplex,"divu_sum_",-1,&divu_sum);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)divu_sum,"divu_sum");CHKERRQ(ierr);
+  CHKERRQ(PetscFECreateDefault(PetscObjectComm((PetscObject)mesh),dim,dim,simplex,"velocity_",-1,&u));
+  CHKERRQ(PetscObjectSetName((PetscObject)u,"velocity"));
+  CHKERRQ(PetscFECreateDefault(PetscObjectComm((PetscObject)mesh_sum),dim,dim,simplex,"velocity_sum_",-1,&u_sum));
+  CHKERRQ(PetscObjectSetName((PetscObject)u_sum,"velocity_sum"));
+  CHKERRQ(PetscFECreateDefault(PetscObjectComm((PetscObject)mesh),dim,1,simplex,"divu_",-1,&divu));
+  CHKERRQ(PetscObjectSetName((PetscObject)divu,"divu"));
+  CHKERRQ(PetscFECreateDefault(PetscObjectComm((PetscObject)mesh_sum),dim,1,simplex,"divu_sum_",-1,&divu_sum));
+  CHKERRQ(PetscObjectSetName((PetscObject)divu_sum,"divu_sum"));
 
-  ierr = PetscFECopyQuadrature(u,divu);CHKERRQ(ierr);
-  ierr = PetscFECopyQuadrature(u_sum,divu_sum);CHKERRQ(ierr);
+  CHKERRQ(PetscFECopyQuadrature(u,divu));
+  CHKERRQ(PetscFECopyQuadrature(u_sum,divu_sum));
 
   /* Associate the FE objects with the mesh and setup the system */
-  ierr = DMSetField(mesh,0,NULL,(PetscObject)u);CHKERRQ(ierr);
-  ierr = DMSetField(mesh,1,NULL,(PetscObject)divu);CHKERRQ(ierr);
-  ierr = DMCreateDS(mesh);CHKERRQ(ierr);
-  ierr = (*setup)(mesh,user);CHKERRQ(ierr);
+  CHKERRQ(DMSetField(mesh,0,NULL,(PetscObject)u));
+  CHKERRQ(DMSetField(mesh,1,NULL,(PetscObject)divu));
+  CHKERRQ(DMCreateDS(mesh));
+  CHKERRQ((*setup)(mesh,user));
 
-  ierr = DMSetField(mesh_sum,0,NULL,(PetscObject)u_sum);CHKERRQ(ierr);
-  ierr = DMSetField(mesh_sum,1,NULL,(PetscObject)divu_sum);CHKERRQ(ierr);
-  ierr = DMCreateDS(mesh_sum);CHKERRQ(ierr);
-  ierr = (*setup)(mesh_sum,user);CHKERRQ(ierr);
+  CHKERRQ(DMSetField(mesh_sum,0,NULL,(PetscObject)u_sum));
+  CHKERRQ(DMSetField(mesh_sum,1,NULL,(PetscObject)divu_sum));
+  CHKERRQ(DMCreateDS(mesh_sum));
+  CHKERRQ((*setup)(mesh_sum,user));
 
   while (cdm) {
-    ierr = DMCopyDisc(mesh,cdm);CHKERRQ(ierr);
-    ierr = DMGetCoarseDM(cdm,&cdm);CHKERRQ(ierr);
+    CHKERRQ(DMCopyDisc(mesh,cdm));
+    CHKERRQ(DMGetCoarseDM(cdm,&cdm));
   }
 
   while (cdm_sum) {
-    ierr = DMCopyDisc(mesh_sum,cdm_sum);CHKERRQ(ierr);
-    ierr = DMGetCoarseDM(cdm_sum,&cdm_sum);CHKERRQ(ierr);
+    CHKERRQ(DMCopyDisc(mesh_sum,cdm_sum));
+    CHKERRQ(DMGetCoarseDM(cdm_sum,&cdm_sum));
   }
 
   /* The Mesh now owns the fields, so we can destroy the FEs created in this
    * function */
-  ierr = PetscFEDestroy(&u);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&divu);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&u_sum);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&divu_sum);CHKERRQ(ierr);
-  ierr = DMDestroy(&cdm);CHKERRQ(ierr);
-  ierr = DMDestroy(&cdm_sum);CHKERRQ(ierr);
+  CHKERRQ(PetscFEDestroy(&u));
+  CHKERRQ(PetscFEDestroy(&divu));
+  CHKERRQ(PetscFEDestroy(&u_sum));
+  CHKERRQ(PetscFEDestroy(&divu_sum));
+  CHKERRQ(DMDestroy(&cdm));
+  CHKERRQ(DMDestroy(&cdm_sum));
   PetscFunctionReturn(0);
 }
 
@@ -219,51 +215,51 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /* Set up a snes for the standard approach, one space with 2 components */
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD,&user,&dm);CHKERRQ(ierr);
-  ierr = SNESSetDM(snes,dm);CHKERRQ(ierr);
+  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes));
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD,&user,&dm));
+  CHKERRQ(SNESSetDM(snes,dm));
 
   /* Set up a snes for the sum space approach, where each subspace of the sum space represents one component */
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes_sum);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD,&user,&dm_sum);CHKERRQ(ierr);
-  ierr = SNESSetDM(snes_sum,dm_sum);CHKERRQ(ierr);
-  ierr = SetupDiscretization(dm,dm_sum,SetupProblem,&user);CHKERRQ(ierr);
+  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&snes_sum));
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD,&user,&dm_sum));
+  CHKERRQ(SNESSetDM(snes_sum,dm_sum));
+  CHKERRQ(SetupDiscretization(dm,dm_sum,SetupProblem,&user));
 
   /* Set up and solve the system using standard approach. */
-  ierr = DMCreateGlobalVector(dm,&u);CHKERRQ(ierr);
-  ierr = VecSet(u,0.0);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)u,"solution");CHKERRQ(ierr);
-  ierr = DMPlexSetSNESLocalFEM(dm,&user,&user,&user);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = DMSNESCheckFromOptions(snes,u);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,NULL,u);CHKERRQ(ierr);
-  ierr = SNESGetSolution(snes,&u);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(u,NULL,"-solution_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(dm,&u));
+  CHKERRQ(VecSet(u,0.0));
+  CHKERRQ(PetscObjectSetName((PetscObject)u,"solution"));
+  CHKERRQ(DMPlexSetSNESLocalFEM(dm,&user,&user,&user));
+  CHKERRQ(SNESSetFromOptions(snes));
+  CHKERRQ(DMSNESCheckFromOptions(snes,u));
+  CHKERRQ(SNESSolve(snes,NULL,u));
+  CHKERRQ(SNESGetSolution(snes,&u));
+  CHKERRQ(VecViewFromOptions(u,NULL,"-solution_view"));
 
   /* Set up and solve the sum space system */
-  ierr = DMCreateGlobalVector(dm_sum,&u_sum);CHKERRQ(ierr);
-  ierr = VecSet(u_sum,0.0);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)u_sum,"solution_sum");CHKERRQ(ierr);
-  ierr = DMPlexSetSNESLocalFEM(dm_sum,&user,&user,&user);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes_sum);CHKERRQ(ierr);
-  ierr = DMSNESCheckFromOptions(snes_sum,u_sum);CHKERRQ(ierr);
-  ierr = SNESSolve(snes_sum,NULL,u_sum);CHKERRQ(ierr);
-  ierr = SNESGetSolution(snes_sum,&u_sum);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(u_sum,NULL,"-solution_sum_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(dm_sum,&u_sum));
+  CHKERRQ(VecSet(u_sum,0.0));
+  CHKERRQ(PetscObjectSetName((PetscObject)u_sum,"solution_sum"));
+  CHKERRQ(DMPlexSetSNESLocalFEM(dm_sum,&user,&user,&user));
+  CHKERRQ(SNESSetFromOptions(snes_sum));
+  CHKERRQ(DMSNESCheckFromOptions(snes_sum,u_sum));
+  CHKERRQ(SNESSolve(snes_sum,NULL,u_sum));
+  CHKERRQ(SNESGetSolution(snes_sum,&u_sum));
+  CHKERRQ(VecViewFromOptions(u_sum,NULL,"-solution_sum_view"));
 
   /* Check if standard solution and sum space solution match to machine precision */
-  ierr = VecAXPY(u_sum,-1,u);CHKERRQ(ierr);
-  ierr = VecNorm(u_sum,NORM_2,&errNorm);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(u_sum,-1,u));
+  CHKERRQ(VecNorm(u_sum,NORM_2,&errNorm));
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Sum space provides the same solution as a regular space: %s",(errNorm < errTol) ? "true" : "false");CHKERRQ(
     ierr);
 
   /* Cleanup */
-  ierr = VecDestroy(&u_sum);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes_sum);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm_sum);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&u_sum));
+  CHKERRQ(VecDestroy(&u));
+  CHKERRQ(SNESDestroy(&snes_sum));
+  CHKERRQ(SNESDestroy(&snes));
+  CHKERRQ(DMDestroy(&dm_sum));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

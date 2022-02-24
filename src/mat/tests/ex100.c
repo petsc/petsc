@@ -14,47 +14,47 @@ int main(int argc,char **args)
   PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* Load aij matrix A */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
   PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatLoad(A,fd));
+  CHKERRQ(PetscViewerDestroy(&fd));
 
   /* Get dof, then create maij matrix MA */
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
-  ierr = MatCreateMAIJ(A,dof,&MA);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(MA,&m,&n);CHKERRQ(ierr);
-  ierr = MatGetSize(MA,&M,&N);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
+  CHKERRQ(MatCreateMAIJ(A,dof,&MA));
+  CHKERRQ(MatGetLocalSize(MA,&m,&n));
+  CHKERRQ(MatGetSize(MA,&M,&N));
 
   if (size == 1) {
-    ierr = MatConvert(MA,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    CHKERRQ(MatConvert(MA,MATSEQAIJ,MAT_INITIAL_MATRIX,&B));
   } else {
-    ierr = MatConvert(MA,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    CHKERRQ(MatConvert(MA,MATMPIAIJ,MAT_INITIAL_MATRIX,&B));
   }
 
   /* Test MatMult() */
-  ierr = MatMultEqual(MA,B,10,&flg);CHKERRQ(ierr);
+  CHKERRQ(MatMultEqual(MA,B,10,&flg));
   PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMul() for MAIJ matrix");
   /* Test MatMultAdd() */
-  ierr = MatMultAddEqual(MA,B,10,&flg);CHKERRQ(ierr);
+  CHKERRQ(MatMultAddEqual(MA,B,10,&flg));
   PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMulAdd() for MAIJ matrix");
 
   /* Test MatMultTranspose() */
-  ierr = MatMultTransposeEqual(MA,B,10,&flg);CHKERRQ(ierr);
+  CHKERRQ(MatMultTransposeEqual(MA,B,10,&flg));
   PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMulAdd() for MAIJ matrix");
 
   /* Test MatMultTransposeAdd() */
-  ierr = MatMultTransposeAddEqual(MA,B,10,&flg);CHKERRQ(ierr);
+  CHKERRQ(MatMultTransposeAddEqual(MA,B,10,&flg));
   PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMulTransposeAdd() for MAIJ matrix");
 
-  ierr = MatDestroy(&MA);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&MA));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&B));
   ierr = PetscFinalize();
   return ierr;
 }

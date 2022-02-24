@@ -9,70 +9,70 @@ int main(int argc,char **argv)
   Vec             vec;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,4,4,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,3,3,3,DMSTAG_STENCIL_STAR,1,NULL,NULL,NULL,&dm);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = DMSetUp(dm);CHKERRQ(ierr);
-  ierr = DMStagSetUniformCoordinatesProduct(dm,0.0,10.0,0.0,10.0,0.0,10.0);CHKERRQ(ierr);
+  CHKERRQ(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,4,4,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,3,3,3,DMSTAG_STENCIL_STAR,1,NULL,NULL,NULL,&dm));
+  CHKERRQ(DMSetFromOptions(dm));
+  CHKERRQ(DMSetUp(dm));
+  CHKERRQ(DMStagSetUniformCoordinatesProduct(dm,0.0,10.0,0.0,10.0,0.0,10.0));
 
-  ierr = DMCreateGlobalVector(dm,&vec);CHKERRQ(ierr);
-  ierr = VecSet(vec,1.234);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(dm,&vec));
+  CHKERRQ(VecSet(vec,1.234));
 
   /* All element values */
   {
     DM  da;
     Vec vecda;
-    ierr = DMStagVecSplitToDMDA(dm,vec,DMSTAG_ELEMENT,-3,&da,&vecda);CHKERRQ(ierr);
-    ierr = DMDestroy(&da);CHKERRQ(ierr);
-    ierr = VecDestroy(&vecda);CHKERRQ(ierr);
+    CHKERRQ(DMStagVecSplitToDMDA(dm,vec,DMSTAG_ELEMENT,-3,&da,&vecda));
+    CHKERRQ(DMDestroy(&da));
+    CHKERRQ(VecDestroy(&vecda));
   }
 
   /* Pad element values */
   {
     DM  da;
     Vec vecda;
-    ierr = DMStagVecSplitToDMDA(dm,vec,DMSTAG_ELEMENT,-5,&da,&vecda);CHKERRQ(ierr);
-    ierr = DMDestroy(&da);CHKERRQ(ierr);
-    ierr = VecDestroy(&vecda);CHKERRQ(ierr);
+    CHKERRQ(DMStagVecSplitToDMDA(dm,vec,DMSTAG_ELEMENT,-5,&da,&vecda));
+    CHKERRQ(DMDestroy(&da));
+    CHKERRQ(VecDestroy(&vecda));
   }
 
   /* 2 element values */
   {
     DM  da;
     Vec vecda;
-    ierr = DMStagVecSplitToDMDA(dm,vec,DMSTAG_ELEMENT,-2,&da,&vecda);CHKERRQ(ierr);
-    ierr = DMDestroy(&da);CHKERRQ(ierr);
-    ierr = VecDestroy(&vecda);CHKERRQ(ierr);
+    CHKERRQ(DMStagVecSplitToDMDA(dm,vec,DMSTAG_ELEMENT,-2,&da,&vecda));
+    CHKERRQ(DMDestroy(&da));
+    CHKERRQ(VecDestroy(&vecda));
   }
 
   /* One corner value */
   {
     DM  da;
     Vec vecda;
-    ierr = DMStagVecSplitToDMDA(dm,vec,DMSTAG_FRONT_DOWN_LEFT,2,&da,&vecda);CHKERRQ(ierr);
-    ierr = DMDestroy(&da);CHKERRQ(ierr);
-    ierr = VecDestroy(&vecda);CHKERRQ(ierr);
+    CHKERRQ(DMStagVecSplitToDMDA(dm,vec,DMSTAG_FRONT_DOWN_LEFT,2,&da,&vecda));
+    CHKERRQ(DMDestroy(&da));
+    CHKERRQ(VecDestroy(&vecda));
   }
 
   /* One edge value */
   {
     DM  da;
     Vec vecda;
-    ierr = DMStagVecSplitToDMDA(dm,vec,DMSTAG_BACK_RIGHT,1,&da,&vecda);CHKERRQ(ierr);
-    ierr = DMDestroy(&da);CHKERRQ(ierr);
-    ierr = VecDestroy(&vecda);CHKERRQ(ierr);
+    CHKERRQ(DMStagVecSplitToDMDA(dm,vec,DMSTAG_BACK_RIGHT,1,&da,&vecda));
+    CHKERRQ(DMDestroy(&da));
+    CHKERRQ(VecDestroy(&vecda));
   }
 
   /* One face value */
   {
     DM  da;
     Vec vecda;
-    ierr = DMStagVecSplitToDMDA(dm,vec,DMSTAG_DOWN,0,&da,&vecda);CHKERRQ(ierr);
-    ierr = DMDestroy(&da);CHKERRQ(ierr);
-    ierr = VecDestroy(&vecda);CHKERRQ(ierr);
+    CHKERRQ(DMStagVecSplitToDMDA(dm,vec,DMSTAG_DOWN,0,&da,&vecda));
+    CHKERRQ(DMDestroy(&da));
+    CHKERRQ(VecDestroy(&vecda));
   }
 
-  ierr = VecDestroy(&vec);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&vec));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

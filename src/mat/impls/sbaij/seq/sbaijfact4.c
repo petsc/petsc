@@ -8,7 +8,6 @@
 PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ*)C->data;
-  PetscErrorCode ierr;
   PetscInt       i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
   PetscInt       *ai,*aj,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
   MatScalar      *ba = b->a,*aa,*ap,*dk,*uik;
@@ -19,12 +18,12 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat C,Mat A,c
   PetscFunctionBegin;
   /* initialization */
   allowzeropivot = PetscNot(A->erroriffailure);
-  ierr = PetscCalloc1(9*mbs,&rtmp);CHKERRQ(ierr);
-  ierr = PetscMalloc2(mbs,&il,mbs,&jl);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc1(9*mbs,&rtmp));
+  CHKERRQ(PetscMalloc2(mbs,&il,mbs,&jl));
   il[0] = 0;
   for (i=0; i<mbs; i++) jl[i] = mbs;
 
-  ierr = PetscMalloc2(9,&dk,9,&uik);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc2(9,&dk,9,&uik));
   ai   = a->i; aj = a->j; aa = a->a;
 
   /* for each row k */
@@ -42,7 +41,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat C,Mat A,c
     }
 
     /* modify k-th row by adding in those rows i with U(i,k) != 0 */
-    ierr = PetscArraycpy(dk,rtmp+k*9,9);CHKERRQ(ierr);
+    CHKERRQ(PetscArraycpy(dk,rtmp+k*9,9));
     i    = jl[k]; /* first row to be added to k_th row  */
 
     while (i < mbs) {
@@ -80,10 +79,10 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat C,Mat A,c
       dk[7] += uik[3]*u[6] + uik[4]*u[7] + uik[5]*u[8];
       dk[8] += uik[6]*u[6] + uik[7]*u[7] + uik[8]*u[8];
 
-      ierr = PetscLogFlops(27.0*4.0);CHKERRQ(ierr);
+      CHKERRQ(PetscLogFlops(27.0*4.0));
 
       /* update -U(i,k) */
-      ierr = PetscArraycpy(ba+ili*9,uik,9);CHKERRQ(ierr);
+      CHKERRQ(PetscArraycpy(ba+ili*9,uik,9));
 
       /* add multiple of row i to k-th row ... */
       jmin = ili + 1; jmax = bi[i+1];
@@ -104,7 +103,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat C,Mat A,c
           rtmp_ptr[7] += uik[3]*u[6] + uik[4]*u[7] + uik[5]*u[8];
           rtmp_ptr[8] += uik[6]*u[6] + uik[7]*u[7] + uik[8]*u[8];
         }
-        ierr = PetscLogFlops(2.0*27.0*(jmax-jmin));CHKERRQ(ierr);
+        CHKERRQ(PetscLogFlops(2.0*27.0*(jmax-jmin)));
 
         /* ... add i to row list for next nonzero entry */
         il[i] = jmin;             /* update il(i) in column k+1, ... mbs-1 */
@@ -118,8 +117,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat C,Mat A,c
 
     /* invert diagonal block */
     diag = ba+k*9;
-    ierr = PetscArraycpy(diag,dk,9);CHKERRQ(ierr);
-    ierr = PetscKernel_A_gets_inverse_A_3(diag,shift,allowzeropivot,&zeropivotdetected);CHKERRQ(ierr);
+    CHKERRQ(PetscArraycpy(diag,dk,9));
+    CHKERRQ(PetscKernel_A_gets_inverse_A_3(diag,shift,allowzeropivot,&zeropivotdetected));
     if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
 
     jmin = bi[k]; jmax = bi[k+1];
@@ -141,9 +140,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat C,Mat A,c
     }
   }
 
-  ierr = PetscFree(rtmp);CHKERRQ(ierr);
-  ierr = PetscFree2(il,jl);CHKERRQ(ierr);
-  ierr = PetscFree2(dk,uik);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(rtmp));
+  CHKERRQ(PetscFree2(il,jl));
+  CHKERRQ(PetscFree2(dk,uik));
 
   C->ops->solve          = MatSolve_SeqSBAIJ_3_NaturalOrdering_inplace;
   C->ops->solvetranspose = MatSolve_SeqSBAIJ_3_NaturalOrdering_inplace;
@@ -153,6 +152,6 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat C,Mat A,c
   C->assembled    = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
 
-  ierr = PetscLogFlops(1.3333*27*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
+  CHKERRQ(PetscLogFlops(1.3333*27*b->mbs)); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }

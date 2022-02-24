@@ -37,49 +37,48 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,7,7,7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
-  ierr = KSPSetComputeInitialGuess(ksp,ComputeInitialGuess,NULL);CHKERRQ(ierr);
-  ierr = KSPSetComputeRHS(ksp,ComputeRHS,NULL);CHKERRQ(ierr);
-  ierr = KSPSetComputeOperators(ksp,ComputeMatrix,NULL);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,7,7,7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da));
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
+  CHKERRQ(KSPSetDM(ksp,da));
+  CHKERRQ(KSPSetComputeInitialGuess(ksp,ComputeInitialGuess,NULL));
+  CHKERRQ(KSPSetComputeRHS(ksp,ComputeRHS,NULL));
+  CHKERRQ(KSPSetComputeOperators(ksp,ComputeMatrix,NULL));
+  CHKERRQ(DMDestroy(&da));
 
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,NULL,NULL);CHKERRQ(ierr);
-  ierr = KSPGetSolution(ksp,&x);CHKERRQ(ierr);
-  ierr = KSPGetRhs(ksp,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&r);CHKERRQ(ierr);
-  ierr = KSPGetOperators(ksp,&A,NULL);CHKERRQ(ierr);
+  CHKERRQ(KSPSetFromOptions(ksp));
+  CHKERRQ(KSPSolve(ksp,NULL,NULL));
+  CHKERRQ(KSPGetSolution(ksp,&x));
+  CHKERRQ(KSPGetRhs(ksp,&b));
+  CHKERRQ(VecDuplicate(b,&r));
+  CHKERRQ(KSPGetOperators(ksp,&A,NULL));
 
-  ierr = MatMult(A,x,r);CHKERRQ(ierr);
-  ierr = VecAXPY(r,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(r,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm);CHKERRQ(ierr);
+  CHKERRQ(MatMult(A,x,r));
+  CHKERRQ(VecAXPY(r,-1.0,b));
+  CHKERRQ(VecNorm(r,NORM_2,&norm));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm));
 
-  ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&r));
+  CHKERRQ(KSPDestroy(&ksp));
   ierr = PetscFinalize();
   return ierr;
 }
 
 PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
   DM             dm;
   PetscScalar    Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
   PetscScalar    ***barray;
 
   PetscFunctionBeginUser;
-  ierr    = KSPGetDM(ksp,&dm);CHKERRQ(ierr);
-  ierr    = DMDAGetInfo(dm,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(KSPGetDM(ksp,&dm));
+  CHKERRQ(DMDAGetInfo(dm,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0));
   Hx      = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
-  ierr    = DMDAGetCorners(dm,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr    = DMDAVecGetArray(dm,b,&barray);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(dm,&xs,&ys,&zs,&xm,&ym,&zm));
+  CHKERRQ(DMDAVecGetArray(dm,b,&barray));
 
   for (k=zs; k<zs+zm; k++) {
     for (j=ys; j<ys+ym; j++) {
@@ -92,33 +91,30 @@ PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)
       }
     }
   }
-  ierr = DMDAVecRestoreArray(dm,b,&barray);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArray(dm,b,&barray));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ComputeInitialGuess(KSP ksp,Vec b,void *ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = VecSet(b,0);CHKERRQ(ierr);
+  CHKERRQ(VecSet(b,0));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ComputeMatrix(KSP ksp,Mat jac,Mat B,void *ctx)
 {
   DM             da;
-  PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
   PetscScalar    v[7],Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
   MatStencil     row,col[7];
 
   PetscFunctionBeginUser;
-  ierr    = KSPGetDM(ksp,&da);CHKERRQ(ierr);
-  ierr    = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(KSPGetDM(ksp,&da));
+  CHKERRQ(DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0));
   Hx      = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
-  ierr    = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
 
   for (k=zs; k<zs+zm; k++) {
     for (j=ys; j<ys+ym; j++) {
@@ -126,7 +122,7 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat jac,Mat B,void *ctx)
         row.i = i; row.j = j; row.k = k;
         if (i==0 || j==0 || k==0 || i==mx-1 || j==my-1 || k==mz-1) {
           v[0] = 2.0*(HxHydHz + HxHzdHy + HyHzdHx);
-          ierr = MatSetValuesStencil(B,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+          CHKERRQ(MatSetValuesStencil(B,1,&row,1,&row,v,INSERT_VALUES));
         } else {
           v[0] = -HxHydHz;col[0].i = i; col[0].j = j; col[0].k = k-1;
           v[1] = -HxHzdHy;col[1].i = i; col[1].j = j-1; col[1].k = k;
@@ -135,13 +131,13 @@ PetscErrorCode ComputeMatrix(KSP ksp,Mat jac,Mat B,void *ctx)
           v[4] = -HyHzdHx;col[4].i = i+1; col[4].j = j; col[4].k = k;
           v[5] = -HxHzdHy;col[5].i = i; col[5].j = j+1; col[5].k = k;
           v[6] = -HxHydHz;col[6].i = i; col[6].j = j; col[6].k = k+1;
-          ierr = MatSetValuesStencil(B,1,&row,7,col,v,INSERT_VALUES);CHKERRQ(ierr);
+          CHKERRQ(MatSetValuesStencil(B,1,&row,7,col,v,INSERT_VALUES));
         }
       }
     }
   }
-  ierr   = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr   = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 

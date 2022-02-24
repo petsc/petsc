@@ -17,30 +17,28 @@ struct _n_PetscFPT {
 };
 PETSC_INTERN PetscFPT PetscFPTData;
 
-static inline PetscErrorCode  PetscFPTView(PetscViewer viewer)
+static inline PetscErrorCode PetscFPTView(PetscViewer viewer)
 {
-  PetscInt       i;
-
-  if (!PetscFPTData) return(0);
-  for (i=0; i<PetscFPTData->tablesize; i++) {
-    if (PetscFPTData->functionpointer[i]) {
-      printf("%s()\n",PetscFPTData->functionname[i]);
+  if (PetscFPTData) {
+    for (PetscInt i = 0; i < PetscFPTData->tablesize; ++i) {
+      if (PetscFPTData->functionpointer[i]) {
+        printf("%s()\n",PetscFPTData->functionname[i]);
+      }
     }
   }
-  return(0);
+  return 0;
 }
 
-static inline PetscErrorCode  PetscFPTDestroy(void)
+static inline PetscErrorCode PetscFPTDestroy(void)
 {
-  PetscErrorCode ierr;
-  PetscFPT       _PetscFPTData = PetscFPTData;
+  PetscFPT data = PetscFPTData;
 
   PetscFPTData = NULL;
-  if (!_PetscFPTData) return 0;
-  ierr = PetscFree((_PetscFPTData)->functionpointer);CHKERRQ(ierr);
-  ierr = PetscFree((_PetscFPTData)->functionname);CHKERRQ(ierr);
-  ierr = PetscFree(_PetscFPTData);CHKERRQ(ierr);
-  return(0);
+  if (!data) return 0;
+  CHKERRQ(PetscFree(data->functionpointer));
+  CHKERRQ(PetscFree(data->functionname));
+  CHKERRQ(PetscFree(data));
+  return 0;
 }
 
 /*
@@ -52,21 +50,16 @@ static inline PetscErrorCode  PetscFPTDestroy(void)
 */
 static inline PetscErrorCode  PetscFPTCreate(PetscInt n)
 {
-  PetscErrorCode ierr;
-  PetscInt       i;
-  PetscFPT       _PetscFPTData;
+  PetscFPT _PetscFPTData;
 
   PetscCheck(n >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n < 0");
   /* Cannot use PetscNew() here because it is not yet defined in the include file chain */
-  ierr          = PetscMalloc(sizeof(struct _n_PetscFPT),&_PetscFPTData);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc(sizeof(struct _n_PetscFPT),&_PetscFPTData));
   _PetscFPTData->tablesize = (3*n)/2 + 17;
   if (_PetscFPTData->tablesize < n) _PetscFPTData->tablesize = PETSC_MAX_INT/4; /* overflow */
-  ierr          = PetscMalloc(sizeof(void*)*_PetscFPTData->tablesize,&_PetscFPTData->functionpointer);CHKERRQ(ierr);
-  for (i=0; i<_PetscFPTData->tablesize; i++) {
-    _PetscFPTData->functionpointer[i] = NULL;
-  }
-  ierr          = PetscMalloc(sizeof(char**)*_PetscFPTData->tablesize,&_PetscFPTData->functionname);CHKERRQ(ierr);
-  _PetscFPTData->count     = 0;
+  CHKERRQ(PetscCalloc(sizeof(void*)*_PetscFPTData->tablesize,&_PetscFPTData->functionpointer));
+  CHKERRQ(PetscMalloc(sizeof(char**)*_PetscFPTData->tablesize,&_PetscFPTData->functionname));
+  _PetscFPTData->count = 0;
   PetscFPTData = _PetscFPTData;
   return(0);
 }
@@ -79,25 +72,21 @@ static inline unsigned long PetscFPTHashPointer(void *ptr)
 
 static inline PetscErrorCode PetscFPTAdd(void* key,const char* data)
 {
-  PetscInt       i,hash;
-
   PetscCheck(data,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null function name");
-  if (!PetscFPTData) return(0);
-  hash = (PetscInt)PetscFPTHashPointer(key);
-  for (i=0; i<PetscFPTData->tablesize; i++) {
+  if (!PetscFPTData) return 0;
+  for (PetscInt i = 0, hash = (PetscInt)PetscFPTHashPointer(key); i < PetscFPTData->tablesize; ++i) {
     if (PetscFPTData->functionpointer[hash] == key) {
       PetscFPTData->functionname[hash] = (char*) data;
-      return(0);
+      return 0;
     } else if (!PetscFPTData->functionpointer[hash]) {
       PetscFPTData->count++;
       PetscFPTData->functionpointer[hash] = key;
       PetscFPTData->functionname[hash] = (char*) data;
-      return(0);
+      return 0;
     }
     hash = (hash == (PetscFPTData->tablesize-1)) ? 0 : hash+1;
   }
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Function pointer table is full");
-  return(0);
 }
 
 /*
@@ -112,7 +101,7 @@ static inline PetscErrorCode  PetscFPTFind(void* key,char const **data)
 
   *data = NULL;
   if (!PetscFPTData) return(0);
-  hash  = PetscFPTHashPointer(key);
+  hash = PetscFPTHashPointer(key);
   while (ii++ < PetscFPTData->tablesize) {
     if (!PetscFPTData->functionpointer[hash]) break;
     else if (PetscFPTData->functionpointer[hash] == key) {
@@ -121,7 +110,7 @@ static inline PetscErrorCode  PetscFPTFind(void* key,char const **data)
     }
     hash = (hash == (PetscFPTData->tablesize-1)) ? 0 : hash+1;
   }
-  return(0);
+  return 0;
 }
 
 #endif

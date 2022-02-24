@@ -10,7 +10,6 @@ static inline PetscErrorCode PetscArgSortPixVal(const PetscDrawXiPixVal v[PETSC_
 {
   PetscDrawXiPixVal vl;
   int               i,last,tmp;
-  PetscErrorCode    ierr;
 # define            SWAP(a,b) {tmp=a;a=b;b=tmp;}
   PetscFunctionBegin;
   if (right <= 1) {
@@ -24,8 +23,8 @@ static inline PetscErrorCode PetscArgSortPixVal(const PetscDrawXiPixVal v[PETSC_
   for (i=1; i<=right; i++)
     if (v[idx[i]] < vl) {last++; SWAP(idx[last],idx[i]);}
   SWAP(idx[0],idx[last]);
-  ierr = PetscArgSortPixVal(v,idx,last-1);CHKERRQ(ierr);
-  ierr = PetscArgSortPixVal(v,idx+last+1,right-(last+1));CHKERRQ(ierr);
+  CHKERRQ(PetscArgSortPixVal(v,idx,last-1));
+  CHKERRQ(PetscArgSortPixVal(v,idx+last+1,right-(last+1)));
 # undef SWAP
   PetscFunctionReturn(0);
 }
@@ -60,13 +59,13 @@ PetscErrorCode PetscDrawGetImage_X(PetscDraw draw,unsigned char palette[PETSC_DR
   if (out_w)      *out_w      = 0;
   if (out_h)      *out_h      = 0;
   if (out_pixels) *out_pixels = NULL;
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank));
 
   /* make sure the X server processed requests from all processes */
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
   XSync(Xwin->disp,True);
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-  ierr = MPI_Barrier(PetscObjectComm((PetscObject)draw));CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Barrier(PetscObjectComm((PetscObject)draw)));
 
   /* only the first process return image data */
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
@@ -78,16 +77,16 @@ PetscErrorCode PetscDrawGetImage_X(PetscDraw draw,unsigned char palette[PETSC_DR
     unsigned int  w,h,dummy;
     int           x,y,p;
     /* copy colormap palette to the caller */
-    ierr = PetscMemcpy(palette,Xwin->cpalette,sizeof(Xwin->cpalette));CHKERRQ(ierr);
+    CHKERRQ(PetscMemcpy(palette,Xwin->cpalette,sizeof(Xwin->cpalette)));
     /* get image out of the drawable */
     XGetGeometry(Xwin->disp,PetscDrawXiDrawable(Xwin),&root,&x,&y,&w,&h,&dummy,&dummy);
     ximage = XGetImage(Xwin->disp,PetscDrawXiDrawable(Xwin),0,0,w,h,AllPlanes,ZPixmap);
     PetscCheckFalse(!ximage,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot XGetImage()");
     /* build indirect sort permutation (a.k.a argsort) of the color -> pixel mapping */
     for (p=0; p<PETSC_DRAW_MAXCOLOR; p++) pmap[p] = p; /* identity permutation */
-    ierr = PetscArgSortPixVal(Xwin->cmapping,pmap,255);CHKERRQ(ierr);
+    CHKERRQ(PetscArgSortPixVal(Xwin->cmapping,pmap,255));
     /* extract pixel values out of the image and map them to color indices */
-    ierr = PetscMalloc1(w*h,&pixels);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(w*h,&pixels));
     for (p=0,y=0; y<(int)h; y++)
       for (x=0; x<(int)w; x++) {
         PetscDrawXiPixVal pix = XGetPixel(ximage,x,y);

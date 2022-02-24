@@ -18,230 +18,230 @@ int main(int argc,char **argv)
   PetscBool      mats_view=PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,(char*) 0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rand));
+  CHKERRQ(PetscRandomSetFromOptions(rand));
 
   /* Get local dimensions of matrices */
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   n    = m;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   p    = m/2;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-p",&p,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-mats_view",&mats_view);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-p",&p,NULL));
+  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-mats_view",&mats_view));
 
   /* Create matrix A */
-  ierr = PetscPrintf(PETSC_COMM_WORLD," Create ScaLAPACK matrix A\n");CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSCALAPACK);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," Create ScaLAPACK matrix A\n"));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetSizes(A,m,n,PETSC_DECIDE,PETSC_DECIDE));
+  CHKERRQ(MatSetType(A,MATSCALAPACK));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatSetUp(A));
   /* Set local matrix entries */
-  ierr = MatGetOwnershipIS(A,&isrows,&iscols);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(isrows,&nrows);CHKERRQ(ierr);
-  ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
-  ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nrows*ncols,&v);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipIS(A,&isrows,&iscols));
+  CHKERRQ(ISGetLocalSize(isrows,&nrows));
+  CHKERRQ(ISGetIndices(isrows,&rows));
+  CHKERRQ(ISGetLocalSize(iscols,&ncols));
+  CHKERRQ(ISGetIndices(iscols,&cols));
+  CHKERRQ(PetscMalloc1(nrows*ncols,&v));
   for (i=0;i<nrows;i++) {
     for (j=0;j<ncols;j++) {
-      ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+      CHKERRQ(PetscRandomGetValue(rand,&rval));
       v[i*ncols+j] = rval;
     }
   }
-  ierr = MatSetValues(A,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
-  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscols);CHKERRQ(ierr);
-  ierr = PetscFree(v);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(A,nrows,rows,ncols,cols,v,INSERT_VALUES));
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(ISRestoreIndices(isrows,&rows));
+  CHKERRQ(ISRestoreIndices(iscols,&cols));
+  CHKERRQ(ISDestroy(&isrows));
+  CHKERRQ(ISDestroy(&iscols));
+  CHKERRQ(PetscFree(v));
   if (mats_view) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "A: nrows %" PetscInt_FMT ", m %" PetscInt_FMT "; ncols %" PetscInt_FMT ", n %" PetscInt_FMT "\n",nrows,m,ncols,n);CHKERRQ(ierr);
-    ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "A: nrows %" PetscInt_FMT ", m %" PetscInt_FMT "; ncols %" PetscInt_FMT ", n %" PetscInt_FMT "\n",nrows,m,ncols,n));
+    CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /* Create rhs matrix B */
-  ierr = PetscPrintf(PETSC_COMM_WORLD," Create rhs matrix B\n");CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,m,p,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATSCALAPACK);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(B);CHKERRQ(ierr);
-  ierr = MatSetUp(B);CHKERRQ(ierr);
-  ierr = MatGetOwnershipIS(B,&isrows,&iscols);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(isrows,&nrows);CHKERRQ(ierr);
-  ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(iscols,&ncols);CHKERRQ(ierr);
-  ierr = ISGetIndices(iscols,&cols);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nrows*ncols,&v);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," Create rhs matrix B\n"));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&B));
+  CHKERRQ(MatSetSizes(B,m,p,PETSC_DECIDE,PETSC_DECIDE));
+  CHKERRQ(MatSetType(B,MATSCALAPACK));
+  CHKERRQ(MatSetFromOptions(B));
+  CHKERRQ(MatSetUp(B));
+  CHKERRQ(MatGetOwnershipIS(B,&isrows,&iscols));
+  CHKERRQ(ISGetLocalSize(isrows,&nrows));
+  CHKERRQ(ISGetIndices(isrows,&rows));
+  CHKERRQ(ISGetLocalSize(iscols,&ncols));
+  CHKERRQ(ISGetIndices(iscols,&cols));
+  CHKERRQ(PetscMalloc1(nrows*ncols,&v));
   for (i=0;i<nrows;i++) {
     for (j=0;j<ncols;j++) {
-      ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+      CHKERRQ(PetscRandomGetValue(rand,&rval));
       v[i*ncols+j] = rval;
     }
   }
-  ierr = MatSetValues(B,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(iscols,&cols);CHKERRQ(ierr);
-  ierr = ISDestroy(&isrows);CHKERRQ(ierr);
-  ierr = ISDestroy(&iscols);CHKERRQ(ierr);
-  ierr = PetscFree(v);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(B,nrows,rows,ncols,cols,v,INSERT_VALUES));
+  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(ISRestoreIndices(isrows,&rows));
+  CHKERRQ(ISRestoreIndices(iscols,&cols));
+  CHKERRQ(ISDestroy(&isrows));
+  CHKERRQ(ISDestroy(&iscols));
+  CHKERRQ(PetscFree(v));
   if (mats_view) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "B: nrows %" PetscInt_FMT ", m %" PetscInt_FMT "; ncols %" PetscInt_FMT ", p %" PetscInt_FMT "\n",nrows,m,ncols,p);CHKERRQ(ierr);
-    ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "B: nrows %" PetscInt_FMT ", m %" PetscInt_FMT "; ncols %" PetscInt_FMT ", p %" PetscInt_FMT "\n",nrows,m,ncols,p));
+    CHKERRQ(MatView(B,PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /* Create rhs vector b and solution x (same size as b) */
-  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr = VecSetSizes(b,m,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-  ierr = VecGetArray(b,&barray);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&b));
+  CHKERRQ(VecSetSizes(b,m,PETSC_DECIDE));
+  CHKERRQ(VecSetFromOptions(b));
+  CHKERRQ(VecGetArray(b,&barray));
   for (j=0;j<m;j++) {
-    ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+    CHKERRQ(PetscRandomGetValue(rand,&rval));
     barray[j] = rval;
   }
-  ierr = VecRestoreArray(b,&barray);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(b,&barray));
+  CHKERRQ(VecAssemblyBegin(b));
+  CHKERRQ(VecAssemblyEnd(b));
   if (mats_view) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d] b: m %" PetscInt_FMT "\n",rank,m);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-    ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d] b: m %" PetscInt_FMT "\n",rank,m));
+    CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+    CHKERRQ(VecView(b,PETSC_VIEWER_STDOUT_WORLD));
   }
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(b,&x));
 
   /* Create matrix X - same size as B */
-  ierr = PetscPrintf(PETSC_COMM_WORLD," Create solution matrix X\n");CHKERRQ(ierr);
-  ierr = MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&X);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," Create solution matrix X\n"));
+  CHKERRQ(MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&X));
 
   /* Cholesky factorization */
   /*------------------------*/
-  ierr = PetscPrintf(PETSC_COMM_WORLD," Create ScaLAPACK matrix Aher\n");CHKERRQ(ierr);
-  ierr = MatHermitianTranspose(A,MAT_INITIAL_MATRIX,&Aher);CHKERRQ(ierr);
-  ierr = MatAXPY(Aher,1.0,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr); /* Aher = A + A^T */
-  ierr = MatShift(Aher,100.0);CHKERRQ(ierr);  /* add 100.0 to diagonals of Aher to make it spd */
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," Create ScaLAPACK matrix Aher\n"));
+  CHKERRQ(MatHermitianTranspose(A,MAT_INITIAL_MATRIX,&Aher));
+  CHKERRQ(MatAXPY(Aher,1.0,A,SAME_NONZERO_PATTERN)); /* Aher = A + A^T */
+  CHKERRQ(MatShift(Aher,100.0));  /* add 100.0 to diagonals of Aher to make it spd */
   if (mats_view) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Aher:\n");CHKERRQ(ierr);
-    ierr = MatView(Aher,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Aher:\n"));
+    CHKERRQ(MatView(Aher,PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /* Cholesky factorization */
   /*------------------------*/
-  ierr = PetscPrintf(PETSC_COMM_WORLD," Test Cholesky Solver \n");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," Test Cholesky Solver \n"));
   /* In-place Cholesky */
   /* Create matrix factor G, with a copy of Aher */
-  ierr = MatDuplicate(Aher,MAT_COPY_VALUES,&G);CHKERRQ(ierr);
+  CHKERRQ(MatDuplicate(Aher,MAT_COPY_VALUES,&G));
 
   /* G = L * L^T */
-  ierr = MatCholeskyFactor(G,0,0);CHKERRQ(ierr);
+  CHKERRQ(MatCholeskyFactor(G,0,0));
   if (mats_view) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Cholesky Factor G:\n");CHKERRQ(ierr);
-    ierr = MatView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Cholesky Factor G:\n"));
+    CHKERRQ(MatView(G,PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /* Solve L * L^T x = b and L * L^T * X = B */
-  ierr = MatSolve(G,b,x);CHKERRQ(ierr);
-  ierr = MatMatSolve(G,B,X);CHKERRQ(ierr);
-  ierr = MatDestroy(&G);CHKERRQ(ierr);
+  CHKERRQ(MatSolve(G,b,x));
+  CHKERRQ(MatMatSolve(G,B,X));
+  CHKERRQ(MatDestroy(&G));
 
   /* Out-place Cholesky */
-  ierr = MatGetFactor(Aher,MATSOLVERSCALAPACK,MAT_FACTOR_CHOLESKY,&G);CHKERRQ(ierr);
-  ierr = MatCholeskyFactorSymbolic(G,Aher,0,NULL);CHKERRQ(ierr);
-  ierr = MatCholeskyFactorNumeric(G,Aher,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatGetFactor(Aher,MATSOLVERSCALAPACK,MAT_FACTOR_CHOLESKY,&G));
+  CHKERRQ(MatCholeskyFactorSymbolic(G,Aher,0,NULL));
+  CHKERRQ(MatCholeskyFactorNumeric(G,Aher,NULL));
   if (mats_view) {
-    ierr = MatView(G,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(MatView(G,PETSC_VIEWER_STDOUT_WORLD));
   }
-  ierr = MatSolve(G,b,x);CHKERRQ(ierr);
-  ierr = MatMatSolve(G,B,X);CHKERRQ(ierr);
-  ierr = MatDestroy(&G);CHKERRQ(ierr);
+  CHKERRQ(MatSolve(G,b,x));
+  CHKERRQ(MatMatSolve(G,B,X));
+  CHKERRQ(MatDestroy(&G));
 
   /* Check norm(Aher*x - b) */
-  ierr = VecCreate(PETSC_COMM_WORLD,&c);CHKERRQ(ierr);
-  ierr = VecSetSizes(c,m,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(c);CHKERRQ(ierr);
-  ierr = MatMult(Aher,x,c);CHKERRQ(ierr);
-  ierr = VecAXPY(c,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(c,NORM_1,&norm);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&c));
+  CHKERRQ(VecSetSizes(c,m,PETSC_DECIDE));
+  CHKERRQ(VecSetFromOptions(c));
+  CHKERRQ(MatMult(Aher,x,c));
+  CHKERRQ(VecAXPY(c,-1.0,b));
+  CHKERRQ(VecNorm(c,NORM_1,&norm));
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: ||Aher*x - b||=%g for Cholesky\n",(double)norm);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Warning: ||Aher*x - b||=%g for Cholesky\n",(double)norm));
   }
 
   /* Check norm(Aher*X - B) */
-  ierr = MatMatMult(Aher,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
-  ierr = MatAXPY(C,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(C,NORM_1,&norm);CHKERRQ(ierr);
+  CHKERRQ(MatMatMult(Aher,X,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C));
+  CHKERRQ(MatAXPY(C,-1.0,B,SAME_NONZERO_PATTERN));
+  CHKERRQ(MatNorm(C,NORM_1,&norm));
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: ||Aher*X - B||=%g for Cholesky\n",(double)norm);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Warning: ||Aher*X - B||=%g for Cholesky\n",(double)norm));
   }
 
   /* LU factorization */
   /*------------------*/
-  ierr = PetscPrintf(PETSC_COMM_WORLD," Test LU Solver \n");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," Test LU Solver \n"));
   /* In-place LU */
   /* Create matrix factor F, with a copy of A */
-  ierr = MatDuplicate(A,MAT_COPY_VALUES,&F);CHKERRQ(ierr);
+  CHKERRQ(MatDuplicate(A,MAT_COPY_VALUES,&F));
   /* Create vector d to test MatSolveAdd() */
-  ierr = VecDuplicate(x,&d);CHKERRQ(ierr);
-  ierr = VecCopy(x,d);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(x,&d));
+  CHKERRQ(VecCopy(x,d));
 
   /* PF=LU factorization */
-  ierr = MatLUFactor(F,0,0,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatLUFactor(F,0,0,NULL));
 
   /* Solve LUX = PB */
-  ierr = MatSolveAdd(F,b,d,x);CHKERRQ(ierr);
-  ierr = MatMatSolve(F,B,X);CHKERRQ(ierr);
-  ierr = MatDestroy(&F);CHKERRQ(ierr);
+  CHKERRQ(MatSolveAdd(F,b,d,x));
+  CHKERRQ(MatMatSolve(F,B,X));
+  CHKERRQ(MatDestroy(&F));
 
   /* Check norm(A*X - B) */
-  ierr = VecCreate(PETSC_COMM_WORLD,&e);CHKERRQ(ierr);
-  ierr = VecSetSizes(e,m,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(e);CHKERRQ(ierr);
-  ierr = MatMult(A,x,c);CHKERRQ(ierr);
-  ierr = MatMult(A,d,e);CHKERRQ(ierr);
-  ierr = VecAXPY(c,-1.0,e);CHKERRQ(ierr);
-  ierr = VecAXPY(c,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(c,NORM_1,&norm);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&e));
+  CHKERRQ(VecSetSizes(e,m,PETSC_DECIDE));
+  CHKERRQ(VecSetFromOptions(e));
+  CHKERRQ(MatMult(A,x,c));
+  CHKERRQ(MatMult(A,d,e));
+  CHKERRQ(VecAXPY(c,-1.0,e));
+  CHKERRQ(VecAXPY(c,-1.0,b));
+  CHKERRQ(VecNorm(c,NORM_1,&norm));
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: ||A*x - b||=%g for LU\n",(double)norm);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Warning: ||A*x - b||=%g for LU\n",(double)norm));
   }
   /* Reuse product C; replace Aher with A */
-  ierr = MatProductReplaceMats(A,NULL,NULL,C);CHKERRQ(ierr);
-  ierr = MatMatMult(A,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
-  ierr = MatAXPY(C,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatNorm(C,NORM_1,&norm);CHKERRQ(ierr);
+  CHKERRQ(MatProductReplaceMats(A,NULL,NULL,C));
+  CHKERRQ(MatMatMult(A,X,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C));
+  CHKERRQ(MatAXPY(C,-1.0,B,SAME_NONZERO_PATTERN));
+  CHKERRQ(MatNorm(C,NORM_1,&norm));
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: ||A*X - B||=%g for LU\n",(double)norm);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Warning: ||A*X - B||=%g for LU\n",(double)norm));
   }
 
   /* Out-place LU */
-  ierr = MatGetFactor(A,MATSOLVERSCALAPACK,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
-  ierr = MatLUFactorSymbolic(F,A,0,0,NULL);CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric(F,A,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatGetFactor(A,MATSOLVERSCALAPACK,MAT_FACTOR_LU,&F));
+  CHKERRQ(MatLUFactorSymbolic(F,A,0,0,NULL));
+  CHKERRQ(MatLUFactorNumeric(F,A,NULL));
   if (mats_view) {
-    ierr = MatView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(MatView(F,PETSC_VIEWER_STDOUT_WORLD));
   }
-  ierr = MatSolve(F,b,x);CHKERRQ(ierr);
-  ierr = MatMatSolve(F,B,X);CHKERRQ(ierr);
-  ierr = MatDestroy(&F);CHKERRQ(ierr);
+  CHKERRQ(MatSolve(F,b,x));
+  CHKERRQ(MatMatSolve(F,B,X));
+  CHKERRQ(MatDestroy(&F));
 
   /* Free space */
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&Aher);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&c);CHKERRQ(ierr);
-  ierr = VecDestroy(&d);CHKERRQ(ierr);
-  ierr = VecDestroy(&e);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&Aher));
+  CHKERRQ(MatDestroy(&B));
+  CHKERRQ(MatDestroy(&C));
+  CHKERRQ(MatDestroy(&X));
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(VecDestroy(&c));
+  CHKERRQ(VecDestroy(&d));
+  CHKERRQ(VecDestroy(&e));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(PetscRandomDestroy(&rand));
   ierr = PetscFinalize();
   return ierr;
 }

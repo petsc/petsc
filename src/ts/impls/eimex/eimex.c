@@ -34,9 +34,8 @@ static PetscErrorCode TSEvaluateStep_EIMEX(TS ts,PetscInt order,Vec X,PetscBool 
 {
   TS_EIMEX        *ext = (TS_EIMEX*)ts->data;
   const PetscInt  ns = ext->nstages;
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecCopy(ext->T[Map(ext->row_ind,ext->col_ind,ns)],X);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(ext->T[Map(ext->row_ind,ext->col_ind,ns)],X));
   PetscFunctionReturn(0);
 }
 
@@ -49,24 +48,23 @@ static PetscErrorCode TSStage_EIMEX(TS ts,PetscInt istage)
   TSAdapt         adapt;
   PetscInt        i,its,lits;
   PetscBool       accept;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  CHKERRQ(TSGetSNES(ts,&snes));
   h = ts->time_step/ext->N[istage];/* step size for the istage-th stage */
   ext->shift = 1./h;
-  ierr = SNESSetLagJacobian(snes,-2);CHKERRQ(ierr); /* Recompute the Jacobian on this solve, but not again */
-  ierr = VecCopy(ext->VecSolPrev,Y);CHKERRQ(ierr); /* Take the previous solution as initial step */
+  CHKERRQ(SNESSetLagJacobian(snes,-2)); /* Recompute the Jacobian on this solve, but not again */
+  CHKERRQ(VecCopy(ext->VecSolPrev,Y)); /* Take the previous solution as initial step */
 
   for (i=0; i<ext->N[istage]; i++) {
     ext->ctime = ts->ptime + h*i;
-    ierr = VecCopy(Y,Z);CHKERRQ(ierr);/* Save the solution of the previous substep */
-    ierr = SNESSolve(snes,NULL,Y);CHKERRQ(ierr);
-    ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-    ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(Y,Z));/* Save the solution of the previous substep */
+    CHKERRQ(SNESSolve(snes,NULL,Y));
+    CHKERRQ(SNESGetIterationNumber(snes,&its));
+    CHKERRQ(SNESGetLinearSolveIterations(snes,&lits));
     ts->snes_its += its; ts->ksp_its += lits;
-    ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-    ierr = TSAdaptCheckStage(adapt,ts,ext->ctime,Y,&accept);CHKERRQ(ierr);
+    CHKERRQ(TSGetAdapt(ts,&adapt));
+    CHKERRQ(TSAdaptCheckStage(adapt,ts,ext->ctime,Y,&accept));
   }
   PetscFunctionReturn(0);
 }
@@ -84,16 +82,16 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
   PetscReal       alpha,local_error,local_error_a,local_error_r;
   PetscFunctionBegin;
 
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESSetType(snes,"ksponly");CHKERRQ(ierr);
+  CHKERRQ(TSGetSNES(ts,&snes));
+  CHKERRQ(SNESSetType(snes,"ksponly"));
   ext->status = TS_STEP_INCOMPLETE;
 
-  ierr = VecCopy(ts->vec_sol,ext->VecSolPrev);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(ts->vec_sol,ext->VecSolPrev));
 
   /* Apply n_j steps of the base method to obtain solutions of T(j,1),1<=j<=s */
   for (j=0; j<ns; j++) {
-        ierr = TSStage_EIMEX(ts,j);CHKERRQ(ierr);
-        ierr = VecCopy(Y,T[j]);CHKERRQ(ierr);
+        CHKERRQ(TSStage_EIMEX(ts,j));
+        CHKERRQ(VecCopy(Y,T[j]));
   }
 
   for (i=1;i<ns;i++) {
@@ -101,46 +99,46 @@ static PetscErrorCode TSStep_EIMEX(TS ts)
       alpha = -(PetscReal)ext->N[j]/ext->N[j-i];
       ierr  = VecAXPBYPCZ(T[Map(j,i,ns)],alpha,1.0,0,T[Map(j,i-1,ns)],T[Map(j-1,i-1,ns)]);/* T[j][i]=alpha*T[j][i-1]+T[j-1][i-1] */CHKERRQ(ierr);
       alpha = 1.0/(1.0 + alpha);
-      ierr  = VecScale(T[Map(j,i,ns)],alpha);CHKERRQ(ierr);
+      CHKERRQ(VecScale(T[Map(j,i,ns)],alpha));
     }
   }
 
-  ierr = TSEvaluateStep(ts,ns,ts->vec_sol,NULL);CHKERRQ(ierr);/*update ts solution */
+  CHKERRQ(TSEvaluateStep(ts,ns,ts->vec_sol,NULL));/*update ts solution */
 
   if (ext->ord_adapt && ext->nstages < ext->max_rows) {
         accept = PETSC_FALSE;
         while (!accept && ext->nstages < ext->max_rows) {
-          ierr = TSErrorWeightedNorm(ts,ts->vec_sol,T[Map(ext->nstages-1,ext->nstages-2,ext->nstages)],ts->adapt->wnormtype,&local_error,&local_error_a,&local_error_r);CHKERRQ(ierr);
+          CHKERRQ(TSErrorWeightedNorm(ts,ts->vec_sol,T[Map(ext->nstages-1,ext->nstages-2,ext->nstages)],ts->adapt->wnormtype,&local_error,&local_error_a,&local_error_r));
           accept = (local_error < 1.0)? PETSC_TRUE : PETSC_FALSE;
 
           if (!accept) {/* add one more stage*/
-            ierr = TSStage_EIMEX(ts,ext->nstages);CHKERRQ(ierr);
+            CHKERRQ(TSStage_EIMEX(ts,ext->nstages));
             ext->nstages++; ext->row_ind++; ext->col_ind++;
             /*T table need to be recycled*/
-            ierr = VecDuplicateVecs(ts->vec_sol,(1+ext->nstages)*ext->nstages/2,&ext->T);CHKERRQ(ierr);
+            CHKERRQ(VecDuplicateVecs(ts->vec_sol,(1+ext->nstages)*ext->nstages/2,&ext->T));
             for (i=0; i<ext->nstages-1; i++) {
               for (j=0; j<=i; j++) {
-                ierr = VecCopy(T[Map(i,j,ext->nstages-1)],ext->T[Map(i,j,ext->nstages)]);CHKERRQ(ierr);
+                CHKERRQ(VecCopy(T[Map(i,j,ext->nstages-1)],ext->T[Map(i,j,ext->nstages)]));
               }
             }
-            ierr = VecDestroyVecs(ext->nstages*(ext->nstages-1)/2,&T);CHKERRQ(ierr);
+            CHKERRQ(VecDestroyVecs(ext->nstages*(ext->nstages-1)/2,&T));
             T = ext->T; /*reset the pointer*/
             /*recycling finished, store the new solution*/
-            ierr = VecCopy(Y,T[ext->nstages-1]);CHKERRQ(ierr);
+            CHKERRQ(VecCopy(Y,T[ext->nstages-1]));
             /*extrapolation for the newly added stage*/
             for (i=1;i<ext->nstages;i++) {
               alpha = -(PetscReal)ext->N[ext->nstages-1]/ext->N[ext->nstages-1-i];
               ierr  = VecAXPBYPCZ(T[Map(ext->nstages-1,i,ext->nstages)],alpha,1.0,0,T[Map(ext->nstages-1,i-1,ext->nstages)],T[Map(ext->nstages-1-1,i-1,ext->nstages)]);/*T[ext->nstages-1][i]=alpha*T[ext->nstages-1][i-1]+T[ext->nstages-1-1][i-1]*/CHKERRQ(ierr);
               alpha = 1.0/(1.0 + alpha);
-              ierr  = VecScale(T[Map(ext->nstages-1,i,ext->nstages)],alpha);CHKERRQ(ierr);
+              CHKERRQ(VecScale(T[Map(ext->nstages-1,i,ext->nstages)],alpha));
             }
             /*update ts solution */
-            ierr = TSEvaluateStep(ts,ext->nstages,ts->vec_sol,NULL);CHKERRQ(ierr);
+            CHKERRQ(TSEvaluateStep(ts,ext->nstages,ts->vec_sol,NULL));
           }/*end if !accept*/
         }/*end while*/
 
         if (ext->nstages == ext->max_rows) {
-          ierr = PetscInfo(ts,"Max number of rows has been used\n");CHKERRQ(ierr);
+          CHKERRQ(PetscInfo(ts,"Max number of rows has been used\n"));
         }
   }/*end if ext->ord_adapt*/
   ts->ptime += ts->time_step;
@@ -157,22 +155,21 @@ static PetscErrorCode TSInterpolate_EIMEX(TS ts,PetscReal itime,Vec X)
   PetscReal      t,a,b;
   Vec            Y0=ext->VecSolPrev,Y1=ext->Y,Ydot=ext->Ydot,YdotI=ext->YdotI;
   const PetscReal h = ts->ptime - ts->ptime_prev;
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   t = (itime -ts->ptime + h)/h;
   /* YdotI = -f(x)-g(x) */
 
-  ierr = VecZeroEntries(Ydot);CHKERRQ(ierr);
-  ierr = TSComputeIFunction(ts,ts->ptime-h,Y0,Ydot,YdotI,PETSC_FALSE);CHKERRQ(ierr);
+  CHKERRQ(VecZeroEntries(Ydot));
+  CHKERRQ(TSComputeIFunction(ts,ts->ptime-h,Y0,Ydot,YdotI,PETSC_FALSE));
 
   a    = 2.0*t*t*t - 3.0*t*t + 1.0;
   b    = -(t*t*t - 2.0*t*t + t)*h;
-  ierr = VecAXPBYPCZ(X,a,b,0.0,Y0,YdotI);CHKERRQ(ierr);
+  CHKERRQ(VecAXPBYPCZ(X,a,b,0.0,Y0,YdotI));
 
-  ierr = TSComputeIFunction(ts,ts->ptime,Y1,Ydot,YdotI,PETSC_FALSE);CHKERRQ(ierr);
+  CHKERRQ(TSComputeIFunction(ts,ts->ptime,Y1,Ydot,YdotI,PETSC_FALSE));
   a    = -2.0*t*t*t+3.0*t*t;
   b    = -(t*t*t - t*t)*h;
-  ierr = VecAXPBYPCZ(X,a,b,1.0,Y1,YdotI);CHKERRQ(ierr);
+  CHKERRQ(VecAXPBYPCZ(X,a,b,1.0,Y1,YdotI));
 
   PetscFunctionReturn(0);
 }
@@ -181,58 +178,54 @@ static PetscErrorCode TSReset_EIMEX(TS ts)
 {
   TS_EIMEX        *ext = (TS_EIMEX*)ts->data;
   PetscInt        ns;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ns = ext->nstages;
-  ierr = VecDestroyVecs((1+ns)*ns/2,&ext->T);CHKERRQ(ierr);
-  ierr = VecDestroy(&ext->Y);CHKERRQ(ierr);
-  ierr = VecDestroy(&ext->Z);CHKERRQ(ierr);
-  ierr = VecDestroy(&ext->YdotRHS);CHKERRQ(ierr);
-  ierr = VecDestroy(&ext->YdotI);CHKERRQ(ierr);
-  ierr = VecDestroy(&ext->Ydot);CHKERRQ(ierr);
-  ierr = VecDestroy(&ext->VecSolPrev);CHKERRQ(ierr);
-  ierr = PetscFree(ext->N);CHKERRQ(ierr);
+  CHKERRQ(VecDestroyVecs((1+ns)*ns/2,&ext->T));
+  CHKERRQ(VecDestroy(&ext->Y));
+  CHKERRQ(VecDestroy(&ext->Z));
+  CHKERRQ(VecDestroy(&ext->YdotRHS));
+  CHKERRQ(VecDestroy(&ext->YdotI));
+  CHKERRQ(VecDestroy(&ext->Ydot));
+  CHKERRQ(VecDestroy(&ext->VecSolPrev));
+  CHKERRQ(PetscFree(ext->N));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSDestroy_EIMEX(TS ts)
 {
-  PetscErrorCode  ierr;
-
   PetscFunctionBegin;
-  ierr = TSReset_EIMEX(ts);CHKERRQ(ierr);
-  ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetMaxRows_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetRowCol_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetOrdAdapt_C",NULL);CHKERRQ(ierr);
+  CHKERRQ(TSReset_EIMEX(ts));
+  CHKERRQ(PetscFree(ts->data));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetMaxRows_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetRowCol_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetOrdAdapt_C",NULL));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSEIMEXGetVecs(TS ts,DM dm,Vec *Z,Vec *Ydot,Vec *YdotI, Vec *YdotRHS)
 {
   TS_EIMEX       *ext = (TS_EIMEX*)ts->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (Z) {
     if (dm && dm != ts->dm) {
-      ierr = DMGetNamedGlobalVector(dm,"TSEIMEX_Z",Z);CHKERRQ(ierr);
+      CHKERRQ(DMGetNamedGlobalVector(dm,"TSEIMEX_Z",Z));
     } else *Z = ext->Z;
   }
   if (Ydot) {
     if (dm && dm != ts->dm) {
-      ierr = DMGetNamedGlobalVector(dm,"TSEIMEX_Ydot",Ydot);CHKERRQ(ierr);
+      CHKERRQ(DMGetNamedGlobalVector(dm,"TSEIMEX_Ydot",Ydot));
     } else *Ydot = ext->Ydot;
   }
   if (YdotI) {
     if (dm && dm != ts->dm) {
-      ierr = DMGetNamedGlobalVector(dm,"TSEIMEX_YdotI",YdotI);CHKERRQ(ierr);
+      CHKERRQ(DMGetNamedGlobalVector(dm,"TSEIMEX_YdotI",YdotI));
     } else *YdotI = ext->YdotI;
   }
   if (YdotRHS) {
     if (dm && dm != ts->dm) {
-      ierr = DMGetNamedGlobalVector(dm,"TSEIMEX_YdotRHS",YdotRHS);CHKERRQ(ierr);
+      CHKERRQ(DMGetNamedGlobalVector(dm,"TSEIMEX_YdotRHS",YdotRHS));
     } else *YdotRHS = ext->YdotRHS;
   }
   PetscFunctionReturn(0);
@@ -240,27 +233,25 @@ static PetscErrorCode TSEIMEXGetVecs(TS ts,DM dm,Vec *Z,Vec *Ydot,Vec *YdotI, Ve
 
 static PetscErrorCode TSEIMEXRestoreVecs(TS ts,DM dm,Vec *Z,Vec *Ydot,Vec *YdotI,Vec *YdotRHS)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (Z) {
     if (dm && dm != ts->dm) {
-      ierr = DMRestoreNamedGlobalVector(dm,"TSEIMEX_Z",Z);CHKERRQ(ierr);
+      CHKERRQ(DMRestoreNamedGlobalVector(dm,"TSEIMEX_Z",Z));
     }
   }
   if (Ydot) {
     if (dm && dm != ts->dm) {
-      ierr = DMRestoreNamedGlobalVector(dm,"TSEIMEX_Ydot",Ydot);CHKERRQ(ierr);
+      CHKERRQ(DMRestoreNamedGlobalVector(dm,"TSEIMEX_Ydot",Ydot));
     }
   }
   if (YdotI) {
     if (dm && dm != ts->dm) {
-      ierr = DMRestoreNamedGlobalVector(dm,"TSEIMEX_YdotI",YdotI);CHKERRQ(ierr);
+      CHKERRQ(DMRestoreNamedGlobalVector(dm,"TSEIMEX_YdotI",YdotI));
     }
   }
   if (YdotRHS) {
     if (dm && dm != ts->dm) {
-      ierr = DMRestoreNamedGlobalVector(dm,"TSEIMEX_YdotRHS",YdotRHS);CHKERRQ(ierr);
+      CHKERRQ(DMRestoreNamedGlobalVector(dm,"TSEIMEX_YdotRHS",YdotRHS));
     }
   }
   PetscFunctionReturn(0);
@@ -275,23 +266,22 @@ static PetscErrorCode TSEIMEXRestoreVecs(TS ts,DM dm,Vec *Z,Vec *Ydot,Vec *YdotI
 static PetscErrorCode SNESTSFormFunction_EIMEX(SNES snes,Vec X,Vec G,TS ts)
 {
   TS_EIMEX        *ext = (TS_EIMEX*)ts->data;
-  PetscErrorCode  ierr;
   Vec             Ydot,Z;
   DM              dm,dmsave;
 
   PetscFunctionBegin;
-  ierr = VecZeroEntries(G);CHKERRQ(ierr);
+  CHKERRQ(VecZeroEntries(G));
 
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = TSEIMEXGetVecs(ts,dm,&Z,&Ydot,NULL,NULL);CHKERRQ(ierr);
-  ierr = VecZeroEntries(Ydot);CHKERRQ(ierr);
+  CHKERRQ(SNESGetDM(snes,&dm));
+  CHKERRQ(TSEIMEXGetVecs(ts,dm,&Z,&Ydot,NULL,NULL));
+  CHKERRQ(VecZeroEntries(Ydot));
   dmsave = ts->dm;
   ts->dm = dm;
-  ierr = TSComputeIFunction(ts,ext->ctime,X,Ydot,G,PETSC_FALSE);CHKERRQ(ierr);
+  CHKERRQ(TSComputeIFunction(ts,ext->ctime,X,Ydot,G,PETSC_FALSE));
   /* PETSC_FALSE indicates non-imex, adding explicit RHS to the implicit I function.  */
-  ierr = VecCopy(G,Ydot);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(G,Ydot));
   ts->dm = dmsave;
-  ierr = TSEIMEXRestoreVecs(ts,dm,&Z,&Ydot,NULL,NULL);CHKERRQ(ierr);
+  CHKERRQ(TSEIMEXRestoreVecs(ts,dm,&Z,&Ydot,NULL,NULL));
 
   PetscFunctionReturn(0);
 }
@@ -303,24 +293,22 @@ static PetscErrorCode SNESTSFormJacobian_EIMEX(SNES snes,Vec X,Mat A,Mat B,TS ts
 {
   TS_EIMEX        *ext = (TS_EIMEX*)ts->data;
   Vec             Ydot;
-  PetscErrorCode  ierr;
   DM              dm,dmsave;
   PetscFunctionBegin;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = TSEIMEXGetVecs(ts,dm,NULL,&Ydot,NULL,NULL);CHKERRQ(ierr);
-  /*  ierr = VecZeroEntries(Ydot);CHKERRQ(ierr); */
+  CHKERRQ(SNESGetDM(snes,&dm));
+  CHKERRQ(TSEIMEXGetVecs(ts,dm,NULL,&Ydot,NULL,NULL));
+  /*  CHKERRQ(VecZeroEntries(Ydot)); */
   /* ext->Ydot have already been computed in SNESTSFormFunction_EIMEX (SNES guarantees this) */
   dmsave = ts->dm;
   ts->dm = dm;
-  ierr = TSComputeIJacobian(ts,ts->ptime,X,Ydot,ext->shift,A,B,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(TSComputeIJacobian(ts,ts->ptime,X,Ydot,ext->shift,A,B,PETSC_TRUE));
   ts->dm = dmsave;
-  ierr = TSEIMEXRestoreVecs(ts,dm,NULL,&Ydot,NULL,NULL);CHKERRQ(ierr);
+  CHKERRQ(TSEIMEXRestoreVecs(ts,dm,NULL,&Ydot,NULL,NULL));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode DMCoarsenHook_TSEIMEX(DM fine,DM coarse,void *ctx)
 {
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -328,56 +316,54 @@ static PetscErrorCode DMCoarsenHook_TSEIMEX(DM fine,DM coarse,void *ctx)
 static PetscErrorCode DMRestrictHook_TSEIMEX(DM fine,Mat restrct,Vec rscale,Mat inject,DM coarse,void *ctx)
 {
   TS ts = (TS)ctx;
-  PetscErrorCode ierr;
   Vec Z,Z_c;
 
   PetscFunctionBegin;
-  ierr = TSEIMEXGetVecs(ts,fine,&Z,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = TSEIMEXGetVecs(ts,coarse,&Z_c,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = MatRestrict(restrct,Z,Z_c);CHKERRQ(ierr);
-  ierr = VecPointwiseMult(Z_c,rscale,Z_c);CHKERRQ(ierr);
-  ierr = TSEIMEXRestoreVecs(ts,fine,&Z,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = TSEIMEXRestoreVecs(ts,coarse,&Z_c,NULL,NULL,NULL);CHKERRQ(ierr);
+  CHKERRQ(TSEIMEXGetVecs(ts,fine,&Z,NULL,NULL,NULL));
+  CHKERRQ(TSEIMEXGetVecs(ts,coarse,&Z_c,NULL,NULL,NULL));
+  CHKERRQ(MatRestrict(restrct,Z,Z_c));
+  CHKERRQ(VecPointwiseMult(Z_c,rscale,Z_c));
+  CHKERRQ(TSEIMEXRestoreVecs(ts,fine,&Z,NULL,NULL,NULL));
+  CHKERRQ(TSEIMEXRestoreVecs(ts,coarse,&Z_c,NULL,NULL,NULL));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSSetUp_EIMEX(TS ts)
 {
   TS_EIMEX       *ext = (TS_EIMEX*)ts->data;
-  PetscErrorCode ierr;
   DM             dm;
 
   PetscFunctionBegin;
   if (!ext->N) { /* ext->max_rows not set */
-    ierr = TSEIMEXSetMaxRows(ts,TSEIMEXDefault);CHKERRQ(ierr);
+    CHKERRQ(TSEIMEXSetMaxRows(ts,TSEIMEXDefault));
   }
   if (-1 == ext->row_ind && -1 == ext->col_ind) {
-        ierr = TSEIMEXSetRowCol(ts,ext->max_rows,ext->max_rows);CHKERRQ(ierr);
+        CHKERRQ(TSEIMEXSetRowCol(ts,ext->max_rows,ext->max_rows));
   } else{/* ext->row_ind and col_ind already set */
     if (ext->ord_adapt) {
-      ierr = PetscInfo(ts,"Order adaptivity is enabled and TSEIMEXSetRowCol or -ts_eimex_row_col option will take no effect\n");CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(ts,"Order adaptivity is enabled and TSEIMEXSetRowCol or -ts_eimex_row_col option will take no effect\n"));
     }
   }
 
   if (ext->ord_adapt) {
     ext->nstages = 2; /* Start with the 2-stage scheme */
-    ierr = TSEIMEXSetRowCol(ts,ext->nstages,ext->nstages);CHKERRQ(ierr);
+    CHKERRQ(TSEIMEXSetRowCol(ts,ext->nstages,ext->nstages));
   } else{
     ext->nstages = ext->max_rows; /* by default nstages is the same as max_rows, this can be changed by setting order adaptivity */
   }
 
-  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
+  CHKERRQ(TSGetAdapt(ts,&ts->adapt));
 
-  ierr = VecDuplicateVecs(ts->vec_sol,(1+ext->nstages)*ext->nstages/2,&ext->T);CHKERRQ(ierr);/* full T table */
-  ierr = VecDuplicate(ts->vec_sol,&ext->YdotI);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&ext->YdotRHS);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&ext->Ydot);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&ext->VecSolPrev);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&ext->Y);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&ext->Z);CHKERRQ(ierr);
-  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicateVecs(ts->vec_sol,(1+ext->nstages)*ext->nstages/2,&ext->T));/* full T table */
+  CHKERRQ(VecDuplicate(ts->vec_sol,&ext->YdotI));
+  CHKERRQ(VecDuplicate(ts->vec_sol,&ext->YdotRHS));
+  CHKERRQ(VecDuplicate(ts->vec_sol,&ext->Ydot));
+  CHKERRQ(VecDuplicate(ts->vec_sol,&ext->VecSolPrev));
+  CHKERRQ(VecDuplicate(ts->vec_sol,&ext->Y));
+  CHKERRQ(VecDuplicate(ts->vec_sol,&ext->Z));
+  CHKERRQ(TSGetDM(ts,&dm));
   if (dm) {
-    ierr = DMCoarsenHookAdd(dm,DMCoarsenHook_TSEIMEX,DMRestrictHook_TSEIMEX,ts);CHKERRQ(ierr);
+    CHKERRQ(DMCoarsenHookAdd(dm,DMCoarsenHook_TSEIMEX,DMRestrictHook_TSEIMEX,ts));
   }
   PetscFunctionReturn(0);
 }
@@ -385,27 +371,26 @@ static PetscErrorCode TSSetUp_EIMEX(TS ts)
 static PetscErrorCode TSSetFromOptions_EIMEX(PetscOptionItems *PetscOptionsObject,TS ts)
 {
   TS_EIMEX       *ext = (TS_EIMEX*)ts->data;
-  PetscErrorCode ierr;
   PetscInt       tindex[2];
   PetscInt       np = 2, nrows=TSEIMEXDefault;
 
   PetscFunctionBegin;
   tindex[0] = TSEIMEXDefault;
   tindex[1] = TSEIMEXDefault;
-  ierr = PetscOptionsHead(PetscOptionsObject,"EIMEX ODE solver options");CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"EIMEX ODE solver options"));
   {
     PetscBool flg;
-    ierr = PetscOptionsInt("-ts_eimex_max_rows","Define the maximum number of rows used","TSEIMEXSetMaxRows",nrows,&nrows,&flg);CHKERRQ(ierr); /* default value 3 */
+    CHKERRQ(PetscOptionsInt("-ts_eimex_max_rows","Define the maximum number of rows used","TSEIMEXSetMaxRows",nrows,&nrows,&flg)); /* default value 3 */
     if (flg) {
-      ierr = TSEIMEXSetMaxRows(ts,nrows);CHKERRQ(ierr);
+      CHKERRQ(TSEIMEXSetMaxRows(ts,nrows));
     }
-    ierr = PetscOptionsIntArray("-ts_eimex_row_col","Return the specific term in the T table","TSEIMEXSetRowCol",tindex,&np,&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsIntArray("-ts_eimex_row_col","Return the specific term in the T table","TSEIMEXSetRowCol",tindex,&np,&flg));
     if (flg) {
-      ierr = TSEIMEXSetRowCol(ts,tindex[0],tindex[1]);CHKERRQ(ierr);
+      CHKERRQ(TSEIMEXSetRowCol(ts,tindex[0],tindex[1]));
     }
-    ierr = PetscOptionsBool("-ts_eimex_order_adapt","Solve the problem with adaptive order","TSEIMEXSetOrdAdapt",ext->ord_adapt,&ext->ord_adapt,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsBool("-ts_eimex_order_adapt","Solve the problem with adaptive order","TSEIMEXSetOrdAdapt",ext->ord_adapt,&ext->ord_adapt,NULL));
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -430,10 +415,9 @@ static PetscErrorCode TSView_EIMEX(TS ts,PetscViewer viewer)
 @*/
 PetscErrorCode TSEIMEXSetMaxRows(TS ts, PetscInt nrows)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscTryMethod(ts,"TSEIMEXSetMaxRows_C",(TS,PetscInt),(ts,nrows));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ts,"TSEIMEXSetMaxRows_C",(TS,PetscInt),(ts,nrows)));
   PetscFunctionReturn(0);
 }
 
@@ -452,10 +436,9 @@ PetscErrorCode TSEIMEXSetMaxRows(TS ts, PetscInt nrows)
 @*/
 PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt row, PetscInt col)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscTryMethod(ts,"TSEIMEXSetRowCol_C",(TS,PetscInt, PetscInt),(ts,row,col));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ts,"TSEIMEXSetRowCol_C",(TS,PetscInt, PetscInt),(ts,row,col)));
   PetscFunctionReturn(0);
 }
 
@@ -474,24 +457,22 @@ PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt row, PetscInt col)
 @*/
 PetscErrorCode TSEIMEXSetOrdAdapt(TS ts, PetscBool flg)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscTryMethod(ts,"TSEIMEXSetOrdAdapt_C",(TS,PetscBool),(ts,flg));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ts,"TSEIMEXSetOrdAdapt_C",(TS,PetscBool),(ts,flg)));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSEIMEXSetMaxRows_EIMEX(TS ts,PetscInt nrows)
 {
   TS_EIMEX *ext = (TS_EIMEX*)ts->data;
-  PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin;
   PetscCheck(nrows >= 0 && nrows <= 100,((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Max number of rows (current value %D) should be an integer number between 1 and 100",nrows);
-  ierr = PetscFree(ext->N);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(ext->N));
   ext->max_rows = nrows;
-  ierr = PetscMalloc1(nrows,&ext->N);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(nrows,&ext->N));
   for (i=0;i<nrows;i++) ext->N[i]=i+1;
   PetscFunctionReturn(0);
 }
@@ -558,7 +539,6 @@ Computing, 31 (2010), pp. 4452-4477.
 PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS ts)
 {
   TS_EIMEX       *ext;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
@@ -576,7 +556,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS ts)
 
   ts->usessnes = PETSC_TRUE;
 
-  ierr = PetscNewLog(ts,&ext);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(ts,&ext));
   ts->data = (void*)ext;
 
   ext->ord_adapt = PETSC_FALSE; /* By default, no order adapativity */
@@ -585,8 +565,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS ts)
   ext->max_rows  = TSEIMEXDefault;
   ext->nstages   = TSEIMEXDefault;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetMaxRows_C", TSEIMEXSetMaxRows_EIMEX);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetRowCol_C",  TSEIMEXSetRowCol_EIMEX);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetOrdAdapt_C",TSEIMEXSetOrdAdapt_EIMEX);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetMaxRows_C", TSEIMEXSetMaxRows_EIMEX));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetRowCol_C",  TSEIMEXSetRowCol_EIMEX));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSEIMEXSetOrdAdapt_C",TSEIMEXSetOrdAdapt_EIMEX));
   PetscFunctionReturn(0);
 }

@@ -8,10 +8,10 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = PetscOptionsSetValue(NULL,"-abc",NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue(NULL,"-FOO",NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsClearValue(NULL,"-FOO");CHKERRQ(ierr);
-  ierr = PetscOptionsView(NULL,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsSetValue(NULL,"-abc",NULL));
+  CHKERRQ(PetscOptionsSetValue(NULL,"-FOO",NULL));
+  CHKERRQ(PetscOptionsClearValue(NULL,"-FOO"));
+  CHKERRQ(PetscOptionsView(NULL,NULL));
   ierr = PetscFinalize();
   return ierr;
 }

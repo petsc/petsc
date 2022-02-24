@@ -40,35 +40,33 @@ PETSC_EXTERN PetscErrorCode VecCreate_HIP(Vec);
 @*/
 PetscErrorCode VecRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (VecRegisterAllCalled) PetscFunctionReturn(0);
   VecRegisterAllCalled = PETSC_TRUE;
 
-  ierr = VecRegister(VECSEQ,        VecCreate_Seq);CHKERRQ(ierr);
-  ierr = VecRegister(VECMPI,        VecCreate_MPI);CHKERRQ(ierr);
-  ierr = VecRegister(VECSTANDARD,   VecCreate_Standard);CHKERRQ(ierr);
-  ierr = VecRegister(VECSHARED,     VecCreate_Shared);CHKERRQ(ierr);
+  CHKERRQ(VecRegister(VECSEQ,        VecCreate_Seq));
+  CHKERRQ(VecRegister(VECMPI,        VecCreate_MPI));
+  CHKERRQ(VecRegister(VECSTANDARD,   VecCreate_Standard));
+  CHKERRQ(VecRegister(VECSHARED,     VecCreate_Shared));
 #if defined PETSC_HAVE_VIENNACL
-  ierr = VecRegister(VECSEQVIENNACL,    VecCreate_SeqViennaCL);CHKERRQ(ierr);
-  ierr = VecRegister(VECMPIVIENNACL,    VecCreate_MPIViennaCL);CHKERRQ(ierr);
-  ierr = VecRegister(VECVIENNACL,       VecCreate_ViennaCL);CHKERRQ(ierr);
+  CHKERRQ(VecRegister(VECSEQVIENNACL,    VecCreate_SeqViennaCL));
+  CHKERRQ(VecRegister(VECMPIVIENNACL,    VecCreate_MPIViennaCL));
+  CHKERRQ(VecRegister(VECVIENNACL,       VecCreate_ViennaCL));
 #endif
 #if defined(PETSC_HAVE_CUDA)
-  ierr = VecRegister(VECSEQCUDA,    VecCreate_SeqCUDA);CHKERRQ(ierr);
-  ierr = VecRegister(VECMPICUDA,    VecCreate_MPICUDA);CHKERRQ(ierr);
-  ierr = VecRegister(VECCUDA,       VecCreate_CUDA);CHKERRQ(ierr);
+  CHKERRQ(VecRegister(VECSEQCUDA,    VecCreate_SeqCUDA));
+  CHKERRQ(VecRegister(VECMPICUDA,    VecCreate_MPICUDA));
+  CHKERRQ(VecRegister(VECCUDA,       VecCreate_CUDA));
 #endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
-  ierr = VecRegister(VECSEQKOKKOS,  VecCreate_SeqKokkos);CHKERRQ(ierr);
-  ierr = VecRegister(VECMPIKOKKOS,  VecCreate_MPIKokkos);CHKERRQ(ierr);
-  ierr = VecRegister(VECKOKKOS,     VecCreate_Kokkos);CHKERRQ(ierr);
+  CHKERRQ(VecRegister(VECSEQKOKKOS,  VecCreate_SeqKokkos));
+  CHKERRQ(VecRegister(VECMPIKOKKOS,  VecCreate_MPIKokkos));
+  CHKERRQ(VecRegister(VECKOKKOS,     VecCreate_Kokkos));
 #endif
 #if defined(PETSC_HAVE_HIP)
-  ierr = VecRegister(VECSEQHIP,    VecCreate_SeqHIP);CHKERRQ(ierr);
-  ierr = VecRegister(VECMPIHIP,    VecCreate_MPIHIP);CHKERRQ(ierr);
-  ierr = VecRegister(VECHIP,       VecCreate_HIP);CHKERRQ(ierr);
+  CHKERRQ(VecRegister(VECSEQHIP,    VecCreate_SeqHIP));
+  CHKERRQ(VecRegister(VECMPIHIP,    VecCreate_MPIHIP));
+  CHKERRQ(VecRegister(VECHIP,       VecCreate_HIP));
 #endif
   PetscFunctionReturn(0);
 }

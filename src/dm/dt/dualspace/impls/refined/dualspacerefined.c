@@ -22,13 +22,11 @@ typedef struct {
 @*/
 PetscErrorCode PetscDualSpaceRefinedSetCellSpaces(PetscDualSpace sp, const PetscDualSpace cellSpaces[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(cellSpaces,2);
   PetscCheckFalse(sp->setupcalled,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Cannot change cell spaces after setup is called");
-  ierr = PetscTryMethod(sp, "PetscDualSpaceRefinedSetCellSpaces_C", (PetscDualSpace,const PetscDualSpace []),(sp,cellSpaces));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(sp, "PetscDualSpaceRefinedSetCellSpaces_C", (PetscDualSpace,const PetscDualSpace []),(sp,cellSpaces)));
   PetscFunctionReturn(0);
 }
 
@@ -37,20 +35,19 @@ static PetscErrorCode PetscDualSpaceRefinedSetCellSpaces_Refined(PetscDualSpace 
   DM dm;
   PetscInt pStart, pEnd;
   PetscInt cStart, cEnd, c;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   dm = sp->dm;
   PetscCheckFalse(!dm,PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_WRONGSTATE, "PetscDualSpace must have a DM (PetscDualSpaceSetDM()) before calling PetscDualSpaceRefinedSetCellSpaces");
-  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetChart(dm, &pStart, &pEnd));
   if (!sp->pointSpaces) {
 
-    ierr = PetscCalloc1(pEnd-pStart,&(sp->pointSpaces));CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc1(pEnd-pStart,&(sp->pointSpaces)));
   }
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   for (c = 0; c < cEnd - cStart; c++) {
-    ierr = PetscObjectReference((PetscObject)cellSpaces[c]);CHKERRQ(ierr);
-    ierr = PetscDualSpaceDestroy(&(sp->pointSpaces[c + cStart - pStart]));CHKERRQ(ierr);
+    CHKERRQ(PetscObjectReference((PetscObject)cellSpaces[c]));
+    CHKERRQ(PetscDualSpaceDestroy(&(sp->pointSpaces[c + cStart - pStart])));
     sp->pointSpaces[c+cStart-pStart] = cellSpaces[c];
   }
   PetscFunctionReturn(0);
@@ -59,11 +56,10 @@ static PetscErrorCode PetscDualSpaceRefinedSetCellSpaces_Refined(PetscDualSpace 
 static PetscErrorCode PetscDualSpaceDestroy_Refined(PetscDualSpace sp)
 {
   PetscDualSpace_Refined *ref = (PetscDualSpace_Refined *) sp->data;
-  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceRefinedSetCellSpaces_C", NULL);CHKERRQ(ierr);
-  ierr = PetscFree(ref);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceRefinedSetCellSpaces_C", NULL));
+  CHKERRQ(PetscFree(ref));
   PetscFunctionReturn(0);
 }
 
@@ -74,19 +70,18 @@ static PetscErrorCode PetscDualSpaceSetUp_Refined(PetscDualSpace sp)
   PetscInt h;
   DM dm;
   PetscSection   section;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDualSpaceGetDM(sp, &dm);CHKERRQ(ierr);
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  CHKERRQ(PetscDualSpaceGetDM(sp, &dm));
+  CHKERRQ(DMPlexGetDepth(dm, &depth));
+  CHKERRQ(DMPlexGetChart(dm, &pStart, &pEnd));
+  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   for (c = cStart; c < cEnd; c++) {
     if (sp->pointSpaces[c-pStart]) {
       PetscInt ccStart, ccEnd;
       PetscCheckFalse(sp->pointSpaces[c-pStart]->k != sp->k,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_INCOMP, "All cell spaces must have the same form degree as the refined dual space");
       PetscCheckFalse(sp->pointSpaces[c-pStart]->Nc != sp->Nc,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_INCOMP, "All cell spaces must have the same number of components as the refined dual space");
-      ierr = DMPlexGetHeightStratum(sp->pointSpaces[c-pStart]->dm, 0, &ccStart, &ccEnd);CHKERRQ(ierr);
+      CHKERRQ(DMPlexGetHeightStratum(sp->pointSpaces[c-pStart]->dm, 0, &ccStart, &ccEnd));
       PetscCheckFalse(ccEnd - ccStart != 1,PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_INCOMP, "All cell spaces must have a single cell themselves");
     }
   }
@@ -94,7 +89,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Refined(PetscDualSpace sp)
     if (sp->pointSpaces[c-pStart]) {
       PetscBool cUniform;
 
-      ierr = PetscDualSpaceGetUniform(sp->pointSpaces[c-pStart],&cUniform);CHKERRQ(ierr);
+      CHKERRQ(PetscDualSpaceGetUniform(sp->pointSpaces[c-pStart],&cUniform));
       if (!cUniform) break;
     }
     if ((c > cStart) && sp->pointSpaces[c-pStart] != sp->pointSpaces[c-1-pStart]) break;
@@ -103,7 +98,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Refined(PetscDualSpace sp)
   for (h = 0; h < depth; h++) {
     PetscInt hStart, hEnd;
 
-    ierr = DMPlexGetHeightStratum(dm, h, &hStart, &hEnd);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetHeightStratum(dm, h, &hStart, &hEnd));
     for (c = hStart; c < hEnd; c++) {
       PetscInt coneSize, e;
       PetscDualSpace cspace = sp->pointSpaces[c-pStart];
@@ -111,55 +106,53 @@ static PetscErrorCode PetscDualSpaceSetUp_Refined(PetscDualSpace sp)
       const PetscInt *refCone;
 
       if (!cspace) continue;
-      ierr = DMPlexGetConeSize(dm, c, &coneSize);CHKERRQ(ierr);
-      ierr = DMPlexGetCone(dm, c, &cone);CHKERRQ(ierr);
-      ierr = DMPlexGetCone(cspace->dm, 0, &refCone);CHKERRQ(ierr);
+      CHKERRQ(DMPlexGetConeSize(dm, c, &coneSize));
+      CHKERRQ(DMPlexGetCone(dm, c, &cone));
+      CHKERRQ(DMPlexGetCone(cspace->dm, 0, &refCone));
       for (e = 0; e < coneSize; e++) {
         PetscInt point = cone[e];
         PetscInt refpoint = refCone[e];
         PetscDualSpace espace;
 
-        ierr = PetscDualSpaceGetPointSubspace(cspace,refpoint,&espace);CHKERRQ(ierr);
+        CHKERRQ(PetscDualSpaceGetPointSubspace(cspace,refpoint,&espace));
         if (sp->pointSpaces[point-pStart] == NULL) {
-          ierr = PetscObjectReference((PetscObject)espace);CHKERRQ(ierr);
+          CHKERRQ(PetscObjectReference((PetscObject)espace));
           sp->pointSpaces[point-pStart] = espace;
         }
       }
     }
   }
-  ierr = PetscDualSpaceGetSection(sp, &section);CHKERRQ(ierr);
-  ierr = PetscDualSpaceGetDimension(sp, &spdim);CHKERRQ(ierr);
-  ierr = PetscMalloc1(spdim, &(sp->functional));CHKERRQ(ierr);
-  ierr = PetscDualSpacePushForwardSubspaces_Internal(sp, pStart, pEnd);CHKERRQ(ierr);
+  CHKERRQ(PetscDualSpaceGetSection(sp, &section));
+  CHKERRQ(PetscDualSpaceGetDimension(sp, &spdim));
+  CHKERRQ(PetscMalloc1(spdim, &(sp->functional)));
+  CHKERRQ(PetscDualSpacePushForwardSubspaces_Internal(sp, pStart, pEnd));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscDualSpaceRefinedView_Ascii(PetscDualSpace sp, PetscViewer viewer)
 {
-  PetscErrorCode      ierr;
-
   PetscFunctionBegin;
   if (sp->dm && sp->pointSpaces) {
     PetscInt pStart, pEnd;
     PetscInt cStart, cEnd, c;
 
-    ierr = DMPlexGetChart(sp->dm, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = DMPlexGetHeightStratum(sp->dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Refined dual space:\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetChart(sp->dm, &pStart, &pEnd));
+    CHKERRQ(DMPlexGetHeightStratum(sp->dm, 0, &cStart, &cEnd));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer, "Refined dual space:\n"));
+    CHKERRQ(PetscViewerASCIIPushTab(viewer));
     for (c = cStart; c < cEnd; c++) {
       if (!sp->pointSpaces[c-pStart]) {
-        ierr = PetscViewerASCIIPrintf(viewer, "Cell space %D not set yet\n", c);CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer, "Cell space %D not set yet\n", c));
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer, "Cell space %D:ot set yet\n", c);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = PetscDualSpaceView(sp->pointSpaces[c-pStart],viewer);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer, "Cell space %D:ot set yet\n", c));
+        CHKERRQ(PetscViewerASCIIPushTab(viewer));
+        CHKERRQ(PetscDualSpaceView(sp->pointSpaces[c-pStart],viewer));
+        CHKERRQ(PetscViewerASCIIPopTab(viewer));
       }
     }
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPopTab(viewer));
   } else {
-    ierr = PetscViewerASCIIPrintf(viewer, "Refined dual space: (cell spaces not set yet)\n");CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer, "Refined dual space: (cell spaces not set yet)\n"));
   }
   PetscFunctionReturn(0);
 }
@@ -167,13 +160,12 @@ static PetscErrorCode PetscDualSpaceRefinedView_Ascii(PetscDualSpace sp, PetscVi
 static PetscErrorCode PetscDualSpaceView_Refined(PetscDualSpace sp, PetscViewer viewer)
 {
   PetscBool      iascii;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
-  if (iascii) {ierr = PetscDualSpaceRefinedView_Ascii(sp, viewer);CHKERRQ(ierr);}
+  CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii));
+  if (iascii) CHKERRQ(PetscDualSpaceRefinedView_Ascii(sp, viewer));
   PetscFunctionReturn(0);
 }
 
@@ -206,14 +198,13 @@ M*/
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Refined(PetscDualSpace sp)
 {
   PetscDualSpace_Refined *ref;
-  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  ierr     = PetscNewLog(sp,&ref);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(sp,&ref));
   sp->data = ref;
 
-  ierr = PetscDualSpaceInitialize_Refined(sp);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceRefinedSetCellSpaces_C", PetscDualSpaceRefinedSetCellSpaces_Refined);CHKERRQ(ierr);
+  CHKERRQ(PetscDualSpaceInitialize_Refined(sp));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject) sp, "PetscDualSpaceRefinedSetCellSpaces_C", PetscDualSpaceRefinedSetCellSpaces_Refined));
   PetscFunctionReturn(0);
 }

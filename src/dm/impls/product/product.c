@@ -2,15 +2,14 @@
 
 static PetscErrorCode DMDestroy_Product(DM dm)
 {
-  PetscErrorCode ierr;
   DM_Product     *product = (DM_Product*)dm->data;
   PetscInt       d;
 
   PetscFunctionBeginUser;
   for (d=0; d<DMPRODUCT_MAX_DIM; ++d) {
-    ierr = DMDestroy(&product->dm[d]);CHKERRQ(ierr);
+    CHKERRQ(DMDestroy(&product->dm[d]));
   }
-  ierr = PetscFree(product);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(product));
   PetscFunctionReturn(0);
 }
 
@@ -28,13 +27,12 @@ M*/
 
 PETSC_EXTERN PetscErrorCode DMCreate_Product(DM dm)
 {
-  PetscErrorCode ierr;
   DM_Product     *product;
   PetscInt       d;
 
   PetscFunctionBegin;
   PetscValidPointer(dm,1);
-  ierr = PetscNewLog(dm,&product);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(dm,&product));
   dm->data = product;
 
   for (d=0; d<DMPRODUCT_MAX_DIM; ++d) product->dm[d]  = NULL;

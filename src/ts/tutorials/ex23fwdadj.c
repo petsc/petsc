@@ -28,41 +28,39 @@ struct _n_User {
 
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
-  PetscErrorCode    ierr;
   User              user = (User)ctx;
   const PetscScalar *x,*xdot;
   PetscScalar       *f;
 
   PetscFunctionBeginUser;
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
-  ierr = VecGetArrayWrite(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(X,&x));
+  CHKERRQ(VecGetArrayRead(Xdot,&xdot));
+  CHKERRQ(VecGetArrayWrite(F,&f));
   f[0] = user->c*xdot[0] - user->b*x[0];
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Xdot,&xdot);CHKERRQ(ierr);
-  ierr = VecRestoreArrayWrite(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(X,&x));
+  CHKERRQ(VecRestoreArrayRead(Xdot,&xdot));
+  CHKERRQ(VecRestoreArrayWrite(F,&f));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode    ierr;
   User              user     = (User)ctx;
   PetscInt          rowcol[] = {0};
   PetscScalar       J[1][1];
   const PetscScalar *x;
 
   PetscFunctionBeginUser;
-  ierr    = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(X,&x));
   J[0][0] = user->c*a - user->b*1.0;
-  ierr    = MatSetValues(B,1,rowcol,1,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr    = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(B,1,rowcol,1,rowcol,&J[0][0],INSERT_VALUES));
+  CHKERRQ(VecRestoreArrayRead(X,&x));
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   if (A != B) {
-    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -74,19 +72,18 @@ static PetscErrorCode IJacobianP(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shif
   PetscScalar       J[1][1];
   const PetscScalar *x,*xdot;
   PetscReal         dt;
-  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  ierr    = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr    = VecGetArrayRead(Xdot,&xdot);CHKERRQ(ierr);
-  ierr    = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(X,&x));
+  CHKERRQ(VecGetArrayRead(Xdot,&xdot));
+  CHKERRQ(TSGetTimeStep(ts,&dt));
   if (user->der == 1) J[0][0] = xdot[0];
   if (user->der == 2) J[0][0] = -x[0];
-  ierr    = MatSetValues(A,1,row,1,col,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr    = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(A,1,row,1,col,&J[0][0],INSERT_VALUES));
+  CHKERRQ(VecRestoreArrayRead(X,&x));
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
@@ -101,7 +98,7 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   user.a           = 2.0;
@@ -110,81 +107,81 @@ int main(int argc,char **argv)
   user.steps       = 0;
   user.ftime       = 1.0;
   user.der         = 1;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-der",&user.der,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-der",&user.der,NULL));
 
   rows = 1;
   cols = 1;
-  ierr = MatCreate(PETSC_COMM_WORLD,&user.Jac);CHKERRQ(ierr);
-  ierr = MatSetSizes(user.Jac,PETSC_DECIDE,PETSC_DECIDE,1,1);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(user.Jac);CHKERRQ(ierr);
-  ierr = MatSetUp(user.Jac);CHKERRQ(ierr);
-  ierr = MatCreateVecs(user.Jac,&user.x,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&user.Jac));
+  CHKERRQ(MatSetSizes(user.Jac,PETSC_DECIDE,PETSC_DECIDE,1,1));
+  CHKERRQ(MatSetFromOptions(user.Jac));
+  CHKERRQ(MatSetUp(user.Jac));
+  CHKERRQ(MatCreateVecs(user.Jac,&user.x,NULL));
 
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,NULL,IFunction,&user);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,user.Jac,user.Jac,IJacobian,&user);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts,user.ftime);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
+  CHKERRQ(TSSetType(ts,TSBEULER));
+  CHKERRQ(TSSetIFunction(ts,NULL,IFunction,&user));
+  CHKERRQ(TSSetIJacobian(ts,user.Jac,user.Jac,IJacobian,&user));
+  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
+  CHKERRQ(TSSetMaxTime(ts,user.ftime));
 
-  ierr = VecGetArrayWrite(user.x,&x_ptr);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayWrite(user.x,&x_ptr));
   x_ptr[0] = user.a;
-  ierr = VecRestoreArrayWrite(user.x,&x_ptr);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,0.001);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayWrite(user.x,&x_ptr));
+  CHKERRQ(TSSetTimeStep(ts,0.001));
 
   /* Set up forward sensitivity */
-  ierr = MatCreate(PETSC_COMM_WORLD,&user.Jacp);CHKERRQ(ierr);
-  ierr = MatSetSizes(user.Jacp,PETSC_DECIDE,PETSC_DECIDE,rows,cols);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(user.Jacp);CHKERRQ(ierr);
-  ierr = MatSetUp(user.Jacp);CHKERRQ(ierr);
-  ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,rows,cols,NULL,&user.sp);CHKERRQ(ierr);
-  ierr = MatZeroEntries(user.sp);CHKERRQ(ierr);
-  ierr = TSForwardSetSensitivities(ts,cols,user.sp);CHKERRQ(ierr);
-  ierr = TSSetIJacobianP(ts,user.Jacp,IJacobianP,&user);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&user.Jacp));
+  CHKERRQ(MatSetSizes(user.Jacp,PETSC_DECIDE,PETSC_DECIDE,rows,cols));
+  CHKERRQ(MatSetFromOptions(user.Jacp));
+  CHKERRQ(MatSetUp(user.Jacp));
+  CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,rows,cols,NULL,&user.sp));
+  CHKERRQ(MatZeroEntries(user.sp));
+  CHKERRQ(TSForwardSetSensitivities(ts,cols,user.sp));
+  CHKERRQ(TSSetIJacobianP(ts,user.Jacp,IJacobianP,&user));
 
-  ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  CHKERRQ(TSSetSaveTrajectory(ts));
+  CHKERRQ(TSSetFromOptions(ts));
 
-  ierr = TSSolve(ts,user.x);CHKERRQ(ierr);
-  ierr = TSGetSolveTime(ts,&user.ftime);CHKERRQ(ierr);
-  ierr = TSGetStepNumber(ts,&user.steps);CHKERRQ(ierr);
-  ierr = VecGetArray(user.x,&x_ptr);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n ode solution %g\n",(double)PetscRealPart(x_ptr[0]));CHKERRQ(ierr);
-  ierr = VecRestoreArray(user.x,&x_ptr);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n analytical solution %g\n",(double)user.a*PetscExpReal(user.b/user.c*user.ftime));CHKERRQ(ierr);
+  CHKERRQ(TSSolve(ts,user.x));
+  CHKERRQ(TSGetSolveTime(ts,&user.ftime));
+  CHKERRQ(TSGetStepNumber(ts,&user.steps));
+  CHKERRQ(VecGetArray(user.x,&x_ptr));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n ode solution %g\n",(double)PetscRealPart(x_ptr[0])));
+  CHKERRQ(VecRestoreArray(user.x,&x_ptr));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n analytical solution %g\n",(double)user.a*PetscExpReal(user.b/user.c*user.ftime)));
 
   if (user.der == 1) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n analytical derivative w.r.t. c %g\n",(double)-user.a*user.ftime*user.b/(user.c*user.c)*PetscExpReal(user.b/user.c*user.ftime));CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n analytical derivative w.r.t. c %g\n",(double)-user.a*user.ftime*user.b/(user.c*user.c)*PetscExpReal(user.b/user.c*user.ftime)));
   }
   if (user.der == 2) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n analytical derivative w.r.t. b %g\n",user.a*user.ftime/user.c*PetscExpReal(user.b/user.c*user.ftime));CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n analytical derivative w.r.t. b %g\n",user.a*user.ftime/user.c*PetscExpReal(user.b/user.c*user.ftime)));
   }
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n forward sensitivity:\n");CHKERRQ(ierr);
-  ierr = MatView(user.sp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n forward sensitivity:\n"));
+  CHKERRQ(MatView(user.sp,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = MatCreateVecs(user.Jac,&user.lambda[0],NULL);CHKERRQ(ierr);
+  CHKERRQ(MatCreateVecs(user.Jac,&user.lambda[0],NULL));
   /* Set initial conditions for the adjoint integration */
-  ierr = VecGetArrayWrite(user.lambda[0],&x_ptr);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayWrite(user.lambda[0],&x_ptr));
   x_ptr[0] = 1.0;
-  ierr = VecRestoreArrayWrite(user.lambda[0],&x_ptr);CHKERRQ(ierr);
-  ierr = MatCreateVecs(user.Jacp,&user.mup[0],NULL);CHKERRQ(ierr);
-  ierr = VecGetArrayWrite(user.mup[0],&x_ptr);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayWrite(user.lambda[0],&x_ptr));
+  CHKERRQ(MatCreateVecs(user.Jacp,&user.mup[0],NULL));
+  CHKERRQ(VecGetArrayWrite(user.mup[0],&x_ptr));
   x_ptr[0] = 0.0;
-  ierr = VecRestoreArrayWrite(user.mup[0],&x_ptr);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayWrite(user.mup[0],&x_ptr));
 
-  ierr = TSSetCostGradients(ts,1,user.lambda,user.mup);CHKERRQ(ierr);
-  ierr = TSAdjointSolve(ts);CHKERRQ(ierr);
+  CHKERRQ(TSSetCostGradients(ts,1,user.lambda,user.mup));
+  CHKERRQ(TSAdjointSolve(ts));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n adjoint sensitivity:\n");CHKERRQ(ierr);
-  ierr = VecView(user.mup[0],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n adjoint sensitivity:\n"));
+  CHKERRQ(VecView(user.mup[0],PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = MatDestroy(&user.Jac);CHKERRQ(ierr);
-  ierr = MatDestroy(&user.sp);CHKERRQ(ierr);
-  ierr = MatDestroy(&user.Jacp);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.x);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.lambda[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.mup[0]);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&user.Jac));
+  CHKERRQ(MatDestroy(&user.sp));
+  CHKERRQ(MatDestroy(&user.Jacp));
+  CHKERRQ(VecDestroy(&user.x));
+  CHKERRQ(VecDestroy(&user.lambda[0]));
+  CHKERRQ(VecDestroy(&user.mup[0]));
+  CHKERRQ(TSDestroy(&ts));
 
   ierr = PetscFinalize();
   return(ierr);

@@ -16,65 +16,65 @@ int main(int argc,char **args)
   char            rankstr[16]={0};
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  ierr = PetscOptionsGetString(NULL,NULL,"-A",matfile,sizeof(matfile),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-row",rowfile,sizeof(rowfile),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-col",colfile,sizeof(colfile),NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-A",matfile,sizeof(matfile),NULL));
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-row",rowfile,sizeof(rowfile),NULL));
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-col",colfile,sizeof(colfile),NULL));
 
   /* Each rank has its own files for row/col ISes */
-  ierr = PetscSNPrintf(rankstr,16,"-%d",rank);CHKERRQ(ierr);
-  ierr = PetscStrlcat(rowfile,rankstr,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscStrlcat(colfile,rankstr,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  CHKERRQ(PetscSNPrintf(rankstr,16,"-%d",rank));
+  CHKERRQ(PetscStrlcat(rowfile,rankstr,PETSC_MAX_PATH_LEN));
+  CHKERRQ(PetscStrlcat(colfile,rankstr,PETSC_MAX_PATH_LEN));
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,matfile,FILE_MODE_READ,&matfd);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,rowfile,FILE_MODE_READ,&rowfd);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,colfile,FILE_MODE_READ,&colfd);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,matfile,FILE_MODE_READ,&matfd));
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,rowfile,FILE_MODE_READ,&rowfd));
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,colfile,FILE_MODE_READ,&colfd));
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatLoad(A,matfd);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatLoad(A,matfd));
 
   /* We stored the number of ISes at the beginning of rowfd */
-  ierr = PetscViewerBinaryRead(rowfd,&n,1,NULL,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscMalloc2(n,&irow,n,&icol);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryRead(rowfd,&n,1,NULL,PETSC_INT));
+  CHKERRQ(PetscMalloc2(n,&irow,n,&icol));
   for (i=0; i<n; i++) {
-    ierr = ISCreate(PETSC_COMM_SELF,&irow[i]);CHKERRQ(ierr);
-    ierr = ISCreate(PETSC_COMM_SELF,&icol[i]);CHKERRQ(ierr);
-    ierr = ISLoad(irow[i],rowfd);CHKERRQ(ierr);
-    ierr = ISLoad(icol[i],colfd);CHKERRQ(ierr);
+    CHKERRQ(ISCreate(PETSC_COMM_SELF,&irow[i]));
+    CHKERRQ(ISCreate(PETSC_COMM_SELF,&icol[i]));
+    CHKERRQ(ISLoad(irow[i],rowfd));
+    CHKERRQ(ISLoad(icol[i],colfd));
   }
 
-  ierr = PetscViewerDestroy(&matfd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&rowfd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&colfd);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDestroy(&matfd));
+  CHKERRQ(PetscViewerDestroy(&rowfd));
+  CHKERRQ(PetscViewerDestroy(&colfd));
 
   /* Create submats for the first time */
-  ierr = MatCreateSubMatrices(A,n,irow,icol,MAT_INITIAL_MATRIX,&submats);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSubMatrices(A,n,irow,icol,MAT_INITIAL_MATRIX,&submats));
 
   /* Dup submats to submats2 for later comparison */
-  ierr = PetscMalloc1(n,&submats2);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(n,&submats2));
   for (i=0; i<n; i++) {
-    ierr = MatDuplicate(submats[i],MAT_COPY_VALUES,&submats2[i]);CHKERRQ(ierr);
+    CHKERRQ(MatDuplicate(submats[i],MAT_COPY_VALUES,&submats2[i]));
   }
 
   /* Create submats again */
-  ierr = MatCreateSubMatrices(A,n,irow,icol,MAT_REUSE_MATRIX,&submats);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSubMatrices(A,n,irow,icol,MAT_REUSE_MATRIX,&submats));
 
   /* Compare submats and submats2 */
   for (i=0; i<n; i++) {
-    ierr = MatEqual(submats[i],submats2[i],&same);CHKERRQ(ierr);
+    CHKERRQ(MatEqual(submats[i],submats2[i],&same));
     PetscCheckFalse(!same,PETSC_COMM_SELF,PETSC_ERR_PLIB,"submatrix %" PetscInt_FMT " is not same",i);
   }
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
   for (i=0; i<n; i++) {
-    ierr = ISDestroy(&irow[i]);CHKERRQ(ierr);
-    ierr = ISDestroy(&icol[i]);CHKERRQ(ierr);
+    CHKERRQ(ISDestroy(&irow[i]));
+    CHKERRQ(ISDestroy(&icol[i]));
   }
-  ierr = MatDestroySubMatrices(n,&submats);CHKERRQ(ierr);
-  ierr = MatDestroyMatrices(n,&submats2);CHKERRQ(ierr);
-  ierr = PetscFree2(irow,icol);CHKERRQ(ierr);
+  CHKERRQ(MatDestroySubMatrices(n,&submats));
+  CHKERRQ(MatDestroyMatrices(n,&submats2));
+  CHKERRQ(PetscFree2(irow,icol));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -19,17 +19,17 @@ int main(int argc, char **argv)
       */
     dim = 2;
     numFaces = 9;
-    ierr = PetscMalloc2(dim * numFaces, &dx, dim * numFaces, &grad);CHKERRQ(ierr);
-    ierr = PetscFVCreate(PETSC_COMM_WORLD, &fvm);CHKERRQ(ierr);
-    ierr = PetscFVSetType(fvm, PETSCFVLEASTSQUARES);CHKERRQ(ierr);
-    ierr = PetscFVLeastSquaresSetMaxFaces(fvm, numFaces);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc2(dim * numFaces, &dx, dim * numFaces, &grad));
+    CHKERRQ(PetscFVCreate(PETSC_COMM_WORLD, &fvm));
+    CHKERRQ(PetscFVSetType(fvm, PETSCFVLEASTSQUARES));
+    CHKERRQ(PetscFVLeastSquaresSetMaxFaces(fvm, numFaces));
 
     /* Issue here */
-    ierr = PetscFVComputeGradient(fvm, numFaces, dx, grad);CHKERRQ(ierr);
+    CHKERRQ(PetscFVComputeGradient(fvm, numFaces, dx, grad));
 
-    ierr = PetscFVDestroy(&fvm);CHKERRQ(ierr);
-    ierr = PetscFree2(dx, grad);CHKERRQ(ierr);
-    ierr = PetscFinalize();CHKERRQ(ierr);
+    CHKERRQ(PetscFVDestroy(&fvm));
+    CHKERRQ(PetscFree2(dx, grad));
+    CHKERRQ(PetscFinalize());
     PetscFunctionReturn(0);
 }
 

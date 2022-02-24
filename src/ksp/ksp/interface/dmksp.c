@@ -4,24 +4,20 @@
 
 static PetscErrorCode DMKSPDestroy(DMKSP *kdm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!*kdm) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*kdm),DMKSP_CLASSID,1);
   if (--((PetscObject)(*kdm))->refct > 0) {*kdm = NULL; PetscFunctionReturn(0);}
-  if ((*kdm)->ops->destroy) {ierr = ((*kdm)->ops->destroy)(kdm);CHKERRQ(ierr);}
-  ierr = PetscHeaderDestroy(kdm);CHKERRQ(ierr);
+  if ((*kdm)->ops->destroy) CHKERRQ(((*kdm)->ops->destroy)(kdm));
+  CHKERRQ(PetscHeaderDestroy(kdm));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode DMKSPCreate(MPI_Comm comm,DMKSP *kdm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = KSPInitializePackage();CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(*kdm, DMKSP_CLASSID, "DMKSP", "DMKSP", "DMKSP", comm, DMKSPDestroy, NULL);CHKERRQ(ierr);
+  CHKERRQ(KSPInitializePackage());
+  CHKERRQ(PetscHeaderCreate(*kdm, DMKSP_CLASSID, "DMKSP", "DMKSP", "DMKSP", comm, DMKSPDestroy, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -30,10 +26,8 @@ static PetscErrorCode DMKSPCreate(MPI_Comm comm,DMKSP *kdm)
  */
 static PetscErrorCode DMCoarsenHook_DMKSP(DM dm,DM dmc,void *ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = DMCopyDMKSP(dm,dmc);CHKERRQ(ierr);
+  CHKERRQ(DMCopyDMKSP(dm,dmc));
   PetscFunctionReturn(0);
 }
 
@@ -42,10 +36,8 @@ static PetscErrorCode DMCoarsenHook_DMKSP(DM dm,DM dmc,void *ctx)
  */
 static PetscErrorCode DMRefineHook_DMKSP(DM dm,DM dmc,void *ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = DMCopyDMKSP(dm,dmc);CHKERRQ(ierr);
+  CHKERRQ(DMCopyDMKSP(dm,dmc));
   PetscFunctionReturn(0);
 }
 
@@ -64,8 +56,6 @@ static PetscErrorCode DMRefineHook_DMKSP(DM dm,DM dmc,void *ctx)
 @*/
 PetscErrorCode DMKSPCopy(DMKSP kdm,DMKSP nkdm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(kdm,DMKSP_CLASSID,1);
   PetscValidHeaderSpecific(nkdm,DMKSP_CLASSID,2);
@@ -86,7 +76,7 @@ PetscErrorCode DMKSPCopy(DMKSP kdm,DMKSP nkdm)
   nkdm->fortran_func_pointers[2] = kdm->fortran_func_pointers[2];
 
   /* implementation specific copy hooks */
-  if (kdm->ops->duplicate) {ierr = (*kdm->ops->duplicate)(kdm,nkdm);CHKERRQ(ierr);}
+  if (kdm->ops->duplicate) CHKERRQ((*kdm->ops->duplicate)(kdm,nkdm));
   PetscFunctionReturn(0);
 }
 
@@ -110,18 +100,16 @@ PetscErrorCode DMKSPCopy(DMKSP kdm,DMKSP nkdm)
 @*/
 PetscErrorCode DMGetDMKSP(DM dm,DMKSP *kspdm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   *kspdm = (DMKSP) dm->dmksp;
   if (!*kspdm) {
-    ierr                 = PetscInfo(dm,"Creating new DMKSP\n");CHKERRQ(ierr);
-    ierr                 = DMKSPCreate(PetscObjectComm((PetscObject)dm),kspdm);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(dm,"Creating new DMKSP\n"));
+    CHKERRQ(DMKSPCreate(PetscObjectComm((PetscObject)dm),kspdm));
     dm->dmksp            = (PetscObject) *kspdm;
     (*kspdm)->originaldm = dm;
-    ierr                 = DMCoarsenHookAdd(dm,DMCoarsenHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
-    ierr                 = DMRefineHookAdd(dm,DMRefineHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
+    CHKERRQ(DMCoarsenHookAdd(dm,DMCoarsenHook_DMKSP,NULL,NULL));
+    CHKERRQ(DMRefineHookAdd(dm,DMRefineHook_DMKSP,NULL,NULL));
   }
   PetscFunctionReturn(0);
 }
@@ -143,19 +131,18 @@ PetscErrorCode DMGetDMKSP(DM dm,DMKSP *kspdm)
 @*/
 PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
 {
-  PetscErrorCode ierr;
   DMKSP          kdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetDMKSP(dm,&kdm);CHKERRQ(ierr);
+  CHKERRQ(DMGetDMKSP(dm,&kdm));
   PetscCheckFalse(!kdm->originaldm,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"DMKSP has a NULL originaldm");
   if (kdm->originaldm != dm) {  /* Copy on write */
     DMKSP oldkdm = kdm;
-    ierr      = PetscInfo(dm,"Copying DMKSP due to write\n");CHKERRQ(ierr);
-    ierr      = DMKSPCreate(PetscObjectComm((PetscObject)dm),&kdm);CHKERRQ(ierr);
-    ierr      = DMKSPCopy(oldkdm,kdm);CHKERRQ(ierr);
-    ierr      = DMKSPDestroy((DMKSP*)&dm->dmksp);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(dm,"Copying DMKSP due to write\n"));
+    CHKERRQ(DMKSPCreate(PetscObjectComm((PetscObject)dm),&kdm));
+    CHKERRQ(DMKSPCopy(oldkdm,kdm));
+    CHKERRQ(DMKSPDestroy((DMKSP*)&dm->dmksp));
     dm->dmksp = (PetscObject)kdm;
     kdm->originaldm = dm;
   }
@@ -181,16 +168,14 @@ PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
 @*/
 PetscErrorCode DMCopyDMKSP(DM dmsrc,DM dmdest)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmsrc,DM_CLASSID,1);
   PetscValidHeaderSpecific(dmdest,DM_CLASSID,2);
-  ierr          = DMKSPDestroy((DMKSP*)&dmdest->dmksp);CHKERRQ(ierr);
+  CHKERRQ(DMKSPDestroy((DMKSP*)&dmdest->dmksp));
   dmdest->dmksp = dmsrc->dmksp;
-  ierr          = PetscObjectReference(dmdest->dmksp);CHKERRQ(ierr);
-  ierr          = DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
-  ierr          = DMRefineHookAdd(dmdest,DMRefineHook_DMKSP,NULL,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectReference(dmdest->dmksp));
+  CHKERRQ(DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMKSP,NULL,NULL));
+  CHKERRQ(DMRefineHookAdd(dmdest,DMRefineHook_DMKSP,NULL,NULL));
   PetscFunctionReturn(0);
 }
 
@@ -215,12 +200,11 @@ PetscErrorCode DMCopyDMKSP(DM dmsrc,DM dmdest)
 @*/
 PetscErrorCode DMKSPSetComputeOperators(DM dm,PetscErrorCode (*func)(KSP,Mat,Mat,void*),void *ctx)
 {
-  PetscErrorCode ierr;
   DMKSP          kdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetDMKSPWrite(dm,&kdm);CHKERRQ(ierr);
+  CHKERRQ(DMGetDMKSPWrite(dm,&kdm));
   if (func) kdm->ops->computeoperators = func;
   if (ctx) kdm->operatorsctx = ctx;
   PetscFunctionReturn(0);
@@ -244,12 +228,11 @@ PetscErrorCode DMKSPSetComputeOperators(DM dm,PetscErrorCode (*func)(KSP,Mat,Mat
 @*/
 PetscErrorCode DMKSPGetComputeOperators(DM dm,PetscErrorCode (**func)(KSP,Mat,Mat,void*),void *ctx)
 {
-  PetscErrorCode ierr;
   DMKSP          kdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetDMKSP(dm,&kdm);CHKERRQ(ierr);
+  CHKERRQ(DMGetDMKSP(dm,&kdm));
   if (func) *func = kdm->ops->computeoperators;
   if (ctx) *(void**)ctx = kdm->operatorsctx;
   PetscFunctionReturn(0);
@@ -276,12 +259,11 @@ PetscErrorCode DMKSPGetComputeOperators(DM dm,PetscErrorCode (**func)(KSP,Mat,Ma
 @*/
 PetscErrorCode DMKSPSetComputeRHS(DM dm,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
 {
-  PetscErrorCode ierr;
   DMKSP          kdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetDMKSPWrite(dm,&kdm);CHKERRQ(ierr);
+  CHKERRQ(DMGetDMKSPWrite(dm,&kdm));
   if (func) kdm->ops->computerhs = func;
   if (ctx) kdm->rhsctx = ctx;
   PetscFunctionReturn(0);
@@ -307,12 +289,11 @@ PetscErrorCode DMKSPSetComputeRHS(DM dm,PetscErrorCode (*func)(KSP,Vec,void*),vo
 @*/
 PetscErrorCode DMKSPSetComputeInitialGuess(DM dm,PetscErrorCode (*func)(KSP,Vec,void*),void *ctx)
 {
-  PetscErrorCode ierr;
   DMKSP          kdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetDMKSPWrite(dm,&kdm);CHKERRQ(ierr);
+  CHKERRQ(DMGetDMKSPWrite(dm,&kdm));
   if (func) kdm->ops->computeinitialguess = func;
   if (ctx) kdm->initialguessctx = ctx;
   PetscFunctionReturn(0);
@@ -336,12 +317,11 @@ PetscErrorCode DMKSPSetComputeInitialGuess(DM dm,PetscErrorCode (*func)(KSP,Vec,
 @*/
 PetscErrorCode DMKSPGetComputeRHS(DM dm,PetscErrorCode (**func)(KSP,Vec,void*),void *ctx)
 {
-  PetscErrorCode ierr;
   DMKSP          kdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetDMKSP(dm,&kdm);CHKERRQ(ierr);
+  CHKERRQ(DMGetDMKSP(dm,&kdm));
   if (func) *func = kdm->ops->computerhs;
   if (ctx) *(void**)ctx = kdm->rhsctx;
   PetscFunctionReturn(0);
@@ -365,12 +345,11 @@ PetscErrorCode DMKSPGetComputeRHS(DM dm,PetscErrorCode (**func)(KSP,Vec,void*),v
 @*/
 PetscErrorCode DMKSPGetComputeInitialGuess(DM dm,PetscErrorCode (**func)(KSP,Vec,void*),void *ctx)
 {
-  PetscErrorCode ierr;
   DMKSP          kdm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMGetDMKSP(dm,&kdm);CHKERRQ(ierr);
+  CHKERRQ(DMGetDMKSP(dm,&kdm));
   if (func) *func = kdm->ops->computeinitialguess;
   if (ctx) *(void**)ctx = kdm->initialguessctx;
   PetscFunctionReturn(0);

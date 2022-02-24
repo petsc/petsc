@@ -51,7 +51,7 @@ PetscErrorCode FormInitGuess(DM da, Vec X, Params *p)
     - You MUST call VecRestoreArray() when you no longer need access
       to the array.
   */
-  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecGetArray(da,X,&x));
 
   /*
     Get local grid boundaries (for 3-dimensional DMDA):
@@ -60,7 +60,7 @@ PetscErrorCode FormInitGuess(DM da, Vec X, Params *p)
 
     - xm, ym, zm: widths of local grid (no ghost points)
   */
-  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
 
   /*
     Compute initial guess over the locally owned part of the grid
@@ -83,7 +83,7 @@ PetscErrorCode FormInitGuess(DM da, Vec X, Params *p)
   /*
     Restore vector
   */
-  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArray(da,X,&x));
 
   PetscFunctionReturn(0);
 }
@@ -114,7 +114,7 @@ PetscErrorCode FormFunction(DM da, Vec X, Vec F, Params *p)
   hyhzdhx = hy*hz/hx;
   hxhydhz = hx*hy/hz;
 
-  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
+  CHKERRQ(DMGetLocalVector(da,&localX));
 
   /*
     Scatter ghost points to local vector,using the 2-step process
@@ -122,19 +122,19 @@ PetscErrorCode FormFunction(DM da, Vec X, Vec F, Params *p)
     between these two statements, computations can be done while
     messages are in transition.
   */
-  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  CHKERRQ(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX));
+  CHKERRQ(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX));
 
   /*
     Get pointers to vector data.
   */
-  ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecGetArray(da,localX,&x));
+  CHKERRQ(DMDAVecGetArray(da,F,&f));
 
   /*
     Get local grid boundaries.
   */
-  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
 
   /*
     Compute function over the locally owned part of the grid.
@@ -166,10 +166,10 @@ PetscErrorCode FormFunction(DM da, Vec X, Vec F, Params *p)
   /*
     Restore vectors.
   */
-  ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
-  ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArray(da,F,&f));
+  CHKERRQ(DMDAVecRestoreArray(da,localX,&x));
+  CHKERRQ(DMRestoreLocalVector(da,&localX));
+  CHKERRQ(PetscLogFlops(11.0*ym*xm));
 
   PetscFunctionReturn(0);
 }
@@ -201,7 +201,7 @@ PetscErrorCode FormJacobian(DM da, Vec X, Mat J, Params *p)
   hyhzdhx = hy*hz/hx;
   hxhydhz = hx*hy/hz;
 
-  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
+  CHKERRQ(DMGetLocalVector(da,&localX));
 
   /*
     Scatter ghost points to local vector, using the 2-step process
@@ -209,18 +209,18 @@ PetscErrorCode FormJacobian(DM da, Vec X, Mat J, Params *p)
     between these two statements, computations can be done while
     messages are in transition.
   */
-  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  CHKERRQ(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX));
+  CHKERRQ(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX));
 
   /*
     Get pointer to vector data.
   */
-  ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecGetArray(da,localX,&x));
 
   /*
     Get local grid boundaries.
   */
-  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
 
   /*
     Compute entries for the locally owned part of the Jacobian.
@@ -244,7 +244,7 @@ PetscErrorCode FormJacobian(DM da, Vec X, Mat J, Params *p)
         /* boundary points */
         if (i == 0 || j == 0 || k == 0|| i == Mx-1 || j == My-1 || k == Mz-1) {
           v[0] = 1.0;
-          ierr = MatSetValuesStencil(J,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
+          CHKERRQ(MatSetValuesStencil(J,1,&row,1,&row,v,INSERT_VALUES));
         } else {
         /* interior grid points */
           v[0] = -hxhydhz; col[0].k=k-1;col[0].j=j;  col[0].i = i;
@@ -254,26 +254,26 @@ PetscErrorCode FormJacobian(DM da, Vec X, Mat J, Params *p)
           v[4] = -hyhzdhx; col[4].k=k;  col[4].j=j;  col[4].i = i+1;
           v[5] = -hxhzdhy; col[5].k=k;  col[5].j=j+1;col[5].i = i;
           v[6] = -hxhydhz; col[6].k=k+1;col[6].j=j;  col[6].i = i;
-          ierr = MatSetValuesStencil(J,1,&row,7,col,v,INSERT_VALUES);CHKERRQ(ierr);
+          CHKERRQ(MatSetValuesStencil(J,1,&row,7,col,v,INSERT_VALUES));
         }
       }
     }
   }
-  ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArray(da,localX,&x));
+  CHKERRQ(DMRestoreLocalVector(da,&localX));
 
   /*
     Assemble matrix, using the 2-step process: MatAssemblyBegin(),
     MatAssemblyEnd().
   */
-  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
 
   /*
     Tell the matrix we will never add a new nonzero location to the
     matrix. If we do, it will generate an error.
   */
-  ierr = MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(MatSetOption(J,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
 
   PetscFunctionReturn(0);
 }

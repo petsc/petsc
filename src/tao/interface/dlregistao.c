@@ -12,10 +12,8 @@ static PetscBool TaoPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode TaoFinalizePackage(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&TaoList);CHKERRQ(ierr);
+  CHKERRQ(PetscFunctionListDestroy(&TaoList));
   TaoPackageInitialized = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -34,38 +32,37 @@ PetscErrorCode TaoInitializePackage(void)
 {
   char           logList[256];
   PetscBool      opt,pkg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (TaoPackageInitialized) PetscFunctionReturn(0);
   TaoPackageInitialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscClassIdRegister("Tao",&TAO_CLASSID);CHKERRQ(ierr);
+  CHKERRQ(PetscClassIdRegister("Tao",&TAO_CLASSID));
   /* Register Constructors */
-  ierr = TaoRegisterAll();CHKERRQ(ierr);
+  CHKERRQ(TaoRegisterAll());
   /* Register Events */
-  ierr = PetscLogEventRegister("TaoSolve",         TAO_CLASSID,&TAO_Solve);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoObjectiveEval", TAO_CLASSID,&TAO_ObjectiveEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoGradientEval",  TAO_CLASSID,&TAO_GradientEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoObjGradEval",   TAO_CLASSID,&TAO_ObjGradEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoHessianEval",   TAO_CLASSID,&TAO_HessianEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoConstrEval",    TAO_CLASSID,&TAO_ConstraintsEval);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoJacobianEval",  TAO_CLASSID,&TAO_JacobianEval);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventRegister("TaoSolve",         TAO_CLASSID,&TAO_Solve));
+  CHKERRQ(PetscLogEventRegister("TaoObjectiveEval", TAO_CLASSID,&TAO_ObjectiveEval));
+  CHKERRQ(PetscLogEventRegister("TaoGradientEval",  TAO_CLASSID,&TAO_GradientEval));
+  CHKERRQ(PetscLogEventRegister("TaoObjGradEval",   TAO_CLASSID,&TAO_ObjGradEval));
+  CHKERRQ(PetscLogEventRegister("TaoHessianEval",   TAO_CLASSID,&TAO_HessianEval));
+  CHKERRQ(PetscLogEventRegister("TaoConstrEval",    TAO_CLASSID,&TAO_ConstraintsEval));
+  CHKERRQ(PetscLogEventRegister("TaoJacobianEval",  TAO_CLASSID,&TAO_JacobianEval));
   /* Process Info */
   {
     PetscClassId  classids[1];
 
     classids[0] = TAO_CLASSID;
-    ierr = PetscInfoProcessClass("tao", 1, classids);CHKERRQ(ierr);
+    CHKERRQ(PetscInfoProcessClass("tao", 1, classids));
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
   if (opt) {
-    ierr = PetscStrInList("tao",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventExcludeClass(TAO_CLASSID);CHKERRQ(ierr);}
+    CHKERRQ(PetscStrInList("tao",logList,',',&pkg));
+    if (pkg) CHKERRQ(PetscLogEventExcludeClass(TAO_CLASSID));
   }
   /* Register package finalizer */
-  ierr = PetscRegisterFinalize(TaoFinalizePackage);CHKERRQ(ierr);
+  CHKERRQ(PetscRegisterFinalize(TaoFinalizePackage));
   PetscFunctionReturn(0);
 }
 
@@ -82,11 +79,9 @@ PetscErrorCode TaoInitializePackage(void)
 */
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petsctao(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = TaoInitializePackage();CHKERRQ(ierr);
-  ierr = TaoLineSearchInitializePackage();CHKERRQ(ierr);
+  CHKERRQ(TaoInitializePackage());
+  CHKERRQ(TaoLineSearchInitializePackage());
   PetscFunctionReturn(0);
 }
 #endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

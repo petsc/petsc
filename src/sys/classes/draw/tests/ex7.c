@@ -20,93 +20,93 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
 
-  ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Draw Example",PETSC_DECIDE,PETSC_DECIDE,101,101,&draw);CHKERRQ(ierr);
-  /*ierr = PetscDrawSetPause(draw,2.0);CHKERRQ(ierr);*/
-  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawCreate(PETSC_COMM_WORLD,0,"Draw Example",PETSC_DECIDE,PETSC_DECIDE,101,101,&draw));
+  /*CHKERRQ(PetscDrawSetPause(draw,2.0));*/
+  CHKERRQ(PetscDrawSetFromOptions(draw));
 
-  ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  ierr = PetscDrawGetWindowSize(draw,&w,&h);CHKERRQ(ierr);
-  ierr = PetscDrawSetCoordinates(draw,0,0,--w,--h);CHKERRQ(ierr);
-  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawCheckResizedWindow(draw));
+  CHKERRQ(PetscDrawGetWindowSize(draw,&w,&h));
+  CHKERRQ(PetscDrawSetCoordinates(draw,0,0,--w,--h));
+  CHKERRQ(PetscDrawClear(draw));
   /* one-pixel lines in the window corners */
-  ierr = PetscDrawLine(draw,0,0,0,0,r);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,w,0,w,0,r);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,0,h,0,h,r);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,w,h,w,h,r);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawLine(draw,0,0,0,0,r));
+  CHKERRQ(PetscDrawLine(draw,w,0,w,0,r));
+  CHKERRQ(PetscDrawLine(draw,0,h,0,h,r));
+  CHKERRQ(PetscDrawLine(draw,w,h,w,h,r));
   /* border lines with two pixels from  borders */
-  ierr = PetscDrawLine(draw,0+2,0,w-2,0,k);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,0+2,h,w-2,h,k);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,0,0+2,0,h-2,k);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,w,0+2,w,h-2,k);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawLine(draw,0+2,0,w-2,0,k));
+  CHKERRQ(PetscDrawLine(draw,0+2,h,w-2,h,k));
+  CHKERRQ(PetscDrawLine(draw,0,0+2,0,h-2,k));
+  CHKERRQ(PetscDrawLine(draw,w,0+2,w,h-2,k));
   /* oblique lines */
-  ierr = PetscDrawLine(draw,0+2,h/2,w-2,h-2,b);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,0+1,h-1,w-1,0+1,b);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawLine(draw,0+2,h/2,w-2,h-2,b));
+  CHKERRQ(PetscDrawLine(draw,0+1,h-1,w-1,0+1,b));
   /* vertical up and down arrow, two pixels from borders  */
-  ierr = PetscDrawArrow(draw,1*w/4,0+2,1*w/4,h-2,g);CHKERRQ(ierr);
-  ierr = PetscDrawArrow(draw,3*w/4,h-2,3*w/4,0+2,g);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawArrow(draw,1*w/4,0+2,1*w/4,h-2,g));
+  CHKERRQ(PetscDrawArrow(draw,3*w/4,h-2,3*w/4,0+2,g));
   /* horizontal right and left arrow, two pixels from borders  */
-  ierr = PetscDrawArrow(draw,0+2,3*h/4,w-2,3*h/4,g);CHKERRQ(ierr);
-  ierr = PetscDrawArrow(draw,w-2,1*h/4,0+2,1*h/4,g);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawArrow(draw,0+2,3*h/4,w-2,3*h/4,g));
+  CHKERRQ(PetscDrawArrow(draw,w-2,1*h/4,0+2,1*h/4,g));
   /* flush, save, and pause */
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
-  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawFlush(draw));
+  CHKERRQ(PetscDrawSave(draw));
+  CHKERRQ(PetscDrawPause(draw));
 
-  ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  ierr = PetscDrawGetWindowSize(draw,&w,&h);CHKERRQ(ierr);
-  ierr = PetscDrawSetCoordinates(draw,0,0,--w,--h);CHKERRQ(ierr);
-  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawCheckResizedWindow(draw));
+  CHKERRQ(PetscDrawGetWindowSize(draw,&w,&h));
+  CHKERRQ(PetscDrawSetCoordinates(draw,0,0,--w,--h));
+  CHKERRQ(PetscDrawClear(draw));
   /* one-pixel rectangles in the window corners */
-  ierr = PetscDrawRectangle(draw,0,0,0,0,k,k,k,k);CHKERRQ(ierr);
-  ierr = PetscDrawRectangle(draw,w,0,w,0,k,k,k,k);CHKERRQ(ierr);
-  ierr = PetscDrawRectangle(draw,0,h,0,h,k,k,k,k);CHKERRQ(ierr);
-  ierr = PetscDrawRectangle(draw,w,h,w,h,k,k,k,k);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawRectangle(draw,0,0,0,0,k,k,k,k));
+  CHKERRQ(PetscDrawRectangle(draw,w,0,w,0,k,k,k,k));
+  CHKERRQ(PetscDrawRectangle(draw,0,h,0,h,k,k,k,k));
+  CHKERRQ(PetscDrawRectangle(draw,w,h,w,h,k,k,k,k));
   /* border rectangles with two pixels from  borders */
-  ierr = PetscDrawRectangle(draw,0+2,0,w-2,0,k,k,k,k);CHKERRQ(ierr);
-  ierr = PetscDrawRectangle(draw,0+2,h,w-2,h,k,k,k,k);CHKERRQ(ierr);
-  ierr = PetscDrawRectangle(draw,0,0+2,0,h-2,k,k,k,k);CHKERRQ(ierr);
-  ierr = PetscDrawRectangle(draw,w,0+2,w,h-2,k,k,k,k);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawRectangle(draw,0+2,0,w-2,0,k,k,k,k));
+  CHKERRQ(PetscDrawRectangle(draw,0+2,h,w-2,h,k,k,k,k));
+  CHKERRQ(PetscDrawRectangle(draw,0,0+2,0,h-2,k,k,k,k));
+  CHKERRQ(PetscDrawRectangle(draw,w,0+2,w,h-2,k,k,k,k));
   /* more rectangles */
-  ierr = PetscDrawRectangle(draw,0+2,0+2,w/2-1,h/2-1,b,b,b,b);CHKERRQ(ierr);
-  ierr = PetscDrawRectangle(draw,0+2,h/2+1,w/2-1,h-2,r,r,r,r);CHKERRQ(ierr);
-  ierr = PetscDrawRectangle(draw,w/2+1,h/2+1,w-2,h-2,g,g,g,g);CHKERRQ(ierr);
-  ierr = PetscDrawRectangle(draw,w/2+1,0+2,w-2,h/2-1,y,y,y,y);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawRectangle(draw,0+2,0+2,w/2-1,h/2-1,b,b,b,b));
+  CHKERRQ(PetscDrawRectangle(draw,0+2,h/2+1,w/2-1,h-2,r,r,r,r));
+  CHKERRQ(PetscDrawRectangle(draw,w/2+1,h/2+1,w-2,h-2,g,g,g,g));
+  CHKERRQ(PetscDrawRectangle(draw,w/2+1,0+2,w-2,h/2-1,y,y,y,y));
   /* flush, save, and pause */
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
-  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawFlush(draw));
+  CHKERRQ(PetscDrawSave(draw));
+  CHKERRQ(PetscDrawPause(draw));
 
-  ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  ierr = PetscDrawGetWindowSize(draw,&w,&h);CHKERRQ(ierr);
-  ierr = PetscDrawSetCoordinates(draw,0,0,--w,--h);CHKERRQ(ierr);
-  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawCheckResizedWindow(draw));
+  CHKERRQ(PetscDrawGetWindowSize(draw,&w,&h));
+  CHKERRQ(PetscDrawSetCoordinates(draw,0,0,--w,--h));
+  CHKERRQ(PetscDrawClear(draw));
   /* interpolated triangles, one pixel from borders */
-  ierr = PetscDrawTriangle(draw,0+1,0+1,w-1,0+1,w-1,h-1,c0,c1,c2);CHKERRQ(ierr);
-  ierr = PetscDrawTriangle(draw,0+1,0+1,0+1,h-1,w-1,h-1,c0,c1,c2);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawTriangle(draw,0+1,0+1,w-1,0+1,w-1,h-1,c0,c1,c2));
+  CHKERRQ(PetscDrawTriangle(draw,0+1,0+1,0+1,h-1,w-1,h-1,c0,c1,c2));
   /* interpolated triangle, oblique, inside canvas */
-  ierr = PetscDrawTriangle(draw,w/4,h/4,w/2,3*h/4,3*w/4,h/2,c2,c1,c0);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawTriangle(draw,w/4,h/4,w/2,3*h/4,3*w/4,h/2,c2,c1,c0));
   /* flush, save, and pause */
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
-  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawFlush(draw));
+  CHKERRQ(PetscDrawSave(draw));
+  CHKERRQ(PetscDrawPause(draw));
 
-  ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  ierr = PetscDrawGetWindowSize(draw,&w,&h);CHKERRQ(ierr);
-  ierr = PetscDrawSetCoordinates(draw,0,0,--w,--h);CHKERRQ(ierr);
-  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawCheckResizedWindow(draw));
+  CHKERRQ(PetscDrawGetWindowSize(draw,&w,&h));
+  CHKERRQ(PetscDrawSetCoordinates(draw,0,0,--w,--h));
+  CHKERRQ(PetscDrawClear(draw));
   /* circles and ellipses */
-  ierr = PetscDrawEllipse(draw,w/2,h/2,w-1,h-1,r);CHKERRQ(ierr);
-  ierr = PetscDrawEllipse(draw,w,h/2,w/2,h,g);CHKERRQ(ierr);
-  ierr = PetscDrawEllipse(draw,0,0,w,h/2,b);CHKERRQ(ierr);
-  ierr = PetscDrawEllipse(draw,w/4,3*h/4,w/2,h/4,y);CHKERRQ(ierr);
-  ierr = PetscDrawCoordinateToPixel(draw,w/2,h/2,&i,&j);CHKERRQ(ierr);
-  ierr = PetscDrawPointPixel(draw,i,j,k);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawEllipse(draw,w/2,h/2,w-1,h-1,r));
+  CHKERRQ(PetscDrawEllipse(draw,w,h/2,w/2,h,g));
+  CHKERRQ(PetscDrawEllipse(draw,0,0,w,h/2,b));
+  CHKERRQ(PetscDrawEllipse(draw,w/4,3*h/4,w/2,h/4,y));
+  CHKERRQ(PetscDrawCoordinateToPixel(draw,w/2,h/2,&i,&j));
+  CHKERRQ(PetscDrawPointPixel(draw,i,j,k));
   /* flush, save, and pause */
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
-  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawFlush(draw));
+  CHKERRQ(PetscDrawSave(draw));
+  CHKERRQ(PetscDrawPause(draw));
 
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawDestroy(&draw));
   ierr = PetscFinalize();
   return ierr;
 }

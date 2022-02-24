@@ -15,44 +15,44 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscHSetICreate(&table);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  CHKERRQ(PetscHSetICreate(&table));
 
   /* The following line silences warnings from Clang Static Analyzer */
-  ierr = PetscHSetIResize(table,0);CHKERRQ(ierr);
+  CHKERRQ(PetscHSetIResize(table,0));
 
-  ierr = PetscTimeSubtract(&t_add);CHKERRQ(ierr);
+  CHKERRQ(PetscTimeSubtract(&t_add));
   for (i = 0; i < N; ++i) {
     for (j = 0; j < N; ++j) {
       PetscInt key = i+j*N;
-      ierr  = PetscHSetIQueryAdd(table, key, &flag);CHKERRQ(ierr);
+      CHKERRQ(PetscHSetIQueryAdd(table, key, &flag));
     }
   }
-  ierr = PetscTimeAdd(&t_add);CHKERRQ(ierr);
+  CHKERRQ(PetscTimeAdd(&t_add));
 
-  ierr = PetscHSetIGetSize(table,&n);CHKERRQ(ierr);
+  CHKERRQ(PetscHSetIGetSize(table,&n));
 
-  ierr = PetscTimeSubtract(&t_has);CHKERRQ(ierr);
+  CHKERRQ(PetscTimeSubtract(&t_has));
   for (i = 0; i < N; ++i) {
     for (j = 0; j < N; ++j) {
       PetscInt key = i+j*N;
-      ierr  = PetscHSetIHas(table, key, &flag);CHKERRQ(ierr);
+      CHKERRQ(PetscHSetIHas(table, key, &flag));
     }
   }
-  ierr = PetscTimeAdd(&t_has);CHKERRQ(ierr);
+  CHKERRQ(PetscTimeAdd(&t_has));
 
-  ierr = PetscTimeSubtract(&t_del);CHKERRQ(ierr);
+  CHKERRQ(PetscTimeSubtract(&t_del));
   for (i = 0; i < N; ++i) {
     for (j = 0; j < N; ++j) {
       PetscInt key = i+j*N;
-      ierr  = PetscHSetIQueryDel(table, key, &flag);CHKERRQ(ierr);
+      CHKERRQ(PetscHSetIQueryDel(table, key, &flag));
     }
   }
-  ierr = PetscTimeAdd(&t_del);CHKERRQ(ierr);
+  CHKERRQ(PetscTimeAdd(&t_del));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"N = %" PetscInt_FMT " - table size: %" PetscInt_FMT ", add: %g, has: %g, del: %g\n",N,n,t_add,t_has,t_del);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"N = %" PetscInt_FMT " - table size: %" PetscInt_FMT ", add: %g, has: %g, del: %g\n",N,n,t_add,t_has,t_del));
 
-  ierr = PetscHSetIDestroy(&table);CHKERRQ(ierr);
+  CHKERRQ(PetscHSetIDestroy(&table));
   ierr = PetscFinalize();
   return ierr;
 }

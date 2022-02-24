@@ -9,11 +9,9 @@
 */
 static PetscErrorCode KSPSetUp_PIPECG(KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   /* get work vectors needed by PIPECG */
-  ierr = KSPSetWorkVecs(ksp,9);CHKERRQ(ierr);
+  CHKERRQ(KSPSetWorkVecs(ksp,9));
   PetscFunctionReturn(0);
 }
 
@@ -22,7 +20,6 @@ static PetscErrorCode KSPSetUp_PIPECG(KSP ksp)
 */
 static PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
 {
-  PetscErrorCode ierr;
   PetscInt       i;
   PetscScalar    alpha = 0.0,beta = 0.0,gamma = 0.0,gammaold = 0.0,delta = 0.0;
   PetscReal      dp    = 0.0;
@@ -31,7 +28,7 @@ static PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
-  ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
+  CHKERRQ(PCGetDiagonalScale(ksp->pc,&diagonalscale));
   PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   X = ksp->vec_sol;
@@ -46,115 +43,115 @@ static PetscErrorCode  KSPSolve_PIPECG(KSP ksp)
   M = ksp->work[7];
   S = ksp->work[8];
 
-  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
+  CHKERRQ(PCGetOperators(ksp->pc,&Amat,&Pmat));
 
   ksp->its = 0;
   if (!ksp->guess_zero) {
-    ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);            /*     r <- b - Ax     */
-    ierr = VecAYPX(R,-1.0,B);CHKERRQ(ierr);
+    CHKERRQ(KSP_MatMult(ksp,Amat,X,R));            /*     r <- b - Ax     */
+    CHKERRQ(VecAYPX(R,-1.0,B));
   } else {
-    ierr = VecCopy(B,R);CHKERRQ(ierr);                         /*     r <- b (x is 0) */
+    CHKERRQ(VecCopy(B,R));                         /*     r <- b (x is 0) */
   }
 
-  ierr = KSP_PCApply(ksp,R,U);CHKERRQ(ierr);                   /*     u <- Br   */
+  CHKERRQ(KSP_PCApply(ksp,R,U));                   /*     u <- Br   */
 
   switch (ksp->normtype) {
   case KSP_NORM_PRECONDITIONED:
-    ierr = VecNormBegin(U,NORM_2,&dp);CHKERRQ(ierr);                /*     dp <- u'*u = e'*A'*B'*B*A'*e'     */
-    ierr = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)U));CHKERRQ(ierr);
-    ierr = KSP_MatMult(ksp,Amat,U,W);CHKERRQ(ierr);              /*     w <- Au   */
-    ierr = VecNormEnd(U,NORM_2,&dp);CHKERRQ(ierr);
+    CHKERRQ(VecNormBegin(U,NORM_2,&dp));                /*     dp <- u'*u = e'*A'*B'*B*A'*e'     */
+    CHKERRQ(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)U)));
+    CHKERRQ(KSP_MatMult(ksp,Amat,U,W));              /*     w <- Au   */
+    CHKERRQ(VecNormEnd(U,NORM_2,&dp));
     break;
   case KSP_NORM_UNPRECONDITIONED:
-    ierr = VecNormBegin(R,NORM_2,&dp);CHKERRQ(ierr);                /*     dp <- r'*r = e'*A'*A*e            */
-    ierr = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R));CHKERRQ(ierr);
-    ierr = KSP_MatMult(ksp,Amat,U,W);CHKERRQ(ierr);              /*     w <- Au   */
-    ierr = VecNormEnd(R,NORM_2,&dp);CHKERRQ(ierr);
+    CHKERRQ(VecNormBegin(R,NORM_2,&dp));                /*     dp <- r'*r = e'*A'*A*e            */
+    CHKERRQ(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R)));
+    CHKERRQ(KSP_MatMult(ksp,Amat,U,W));              /*     w <- Au   */
+    CHKERRQ(VecNormEnd(R,NORM_2,&dp));
     break;
   case KSP_NORM_NATURAL:
-    ierr = VecDotBegin(R,U,&gamma);CHKERRQ(ierr);                  /*     gamma <- u'*r       */
-    ierr = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R));CHKERRQ(ierr);
-    ierr = KSP_MatMult(ksp,Amat,U,W);CHKERRQ(ierr);              /*     w <- Au   */
-    ierr = VecDotEnd(R,U,&gamma);CHKERRQ(ierr);
+    CHKERRQ(VecDotBegin(R,U,&gamma));                  /*     gamma <- u'*r       */
+    CHKERRQ(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R)));
+    CHKERRQ(KSP_MatMult(ksp,Amat,U,W));              /*     w <- Au   */
+    CHKERRQ(VecDotEnd(R,U,&gamma));
     KSPCheckDot(ksp,gamma);
     dp = PetscSqrtReal(PetscAbsScalar(gamma));                  /*     dp <- r'*u = r'*B*r = e'*A'*B*A*e */
     break;
   case KSP_NORM_NONE:
-    ierr = KSP_MatMult(ksp,Amat,U,W);CHKERRQ(ierr);
+    CHKERRQ(KSP_MatMult(ksp,Amat,U,W));
     dp   = 0.0;
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
   }
-  ierr       = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
-  ierr       = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
+  CHKERRQ(KSPLogResidualHistory(ksp,dp));
+  CHKERRQ(KSPMonitor(ksp,0,dp));
   ksp->rnorm = dp;
-  ierr       = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
+  CHKERRQ((*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP)); /* test for convergence */
   if (ksp->reason) PetscFunctionReturn(0);
 
   i = 0;
   do {
     if (i > 0 && ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
-      ierr = VecNormBegin(R,NORM_2,&dp);CHKERRQ(ierr);
+      CHKERRQ(VecNormBegin(R,NORM_2,&dp));
     } else if (i > 0 && ksp->normtype == KSP_NORM_PRECONDITIONED) {
-      ierr = VecNormBegin(U,NORM_2,&dp);CHKERRQ(ierr);
+      CHKERRQ(VecNormBegin(U,NORM_2,&dp));
     }
     if (!(i == 0 && ksp->normtype == KSP_NORM_NATURAL)) {
-      ierr = VecDotBegin(R,U,&gamma);CHKERRQ(ierr);
+      CHKERRQ(VecDotBegin(R,U,&gamma));
     }
-    ierr = VecDotBegin(W,U,&delta);CHKERRQ(ierr);
-    ierr = PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R));CHKERRQ(ierr);
+    CHKERRQ(VecDotBegin(W,U,&delta));
+    CHKERRQ(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R)));
 
-    ierr = KSP_PCApply(ksp,W,M);CHKERRQ(ierr);           /*   m <- Bw       */
-    ierr = KSP_MatMult(ksp,Amat,M,N);CHKERRQ(ierr);      /*   n <- Am       */
+    CHKERRQ(KSP_PCApply(ksp,W,M));           /*   m <- Bw       */
+    CHKERRQ(KSP_MatMult(ksp,Amat,M,N));      /*   n <- Am       */
 
     if (i > 0 && ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
-      ierr = VecNormEnd(R,NORM_2,&dp);CHKERRQ(ierr);
+      CHKERRQ(VecNormEnd(R,NORM_2,&dp));
     } else if (i > 0 && ksp->normtype == KSP_NORM_PRECONDITIONED) {
-      ierr = VecNormEnd(U,NORM_2,&dp);CHKERRQ(ierr);
+      CHKERRQ(VecNormEnd(U,NORM_2,&dp));
     }
     if (!(i == 0 && ksp->normtype == KSP_NORM_NATURAL)) {
-      ierr = VecDotEnd(R,U,&gamma);CHKERRQ(ierr);
+      CHKERRQ(VecDotEnd(R,U,&gamma));
     }
-    ierr = VecDotEnd(W,U,&delta);CHKERRQ(ierr);
+    CHKERRQ(VecDotEnd(W,U,&delta));
 
     if (i > 0) {
       if (ksp->normtype == KSP_NORM_NATURAL) dp = PetscSqrtReal(PetscAbsScalar(gamma));
       else if (ksp->normtype == KSP_NORM_NONE) dp = 0.0;
 
       ksp->rnorm = dp;
-      ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
-      ierr = KSPMonitor(ksp,i,dp);CHKERRQ(ierr);
-      ierr = (*ksp->converged)(ksp,i,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+      CHKERRQ(KSPLogResidualHistory(ksp,dp));
+      CHKERRQ(KSPMonitor(ksp,i,dp));
+      CHKERRQ((*ksp->converged)(ksp,i,dp,&ksp->reason,ksp->cnvP));
       if (ksp->reason) PetscFunctionReturn(0);
     }
 
     if (i == 0) {
       alpha = gamma / delta;
-      ierr  = VecCopy(N,Z);CHKERRQ(ierr);        /*     z <- n          */
-      ierr  = VecCopy(M,Q);CHKERRQ(ierr);        /*     q <- m          */
-      ierr  = VecCopy(U,P);CHKERRQ(ierr);        /*     p <- u          */
-      ierr  = VecCopy(W,S);CHKERRQ(ierr);        /*     s <- w          */
+      CHKERRQ(VecCopy(N,Z));        /*     z <- n          */
+      CHKERRQ(VecCopy(M,Q));        /*     q <- m          */
+      CHKERRQ(VecCopy(U,P));        /*     p <- u          */
+      CHKERRQ(VecCopy(W,S));        /*     s <- w          */
     } else {
       beta  = gamma / gammaold;
       alpha = gamma / (delta - beta / alpha * gamma);
-      ierr  = VecAYPX(Z,beta,N);CHKERRQ(ierr);   /*     z <- n + beta * z   */
-      ierr  = VecAYPX(Q,beta,M);CHKERRQ(ierr);   /*     q <- m + beta * q   */
-      ierr  = VecAYPX(P,beta,U);CHKERRQ(ierr);   /*     p <- u + beta * p   */
-      ierr  = VecAYPX(S,beta,W);CHKERRQ(ierr);   /*     s <- w + beta * s   */
+      CHKERRQ(VecAYPX(Z,beta,N));   /*     z <- n + beta * z   */
+      CHKERRQ(VecAYPX(Q,beta,M));   /*     q <- m + beta * q   */
+      CHKERRQ(VecAYPX(P,beta,U));   /*     p <- u + beta * p   */
+      CHKERRQ(VecAYPX(S,beta,W));   /*     s <- w + beta * s   */
     }
-    ierr     = VecAXPY(X, alpha,P);CHKERRQ(ierr); /*     x <- x + alpha * p   */
-    ierr     = VecAXPY(U,-alpha,Q);CHKERRQ(ierr); /*     u <- u - alpha * q   */
-    ierr     = VecAXPY(W,-alpha,Z);CHKERRQ(ierr); /*     w <- w - alpha * z   */
-    ierr     = VecAXPY(R,-alpha,S);CHKERRQ(ierr); /*     r <- r - alpha * s   */
+    CHKERRQ(VecAXPY(X, alpha,P)); /*     x <- x + alpha * p   */
+    CHKERRQ(VecAXPY(U,-alpha,Q)); /*     u <- u - alpha * q   */
+    CHKERRQ(VecAXPY(W,-alpha,Z)); /*     w <- w - alpha * z   */
+    CHKERRQ(VecAXPY(R,-alpha,S)); /*     r <- r - alpha * s   */
     gammaold = gamma;
     i++;
     ksp->its = i;
 
     /* if (i%50 == 0) { */
-    /*   ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);            /\*     w <- b - Ax     *\/ */
-    /*   ierr = VecAYPX(R,-1.0,B);CHKERRQ(ierr); */
-    /*   ierr = KSP_PCApply(ksp,R,U);CHKERRQ(ierr); */
-    /*   ierr = KSP_MatMult(ksp,Amat,U,W);CHKERRQ(ierr); */
+    /*   CHKERRQ(KSP_MatMult(ksp,Amat,X,R));            /\*     w <- b - Ax     *\/ */
+    /*   CHKERRQ(VecAYPX(R,-1.0,B)); */
+    /*   CHKERRQ(KSP_PCApply(ksp,R,U)); */
+    /*   CHKERRQ(KSP_MatMult(ksp,Amat,U,W)); */
     /* } */
 
   } while (i<=ksp->max_it);
@@ -189,13 +186,11 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP,Vec,Vec,Vec*);
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG(KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2);CHKERRQ(ierr);
-  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2));
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2));
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,2));
+  CHKERRQ(KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1));
 
   ksp->ops->setup          = KSPSetUp_PIPECG;
   ksp->ops->solve          = KSPSolve_PIPECG;

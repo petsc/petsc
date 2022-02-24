@@ -10,20 +10,20 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
   /* To take care of paging effects */
-  ierr = PetscTime(&y);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&y));
 
   for (i=0; i<2; i++) {
-    ierr = PetscTime(&x);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
-    ierr = PetscTime(&y);CHKERRQ(ierr);
+    CHKERRQ(PetscTime(&x));
+    CHKERRQ(PetscTime(&y));
+    CHKERRQ(PetscTime(&y));
+    CHKERRQ(PetscTime(&y));
+    CHKERRQ(PetscTime(&y));
+    CHKERRQ(PetscTime(&y));
+    CHKERRQ(PetscTime(&y));
+    CHKERRQ(PetscTime(&y));
+    CHKERRQ(PetscTime(&y));
+    CHKERRQ(PetscTime(&y));
+    CHKERRQ(PetscTime(&y));
     fprintf(stdout,"%-15s : %e sec\n","PetscTime",(y-x)/10.0);
   }
 

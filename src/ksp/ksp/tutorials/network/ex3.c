@@ -29,46 +29,46 @@ int main(int argc,char ** argv)
   PetscScalar    val;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* Create a network of subnetworks */
   nsubnet = 1;
   if (size == 1) nsubnet = 2;
 
   /* Create a dmnetwork and register components */
-  ierr = DMNetworkCreate(PETSC_COMM_WORLD,&dmnetwork);CHKERRQ(ierr);
-  ierr = DMNetworkRegisterComponent(dmnetwork,"comp0",sizeof(Comp0),&compkey0);CHKERRQ(ierr);
-  ierr = DMNetworkRegisterComponent(dmnetwork,"comp1",sizeof(Comp1),&compkey1);CHKERRQ(ierr);
+  CHKERRQ(DMNetworkCreate(PETSC_COMM_WORLD,&dmnetwork));
+  CHKERRQ(DMNetworkRegisterComponent(dmnetwork,"comp0",sizeof(Comp0),&compkey0));
+  CHKERRQ(DMNetworkRegisterComponent(dmnetwork,"comp1",sizeof(Comp1),&compkey1));
 
   /* Set componnet values - intentionally take rank-dependent value for test */
   comp0.id  = rank;
   comp1.val = 10.0*rank;
 
   /* Set number of subnetworks, numbers of vertices and edges over each subnetwork */
-  ierr = DMNetworkSetNumSubNetworks(dmnetwork,nsubnet,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = DMNetworkGetNumSubNetworks(dmnetwork,NULL,&Nsubnet);CHKERRQ(ierr);
+  CHKERRQ(DMNetworkSetNumSubNetworks(dmnetwork,nsubnet,PETSC_DECIDE));
+  CHKERRQ(DMNetworkGetNumSubNetworks(dmnetwork,NULL,&Nsubnet));
 
   /* Input subnetworks; when size>1, process[i] creates subnetwork[i] */
   for (i=0; i<Nsubnet; i++) numEdges[i] = 0;
   for (i=0; i<Nsubnet; i++) {
     if (i == 0 && (size == 1 || (rank == i && size >1))) {
       numEdges[i] = 3;
-      ierr = PetscMalloc1(2*numEdges[i],&edgelist[i]);CHKERRQ(ierr);
+      CHKERRQ(PetscMalloc1(2*numEdges[i],&edgelist[i]));
       edgelist[i][0] = 0; edgelist[i][1] = 2;
       edgelist[i][2] = 2; edgelist[i][3] = 1;
       edgelist[i][4] = 1; edgelist[i][5] = 3;
 
     } else if (i == 1 && (size == 1 || (rank == i && size >1))) {
       numEdges[i] = 3;
-      ierr = PetscMalloc1(2*numEdges[i],&edgelist[i]);CHKERRQ(ierr);
+      CHKERRQ(PetscMalloc1(2*numEdges[i],&edgelist[i]));
       edgelist[i][0] = 0; edgelist[i][1] = 3;
       edgelist[i][2] = 3; edgelist[i][3] = 2;
       edgelist[i][4] = 2; edgelist[i][5] = 1;
 
     } else if (i>1 && (size == 1 || (rank == i && size >1))) {
       numEdges[i] = 3;
-      ierr = PetscMalloc1(2*numEdges[i],&edgelist[i]);CHKERRQ(ierr);
+      CHKERRQ(PetscMalloc1(2*numEdges[i],&edgelist[i]));
       for (j=0; j< numEdges[i]; j++) {
         edgelist[i][2*j] = j; edgelist[i][2*j+1] = j+1;
       }
@@ -78,131 +78,131 @@ int main(int argc,char ** argv)
   /* Add subnetworks */
   for (i=0; i<Nsubnet; i++) {
     PetscInt netNum = -1;
-    ierr = DMNetworkAddSubnetwork(dmnetwork,NULL,numEdges[i],edgelist[i],&netNum);CHKERRQ(ierr);
+    CHKERRQ(DMNetworkAddSubnetwork(dmnetwork,NULL,numEdges[i],edgelist[i],&netNum));
   }
 
   /* Add shared vertices -- all processes hold this info at current implementation */
   asvtx = bsvtx = 0;
   for (j=1; j<Nsubnet; j++) {
     /* vertex subnet[0].0 shares with vertex subnet[j].0 */
-    ierr = DMNetworkAddSharedVertices(dmnetwork,0,j,1,&asvtx,&bsvtx);CHKERRQ(ierr);
+    CHKERRQ(DMNetworkAddSharedVertices(dmnetwork,0,j,1,&asvtx,&bsvtx));
   }
 
   /* Setup the network layout */
-  ierr = DMNetworkLayoutSetUp(dmnetwork);CHKERRQ(ierr);
+  CHKERRQ(DMNetworkLayoutSetUp(dmnetwork));
 
   /* Get Subnetwork(); Add nvar=1 to subnet[0] and nvar=2 to other subnets */
   for (net=0; net<Nsubnet; net++) {
-    ierr = DMNetworkGetSubnetwork(dmnetwork,net,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
+    CHKERRQ(DMNetworkGetSubnetwork(dmnetwork,net,&nv,&ne,&vtx,&edges));
     for (v=0; v<nv; v++) {
-      ierr = DMNetworkIsSharedVertex(dmnetwork,vtx[v],&sharedv);CHKERRQ(ierr);
+      CHKERRQ(DMNetworkIsSharedVertex(dmnetwork,vtx[v],&sharedv));
       if (sharedv) continue;
 
       if (!net) {
-        ierr = DMNetworkAddComponent(dmnetwork,vtx[v],compkey0,&comp0,1);CHKERRQ(ierr);
+        CHKERRQ(DMNetworkAddComponent(dmnetwork,vtx[v],compkey0,&comp0,1));
       } else {
-        ierr = DMNetworkAddComponent(dmnetwork,vtx[v],compkey1,&comp1,2);CHKERRQ(ierr);
+        CHKERRQ(DMNetworkAddComponent(dmnetwork,vtx[v],compkey1,&comp1,2));
       }
     }
   }
 
   /* Add components and nvar to shared vertex -- owning and all ghost ranks must call DMNetworkAddComponent() */
-  ierr = DMNetworkGetSharedVertices(dmnetwork,&nv,&vtx);CHKERRQ(ierr);
+  CHKERRQ(DMNetworkGetSharedVertices(dmnetwork,&nv,&vtx));
   for (v=0; v<nv; v++) {
-    ierr = DMNetworkAddComponent(dmnetwork,vtx[v],compkey0,&comp0,1);CHKERRQ(ierr);
-    ierr = DMNetworkAddComponent(dmnetwork,vtx[v],compkey1,&comp1,2);CHKERRQ(ierr);
+    CHKERRQ(DMNetworkAddComponent(dmnetwork,vtx[v],compkey0,&comp0,1));
+    CHKERRQ(DMNetworkAddComponent(dmnetwork,vtx[v],compkey1,&comp1,2));
   }
 
   /* Enable runtime option of graph partition type -- must be called before DMSetUp() */
   if (size > 1) {
     DM               plexdm;
     PetscPartitioner part;
-    ierr = DMNetworkGetPlex(dmnetwork,&plexdm);CHKERRQ(ierr);
-    ierr = DMPlexGetPartitioner(plexdm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetType(part,PETSCPARTITIONERSIMPLE);CHKERRQ(ierr);
-    ierr = PetscOptionsSetValue(NULL,"-dm_plex_csr_alg","mat");CHKERRQ(ierr); /* for parmetis */
+    CHKERRQ(DMNetworkGetPlex(dmnetwork,&plexdm));
+    CHKERRQ(DMPlexGetPartitioner(plexdm, &part));
+    CHKERRQ(PetscPartitionerSetType(part,PETSCPARTITIONERSIMPLE));
+    CHKERRQ(PetscOptionsSetValue(NULL,"-dm_plex_csr_alg","mat")); /* for parmetis */
   }
 
   /* Setup dmnetwork */
-  ierr = DMSetUp(dmnetwork);CHKERRQ(ierr);
+  CHKERRQ(DMSetUp(dmnetwork));
 
   /* Redistribute the network layout; use '-distribute false' to skip */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-distribute",&distribute,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-distribute",&distribute,NULL));
   if (distribute) {
-    ierr = DMNetworkDistribute(&dmnetwork,0);CHKERRQ(ierr);
-    ierr = DMView(dmnetwork,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(DMNetworkDistribute(&dmnetwork,0));
+    CHKERRQ(DMView(dmnetwork,PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /* Create a global vector */
-  ierr = DMCreateGlobalVector(dmnetwork,&X);CHKERRQ(ierr);
-  ierr = VecSet(X,0.0);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(dmnetwork,&X));
+  CHKERRQ(VecSet(X,0.0));
 
   /* Set X values at shared vertex */
-  ierr = DMNetworkGetSharedVertices(dmnetwork,&nv,&vtx);CHKERRQ(ierr);
+  CHKERRQ(DMNetworkGetSharedVertices(dmnetwork,&nv,&vtx));
   for (v=0; v<nv; v++) {
-    ierr = DMNetworkIsGhostVertex(dmnetwork,vtx[v],&ghost);CHKERRQ(ierr);
+    CHKERRQ(DMNetworkIsGhostVertex(dmnetwork,vtx[v],&ghost));
     if (ghost) continue;
 
     /* only one process holds a non-ghost vertex */
-    ierr = DMNetworkGetComponent(dmnetwork,vtx[v],ALL_COMPONENTS,NULL,NULL,&nvar);CHKERRQ(ierr);
-    ierr = DMNetworkGetNumComponents(dmnetwork,vtx[v],&ncomp);CHKERRQ(ierr);
-    /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] shared v %D: nvar %D, ncomp %D\n",rank,vtx[v],nvar,ncomp);CHKERRQ(ierr); */
+    CHKERRQ(DMNetworkGetComponent(dmnetwork,vtx[v],ALL_COMPONENTS,NULL,NULL,&nvar));
+    CHKERRQ(DMNetworkGetNumComponents(dmnetwork,vtx[v],&ncomp));
+    /* CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"[%d] shared v %D: nvar %D, ncomp %D\n",rank,vtx[v],nvar,ncomp)); */
     for (j=0; j<ncomp; j++) {
-      ierr = DMNetworkGetComponent(dmnetwork,vtx[v],j,&compkey,NULL,&nvar);CHKERRQ(ierr);
-      ierr = DMNetworkGetGlobalVecOffset(dmnetwork,vtx[v],j,&goffset);CHKERRQ(ierr);
+      CHKERRQ(DMNetworkGetComponent(dmnetwork,vtx[v],j,&compkey,NULL,&nvar));
+      CHKERRQ(DMNetworkGetGlobalVecOffset(dmnetwork,vtx[v],j,&goffset));
       for (i=0; i<nvar; i++) {
         row = goffset + i;
         val = compkey + 1.0;
-        ierr = VecSetValues(X,1,&row,&val,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(VecSetValues(X,1,&row,&val,INSERT_VALUES));
       }
     }
   }
-  ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
-  ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecAssemblyBegin(X));
+  CHKERRQ(VecAssemblyEnd(X));
+  CHKERRQ(VecView(X,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Test DMNetworkGetSubnetwork() */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-test_getsubnet",&test,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test_getsubnet",&test,NULL));
   if (test) {
     net = 0;
-    ierr = PetscOptionsGetInt(NULL,NULL,"-subnet",&net,NULL);CHKERRQ(ierr);
-    ierr = DMNetworkGetSubnetwork(dmnetwork,net,&nv,&ne,&vtx,&edges);CHKERRQ(ierr);
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] subnet %D: nv %D, ne %D\n",rank,net,nv,ne);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
+    CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-subnet",&net,NULL));
+    CHKERRQ(DMNetworkGetSubnetwork(dmnetwork,net,&nv,&ne,&vtx,&edges));
+    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] subnet %D: nv %D, ne %D\n",rank,net,nv,ne));
+    CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+    CHKERRMPI(MPI_Barrier(PETSC_COMM_WORLD));
 
     for (i=0; i<nv; i++) {
-      ierr = DMNetworkIsGhostVertex(dmnetwork,vtx[i],&ghost);CHKERRQ(ierr);
-      ierr = DMNetworkIsSharedVertex(dmnetwork,vtx[i],&sharedv);CHKERRQ(ierr);
+      CHKERRQ(DMNetworkIsGhostVertex(dmnetwork,vtx[i],&ghost));
+      CHKERRQ(DMNetworkIsSharedVertex(dmnetwork,vtx[i],&sharedv));
 
-      ierr = DMNetworkGetNumComponents(dmnetwork,vtx[i],&ncomp);CHKERRQ(ierr);
+      CHKERRQ(DMNetworkGetNumComponents(dmnetwork,vtx[i],&ncomp));
       if (sharedv || ghost) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"  [%d] v %D is shared %d, is ghost %d, ncomp %D\n",rank,vtx[i],sharedv,ghost,ncomp);CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  [%d] v %D is shared %d, is ghost %d, ncomp %D\n",rank,vtx[i],sharedv,ghost,ncomp));
       }
 
       for (j=0; j<ncomp; j++) {
         void* component;
-        ierr = DMNetworkGetComponent(dmnetwork,vtx[i],j,&compkey,(void**)&component,NULL);CHKERRQ(ierr);
+        CHKERRQ(DMNetworkGetComponent(dmnetwork,vtx[i],j,&compkey,(void**)&component,NULL));
         if (compkey == 0) {
           Comp0  *mycomp0;
           mycomp0 = (Comp0*)component;
-          ierr = PetscPrintf(PETSC_COMM_SELF,"  [%d] v %D compkey %D, mycomp0->id %D\n",rank,vtx[i],compkey,mycomp0->id);CHKERRQ(ierr);
+          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  [%d] v %D compkey %D, mycomp0->id %D\n",rank,vtx[i],compkey,mycomp0->id));
         } else if (compkey == 1) {
           Comp1  *mycomp1;
           mycomp1 = (Comp1*)component;
-          ierr = PetscPrintf(PETSC_COMM_SELF,"  [%d] v %D compkey %D, mycomp1->val %g\n",rank,vtx[i],compkey,mycomp1->val);CHKERRQ(ierr);
+          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  [%d] v %D compkey %D, mycomp1->val %g\n",rank,vtx[i],compkey,mycomp1->val));
         }
       }
     }
   }
 
   /* Free work space */
-  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&X));
   for (i=0; i<Nsubnet; i++) {
-    if (size == 1 || rank == i) {ierr = PetscFree(edgelist[i]);CHKERRQ(ierr);}
+    if (size == 1 || rank == i) CHKERRQ(PetscFree(edgelist[i]));
   }
 
-  ierr = DMDestroy(&dmnetwork);CHKERRQ(ierr);
+  CHKERRQ(DMDestroy(&dmnetwork));
   ierr = PetscFinalize();
   return ierr;
 }

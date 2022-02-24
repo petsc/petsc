@@ -15,48 +15,48 @@ int main(int argc,char **args)
   PetscScalar    v;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,n*bs,n*bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(A,bs);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSEQBAIJ);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetSizes(A,n*bs,n*bs,PETSC_DETERMINE,PETSC_DETERMINE));
+  CHKERRQ(MatSetBlockSize(A,bs));
+  CHKERRQ(MatSetType(A,MATSEQBAIJ));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatSetUp(A));
 
   /*
      Don't bother to preallocate matrix
   */
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,&rctx);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF,&rctx));
   for (i=0; i<n; i++) {
     for (j=0; j<n; j++) {
-      ierr = PetscRandomGetValue(rctx,&v);CHKERRQ(ierr);
+      CHKERRQ(PetscRandomGetValue(rctx,&v));
       if (PetscRealPart(v) < .25 || i == j) {
         for (k=0; k<bs; k++) {
           for (l=0; l<bs; l++) {
-            ierr = PetscRandomGetValue(rctx,&v);CHKERRQ(ierr);
+            CHKERRQ(PetscRandomGetValue(rctx,&v));
             Ii = i*bs + k;
             J = j*bs + l;
             if (Ii == J) v += 10.;
-            ierr = MatSetValue(A,Ii,J,v,INSERT_VALUES);CHKERRQ(ierr);
+            CHKERRQ(MatSetValue(A,Ii,J,v,INSERT_VALUES));
           }
         }
       }
     }
   }
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,n*bs);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
+  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,n*bs));
+  CHKERRQ(VecSetFromOptions(u));
+  CHKERRQ(VecDuplicate(u,&b));
+  CHKERRQ(VecDuplicate(b,&x));
 
-  ierr = VecSet(u,1.0);CHKERRQ(ierr);
-  ierr = MatMult(A,u,b);CHKERRQ(ierr);
+  CHKERRQ(VecSet(u,1.0));
+  CHKERRQ(MatMult(A,u,b));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
@@ -65,21 +65,21 @@ int main(int argc,char **args)
   /*
      Create linear solver context
   */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
 
   /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  CHKERRQ(KSPSetOperators(ksp,A,A));
 
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPSetFromOptions(ksp));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  CHKERRQ(KSPSolve(ksp,b,x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check solution and clean up
@@ -88,9 +88,9 @@ int main(int argc,char **args)
   /*
      Check the error
   */
-  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(x,-1.0,u));
+  CHKERRQ(VecNorm(x,NORM_2,&norm));
+  CHKERRQ(KSPGetIterationNumber(ksp,&its));
 
   /*
      Print convergence information.  PetscPrintf() produces a single
@@ -98,19 +98,19 @@ int main(int argc,char **args)
      An alternative is PetscFPrintf(), which prints to a file.
   */
   if (norm > .1) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of residual %g iterations %D bs %D\n",(double)norm,its,bs);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of residual %g iterations %D bs %D\n",(double)norm,its,bs));
   }
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(VecDestroy(&u));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(PetscRandomDestroy(&rctx));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

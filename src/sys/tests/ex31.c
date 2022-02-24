@@ -6,11 +6,10 @@ static char help[] = "Tests PetscGetFullPath().\n\n";
 /* for windows - fix up path - so that we can do diff test */
 PetscErrorCode  path_to_unix(char filein[])
 {
-  PetscErrorCode ierr;
   size_t         i,n;
 
   PetscFunctionBegin;
-  ierr = PetscStrlen(filein,&n);CHKERRQ(ierr);
+  CHKERRQ(PetscStrlen(filein,&n));
   for (i=0; i<n; i++) {
     if (filein[i] == '\\') filein[i] = '/';
   }
@@ -23,12 +22,12 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscGetFullPath("~/somefile",fpath,sizeof(fpath));CHKERRQ(ierr);
-  ierr = path_to_unix(fpath);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",fpath);CHKERRQ(ierr);
-  ierr = PetscGetFullPath("someotherfile",fpath,sizeof(fpath));CHKERRQ(ierr);
-  ierr = path_to_unix(fpath);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s\n",fpath);CHKERRQ(ierr);
+  CHKERRQ(PetscGetFullPath("~/somefile",fpath,sizeof(fpath)));
+  CHKERRQ(path_to_unix(fpath));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%s\n",fpath));
+  CHKERRQ(PetscGetFullPath("someotherfile",fpath,sizeof(fpath)));
+  CHKERRQ(path_to_unix(fpath));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%s\n",fpath));
   ierr = PetscFinalize();
   return ierr;
 }

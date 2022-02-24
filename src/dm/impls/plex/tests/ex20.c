@@ -11,22 +11,22 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
-  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) dm, "Pre Adaptation Mesh");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-pre_adapt_dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dm));
+  CHKERRQ(DMSetType(dm, DMPLEX));
+  CHKERRQ(DMSetFromOptions(dm));
+  CHKERRQ(PetscObjectSetName((PetscObject) dm, "Pre Adaptation Mesh"));
+  CHKERRQ(DMViewFromOptions(dm, NULL, "-pre_adapt_dm_view"));
 
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel);CHKERRQ(ierr);
-  ierr = DMLabelSetDefaultValue(adaptLabel, DM_ADAPT_COARSEN);CHKERRQ(ierr);
-  if (cEnd > cStart) {ierr = DMLabelSetValue(adaptLabel, cStart, DM_ADAPT_REFINE);CHKERRQ(ierr);}
-  ierr = DMAdaptLabel(dm, adaptLabel, &dmAdapt);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) dmAdapt, "Post Adaptation Mesh");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dmAdapt, NULL, "-post_adapt_dm_view");CHKERRQ(ierr);
-  ierr = DMDestroy(&dmAdapt);CHKERRQ(ierr);
-  ierr = DMLabelDestroy(&adaptLabel);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  CHKERRQ(DMLabelCreate(PETSC_COMM_SELF, "adapt", &adaptLabel));
+  CHKERRQ(DMLabelSetDefaultValue(adaptLabel, DM_ADAPT_COARSEN));
+  if (cEnd > cStart) CHKERRQ(DMLabelSetValue(adaptLabel, cStart, DM_ADAPT_REFINE));
+  CHKERRQ(DMAdaptLabel(dm, adaptLabel, &dmAdapt));
+  CHKERRQ(PetscObjectSetName((PetscObject) dmAdapt, "Post Adaptation Mesh"));
+  CHKERRQ(DMViewFromOptions(dmAdapt, NULL, "-post_adapt_dm_view"));
+  CHKERRQ(DMDestroy(&dmAdapt));
+  CHKERRQ(DMLabelDestroy(&adaptLabel));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -52,25 +52,25 @@ int main(int argc,char **argv)
   PetscBool      errorinmatmult = PETSC_FALSE,errorinpcapply = PETSC_FALSE,errorinpcsetup = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-error_in_matmult",&errorinmatmult,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-error_in_pcapply",&errorinpcapply,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-error_in_pcsetup",&errorinpcsetup,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-error_in_matmult",&errorinmatmult,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-error_in_pcapply",&errorinpcapply,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-error_in_pcsetup",&errorinpcsetup,NULL));
   user.errorindomain = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-error_in_domain",&user.errorindomain,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-error_in_domain",&user.errorindomain,NULL));
   user.errorindomainmf = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-error_in_domainmf",&user.errorindomainmf,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-error_in_domainmf",&user.errorindomainmf,NULL));
 
   comm = PETSC_COMM_WORLD;
-  ierr = SNESCreate(comm,&user.snes);CHKERRQ(ierr);
+  CHKERRQ(SNESCreate(comm,&user.snes));
 
   /*
       Create distributed array object to manage parallel grid and vectors
       for principal unknowns (x) and governing residuals (f)
   */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = SNESSetDM(user.snes,da);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da));
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
+  CHKERRQ(SNESSetDM(user.snes,da));
 
   ierr = DMDAGetInfo(da,0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
@@ -81,15 +81,15 @@ int main(int argc,char **argv)
   user.prandtl     = 1.0;
   user.grashof     = 1.0;
 
-  ierr = PetscOptionsGetReal(NULL,NULL,"-lidvelocity",&user.lidvelocity,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-prandtl",&user.prandtl,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-grashof",&user.grashof,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-lidvelocity",&user.lidvelocity,NULL));
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-prandtl",&user.prandtl,NULL));
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-grashof",&user.grashof,NULL));
+  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-contours",&user.draw_contours));
 
-  ierr = DMDASetFieldName(da,0,"x_velocity");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,1,"y_velocity");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,2,"Omega");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,3,"temperature");CHKERRQ(ierr);
+  CHKERRQ(DMDASetFieldName(da,0,"x_velocity"));
+  CHKERRQ(DMDASetFieldName(da,1,"y_velocity"));
+  CHKERRQ(DMDASetFieldName(da,2,"Omega"));
+  CHKERRQ(DMDASetFieldName(da,3,"temperature"));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
@@ -100,51 +100,51 @@ int main(int argc,char **argv)
      Create nonlinear solver context
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
-  ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user);CHKERRQ(ierr);
+  CHKERRQ(DMSetApplicationContext(da,&user));
+  CHKERRQ(DMDASNESSetFunctionLocal(da,INSERT_VALUES,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))FormFunctionLocal,&user));
 
   if (errorinmatmult) {
-    ierr = MatCreateSNESMF(user.snes,&Jmf);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(Jmf);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(Jmf,&mlocal,&nlocal);CHKERRQ(ierr);
+    CHKERRQ(MatCreateSNESMF(user.snes,&Jmf));
+    CHKERRQ(MatSetFromOptions(Jmf));
+    CHKERRQ(MatGetLocalSize(Jmf,&mlocal,&nlocal));
     matshellctx.Jmf = Jmf;
-    ierr = MatCreateShell(PetscObjectComm((PetscObject)Jmf),mlocal,nlocal,PETSC_DECIDE,PETSC_DECIDE,&matshellctx,&J);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(J,MATOP_MULT,(void (*)(void))MatMult_MyShell);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(J,MATOP_ASSEMBLY_END,(void (*)(void))MatAssemblyEnd_MyShell);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(user.snes,J,J,MatMFFDComputeJacobian,NULL);CHKERRQ(ierr);
+    CHKERRQ(MatCreateShell(PetscObjectComm((PetscObject)Jmf),mlocal,nlocal,PETSC_DECIDE,PETSC_DECIDE,&matshellctx,&J));
+    CHKERRQ(MatShellSetOperation(J,MATOP_MULT,(void (*)(void))MatMult_MyShell));
+    CHKERRQ(MatShellSetOperation(J,MATOP_ASSEMBLY_END,(void (*)(void))MatAssemblyEnd_MyShell));
+    CHKERRQ(SNESSetJacobian(user.snes,J,J,MatMFFDComputeJacobian,NULL));
   }
 
-  ierr = SNESSetFromOptions(user.snes);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",(double)user.lidvelocity,(double)user.prandtl,(double)user.grashof);CHKERRQ(ierr);
+  CHKERRQ(SNESSetFromOptions(user.snes));
+  CHKERRQ(PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",(double)user.lidvelocity,(double)user.prandtl,(double)user.grashof));
 
   if (errorinpcapply) {
-    ierr = SNESGetKSP(user.snes,&ksp);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    ierr = PCSetType(pc,PCSHELL);CHKERRQ(ierr);
-    ierr = PCShellSetApply(pc,PCApply_MyShell);CHKERRQ(ierr);
+    CHKERRQ(SNESGetKSP(user.snes,&ksp));
+    CHKERRQ(KSPGetPC(ksp,&pc));
+    CHKERRQ(PCSetType(pc,PCSHELL));
+    CHKERRQ(PCShellSetApply(pc,PCApply_MyShell));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve the nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-  ierr = FormInitialGuess(&user,da,x);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(da,&x));
+  CHKERRQ(FormInitialGuess(&user,da,x));
 
   if (errorinpcsetup) {
-    ierr = SNESSetUp(user.snes);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(user.snes,NULL,NULL,SNESComputeJacobian_MyShell,NULL);CHKERRQ(ierr);
+    CHKERRQ(SNESSetUp(user.snes));
+    CHKERRQ(SNESSetJacobian(user.snes,NULL,NULL,SNESComputeJacobian_MyShell,NULL));
   }
-  ierr = SNESSolve(user.snes,NULL,x);CHKERRQ(ierr);
+  CHKERRQ(SNESSolve(user.snes,NULL,x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
-  ierr = MatDestroy(&Jmf);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = SNESDestroy(&user.snes);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&J));
+  CHKERRQ(MatDestroy(&Jmf));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(DMDestroy(&da));
+  CHKERRQ(SNESDestroy(&user.snes));
   ierr = PetscFinalize();
   return ierr;
 }
@@ -164,14 +164,13 @@ int main(int argc,char **argv)
 PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
 {
   PetscInt       i,j,mx,xs,ys,xm,ym;
-  PetscErrorCode ierr;
   PetscReal      grashof,dx;
   Field          **x;
 
   PetscFunctionBeginUser;
   grashof = user->grashof;
 
-  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0));
   dx   = 1.0/(mx-1);
 
   /*
@@ -179,7 +178,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
        xs, ys   - starting grid indices (no ghost points)
        xm, ym   - widths of local grid (no ghost points)
   */
-  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   /*
      Get a pointer to vector data.
@@ -188,7 +187,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecGetArray(da,X,&x));
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -206,14 +205,13 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
   /*
      Restore vector
   */
-  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArray(da,X,&x));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *ptr)
 {
   AppCtx          *user = (AppCtx*)ptr;
-  PetscErrorCode  ierr;
   PetscInt        xints,xinte,yints,yinte,i,j;
   PetscReal       hx,hy,dhx,dhy,hxdhy,hydhx;
   PetscReal       grashof,prandtl,lid;
@@ -223,9 +221,9 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   PetscFunctionBeginUser;
   if ((fail++ > 7 && user->errorindomainmf) || (fail++ > 36 && user->errorindomain)) {
     PetscMPIInt rank;
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)user->snes),&rank);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)user->snes),&rank));
     if (rank == 0) {
-      ierr = SNESSetFunctionDomainError(user->snes);CHKERRQ(ierr);
+      CHKERRQ(SNESSetFunctionDomainError(user->snes));
     }
   }
   grashof = user->grashof;
@@ -341,49 +339,46 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
   /*
      Flop count (multiply-adds are counted as 2 operations)
   */
-  ierr = PetscLogFlops(84.0*info->ym*info->xm);CHKERRQ(ierr);
+  CHKERRQ(PetscLogFlops(84.0*info->ym*info->xm));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatMult_MyShell(Mat A,Vec x,Vec y)
 {
-  PetscErrorCode  ierr;
   MatShellCtx     *matshellctx;
   static PetscInt fail = 0;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A,&matshellctx);CHKERRQ(ierr);
-  ierr = MatMult(matshellctx->Jmf,x,y);CHKERRQ(ierr);
+  CHKERRQ(MatShellGetContext(A,&matshellctx));
+  CHKERRQ(MatMult(matshellctx->Jmf,x,y));
   if (fail++ > 5) {
     PetscMPIInt rank;
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank);CHKERRMPI(ierr);
-    if (rank == 0) {ierr = VecSetInf(y);CHKERRQ(ierr);}
+    CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A),&rank));
+    if (rank == 0) CHKERRQ(VecSetInf(y));
   }
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatAssemblyEnd_MyShell(Mat A,MatAssemblyType tp)
 {
-  PetscErrorCode ierr;
   MatShellCtx    *matshellctx;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(A,&matshellctx);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(matshellctx->Jmf,tp);CHKERRQ(ierr);
+  CHKERRQ(MatShellGetContext(A,&matshellctx));
+  CHKERRQ(MatAssemblyEnd(matshellctx->Jmf,tp));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PCApply_MyShell(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
   static PetscInt fail = 0;
 
   PetscFunctionBegin;
-  ierr = VecCopy(x,y);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(x,y));
   if (fail++ > 3) {
     PetscMPIInt rank;
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank);CHKERRMPI(ierr);
-    if (rank == 0) {ierr = VecSetInf(y);CHKERRQ(ierr);}
+    CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank));
+    if (rank == 0) CHKERRQ(VecSetInf(y));
   }
   PetscFunctionReturn(0);
 }
@@ -393,12 +388,11 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES,Vec,Mat,Mat,void*);
 PetscErrorCode SNESComputeJacobian_MyShell(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   static PetscInt fail = 0;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = SNESComputeJacobian_DMDA(snes,X,A,B,ctx);CHKERRQ(ierr);
+  CHKERRQ(SNESComputeJacobian_DMDA(snes,X,A,B,ctx));
   if (fail++ > 0) {
-    ierr = MatZeroEntries(A);CHKERRQ(ierr);
+    CHKERRQ(MatZeroEntries(A));
   }
   PetscFunctionReturn(0);
 }

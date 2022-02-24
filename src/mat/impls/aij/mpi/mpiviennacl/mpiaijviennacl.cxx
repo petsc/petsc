@@ -7,24 +7,23 @@
 PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJViennaCL(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
   Mat_MPIAIJ     *b = (Mat_MPIAIJ*)B->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLayoutSetUp(B->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(B->cmap);CHKERRQ(ierr);
+  CHKERRQ(PetscLayoutSetUp(B->rmap));
+  CHKERRQ(PetscLayoutSetUp(B->cmap));
   if (!B->preallocated) {
     /* Explicitly create the two MATSEQAIJVIENNACL matrices. */
-    ierr = MatCreate(PETSC_COMM_SELF,&b->A);CHKERRQ(ierr);
-    ierr = MatSetSizes(b->A,B->rmap->n,B->cmap->n,B->rmap->n,B->cmap->n);CHKERRQ(ierr);
-    ierr = MatSetType(b->A,MATSEQAIJVIENNACL);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)b->A);CHKERRQ(ierr);
-    ierr = MatCreate(PETSC_COMM_SELF,&b->B);CHKERRQ(ierr);
-    ierr = MatSetSizes(b->B,B->rmap->n,B->cmap->N,B->rmap->n,B->cmap->N);CHKERRQ(ierr);
-    ierr = MatSetType(b->B,MATSEQAIJVIENNACL);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent((PetscObject)B,(PetscObject)b->B);CHKERRQ(ierr);
+    CHKERRQ(MatCreate(PETSC_COMM_SELF,&b->A));
+    CHKERRQ(MatSetSizes(b->A,B->rmap->n,B->cmap->n,B->rmap->n,B->cmap->n));
+    CHKERRQ(MatSetType(b->A,MATSEQAIJVIENNACL));
+    CHKERRQ(PetscLogObjectParent((PetscObject)B,(PetscObject)b->A));
+    CHKERRQ(MatCreate(PETSC_COMM_SELF,&b->B));
+    CHKERRQ(MatSetSizes(b->B,B->rmap->n,B->cmap->N,B->rmap->n,B->cmap->N));
+    CHKERRQ(MatSetType(b->B,MATSEQAIJVIENNACL));
+    CHKERRQ(PetscLogObjectParent((PetscObject)B,(PetscObject)b->B));
   }
-  ierr = MatSeqAIJSetPreallocation(b->A,d_nz,d_nnz);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(b->B,o_nz,o_nnz);CHKERRQ(ierr);
+  CHKERRQ(MatSeqAIJSetPreallocation(b->A,d_nz,d_nnz));
+  CHKERRQ(MatSeqAIJSetPreallocation(b->B,o_nz,o_nnz));
   B->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -32,42 +31,37 @@ PetscErrorCode  MatMPIAIJSetPreallocation_MPIAIJViennaCL(Mat B,PetscInt d_nz,con
 PetscErrorCode MatAssemblyEnd_MPIAIJViennaCL(Mat A,MatAssemblyType mode)
 {
   Mat_MPIAIJ     *b = (Mat_MPIAIJ*)A->data;
-  PetscErrorCode ierr;
   PetscBool      v;
 
   PetscFunctionBegin;
-  ierr = MatAssemblyEnd_MPIAIJ(A,mode);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)b->lvec,VECSEQVIENNACL,&v);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyEnd_MPIAIJ(A,mode));
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)b->lvec,VECSEQVIENNACL,&v));
   if (!v) {
     PetscInt m;
-    ierr = VecGetSize(b->lvec,&m);CHKERRQ(ierr);
-    ierr = VecDestroy(&b->lvec);CHKERRQ(ierr);
-    ierr = VecCreateSeqViennaCL(PETSC_COMM_SELF,m,&b->lvec);CHKERRQ(ierr);
+    CHKERRQ(VecGetSize(b->lvec,&m));
+    CHKERRQ(VecDestroy(&b->lvec));
+    CHKERRQ(VecCreateSeqViennaCL(PETSC_COMM_SELF,m,&b->lvec));
   }
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatDestroy_MPIAIJViennaCL(Mat A)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy_MPIAIJ(A));
   PetscFunctionReturn(0);
 }
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJViennaCL(Mat A)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatCreate_MPIAIJ(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate_MPIAIJ(A));
   A->boundtocpu = PETSC_FALSE;
-  ierr = PetscFree(A->defaultvectype);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(VECVIENNACL,&A->defaultvectype);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",MatMPIAIJSetPreallocation_MPIAIJViennaCL);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(A->defaultvectype));
+  CHKERRQ(PetscStrallocpy(VECVIENNACL,&A->defaultvectype));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",MatMPIAIJSetPreallocation_MPIAIJViennaCL));
   A->ops->assemblyend = MatAssemblyEnd_MPIAIJViennaCL;
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJVIENNACL);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJVIENNACL));
   PetscFunctionReturn(0);
 }
 
@@ -115,19 +109,18 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJViennaCL(Mat A)
 @*/
 PetscErrorCode  MatCreateAIJViennaCL(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[],Mat *A)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MatCreate(comm,A);CHKERRQ(ierr);
-  ierr = MatSetSizes(*A,m,n,M,N);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  CHKERRQ(MatCreate(comm,A));
+  CHKERRQ(MatSetSizes(*A,m,n,M,N));
+  CHKERRMPI(MPI_Comm_size(comm,&size));
   if (size > 1) {
-    ierr = MatSetType(*A,MATMPIAIJVIENNACL);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocation(*A,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
+    CHKERRQ(MatSetType(*A,MATMPIAIJVIENNACL));
+    CHKERRQ(MatMPIAIJSetPreallocation(*A,d_nz,d_nnz,o_nz,o_nnz));
   } else {
-    ierr = MatSetType(*A,MATSEQAIJVIENNACL);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(*A,d_nz,d_nnz);CHKERRQ(ierr);
+    CHKERRQ(MatSetType(*A,MATSEQAIJVIENNACL));
+    CHKERRQ(MatSeqAIJSetPreallocation(*A,d_nz,d_nnz));
   }
   PetscFunctionReturn(0);
 }

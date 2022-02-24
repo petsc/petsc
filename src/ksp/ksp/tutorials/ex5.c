@@ -40,31 +40,31 @@ int main(int argc,char **args)
 #endif
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   n    = 2*size;
 
   /*
      Set flag if we are doing a nonsymmetric problem; the default is symmetric.
   */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-mat_nonsym",&mat_nonsymmetric,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-mat_nonsym",&mat_nonsymmetric,NULL));
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-test_scaledMat",&testscaledMat,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test_scaledMat",&testscaledMat,NULL));
 
   /*
      Register two stages for separate profiling of the two linear solves.
      Use the runtime option -log_view for a printout of performance
      statistics at the program's conlusion.
   */
-  ierr = PetscLogStageRegister("Original Solve",&stages[0]);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("Second Solve",&stages[1]);CHKERRQ(ierr);
+  CHKERRQ(PetscLogStageRegister("Original Solve",&stages[0]));
+  CHKERRQ(PetscLogStageRegister("Second Solve",&stages[1]));
 
   /* -------------- Stage 0: Solve Original System ---------------------- */
   /*
      Indicate to PETSc profiling that we're beginning the first stage
   */
-  ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
+  CHKERRQ(PetscLogStagePush(stages[0]));
 
   /*
      Create parallel matrix, specifying only its global dimensions.
@@ -72,17 +72,17 @@ int main(int argc,char **args)
      runtime. Also, the parallel partitioning of the matrix is
      determined by PETSc at runtime.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
-  ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-  ierr = MatSetUp(C);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
+  CHKERRQ(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  CHKERRQ(MatSetFromOptions(C));
+  CHKERRQ(MatSetUp(C));
 
   /*
      Currently, all PETSc parallel matrix formats are partitioned by
      contiguous chunks of rows across the processors.  Determine which
      rows of the matrix are locally owned.
   */
-  ierr = MatGetOwnershipRange(C,&Istart,&Iend);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(C,&Istart,&Iend));
 
   /*
      Set matrix entries matrix in parallel.
@@ -93,11 +93,11 @@ int main(int argc,char **args)
   */
   for (Ii=Istart; Ii<Iend; Ii++) {
     v = -1.0; i = Ii/n; j = Ii - i*n;
-    if (i>0)   {J = Ii - n; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-    if (i<m-1) {J = Ii + n; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-    if (j>0)   {J = Ii - 1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-    if (j<n-1) {J = Ii + 1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-    v = 4.0; ierr = MatSetValues(C,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
+    if (i>0)   {J = Ii - n; CHKERRQ(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
+    if (i<m-1) {J = Ii + n; CHKERRQ(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
+    if (j>0)   {J = Ii - 1; CHKERRQ(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
+    if (j<n-1) {J = Ii + 1; CHKERRQ(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
+    v = 4.0; CHKERRQ(MatSetValues(C,1,&Ii,1,&Ii,&v,ADD_VALUES));
   }
 
   /*
@@ -106,11 +106,11 @@ int main(int argc,char **args)
   if (mat_nonsymmetric) {
     for (Ii=Istart; Ii<Iend; Ii++) {
       v = -1.5; i = Ii/n;
-      if (i>1)   {J = Ii-n-1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      if (i>1)   {J = Ii-n-1; CHKERRQ(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
     }
   } else {
-    ierr = MatSetOption(C,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = MatSetOption(C,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr);
+    CHKERRQ(MatSetOption(C,MAT_SYMMETRIC,PETSC_TRUE));
+    CHKERRQ(MatSetOption(C,MAT_SYMMETRY_ETERNAL,PETSC_TRUE));
   }
 
   /*
@@ -119,8 +119,8 @@ int main(int argc,char **args)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   /*
      Create parallel vectors.
@@ -128,18 +128,18 @@ int main(int argc,char **args)
         dimension; the parallel partitioning is determined at runtime.
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,m*n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
+  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,m*n));
+  CHKERRQ(VecSetFromOptions(u));
+  CHKERRQ(VecDuplicate(u,&b));
+  CHKERRQ(VecDuplicate(b,&x));
 
   /*
      Currently, all parallel PETSc vectors are partitioned by
      contiguous chunks across the processors.  Determine which
      range of entries are locally owned.
   */
-  ierr = VecGetOwnershipRange(x,&low,&high);CHKERRQ(ierr);
+  CHKERRQ(VecGetOwnershipRange(x,&low,&high));
 
   /*
     Set elements within the exact solution vector in parallel.
@@ -148,11 +148,11 @@ int main(int argc,char **args)
        appropriate processor during vector assembly).
      - Always specify global locations of vector entries.
   */
-  ierr = VecGetLocalSize(x,&ldim);CHKERRQ(ierr);
+  CHKERRQ(VecGetLocalSize(x,&ldim));
   for (i=0; i<ldim; i++) {
     iglobal = i + low;
     v       = (PetscScalar)(i + 100*rank);
-    ierr    = VecSetValues(u,1,&iglobal,&v,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(u,1,&iglobal,&v,INSERT_VALUES));
   }
 
   /*
@@ -161,29 +161,29 @@ int main(int argc,char **args)
      Computations can be done while messages are in transition,
      by placing code between these two statements.
   */
-  ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
+  CHKERRQ(VecAssemblyBegin(u));
+  CHKERRQ(VecAssemblyEnd(u));
 
   /*
      Compute right-hand-side vector
   */
-  ierr = MatMult(C,u,b);CHKERRQ(ierr);
+  CHKERRQ(MatMult(C,u,b));
 
   /*
     Create linear solver context
   */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
 
   /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
+  CHKERRQ(KSPSetOperators(ksp,C,C));
 
   /*
      Set runtime options (e.g., -ksp_type <type> -pc_type <type>)
   */
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPSetFromOptions(ksp));
 
   /*
      Solve linear system.  Here we explicitly call KSPSetUp() for more
@@ -192,17 +192,17 @@ int main(int argc,char **args)
      automatically be called within KSPSolve() if it hasn't been
      called already.
   */
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  CHKERRQ(KSPSetUp(ksp));
+  CHKERRQ(KSPSolve(ksp,b,x));
 
   /*
      Check the error
   */
-  ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(x,none,u));
+  CHKERRQ(VecNorm(x,NORM_2,&norm));
+  CHKERRQ(KSPGetIterationNumber(ksp,&its));
   if (!testscaledMat || norm > 1.e-7) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its));
   }
 
   /* -------------- Stage 1: Solve Second System ---------------------- */
@@ -215,14 +215,14 @@ int main(int argc,char **args)
      stage with PetscLogStagePop(), and beginning the second stage with
      PetscLogStagePush().
   */
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stages[1]);CHKERRQ(ierr);
+  CHKERRQ(PetscLogStagePop());
+  CHKERRQ(PetscLogStagePush(stages[1]));
 
   /*
      Initialize all matrix entries to zero.  MatZeroEntries() retains the
      nonzero structure of the matrix for sparse formats.
   */
-  ierr = MatZeroEntries(C);CHKERRQ(ierr);
+  CHKERRQ(MatZeroEntries(C));
 
   /*
      Assemble matrix again.  Note that we retain the same matrix data
@@ -232,21 +232,21 @@ int main(int argc,char **args)
   for (i=0; i<m; i++) {
     for (j=2*rank; j<2*rank+2; j++) {
       v = -1.0;  Ii = j + n*i;
-      if (i>0)   {J = Ii - n; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-      if (i<m-1) {J = Ii + n; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-      if (j>0)   {J = Ii - 1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-      if (j<n-1) {J = Ii + 1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
-      v = 6.0; ierr = MatSetValues(C,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
+      if (i>0)   {J = Ii - n; CHKERRQ(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
+      if (i<m-1) {J = Ii + n; CHKERRQ(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
+      if (j>0)   {J = Ii - 1; CHKERRQ(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
+      if (j<n-1) {J = Ii + 1; CHKERRQ(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
+      v = 6.0; CHKERRQ(MatSetValues(C,1,&Ii,1,&Ii,&v,ADD_VALUES));
     }
   }
   if (mat_nonsymmetric) {
     for (Ii=Istart; Ii<Iend; Ii++) {
       v = -1.5; i = Ii/n;
-      if (i>1)   {J = Ii-n-1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
+      if (i>1)   {J = Ii-n-1; CHKERRQ(MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES));}
     }
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   if (testscaledMat) {
     PetscRandom    rctx;
@@ -254,79 +254,79 @@ int main(int argc,char **args)
     /* Scale a(0,0) and a(M-1,M-1) */
     if (rank == 0) {
       v = 6.0*0.00001; Ii = 0; J = 0;
-      ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES));
     } else if (rank == size -1) {
       v = 6.0*0.00001; Ii = m*n-1; J = m*n-1;
-      ierr = MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(C,1,&Ii,1,&J,&v,INSERT_VALUES));
     }
-    ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
     /* Compute a new right-hand-side vector */
-    ierr = VecDestroy(&u);CHKERRQ(ierr);
-    ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-    ierr = VecSetSizes(u,PETSC_DECIDE,m*n);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(u);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&u));
+    CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
+    CHKERRQ(VecSetSizes(u,PETSC_DECIDE,m*n));
+    CHKERRQ(VecSetFromOptions(u));
 
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-    ierr = VecSetRandom(u,rctx);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
+    CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
+    CHKERRQ(PetscRandomSetFromOptions(rctx));
+    CHKERRQ(VecSetRandom(u,rctx));
+    CHKERRQ(PetscRandomDestroy(&rctx));
+    CHKERRQ(VecAssemblyBegin(u));
+    CHKERRQ(VecAssemblyEnd(u));
   }
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-test_newMat",&testnewC,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test_newMat",&testnewC,NULL));
   if (testnewC) {
     /*
      User may use a new matrix C with same nonzero pattern, e.g.
       ./ex5 -ksp_monitor -mat_type sbaij -pc_type cholesky -pc_factor_mat_solver_type mumps -test_newMat
     */
     Mat Ctmp;
-    ierr = MatDuplicate(C,MAT_COPY_VALUES,&Ctmp);CHKERRQ(ierr);
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
-    ierr = MatDuplicate(Ctmp,MAT_COPY_VALUES,&C);CHKERRQ(ierr);
-    ierr = MatDestroy(&Ctmp);CHKERRQ(ierr);
+    CHKERRQ(MatDuplicate(C,MAT_COPY_VALUES,&Ctmp));
+    CHKERRQ(MatDestroy(&C));
+    CHKERRQ(MatDuplicate(Ctmp,MAT_COPY_VALUES,&C));
+    CHKERRQ(MatDestroy(&Ctmp));
   }
 
-  ierr = MatMult(C,u,b);CHKERRQ(ierr);
+  CHKERRQ(MatMult(C,u,b));
 
   /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
+  CHKERRQ(KSPSetOperators(ksp,C,C));
 
   /*
      Solve linear system
   */
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  CHKERRQ(KSPSetUp(ksp));
+  CHKERRQ(KSPSolve(ksp,b,x));
 
   /*
      Check the error
   */
-  ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(x,none,u));
+  CHKERRQ(VecNorm(x,NORM_2,&norm));
+  CHKERRQ(KSPGetIterationNumber(ksp,&its));
   if (!testscaledMat || norm > 1.e-7) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its));
   }
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(VecDestroy(&u));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(MatDestroy(&C));
 
   /*
      Indicate to PETSc profiling that we're concluding the second stage
   */
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  CHKERRQ(PetscLogStagePop());
 
   ierr = PetscFinalize();
   return ierr;

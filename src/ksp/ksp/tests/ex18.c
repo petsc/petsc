@@ -23,63 +23,63 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 
   /* Read matrix and RHS */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),NULL);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr = VecLoad(b,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),NULL));
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetType(A,MATSEQAIJ));
+  CHKERRQ(MatLoad(A,fd));
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&b));
+  CHKERRQ(VecLoad(b,fd));
+  CHKERRQ(PetscViewerDestroy(&fd));
 
   /*
      If the load matrix is larger then the vector, due to being padded
      to match the blocksize then create a new padded vector
   */
-  ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = VecGetSize(b,&mvec);CHKERRQ(ierr);
+  CHKERRQ(MatGetSize(A,&m,&n));
+  CHKERRQ(VecGetSize(b,&mvec));
   if (m > mvec) {
     Vec         tmp;
     PetscScalar *bold,*bnew;
     /* create a new vector b by padding the old one */
-    ierr = VecCreate(PETSC_COMM_WORLD,&tmp);CHKERRQ(ierr);
-    ierr = VecSetSizes(tmp,PETSC_DECIDE,m);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);
-    ierr = VecGetArray(tmp,&bnew);CHKERRQ(ierr);
-    ierr = VecGetArray(b,&bold);CHKERRQ(ierr);
-    ierr = PetscArraycpy(bnew,bold,mvec);CHKERRQ(ierr);
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
+    CHKERRQ(VecCreate(PETSC_COMM_WORLD,&tmp));
+    CHKERRQ(VecSetSizes(tmp,PETSC_DECIDE,m));
+    CHKERRQ(VecSetFromOptions(tmp));
+    CHKERRQ(VecGetArray(tmp,&bnew));
+    CHKERRQ(VecGetArray(b,&bold));
+    CHKERRQ(PetscArraycpy(bnew,bold,mvec));
+    CHKERRQ(VecDestroy(&b));
     b    = tmp;
   }
 
   /* Set up solution */
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
-  ierr = VecSet(x,0.0);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(b,&x));
+  CHKERRQ(VecDuplicate(b,&u));
+  CHKERRQ(VecSet(x,0.0));
 
   /* Solve system */
-  ierr = PetscLogStageRegister("Stage 1",&stage1);CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage1);CHKERRQ(ierr);
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  CHKERRQ(PetscLogStageRegister("Stage 1",&stage1));
+  CHKERRQ(PetscLogStagePush(stage1));
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPSetOperators(ksp,A,A));
+  CHKERRQ(KSPSetFromOptions(ksp));
+  CHKERRQ(KSPSolve(ksp,b,x));
+  CHKERRQ(PetscLogStagePop());
 
   /* Show result */
-  ierr = MatMult(A,x,u);CHKERRQ(ierr);
-  ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm);CHKERRQ(ierr);
+  CHKERRQ(MatMult(A,x,u));
+  CHKERRQ(VecAXPY(u,-1.0,b));
+  CHKERRQ(VecNorm(u,NORM_2,&norm));
+  CHKERRQ(KSPGetIterationNumber(ksp,&its));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Residual norm %g\n",(double)norm));
 
   /* Cleanup */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(VecDestroy(&u));
+  CHKERRQ(MatDestroy(&A));
 
   ierr = PetscFinalize();
   return ierr;

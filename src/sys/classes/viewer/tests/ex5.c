@@ -11,29 +11,29 @@ int main(int argc,char **args)
   PetscBool         iascii;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-myviewer",&viewer,&format,NULL);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-myviewer",&viewer,&format,NULL));
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     PetscBool flg;
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Testing PetscViewerASCIIPrintf %d\n", 0);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = PetscOptionsPushGetViewerOff(PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-myviewer",&viewer,&format,&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerPushFormat(viewer,format));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Testing PetscViewerASCIIPrintf %d\n", 0));
+    CHKERRQ(PetscViewerPopFormat(viewer));
+    CHKERRQ(PetscViewerDestroy(&viewer));
+    CHKERRQ(PetscOptionsPushGetViewerOff(PETSC_TRUE));
+    CHKERRQ(PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-myviewer",&viewer,&format,&flg));
     PetscCheckFalse(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Pushed viewer off, but viewer was set");
     if (viewer) {
-      ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"Testing PetscViewerASCIIPrintf %d\n", 1);CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerPushFormat(viewer,format));
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Testing PetscViewerASCIIPrintf %d\n", 1));
+      CHKERRQ(PetscViewerPopFormat(viewer));
     }
-    ierr = PetscOptionsPopGetViewerOff();CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-myviewer",&viewer,&format,&flg);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer,format);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Testing PetscViewerASCIIPrintf %d\n", 2);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsPopGetViewerOff());
+    CHKERRQ(PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-myviewer",&viewer,&format,&flg));
+    CHKERRQ(PetscViewerPushFormat(viewer,format));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Testing PetscViewerASCIIPrintf %d\n", 2));
+    CHKERRQ(PetscViewerPopFormat(viewer));
   }
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDestroy(&viewer));
   ierr = PetscFinalize();
   return ierr;
 }

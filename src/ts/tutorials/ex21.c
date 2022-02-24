@@ -94,15 +94,15 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,bounds);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,bounds));
 
   appctx.comm = PETSC_COMM_WORLD;
   appctx.m    = 60;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&appctx.m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,NULL,"-ul",&ul,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(NULL,NULL,"-uh",&uh,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&appctx.m,NULL));
+  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-ul",&ul,NULL));
+  CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-uh",&uh,NULL));
+  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-debug",&appctx.debug));
+  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-mymonitor",&mymonitor));
   appctx.h    = 1.0/(appctx.m-1.0);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -114,47 +114,47 @@ int main(int argc,char **argv)
      and to set up the ghost point communication pattern.  There are M
      total grid values spread equally among all the processors.
   */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,appctx.m,1,1,NULL,&appctx.da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(appctx.da);CHKERRQ(ierr);
-  ierr = DMSetUp(appctx.da);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,appctx.m,1,1,NULL,&appctx.da));
+  CHKERRQ(DMSetFromOptions(appctx.da));
+  CHKERRQ(DMSetUp(appctx.da));
 
   /*
      Extract global and local vectors from DMDA; we use these to store the
      approximate solution.  Then duplicate these for remaining vectors that
      have the same types.
   */
-  ierr = DMCreateGlobalVector(appctx.da,&u);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(appctx.da,&appctx.u_local);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(appctx.da,&u));
+  CHKERRQ(DMCreateLocalVector(appctx.da,&appctx.u_local));
 
   /*
      Create local work vector for use in evaluating right-hand-side function;
      create global work vector for storing exact solution.
   */
-  ierr = VecDuplicate(appctx.u_local,&appctx.localwork);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&appctx.solution);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(appctx.u_local,&appctx.localwork));
+  CHKERRQ(VecDuplicate(u,&appctx.solution));
 
   /* Create residual vector */
-  ierr = VecDuplicate(u,&r);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(u,&r));
   /* Create lower and upper bound vectors */
-  ierr = VecDuplicate(u,&xl);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&xu);CHKERRQ(ierr);
-  ierr = SetBounds(xl,xu,ul,uh,&appctx);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(u,&xl));
+  CHKERRQ(VecDuplicate(u,&xu));
+  CHKERRQ(SetBounds(xl,xu,ul,uh,&appctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context; set callback routine for
      right-hand-side function evaluation.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,r,RHSFunction,&appctx);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
+  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
+  CHKERRQ(TSSetRHSFunction(ts,r,RHSFunction,&appctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   if (mymonitor) {
-    ierr = TSMonitorSet(ts,Monitor,&appctx,NULL);CHKERRQ(ierr);
+    CHKERRQ(TSMonitorSet(ts,Monitor,&appctx,NULL));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -164,18 +164,18 @@ int main(int argc,char **argv)
      Create matrix data structure; set Jacobian evaluation routine.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,appctx.m,appctx.m);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&appctx);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,appctx.m,appctx.m));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatSetUp(A));
+  CHKERRQ(TSSetRHSJacobian(ts,A,A,RHSJacobian,&appctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solution vector and initial timestep
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   dt   = appctx.h/2.0;
-  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
+  CHKERRQ(TSSetTimeStep(ts,dt));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize timestepping solver:
@@ -187,13 +187,13 @@ int main(int argc,char **argv)
      to override the defaults set by TSSetMaxSteps()/TSSetMaxTime().
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
-  ierr = TSSetMaxSteps(ts,time_steps_max);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts,time_total_max);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
+  CHKERRQ(TSSetType(ts,TSBEULER));
+  CHKERRQ(TSSetMaxSteps(ts,time_steps_max));
+  CHKERRQ(TSSetMaxTime(ts,time_total_max));
+  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
   /* Set lower and upper bound on the solution vector for each time step */
-  ierr = TSVISetVariableBounds(ts,xl,xu);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  CHKERRQ(TSVISetVariableBounds(ts,xl,xu));
+  CHKERRQ(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve the problem
@@ -202,28 +202,28 @@ int main(int argc,char **argv)
   /*
      Evaluate initial conditions
   */
-  ierr = InitialConditions(u,&appctx);CHKERRQ(ierr);
+  CHKERRQ(InitialConditions(u,&appctx));
 
   /*
      Run the timestepping solver
   */
-  ierr = TSSolve(ts,u);CHKERRQ(ierr);
+  CHKERRQ(TSSolve(ts,u));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = VecDestroy(&xl);CHKERRQ(ierr);
-  ierr = VecDestroy(&xu);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = DMDestroy(&appctx.da);CHKERRQ(ierr);
-  ierr = VecDestroy(&appctx.localwork);CHKERRQ(ierr);
-  ierr = VecDestroy(&appctx.solution);CHKERRQ(ierr);
-  ierr = VecDestroy(&appctx.u_local);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&r));
+  CHKERRQ(VecDestroy(&xl));
+  CHKERRQ(VecDestroy(&xu));
+  CHKERRQ(TSDestroy(&ts));
+  CHKERRQ(VecDestroy(&u));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(DMDestroy(&appctx.da));
+  CHKERRQ(VecDestroy(&appctx.localwork));
+  CHKERRQ(VecDestroy(&appctx.solution));
+  CHKERRQ(VecDestroy(&appctx.u_local));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -249,13 +249,12 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
 {
   PetscScalar    *u_localptr,h = appctx->h,x;
   PetscInt       i,mybase,myend;
-  PetscErrorCode ierr;
 
   /*
      Determine starting point of each processor's range of
      grid values.
   */
-  ierr = VecGetOwnershipRange(u,&mybase,&myend);CHKERRQ(ierr);
+  CHKERRQ(VecGetOwnershipRange(u,&mybase,&myend));
 
   /*
     Get a pointer to vector data.
@@ -266,7 +265,7 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
     - Note that the Fortran interface to VecGetArray() differs from the
       C version.  See the users manual for details.
   */
-  ierr = VecGetArray(u,&u_localptr);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(u,&u_localptr));
 
   /*
      We initialize the solution array by simply writing the solution
@@ -281,14 +280,14 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(u,&u_localptr);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(u,&u_localptr));
 
   /*
      Print debugging information if desired
   */
   if (appctx->debug) {
-     ierr = PetscPrintf(appctx->comm,"initial guess vector\n");CHKERRQ(ierr);
-     ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+     CHKERRQ(PetscPrintf(appctx->comm,"initial guess vector\n"));
+     CHKERRQ(VecView(u,PETSC_VIEWER_STDOUT_WORLD));
   }
 
   return 0;
@@ -307,20 +306,19 @@ PetscErrorCode InitialConditions(Vec u,AppCtx *appctx)
  */
 PetscErrorCode SetBounds(Vec xl, Vec xu, PetscScalar ul, PetscScalar uh,AppCtx *appctx)
 {
-  PetscErrorCode    ierr;
   PetscScalar       *l,*u;
   PetscMPIInt       rank,size;
   PetscInt          localsize;
 
   PetscFunctionBeginUser;
-  ierr = VecSet(xl,ul);CHKERRQ(ierr);
-  ierr = VecSet(xu,uh);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(xl,&localsize);CHKERRQ(ierr);
-  ierr = VecGetArray(xl,&l);CHKERRQ(ierr);
-  ierr = VecGetArray(xu,&u);CHKERRQ(ierr);
+  CHKERRQ(VecSet(xl,ul));
+  CHKERRQ(VecSet(xu,uh));
+  CHKERRQ(VecGetLocalSize(xl,&localsize));
+  CHKERRQ(VecGetArray(xl,&l));
+  CHKERRQ(VecGetArray(xu,&u));
 
-  ierr = MPI_Comm_rank(appctx->comm,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(appctx->comm,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(appctx->comm,&rank));
+  CHKERRMPI(MPI_Comm_size(appctx->comm,&size));
   if (rank == 0) {
     l[0] = -PETSC_INFINITY;
     u[0] =  PETSC_INFINITY;
@@ -329,8 +327,8 @@ PetscErrorCode SetBounds(Vec xl, Vec xu, PetscScalar ul, PetscScalar uh,AppCtx *
     l[localsize-1] = -PETSC_INFINITY;
     u[localsize-1] = PETSC_INFINITY;
   }
-  ierr = VecRestoreArray(xl,&l);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xu,&u);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(xl,&l));
+  CHKERRQ(VecRestoreArray(xu,&u));
   PetscFunctionReturn(0);
 }
 
@@ -350,18 +348,17 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
 {
   PetscScalar    *s_localptr,h = appctx->h,x;
   PetscInt       i,mybase,myend;
-  PetscErrorCode ierr;
 
   /*
      Determine starting and ending points of each processor's
      range of grid values
   */
-  ierr = VecGetOwnershipRange(solution,&mybase,&myend);CHKERRQ(ierr);
+  CHKERRQ(VecGetOwnershipRange(solution,&mybase,&myend));
 
   /*
      Get a pointer to vector data.
   */
-  ierr = VecGetArray(solution,&s_localptr);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(solution,&s_localptr));
 
   /*
      Simply write the solution directly into the array locations.
@@ -375,7 +372,7 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
   /*
      Restore vector
   */
-  ierr = VecRestoreArray(solution,&s_localptr);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(solution,&s_localptr));
   return 0;
 }
 /* --------------------------------------------------------------------- */
@@ -398,7 +395,6 @@ PetscErrorCode ExactSolution(PetscReal t,Vec solution,AppCtx *appctx)
 PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 {
   AppCtx         *appctx = (AppCtx*) ctx;   /* user-defined application context */
-  PetscErrorCode ierr;
   PetscReal      en2,en2s,enmax;
   PetscDraw      draw;
 
@@ -413,45 +409,45 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 
      PetscReal buffering makes graphics look better.
   */
-  ierr = PetscViewerDrawGetDraw(PETSC_VIEWER_DRAW_(appctx->comm),0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
-  ierr = VecView(u,PETSC_VIEWER_DRAW_(appctx->comm));CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDrawGetDraw(PETSC_VIEWER_DRAW_(appctx->comm),0,&draw));
+  CHKERRQ(PetscDrawSetDoubleBuffer(draw));
+  CHKERRQ(VecView(u,PETSC_VIEWER_DRAW_(appctx->comm)));
 
   /*
      Compute the exact solution at this timestep
   */
-  ierr = ExactSolution(time,appctx->solution,appctx);CHKERRQ(ierr);
+  CHKERRQ(ExactSolution(time,appctx->solution,appctx));
 
   /*
      Print debugging information if desired
   */
   if (appctx->debug) {
-    ierr = PetscPrintf(appctx->comm,"Computed solution vector\n");CHKERRQ(ierr);
-    ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(appctx->comm,"Exact solution vector\n");CHKERRQ(ierr);
-    ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(appctx->comm,"Computed solution vector\n"));
+    CHKERRQ(VecView(u,PETSC_VIEWER_STDOUT_WORLD));
+    CHKERRQ(PetscPrintf(appctx->comm,"Exact solution vector\n"));
+    CHKERRQ(VecView(appctx->solution,PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /*
      Compute the 2-norm and max-norm of the error
   */
-  ierr = VecAXPY(appctx->solution,-1.0,u);CHKERRQ(ierr);
-  ierr = VecNorm(appctx->solution,NORM_2,&en2);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(appctx->solution,-1.0,u));
+  CHKERRQ(VecNorm(appctx->solution,NORM_2,&en2));
   en2s = PetscSqrtReal(appctx->h)*en2;  /* scale the 2-norm by the grid spacing */
-  ierr = VecNorm(appctx->solution,NORM_MAX,&enmax);CHKERRQ(ierr);
+  CHKERRQ(VecNorm(appctx->solution,NORM_MAX,&enmax));
 
   /*
      PetscPrintf() causes only the first processor in this
      communicator to print the timestep information.
   */
-  ierr = PetscPrintf(appctx->comm,"Timestep %D: time = %g,2-norm error = %g, max norm error = %g\n",step,(double)time,(double)en2s,(double)enmax);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(appctx->comm,"Timestep %D: time = %g,2-norm error = %g, max norm error = %g\n",step,(double)time,(double)en2s,(double)enmax));
 
   /*
      Print debugging information if desired
    */
   /*  if (appctx->debug) {
-     ierr = PetscPrintf(appctx->comm,"Error vector\n");CHKERRQ(ierr);
-     ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+     CHKERRQ(PetscPrintf(appctx->comm,"Error vector\n"));
+     CHKERRQ(VecView(appctx->solution,PETSC_VIEWER_STDOUT_WORLD));
    } */
   return 0;
 }
@@ -478,7 +474,6 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
   DM                da        = appctx->da;        /* distributed array */
   Vec               local_in  = appctx->u_local;   /* local ghosted input vector */
   Vec               localwork = appctx->localwork; /* local ghosted work vector */
-  PetscErrorCode    ierr;
   PetscInt          i,localsize;
   PetscMPIInt       rank,size;
   PetscScalar       *copyptr,sc;
@@ -493,25 +488,25 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  ierr = DMGlobalToLocalBegin(da,global_in,INSERT_VALUES,local_in);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,global_in,INSERT_VALUES,local_in);CHKERRQ(ierr);
+  CHKERRQ(DMGlobalToLocalBegin(da,global_in,INSERT_VALUES,local_in));
+  CHKERRQ(DMGlobalToLocalEnd(da,global_in,INSERT_VALUES,local_in));
 
   /*
       Access directly the values in our local INPUT work array
   */
-  ierr = VecGetArrayRead(local_in,&localptr);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(local_in,&localptr));
 
   /*
       Access directly the values in our local OUTPUT work array
   */
-  ierr = VecGetArray(localwork,&copyptr);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(localwork,&copyptr));
 
   sc = 1.0/(appctx->h*appctx->h*2.0*(1.0+t)*(1.0+t));
 
   /*
       Evaluate our function on the nodes owned by this processor
   */
-  ierr = VecGetLocalSize(local_in,&localsize);CHKERRQ(ierr);
+  CHKERRQ(VecGetLocalSize(local_in,&localsize));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Compute entries for the locally owned part
@@ -526,8 +521,8 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
      In our case, u(t,0) = t + 1, so that u_{t}(t,0) = 1
              and  u(t,1) = 2t+ 2, so that u_{t}(t,1) = 2
   */
-  ierr = MPI_Comm_rank(appctx->comm,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(appctx->comm,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(appctx->comm,&rank));
+  CHKERRMPI(MPI_Comm_size(appctx->comm,&size));
   if (rank == 0) copyptr[0] = 1.0;
   if (rank == size-1) copyptr[localsize-1] = (t < .5) ? 2.0 : 0.0;
 
@@ -540,20 +535,20 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
   /*
      Restore vectors
   */
-  ierr = VecRestoreArrayRead(local_in,&localptr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(localwork,&copyptr);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(local_in,&localptr));
+  CHKERRQ(VecRestoreArray(localwork,&copyptr));
 
   /*
      Insert values from the local OUTPUT vector into the global
      output vector
   */
-  ierr = DMLocalToGlobalBegin(da,localwork,INSERT_VALUES,global_out);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(da,localwork,INSERT_VALUES,global_out);CHKERRQ(ierr);
+  CHKERRQ(DMLocalToGlobalBegin(da,localwork,INSERT_VALUES,global_out));
+  CHKERRQ(DMLocalToGlobalEnd(da,localwork,INSERT_VALUES,global_out));
 
   /* Print debugging information if desired */
   /*  if (appctx->debug) {
-     ierr = PetscPrintf(appctx->comm,"RHS function vector\n");CHKERRQ(ierr);
-     ierr = VecView(global_out,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+     CHKERRQ(PetscPrintf(appctx->comm,"RHS function vector\n"));
+     CHKERRQ(VecView(global_out,PETSC_VIEWER_STDOUT_WORLD));
    } */
 
   return 0;
@@ -594,7 +589,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat B,void *ct
   DM                da       = appctx->da;        /* distributed array */
   PetscScalar       v[3],sc;
   const PetscScalar *localptr;
-  PetscErrorCode    ierr;
   PetscInt          i,mstart,mend,mstarts,mends,idx[3],is;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -606,18 +600,18 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat B,void *ct
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  ierr = DMGlobalToLocalBegin(da,global_in,INSERT_VALUES,local_in);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,global_in,INSERT_VALUES,local_in);CHKERRQ(ierr);
+  CHKERRQ(DMGlobalToLocalBegin(da,global_in,INSERT_VALUES,local_in));
+  CHKERRQ(DMGlobalToLocalEnd(da,global_in,INSERT_VALUES,local_in));
 
   /*
      Get pointer to vector data
   */
-  ierr = VecGetArrayRead(local_in,&localptr);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(local_in,&localptr));
 
   /*
      Get starting and ending locally owned rows of the matrix
   */
-  ierr   = MatGetOwnershipRange(B,&mstarts,&mends);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(B,&mstarts,&mends));
   mstart = mstarts; mend = mends;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -637,13 +631,13 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat B,void *ct
   */
   if (mstart == 0) {
     v[0] = 0.0;
-    ierr = MatSetValues(B,1,&mstart,1,&mstart,v,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(B,1,&mstart,1,&mstart,v,INSERT_VALUES));
     mstart++;
   }
   if (mend == appctx->m) {
     mend--;
     v[0] = 0.0;
-    ierr = MatSetValues(B,1,&mend,1,&mend,v,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(B,1,&mend,1,&mend,v,INSERT_VALUES));
   }
 
   /*
@@ -657,13 +651,13 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat B,void *ct
     v[0]   = sc*localptr[is];
     v[1]   = sc*(localptr[is+1] + localptr[is-1] - 4.0*localptr[is]);
     v[2]   = sc*localptr[is];
-    ierr   = MatSetValues(B,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(B,1,&i,3,idx,v,INSERT_VALUES));
   }
 
   /*
      Restore vector
   */
-  ierr = VecRestoreArrayRead(local_in,&localptr);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(local_in,&localptr));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Complete the matrix assembly process and set some options
@@ -674,14 +668,14 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec global_in,Mat AA,Mat B,void *ct
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
 
   /*
      Set and option to indicate that we will never add a new nonzero location
      to the matrix. If we do, it will generate an error.
   */
-  ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE));
 
   return 0;
 }

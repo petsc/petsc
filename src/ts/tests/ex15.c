@@ -40,19 +40,18 @@ static PetscErrorCode IFunction_Conservative(TS ts,PetscReal t,Vec U,Vec Udot,Ve
 {
   const PetscScalar *u,*udot;
   PetscScalar       *f;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(U,&u));
+  CHKERRQ(VecGetArrayRead(Udot,&udot));
+  CHKERRQ(VecGetArray(F,&f));
 
   f[0] = udot[0] + u[0];
   f[1] = udot[1] - u[0];
 
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(U,&u));
+  CHKERRQ(VecRestoreArrayRead(Udot,&udot));
+  CHKERRQ(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -60,19 +59,18 @@ static PetscErrorCode IFunction_Nonconservative(TS ts,PetscReal t,Vec U,Vec Udot
 {
   const PetscScalar *u,*udot;
   PetscScalar       *f;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(U,&u));
+  CHKERRQ(VecGetArrayRead(Udot,&udot));
+  CHKERRQ(VecGetArray(F,&f));
 
   f[0] = PetscExpScalar(u[0])*udot[0] + PetscExpScalar(u[0]);
   f[1] = PetscExpScalar(u[1])*udot[1] - PetscExpScalar(u[0]);
 
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(U,&u));
+  CHKERRQ(VecRestoreArrayRead(Udot,&udot));
+  CHKERRQ(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -80,29 +78,26 @@ static PetscErrorCode IFunction_TransientVar(TS ts,PetscReal t,Vec U,Vec Cdot,Ve
 {
   const PetscScalar *u,*cdot;
   PetscScalar       *f;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Cdot,&cdot);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(U,&u));
+  CHKERRQ(VecGetArrayRead(Cdot,&cdot));
+  CHKERRQ(VecGetArray(F,&f));
 
   f[0] = cdot[0] + PetscExpScalar(u[0]);
   f[1] = cdot[1] - PetscExpScalar(u[0]);
 
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Cdot,&cdot);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(U,&u));
+  CHKERRQ(VecRestoreArrayRead(Cdot,&cdot));
+  CHKERRQ(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TransientVar(TS ts,Vec U,Vec C,void *ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecCopy(U,C);CHKERRQ(ierr);
-  ierr = VecExp(C);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(U,C));
+  CHKERRQ(VecExp(C));
   PetscFunctionReturn(0);
 }
 
@@ -117,46 +112,46 @@ int main(int argc, char *argv[])
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"TS conservation example","");CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-var","Variable formulation",NULL,VarModes,(PetscEnum)var,(PetscEnum*)&var,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsEnum("-var","Variable formulation",NULL,VarModes,(PetscEnum)var,(PetscEnum*)&var,NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSBDF);CHKERRQ(ierr);
-  ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,2,&U);CHKERRQ(ierr);
-  ierr = VecSetValue(U,0,2.,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecSetValue(U,1,1.,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
+  CHKERRQ(TSSetType(ts,TSBDF));
+  CHKERRQ(TSGetDM(ts,&dm));
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,2,&U));
+  CHKERRQ(VecSetValue(U,0,2.,INSERT_VALUES));
+  CHKERRQ(VecSetValue(U,1,1.,INSERT_VALUES));
   switch (var) {
   case VAR_CONSERVATIVE:
-    ierr = DMTSSetIFunction(dm,IFunction_Conservative,NULL);CHKERRQ(ierr);
+    CHKERRQ(DMTSSetIFunction(dm,IFunction_Conservative,NULL));
     break;
   case VAR_NONCONSERVATIVE:
-    ierr = VecLog(U);CHKERRQ(ierr);
-    ierr = DMTSSetIFunction(dm,IFunction_Nonconservative,NULL);CHKERRQ(ierr);
+    CHKERRQ(VecLog(U));
+    CHKERRQ(DMTSSetIFunction(dm,IFunction_Nonconservative,NULL));
     break;
   case VAR_TRANSIENTVAR:
-    ierr = VecLog(U);CHKERRQ(ierr);
-    ierr = DMTSSetIFunction(dm,IFunction_TransientVar,NULL);CHKERRQ(ierr);
-    ierr = DMTSSetTransientVariable(dm,TransientVar,NULL);CHKERRQ(ierr);
+    CHKERRQ(VecLog(U));
+    CHKERRQ(DMTSSetIFunction(dm,IFunction_TransientVar,NULL));
+    CHKERRQ(DMTSSetTransientVariable(dm,TransientVar,NULL));
   }
-  ierr = TSSetMaxTime(ts,1.);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  CHKERRQ(TSSetMaxTime(ts,1.));
+  CHKERRQ(TSSetFromOptions(ts));
 
-  ierr = TSSolve(ts,U);CHKERRQ(ierr);
+  CHKERRQ(TSSolve(ts,U));
   switch (var) {
   case VAR_CONSERVATIVE:
     break;
   case VAR_NONCONSERVATIVE:
   case VAR_TRANSIENTVAR:
-    ierr = VecExp(U);CHKERRQ(ierr);
+    CHKERRQ(VecExp(U));
     break;
   }
-  ierr = VecView(U,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecSum(U,&sum);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Conservation error %g\n", PetscRealPart(sum - 3.));CHKERRQ(ierr);
+  CHKERRQ(VecView(U,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(VecSum(U,&sum));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Conservation error %g\n", PetscRealPart(sum - 3.)));
 
-  ierr = VecDestroy(&U);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&U));
+  CHKERRQ(TSDestroy(&ts));
   ierr = PetscFinalize();
   return ierr;
 }

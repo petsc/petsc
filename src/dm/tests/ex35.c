@@ -17,32 +17,32 @@ int main(int argc,char **argv)
   Mat            A;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp.dat",FILE_MODE_WRITE,&viewer));
 
   /* Read options */
-  ierr = PetscOptionsGetInt(NULL,NULL,"-X",&X,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-Y",&Y,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-Z",&Z,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-X",&X,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-Y",&Y,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-Z",&Z,NULL));
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,X,Y,Z,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMSetMatType(da,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
-  ierr = MatShift(A,X);CHKERRQ(ierr);
-  ierr = MatView(A,viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,X,Y,Z,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&da));
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
+  CHKERRQ(DMSetMatType(da,MATMPIAIJ));
+  CHKERRQ(DMCreateMatrix(da,&A));
+  CHKERRQ(MatShift(A,X));
+  CHKERRQ(MatView(A,viewer));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(PetscViewerDestroy(&viewer));
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
-  ierr = MatLoad(A,viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp.dat",FILE_MODE_READ,&viewer));
+  CHKERRQ(DMCreateMatrix(da,&A));
+  CHKERRQ(MatLoad(A,viewer));
 
   /* Free memory */
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(PetscViewerDestroy(&viewer));
+  CHKERRQ(DMDestroy(&da));
   ierr = PetscFinalize();
   return ierr;
 }

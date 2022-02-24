@@ -16,52 +16,52 @@ int main(int argc,char **args)
   PetscMPIInt    rank;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
   PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatLoad(A,fd));
+  CHKERRQ(PetscViewerDestroy(&fd));
 
-  ierr = MatGetSize(A,NULL,&n);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&reductions_real);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&reductions_scalar);CHKERRQ(ierr);
+  CHKERRQ(MatGetSize(A,NULL,&n));
+  CHKERRQ(PetscMalloc1(n,&reductions_real));
+  CHKERRQ(PetscMalloc1(n,&reductions_scalar));
 
-  ierr = MatGetColumnNorms(A,NORM_2,reductions_real);CHKERRQ(ierr);
+  CHKERRQ(MatGetColumnNorms(A,NORM_2,reductions_real));
   if (rank == 0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"NORM_2:\n");CHKERRQ(ierr);
-    ierr = PetscRealView(n,reductions_real,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"NORM_2:\n"));
+    CHKERRQ(PetscRealView(n,reductions_real,PETSC_VIEWER_STDOUT_SELF));
   }
 
-  ierr = MatGetColumnNorms(A,NORM_1,reductions_real);CHKERRQ(ierr);
+  CHKERRQ(MatGetColumnNorms(A,NORM_1,reductions_real));
   if (rank == 0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"NORM_1:\n");CHKERRQ(ierr);
-    ierr = PetscRealView(n,reductions_real,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"NORM_1:\n"));
+    CHKERRQ(PetscRealView(n,reductions_real,PETSC_VIEWER_STDOUT_SELF));
   }
 
-  ierr = MatGetColumnNorms(A,NORM_INFINITY,reductions_real);CHKERRQ(ierr);
+  CHKERRQ(MatGetColumnNorms(A,NORM_INFINITY,reductions_real));
   if (rank == 0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"NORM_INFINITY:\n");CHKERRQ(ierr);
-    ierr = PetscRealView(n,reductions_real,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"NORM_INFINITY:\n"));
+    CHKERRQ(PetscRealView(n,reductions_real,PETSC_VIEWER_STDOUT_SELF));
   }
 
-  ierr = MatGetColumnSums(A,reductions_scalar);CHKERRQ(ierr);
+  CHKERRQ(MatGetColumnSums(A,reductions_scalar));
   if (!rank) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"REDUCTION_SUM:\n");CHKERRQ(ierr);
-    ierr = PetscScalarView(n,reductions_scalar,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"REDUCTION_SUM:\n"));
+    CHKERRQ(PetscScalarView(n,reductions_scalar,PETSC_VIEWER_STDOUT_SELF));
   }
 
-  ierr = MatGetColumnMeans(A,reductions_scalar);CHKERRQ(ierr);
+  CHKERRQ(MatGetColumnMeans(A,reductions_scalar));
   if (!rank) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"REDUCTION_MEAN:\n");CHKERRQ(ierr);
-    ierr = PetscScalarView(n,reductions_scalar,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"REDUCTION_MEAN:\n"));
+    CHKERRQ(PetscScalarView(n,reductions_scalar,PETSC_VIEWER_STDOUT_SELF));
   }
 
-  ierr = PetscFree(reductions_real);CHKERRQ(ierr);
-  ierr = PetscFree(reductions_scalar);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(reductions_real));
+  CHKERRQ(PetscFree(reductions_scalar));
+  CHKERRQ(MatDestroy(&A));
   ierr = PetscFinalize();
   return ierr;
 }

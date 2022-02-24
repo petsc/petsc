@@ -12,10 +12,8 @@ static char help[] = "Solves DAE with integrator only on non-algebraic terms \n"
 */
 PetscErrorCode f(PetscReal t,Vec U,Vec V,Vec F)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = VecWAXPY(F,1.0,U,V);CHKERRQ(ierr);
+  CHKERRQ(VecWAXPY(F,1.0,U,V));
   PetscFunctionReturn(0);
 }
 
@@ -24,10 +22,8 @@ PetscErrorCode f(PetscReal t,Vec U,Vec V,Vec F)
 */
 PetscErrorCode F(PetscReal t,Vec U,Vec V,Vec F)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = VecWAXPY(F,-1.0,V,U);CHKERRQ(ierr);
+  CHKERRQ(VecWAXPY(F,-1.0,V,U));
   PetscFunctionReturn(0);
 }
 
@@ -50,31 +46,31 @@ int main(int argc,char **argv)
   Vec            tsrhs,U;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSEULER);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,1,&tsrhs);CHKERRQ(ierr);
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,1,&U);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,tsrhs,TSFunction,&ctx);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts,1.0);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
+  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
+  CHKERRQ(TSSetType(ts,TSEULER));
+  CHKERRQ(TSSetFromOptions(ts));
+  CHKERRQ(VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,1,&tsrhs));
+  CHKERRQ(VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,1,&U));
+  CHKERRQ(TSSetRHSFunction(ts,tsrhs,TSFunction,&ctx));
+  CHKERRQ(TSSetMaxTime(ts,1.0));
   ctx.f = f;
 
-  ierr = SNESCreate(PETSC_COMM_WORLD,&ctx.snes);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(ctx.snes);CHKERRQ(ierr);
-  ierr = SNESSetFunction(ctx.snes,NULL,SNESFunction,&ctx);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(ctx.snes,NULL,NULL,SNESComputeJacobianDefault,&ctx);CHKERRQ(ierr);
+  CHKERRQ(SNESCreate(PETSC_COMM_WORLD,&ctx.snes));
+  CHKERRQ(SNESSetFromOptions(ctx.snes));
+  CHKERRQ(SNESSetFunction(ctx.snes,NULL,SNESFunction,&ctx));
+  CHKERRQ(SNESSetJacobian(ctx.snes,NULL,NULL,SNESComputeJacobianDefault,&ctx));
   ctx.F = F;
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,1,&ctx.V);CHKERRQ(ierr);
+  CHKERRQ(VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,1,&ctx.V));
 
-  ierr = VecSet(U,1.0);CHKERRQ(ierr);
-  ierr = TSSolve(ts,U);CHKERRQ(ierr);
+  CHKERRQ(VecSet(U,1.0));
+  CHKERRQ(TSSolve(ts,U));
 
-  ierr = VecDestroy(&ctx.V);CHKERRQ(ierr);
-  ierr = VecDestroy(&tsrhs);CHKERRQ(ierr);
-  ierr = VecDestroy(&U);CHKERRQ(ierr);
-  ierr = SNESDestroy(&ctx.snes);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&ctx.V));
+  CHKERRQ(VecDestroy(&tsrhs));
+  CHKERRQ(VecDestroy(&U));
+  CHKERRQ(SNESDestroy(&ctx.snes));
+  CHKERRQ(TSDestroy(&ts));
   ierr = PetscFinalize();
   return ierr;
 }
@@ -87,13 +83,12 @@ int main(int argc,char **argv)
 PetscErrorCode TSFunction(TS ts,PetscReal t,Vec U,Vec F,void *actx)
 {
   AppCtx         *ctx = (AppCtx*)actx;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   ctx->t = t;
   ctx->U = U;
-  ierr   = SNESSolve(ctx->snes,NULL,ctx->V);CHKERRQ(ierr);
-  ierr   = (*ctx->f)(t,U,ctx->V,F);CHKERRQ(ierr);
+  CHKERRQ(SNESSolve(ctx->snes,NULL,ctx->V));
+  CHKERRQ((*ctx->f)(t,U,ctx->V,F));
   PetscFunctionReturn(0);
 }
 
@@ -103,10 +98,9 @@ PetscErrorCode TSFunction(TS ts,PetscReal t,Vec U,Vec F,void *actx)
 PetscErrorCode SNESFunction(SNES snes,Vec V,Vec F,void *actx)
 {
   AppCtx         *ctx = (AppCtx*)actx;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = (*ctx->F)(ctx->t,ctx->U,V,F);CHKERRQ(ierr);
+  CHKERRQ((*ctx->F)(ctx->t,ctx->U,V,F));
   PetscFunctionReturn(0);
 }
 

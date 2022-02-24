@@ -29,11 +29,9 @@
 @*/
 PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscTryMethod(ksp,"KSPCGSetType_C",(KSP,KSPCGType),(ksp,type));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ksp,"KSPCGSetType_C",(KSP,KSPCGType),(ksp,type)));
   PetscFunctionReturn(0);
 }
 
@@ -63,12 +61,10 @@ PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
 @*/
 PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool flg)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveBool(ksp,flg,2);
-  ierr = PetscTryMethod(ksp,"KSPCGUseSingleReduction_C",(KSP,PetscBool),(ksp,flg));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ksp,"KSPCGUseSingleReduction_C",(KSP,PetscBool),(ksp,flg)));
   PetscFunctionReturn(0);
 }
 
@@ -87,12 +83,10 @@ PetscErrorCode  KSPCGUseSingleReduction(KSP ksp,PetscBool flg)
 @*/
 PetscErrorCode  KSPCGSetRadius(KSP ksp, PetscReal radius)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveReal(ksp,radius,2);
-  ierr = PetscTryMethod(ksp,"KSPCGSetRadius_C",(KSP,PetscReal),(ksp,radius));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ksp,"KSPCGSetRadius_C",(KSP,PetscReal),(ksp,radius)));
   PetscFunctionReturn(0);
 }
 
@@ -111,11 +105,9 @@ PetscErrorCode  KSPCGSetRadius(KSP ksp, PetscReal radius)
 @*/
 PetscErrorCode  KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscUseMethod(ksp,"KSPCGGetNormD_C",(KSP,PetscReal*),(ksp,norm_d));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(ksp,"KSPCGGetNormD_C",(KSP,PetscReal*),(ksp,norm_d)));
   PetscFunctionReturn(0);
 }
 
@@ -134,11 +126,8 @@ PetscErrorCode  KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
 @*/
 PetscErrorCode  KSPCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ierr = PetscUseMethod(ksp,"KSPCGGetObjFcn_C",(KSP,PetscReal*),(ksp,o_fcn));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(ksp,"KSPCGGetObjFcn_C",(KSP,PetscReal*),(ksp,o_fcn)));
   PetscFunctionReturn(0);
 }
-

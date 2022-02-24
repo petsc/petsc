@@ -21,69 +21,69 @@ int main(int argc,char **args)
   PetscRandom       r;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),NULL));
 
   /* Load the matrix as AIJ format */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&va);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatLoad(A,va);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&va);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&va));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetType(A,MATSEQAIJ));
+  CHKERRQ(MatLoad(A,va));
+  CHKERRQ(PetscViewerDestroy(&va));
 
   /* Load the matrix as BAIJ format */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&vb);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATSEQBAIJ);CHKERRQ(ierr);
-  ierr = MatLoad(B,vb);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&vb);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&vb));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&B));
+  CHKERRQ(MatSetType(B,MATSEQBAIJ));
+  CHKERRQ(MatLoad(B,vb));
+  CHKERRQ(PetscViewerDestroy(&vb));
 
   /* Load the matrix as BAIJ format */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&vc);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
-  ierr = MatSetType(C,MATSEQBAIJ);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-  ierr = MatLoad(C,vc);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&vc);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&vc));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
+  CHKERRQ(MatSetType(C,MATSEQBAIJ));
+  CHKERRQ(MatSetFromOptions(C));
+  CHKERRQ(MatLoad(C,vc));
+  CHKERRQ(PetscViewerDestroy(&vc));
 
-  ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = MatGetSize(B,&m2,&n2);CHKERRQ(ierr);
+  CHKERRQ(MatGetSize(A,&m,&n));
+  CHKERRQ(MatGetSize(B,&m2,&n2));
   PetscCheckFalse(m!=m2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Matrices are of different size. Cannot run this example");
 
   /* Test MatEqual() */
-  ierr = MatEqual(B,C,&tflg);CHKERRQ(ierr);
+  CHKERRQ(MatEqual(B,C,&tflg));
   PetscCheckFalse(!tflg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatEqual() failed");
 
   /* Test MatGetDiagonal() */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,m,&x);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,m,&y);CHKERRQ(ierr);
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,m,&x));
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,m,&y));
 
-  ierr = MatGetDiagonal(A,x);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(B,y);CHKERRQ(ierr);
+  CHKERRQ(MatGetDiagonal(A,x));
+  CHKERRQ(MatGetDiagonal(B,y));
 
-  ierr = VecEqual(x,y,&tflg);CHKERRQ(ierr);
+  CHKERRQ(VecEqual(x,y,&tflg));
   PetscCheckFalse(!tflg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetDiagonal() failed");
 
   /* Test MatDiagonalScale() */
-  ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
-  ierr = VecSetRandom(x,r);CHKERRQ(ierr);
-  ierr = VecSetRandom(y,r);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF,&r));
+  CHKERRQ(PetscRandomSetFromOptions(r));
+  CHKERRQ(VecSetRandom(x,r));
+  CHKERRQ(VecSetRandom(y,r));
 
-  ierr  = MatDiagonalScale(A,x,y);CHKERRQ(ierr);
-  ierr  = MatDiagonalScale(B,x,y);CHKERRQ(ierr);
-  ierr  = MatMult(A,x,y);CHKERRQ(ierr);
-  ierr  = VecNorm(y,NORM_2,&norm1);CHKERRQ(ierr);
-  ierr  = MatMult(B,x,y);CHKERRQ(ierr);
-  ierr  = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
+  CHKERRQ(MatDiagonalScale(A,x,y));
+  CHKERRQ(MatDiagonalScale(B,x,y));
+  CHKERRQ(MatMult(A,x,y));
+  CHKERRQ(VecNorm(y,NORM_2,&norm1));
+  CHKERRQ(MatMult(B,x,y));
+  CHKERRQ(VecNorm(y,NORM_2,&norm2));
   rnorm = ((norm1-norm2)*100)/norm1;
   PetscCheckFalse(rnorm<-0.1 || rnorm>0.01,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatDiagonalScale() failed Norm1 %g Norm2 %g",(double)norm1,(double)norm2);
 
   /* Test MatGetRow()/ MatRestoreRow() */
   for (ct=0; ct<100; ct++) {
-    ierr = PetscRandomGetValue(r,&rval);CHKERRQ(ierr);
+    CHKERRQ(PetscRandomGetValue(r,&rval));
     row  = (int)(rval*m);
-    ierr = MatGetRow(A,row,&ncols1,&cols1,&vals1);CHKERRQ(ierr);
-    ierr = MatGetRow(B,row,&ncols2,&cols2,&vals2);CHKERRQ(ierr);
+    CHKERRQ(MatGetRow(A,row,&ncols1,&cols1,&vals1));
+    CHKERRQ(MatGetRow(B,row,&ncols2,&cols2,&vals2));
 
     for (i=0,j=0; i<ncols1 && j<ncols2; i++) {
       while (cols2[j] != cols1[i]) j++;
@@ -91,16 +91,16 @@ int main(int argc,char **args)
     }
     PetscCheckFalse(i<ncols1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetRow() failed - cols incorrect");
 
-    ierr = MatRestoreRow(A,row,&ncols1,&cols1,&vals1);CHKERRQ(ierr);
-    ierr = MatRestoreRow(B,row,&ncols2,&cols2,&vals2);CHKERRQ(ierr);
+    CHKERRQ(MatRestoreRow(A,row,&ncols1,&cols1,&vals1));
+    CHKERRQ(MatRestoreRow(B,row,&ncols2,&cols2,&vals2));
   }
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&B));
+  CHKERRQ(MatDestroy(&C));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
+  CHKERRQ(PetscRandomDestroy(&r));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -59,17 +59,16 @@ struct _p_PetscDrawHG {
 PetscErrorCode  PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
 {
   PetscDrawHG    h;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID,1);
   PetscValidLogicalCollectiveInt(draw,bins,2);
   PetscValidPointer(hist,3);
 
-  ierr = PetscHeaderCreate(h,PETSC_DRAWHG_CLASSID,"DrawHG","Histogram","Draw",PetscObjectComm((PetscObject)draw),PetscDrawHGDestroy,NULL);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)draw,(PetscObject)h);CHKERRQ(ierr);
+  CHKERRQ(PetscHeaderCreate(h,PETSC_DRAWHG_CLASSID,"DrawHG","Histogram","Draw",PetscObjectComm((PetscObject)draw),PetscDrawHGDestroy,NULL));
+  CHKERRQ(PetscLogObjectParent((PetscObject)draw,(PetscObject)h));
 
-  ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectReference((PetscObject)draw));
   h->win = draw;
 
   h->view        = NULL;
@@ -82,18 +81,18 @@ PetscErrorCode  PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
   h->numBins     = bins;
   h->maxBins     = bins;
 
-  ierr = PetscMalloc1(h->maxBins,&h->bins);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(h->maxBins,&h->bins));
 
   h->numValues   = 0;
   h->maxValues   = CHUNKSIZE;
   h->calcStats   = PETSC_FALSE;
   h->integerBins = PETSC_FALSE;
 
-  ierr = PetscMalloc1(h->maxValues,&h->values);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)h,(h->maxBins + h->maxValues)*sizeof(PetscReal));CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(h->maxValues,&h->values));
+  CHKERRQ(PetscLogObjectMemory((PetscObject)h,(h->maxBins + h->maxValues)*sizeof(PetscReal)));
 
-  ierr = PetscDrawAxisCreate(draw,&h->axis);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)h,(PetscObject)h->axis);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawAxisCreate(draw,&h->axis));
+  CHKERRQ(PetscLogObjectParent((PetscObject)h,(PetscObject)h->axis));
 
   *hist = h;
   PetscFunctionReturn(0);
@@ -115,16 +114,14 @@ PetscErrorCode  PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
 @*/
 PetscErrorCode  PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist,PETSC_DRAWHG_CLASSID,1);
   PetscValidLogicalCollectiveInt(hist,bins,2);
 
   if (hist->maxBins < bins) {
-    ierr = PetscFree(hist->bins);CHKERRQ(ierr);
-    ierr = PetscMalloc1(bins, &hist->bins);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)hist, (bins - hist->maxBins) * sizeof(PetscReal));CHKERRQ(ierr);
+    CHKERRQ(PetscFree(hist->bins));
+    CHKERRQ(PetscMalloc1(bins, &hist->bins));
+    CHKERRQ(PetscLogObjectMemory((PetscObject)hist, (bins - hist->maxBins) * sizeof(PetscReal)));
     hist->maxBins = bins;
   }
   hist->numBins = bins;
@@ -171,18 +168,16 @@ PetscErrorCode  PetscDrawHGReset(PetscDrawHG hist)
 @*/
 PetscErrorCode  PetscDrawHGDestroy(PetscDrawHG *hist)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!*hist) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*hist,PETSC_DRAWHG_CLASSID,1);
   if (--((PetscObject)(*hist))->refct > 0) {*hist = NULL; PetscFunctionReturn(0);}
 
-  ierr = PetscFree((*hist)->bins);CHKERRQ(ierr);
-  ierr = PetscFree((*hist)->values);CHKERRQ(ierr);
-  ierr = PetscDrawAxisDestroy(&(*hist)->axis);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&(*hist)->win);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(hist);CHKERRQ(ierr);
+  CHKERRQ(PetscFree((*hist)->bins));
+  CHKERRQ(PetscFree((*hist)->values));
+  CHKERRQ(PetscDrawAxisDestroy(&(*hist)->axis));
+  CHKERRQ(PetscDrawDestroy(&(*hist)->win));
+  CHKERRQ(PetscHeaderDestroy(hist));
   PetscFunctionReturn(0);
 }
 
@@ -207,12 +202,11 @@ PetscErrorCode  PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
   /* Allocate more memory if necessary */
   if (hist->numValues >= hist->maxValues) {
     PetscReal      *tmp;
-    PetscErrorCode ierr;
 
-    ierr = PetscMalloc1(hist->maxValues+CHUNKSIZE, &tmp);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)hist, CHUNKSIZE * sizeof(PetscReal));CHKERRQ(ierr);
-    ierr = PetscArraycpy(tmp, hist->values, hist->maxValues);CHKERRQ(ierr);
-    ierr = PetscFree(hist->values);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(hist->maxValues+CHUNKSIZE, &tmp));
+    CHKERRQ(PetscLogObjectMemory((PetscObject)hist, CHUNKSIZE * sizeof(PetscReal)));
+    CHKERRQ(PetscArraycpy(tmp, hist->values, hist->maxValues));
+    CHKERRQ(PetscFree(hist->values));
 
     hist->values     = tmp;
     hist->maxValues += CHUNKSIZE;
@@ -272,9 +266,9 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist,PETSC_DRAWHG_CLASSID,1);
-  ierr = PetscDrawIsNull(hist->win,&isnull);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawIsNull(hist->win,&isnull));
   if (isnull) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)hist),&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)hist),&rank));
 
   if ((hist->xmin >= hist->xmax) || (hist->ymin >= hist->ymax)) PetscFunctionReturn(0);
   if (hist->numValues < 1) PetscFunctionReturn(0);
@@ -293,8 +287,8 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
   var       = 0.0;
 
   draw = hist->win;
-  ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawCheckResizedWindow(draw));
+  CHKERRQ(PetscDrawClear(draw));
 
   if (xmin == xmax) {
     /* Calculate number of points in each bin */
@@ -308,24 +302,24 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
     maxHeight = bins[0];
     if (maxHeight > ymax) ymax = hist->ymax = maxHeight;
     xmax = xmin + 1;
-    ierr = PetscDrawAxisSetLimits(hist->axis, xmin, xmax, ymin, ymax);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawAxisSetLimits(hist->axis, xmin, xmax, ymin, ymax));
     if (hist->calcStats) {
       mean /= numValues;
       if (numValues > 1) var = (var - numValues*mean*mean) / (numValues-1);
       else var = 0.0;
-      ierr = PetscSNPrintf(title, 256, "Mean: %g  Var: %g", (double)mean, (double)var);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(xlabel,256, "Total: %" PetscInt_FMT, numValues);CHKERRQ(ierr);
-      ierr = PetscDrawAxisSetLabels(hist->axis, title, xlabel, NULL);CHKERRQ(ierr);
+      CHKERRQ(PetscSNPrintf(title, 256, "Mean: %g  Var: %g", (double)mean, (double)var));
+      CHKERRQ(PetscSNPrintf(xlabel,256, "Total: %" PetscInt_FMT, numValues));
+      CHKERRQ(PetscDrawAxisSetLabels(hist->axis, title, xlabel, NULL));
     }
-    ierr = PetscDrawAxisDraw(hist->axis);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawAxisDraw(hist->axis));
     ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
     if (rank == 0) { /* Draw bins */
       binLeft  = xmin;
       binRight = xmax;
-      ierr = PetscDrawRectangle(draw,binLeft,ymin,binRight,bins[0],bcolor,bcolor,bcolor,bcolor);CHKERRQ(ierr);
-      ierr = PetscDrawLine(draw,binLeft,ymin,binLeft,bins[0],PETSC_DRAW_BLACK);CHKERRQ(ierr);
-      ierr = PetscDrawLine(draw,binRight,ymin,binRight,bins[0],PETSC_DRAW_BLACK);CHKERRQ(ierr);
-      ierr = PetscDrawLine(draw,binLeft,bins[0],binRight,bins[0],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      CHKERRQ(PetscDrawRectangle(draw,binLeft,ymin,binRight,bins[0],bcolor,bcolor,bcolor,bcolor));
+      CHKERRQ(PetscDrawLine(draw,binLeft,ymin,binLeft,bins[0],PETSC_DRAW_BLACK));
+      CHKERRQ(PetscDrawLine(draw,binRight,ymin,binRight,bins[0],PETSC_DRAW_BLACK));
+      CHKERRQ(PetscDrawLine(draw,binLeft,bins[0],binRight,bins[0],PETSC_DRAW_BLACK));
     }
     ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
   } else {
@@ -336,13 +330,13 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
       while (initSize*numBins != (int) xmax - xmin) {
         initSize = PetscMax(initSize - 1, 1);
         numBins  = (int) ((int) xmax - xmin)/initSize;
-        ierr     = PetscDrawHGSetNumberBins(hist, numBins);CHKERRQ(ierr);
+        CHKERRQ(PetscDrawHGSetNumberBins(hist, numBins));
       }
     }
     binSize = (xmax - xmin)/numBins;
     bins    = hist->bins;
 
-    ierr = PetscArrayzero(bins, numBins);CHKERRQ(ierr);
+    CHKERRQ(PetscArrayzero(bins, numBins));
 
     maxHeight = 0.0;
     for (i = 0; i < numBins; i++) {
@@ -361,35 +355,35 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
     }
     if (maxHeight > ymax) ymax = hist->ymax = maxHeight;
 
-    ierr = PetscDrawAxisSetLimits(hist->axis, xmin, xmax, ymin, ymax);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawAxisSetLimits(hist->axis, xmin, xmax, ymin, ymax));
     if (hist->calcStats) {
       mean /= numValues;
       if (numValues > 1) var = (var - numValues*mean*mean) / (numValues-1);
       else var = 0.0;
-      ierr = PetscSNPrintf(title, 256,"Mean: %g  Var: %g", (double)mean, (double)var);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(xlabel,256, "Total: %" PetscInt_FMT, numValues);CHKERRQ(ierr);
-      ierr = PetscDrawAxisSetLabels(hist->axis, title, xlabel, NULL);CHKERRQ(ierr);
+      CHKERRQ(PetscSNPrintf(title, 256,"Mean: %g  Var: %g", (double)mean, (double)var));
+      CHKERRQ(PetscSNPrintf(xlabel,256, "Total: %" PetscInt_FMT, numValues));
+      CHKERRQ(PetscDrawAxisSetLabels(hist->axis, title, xlabel, NULL));
     }
-    ierr = PetscDrawAxisDraw(hist->axis);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawAxisDraw(hist->axis));
     ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
     if (rank == 0) { /* Draw bins */
       for (i = 0; i < numBins; i++) {
         binLeft  = xmin + binSize*i;
         binRight = xmin + binSize*(i+1);
-        ierr = PetscDrawRectangle(draw,binLeft,ymin,binRight,bins[i],bcolor,bcolor,bcolor,bcolor);CHKERRQ(ierr);
-        ierr = PetscDrawLine(draw,binLeft,ymin,binLeft,bins[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
-        ierr = PetscDrawLine(draw,binRight,ymin,binRight,bins[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
-        ierr = PetscDrawLine(draw,binLeft,bins[i],binRight,bins[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+        CHKERRQ(PetscDrawRectangle(draw,binLeft,ymin,binRight,bins[i],bcolor,bcolor,bcolor,bcolor));
+        CHKERRQ(PetscDrawLine(draw,binLeft,ymin,binLeft,bins[i],PETSC_DRAW_BLACK));
+        CHKERRQ(PetscDrawLine(draw,binRight,ymin,binRight,bins[i],PETSC_DRAW_BLACK));
+        CHKERRQ(PetscDrawLine(draw,binLeft,bins[i],binRight,bins[i],PETSC_DRAW_BLACK));
         if (color == PETSC_DRAW_ROTATE && bins[i]) bcolor++;
         if (bcolor > PETSC_DRAW_BASIC_COLORS-1) bcolor = PETSC_DRAW_BLACK+1;
       }
     }
     ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
-    ierr = PetscDrawHGSetNumberBins(hist,numBinsOld);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawHGSetNumberBins(hist,numBinsOld));
   }
 
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
-  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawFlush(draw));
+  CHKERRQ(PetscDrawPause(draw));
   PetscFunctionReturn(0);
 }
 
@@ -407,11 +401,9 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
 @*/
 PetscErrorCode  PetscDrawHGSave(PetscDrawHG hg)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hg,PETSC_DRAWHG_CLASSID,1);
-  ierr = PetscDrawSave(hg->win);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawSave(hg->win));
   PetscFunctionReturn(0);
 }
 
@@ -431,7 +423,6 @@ PetscErrorCode  PetscDrawHGSave(PetscDrawHG hg)
 PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
 {
   PetscReal      xmax,xmin,*bins,*values,binSize,binLeft,binRight,mean,var;
-  PetscErrorCode ierr;
   PetscInt       numBins,numBinsOld,numValues,initSize,i,p;
 
   PetscFunctionBegin;
@@ -441,9 +432,9 @@ PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
   if (hist->numValues < 1) PetscFunctionReturn(0);
 
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)hist),&viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)hist),&viewer));
   }
-  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)hist,viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectPrintClassNamePrefixType((PetscObject)hist,viewer));
   xmax      = hist->xmax;
   xmin      = hist->xmin;
   numValues = hist->numValues;
@@ -460,7 +451,7 @@ PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
       var  += values[p]*values[p];
     }
     /* Draw bins */
-    ierr = PetscViewerASCIIPrintf(viewer, "Bin %2d (%6.2g - %6.2g): %.0g\n", 0, (double)xmin, (double)xmax, (double)bins[0]);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer, "Bin %2d (%6.2g - %6.2g): %.0g\n", 0, (double)xmin, (double)xmax, (double)bins[0]));
   } else {
     numBins    = hist->numBins;
     numBinsOld = hist->numBins;
@@ -469,14 +460,14 @@ PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
       while (initSize*numBins != (int) xmax - xmin) {
         initSize = PetscMax(initSize - 1, 1);
         numBins  = (int) ((int) xmax - xmin)/initSize;
-        ierr     = PetscDrawHGSetNumberBins(hist, numBins);CHKERRQ(ierr);
+        CHKERRQ(PetscDrawHGSetNumberBins(hist, numBins));
       }
     }
     binSize = (xmax - xmin)/numBins;
     bins    = hist->bins;
 
     /* Calculate number of points in each bin */
-    ierr = PetscArrayzero(bins, numBins);CHKERRQ(ierr);
+    CHKERRQ(PetscArrayzero(bins, numBins));
     for (i = 0; i < numBins; i++) {
       binLeft  = xmin + binSize*i;
       binRight = xmin + binSize*(i+1);
@@ -494,17 +485,17 @@ PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
     for (i = 0; i < numBins; i++) {
       binLeft  = xmin + binSize*i;
       binRight = xmin + binSize*(i+1);
-      ierr = PetscViewerASCIIPrintf(viewer, "Bin %2d (%6.2g - %6.2g): %.0g\n", (int)i, (double)binLeft, (double)binRight, (double)bins[i]);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer, "Bin %2d (%6.2g - %6.2g): %.0g\n", (int)i, (double)binLeft, (double)binRight, (double)bins[i]));
     }
-    ierr = PetscDrawHGSetNumberBins(hist, numBinsOld);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawHGSetNumberBins(hist, numBinsOld));
   }
 
   if (hist->calcStats) {
     mean /= numValues;
     if (numValues > 1) var = (var - numValues*mean*mean) / (numValues-1);
     else var = 0.0;
-    ierr = PetscViewerASCIIPrintf(viewer, "Mean: %g  Var: %g\n", (double)mean, (double)var);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Total: %" PetscInt_FMT "\n", numValues);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer, "Mean: %g  Var: %g\n", (double)mean, (double)var));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer, "Total: %" PetscInt_FMT "\n", numValues));
   }
   PetscFunctionReturn(0);
 }

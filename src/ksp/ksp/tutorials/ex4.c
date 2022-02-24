@@ -24,24 +24,24 @@ int main(int argc,char **args)
   PC             pc;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-test_hmg_interface",&test,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-test_reuse_interpolation",&reuse,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-view_explicit_mat",&viewexpl,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test_hmg_interface",&test,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test_reuse_interpolation",&reuse,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-view_explicit_mat",&viewexpl,NULL));
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n*bs,m*n*bs);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(A,bs);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,5,NULL,5,NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A,5,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n*bs,m*n*bs));
+  CHKERRQ(MatSetBlockSize(A,bs));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatMPIAIJSetPreallocation(A,5,NULL,5,NULL));
+  CHKERRQ(MatSeqAIJSetPreallocation(A,5,NULL));
 #if defined(PETSC_HAVE_HYPRE)
-  ierr = MatHYPRESetPreallocation(A,5,NULL,5,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatHYPRESetPreallocation(A,5,NULL,5,NULL));
 #endif
 
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(A,&Istart,&Iend));
 
   for (Ii=Istart/bs; Ii<Iend/bs; Ii++) {
     v = -1.0; i = Ii/n; j = Ii - i*n;
@@ -50,7 +50,7 @@ int main(int argc,char **args)
       for (jj=0; jj<bs; jj++) {
         II = Ii*bs + jj;
         JJ = J*bs + jj;
-        ierr = MatSetValues(A,1,&II,1,&JJ,&v,ADD_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValues(A,1,&II,1,&JJ,&v,ADD_VALUES));
       }
     }
     if (i<m-1) {
@@ -58,7 +58,7 @@ int main(int argc,char **args)
       for (jj=0; jj<bs; jj++) {
         II = Ii*bs + jj;
         JJ = J*bs + jj;
-        ierr = MatSetValues(A,1,&II,1,&JJ,&v,ADD_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValues(A,1,&II,1,&JJ,&v,ADD_VALUES));
       }
     }
     if (j>0) {
@@ -66,7 +66,7 @@ int main(int argc,char **args)
       for (jj=0; jj<bs; jj++) {
         II = Ii*bs + jj;
         JJ = J*bs + jj;
-        ierr = MatSetValues(A,1,&II,1,&JJ,&v,ADD_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValues(A,1,&II,1,&JJ,&v,ADD_VALUES));
       }
     }
     if (j<n-1) {
@@ -74,86 +74,86 @@ int main(int argc,char **args)
       for (jj=0; jj<bs; jj++) {
         II = Ii*bs + jj;
         JJ = J*bs + jj;
-        ierr = MatSetValues(A,1,&II,1,&JJ,&v,ADD_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValues(A,1,&II,1,&JJ,&v,ADD_VALUES));
       }
     }
     v = 4.0;
     for (jj=0; jj<bs; jj++) {
       II = Ii*bs + jj;
-      ierr = MatSetValues(A,1,&II,1,&II,&v,ADD_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&II,1,&II,&v,ADD_VALUES));
     }
   }
 
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   if (viewexpl) {
     Mat E;
-    ierr = MatComputeOperator(A,MATAIJ,&E);CHKERRQ(ierr);
-    ierr = MatView(E,NULL);CHKERRQ(ierr);
-    ierr = MatDestroy(&E);CHKERRQ(ierr);
+    CHKERRQ(MatComputeOperator(A,MATAIJ,&E));
+    CHKERRQ(MatView(E,NULL));
+    CHKERRQ(MatDestroy(&E));
   }
 
-  ierr = MatCreateVecs(A,&u,NULL);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  CHKERRQ(MatCreateVecs(A,&u,NULL));
+  CHKERRQ(VecSetFromOptions(u));
+  CHKERRQ(VecDuplicate(u,&b));
+  CHKERRQ(VecDuplicate(b,&x));
 
-  ierr = VecSet(u,1.0);CHKERRQ(ierr);
-  ierr = MatMult(A,u,b);CHKERRQ(ierr);
+  CHKERRQ(VecSet(u,1.0));
+  CHKERRQ(MatMult(A,u,b));
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-view_exact_sol",&flg,NULL);CHKERRQ(ierr);
-  if (flg) {ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-view_exact_sol",&flg,NULL));
+  if (flg) CHKERRQ(VecView(u,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),1.e-50,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPSetOperators(ksp,A,A));
+  CHKERRQ(KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),1.e-50,PETSC_DEFAULT,PETSC_DEFAULT));
 
   if (test) {
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    ierr = PCSetType(pc,PCHMG);CHKERRQ(ierr);
-    ierr = PCHMGSetInnerPCType(pc,PCGAMG);CHKERRQ(ierr);
-    ierr = PCHMGSetReuseInterpolation(pc,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PCHMGSetUseSubspaceCoarsening(pc,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PCHMGUseMatMAIJ(pc,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PCHMGSetCoarseningComponent(pc,0);CHKERRQ(ierr);
+    CHKERRQ(KSPGetPC(ksp,&pc));
+    CHKERRQ(PCSetType(pc,PCHMG));
+    CHKERRQ(PCHMGSetInnerPCType(pc,PCGAMG));
+    CHKERRQ(PCHMGSetReuseInterpolation(pc,PETSC_TRUE));
+    CHKERRQ(PCHMGSetUseSubspaceCoarsening(pc,PETSC_TRUE));
+    CHKERRQ(PCHMGUseMatMAIJ(pc,PETSC_FALSE));
+    CHKERRQ(PCHMGSetCoarseningComponent(pc,0));
   }
 
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  CHKERRQ(KSPSetFromOptions(ksp));
+  CHKERRQ(KSPSolve(ksp,b,x));
 
   if (reuse) {
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(KSPSolve(ksp,b,x));
+    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(KSPSolve(ksp,b,x));
     /* Make sparsity pattern different and reuse interpolation */
-    ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = MatSetOption(A,MAT_IGNORE_ZERO_ENTRIES,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = MatGetSize(A,&m,NULL);CHKERRQ(ierr);
+    CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
+    CHKERRQ(MatSetOption(A,MAT_IGNORE_ZERO_ENTRIES,PETSC_FALSE));
+    CHKERRQ(MatGetSize(A,&m,NULL));
     n = 0;
     v = 0;
     m--;
     /* Connect the last element to the first element */
-    ierr = MatSetValue(A,m,n,v,ADD_VALUES);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+    CHKERRQ(MatSetValue(A,m,n,v,ADD_VALUES));
+    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(KSPSolve(ksp,b,x));
   }
 
-  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(x,-1.0,u));
+  CHKERRQ(VecNorm(x,NORM_2,&norm));
+  CHKERRQ(KSPGetIterationNumber(ksp,&its));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its));
 
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(VecDestroy(&u));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(MatDestroy(&A));
 
   ierr = PetscFinalize();
   return ierr;

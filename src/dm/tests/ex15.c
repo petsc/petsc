@@ -16,12 +16,12 @@ int main(int argc,char **argv)
   DMBoundaryType   bx = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE,bz = DM_BOUNDARY_NONE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-stencil_width",&s,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-ratio",&ratio,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-periodic",(PetscBool*)&pt,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M1,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-stencil_width",&s,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-ratio",&ratio,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-periodic",(PetscBool*)&pt,NULL));
 
   if (pt) {
     if (dim > 0) bx = DM_BOUNDARY_PERIODIC;
@@ -36,36 +36,35 @@ int main(int argc,char **argv)
 
   /* Set up the array */
   if (dim == 1) {
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M1,dof,s,NULL,&da_c);CHKERRQ(ierr);
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M2,dof,s,NULL,&da_f);CHKERRQ(ierr);
+    CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,bx,M1,dof,s,NULL,&da_c));
+    CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,bx,M2,dof,s,NULL,&da_f));
   } else if (dim == 2) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,DMDA_STENCIL_BOX,M1,M1,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da_c);CHKERRQ(ierr);
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,DMDA_STENCIL_BOX,M2,M2,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da_f);CHKERRQ(ierr);
+    CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,bx,by,DMDA_STENCIL_BOX,M1,M1,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da_c));
+    CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,bx,by,DMDA_STENCIL_BOX,M2,M2,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,&da_f));
   } else if (dim == 3) {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,DMDA_STENCIL_BOX,M1,M1,M1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,NULL,&da_c);CHKERRQ(ierr);
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,DMDA_STENCIL_BOX,M2,M2,M2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,NULL,&da_f);CHKERRQ(ierr);
+    CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,DMDA_STENCIL_BOX,M1,M1,M1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,NULL,&da_c));
+    CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,DMDA_STENCIL_BOX,M2,M2,M2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,s,NULL,NULL,NULL,&da_f));
   } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"dim must be 1,2, or 3");
-  ierr = DMSetFromOptions(da_c);CHKERRQ(ierr);
-  ierr = DMSetUp(da_c);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da_f);CHKERRQ(ierr);
-  ierr = DMSetUp(da_f);CHKERRQ(ierr);
+  CHKERRQ(DMSetFromOptions(da_c));
+  CHKERRQ(DMSetUp(da_c));
+  CHKERRQ(DMSetFromOptions(da_f));
+  CHKERRQ(DMSetUp(da_f));
 
-  ierr = DMCreateGlobalVector(da_c,&v_c);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(da_f,&v_f);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(da_c,&v_c));
+  CHKERRQ(DMCreateGlobalVector(da_f,&v_f));
 
-  ierr = VecSet(v_c,one);CHKERRQ(ierr);
-  ierr = DMCreateInterpolation(da_c,da_f,&Interp,NULL);CHKERRQ(ierr);
-  ierr = MatMult(Interp,v_c,v_f);CHKERRQ(ierr);
-  ierr = VecView(v_f,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatMultTranspose(Interp,v_f,v_c);CHKERRQ(ierr);
-  ierr = VecView(v_c,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecSet(v_c,one));
+  CHKERRQ(DMCreateInterpolation(da_c,da_f,&Interp,NULL));
+  CHKERRQ(MatMult(Interp,v_c,v_f));
+  CHKERRQ(VecView(v_f,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(MatMultTranspose(Interp,v_f,v_c));
+  CHKERRQ(VecView(v_c,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = MatDestroy(&Interp);CHKERRQ(ierr);
-  ierr = VecDestroy(&v_c);CHKERRQ(ierr);
-  ierr = DMDestroy(&da_c);CHKERRQ(ierr);
-  ierr = VecDestroy(&v_f);CHKERRQ(ierr);
-  ierr = DMDestroy(&da_f);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&Interp));
+  CHKERRQ(VecDestroy(&v_c));
+  CHKERRQ(DMDestroy(&da_c));
+  CHKERRQ(VecDestroy(&v_f));
+  CHKERRQ(DMDestroy(&da_f));
   ierr = PetscFinalize();
   return ierr;
 }
-

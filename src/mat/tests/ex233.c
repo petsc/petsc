@@ -16,30 +16,30 @@ int main(int argc,char **argv)
   PetscBool      rect = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCheckFalse(size < 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is an example with more then one processors");
   if (rank) {
     PetscInt i;
     for (i = 0; i < 3; i++) ia[i] = 0;
     for (i = 0; i < 5; i++) ia2[i] = 0;
   }
-  ierr = PetscOptionsGetBool(NULL,NULL,"-rect",&rect,NULL);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&ssbaij);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(ssbaij,2);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-rect",&rect,NULL));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&ssbaij));
+  CHKERRQ(MatSetBlockSize(ssbaij,2));
   if (rect) {
-    ierr = MatSetType(ssbaij,MATMPIBAIJ);CHKERRQ(ierr);
-    ierr = MatSetSizes(ssbaij,4,6,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    CHKERRQ(MatSetType(ssbaij,MATMPIBAIJ));
+    CHKERRQ(MatSetSizes(ssbaij,4,6,PETSC_DECIDE,PETSC_DECIDE));
   } else {
-    ierr = MatSetType(ssbaij,MATMPISBAIJ);CHKERRQ(ierr);
-    ierr = MatSetSizes(ssbaij,4,4,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    CHKERRQ(MatSetType(ssbaij,MATMPISBAIJ));
+    CHKERRQ(MatSetSizes(ssbaij,4,4,PETSC_DECIDE,PETSC_DECIDE));
   }
-  ierr = MatSetFromOptions(ssbaij);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocationCSR(ssbaij,ia2,ja2,c2);CHKERRQ(ierr);
-  ierr = MatMPIBAIJSetPreallocationCSR(ssbaij,2,ia,ja,c);CHKERRQ(ierr);
-  ierr = MatMPISBAIJSetPreallocationCSR(ssbaij,2,ia,ja,c);CHKERRQ(ierr);
-  ierr = MatViewFromOptions(ssbaij,NULL,"-view");CHKERRQ(ierr);
-  ierr = MatDestroy(&ssbaij);CHKERRQ(ierr);
+  CHKERRQ(MatSetFromOptions(ssbaij));
+  CHKERRQ(MatMPIAIJSetPreallocationCSR(ssbaij,ia2,ja2,c2));
+  CHKERRQ(MatMPIBAIJSetPreallocationCSR(ssbaij,2,ia,ja,c));
+  CHKERRQ(MatMPISBAIJSetPreallocationCSR(ssbaij,2,ia,ja,c));
+  CHKERRQ(MatViewFromOptions(ssbaij,NULL,"-view"));
+  CHKERRQ(MatDestroy(&ssbaij));
   ierr = PetscFinalize();
   return ierr;
 }

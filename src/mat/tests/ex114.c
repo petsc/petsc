@@ -17,23 +17,23 @@ int main(int argc,char **args)
   PetscReal      enorm;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-testcase",&testcase,NULL);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-testcase",&testcase,NULL));
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
   if (testcase == 1) { /* proc[0] holds entire A and other processes have no entry */
     if (rank == 0) {
-      ierr = MatSetSizes(A,M,N,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+      CHKERRQ(MatSetSizes(A,M,N,PETSC_DECIDE,PETSC_DECIDE));
     } else {
-      ierr = MatSetSizes(A,0,0,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+      CHKERRQ(MatSetSizes(A,0,0,PETSC_DECIDE,PETSC_DECIDE));
     }
     testcase = 0;
   } else {
-    ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+    CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N));
   }
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatSetUp(A));
 
   if (rank == 0) { /* proc[0] sets matrix A */
     for (j=0; j<N; j++) indices[j] = j;
@@ -43,120 +43,120 @@ int main(int argc,char **args)
     case 2:
       row = 0;
       values[0]  = -2.0; values[1] = -2.0; values[2] = -2.0; values[3] = -4.0; values[4] = 1.0; values[5] = 1.0;
-      ierr = MatSetValues(A,1,&row,N,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&row,N,indices,values,INSERT_VALUES));
       row = 2;
       indices[0] = 0;    indices[1] = 3;    indices[2] = 5;
       values[0]  = -2.0; values[1]  = -2.0; values[2]  = -2.0;
-      ierr = MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES));
       row = 3;
       indices[0] = 0;    indices[1] = 1;    indices[2] = 4;
       values[0]  = -2.0; values[1]  = -2.0; values[2]  = -2.0;
-      ierr = MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES));
       row = 4;
       indices[0] = 0;    indices[1] = 1;    indices[2] = 2;
       values[0]  = -2.0; values[1]  = -2.0; values[2]  = -2.0;
-      ierr = MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES));
       break;
     case 3:
       row = 0;
       values[0]  = -2.0; values[1] = -2.0; values[2] = -2.0;
-      ierr = MatSetValues(A,1,&row,3,indices+1,values,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&row,3,indices+1,values,INSERT_VALUES));
       row = 1;
       values[0]  = -2.0; values[1] = -2.0; values[2] = -2.0;
-      ierr = MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES));
       row = 2;
       values[0]  = -2.0; values[1] = -2.0; values[2]  = -2.0;
-      ierr = MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES));
       row = 3;
       values[0]  = -2.0; values[1] = -2.0; values[2]  = -2.0; values[3] = -1.0;
-      ierr = MatSetValues(A,1,&row,4,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&row,4,indices,values,INSERT_VALUES));
       row = 4;
       values[0]  = -2.0; values[1] = -2.0; values[2]  = -2.0; values[3] = -1.0;
-      ierr = MatSetValues(A,1,&row,4,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&row,4,indices,values,INSERT_VALUES));
       break;
 
     default:
       row  = 0;
       values[0]  = -1.0; values[1] = 0.0; values[2] = 1.0; values[3] = 3.0; values[4] = 4.0; values[5] = -5.0;
-      ierr = MatSetValues(A,1,&row,N,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&row,N,indices,values,INSERT_VALUES));
       row  = 1;
-      ierr = MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&row,3,indices,values,INSERT_VALUES));
       row  = 3;
-      ierr = MatSetValues(A,1,&row,1,indices+4,values+4,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&row,1,indices+4,values+4,INSERT_VALUES));
       row  = 4;
-      ierr = MatSetValues(A,1,&row,2,indices+4,values+4,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&row,2,indices+4,values+4,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = MatGetLocalSize(A, &m,&n);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&min);CHKERRQ(ierr);
-  ierr = VecSetSizes(min,m,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(min);CHKERRQ(ierr);
-  ierr = VecDuplicate(min,&max);CHKERRQ(ierr);
-  ierr = VecDuplicate(min,&maxabs);CHKERRQ(ierr);
-  ierr = VecDuplicate(min,&e);CHKERRQ(ierr);
+  CHKERRQ(MatGetLocalSize(A, &m,&n));
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&min));
+  CHKERRQ(VecSetSizes(min,m,PETSC_DECIDE));
+  CHKERRQ(VecSetFromOptions(min));
+  CHKERRQ(VecDuplicate(min,&max));
+  CHKERRQ(VecDuplicate(min,&maxabs));
+  CHKERRQ(VecDuplicate(min,&e));
 
   /* MatGetRowMax() */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMax\n");CHKERRQ(ierr);
-  ierr = MatGetRowMax(A,max,NULL);CHKERRQ(ierr);
-  ierr = MatGetRowMax(A,max,imax);CHKERRQ(ierr);
-  ierr = VecView(max,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(max,&n);CHKERRQ(ierr);
-  ierr = PetscIntView(n,imax,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMax\n"));
+  CHKERRQ(MatGetRowMax(A,max,NULL));
+  CHKERRQ(MatGetRowMax(A,max,imax));
+  CHKERRQ(VecView(max,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(VecGetLocalSize(max,&n));
+  CHKERRQ(PetscIntView(n,imax,PETSC_VIEWER_STDOUT_WORLD));
 
   /* MatGetRowMin() */
-  ierr = MatScale(A,-1.0);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMin\n");CHKERRQ(ierr);
-  ierr = MatGetRowMin(A,min,NULL);CHKERRQ(ierr);
-  ierr = MatGetRowMin(A,min,imin);CHKERRQ(ierr);
+  CHKERRQ(MatScale(A,-1.0));
+  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMin\n"));
+  CHKERRQ(MatGetRowMin(A,min,NULL));
+  CHKERRQ(MatGetRowMin(A,min,imin));
 
-  ierr = VecWAXPY(e,1.0,max,min);CHKERRQ(ierr); /* e = max + min */
-  ierr = VecNorm(e,NORM_INFINITY,&enorm);CHKERRQ(ierr);
+  CHKERRQ(VecWAXPY(e,1.0,max,min)); /* e = max + min */
+  CHKERRQ(VecNorm(e,NORM_INFINITY,&enorm));
   PetscCheckFalse(enorm > PETSC_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"max+min > PETSC_MACHINE_EPSILON ");
   for (j = 0; j < n; j++) {
     PetscCheckFalse(imin[j] != imax[j],PETSC_COMM_SELF,PETSC_ERR_PLIB,"imin[%" PetscInt_FMT "] %" PetscInt_FMT " != imax %" PetscInt_FMT,j,imin[j],imax[j]);
   }
 
   /* MatGetRowMaxAbs() */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMaxAbs\n");CHKERRQ(ierr);
-  ierr = MatGetRowMaxAbs(A,maxabs,NULL);CHKERRQ(ierr);
-  ierr = MatGetRowMaxAbs(A,maxabs,imaxabs);CHKERRQ(ierr);
-  ierr = VecView(maxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscIntView(n,imaxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMaxAbs\n"));
+  CHKERRQ(MatGetRowMaxAbs(A,maxabs,NULL));
+  CHKERRQ(MatGetRowMaxAbs(A,maxabs,imaxabs));
+  CHKERRQ(VecView(maxabs,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscIntView(n,imaxabs,PETSC_VIEWER_STDOUT_WORLD));
 
   /* MatGetRowMinAbs() */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMinAbs\n");CHKERRQ(ierr);
-  ierr = MatGetRowMinAbs(A,min,NULL);CHKERRQ(ierr);
-  ierr = MatGetRowMinAbs(A,min,imin);CHKERRQ(ierr);
-  ierr = VecView(min,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscIntView(n,imin,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMinAbs\n"));
+  CHKERRQ(MatGetRowMinAbs(A,min,NULL));
+  CHKERRQ(MatGetRowMinAbs(A,min,imin));
+  CHKERRQ(VecView(min,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscIntView(n,imin,PETSC_VIEWER_STDOUT_WORLD));
 
   if (size == 1) {
     /* Test MatGetRowMax, MatGetRowMin and MatGetRowMaxAbs for SeqDense and MPIBAIJ matrix */
     Mat Adense;
     Vec max_d,maxabs_d;
-    ierr = VecDuplicate(min,&max_d);CHKERRQ(ierr);
-    ierr = VecDuplicate(min,&maxabs_d);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(min,&max_d));
+    CHKERRQ(VecDuplicate(min,&maxabs_d));
 
-    ierr = MatScale(A,-1.0);CHKERRQ(ierr);
-    ierr = MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatGetRowMax for seqdense matrix\n");CHKERRQ(ierr);
-    ierr = MatGetRowMax(Adense,max_d,imax);CHKERRQ(ierr);
+    CHKERRQ(MatScale(A,-1.0));
+    CHKERRQ(MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"MatGetRowMax for seqdense matrix\n"));
+    CHKERRQ(MatGetRowMax(Adense,max_d,imax));
 
-    ierr = VecWAXPY(e,-1.0,max,max_d);CHKERRQ(ierr); /* e = -max + max_d */
-    ierr = VecNorm(e,NORM_INFINITY,&enorm);CHKERRQ(ierr);
+    CHKERRQ(VecWAXPY(e,-1.0,max,max_d)); /* e = -max + max_d */
+    CHKERRQ(VecNorm(e,NORM_INFINITY,&enorm));
     PetscCheckFalse(enorm > PETSC_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"norm(-max + max_d) %g > PETSC_MACHINE_EPSILON",(double)enorm);
 
-    ierr = MatScale(Adense,-1.0);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatGetRowMin for seqdense matrix\n");CHKERRQ(ierr);
-    ierr = MatGetRowMin(Adense,min,imin);CHKERRQ(ierr);
+    CHKERRQ(MatScale(Adense,-1.0));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"MatGetRowMin for seqdense matrix\n"));
+    CHKERRQ(MatGetRowMin(Adense,min,imin));
 
-    ierr = VecWAXPY(e,1.0,max,min);CHKERRQ(ierr); /* e = max + min */
-    ierr = VecNorm(e,NORM_INFINITY,&enorm);CHKERRQ(ierr);
+    CHKERRQ(VecWAXPY(e,1.0,max,min)); /* e = max + min */
+    CHKERRQ(VecNorm(e,NORM_INFINITY,&enorm));
     PetscCheckFalse(enorm > PETSC_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"max+min > PETSC_MACHINE_EPSILON ");
     for (j = 0; j < n; j++) {
       if (imin[j] != imax[j]) {
@@ -164,15 +164,15 @@ int main(int argc,char **args)
       }
     }
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatGetRowMaxAbs for seqdense matrix\n");CHKERRQ(ierr);
-    ierr = MatGetRowMaxAbs(Adense,maxabs_d,imaxabs);CHKERRQ(ierr);
-    ierr = VecWAXPY(e,-1.0,maxabs,maxabs_d);CHKERRQ(ierr); /* e = -maxabs + maxabs_d */
-    ierr = VecNorm(e,NORM_INFINITY,&enorm);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"MatGetRowMaxAbs for seqdense matrix\n"));
+    CHKERRQ(MatGetRowMaxAbs(Adense,maxabs_d,imaxabs));
+    CHKERRQ(VecWAXPY(e,-1.0,maxabs,maxabs_d)); /* e = -maxabs + maxabs_d */
+    CHKERRQ(VecNorm(e,NORM_INFINITY,&enorm));
     PetscCheckFalse(enorm > PETSC_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"norm(-maxabs + maxabs_d) %g > PETSC_MACHINE_EPSILON",(double)enorm);
 
-    ierr = MatDestroy(&Adense);CHKERRQ(ierr);
-    ierr = VecDestroy(&max_d);CHKERRQ(ierr);
-    ierr = VecDestroy(&maxabs_d);CHKERRQ(ierr);
+    CHKERRQ(MatDestroy(&Adense));
+    CHKERRQ(VecDestroy(&max_d));
+    CHKERRQ(VecDestroy(&maxabs_d));
   }
 
   { /* BAIJ matrix */
@@ -183,77 +183,77 @@ int main(int argc,char **args)
     const PetscScalar *vals,*vals2;
     PetscScalar       Bvals[4];
 
-    ierr = PetscMalloc2(M,&imaxabsB,bs*M,&imaxabsB2);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc2(M,&imaxabsB,bs*M,&imaxabsB2));
 
     /* bs = 1 */
-    ierr = MatConvert(A,MATMPIBAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-    ierr = VecDuplicate(min,&maxabsB);CHKERRQ(ierr);
-    ierr = MatGetRowMaxAbs(B,maxabsB,NULL);CHKERRQ(ierr);
-    ierr = MatGetRowMaxAbs(B,maxabsB,imaxabsB);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMaxAbs for BAIJ matrix\n");CHKERRQ(ierr);
-    ierr = VecWAXPY(e,-1.0,maxabs,maxabsB);CHKERRQ(ierr); /* e = -maxabs + maxabsB */
-    ierr = VecNorm(e,NORM_INFINITY,&enorm);CHKERRQ(ierr);
+    CHKERRQ(MatConvert(A,MATMPIBAIJ,MAT_INITIAL_MATRIX,&B));
+    CHKERRQ(VecDuplicate(min,&maxabsB));
+    CHKERRQ(MatGetRowMaxAbs(B,maxabsB,NULL));
+    CHKERRQ(MatGetRowMaxAbs(B,maxabsB,imaxabsB));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n MatGetRowMaxAbs for BAIJ matrix\n"));
+    CHKERRQ(VecWAXPY(e,-1.0,maxabs,maxabsB)); /* e = -maxabs + maxabsB */
+    CHKERRQ(VecNorm(e,NORM_INFINITY,&enorm));
     PetscCheckFalse(enorm > PETSC_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"norm(-maxabs + maxabs_d) %g > PETSC_MACHINE_EPSILON",(double)enorm);
 
     for (j = 0; j < n; j++) {
       PetscCheckFalse(imaxabs[j] != imaxabsB[j],PETSC_COMM_SELF,PETSC_ERR_PLIB,"imaxabs[%" PetscInt_FMT "] %" PetscInt_FMT " != imaxabsB %" PetscInt_FMT,j,imin[j],imax[j]);
     }
-    ierr = MatDestroy(&B);CHKERRQ(ierr);
+    CHKERRQ(MatDestroy(&B));
 
     /* Test bs = 2: Create B with bs*bs block structure of A */
-    ierr = VecCreate(PETSC_COMM_WORLD,&maxabsB2);CHKERRQ(ierr);
-    ierr = VecSetSizes(maxabsB2,bs*m,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(maxabsB2);CHKERRQ(ierr);
+    CHKERRQ(VecCreate(PETSC_COMM_WORLD,&maxabsB2));
+    CHKERRQ(VecSetSizes(maxabsB2,bs*m,PETSC_DECIDE));
+    CHKERRQ(VecSetFromOptions(maxabsB2));
 
-    ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRangeColumn(A,&cstart,&cend);CHKERRQ(ierr);
-    ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-    ierr = MatSetSizes(B,bs*(rend-rstart),bs*(cend-cstart),PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(B);CHKERRQ(ierr);
-    ierr = MatSetUp(B);CHKERRQ(ierr);
+    CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
+    CHKERRQ(MatGetOwnershipRangeColumn(A,&cstart,&cend));
+    CHKERRQ(MatCreate(PETSC_COMM_WORLD,&B));
+    CHKERRQ(MatSetSizes(B,bs*(rend-rstart),bs*(cend-cstart),PETSC_DECIDE,PETSC_DECIDE));
+    CHKERRQ(MatSetFromOptions(B));
+    CHKERRQ(MatSetUp(B));
 
     for (row=rstart; row<rend; row++) {
-      ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+      CHKERRQ(MatGetRow(A,row,&ncols,&cols,&vals));
       for (col=0; col<ncols; col++) {
         for (j=0; j<bs; j++) {
           Brows[j] = bs*row + j;
           Bcols[j] = bs*cols[col]+j;
         }
         for (j=0; j<bs*bs; j++) Bvals[j] = vals[col];
-        ierr = MatSetValues(B,bs,Brows,bs,Bcols,Bvals,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValues(B,bs,Brows,bs,Bcols,Bvals,INSERT_VALUES));
       }
-      ierr = MatRestoreRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+      CHKERRQ(MatRestoreRow(A,row,&ncols,&cols,&vals));
     }
-    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
 
-    ierr = MatGetRowMaxAbs(B,maxabsB2,imaxabsB2);CHKERRQ(ierr);
+    CHKERRQ(MatGetRowMaxAbs(B,maxabsB2,imaxabsB2));
 
     /* Check maxabsB2 and imaxabsB2 */
-    ierr = VecGetArrayRead(maxabsB,&vals);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(maxabsB2,&vals2);CHKERRQ(ierr);
+    CHKERRQ(VecGetArrayRead(maxabsB,&vals));
+    CHKERRQ(VecGetArrayRead(maxabsB2,&vals2));
     for (row=0; row<m; row++) {
       if (PetscAbsScalar(vals[row] - vals2[bs*row]) > PETSC_MACHINE_EPSILON)
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"row %" PetscInt_FMT " maxabsB != maxabsB2",row);
     }
-    ierr = VecRestoreArrayRead(maxabsB,&vals);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(maxabsB2,&vals2);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArrayRead(maxabsB,&vals));
+    CHKERRQ(VecRestoreArrayRead(maxabsB2,&vals2));
 
     for (col=0; col<n; col++) {
       if (imaxabsB[col] != imaxabsB2[bs*col]/bs)
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"col %" PetscInt_FMT " imaxabsB != imaxabsB2",col);
     }
-    ierr = VecDestroy(&maxabsB);CHKERRQ(ierr);
-    ierr = MatDestroy(&B);CHKERRQ(ierr);
-    ierr = VecDestroy(&maxabsB2);CHKERRQ(ierr);
-    ierr = PetscFree2(imaxabsB,imaxabsB2);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&maxabsB));
+    CHKERRQ(MatDestroy(&B));
+    CHKERRQ(VecDestroy(&maxabsB2));
+    CHKERRQ(PetscFree2(imaxabsB,imaxabsB2));
   }
 
-  ierr = VecDestroy(&min);CHKERRQ(ierr);
-  ierr = VecDestroy(&max);CHKERRQ(ierr);
-  ierr = VecDestroy(&maxabs);CHKERRQ(ierr);
-  ierr = VecDestroy(&e);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&min));
+  CHKERRQ(VecDestroy(&max));
+  CHKERRQ(VecDestroy(&maxabs));
+  CHKERRQ(VecDestroy(&e));
+  CHKERRQ(MatDestroy(&A));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -65,7 +65,6 @@ typedef struct {
 
 static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **adjncy)
 {
-  PetscErrorCode ierr;
   PetscInt       *xadj_temp,*adjncy_temp;
   PetscInt       i,j,k,ii,jj,kk,iindex,count_adj;
   PetscInt       istart_csr,iend_csr,jstart_csr,jend_csr,kstart_csr,kend_csr;
@@ -117,8 +116,8 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **a
       }
     }
   }
-  ierr = PetscMalloc1(dd.xm_l*dd.ym_l*dd.zm_l+1,&xadj_temp);CHKERRQ(ierr);
-  ierr = PetscMalloc1(count_adj,&adjncy_temp);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(dd.xm_l*dd.ym_l*dd.zm_l+1,&xadj_temp));
+  CHKERRQ(PetscMalloc1(count_adj,&adjncy_temp));
 
   /* now fill CSR data structure */
   count_adj=0;
@@ -179,7 +178,6 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **a
 
 static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS *dirichlet,IS *neumann)
 {
-  PetscErrorCode ierr;
   IS             temp_dirichlet=0,temp_neumann=0;
   PetscInt       localsize,i,j,k,*indices;
   PetscBool      *touched;
@@ -187,8 +185,8 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS *dirichlet,
   PetscFunctionBeginUser;
   localsize = dd.xm_l*dd.ym_l*dd.zm_l;
 
-  ierr = PetscMalloc1(localsize,&indices);CHKERRQ(ierr);
-  ierr = PetscMalloc1(localsize,&touched);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(localsize,&indices));
+  CHKERRQ(PetscMalloc1(localsize,&touched));
   for (i=0; i<localsize; i++) touched[i] = PETSC_FALSE;
 
   if (dirichlet) {
@@ -203,7 +201,7 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS *dirichlet,
         }
       }
     }
-    ierr = ISCreateGeneral(dd.gcomm,i,indices,PETSC_COPY_VALUES,&temp_dirichlet);CHKERRQ(ierr);
+    CHKERRQ(ISCreateGeneral(dd.gcomm,i,indices,PETSC_COPY_VALUES,&temp_dirichlet));
   }
   if (neumann) {
     i = 0;
@@ -279,18 +277,17 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd,IS *dirichlet,
         }
       }
     }
-    ierr = ISCreateGeneral(dd.gcomm,i,indices,PETSC_COPY_VALUES,&temp_neumann);CHKERRQ(ierr);
+    CHKERRQ(ISCreateGeneral(dd.gcomm,i,indices,PETSC_COPY_VALUES,&temp_neumann));
   }
   if (dirichlet) *dirichlet = temp_dirichlet;
   if (neumann) *neumann = temp_neumann;
-  ierr = PetscFree(indices);CHKERRQ(ierr);
-  ierr = PetscFree(touched);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(indices));
+  CHKERRQ(PetscFree(touched));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode ComputeMapping(DomainData dd,ISLocalToGlobalMapping *isg2lmap)
 {
-  PetscErrorCode         ierr;
   DM                     da;
   AO                     ao;
   DMBoundaryType         bx = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE, bz = DM_BOUNDARY_NONE;
@@ -303,7 +300,7 @@ static PetscErrorCode ComputeMapping(DomainData dd,ISLocalToGlobalMapping *isg2l
   /* Not an efficient mapping: this function computes a very simple lexicographic mapping
      just to illustrate the creation of a MATIS object */
   localsize = dd.xm_l*dd.ym_l*dd.zm_l;
-  ierr      = PetscMalloc1(localsize,&global_indices);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(localsize,&global_indices));
   for (k=0; k<dd.zm_l; k++) {
     kg=dd.startz+k;
     for (j=0; j<dd.ym_l; j++) {
@@ -317,25 +314,24 @@ static PetscErrorCode ComputeMapping(DomainData dd,ISLocalToGlobalMapping *isg2l
     }
   }
   if (dd.dim==3) {
-    ierr = DMDACreate3d(dd.gcomm,bx,by,bz,stype,dd.xm,dd.ym,dd.zm,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&da);CHKERRQ(ierr);
+    CHKERRQ(DMDACreate3d(dd.gcomm,bx,by,bz,stype,dd.xm,dd.ym,dd.zm,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&da));
   } else if (dd.dim==2) {
-    ierr = DMDACreate2d(dd.gcomm,bx,by,stype,dd.xm,dd.ym,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+    CHKERRQ(DMDACreate2d(dd.gcomm,bx,by,stype,dd.xm,dd.ym,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
   } else {
-    ierr = DMDACreate1d(dd.gcomm,bx,dd.xm,1,1,NULL,&da);CHKERRQ(ierr);
+    CHKERRQ(DMDACreate1d(dd.gcomm,bx,dd.xm,1,1,NULL,&da));
   }
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMDASetAOType(da,AOMEMORYSCALABLE);CHKERRQ(ierr);
-  ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
-  ierr = AOApplicationToPetsc(ao,dd.xm_l*dd.ym_l*dd.zm_l,global_indices);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreate(dd.gcomm,1,localsize,global_indices,PETSC_OWN_POINTER,&temp_isg2lmap);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
+  CHKERRQ(DMDASetAOType(da,AOMEMORYSCALABLE));
+  CHKERRQ(DMDAGetAO(da,&ao));
+  CHKERRQ(AOApplicationToPetsc(ao,dd.xm_l*dd.ym_l*dd.zm_l,global_indices));
+  CHKERRQ(ISLocalToGlobalMappingCreate(dd.gcomm,1,localsize,global_indices,PETSC_OWN_POINTER,&temp_isg2lmap));
+  CHKERRQ(DMDestroy(&da));
   *isg2lmap = temp_isg2lmap;
   PetscFunctionReturn(0);
 }
 static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat *local_mat)
 {
-  PetscErrorCode ierr;
   PetscInt       localsize,zloc,yloc,xloc,auxnex,auxney,auxnez;
   PetscInt       ie,je,ke,i,j,k,ig,jg,kg,ii,ming;
   PetscInt       *indexg,*cols,*colsg;
@@ -344,9 +340,9 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
   IS             submatIS;
 
   PetscFunctionBeginUser;
-  ierr = MatGetSize(glldata.elem_mat,&i,&j);CHKERRQ(ierr);
-  ierr = PetscMalloc1(i,&indexg);CHKERRQ(ierr);
-  ierr = PetscMalloc1(i,&colsg);CHKERRQ(ierr);
+  CHKERRQ(MatGetSize(glldata.elem_mat,&i,&j));
+  CHKERRQ(PetscMalloc1(i,&indexg));
+  CHKERRQ(PetscMalloc1(i,&colsg));
   /* get submatrix of elem_mat without dirichlet nodes */
   if (!dd.pure_neumann && !dd.DBC_zerorows && !dd.ipx) {
     xloc = dd.p+1;
@@ -363,31 +359,31 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
         }
       }
     }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,ii,indexg,PETSC_COPY_VALUES,&submatIS);CHKERRQ(ierr);
-    ierr = MatCreateSubMatrix(glldata.elem_mat,submatIS,submatIS,MAT_INITIAL_MATRIX,&elem_mat_DBC);CHKERRQ(ierr);
-    ierr = ISDestroy(&submatIS);CHKERRQ(ierr);
+    CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,ii,indexg,PETSC_COPY_VALUES,&submatIS));
+    CHKERRQ(MatCreateSubMatrix(glldata.elem_mat,submatIS,submatIS,MAT_INITIAL_MATRIX,&elem_mat_DBC));
+    CHKERRQ(ISDestroy(&submatIS));
   }
 
   /* Assemble subdomain matrix */
   localsize = dd.xm_l*dd.ym_l*dd.zm_l;
-  ierr      = MatCreate(PETSC_COMM_SELF,&temp_local_mat);CHKERRQ(ierr);
-  ierr      = MatSetSizes(temp_local_mat,localsize,localsize,localsize,localsize);CHKERRQ(ierr);
-  ierr      = MatSetOptionsPrefix(temp_local_mat,"subdomain_");CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_SELF,&temp_local_mat));
+  CHKERRQ(MatSetSizes(temp_local_mat,localsize,localsize,localsize,localsize));
+  CHKERRQ(MatSetOptionsPrefix(temp_local_mat,"subdomain_"));
   /* set local matrices type: here we use SEQSBAIJ primarily for testing purpose */
   /* in order to avoid conversions inside the BDDC code, use SeqAIJ if possible */
   if (dd.DBC_zerorows && !dd.ipx) { /* in this case, we need to zero out some of the rows, so use seqaij */
-    ierr = MatSetType(temp_local_mat,MATSEQAIJ);CHKERRQ(ierr);
+    CHKERRQ(MatSetType(temp_local_mat,MATSEQAIJ));
   } else {
-    ierr = MatSetType(temp_local_mat,MATSEQSBAIJ);CHKERRQ(ierr);
+    CHKERRQ(MatSetType(temp_local_mat,MATSEQSBAIJ));
   }
-  ierr = MatSetFromOptions(temp_local_mat);CHKERRQ(ierr);
+  CHKERRQ(MatSetFromOptions(temp_local_mat));
 
   i = PetscPowRealInt(3.0*(dd.p+1.0),dd.dim);
 
-  ierr = MatSeqAIJSetPreallocation(temp_local_mat,i,NULL);CHKERRQ(ierr);      /* very overestimated */
-  ierr = MatSeqSBAIJSetPreallocation(temp_local_mat,1,i,NULL);CHKERRQ(ierr);      /* very overestimated */
-  ierr = MatSeqBAIJSetPreallocation(temp_local_mat,1,i,NULL);CHKERRQ(ierr);      /* very overestimated */
-  ierr = MatSetOption(temp_local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(MatSeqAIJSetPreallocation(temp_local_mat,i,NULL));      /* very overestimated */
+  CHKERRQ(MatSeqSBAIJSetPreallocation(temp_local_mat,1,i,NULL));      /* very overestimated */
+  CHKERRQ(MatSeqBAIJSetPreallocation(temp_local_mat,1,i,NULL));      /* very overestimated */
+  CHKERRQ(MatSetOption(temp_local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE));
 
   yloc = dd.p+1;
   zloc = dd.p+1;
@@ -430,38 +426,37 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
         }
         /* Set values */
         for (i=0; i<xloc*yloc*zloc; i++) {
-          ierr = MatGetRow(*usedmat,i,&j,(const PetscInt**)&cols,(const PetscScalar**)&vals);CHKERRQ(ierr);
+          CHKERRQ(MatGetRow(*usedmat,i,&j,(const PetscInt**)&cols,(const PetscScalar**)&vals));
           for (k=0; k<j; k++) colsg[k] = indexg[cols[k]];
-          ierr = MatSetValues(temp_local_mat,1,&indexg[i],j,colsg,vals,ADD_VALUES);CHKERRQ(ierr);
-          ierr = MatRestoreRow(*usedmat,i,&j,(const PetscInt**)&cols,(const PetscScalar**)&vals);CHKERRQ(ierr);
+          CHKERRQ(MatSetValues(temp_local_mat,1,&indexg[i],j,colsg,vals,ADD_VALUES));
+          CHKERRQ(MatRestoreRow(*usedmat,i,&j,(const PetscInt**)&cols,(const PetscScalar**)&vals));
         }
       }
     }
   }
-  ierr = PetscFree(indexg);CHKERRQ(ierr);
-  ierr = PetscFree(colsg);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(temp_local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd  (temp_local_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(indexg));
+  CHKERRQ(PetscFree(colsg));
+  CHKERRQ(MatAssemblyBegin(temp_local_mat,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd  (temp_local_mat,MAT_FINAL_ASSEMBLY));
 #if DEBUG
   {
     Vec       lvec,rvec;
     PetscReal norm;
-    ierr = MatCreateVecs(temp_local_mat,&lvec,&rvec);CHKERRQ(ierr);
-    ierr = VecSet(lvec,1.0);CHKERRQ(ierr);
-    ierr = MatMult(temp_local_mat,lvec,rvec);CHKERRQ(ierr);
-    ierr = VecNorm(rvec,NORM_INFINITY,&norm);CHKERRQ(ierr);
-    ierr = VecDestroy(&lvec);CHKERRQ(ierr);
-    ierr = VecDestroy(&rvec);CHKERRQ(ierr);
+    CHKERRQ(MatCreateVecs(temp_local_mat,&lvec,&rvec));
+    CHKERRQ(VecSet(lvec,1.0));
+    CHKERRQ(MatMult(temp_local_mat,lvec,rvec));
+    CHKERRQ(VecNorm(rvec,NORM_INFINITY,&norm));
+    CHKERRQ(VecDestroy(&lvec));
+    CHKERRQ(VecDestroy(&rvec));
   }
 #endif
   *local_mat = temp_local_mat;
-  ierr       = MatDestroy(&elem_mat_DBC);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&elem_mat_DBC));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
 {
-  PetscErrorCode ierr;
   PetscReal      *M,si;
   PetscScalar    x,z0,z1,z2,Lpj,Lpr,rhoGLj,rhoGLk;
   PetscBLASInt   pm1,lierr;
@@ -470,29 +465,29 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
 
   PetscFunctionBeginUser;
   /* Gauss-Lobatto-Legendre nodes zGL on [-1,1] */
-  ierr = PetscCalloc1(p+1,&glldata->zGL);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc1(p+1,&glldata->zGL));
 
   glldata->zGL[0]=-1.0;
   glldata->zGL[p]= 1.0;
   if (p > 1) {
     if (p == 2) glldata->zGL[1]=0.0;
     else {
-      ierr = PetscMalloc1(p-1,&M);CHKERRQ(ierr);
+      CHKERRQ(PetscMalloc1(p-1,&M));
       for (i=0; i<p-1; i++) {
         si  = (PetscReal)(i+1.0);
         M[i]=0.5*PetscSqrtReal(si*(si+2.0)/((si+0.5)*(si+1.5)));
       }
       pm1  = p-1;
-      ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+      CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
       PetscStackCallBLAS("LAPACKsteqr",LAPACKsteqr_("N",&pm1,&glldata->zGL[1],M,&x,&pm1,M,&lierr));
       PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in STERF Lapack routine %d",(int)lierr);
-      ierr = PetscFPTrapPop();CHKERRQ(ierr);
-      ierr = PetscFree(M);CHKERRQ(ierr);
+      CHKERRQ(PetscFPTrapPop());
+      CHKERRQ(PetscFree(M));
     }
   }
 
   /* Weights for 1D quadrature */
-  ierr = PetscMalloc1(p+1,&glldata->rhoGL);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(p+1,&glldata->rhoGL));
 
   glldata->rhoGL[0]=2.0/(PetscScalar)(p*(p+1.0));
   glldata->rhoGL[p]=glldata->rhoGL[0];
@@ -510,8 +505,8 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
   }
 
   /* Auxiliary mat for laplacian */
-  ierr = PetscMalloc1(p+1,&glldata->A);CHKERRQ(ierr);
-  ierr = PetscMalloc1((p+1)*(p+1),&glldata->A[0]);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(p+1,&glldata->A));
+  CHKERRQ(PetscMalloc1((p+1)*(p+1),&glldata->A[0]));
   for (i=1; i<p+1; i++) glldata->A[i]=glldata->A[i-1]+p+1;
 
   for (j=1; j<p; j++) {
@@ -580,12 +575,12 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
   xyloc  = xloc*yloc;
   xyzloc = xloc*yloc*zloc;
 
-  ierr = MatCreate(PETSC_COMM_SELF,&glldata->elem_mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(glldata->elem_mat,xyzloc,xyzloc,xyzloc,xyzloc);CHKERRQ(ierr);
-  ierr = MatSetType(glldata->elem_mat,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(glldata->elem_mat,xyzloc,NULL);CHKERRQ(ierr); /* overestimated */
-  ierr = MatZeroEntries(glldata->elem_mat);CHKERRQ(ierr);
-  ierr = MatSetOption(glldata->elem_mat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_SELF,&glldata->elem_mat));
+  CHKERRQ(MatSetSizes(glldata->elem_mat,xyzloc,xyzloc,xyzloc,xyzloc));
+  CHKERRQ(MatSetType(glldata->elem_mat,MATSEQAIJ));
+  CHKERRQ(MatSeqAIJSetPreallocation(glldata->elem_mat,xyzloc,NULL)); /* overestimated */
+  CHKERRQ(MatZeroEntries(glldata->elem_mat));
+  CHKERRQ(MatSetOption(glldata->elem_mat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE));
 
   for (k=0; k<zloc; k++) {
     if (dd.dim>2) rhoGLk=glldata->rhoGL[k];
@@ -601,14 +596,14 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
         r  = j;
         for (q=0; q<xloc; q++) {
           jj   = s*xyloc+r*xloc+q;
-          ierr = MatSetValue(glldata->elem_mat,jj,ii,glldata->A[i][q]*rhoGLj*rhoGLk,ADD_VALUES);CHKERRQ(ierr);
+          CHKERRQ(MatSetValue(glldata->elem_mat,jj,ii,glldata->A[i][q]*rhoGLj*rhoGLk,ADD_VALUES));
         }
         if (dd.dim>1) {
           s=k;
           q=i;
           for (r=0; r<yloc; r++) {
             jj   = s*xyloc+r*xloc+q;
-            ierr = MatSetValue(glldata->elem_mat,jj,ii,glldata->A[j][r]*glldata->rhoGL[i]*rhoGLk,ADD_VALUES);CHKERRQ(ierr);
+            CHKERRQ(MatSetValue(glldata->elem_mat,jj,ii,glldata->A[j][r]*glldata->rhoGL[i]*rhoGLk,ADD_VALUES));
           }
         }
         if (dd.dim>2) {
@@ -616,24 +611,24 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
           q=i;
           for (s=0; s<zloc; s++) {
             jj   = s*xyloc+r*xloc+q;
-            ierr = MatSetValue(glldata->elem_mat,jj,ii,glldata->A[k][s]*rhoGLj*glldata->rhoGL[i],ADD_VALUES);CHKERRQ(ierr);
+            CHKERRQ(MatSetValue(glldata->elem_mat,jj,ii,glldata->A[k][s]*rhoGLj*glldata->rhoGL[i],ADD_VALUES));
           }
         }
       }
     }
   }
-  ierr = MatAssemblyBegin(glldata->elem_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd  (glldata->elem_mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(glldata->elem_mat,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd  (glldata->elem_mat,MAT_FINAL_ASSEMBLY));
 #if DEBUG
   {
     Vec       lvec,rvec;
     PetscReal norm;
-    ierr = MatCreateVecs(glldata->elem_mat,&lvec,&rvec);CHKERRQ(ierr);
-    ierr = VecSet(lvec,1.0);CHKERRQ(ierr);
-    ierr = MatMult(glldata->elem_mat,lvec,rvec);CHKERRQ(ierr);
-    ierr = VecNorm(rvec,NORM_INFINITY,&norm);CHKERRQ(ierr);
-    ierr = VecDestroy(&lvec);CHKERRQ(ierr);
-    ierr = VecDestroy(&rvec);CHKERRQ(ierr);
+    CHKERRQ(MatCreateVecs(glldata->elem_mat,&lvec,&rvec));
+    CHKERRQ(VecSet(lvec,1.0));
+    CHKERRQ(MatMult(glldata->elem_mat,lvec,rvec));
+    CHKERRQ(VecNorm(rvec,NORM_INFINITY,&norm));
+    CHKERRQ(VecDestroy(&lvec));
+    CHKERRQ(VecDestroy(&rvec));
   }
 #endif
   PetscFunctionReturn(0);
@@ -711,7 +706,6 @@ static PetscErrorCode DomainDecomposition(DomainData *dd)
 }
 static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
 {
-  PetscErrorCode         ierr;
   GLLData                gll;
   Mat                    local_mat  =0,temp_A=0;
   ISLocalToGlobalMapping matis_map  =0;
@@ -719,53 +713,53 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
 
   PetscFunctionBeginUser;
   /* Compute some stuff of Gauss-Legendre-Lobatto quadrature rule */
-  ierr = GLLStuffs(dd,&gll);CHKERRQ(ierr);
+  CHKERRQ(GLLStuffs(dd,&gll));
   /* Compute matrix of subdomain Neumann problem */
-  ierr = ComputeSubdomainMatrix(dd,gll,&local_mat);CHKERRQ(ierr);
+  CHKERRQ(ComputeSubdomainMatrix(dd,gll,&local_mat));
   /* Compute global mapping of local dofs */
-  ierr = ComputeMapping(dd,&matis_map);CHKERRQ(ierr);
+  CHKERRQ(ComputeMapping(dd,&matis_map));
   /* Create MATIS object needed by BDDC */
-  ierr = MatCreateIS(dd.gcomm,1,PETSC_DECIDE,PETSC_DECIDE,dd.xm*dd.ym*dd.zm,dd.xm*dd.ym*dd.zm,matis_map,matis_map,&temp_A);CHKERRQ(ierr);
+  CHKERRQ(MatCreateIS(dd.gcomm,1,PETSC_DECIDE,PETSC_DECIDE,dd.xm*dd.ym*dd.zm,dd.xm*dd.ym*dd.zm,matis_map,matis_map,&temp_A));
   /* Set local subdomain matrices into MATIS object */
-  ierr = MatScale(local_mat,dd.scalingfactor);CHKERRQ(ierr);
-  ierr = MatISSetLocalMat(temp_A,local_mat);CHKERRQ(ierr);
+  CHKERRQ(MatScale(local_mat,dd.scalingfactor));
+  CHKERRQ(MatISSetLocalMat(temp_A,local_mat));
   /* Call assembly functions */
-  ierr = MatAssemblyBegin(temp_A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(temp_A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(temp_A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(temp_A,MAT_FINAL_ASSEMBLY));
 
   if (dd.DBC_zerorows) {
     PetscInt dirsize;
 
-    ierr = ComputeSpecialBoundaryIndices(dd,&dirichletIS,NULL);CHKERRQ(ierr);
-    ierr = MatSetOption(local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = MatZeroRowsColumnsLocalIS(temp_A,dirichletIS,1.0,NULL,NULL);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(dirichletIS,&dirsize);CHKERRQ(ierr);
-    ierr = ISDestroy(&dirichletIS);CHKERRQ(ierr);
+    CHKERRQ(ComputeSpecialBoundaryIndices(dd,&dirichletIS,NULL));
+    CHKERRQ(MatSetOption(local_mat,MAT_KEEP_NONZERO_PATTERN,PETSC_TRUE));
+    CHKERRQ(MatZeroRowsColumnsLocalIS(temp_A,dirichletIS,1.0,NULL,NULL));
+    CHKERRQ(ISGetLocalSize(dirichletIS,&dirsize));
+    CHKERRQ(ISDestroy(&dirichletIS));
   }
 
   /* giving hints to local and global matrices could be useful for the BDDC */
-  ierr = MatSetOption(local_mat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatSetOption(local_mat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(MatSetOption(local_mat,MAT_SYMMETRIC,PETSC_TRUE));
+  CHKERRQ(MatSetOption(local_mat,MAT_SPD,PETSC_TRUE));
 #if DEBUG
   {
     Vec       lvec,rvec;
     PetscReal norm;
-    ierr = MatCreateVecs(temp_A,&lvec,&rvec);CHKERRQ(ierr);
-    ierr = VecSet(lvec,1.0);CHKERRQ(ierr);
-    ierr = MatMult(temp_A,lvec,rvec);CHKERRQ(ierr);
-    ierr = VecNorm(rvec,NORM_INFINITY,&norm);CHKERRQ(ierr);
-    ierr = VecDestroy(&lvec);CHKERRQ(ierr);
-    ierr = VecDestroy(&rvec);CHKERRQ(ierr);
+    CHKERRQ(MatCreateVecs(temp_A,&lvec,&rvec));
+    CHKERRQ(VecSet(lvec,1.0));
+    CHKERRQ(MatMult(temp_A,lvec,rvec));
+    CHKERRQ(VecNorm(rvec,NORM_INFINITY,&norm));
+    CHKERRQ(VecDestroy(&lvec));
+    CHKERRQ(VecDestroy(&rvec));
   }
 #endif
   /* free allocated workspace */
-  ierr = PetscFree(gll.zGL);CHKERRQ(ierr);
-  ierr = PetscFree(gll.rhoGL);CHKERRQ(ierr);
-  ierr = PetscFree(gll.A[0]);CHKERRQ(ierr);
-  ierr = PetscFree(gll.A);CHKERRQ(ierr);
-  ierr = MatDestroy(&gll.elem_mat);CHKERRQ(ierr);
-  ierr = MatDestroy(&local_mat);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&matis_map);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(gll.zGL));
+  CHKERRQ(PetscFree(gll.rhoGL));
+  CHKERRQ(PetscFree(gll.A[0]));
+  CHKERRQ(PetscFree(gll.A));
+  CHKERRQ(MatDestroy(&gll.elem_mat));
+  CHKERRQ(MatDestroy(&local_mat));
+  CHKERRQ(ISLocalToGlobalMappingDestroy(&matis_map));
   /* give back the pointer to te MATIS object */
   *A = temp_A;
   PetscFunctionReturn(0);
@@ -773,39 +767,38 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
 
 static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP *ksp_fetidp)
 {
-  PetscErrorCode ierr;
   KSP            temp_ksp;
   PC             pc;
 
   PetscFunctionBeginUser;
-  ierr = KSPGetPC(ksp_bddc,&pc);CHKERRQ(ierr);
+  CHKERRQ(KSPGetPC(ksp_bddc,&pc));
   if (!dd.testkspfetidp) {
     PC  D;
     Mat F;
 
-    ierr = PCBDDCCreateFETIDPOperators(pc,PETSC_TRUE,NULL,&F,&D);CHKERRQ(ierr);
-    ierr = KSPCreate(PetscObjectComm((PetscObject)F),&temp_ksp);CHKERRQ(ierr);
-    ierr = KSPSetOperators(temp_ksp,F,F);CHKERRQ(ierr);
-    ierr = KSPSetType(temp_ksp,KSPCG);CHKERRQ(ierr);
-    ierr = KSPSetPC(temp_ksp,D);CHKERRQ(ierr);
-    ierr = KSPSetComputeSingularValues(temp_ksp,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(temp_ksp,"fluxes_");CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(temp_ksp);CHKERRQ(ierr);
-    ierr = KSPSetUp(temp_ksp);CHKERRQ(ierr);
-    ierr = MatDestroy(&F);CHKERRQ(ierr);
-    ierr = PCDestroy(&D);CHKERRQ(ierr);
+    CHKERRQ(PCBDDCCreateFETIDPOperators(pc,PETSC_TRUE,NULL,&F,&D));
+    CHKERRQ(KSPCreate(PetscObjectComm((PetscObject)F),&temp_ksp));
+    CHKERRQ(KSPSetOperators(temp_ksp,F,F));
+    CHKERRQ(KSPSetType(temp_ksp,KSPCG));
+    CHKERRQ(KSPSetPC(temp_ksp,D));
+    CHKERRQ(KSPSetComputeSingularValues(temp_ksp,PETSC_TRUE));
+    CHKERRQ(KSPSetOptionsPrefix(temp_ksp,"fluxes_"));
+    CHKERRQ(KSPSetFromOptions(temp_ksp));
+    CHKERRQ(KSPSetUp(temp_ksp));
+    CHKERRQ(MatDestroy(&F));
+    CHKERRQ(PCDestroy(&D));
   } else {
     Mat A,Ap;
 
-    ierr = KSPCreate(PetscObjectComm((PetscObject)ksp_bddc),&temp_ksp);CHKERRQ(ierr);
-    ierr = KSPGetOperators(ksp_bddc,&A,&Ap);CHKERRQ(ierr);
-    ierr = KSPSetOperators(temp_ksp,A,Ap);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(temp_ksp,"fluxes_");CHKERRQ(ierr);
-    ierr = KSPSetType(temp_ksp,KSPFETIDP);CHKERRQ(ierr);
-    ierr = KSPFETIDPSetInnerBDDC(temp_ksp,pc);CHKERRQ(ierr);
-    ierr = KSPSetComputeSingularValues(temp_ksp,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(temp_ksp);CHKERRQ(ierr);
-    ierr = KSPSetUp(temp_ksp);CHKERRQ(ierr);
+    CHKERRQ(KSPCreate(PetscObjectComm((PetscObject)ksp_bddc),&temp_ksp));
+    CHKERRQ(KSPGetOperators(ksp_bddc,&A,&Ap));
+    CHKERRQ(KSPSetOperators(temp_ksp,A,Ap));
+    CHKERRQ(KSPSetOptionsPrefix(temp_ksp,"fluxes_"));
+    CHKERRQ(KSPSetType(temp_ksp,KSPFETIDP));
+    CHKERRQ(KSPFETIDPSetInnerBDDC(temp_ksp,pc));
+    CHKERRQ(KSPSetComputeSingularValues(temp_ksp,PETSC_TRUE));
+    CHKERRQ(KSPSetFromOptions(temp_ksp));
+    CHKERRQ(KSPSetUp(temp_ksp));
   }
   *ksp_fetidp = temp_ksp;
   PetscFunctionReturn(0);
@@ -813,7 +806,6 @@ static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP *ksp_fet
 
 static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
 {
-  PetscErrorCode ierr;
   KSP            temp_ksp;
   PC             pc;
   IS             primals,dirichletIS=0,neumannIS=0,*bddc_dofs_splitting;
@@ -821,61 +813,61 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   MatNullSpace   near_null_space;
 
   PetscFunctionBeginUser;
-  ierr = KSPCreate(dd.gcomm,&temp_ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(temp_ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPSetType(temp_ksp,KSPCG);CHKERRQ(ierr);
-  ierr = KSPGetPC(temp_ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCBDDC);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(dd.gcomm,&temp_ksp));
+  CHKERRQ(KSPSetOperators(temp_ksp,A,A));
+  CHKERRQ(KSPSetType(temp_ksp,KSPCG));
+  CHKERRQ(KSPGetPC(temp_ksp,&pc));
+  CHKERRQ(PCSetType(pc,PCBDDC));
 
   localsize = dd.xm_l*dd.ym_l*dd.zm_l;
 
   /* BDDC customization */
 
   /* jumping coefficients case */
-  ierr = PCISSetSubdomainScalingFactor(pc,dd.scalingfactor);CHKERRQ(ierr);
+  CHKERRQ(PCISSetSubdomainScalingFactor(pc,dd.scalingfactor));
 
   /* Dofs splitting
      Simple stride-1 IS
      It is not needed since, by default, PCBDDC assumes a stride-1 split */
-  ierr = PetscMalloc1(1,&bddc_dofs_splitting);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(1,&bddc_dofs_splitting));
 #if 1
-  ierr = ISCreateStride(PETSC_COMM_WORLD,localsize,0,1,&bddc_dofs_splitting[0]);CHKERRQ(ierr);
-  ierr = PCBDDCSetDofsSplittingLocal(pc,1,bddc_dofs_splitting);CHKERRQ(ierr);
+  CHKERRQ(ISCreateStride(PETSC_COMM_WORLD,localsize,0,1,&bddc_dofs_splitting[0]));
+  CHKERRQ(PCBDDCSetDofsSplittingLocal(pc,1,bddc_dofs_splitting));
 #else
   /* examples for global ordering */
 
   /* each process lists the nodes it owns */
   PetscInt sr,er;
-  ierr = MatGetOwnershipRange(A,&sr,&er);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_WORLD,er-sr,sr,1,&bddc_dofs_splitting[0]);CHKERRQ(ierr);
-  ierr = PCBDDCSetDofsSplitting(pc,1,bddc_dofs_splitting);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(A,&sr,&er));
+  CHKERRQ(ISCreateStride(PETSC_COMM_WORLD,er-sr,sr,1,&bddc_dofs_splitting[0]));
+  CHKERRQ(PCBDDCSetDofsSplitting(pc,1,bddc_dofs_splitting));
   /* Split can be passed in a more general way since any process can list any node */
 #endif
-  ierr = ISDestroy(&bddc_dofs_splitting[0]);CHKERRQ(ierr);
-  ierr = PetscFree(bddc_dofs_splitting);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&bddc_dofs_splitting[0]));
+  CHKERRQ(PetscFree(bddc_dofs_splitting));
 
   /* Primal constraints implemented by using a near null space attached to A -> now it passes in only the constants
     (which in practice is not needed since by default PCBDDC builds the primal space using constants for quadrature formulas */
 #if 0
   Vec vecs[2];
   PetscRandom rctx;
-  ierr = MatCreateVecs(A,&vecs[0],&vecs[1]);CHKERRQ(ierr);
-  ierr = PetscRandomCreate(dd.gcomm,&rctx);CHKERRQ(ierr);
-  ierr = VecSetRandom(vecs[0],rctx);CHKERRQ(ierr);
-  ierr = VecSetRandom(vecs[1],rctx);CHKERRQ(ierr);
-  ierr = MatNullSpaceCreate(dd.gcomm,PETSC_TRUE,2,vecs,&near_null_space);CHKERRQ(ierr);
-  ierr = VecDestroy(&vecs[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(&vecs[1]);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
+  CHKERRQ(MatCreateVecs(A,&vecs[0],&vecs[1]));
+  CHKERRQ(PetscRandomCreate(dd.gcomm,&rctx));
+  CHKERRQ(VecSetRandom(vecs[0],rctx));
+  CHKERRQ(VecSetRandom(vecs[1],rctx));
+  CHKERRQ(MatNullSpaceCreate(dd.gcomm,PETSC_TRUE,2,vecs,&near_null_space));
+  CHKERRQ(VecDestroy(&vecs[0]));
+  CHKERRQ(VecDestroy(&vecs[1]));
+  CHKERRQ(PetscRandomDestroy(&rctx));
 #else
-  ierr = MatNullSpaceCreate(dd.gcomm,PETSC_TRUE,0,NULL,&near_null_space);CHKERRQ(ierr);
+  CHKERRQ(MatNullSpaceCreate(dd.gcomm,PETSC_TRUE,0,NULL,&near_null_space));
 #endif
-  ierr = MatSetNearNullSpace(A,near_null_space);CHKERRQ(ierr);
-  ierr = MatNullSpaceDestroy(&near_null_space);CHKERRQ(ierr);
+  CHKERRQ(MatSetNearNullSpace(A,near_null_space));
+  CHKERRQ(MatNullSpaceDestroy(&near_null_space));
 
   /* CSR graph of subdomain dofs */
-  ierr = BuildCSRGraph(dd,&xadj,&adjncy);CHKERRQ(ierr);
-  ierr = PCBDDCSetLocalAdjacencyGraph(pc,localsize,xadj,adjncy,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  CHKERRQ(BuildCSRGraph(dd,&xadj,&adjncy));
+  CHKERRQ(PCBDDCSetLocalAdjacencyGraph(pc,localsize,xadj,adjncy,PETSC_OWN_POINTER));
 
   /* Prescribe user-defined primal vertices: in this case we use the 8 corners in 3D (for 2D and 1D, the indices are duplicated) */
   vidx[0] = 0*dd.xm_l+0;
@@ -886,26 +878,26 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
   vidx[5] = (dd.zm_l-1)*dd.xm_l*dd.ym_l+0*dd.xm_l+dd.xm_l-1;
   vidx[6] = (dd.zm_l-1)*dd.xm_l*dd.ym_l+(dd.ym_l-1)*dd.xm_l+0;
   vidx[7] = (dd.zm_l-1)*dd.xm_l*dd.ym_l+(dd.ym_l-1)*dd.xm_l+dd.xm_l-1;
-  ierr = ISCreateGeneral(dd.gcomm,8,vidx,PETSC_COPY_VALUES,&primals);CHKERRQ(ierr);
-  ierr = PCBDDCSetPrimalVerticesLocalIS(pc,primals);CHKERRQ(ierr);
-  ierr = ISDestroy(&primals);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(dd.gcomm,8,vidx,PETSC_COPY_VALUES,&primals));
+  CHKERRQ(PCBDDCSetPrimalVerticesLocalIS(pc,primals));
+  CHKERRQ(ISDestroy(&primals));
 
   /* Neumann/Dirichlet indices on the global boundary */
   if (dd.DBC_zerorows) {
     /* Only in case you eliminate some rows matrix with zerorows function, you need to set dirichlet indices into PCBDDC data */
-    ierr = ComputeSpecialBoundaryIndices(dd,&dirichletIS,&neumannIS);CHKERRQ(ierr);
-    ierr = PCBDDCSetNeumannBoundariesLocal(pc,neumannIS);CHKERRQ(ierr);
-    ierr = PCBDDCSetDirichletBoundariesLocal(pc,dirichletIS);CHKERRQ(ierr);
+    CHKERRQ(ComputeSpecialBoundaryIndices(dd,&dirichletIS,&neumannIS));
+    CHKERRQ(PCBDDCSetNeumannBoundariesLocal(pc,neumannIS));
+    CHKERRQ(PCBDDCSetDirichletBoundariesLocal(pc,dirichletIS));
   } else {
     if (dd.pure_neumann) {
       /* In such a case, all interface nodes lying on the global boundary are neumann nodes */
-      ierr = ComputeSpecialBoundaryIndices(dd,NULL,&neumannIS);CHKERRQ(ierr);
-      ierr = PCBDDCSetNeumannBoundariesLocal(pc,neumannIS);CHKERRQ(ierr);
+      CHKERRQ(ComputeSpecialBoundaryIndices(dd,NULL,&neumannIS));
+      CHKERRQ(PCBDDCSetNeumannBoundariesLocal(pc,neumannIS));
     } else {
       /* It is wrong setting dirichlet indices without having zeroed the corresponding rows in the global matrix */
       /* But we can still compute them since nodes near the dirichlet boundaries does not need to be defined as neumann nodes */
-      ierr = ComputeSpecialBoundaryIndices(dd,&dirichletIS,&neumannIS);CHKERRQ(ierr);
-      ierr = PCBDDCSetNeumannBoundariesLocal(pc,neumannIS);CHKERRQ(ierr);
+      CHKERRQ(ComputeSpecialBoundaryIndices(dd,&dirichletIS,&neumannIS));
+      CHKERRQ(PCBDDCSetNeumannBoundariesLocal(pc,neumannIS));
     }
   }
 
@@ -914,31 +906,30 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd,Mat A,KSP *ksp)
     MatNullSpace nsp;
     Mat          local_mat;
 
-    ierr = MatISGetLocalMat(A,&local_mat);CHKERRQ(ierr);
-    ierr = MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_TRUE,0,NULL,&nsp);CHKERRQ(ierr);
-    ierr = MatSetNullSpace(local_mat,nsp);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
+    CHKERRQ(MatISGetLocalMat(A,&local_mat));
+    CHKERRQ(MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_TRUE,0,NULL,&nsp));
+    CHKERRQ(MatSetNullSpace(local_mat,nsp));
+    CHKERRQ(MatNullSpaceDestroy(&nsp));
   }
-  ierr = KSPSetComputeSingularValues(temp_ksp,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(temp_ksp,"physical_");CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(temp_ksp);CHKERRQ(ierr);
-  ierr = KSPSetUp(temp_ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPSetComputeSingularValues(temp_ksp,PETSC_TRUE));
+  CHKERRQ(KSPSetOptionsPrefix(temp_ksp,"physical_"));
+  CHKERRQ(KSPSetFromOptions(temp_ksp));
+  CHKERRQ(KSPSetUp(temp_ksp));
   *ksp = temp_ksp;
-  ierr = ISDestroy(&dirichletIS);CHKERRQ(ierr);
-  ierr = ISDestroy(&neumannIS);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&dirichletIS));
+  CHKERRQ(ISDestroy(&neumannIS));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode InitializeDomainData(DomainData *dd)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    sizes,rank;
   PetscInt       factor;
 
   PetscFunctionBeginUser;
   dd->gcomm = PETSC_COMM_WORLD;
-  ierr      = MPI_Comm_size(dd->gcomm,&sizes);CHKERRMPI(ierr);
-  ierr      = MPI_Comm_rank(dd->gcomm,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(dd->gcomm,&sizes));
+  CHKERRMPI(MPI_Comm_rank(dd->gcomm,&rank));
   /* Get information from command line */
   /* Processors/subdomains per dimension */
   /* Default is 1d problem */
@@ -946,9 +937,9 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   dd->npy = 0;
   dd->npz = 0;
   dd->dim = 1;
-  ierr    = PetscOptionsGetInt(NULL,NULL,"-npx",&dd->npx,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt(NULL,NULL,"-npy",&dd->npy,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt(NULL,NULL,"-npz",&dd->npz,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-npx",&dd->npx,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-npy",&dd->npy,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-npz",&dd->npz,NULL));
   if (dd->npy) dd->dim++;
   if (dd->npz) dd->dim++;
   /* Number of elements per dimension */
@@ -956,9 +947,9 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   dd->nex = dd->npx;
   dd->ney = dd->npy;
   dd->nez = dd->npz;
-  ierr    = PetscOptionsGetInt(NULL,NULL,"-nex",&dd->nex,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt(NULL,NULL,"-ney",&dd->ney,NULL);CHKERRQ(ierr);
-  ierr    = PetscOptionsGetInt(NULL,NULL,"-nez",&dd->nez,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nex",&dd->nex,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-ney",&dd->ney,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nez",&dd->nez,NULL));
   if (!dd->npy) {
     dd->ney=0;
     dd->nez=0;
@@ -966,20 +957,20 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
   if (!dd->npz) dd->nez=0;
   /* Spectral degree */
   dd->p = 3;
-  ierr  = PetscOptionsGetInt(NULL,NULL,"-p",&dd->p,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-p",&dd->p,NULL));
   /* pure neumann problem? */
   dd->pure_neumann = PETSC_FALSE;
-  ierr             = PetscOptionsGetBool(NULL,NULL,"-pureneumann",&dd->pure_neumann,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-pureneumann",&dd->pure_neumann,NULL));
 
   /* How to enforce dirichlet boundary conditions (in case pureneumann has not been requested explicitly) */
   dd->DBC_zerorows = PETSC_FALSE;
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-usezerorows",&dd->DBC_zerorows,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-usezerorows",&dd->DBC_zerorows,NULL));
   if (dd->pure_neumann) dd->DBC_zerorows = PETSC_FALSE;
   dd->scalingfactor = 1.0;
 
   factor = 0.0;
-  ierr   = PetscOptionsGetInt(NULL,NULL,"-jump",&factor,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-jump",&factor,NULL));
   /* checkerboard pattern */
   dd->scalingfactor = PetscPowScalar(10.0,(PetscScalar)factor*PetscPowScalar(-1.0,(PetscScalar)rank));
   /* test data passed in */
@@ -1012,9 +1003,9 @@ int main(int argc,char **args)
   /* Init PETSc */
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* Initialize DomainData */
-  ierr = InitializeDomainData(&dd);CHKERRQ(ierr);
+  CHKERRQ(InitializeDomainData(&dd));
   /* Decompose domain */
-  ierr = DomainDecomposition(&dd);CHKERRQ(ierr);
+  CHKERRQ(DomainDecomposition(&dd));
 #if DEBUG
   printf("Subdomain data\n");
   printf("IPS   : %d %d %d\n",dd.ipx,dd.ipy,dd.ipz);
@@ -1025,115 +1016,115 @@ int main(int argc,char **args)
   printf("STARTS: %d %d %d\n",dd.startx,dd.starty,dd.startz);
 #endif
   dd.testkspfetidp = PETSC_TRUE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-testfetidp",&testfetidp,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-testkspfetidp",&dd.testkspfetidp,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-testfetidp",&testfetidp,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-testkspfetidp",&dd.testkspfetidp,NULL));
   /* assemble global matrix */
-  ierr = ComputeMatrix(dd,&A);CHKERRQ(ierr);
+  CHKERRQ(ComputeMatrix(dd,&A));
   /* get work vectors */
-  ierr = MatCreateVecs(A,&bddc_solution,NULL);CHKERRQ(ierr);
-  ierr = VecDuplicate(bddc_solution,&bddc_rhs);CHKERRQ(ierr);
-  ierr = VecDuplicate(bddc_solution,&exact_solution);CHKERRQ(ierr);
+  CHKERRQ(MatCreateVecs(A,&bddc_solution,NULL));
+  CHKERRQ(VecDuplicate(bddc_solution,&bddc_rhs));
+  CHKERRQ(VecDuplicate(bddc_solution,&exact_solution));
   /* create and customize KSP/PC for BDDC */
-  ierr = ComputeKSPBDDC(dd,A,&KSPwithBDDC);CHKERRQ(ierr);
+  CHKERRQ(ComputeKSPBDDC(dd,A,&KSPwithBDDC));
   /* create KSP/PC for FETIDP */
   if (testfetidp) {
-    ierr = ComputeKSPFETIDP(dd,KSPwithBDDC,&KSPwithFETIDP);CHKERRQ(ierr);
+    CHKERRQ(ComputeKSPFETIDP(dd,KSPwithBDDC,&KSPwithFETIDP));
   }
   /* create random exact solution */
 #if defined(PETSC_USE_COMPLEX)
-  ierr = VecSet(exact_solution,1.0 + PETSC_i);CHKERRQ(ierr);
+  CHKERRQ(VecSet(exact_solution,1.0 + PETSC_i));
 #else
-  ierr = VecSetRandom(exact_solution,NULL);CHKERRQ(ierr);
+  CHKERRQ(VecSetRandom(exact_solution,NULL));
 #endif
-  ierr = VecShift(exact_solution,-0.5);CHKERRQ(ierr);
-  ierr = VecScale(exact_solution,100.0);CHKERRQ(ierr);
-  ierr = VecGetSize(exact_solution,&ndofs);CHKERRQ(ierr);
+  CHKERRQ(VecShift(exact_solution,-0.5));
+  CHKERRQ(VecScale(exact_solution,100.0));
+  CHKERRQ(VecGetSize(exact_solution,&ndofs));
   if (dd.pure_neumann) {
-    ierr = VecSum(exact_solution,&scalar_value);CHKERRQ(ierr);
+    CHKERRQ(VecSum(exact_solution,&scalar_value));
     scalar_value = -scalar_value/(PetscScalar)ndofs;
-    ierr = VecShift(exact_solution,scalar_value);CHKERRQ(ierr);
+    CHKERRQ(VecShift(exact_solution,scalar_value));
   }
   /* assemble BDDC rhs */
-  ierr = MatMult(A,exact_solution,bddc_rhs);CHKERRQ(ierr);
+  CHKERRQ(MatMult(A,exact_solution,bddc_rhs));
   /* test ksp with BDDC */
-  ierr = KSPSolve(KSPwithBDDC,bddc_rhs,bddc_solution);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(KSPwithBDDC,&its);CHKERRQ(ierr);
-  ierr = KSPGetConvergedReason(KSPwithBDDC,&reason);CHKERRQ(ierr);
-  ierr = KSPComputeExtremeSingularValues(KSPwithBDDC,&maxeig,&mineig);CHKERRQ(ierr);
+  CHKERRQ(KSPSolve(KSPwithBDDC,bddc_rhs,bddc_solution));
+  CHKERRQ(KSPGetIterationNumber(KSPwithBDDC,&its));
+  CHKERRQ(KSPGetConvergedReason(KSPwithBDDC,&reason));
+  CHKERRQ(KSPComputeExtremeSingularValues(KSPwithBDDC,&maxeig,&mineig));
   if (dd.pure_neumann) {
-    ierr = VecSum(bddc_solution,&scalar_value);CHKERRQ(ierr);
+    CHKERRQ(VecSum(bddc_solution,&scalar_value));
     scalar_value = -scalar_value/(PetscScalar)ndofs;
-    ierr = VecShift(bddc_solution,scalar_value);CHKERRQ(ierr);
+    CHKERRQ(VecShift(bddc_solution,scalar_value));
   }
   /* check exact_solution and BDDC solultion */
-  ierr = VecAXPY(bddc_solution,-1.0,exact_solution);CHKERRQ(ierr);
-  ierr = VecNorm(bddc_solution,NORM_INFINITY,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"---------------------BDDC stats-------------------------------\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D\n",ndofs);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(bddc_solution,-1.0,exact_solution));
+  CHKERRQ(VecNorm(bddc_solution,NORM_INFINITY,&norm));
+  CHKERRQ(PetscPrintf(dd.gcomm,"---------------------BDDC stats-------------------------------\n"));
+  CHKERRQ(PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D\n",ndofs));
   if (reason < 0) {
-    ierr = PetscPrintf(dd.gcomm,"Number of iterations                       : %8D\n",its);CHKERRQ(ierr);
-    ierr = PetscPrintf(dd.gcomm,"Converged reason                           : %s\n",KSPConvergedReasons[reason]);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(dd.gcomm,"Number of iterations                       : %8D\n",its));
+    CHKERRQ(PetscPrintf(dd.gcomm,"Converged reason                           : %s\n",KSPConvergedReasons[reason]));
   }
   if (0.95 <= mineig && mineig <= 1.05) mineig = 1.0;
-  ierr = PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.1e %1.1e\n",(double)PetscFloorReal(100.*mineig)/100.,(double)PetscCeilReal(100.*maxeig)/100.);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.1e %1.1e\n",(double)PetscFloorReal(100.*mineig)/100.,(double)PetscCeilReal(100.*maxeig)/100.));
   if (norm > 1.e-1 || reason < 0) {
-    ierr = PetscPrintf(dd.gcomm,"Error between exact and computed solution : %1.2e\n",(double)norm);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(dd.gcomm,"Error between exact and computed solution : %1.2e\n",(double)norm));
   }
-  ierr = PetscPrintf(dd.gcomm,"--------------------------------------------------------------\n");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(dd.gcomm,"--------------------------------------------------------------\n"));
   if (testfetidp) {
     Vec fetidp_solution_all = NULL,fetidp_solution = NULL,fetidp_rhs = NULL;
 
-    ierr = VecDuplicate(bddc_solution,&fetidp_solution_all);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(bddc_solution,&fetidp_solution_all));
     if (!dd.testkspfetidp) {
       /* assemble fetidp rhs on the space of Lagrange multipliers */
-      ierr = KSPGetOperators(KSPwithFETIDP,&F,NULL);CHKERRQ(ierr);
-      ierr = MatCreateVecs(F,&fetidp_solution,&fetidp_rhs);CHKERRQ(ierr);
-      ierr = PCBDDCMatFETIDPGetRHS(F,bddc_rhs,fetidp_rhs);CHKERRQ(ierr);
-      ierr = VecSet(fetidp_solution,0.0);CHKERRQ(ierr);
+      CHKERRQ(KSPGetOperators(KSPwithFETIDP,&F,NULL));
+      CHKERRQ(MatCreateVecs(F,&fetidp_solution,&fetidp_rhs));
+      CHKERRQ(PCBDDCMatFETIDPGetRHS(F,bddc_rhs,fetidp_rhs));
+      CHKERRQ(VecSet(fetidp_solution,0.0));
       /* test ksp with FETIDP */
-      ierr = KSPSolve(KSPwithFETIDP,fetidp_rhs,fetidp_solution);CHKERRQ(ierr);
+      CHKERRQ(KSPSolve(KSPwithFETIDP,fetidp_rhs,fetidp_solution));
       /* assemble fetidp solution on physical domain */
-      ierr = PCBDDCMatFETIDPGetSolution(F,fetidp_solution,fetidp_solution_all);CHKERRQ(ierr);
+      CHKERRQ(PCBDDCMatFETIDPGetSolution(F,fetidp_solution,fetidp_solution_all));
     } else {
       KSP kspF;
-      ierr = KSPSolve(KSPwithFETIDP,bddc_rhs,fetidp_solution_all);CHKERRQ(ierr);
-      ierr = KSPFETIDPGetInnerKSP(KSPwithFETIDP,&kspF);CHKERRQ(ierr);
-      ierr = KSPGetOperators(kspF,&F,NULL);CHKERRQ(ierr);
+      CHKERRQ(KSPSolve(KSPwithFETIDP,bddc_rhs,fetidp_solution_all));
+      CHKERRQ(KSPFETIDPGetInnerKSP(KSPwithFETIDP,&kspF));
+      CHKERRQ(KSPGetOperators(kspF,&F,NULL));
     }
-    ierr = MatGetSize(F,&ndofs,NULL);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(KSPwithFETIDP,&its);CHKERRQ(ierr);
-    ierr = KSPGetConvergedReason(KSPwithFETIDP,&reason);CHKERRQ(ierr);
-    ierr = KSPComputeExtremeSingularValues(KSPwithFETIDP,&maxeig,&mineig);CHKERRQ(ierr);
+    CHKERRQ(MatGetSize(F,&ndofs,NULL));
+    CHKERRQ(KSPGetIterationNumber(KSPwithFETIDP,&its));
+    CHKERRQ(KSPGetConvergedReason(KSPwithFETIDP,&reason));
+    CHKERRQ(KSPComputeExtremeSingularValues(KSPwithFETIDP,&maxeig,&mineig));
     /* check FETIDP sol */
     if (dd.pure_neumann) {
-      ierr = VecSum(fetidp_solution_all,&scalar_value);CHKERRQ(ierr);
+      CHKERRQ(VecSum(fetidp_solution_all,&scalar_value));
       scalar_value = -scalar_value/(PetscScalar)ndofs;
-      ierr = VecShift(fetidp_solution_all,scalar_value);CHKERRQ(ierr);
+      CHKERRQ(VecShift(fetidp_solution_all,scalar_value));
     }
-    ierr = VecAXPY(fetidp_solution_all,-1.0,exact_solution);CHKERRQ(ierr);
-    ierr = VecNorm(fetidp_solution_all,NORM_INFINITY,&norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(dd.gcomm,"------------------FETI-DP stats-------------------------------\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D\n",ndofs);CHKERRQ(ierr);
+    CHKERRQ(VecAXPY(fetidp_solution_all,-1.0,exact_solution));
+    CHKERRQ(VecNorm(fetidp_solution_all,NORM_INFINITY,&norm));
+    CHKERRQ(PetscPrintf(dd.gcomm,"------------------FETI-DP stats-------------------------------\n"));
+    CHKERRQ(PetscPrintf(dd.gcomm,"Number of degrees of freedom               : %8D\n",ndofs));
     if (reason < 0) {
-      ierr = PetscPrintf(dd.gcomm,"Number of iterations                       : %8D\n",its);CHKERRQ(ierr);
-      ierr = PetscPrintf(dd.gcomm,"Converged reason                           : %D\n",reason);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(dd.gcomm,"Number of iterations                       : %8D\n",its));
+      CHKERRQ(PetscPrintf(dd.gcomm,"Converged reason                           : %D\n",reason));
     }
     if (0.95 <= mineig && mineig <= 1.05) mineig = 1.0;
-    ierr = PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.1e %1.1e\n",(double)PetscFloorReal(100.*mineig)/100.,(double)PetscCeilReal(100.*maxeig)/100.);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(dd.gcomm,"Eigenvalues preconditioned operator        : %1.1e %1.1e\n",(double)PetscFloorReal(100.*mineig)/100.,(double)PetscCeilReal(100.*maxeig)/100.));
     if (norm > 1.e-1 || reason < 0) {
-      ierr = PetscPrintf(dd.gcomm,"Error between exact and computed solution : %1.2e\n",(double)norm);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(dd.gcomm,"Error between exact and computed solution : %1.2e\n",(double)norm));
     }
-    ierr = PetscPrintf(dd.gcomm,"--------------------------------------------------------------\n");CHKERRQ(ierr);
-    ierr = VecDestroy(&fetidp_solution);CHKERRQ(ierr);
-    ierr = VecDestroy(&fetidp_solution_all);CHKERRQ(ierr);
-    ierr = VecDestroy(&fetidp_rhs);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(dd.gcomm,"--------------------------------------------------------------\n"));
+    CHKERRQ(VecDestroy(&fetidp_solution));
+    CHKERRQ(VecDestroy(&fetidp_solution_all));
+    CHKERRQ(VecDestroy(&fetidp_rhs));
   }
-  ierr = KSPDestroy(&KSPwithFETIDP);CHKERRQ(ierr);
-  ierr = VecDestroy(&exact_solution);CHKERRQ(ierr);
-  ierr = VecDestroy(&bddc_solution);CHKERRQ(ierr);
-  ierr = VecDestroy(&bddc_rhs);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = KSPDestroy(&KSPwithBDDC);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&KSPwithFETIDP));
+  CHKERRQ(VecDestroy(&exact_solution));
+  CHKERRQ(VecDestroy(&bddc_solution));
+  CHKERRQ(VecDestroy(&bddc_rhs));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(KSPDestroy(&KSPwithBDDC));
   /* Quit PETSc */
   ierr = PetscFinalize();
   return ierr;

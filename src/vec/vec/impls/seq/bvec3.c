@@ -24,17 +24,16 @@ PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec V)
 {
   Vec_Seq        *s;
   PetscScalar    *array;
-  PetscErrorCode ierr;
   PetscInt       n = PetscMax(V->map->n,V->map->N);
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)V),&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)V),&size));
   PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
 #if !defined(PETSC_USE_MIXED_PRECISION)
-  ierr = PetscCalloc1(n,&array);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)V, n*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = VecCreate_Seq_Private(V,array);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc1(n,&array));
+  CHKERRQ(PetscLogObjectMemory((PetscObject)V, n*sizeof(PetscScalar)));
+  CHKERRQ(VecCreate_Seq_Private(V,array));
 
   s                  = (Vec_Seq*)V->data;
   s->array_allocated = array;
@@ -43,9 +42,9 @@ PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec V)
   case PETSC_PRECISION_SINGLE: {
     float *aarray;
 
-    ierr = PetscCalloc1(n,&aarray);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)V, n*sizeof(float));CHKERRQ(ierr);
-    ierr = VecCreate_Seq_Private(V,aarray);CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc1(n,&aarray));
+    CHKERRQ(PetscLogObjectMemory((PetscObject)V, n*sizeof(float)));
+    CHKERRQ(VecCreate_Seq_Private(V,aarray));
 
     s                  = (Vec_Seq*)V->data;
     s->array_allocated = (PetscScalar*)aarray;
@@ -53,9 +52,9 @@ PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec V)
   case PETSC_PRECISION_DOUBLE: {
     double *aarray;
 
-    ierr = PetscCalloc1(n,&aarray);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)V, n*sizeof(double));CHKERRQ(ierr);
-    ierr = VecCreate_Seq_Private(V,aarray);CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc1(n,&aarray));
+    CHKERRQ(PetscLogObjectMemory((PetscObject)V, n*sizeof(double)));
+    CHKERRQ(VecCreate_Seq_Private(V,aarray));
 
     s                  = (Vec_Seq*)V->data;
     s->array_allocated = (PetscScalar*)aarray;

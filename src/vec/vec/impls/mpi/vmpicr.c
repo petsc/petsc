@@ -30,11 +30,9 @@
 @*/
 PetscErrorCode  VecCreateMPI(MPI_Comm comm,PetscInt n,PetscInt N,Vec *v)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecCreate(comm,v);CHKERRQ(ierr);
-  ierr = VecSetSizes(*v,n,N);CHKERRQ(ierr);
-  ierr = VecSetType(*v,VECMPI);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(comm,v));
+  CHKERRQ(VecSetSizes(*v,n,N));
+  CHKERRQ(VecSetType(*v,VECMPI));
   PetscFunctionReturn(0);
 }

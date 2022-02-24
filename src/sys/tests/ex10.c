@@ -10,17 +10,17 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
-  ierr = PetscMalloc1(10,&a);CHKERRQ(ierr);
-  ierr = PetscMalloc1(20,&b);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(10,&a));
+  CHKERRQ(PetscMalloc1(20,&b));
 
   /*
       Nonoverlapping regions
   */
   for (i=0; i<20; i++) b[i] = i;
-  ierr = PetscArraymove(a,b,10);CHKERRQ(ierr);
-  ierr = PetscIntView(10,a,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscArraymove(a,b,10));
+  CHKERRQ(PetscIntView(10,a,NULL));
 
-  ierr = PetscFree(a);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(a));
 
   /*
      |        |                |       |
@@ -28,21 +28,21 @@ int main(int argc,char **argv)
                               a+10    a+15
   */
   a    = b + 5;
-  ierr = PetscArraymove(a,b,15);CHKERRQ(ierr);
-  ierr = PetscIntView(15,a,NULL);CHKERRQ(ierr);
-  ierr = PetscFree(b);CHKERRQ(ierr);
+  CHKERRQ(PetscArraymove(a,b,15));
+  CHKERRQ(PetscIntView(15,a,NULL));
+  CHKERRQ(PetscFree(b));
 
   /*
      |       |                    |       |
      a       b                   a+20   a+25
                                         b+20
   */
-  ierr = PetscMalloc1(25,&a);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(25,&a));
   b    = a + 5;
   for (i=0; i<20; i++) b[i] = i;
-  ierr = PetscArraymove(a,b,20);CHKERRQ(ierr);
-  ierr = PetscIntView(20,a,NULL);CHKERRQ(ierr);
-  ierr = PetscFree(a);CHKERRQ(ierr);
+  CHKERRQ(PetscArraymove(a,b,20));
+  CHKERRQ(PetscIntView(20,a,NULL));
+  CHKERRQ(PetscFree(a));
 
   ierr = PetscFinalize();
   return ierr;

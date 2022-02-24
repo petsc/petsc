@@ -35,45 +35,45 @@ int main(int argc,char **argv)
    * Construct the Kershaw matrix
    * and a suitable rhs / initial guess
    */
-  ierr = MatCreateSeqAIJ(comm,4,4,4,0,&A);CHKERRQ(ierr);
-  ierr = VecCreateSeq(comm,4,&B);CHKERRQ(ierr);
-  ierr = VecDuplicate(B,&X);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSeqAIJ(comm,4,4,4,0,&A));
+  CHKERRQ(VecCreateSeq(comm,4,&B));
+  CHKERRQ(VecDuplicate(B,&X));
   for (i=0; i<4; i++) {
     v    = 3;
-    ierr = MatSetValues(A,1,&i,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&i,1,&i,&v,INSERT_VALUES));
     v    = 1;
-    ierr = VecSetValues(B,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValues(X,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(B,1,&i,&v,INSERT_VALUES));
+    CHKERRQ(VecSetValues(X,1,&i,&v,INSERT_VALUES));
   }
 
   i    =0; v=0;
-  ierr = VecSetValues(X,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(VecSetValues(X,1,&i,&v,INSERT_VALUES));
 
   for (i=0; i<3; i++) {
     v    = -2; j=i+1;
-    ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValues(A,1,&j,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
+    CHKERRQ(MatSetValues(A,1,&j,1,&i,&v,INSERT_VALUES));
   }
   i=0; j=3; v=2;
 
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatSetValues(A,1,&j,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(B);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(B);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\nThe Kershaw matrix:\n\n");CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
+  CHKERRQ(MatSetValues(A,1,&j,1,&i,&v,INSERT_VALUES));
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(VecAssemblyBegin(B));
+  CHKERRQ(VecAssemblyEnd(B));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nThe Kershaw matrix:\n\n"));
+  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
   /*
    * A Conjugate Gradient method
    * with ILU(0) preconditioning
    */
-  ierr = KSPCreate(comm,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(comm,&ksp));
+  CHKERRQ(KSPSetOperators(ksp,A,A));
 
-  ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
-  ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(KSPSetType(ksp,KSPCG));
+  CHKERRQ(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
 
   /*
    * ILU preconditioner;
@@ -84,47 +84,47 @@ int main(int argc,char **argv)
    * command line option, and see that the pivots are all positive and
    * the method converges.
    */
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCICC);CHKERRQ(ierr);
-  /* ierr = PCFactorSetShiftType(prec,MAT_SHIFT_POSITIVE_DEFINITE);CHKERRQ(ierr); */
+  CHKERRQ(KSPGetPC(ksp,&pc));
+  CHKERRQ(PCSetType(pc,PCICC));
+  /* CHKERRQ(PCFactorSetShiftType(prec,MAT_SHIFT_POSITIVE_DEFINITE)); */
 
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPSetFromOptions(ksp));
+  CHKERRQ(KSPSetUp(ksp));
 
   /*
    * Now that the factorisation is done, show the pivots;
    * note that the last one is negative. This in itself is not an error,
    * but it will make the iterative method diverge.
    */
-  ierr = PCFactorGetMatrix(pc,&M);CHKERRQ(ierr);
-  ierr = VecDuplicate(B,&D);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(M,D);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\nPivots:\n\n");CHKERRQ(ierr);
-  ierr = VecView(D,0);CHKERRQ(ierr);
+  CHKERRQ(PCFactorGetMatrix(pc,&M));
+  CHKERRQ(VecDuplicate(B,&D));
+  CHKERRQ(MatGetDiagonal(M,D));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nPivots:\n\n"));
+  CHKERRQ(VecView(D,0));
 
   /*
    * Solve the system;
    * without the shift this will diverge with
    * an indefinite preconditioner
    */
-  ierr = KSPSolve(ksp,B,X);CHKERRQ(ierr);
-  ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
+  CHKERRQ(KSPSolve(ksp,B,X));
+  CHKERRQ(KSPGetConvergedReason(ksp,&reason));
   if (reason==KSP_DIVERGED_INDEFINITE_PC) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nDivergence because of indefinite preconditioner;\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Run the executable again but with -pc_factor_shift_positive_definite option.\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nDivergence because of indefinite preconditioner;\n"));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Run the executable again but with -pc_factor_shift_positive_definite option.\n"));
   } else if (reason<0) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nOther kind of divergence: this should not happen.\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nOther kind of divergence: this should not happen.\n"));
   } else {
-    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nConvergence in %d iterations.\n",(int)its);CHKERRQ(ierr);
+    CHKERRQ(KSPGetIterationNumber(ksp,&its));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nConvergence in %d iterations.\n",(int)its));
   }
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n"));
 
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&B);CHKERRQ(ierr);
-  ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&D);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(VecDestroy(&B));
+  CHKERRQ(VecDestroy(&X));
+  CHKERRQ(VecDestroy(&D));
   ierr = PetscFinalize();
   return ierr;
 }

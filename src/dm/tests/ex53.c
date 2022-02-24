@@ -36,15 +36,15 @@ int main(int argc,char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  ierr = PetscOptionsGetInt(NULL, NULL, "-mx", &mx, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, NULL, "-my", &my, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, NULL, "-mz", &mz, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, NULL, "-dim", &dim, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, NULL, "-sliceid", &sliceid, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, NULL, "-sliceaxis", &sliceaxis, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL, NULL, "-mx", &mx, NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL, NULL, "-my", &my, NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL, NULL, "-mz", &mz, NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL, NULL, "-sliceid", &sliceid, NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL, NULL, "-sliceaxis", &sliceaxis, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create DMDA object.
@@ -58,8 +58,8 @@ int main(int argc,char **argv)
                         1, 1,
                         NULL, NULL, NULL,
                         &da);CHKERRQ(ierr);
-    ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-    ierr = DMSetUp(da);CHKERRQ(ierr);
+    CHKERRQ(DMSetFromOptions(da));
+    CHKERRQ(DMSetUp(da));
   } else {
     ierr = DMDACreate2d(PETSC_COMM_WORLD,
                         DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
@@ -69,22 +69,22 @@ int main(int argc,char **argv)
                         1, 1,
                         NULL, NULL,
                         &da);CHKERRQ(ierr);
-    ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-    ierr = DMSetUp(da);CHKERRQ(ierr);
+    CHKERRQ(DMSetFromOptions(da));
+    CHKERRQ(DMSetUp(da));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create the parent vector
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-  ierr = DMCreateGlobalVector(da, &vec_full);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) vec_full, "full_vector");CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(da, &vec_full));
+  CHKERRQ(PetscObjectSetName((PetscObject) vec_full, "full_vector"));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Populate the 3D vector
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDAGetCorners(da, &ixs, &iys, &izs, &ixm, &iym, &izm);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(da, &ixs, &iys, &izs, &ixm, &iym, &izm));
   if (dim==3) {
-    ierr = DMDAVecGetArray(da, vec_full, &vecdata3d);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecGetArray(da, vec_full, &vecdata3d));
     for (k=izs; k<izs+izm; k++) {
       for (j=iys; j<iys+iym; j++) {
         for (i=ixs; i<ixs+ixm; i++) {
@@ -92,15 +92,15 @@ int main(int argc,char **argv)
         }
       }
     }
-    ierr = DMDAVecRestoreArray(da, vec_full, &vecdata3d);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecRestoreArray(da, vec_full, &vecdata3d));
   } else {
-    ierr = DMDAVecGetArray(da, vec_full, &vecdata2d);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecGetArray(da, vec_full, &vecdata2d));
     for (j=iys; j<iys+iym; j++) {
       for (i=ixs; i<ixs+ixm; i++) {
         vecdata2d[j][i] = ((i-mx/2)*(j+mx/2));
       }
     }
-    ierr = DMDAVecRestoreArray(da, vec_full, &vecdata2d);CHKERRQ(ierr);
+    CHKERRQ(DMDAVecRestoreArray(da, vec_full, &vecdata2d));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -116,29 +116,29 @@ int main(int argc,char **argv)
     lower.i = 0;  lower.j = 0;  lower.k = sliceid; lower.c = 1;
     upper.i = mx; upper.j = my; upper.k = sliceid; upper.c = 1;
   }
-  ierr = DMDACreatePatchIS(da, &lower, &upper, &selectis, patchis_offproc);CHKERRQ(ierr);
-  ierr = ISView(selectis, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(DMDACreatePatchIS(da, &lower, &upper, &selectis, patchis_offproc));
+  CHKERRQ(ISView(selectis, PETSC_VIEWER_STDOUT_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Use the obtained IS to extract the slice as a subvector
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecGetSubVector(vec_full, selectis, &vec_slice);CHKERRQ(ierr);
+  CHKERRQ(VecGetSubVector(vec_full, selectis, &vec_slice));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      View the extracted subvector
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
-  ierr = VecView(vec_slice, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_DENSE));
+  CHKERRQ(VecView(vec_slice, PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Restore subvector, destroy data structures and exit.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecRestoreSubVector(vec_full, selectis, &vec_slice);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreSubVector(vec_full, selectis, &vec_slice));
 
-  ierr = ISDestroy(&selectis);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = VecDestroy(&vec_full);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&selectis));
+  CHKERRQ(DMDestroy(&da));
+  CHKERRQ(VecDestroy(&vec_full));
 
   ierr = PetscFinalize();
   return ierr;

@@ -23,163 +23,163 @@ int main(int argc,char **args)
   PetscErrorCode     ierr;
 
   ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
-  ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRQ(PetscLogDefaultBegin());
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 4,PETSC_COMM_WORLD,PETSC_ERR_USER,"This example requires 4 processes");
-  ierr = PetscOptionsGetInt(NULL,NULL,"-rhs",&N,NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_SELF,&aux);CHKERRQ(ierr);
-  ierr = ISCreate(PETSC_COMM_SELF,&is);CHKERRQ(ierr);
-  ierr = PetscStrcpy(dir,".");CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-load_dir",dir,sizeof(dir),NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-rhs",&N,NULL));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatCreate(PETSC_COMM_SELF,&aux));
+  CHKERRQ(ISCreate(PETSC_COMM_SELF,&is));
+  CHKERRQ(PetscStrcpy(dir,"."));
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-load_dir",dir,sizeof(dir),NULL));
   /* loading matrices */
-  ierr = PetscSNPrintf(name,sizeof(name),"%s/sizes_%d_%d.dat",dir,rank,size);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = ISCreate(PETSC_COMM_SELF,&sizes);CHKERRQ(ierr);
-  ierr = ISLoad(sizes,viewer);CHKERRQ(ierr);
-  ierr = ISGetIndices(sizes,&idx);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,idx[0],idx[1],idx[2],idx[3]);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(sizes,&idx);CHKERRQ(ierr);
-  ierr = ISDestroy(&sizes);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(name,sizeof(name),"%s/A.dat",dir);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = MatLoad(A,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(name,sizeof(name),"%s/is_%d_%d.dat",dir,rank,size);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = ISLoad(is,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(name,sizeof(name),"%s/Neumann_%d_%d.dat",dir,rank,size);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = MatLoad(aux,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscSNPrintf(name,sizeof(name),"%s/sizes_%d_%d.dat",dir,rank,size));
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer));
+  CHKERRQ(ISCreate(PETSC_COMM_SELF,&sizes));
+  CHKERRQ(ISLoad(sizes,viewer));
+  CHKERRQ(ISGetIndices(sizes,&idx));
+  CHKERRQ(MatSetSizes(A,idx[0],idx[1],idx[2],idx[3]));
+  CHKERRQ(ISRestoreIndices(sizes,&idx));
+  CHKERRQ(ISDestroy(&sizes));
+  CHKERRQ(PetscViewerDestroy(&viewer));
+  CHKERRQ(MatSetUp(A));
+  CHKERRQ(PetscSNPrintf(name,sizeof(name),"%s/A.dat",dir));
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
+  CHKERRQ(MatLoad(A,viewer));
+  CHKERRQ(PetscViewerDestroy(&viewer));
+  CHKERRQ(PetscSNPrintf(name,sizeof(name),"%s/is_%d_%d.dat",dir,rank,size));
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer));
+  CHKERRQ(ISLoad(is,viewer));
+  CHKERRQ(PetscViewerDestroy(&viewer));
+  CHKERRQ(PetscSNPrintf(name,sizeof(name),"%s/Neumann_%d_%d.dat",dir,rank,size));
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ,&viewer));
+  CHKERRQ(MatLoad(aux,viewer));
+  CHKERRQ(PetscViewerDestroy(&viewer));
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-pc_hpddm_levels_1_st_share_sub_ksp",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-pc_hpddm_levels_1_st_share_sub_ksp",&flg,NULL));
   if (flg) { /* PETSc LU/Cholesky is struggling numerically for bs > 1          */
              /* only set the proper bs for the geneo_share_* tests, 1 otherwise */
-    ierr = MatSetBlockSizesFromMats(aux,A,A);CHKERRQ(ierr);
+    CHKERRQ(MatSetBlockSizesFromMats(aux,A,A));
   }
-  ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatSetOption(aux,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
+  CHKERRQ(MatSetOption(aux,MAT_SYMMETRIC,PETSC_TRUE));
   /* ready for testing */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","","");CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsFList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (flg) {
-    ierr = MatConvert(A,type,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
-    ierr = MatConvert(aux,type,MAT_INPLACE_MATRIX,&aux);CHKERRQ(ierr);
+    CHKERRQ(MatConvert(A,type,MAT_INPLACE_MATRIX,&A));
+    CHKERRQ(MatConvert(aux,type,MAT_INPLACE_MATRIX,&aux));
   }
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCHPDDM);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPSetOperators(ksp,A,A));
+  CHKERRQ(KSPGetPC(ksp,&pc));
+  CHKERRQ(PCSetType(pc,PCHPDDM));
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-pc_hpddm_block_splitting",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-pc_hpddm_block_splitting",&flg,NULL));
   if (!flg) {
-    ierr = PCHPDDMSetAuxiliaryMat(pc,is,aux,NULL,NULL);CHKERRQ(ierr);
-    ierr = PCHPDDMHasNeumannMat(pc,PETSC_FALSE);CHKERRQ(ierr); /* PETSC_TRUE is fine as well, just testing */
+    CHKERRQ(PCHPDDMSetAuxiliaryMat(pc,is,aux,NULL,NULL));
+    CHKERRQ(PCHPDDMHasNeumannMat(pc,PETSC_FALSE)); /* PETSC_TRUE is fine as well, just testing */
   }
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-set_rhs",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-set_rhs",&flg,NULL));
   if (flg) { /* user-provided RHS for concurrent generalized eigenvalue problems                                   */
     Mat      a,c,P; /* usually assembled automatically in PCHPDDM, this is solely for testing PCHPDDMSetRHSMat() */
     PetscInt rstart,rend,location;
-    ierr = MatDuplicate(aux,MAT_DO_NOT_COPY_VALUES,&B);CHKERRQ(ierr); /* duplicate so that MatStructure is SAME_NONZERO_PATTERN */
-    ierr = MatGetDiagonalBlock(A,&a);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(is,&m);CHKERRQ(ierr);
-    ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,rend-rstart,m,1,NULL,&P);CHKERRQ(ierr);
+    CHKERRQ(MatDuplicate(aux,MAT_DO_NOT_COPY_VALUES,&B)); /* duplicate so that MatStructure is SAME_NONZERO_PATTERN */
+    CHKERRQ(MatGetDiagonalBlock(A,&a));
+    CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
+    CHKERRQ(ISGetLocalSize(is,&m));
+    CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_SELF,rend-rstart,m,1,NULL,&P));
     for (m = rstart; m < rend; ++m) {
-      ierr = ISLocate(is,m,&location);CHKERRQ(ierr);
+      CHKERRQ(ISLocate(is,m,&location));
       PetscCheck(location >= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "IS of the auxiliary Mat does not include all local rows of A");
-      ierr = MatSetValue(P,m-rstart,location,1.0,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValue(P,m-rstart,location,1.0,INSERT_VALUES));
     }
-    ierr = MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)a,MATSEQAIJ,&flg);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(PetscObjectTypeCompare((PetscObject)a,MATSEQAIJ,&flg));
     if (flg) {
-      ierr = MatPtAP(a,P,MAT_INITIAL_MATRIX,1.0,&X);CHKERRQ(ierr); /* MatPtAP() is used to extend diagonal blocks with zeros on the overlap */
+      CHKERRQ(MatPtAP(a,P,MAT_INITIAL_MATRIX,1.0,&X)); /* MatPtAP() is used to extend diagonal blocks with zeros on the overlap */
     } else { /* workaround for MatPtAP() limitations with some types */
-      ierr = MatConvert(a,MATSEQAIJ,MAT_INITIAL_MATRIX,&c);CHKERRQ(ierr);
-      ierr = MatPtAP(c,P,MAT_INITIAL_MATRIX,1.0,&X);CHKERRQ(ierr);
-      ierr = MatDestroy(&c);CHKERRQ(ierr);
+      CHKERRQ(MatConvert(a,MATSEQAIJ,MAT_INITIAL_MATRIX,&c));
+      CHKERRQ(MatPtAP(c,P,MAT_INITIAL_MATRIX,1.0,&X));
+      CHKERRQ(MatDestroy(&c));
     }
-    ierr = MatDestroy(&P);CHKERRQ(ierr);
-    ierr = MatAXPY(B,1.0,X,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatDestroy(&X);CHKERRQ(ierr);
-    ierr = MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PCHPDDMSetRHSMat(pc,B);CHKERRQ(ierr);
-    ierr = MatDestroy(&B);CHKERRQ(ierr);
+    CHKERRQ(MatDestroy(&P));
+    CHKERRQ(MatAXPY(B,1.0,X,SUBSET_NONZERO_PATTERN));
+    CHKERRQ(MatDestroy(&X));
+    CHKERRQ(MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE));
+    CHKERRQ(PCHPDDMSetRHSMat(pc,B));
+    CHKERRQ(MatDestroy(&B));
   }
 #endif
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = MatDestroy(&aux);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
-  ierr = VecSet(b,1.0);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(x,&m);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&is));
+  CHKERRQ(MatDestroy(&aux));
+  CHKERRQ(KSPSetFromOptions(ksp));
+  CHKERRQ(MatCreateVecs(A,&x,&b));
+  CHKERRQ(VecSet(b,1.0));
+  CHKERRQ(KSPSolve(ksp,b,x));
+  CHKERRQ(VecGetLocalSize(x,&m));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&b));
   if (N > 1) {
     KSPType type;
-    ierr = PetscOptionsClearValue(NULL,"-ksp_converged_reason");CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-    ierr = MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&B);CHKERRQ(ierr);
-    ierr = MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&X);CHKERRQ(ierr);
-    ierr = MatSetRandom(B,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsClearValue(NULL,"-ksp_converged_reason"));
+    CHKERRQ(KSPSetFromOptions(ksp));
+    CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&B));
+    CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,NULL,&X));
+    CHKERRQ(MatSetRandom(B,NULL));
     /* this is algorithmically optimal in the sense that blocks of vectors are coarsened or interpolated using matrix--matrix operations */
     /* PCHPDDM however heavily relies on MPI[S]BAIJ format for which there is no efficient MatProduct implementation */
-    ierr = KSPMatSolve(ksp,B,X);CHKERRQ(ierr);
-    ierr = KSPGetType(ksp,&type);CHKERRQ(ierr);
-    ierr = PetscStrcmp(type,KSPHPDDM,&flg);CHKERRQ(ierr);
+    CHKERRQ(KSPMatSolve(ksp,B,X));
+    CHKERRQ(KSPGetType(ksp,&type));
+    CHKERRQ(PetscStrcmp(type,KSPHPDDM,&flg));
 #if defined(PETSC_HAVE_HPDDM)
     if (flg) {
       PetscReal    norm;
       KSPHPDDMType type;
-      ierr = KSPHPDDMGetType(ksp,&type);CHKERRQ(ierr);
+      CHKERRQ(KSPHPDDMGetType(ksp,&type));
       if (type == KSP_HPDDM_TYPE_PREONLY || type == KSP_HPDDM_TYPE_CG || type == KSP_HPDDM_TYPE_GMRES || type == KSP_HPDDM_TYPE_GCRODR) {
         Mat C;
-        ierr = MatDuplicate(X,MAT_DO_NOT_COPY_VALUES,&C);CHKERRQ(ierr);
-        ierr = KSPSetMatSolveBatchSize(ksp,1);CHKERRQ(ierr);
-        ierr = KSPMatSolve(ksp,B,C);CHKERRQ(ierr);
-        ierr = MatAYPX(C,-1.0,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-        ierr = MatNorm(C,NORM_INFINITY,&norm);CHKERRQ(ierr);
-        ierr = MatDestroy(&C);CHKERRQ(ierr);
+        CHKERRQ(MatDuplicate(X,MAT_DO_NOT_COPY_VALUES,&C));
+        CHKERRQ(KSPSetMatSolveBatchSize(ksp,1));
+        CHKERRQ(KSPMatSolve(ksp,B,C));
+        CHKERRQ(MatAYPX(C,-1.0,X,SAME_NONZERO_PATTERN));
+        CHKERRQ(MatNorm(C,NORM_INFINITY,&norm));
+        CHKERRQ(MatDestroy(&C));
         PetscCheckFalse(norm > 100*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"KSPMatSolve() and KSPSolve() difference has nonzero norm %g with pseudo-block KSPHPDDMType %s",(double)norm,KSPHPDDMTypes[type]);
       }
     }
 #endif
-    ierr = MatDestroy(&X);CHKERRQ(ierr);
-    ierr = MatDestroy(&B);CHKERRQ(ierr);
+    CHKERRQ(MatDestroy(&X));
+    CHKERRQ(MatDestroy(&B));
   }
-  ierr = PetscObjectTypeCompare((PetscObject)pc,PCHPDDM,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCHPDDM,&flg));
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
   if (flg) {
-    ierr = PCHPDDMGetSTShareSubKSP(pc,&flg);CHKERRQ(ierr);
+    CHKERRQ(PCHPDDMGetSTShareSubKSP(pc,&flg));
   }
 #endif
   if (flg && PetscDefined(USE_LOG)) {
-    ierr = PetscLogEventRegister("MatLUFactorSym",PC_CLASSID,&event);CHKERRQ(ierr);
-    ierr = PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info1);CHKERRQ(ierr);
-    ierr = PetscLogEventRegister("MatLUFactorNum",PC_CLASSID,&event);CHKERRQ(ierr);
-    ierr = PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info2);CHKERRQ(ierr);
+    CHKERRQ(PetscLogEventRegister("MatLUFactorSym",PC_CLASSID,&event));
+    CHKERRQ(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info1));
+    CHKERRQ(PetscLogEventRegister("MatLUFactorNum",PC_CLASSID,&event));
+    CHKERRQ(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info2));
     if (info1.count || info2.count) {
       PetscCheckFalse(info2.count <= info1.count,PETSC_COMM_SELF,PETSC_ERR_PLIB,"LU numerical factorization (%d) not called more times than LU symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp",info2.count,info1.count);
     } else {
-      ierr = PetscLogEventRegister("MatCholFctrSym",PC_CLASSID,&event);CHKERRQ(ierr);
-      ierr = PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info1);CHKERRQ(ierr);
-      ierr = PetscLogEventRegister("MatCholFctrNum",PC_CLASSID,&event);CHKERRQ(ierr);
-      ierr = PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info2);CHKERRQ(ierr);
+      CHKERRQ(PetscLogEventRegister("MatCholFctrSym",PC_CLASSID,&event));
+      CHKERRQ(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info1));
+      CHKERRQ(PetscLogEventRegister("MatCholFctrNum",PC_CLASSID,&event));
+      CHKERRQ(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info2));
       PetscCheckFalse(info2.count <= info1.count,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cholesky numerical factorization (%d) not called more times than Cholesky symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp",info2.count,info1.count);
     }
   }
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(MatDestroy(&A));
   ierr = PetscFinalize();
   return ierr;
 }

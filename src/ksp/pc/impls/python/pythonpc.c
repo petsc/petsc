@@ -18,11 +18,9 @@
 @*/
 PetscErrorCode  PCPythonSetType(PC pc,const char pyname[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidCharPointer(pyname,2);
-  ierr = PetscTryMethod(pc,"PCPythonSetType_C",(PC, const char[]),(pc,pyname));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(pc,"PCPythonSetType_C",(PC, const char[]),(pc,pyname)));
   PetscFunctionReturn(0);
 }

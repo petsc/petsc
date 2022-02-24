@@ -10,41 +10,41 @@ int main(int argc,char **args)
   PetscInt       id,val,cnt,*values;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscHeapCreate(9,&h);CHKERRQ(ierr);
-  ierr = PetscHeapAdd(h,0,100);CHKERRQ(ierr);
-  ierr = PetscHeapAdd(h,1,19);CHKERRQ(ierr);
-  ierr = PetscHeapAdd(h,2,36);CHKERRQ(ierr);
-  ierr = PetscHeapAdd(h,3,17);CHKERRQ(ierr);
-  ierr = PetscHeapAdd(h,4,3);CHKERRQ(ierr);
-  ierr = PetscHeapAdd(h,5,25);CHKERRQ(ierr);
-  ierr = PetscHeapAdd(h,6,1);CHKERRQ(ierr);
-  ierr = PetscHeapAdd(h,8,2);CHKERRQ(ierr);
-  ierr = PetscHeapAdd(h,9,7);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Initial heap:\n");CHKERRQ(ierr);
-  ierr = PetscHeapView(h,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscHeapCreate(9,&h));
+  CHKERRQ(PetscHeapAdd(h,0,100));
+  CHKERRQ(PetscHeapAdd(h,1,19));
+  CHKERRQ(PetscHeapAdd(h,2,36));
+  CHKERRQ(PetscHeapAdd(h,3,17));
+  CHKERRQ(PetscHeapAdd(h,4,3));
+  CHKERRQ(PetscHeapAdd(h,5,25));
+  CHKERRQ(PetscHeapAdd(h,6,1));
+  CHKERRQ(PetscHeapAdd(h,8,2));
+  CHKERRQ(PetscHeapAdd(h,9,7));
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Initial heap:\n"));
+  CHKERRQ(PetscHeapView(h,NULL));
 
-  ierr = PetscHeapPop(h,&id,&val);CHKERRQ(ierr);
-  ierr = PetscHeapStash(h,id,val+10);CHKERRQ(ierr);
-  ierr = PetscHeapPop(h,&id,&val);CHKERRQ(ierr);
-  ierr = PetscHeapStash(h,id,val+10);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Pop two items, increment, and place in stash:\n");CHKERRQ(ierr);
-  ierr = PetscHeapView(h,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscHeapPop(h,&id,&val));
+  CHKERRQ(PetscHeapStash(h,id,val+10));
+  CHKERRQ(PetscHeapPop(h,&id,&val));
+  CHKERRQ(PetscHeapStash(h,id,val+10));
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Pop two items, increment, and place in stash:\n"));
+  CHKERRQ(PetscHeapView(h,NULL));
 
-  ierr = PetscHeapUnstash(h);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"After unpacking the stash:\n");CHKERRQ(ierr);
-  ierr = PetscHeapView(h,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscHeapUnstash(h));
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"After unpacking the stash:\n"));
+  CHKERRQ(PetscHeapView(h,NULL));
 
-  ierr = PetscMalloc1(9,&values);CHKERRQ(ierr);
-  ierr = PetscHeapPop(h,&id,&val);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(9,&values));
+  CHKERRQ(PetscHeapPop(h,&id,&val));
   cnt  = 0;
   while (id >= 0) {
     values[cnt++] = val;
-    ierr          = PetscHeapPop(h,&id,&val);CHKERRQ(ierr);
+    CHKERRQ(PetscHeapPop(h,&id,&val));
   }
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Sorted values:\n");CHKERRQ(ierr);
-  ierr = PetscIntView(cnt,values,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscFree(values);CHKERRQ(ierr);
-  ierr = PetscHeapDestroy(&h);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Sorted values:\n"));
+  CHKERRQ(PetscIntView(cnt,values,PETSC_VIEWER_STDOUT_SELF));
+  CHKERRQ(PetscFree(values));
+  CHKERRQ(PetscHeapDestroy(&h));
   ierr = PetscFinalize();
   return ierr;
 }

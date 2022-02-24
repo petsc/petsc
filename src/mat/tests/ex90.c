@@ -58,22 +58,22 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  CHKERRMPI(MPI_Comm_size(comm,&size));
   PetscCheckFalse(size != 2,comm,PETSC_ERR_ARG_INCOMP,"You have to use two processor cores to run this example ");
-  ierr = MatCreateMPIAIJWithArrays(comm,2,2,PETSC_DETERMINE,PETSC_DETERMINE,rank? i2:i1,rank? j2:j1,rank? a2:a1,&A);CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJWithArrays(comm,2,1,PETSC_DETERMINE,PETSC_DETERMINE,rank? pi2:pi1,rank? pj2:pj1,rank? pa2:pa1,&P);CHKERRQ(ierr);
-  ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,1.1,&PtAP);CHKERRQ(ierr);
-  ierr = MatView(A,NULL);CHKERRQ(ierr);
-  ierr = MatView(P,NULL);CHKERRQ(ierr);
-  ierr = MatView(PtAP,NULL);CHKERRQ(ierr);
-  ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,1.1,&PtAP);CHKERRQ(ierr);
-  ierr = MatView(A,NULL);CHKERRQ(ierr);
-  ierr = MatView(P,NULL);CHKERRQ(ierr);
-  ierr = MatView(PtAP,NULL);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&P);CHKERRQ(ierr);
-  ierr = MatDestroy(&PtAP);CHKERRQ(ierr);
+  CHKERRQ(MatCreateMPIAIJWithArrays(comm,2,2,PETSC_DETERMINE,PETSC_DETERMINE,rank? i2:i1,rank? j2:j1,rank? a2:a1,&A));
+  CHKERRQ(MatCreateMPIAIJWithArrays(comm,2,1,PETSC_DETERMINE,PETSC_DETERMINE,rank? pi2:pi1,rank? pj2:pj1,rank? pa2:pa1,&P));
+  CHKERRQ(MatPtAP(A,P,MAT_INITIAL_MATRIX,1.1,&PtAP));
+  CHKERRQ(MatView(A,NULL));
+  CHKERRQ(MatView(P,NULL));
+  CHKERRQ(MatView(PtAP,NULL));
+  CHKERRQ(MatPtAP(A,P,MAT_REUSE_MATRIX,1.1,&PtAP));
+  CHKERRQ(MatView(A,NULL));
+  CHKERRQ(MatView(P,NULL));
+  CHKERRQ(MatView(PtAP,NULL));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&P));
+  CHKERRQ(MatDestroy(&PtAP));
   ierr = PetscFinalize();
   return ierr;
 }

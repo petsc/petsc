@@ -14,139 +14,139 @@ int main(int argc,char **args)
   PetscErrorCode     ierr;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-nx",&nx,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nx",&nx,&flg));
   if (!flg) nx = 3;
 
   y_size = 0;
   shift = 0;
-  ierr = PetscMalloc1(nx, &x);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(nx, &x));
   for (i=0; i<nx; i++) {
     x_size = 2*(i + 1);
     y_size += x_size;
-    ierr = VecCreate(PETSC_COMM_WORLD, &x[i]);CHKERRQ(ierr);
-    ierr = VecSetSizes(x[i], PETSC_DECIDE, x_size);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(x[i]);CHKERRQ(ierr);
-    ierr = VecSetUp(x[i]);CHKERRQ(ierr);
-    ierr = PetscMalloc2(x_size, &idx, x_size, &vals);CHKERRQ(ierr);
+    CHKERRQ(VecCreate(PETSC_COMM_WORLD, &x[i]));
+    CHKERRQ(VecSetSizes(x[i], PETSC_DECIDE, x_size));
+    CHKERRQ(VecSetFromOptions(x[i]));
+    CHKERRQ(VecSetUp(x[i]));
+    CHKERRQ(PetscMalloc2(x_size, &idx, x_size, &vals));
     for (j=0; j<x_size; j++) {
       idx[j] = j;
       vals[j] = (PetscScalar)(shift + j + 1);
     }
     shift += x_size;
-    ierr = VecSetValues(x[i], x_size, (const PetscInt*)idx, (const PetscScalar*)vals, INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(x[i]);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(x[i]);CHKERRQ(ierr);
-    ierr = PetscFree2(idx, vals);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Original X[%" PetscInt_FMT "] vector\n", i);CHKERRQ(ierr);
-    ierr = VecView(x[i], PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(x[i], x_size, (const PetscInt*)idx, (const PetscScalar*)vals, INSERT_VALUES));
+    CHKERRQ(VecAssemblyBegin(x[i]));
+    CHKERRQ(VecAssemblyEnd(x[i]));
+    CHKERRQ(PetscFree2(idx, vals));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Original X[%" PetscInt_FMT "] vector\n", i));
+    CHKERRQ(VecView(x[i], PETSC_VIEWER_STDOUT_WORLD));
   }
-  ierr = VecCreate(PETSC_COMM_WORLD, &y);CHKERRQ(ierr);
-  ierr = VecSetSizes(y, PETSC_DECIDE, y_size);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(y);CHKERRQ(ierr);
-  ierr = VecSetUp(y);CHKERRQ(ierr);
-  ierr = PetscMalloc2(y_size, &idx, y_size, &vals);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD, &y));
+  CHKERRQ(VecSetSizes(y, PETSC_DECIDE, y_size));
+  CHKERRQ(VecSetFromOptions(y));
+  CHKERRQ(VecSetUp(y));
+  CHKERRQ(PetscMalloc2(y_size, &idx, y_size, &vals));
   for (j=0; j<y_size; j++) {
     idx[j] = j;
     vals[j] = (PetscScalar)(j + 1);
   }
-  ierr = VecSetValues(y, y_size, (const PetscInt*)idx, (const PetscScalar*)vals, INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(y);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(y);CHKERRQ(ierr);
-  ierr = PetscFree2(idx, vals);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Expected Y vector\n");CHKERRQ(ierr);
-  ierr = VecView(y, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "------------------------------------------------------------\n");CHKERRQ(ierr);
+  CHKERRQ(VecSetValues(y, y_size, (const PetscInt*)idx, (const PetscScalar*)vals, INSERT_VALUES));
+  CHKERRQ(VecAssemblyBegin(y));
+  CHKERRQ(VecAssemblyEnd(y));
+  CHKERRQ(PetscFree2(idx, vals));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Expected Y vector\n"));
+  CHKERRQ(VecView(y, PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "------------------------------------------------------------\n"));
 
   /* ---------- base VecConcatenate() test ----------- */
-  ierr = VecConcatenate(nx, (const Vec*)x, &y_test, &x_is);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Testing VecConcatenate() for Y = [X[1], X[2], ...]\n");CHKERRQ(ierr);
-  ierr = VecView(y_test, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecConcatenate(nx, (const Vec*)x, &y_test, &x_is));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Testing VecConcatenate() for Y = [X[1], X[2], ...]\n"));
+  CHKERRQ(VecView(y_test, PETSC_VIEWER_STDOUT_WORLD));
   y_equal = PETSC_FALSE;
-  ierr = VecEqual(y_test, y, &y_equal);CHKERRQ(ierr);
+  CHKERRQ(VecEqual(y_test, y, &y_equal));
   if (!y_equal) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "  FAIL\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "  FAIL\n"));
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "  PASS\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "  PASS\n"));
   }
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "------------------------------------------------------------\n");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "------------------------------------------------------------\n"));
 
   /* ---------- test VecConcatenate() without IS (checks for dangling memory from IS) ----------- */
-  ierr = VecDestroy(&y_test);CHKERRQ(ierr);
-  ierr = VecConcatenate(nx, (const Vec*)x, &y_test, NULL);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Testing VecConcatenate() for Y = [X[1], X[2], ...] w/o IS\n");CHKERRQ(ierr);
-  ierr = VecView(y_test, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&y_test));
+  CHKERRQ(VecConcatenate(nx, (const Vec*)x, &y_test, NULL));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Testing VecConcatenate() for Y = [X[1], X[2], ...] w/o IS\n"));
+  CHKERRQ(VecView(y_test, PETSC_VIEWER_STDOUT_WORLD));
   y_equal = PETSC_FALSE;
-  ierr = VecEqual(y_test, y, &y_equal);CHKERRQ(ierr);
+  CHKERRQ(VecEqual(y_test, y, &y_equal));
   if (!y_equal) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "  FAIL\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "  FAIL\n"));
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "  PASS\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "  PASS\n"));
   }
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "------------------------------------------------------------\n");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "------------------------------------------------------------\n"));
 
   /* ---------- using index sets on expected Y instead of concatenated Y ----------- */
   for (i=0; i<nx; i++) {
-    ierr = VecGetSubVector(y, x_is[i], &x_test);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Testing index set for X[%" PetscInt_FMT "] component\n", i);CHKERRQ(ierr);
-    ierr = VecView(x_test, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(VecGetSubVector(y, x_is[i], &x_test));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Testing index set for X[%" PetscInt_FMT "] component\n", i));
+    CHKERRQ(VecView(x_test, PETSC_VIEWER_STDOUT_WORLD));
     x_equal = PETSC_FALSE;
-    ierr = VecEqual(x_test, x[i], &x_equal);CHKERRQ(ierr);
+    CHKERRQ(VecEqual(x_test, x[i], &x_equal));
     if (!x_equal) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "  FAIL\n");CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "  FAIL\n"));
     } else {
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "  PASS\n");CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "  PASS\n"));
     }
-    ierr = VecRestoreSubVector(y, x_is[i], &x_test);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreSubVector(y, x_is[i], &x_test));
   }
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "------------------------------------------------------------\n");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "------------------------------------------------------------\n"));
 
   /* ---------- using VecScatter to communicate data from Y to X[i] for all i ----------- */
   for (i=0; i<nx; i++) {
-    ierr = VecDuplicate(x[i], &x_test);CHKERRQ(ierr);
-    ierr = VecZeroEntries(x_test);CHKERRQ(ierr);
-    ierr = VecScatterCreate(y, x_is[i], x[i], NULL, &y_to_x);CHKERRQ(ierr);
-    ierr = VecScatterBegin(y_to_x, y, x_test, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(y_to_x, y, x_test, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&y_to_x);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Testing VecScatter for Y -> X[%" PetscInt_FMT "]\n", i);CHKERRQ(ierr);
-    ierr = VecView(x_test, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(x[i], &x_test));
+    CHKERRQ(VecZeroEntries(x_test));
+    CHKERRQ(VecScatterCreate(y, x_is[i], x[i], NULL, &y_to_x));
+    CHKERRQ(VecScatterBegin(y_to_x, y, x_test, INSERT_VALUES, SCATTER_FORWARD));
+    CHKERRQ(VecScatterEnd(y_to_x, y, x_test, INSERT_VALUES, SCATTER_FORWARD));
+    CHKERRQ(VecScatterDestroy(&y_to_x));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Testing VecScatter for Y -> X[%" PetscInt_FMT "]\n", i));
+    CHKERRQ(VecView(x_test, PETSC_VIEWER_STDOUT_WORLD));
     x_equal = PETSC_FALSE;
-    ierr = VecEqual(x_test, x[i], &x_equal);CHKERRQ(ierr);
+    CHKERRQ(VecEqual(x_test, x[i], &x_equal));
     if (!x_equal) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "  FAIL\n");CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "  FAIL\n"));
     } else {
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "  PASS\n");CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "  PASS\n"));
     }
-    ierr = VecDestroy(&x_test);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&x_test));
   }
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "------------------------------------------------------------\n");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "------------------------------------------------------------\n"));
 
   /* ---------- using VecScatter to communicate data from X[i] to Y for all i ----------- */
-  ierr = VecZeroEntries(y_test);CHKERRQ(ierr);
+  CHKERRQ(VecZeroEntries(y_test));
   for (i=0; i<nx; i++) {
-    ierr = VecScatterCreate(x[i], NULL, y, x_is[i], &x_to_y);CHKERRQ(ierr);
-    ierr = VecScatterBegin(x_to_y, x[i], y_test, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(x_to_y, x[i], y_test, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(&x_to_y);CHKERRQ(ierr);
+    CHKERRQ(VecScatterCreate(x[i], NULL, y, x_is[i], &x_to_y));
+    CHKERRQ(VecScatterBegin(x_to_y, x[i], y_test, INSERT_VALUES, SCATTER_FORWARD));
+    CHKERRQ(VecScatterEnd(x_to_y, x[i], y_test, INSERT_VALUES, SCATTER_FORWARD));
+    CHKERRQ(VecScatterDestroy(&x_to_y));
   }
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Testing VecScatter for X[:] -> Y\n");CHKERRQ(ierr);
-  ierr = VecView(y_test, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Testing VecScatter for X[:] -> Y\n"));
+  CHKERRQ(VecView(y_test, PETSC_VIEWER_STDOUT_WORLD));
   y_equal = PETSC_FALSE;
-  ierr = VecEqual(y_test, y, &y_equal);CHKERRQ(ierr);
+  CHKERRQ(VecEqual(y_test, y, &y_equal));
   if (!y_equal) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "  FAIL\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "  FAIL\n"));
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "  PASS\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "  PASS\n"));
   }
-  ierr = VecDestroy(&y_test);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&y_test));
 
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&y));
   for (i=0; i<nx; i++) {
-    ierr = VecDestroy(&x[i]);CHKERRQ(ierr);
-    ierr = ISDestroy(&x_is[i]);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&x[i]));
+    CHKERRQ(ISDestroy(&x_is[i]));
   }
-  ierr = PetscFree(x);CHKERRQ(ierr);
-  ierr = PetscFree(x_is);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(x));
+  CHKERRQ(PetscFree(x_is));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -14,14 +14,14 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetMode(viewer, FILE_MODE_APPEND);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(viewer, "test.txt");CHKERRQ(ierr);
+  CHKERRQ(PetscViewerCreate(PETSC_COMM_WORLD, &viewer));
+  CHKERRQ(PetscViewerSetType(viewer, PETSCVIEWERASCII));
+  CHKERRQ(PetscViewerFileSetMode(viewer, FILE_MODE_APPEND));
+  CHKERRQ(PetscViewerFileSetName(viewer, "test.txt"));
   for (i = 0; i < 10; ++i) {
-    ierr = PetscViewerASCIIPrintf(viewer, "test line %" PetscInt_FMT "\n", i);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer, "test line %" PetscInt_FMT "\n", i));
   }
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDestroy(&viewer));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -13,35 +13,35 @@ int main(int argc,char **argv)
   PetscBool      struct_only=PETSC_TRUE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
-  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-struct_only",&struct_only,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-struct_only",&struct_only,NULL));
   n    = m;
 
   /* ------- Assemble matrix, test MatValid() --------- */
-  ierr = MatCreate(PETSC_COMM_WORLD,&mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(mat);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&mat));
+  CHKERRQ(MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m,n));
+  CHKERRQ(MatSetFromOptions(mat));
   if (struct_only) {
-    ierr = MatSetOption(mat,MAT_STRUCTURE_ONLY,PETSC_TRUE);CHKERRQ(ierr);
+    CHKERRQ(MatSetOption(mat,MAT_STRUCTURE_ONLY,PETSC_TRUE));
   }
-  ierr = MatSetUp(mat);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
+  CHKERRQ(MatSetUp(mat));
+  CHKERRQ(MatGetOwnershipRange(mat,&rstart,&rend));
   for (i=rstart; i<rend; i++) {
     for (j=0; j<n; j++) {
       v    = 10.0*i+j;
-      ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Free data structures */
-  ierr = MatDestroy(&mat);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&mat));
   ierr = PetscFinalize();
   return ierr;
 }

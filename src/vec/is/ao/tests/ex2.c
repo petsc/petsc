@@ -13,15 +13,15 @@ int main(int argc,char **argv)
   AO             ao;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);n = rank + 2;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));n = rank + 2;
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* create the orderings */
-  ierr = PetscMalloc2(n,&ispetsc,n,&isapp);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc2(n,&ispetsc,n,&isapp));
 
-  ierr   = MPI_Scan(&n,&start,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-  ierr   = MPI_Allreduce(&n,&N,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Scan(&n,&start,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD));
+  CHKERRMPI(MPI_Allreduce(&n,&N,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD));
   start -= n;
 
   for (i=0; i<n; i++) {
@@ -30,19 +30,19 @@ int main(int argc,char **argv)
   }
 
   /* create the application ordering */
-  ierr = AOCreateBasic(PETSC_COMM_WORLD,n,isapp,ispetsc,&ao);CHKERRQ(ierr);
-  ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(AOCreateBasic(PETSC_COMM_WORLD,n,isapp,ispetsc,&ao));
+  CHKERRQ(AOView(ao,PETSC_VIEWER_STDOUT_WORLD));
 
   /* check the mapping */
-  ierr = AOPetscToApplication(ao,n,ispetsc);CHKERRQ(ierr);
+  CHKERRQ(AOPetscToApplication(ao,n,ispetsc));
   for (i=0; i<n; i++) {
     if (ispetsc[i] != isapp[i]) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] Problem with mapping %" PetscInt_FMT " to %" PetscInt_FMT "\n",rank,i,ispetsc[i]);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"[%d] Problem with mapping %" PetscInt_FMT " to %" PetscInt_FMT "\n",rank,i,ispetsc[i]));
     }
   }
-  ierr = PetscFree2(ispetsc,isapp);CHKERRQ(ierr);
+  CHKERRQ(PetscFree2(ispetsc,isapp));
 
-  ierr = AODestroy(&ao);CHKERRQ(ierr);
+  CHKERRQ(AODestroy(&ao));
   ierr = PetscFinalize();
   return ierr;
 }

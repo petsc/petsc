@@ -22,17 +22,16 @@
 
 static PetscErrorCode oursneslinesearchprecheck(SNESLineSearch linesearch, Vec X, Vec Y, PetscBool * changed, void * ctx)
 {
-  PetscErrorCode ierr = 0;
-  (*(void (*)(SNESLineSearch*,Vec*, Vec*, PetscBool*,void*,PetscErrorCode*))(((PetscObject)linesearch)->fortran_func_pointers[1]))(&linesearch,&X,&Y,changed,ctx,&ierr);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionBegin;
+  CHKERR_FORTRAN_VOID_FUNCTION((*(void (*)(SNESLineSearch*,Vec*, Vec*, PetscBool*,void*,PetscErrorCode*))(((PetscObject)linesearch)->fortran_func_pointers[1]))(&linesearch,&X,&Y,changed,ctx,&ierr));
+  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode oursneslinesearchpostcheck(SNESLineSearch linesearch, Vec X, Vec Y, Vec W, PetscBool * changed_Y, PetscBool * changed_W, void * ctx)
 {
-  PetscErrorCode ierr = 0;
-  (*(void (*)(SNESLineSearch*,Vec*,Vec*,Vec*,PetscBool*,PetscBool*,void*,PetscErrorCode*))
-     (((PetscObject)linesearch)->fortran_func_pointers[2]))(&linesearch,&X,&Y,&W,changed_Y,changed_W,ctx,&ierr);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionBegin;
+  CHKERR_FORTRAN_VOID_FUNCTION((*(void (*)(SNESLineSearch*,Vec*,Vec*,Vec*,PetscBool*,PetscBool*,void*,PetscErrorCode*))(((PetscObject)linesearch)->fortran_func_pointers[2]))(&linesearch,&X,&Y,&W,changed_Y,changed_W,ctx,&ierr));
+  PetscFunctionReturn(0);
 }
 
 PETSC_EXTERN void sneslinesearchgettype_(SNESLineSearch *linesearch,char* name, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)

@@ -12,7 +12,6 @@ Options: \n\
 
 PetscErrorCode pic_insert_DMDA(PetscInt dim)
 {
-  PetscErrorCode ierr;
   DM             celldm = NULL,swarm;
   PetscInt       dof,stencil_width;
   PetscReal      min[3],max[3];
@@ -23,69 +22,68 @@ PetscErrorCode pic_insert_DMDA(PetscInt dim)
   dof = 1;
   stencil_width = 1;
   if (dim == 2) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,25,13,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,&celldm);CHKERRQ(ierr);
+    CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,25,13,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,&celldm));
   }
   if (dim == 3) {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,25,13,19,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,NULL,&celldm);CHKERRQ(ierr);
+    CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,25,13,19,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,NULL,&celldm));
   }
 
-  ierr = DMDASetElementType(celldm,DMDA_ELEMENT_Q1);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(celldm);CHKERRQ(ierr);
-  ierr = DMSetUp(celldm);CHKERRQ(ierr);
+  CHKERRQ(DMDASetElementType(celldm,DMDA_ELEMENT_Q1));
+  CHKERRQ(DMSetFromOptions(celldm));
+  CHKERRQ(DMSetUp(celldm));
 
-  ierr = DMDASetUniformCoordinates(celldm,0.0,2.0,0.0,1.0,0.0,1.5);CHKERRQ(ierr);
+  CHKERRQ(DMDASetUniformCoordinates(celldm,0.0,2.0,0.0,1.0,0.0,1.5));
 
   /* Create the DMSwarm */
-  ierr = DMCreate(PETSC_COMM_WORLD,&swarm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)swarm,"Swarm");CHKERRQ(ierr);
-  ierr = DMSetType(swarm,DMSWARM);CHKERRQ(ierr);
-  ierr = DMSetDimension(swarm,dim);CHKERRQ(ierr);
+  CHKERRQ(DMCreate(PETSC_COMM_WORLD,&swarm));
+  CHKERRQ(PetscObjectSetName((PetscObject)swarm,"Swarm"));
+  CHKERRQ(DMSetType(swarm,DMSWARM));
+  CHKERRQ(DMSetDimension(swarm,dim));
 
   /* Configure swarm to be of type PIC */
-  ierr = DMSwarmSetType(swarm,DMSWARM_PIC);CHKERRQ(ierr);
-  ierr = DMSwarmSetCellDM(swarm,celldm);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmSetType(swarm,DMSWARM_PIC));
+  CHKERRQ(DMSwarmSetCellDM(swarm,celldm));
 
   /* Register two scalar fields within the DMSwarm */
-  ierr = DMSwarmRegisterPetscDatatypeField(swarm,"viscosity",1,PETSC_DOUBLE);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(swarm,"density",1,PETSC_DOUBLE);CHKERRQ(ierr);
-  ierr = DMSwarmFinalizeFieldRegister(swarm);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmRegisterPetscDatatypeField(swarm,"viscosity",1,PETSC_DOUBLE));
+  CHKERRQ(DMSwarmRegisterPetscDatatypeField(swarm,"density",1,PETSC_DOUBLE));
+  CHKERRQ(DMSwarmFinalizeFieldRegister(swarm));
 
   /* Set initial local sizes of the DMSwarm with a buffer length of zero */
-  ierr = DMSwarmSetLocalSizes(swarm,4,0);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmSetLocalSizes(swarm,4,0));
 
   /* Insert swarm coordinates cell-wise */
-  ierr = DMSwarmInsertPointsUsingCellDM(swarm,DMSWARMPIC_LAYOUT_REGULAR,3);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmInsertPointsUsingCellDM(swarm,DMSWARMPIC_LAYOUT_REGULAR,3));
   min[0] = 0.5; max[0] = 0.7;
   min[1] = 0.5; max[1] = 0.8;
   min[2] = 0.5; max[2] = 0.9;
   ndir[0] = ndir[1] = ndir[2] = 30;
-  ierr = DMSwarmSetPointsUniformCoordinates(swarm,min,max,ndir,ADD_VALUES);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmSetPointsUniformCoordinates(swarm,min,max,ndir,ADD_VALUES));
 
   /* This should be dispatched from a regular DMView() */
-  ierr = DMSwarmViewXDMF(swarm,"ex20.xmf");CHKERRQ(ierr);
-  ierr = DMView(celldm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = DMView(swarm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmViewXDMF(swarm,"ex20.xmf"));
+  CHKERRQ(DMView(celldm,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(DMView(swarm,PETSC_VIEWER_STDOUT_WORLD));
 
   {
     PetscInt    npoints,*list;
     PetscMPIInt rank;
 
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-    ierr = DMSwarmSortGetAccess(swarm);CHKERRQ(ierr);
-    ierr = DMSwarmSortGetNumberOfPointsPerCell(swarm,0,&npoints);CHKERRQ(ierr);
-    ierr = DMSwarmSortGetPointsPerCell(swarm,rank,&npoints,&list);CHKERRQ(ierr);
-    ierr = PetscFree(list);CHKERRQ(ierr);
-    ierr = DMSwarmSortRestoreAccess(swarm);CHKERRQ(ierr);
+    CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+    CHKERRQ(DMSwarmSortGetAccess(swarm));
+    CHKERRQ(DMSwarmSortGetNumberOfPointsPerCell(swarm,0,&npoints));
+    CHKERRQ(DMSwarmSortGetPointsPerCell(swarm,rank,&npoints,&list));
+    CHKERRQ(PetscFree(list));
+    CHKERRQ(DMSwarmSortRestoreAccess(swarm));
   }
-  ierr = DMSwarmMigrate(swarm,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = DMDestroy(&celldm);CHKERRQ(ierr);
-  ierr = DMDestroy(&swarm);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmMigrate(swarm,PETSC_FALSE));
+  CHKERRQ(DMDestroy(&celldm));
+  CHKERRQ(DMDestroy(&swarm));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode pic_insert_DMPLEX_with_cell_list(PetscInt dim)
 {
-  PetscErrorCode ierr;
   DM             celldm = NULL,swarm,distributedMesh = NULL;
   const  char    *fieldnames[] = {"viscosity"};
 
@@ -106,8 +104,8 @@ PetscErrorCode pic_insert_DMPLEX_with_cell_list(PetscInt dim)
     nx[1] = cells_per_dim[1] + 1;
     n_trivert = nx[0] * nx[1];
 
-    ierr = PetscMalloc1(n_tricells*3,&tricells);CHKERRQ(ierr);
-    ierr = PetscMalloc1(nx[0]*nx[1]*2,&trivert);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(n_tricells*3,&tricells));
+    CHKERRQ(PetscMalloc1(nx[0]*nx[1]*2,&trivert));
 
     /* verts */
     cnt = 0;
@@ -144,72 +142,71 @@ PetscErrorCode pic_insert_DMPLEX_with_cell_list(PetscInt dim)
         cnt++;
       }
     }
-    ierr = DMPlexCreateFromCellListPetsc(PETSC_COMM_WORLD,dim,n_tricells,n_trivert,3,PETSC_TRUE,tricells,dim,trivert,&celldm);CHKERRQ(ierr);
-    ierr = PetscFree(trivert);CHKERRQ(ierr);
-    ierr = PetscFree(tricells);CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateFromCellListPetsc(PETSC_COMM_WORLD,dim,n_tricells,n_trivert,3,PETSC_TRUE,tricells,dim,trivert,&celldm));
+    CHKERRQ(PetscFree(trivert));
+    CHKERRQ(PetscFree(tricells));
   }
   PetscCheckFalse(dim == 3,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only 2D PLEX example supported");
 
   /* Distribute mesh over processes */
-  ierr = DMPlexDistribute(celldm,0,NULL,&distributedMesh);CHKERRQ(ierr);
+  CHKERRQ(DMPlexDistribute(celldm,0,NULL,&distributedMesh));
   if (distributedMesh) {
-    ierr = DMDestroy(&celldm);CHKERRQ(ierr);
+    CHKERRQ(DMDestroy(&celldm));
     celldm = distributedMesh;
   }
-  ierr = PetscObjectSetName((PetscObject)celldm,"Cells");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(celldm);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetName((PetscObject)celldm,"Cells"));
+  CHKERRQ(DMSetFromOptions(celldm));
   {
     PetscInt     numComp[] = {1};
     PetscInt     numDof[] = {1,0,0}; /* vert, edge, cell */
     PetscInt     numBC = 0;
     PetscSection section;
 
-    ierr = DMPlexCreateSection(celldm,NULL,numComp,numDof,numBC,NULL,NULL,NULL,NULL,&section);CHKERRQ(ierr);
-    ierr = DMSetLocalSection(celldm,section);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateSection(celldm,NULL,numComp,numDof,numBC,NULL,NULL,NULL,NULL,&section));
+    CHKERRQ(DMSetLocalSection(celldm,section));
+    CHKERRQ(PetscSectionDestroy(&section));
   }
-  ierr = DMSetUp(celldm);CHKERRQ(ierr);
+  CHKERRQ(DMSetUp(celldm));
   {
     PetscViewer viewer;
 
-    ierr = PetscViewerCreate(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer,"ex20plex.vtk");CHKERRQ(ierr);
-    ierr = DMView(celldm,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerCreate(PETSC_COMM_WORLD,&viewer));
+    CHKERRQ(PetscViewerSetType(viewer,PETSCVIEWERVTK));
+    CHKERRQ(PetscViewerFileSetMode(viewer,FILE_MODE_WRITE));
+    CHKERRQ(PetscViewerFileSetName(viewer,"ex20plex.vtk"));
+    CHKERRQ(DMView(celldm,viewer));
+    CHKERRQ(PetscViewerDestroy(&viewer));
   }
 
   /* Create the DMSwarm */
-  ierr = DMCreate(PETSC_COMM_WORLD,&swarm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)swarm,"Swarm");CHKERRQ(ierr);
-  ierr = DMSetType(swarm,DMSWARM);CHKERRQ(ierr);
-  ierr = DMSetDimension(swarm,dim);CHKERRQ(ierr);
+  CHKERRQ(DMCreate(PETSC_COMM_WORLD,&swarm));
+  CHKERRQ(PetscObjectSetName((PetscObject)swarm,"Swarm"));
+  CHKERRQ(DMSetType(swarm,DMSWARM));
+  CHKERRQ(DMSetDimension(swarm,dim));
 
-  ierr = DMSwarmSetType(swarm,DMSWARM_PIC);CHKERRQ(ierr);
-  ierr = DMSwarmSetCellDM(swarm,celldm);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmSetType(swarm,DMSWARM_PIC));
+  CHKERRQ(DMSwarmSetCellDM(swarm,celldm));
 
   /* Register two scalar fields within the DMSwarm */
-  ierr = DMSwarmRegisterPetscDatatypeField(swarm,"viscosity",1,PETSC_DOUBLE);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(swarm,"density",1,PETSC_DOUBLE);CHKERRQ(ierr);
-  ierr = DMSwarmFinalizeFieldRegister(swarm);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmRegisterPetscDatatypeField(swarm,"viscosity",1,PETSC_DOUBLE));
+  CHKERRQ(DMSwarmRegisterPetscDatatypeField(swarm,"density",1,PETSC_DOUBLE));
+  CHKERRQ(DMSwarmFinalizeFieldRegister(swarm));
 
   /* Set initial local sizes of the DMSwarm with a buffer length of zero */
-  ierr = DMSwarmSetLocalSizes(swarm,4,0);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmSetLocalSizes(swarm,4,0));
 
   /* Insert swarm coordinates cell-wise */
-  ierr = DMSwarmInsertPointsUsingCellDM(swarm,DMSWARMPIC_LAYOUT_SUBDIVISION,2);CHKERRQ(ierr);
-  ierr = DMSwarmViewFieldsXDMF(swarm,"ex20.xmf",1,fieldnames);CHKERRQ(ierr);
-  ierr = DMView(celldm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = DMView(swarm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = DMDestroy(&celldm);CHKERRQ(ierr);
-  ierr = DMDestroy(&swarm);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmInsertPointsUsingCellDM(swarm,DMSWARMPIC_LAYOUT_SUBDIVISION,2));
+  CHKERRQ(DMSwarmViewFieldsXDMF(swarm,"ex20.xmf",1,fieldnames));
+  CHKERRQ(DMView(celldm,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(DMView(swarm,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(DMDestroy(&celldm));
+  CHKERRQ(DMDestroy(&swarm));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode pic_insert_DMPLEX(PetscBool is_simplex,PetscInt dim)
 {
-  PetscErrorCode ierr;
   DM             celldm,swarm,distributedMesh = NULL;
   const char     *fieldnames[] = {"viscosity","DMSwarm_rank"};
 
@@ -218,62 +215,62 @@ PetscErrorCode pic_insert_DMPLEX(PetscBool is_simplex,PetscInt dim)
   /* Create the background cell DM */
   {
     PetscInt faces[3] = {4, 2, 4};
-    ierr = DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, is_simplex, faces, NULL, NULL, NULL, PETSC_TRUE, &celldm);CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, is_simplex, faces, NULL, NULL, NULL, PETSC_TRUE, &celldm));
   }
 
   /* Distribute mesh over processes */
-  ierr = DMPlexDistribute(celldm,0,NULL,&distributedMesh);CHKERRQ(ierr);
+  CHKERRQ(DMPlexDistribute(celldm,0,NULL,&distributedMesh));
   if (distributedMesh) {
-    ierr = DMDestroy(&celldm);CHKERRQ(ierr);
+    CHKERRQ(DMDestroy(&celldm));
     celldm = distributedMesh;
   }
-  ierr = PetscObjectSetName((PetscObject)celldm,"Cells");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(celldm);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetName((PetscObject)celldm,"Cells"));
+  CHKERRQ(DMSetFromOptions(celldm));
   {
     PetscInt     numComp[] = {1};
     PetscInt     numDof[] = {1,0,0}; /* vert, edge, cell */
     PetscInt     numBC = 0;
     PetscSection section;
 
-    ierr = DMPlexCreateSection(celldm,NULL,numComp,numDof,numBC,NULL,NULL,NULL,NULL,&section);CHKERRQ(ierr);
-    ierr = DMSetLocalSection(celldm,section);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateSection(celldm,NULL,numComp,numDof,numBC,NULL,NULL,NULL,NULL,&section));
+    CHKERRQ(DMSetLocalSection(celldm,section));
+    CHKERRQ(PetscSectionDestroy(&section));
   }
-  ierr = DMSetUp(celldm);CHKERRQ(ierr);
+  CHKERRQ(DMSetUp(celldm));
   {
     PetscViewer viewer;
 
-    ierr = PetscViewerCreate(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer,"ex20plex.vtk");CHKERRQ(ierr);
-    ierr = DMView(celldm,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerCreate(PETSC_COMM_WORLD,&viewer));
+    CHKERRQ(PetscViewerSetType(viewer,PETSCVIEWERVTK));
+    CHKERRQ(PetscViewerFileSetMode(viewer,FILE_MODE_WRITE));
+    CHKERRQ(PetscViewerFileSetName(viewer,"ex20plex.vtk"));
+    CHKERRQ(DMView(celldm,viewer));
+    CHKERRQ(PetscViewerDestroy(&viewer));
   }
 
-  ierr = DMCreate(PETSC_COMM_WORLD,&swarm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)swarm,"Swarm");CHKERRQ(ierr);
-  ierr = DMSetType(swarm,DMSWARM);CHKERRQ(ierr);
-  ierr = DMSetDimension(swarm,dim);CHKERRQ(ierr);
+  CHKERRQ(DMCreate(PETSC_COMM_WORLD,&swarm));
+  CHKERRQ(PetscObjectSetName((PetscObject)swarm,"Swarm"));
+  CHKERRQ(DMSetType(swarm,DMSWARM));
+  CHKERRQ(DMSetDimension(swarm,dim));
 
-  ierr = DMSwarmSetType(swarm,DMSWARM_PIC);CHKERRQ(ierr);
-  ierr = DMSwarmSetCellDM(swarm,celldm);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmSetType(swarm,DMSWARM_PIC));
+  CHKERRQ(DMSwarmSetCellDM(swarm,celldm));
 
   /* Register two scalar fields within the DMSwarm */
-  ierr = DMSwarmRegisterPetscDatatypeField(swarm,"viscosity",1,PETSC_DOUBLE);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(swarm,"density",1,PETSC_DOUBLE);CHKERRQ(ierr);
-  ierr = DMSwarmFinalizeFieldRegister(swarm);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmRegisterPetscDatatypeField(swarm,"viscosity",1,PETSC_DOUBLE));
+  CHKERRQ(DMSwarmRegisterPetscDatatypeField(swarm,"density",1,PETSC_DOUBLE));
+  CHKERRQ(DMSwarmFinalizeFieldRegister(swarm));
 
   /* Set initial local sizes of the DMSwarm with a buffer length of zero */
-  ierr = DMSwarmSetLocalSizes(swarm,4,0);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmSetLocalSizes(swarm,4,0));
 
   /* Insert swarm coordinates cell-wise */
-  ierr = DMSwarmInsertPointsUsingCellDM(swarm,DMSWARMPIC_LAYOUT_GAUSS,3);CHKERRQ(ierr);
-  ierr = DMSwarmViewFieldsXDMF(swarm,"ex20.xmf",2,fieldnames);CHKERRQ(ierr);
-  ierr = DMView(celldm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = DMView(swarm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = DMDestroy(&celldm);CHKERRQ(ierr);
-  ierr = DMDestroy(&swarm);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmInsertPointsUsingCellDM(swarm,DMSWARMPIC_LAYOUT_GAUSS,3));
+  CHKERRQ(DMSwarmViewFieldsXDMF(swarm,"ex20.xmf",2,fieldnames));
+  CHKERRQ(DMView(celldm,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(DMView(swarm,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(DMDestroy(&celldm));
+  CHKERRQ(DMDestroy(&swarm));
   PetscFunctionReturn(0);
 }
 
@@ -284,22 +281,22 @@ int main(int argc,char **args)
   PetscInt       dim = 2;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mode",&mode,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mode",&mode,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
   switch (mode) {
     case 0:
-      ierr = pic_insert_DMDA(dim);CHKERRQ(ierr);
+      CHKERRQ(pic_insert_DMDA(dim));
       break;
     case 1:
       /* tri / tet */
-      ierr = pic_insert_DMPLEX(PETSC_TRUE,dim);CHKERRQ(ierr);
+      CHKERRQ(pic_insert_DMPLEX(PETSC_TRUE,dim));
       break;
     case 2:
       /* quad / hex */
-      ierr = pic_insert_DMPLEX(PETSC_FALSE,dim);CHKERRQ(ierr);
+      CHKERRQ(pic_insert_DMPLEX(PETSC_FALSE,dim));
       break;
     default:
-      ierr = pic_insert_DMDA(dim);CHKERRQ(ierr);
+      CHKERRQ(pic_insert_DMDA(dim));
       break;
   }
   ierr = PetscFinalize();

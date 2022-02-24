@@ -15,28 +15,26 @@ typedef struct {
 
 static PetscErrorCode PCApply_Galerkin(PC pc,Vec x,Vec y)
 {
-  PetscErrorCode ierr;
   PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
 
   PetscFunctionBegin;
   if (jac->R) {
-    ierr = MatRestrict(jac->R,x,jac->b);CHKERRQ(ierr);
+    CHKERRQ(MatRestrict(jac->R,x,jac->b));
   } else {
-    ierr = MatRestrict(jac->P,x,jac->b);CHKERRQ(ierr);
+    CHKERRQ(MatRestrict(jac->P,x,jac->b));
   }
-  ierr = KSPSolve(jac->ksp,jac->b,jac->x);CHKERRQ(ierr);
-  ierr = KSPCheckSolve(jac->ksp,pc,jac->x);CHKERRQ(ierr);
+  CHKERRQ(KSPSolve(jac->ksp,jac->b,jac->x));
+  CHKERRQ(KSPCheckSolve(jac->ksp,pc,jac->x));
   if (jac->P) {
-    ierr = MatInterpolate(jac->P,jac->x,y);CHKERRQ(ierr);
+    CHKERRQ(MatInterpolate(jac->P,jac->x,y));
   } else {
-    ierr = MatInterpolate(jac->R,jac->x,y);CHKERRQ(ierr);
+    CHKERRQ(MatInterpolate(jac->R,jac->x,y));
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCSetUp_Galerkin(PC pc)
 {
-  PetscErrorCode ierr;
   PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
   PetscBool      a;
   Vec            *xx,*yy;
@@ -45,23 +43,23 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
   if (jac->computeasub) {
     Mat Ap;
     if (!pc->setupcalled) {
-      ierr = (*jac->computeasub)(pc,pc->pmat,NULL,&Ap,jac->computeasub_ctx);CHKERRQ(ierr);
-      ierr = KSPSetOperators(jac->ksp,Ap,Ap);CHKERRQ(ierr);
-      ierr = MatDestroy(&Ap);CHKERRQ(ierr);
+      CHKERRQ((*jac->computeasub)(pc,pc->pmat,NULL,&Ap,jac->computeasub_ctx));
+      CHKERRQ(KSPSetOperators(jac->ksp,Ap,Ap));
+      CHKERRQ(MatDestroy(&Ap));
     } else {
-      ierr = KSPGetOperators(jac->ksp,NULL,&Ap);CHKERRQ(ierr);
-      ierr = (*jac->computeasub)(pc,pc->pmat,Ap,NULL,jac->computeasub_ctx);CHKERRQ(ierr);
+      CHKERRQ(KSPGetOperators(jac->ksp,NULL,&Ap));
+      CHKERRQ((*jac->computeasub)(pc,pc->pmat,Ap,NULL,jac->computeasub_ctx));
     }
   }
 
   if (!jac->x) {
-    ierr = KSPGetOperatorsSet(jac->ksp,&a,NULL);CHKERRQ(ierr);
+    CHKERRQ(KSPGetOperatorsSet(jac->ksp,&a,NULL));
     PetscCheckFalse(!a,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set operator of PCGALERKIN KSP with PCGalerkinGetKSP()/KSPSetOperators()");
-    ierr   = KSPCreateVecs(jac->ksp,1,&xx,1,&yy);CHKERRQ(ierr);
+    CHKERRQ(KSPCreateVecs(jac->ksp,1,&xx,1,&yy));
     jac->x = *xx;
     jac->b = *yy;
-    ierr   = PetscFree(xx);CHKERRQ(ierr);
-    ierr   = PetscFree(yy);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(xx));
+    CHKERRQ(PetscFree(yy));
   }
   PetscCheckFalse(!jac->R && !jac->P,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or interpolation of PCGALERKIN with PCGalerkinSetRestriction()/Interpolation()");
   /* should check here that sizes of R/P match size of a */
@@ -72,42 +70,39 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
 static PetscErrorCode PCReset_Galerkin(PC pc)
 {
   PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(&jac->R);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->P);CHKERRQ(ierr);
-  ierr = VecDestroy(&jac->x);CHKERRQ(ierr);
-  ierr = VecDestroy(&jac->b);CHKERRQ(ierr);
-  ierr = KSPReset(jac->ksp);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&jac->R));
+  CHKERRQ(MatDestroy(&jac->P));
+  CHKERRQ(VecDestroy(&jac->x));
+  CHKERRQ(VecDestroy(&jac->b));
+  CHKERRQ(KSPReset(jac->ksp));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCDestroy_Galerkin(PC pc)
 {
   PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCReset_Galerkin(pc);CHKERRQ(ierr);
-  ierr = KSPDestroy(&jac->ksp);CHKERRQ(ierr);
-  ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  CHKERRQ(PCReset_Galerkin(pc));
+  CHKERRQ(KSPDestroy(&jac->ksp));
+  CHKERRQ(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCView_Galerkin(PC pc,PetscViewer viewer)
 {
   PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
-  PetscErrorCode ierr;
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  KSP on Galerkin follow\n");CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  ---------------------------------\n");CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  KSP on Galerkin follow\n"));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  ---------------------------------\n"));
   }
-  ierr = KSPView(jac->ksp,viewer);CHKERRQ(ierr);
+  CHKERRQ(KSPView(jac->ksp,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -123,11 +118,10 @@ static PetscErrorCode  PCGalerkinGetKSP_Galerkin(PC pc,KSP *ksp)
 static PetscErrorCode  PCGalerkinSetRestriction_Galerkin(PC pc,Mat R)
 {
   PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr   = PetscObjectReference((PetscObject)R);CHKERRQ(ierr);
-  ierr   = MatDestroy(&jac->R);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectReference((PetscObject)R));
+  CHKERRQ(MatDestroy(&jac->R));
   jac->R = R;
   PetscFunctionReturn(0);
 }
@@ -135,11 +129,10 @@ static PetscErrorCode  PCGalerkinSetRestriction_Galerkin(PC pc,Mat R)
 static PetscErrorCode  PCGalerkinSetInterpolation_Galerkin(PC pc,Mat P)
 {
   PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr   = PetscObjectReference((PetscObject)P);CHKERRQ(ierr);
-  ierr   = MatDestroy(&jac->P);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectReference((PetscObject)P));
+  CHKERRQ(MatDestroy(&jac->P));
   jac->P = P;
   PetscFunctionReturn(0);
 }
@@ -175,11 +168,9 @@ static PetscErrorCode  PCGalerkinSetComputeSubmatrix_Galerkin(PC pc,PetscErrorCo
 @*/
 PetscErrorCode  PCGalerkinSetRestriction(PC pc,Mat R)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCGalerkinSetRestriction_C",(PC,Mat),(pc,R));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(pc,"PCGalerkinSetRestriction_C",(PC,Mat),(pc,R)));
   PetscFunctionReturn(0);
 }
 
@@ -203,11 +194,9 @@ PetscErrorCode  PCGalerkinSetRestriction(PC pc,Mat R)
 @*/
 PetscErrorCode  PCGalerkinSetInterpolation(PC pc,Mat P)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCGalerkinSetInterpolation_C",(PC,Mat),(pc,P));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(pc,"PCGalerkinSetInterpolation_C",(PC,Mat),(pc,P)));
   PetscFunctionReturn(0);
 }
 
@@ -249,11 +238,9 @@ $    computeAsub(PC pc,Mat A, Mat Ap, Mat *cAP,void *ctx);
 @*/
 PetscErrorCode  PCGalerkinSetComputeSubmatrix(PC pc,PetscErrorCode (*computeAsub)(PC,Mat,Mat,Mat*,void*),void *ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCGalerkinSetComputeSubmatrix_C",(PC,PetscErrorCode (*)(PC,Mat,Mat,Mat*,void*),void*),(pc,computeAsub,ctx));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(pc,"PCGalerkinSetComputeSubmatrix_C",(PC,PetscErrorCode (*)(PC,Mat,Mat,Mat*,void*),void*),(pc,computeAsub,ctx)));
   PetscFunctionReturn(0);
 }
 
@@ -280,36 +267,33 @@ PetscErrorCode  PCGalerkinSetComputeSubmatrix(PC pc,PetscErrorCode (*computeAsub
 @*/
 PetscErrorCode  PCGalerkinGetKSP(PC pc,KSP *ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidPointer(ksp,2);
-  ierr = PetscUseMethod(pc,"PCGalerkinGetKSP_C",(PC,KSP*),(pc,ksp));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(pc,"PCGalerkinGetKSP_C",(PC,KSP*),(pc,ksp)));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCSetFromOptions_Galerkin(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_Galerkin    *jac = (PC_Galerkin*)pc->data;
-  PetscErrorCode ierr;
   const char     *prefix;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = KSPGetOptionsPrefix(jac->ksp,&prefix);CHKERRQ(ierr);
-  ierr = PetscStrendswith(prefix,"galerkin_",&flg);CHKERRQ(ierr);
+  CHKERRQ(KSPGetOptionsPrefix(jac->ksp,&prefix));
+  CHKERRQ(PetscStrendswith(prefix,"galerkin_",&flg));
   if (!flg) {
-    ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(jac->ksp,prefix);CHKERRQ(ierr);
-    ierr = KSPAppendOptionsPrefix(jac->ksp,"galerkin_");CHKERRQ(ierr);
+    CHKERRQ(PCGetOptionsPrefix(pc,&prefix));
+    CHKERRQ(KSPSetOptionsPrefix(jac->ksp,prefix));
+    CHKERRQ(KSPAppendOptionsPrefix(jac->ksp,"galerkin_"));
   }
 
-  ierr = PetscOptionsHead(PetscOptionsObject,"Galerkin options");CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"Galerkin options"));
   if (jac->ksp) {
-    ierr = KSPSetFromOptions(jac->ksp);CHKERRQ(ierr);
+    CHKERRQ(KSPSetFromOptions(jac->ksp));
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -335,11 +319,10 @@ M*/
 
 PETSC_EXTERN PetscErrorCode PCCreate_Galerkin(PC pc)
 {
-  PetscErrorCode ierr;
   PC_Galerkin    *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,&jac);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(pc,&jac));
 
   pc->ops->apply           = PCApply_Galerkin;
   pc->ops->setup           = PCSetUp_Galerkin;
@@ -349,16 +332,15 @@ PETSC_EXTERN PetscErrorCode PCCreate_Galerkin(PC pc)
   pc->ops->setfromoptions  = PCSetFromOptions_Galerkin;
   pc->ops->applyrichardson = NULL;
 
-  ierr = KSPCreate(PetscObjectComm((PetscObject)pc),&jac->ksp);CHKERRQ(ierr);
-  ierr = KSPSetErrorIfNotConverged(jac->ksp,pc->erroriffailure);CHKERRQ(ierr);
-  ierr = PetscObjectIncrementTabLevel((PetscObject)jac->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PetscObjectComm((PetscObject)pc),&jac->ksp));
+  CHKERRQ(KSPSetErrorIfNotConverged(jac->ksp,pc->erroriffailure));
+  CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)jac->ksp,(PetscObject)pc,1));
 
   pc->data = (void*)jac;
 
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetRestriction_C",PCGalerkinSetRestriction_Galerkin);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetInterpolation_C",PCGalerkinSetInterpolation_Galerkin);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinGetKSP_C",PCGalerkinGetKSP_Galerkin);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetComputeSubmatrix_C",PCGalerkinSetComputeSubmatrix_Galerkin);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetRestriction_C",PCGalerkinSetRestriction_Galerkin));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetInterpolation_C",PCGalerkinSetInterpolation_Galerkin));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinGetKSP_C",PCGalerkinGetKSP_Galerkin));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)pc,"PCGalerkinSetComputeSubmatrix_C",PCGalerkinSetComputeSubmatrix_Galerkin));
   PetscFunctionReturn(0);
 }
-

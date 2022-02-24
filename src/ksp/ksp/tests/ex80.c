@@ -17,45 +17,45 @@ int main(int argc,char **args)
     ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 
     /* common data structures */
-    ierr = MatCreateSeqDense(PETSC_COMM_SELF,SIZE,SIZE,NULL,&A);CHKERRQ(ierr);
+    CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF,SIZE,SIZE,NULL,&A));
     for (i = 0; i < SIZE; ++i) {
-      ierr = MatSetValue(A,i,i,1.0,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValue(A,i,i,1.0,INSERT_VALUES));
     }
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-    ierr = VecCreateSeq(PETSC_COMM_SELF,SIZE,&sol);CHKERRQ(ierr);
-    ierr = VecDuplicate(sol,&rhs);CHKERRQ(ierr);
-    ierr = VecDuplicate(sol,&newrhs);CHKERRQ(ierr);
-    ierr = VecDuplicate(sol,&newsol);CHKERRQ(ierr);
+    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,SIZE,&sol));
+    CHKERRQ(VecDuplicate(sol,&rhs));
+    CHKERRQ(VecDuplicate(sol,&newrhs));
+    CHKERRQ(VecDuplicate(sol,&newsol));
 
-    ierr = VecSetValues(sol,SIZE,indices,values,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValues(rhs,SIZE - 1,indices,values,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValues(newrhs,SIZE - 2,indices,values,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(sol);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(rhs);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(newrhs);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(sol);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(rhs);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(newrhs);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(sol,SIZE,indices,values,INSERT_VALUES));
+    CHKERRQ(VecSetValues(rhs,SIZE - 1,indices,values,INSERT_VALUES));
+    CHKERRQ(VecSetValues(newrhs,SIZE - 2,indices,values,INSERT_VALUES));
+    CHKERRQ(VecAssemblyBegin(sol));
+    CHKERRQ(VecAssemblyBegin(rhs));
+    CHKERRQ(VecAssemblyBegin(newrhs));
+    CHKERRQ(VecAssemblyEnd(sol));
+    CHKERRQ(VecAssemblyEnd(rhs));
+    CHKERRQ(VecAssemblyEnd(newrhs));
 
     /* Test one vector */
     {
       KSP      ksp;
       KSPGuess guess;
 
-      ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-      ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-      ierr = KSPGetGuess(ksp,&guess);CHKERRQ(ierr);
+      CHKERRQ(KSPCreate(PETSC_COMM_SELF,&ksp));
+      CHKERRQ(KSPSetOperators(ksp,A,A));
+      CHKERRQ(KSPSetFromOptions(ksp));
+      CHKERRQ(KSPGetGuess(ksp,&guess));
       /* we aren't calling through the KSP so we call this ourselves */
-      ierr = KSPGuessSetUp(guess);CHKERRQ(ierr);
+      CHKERRQ(KSPGuessSetUp(guess));
 
-      ierr = KSPGuessUpdate(guess,rhs,sol);CHKERRQ(ierr);
-      ierr = KSPGuessFormGuess(guess,newrhs,newsol);CHKERRQ(ierr);
-      ierr = VecView(newsol,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      CHKERRQ(KSPGuessUpdate(guess,rhs,sol));
+      CHKERRQ(KSPGuessFormGuess(guess,newrhs,newsol));
+      CHKERRQ(VecView(newsol,PETSC_VIEWER_STDOUT_SELF));
 
-      ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+      CHKERRQ(KSPDestroy(&ksp));
     }
 
     /* Test a singular projection matrix */
@@ -63,26 +63,26 @@ int main(int argc,char **args)
       KSP      ksp;
       KSPGuess guess;
 
-      ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-      ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-      ierr = KSPGetGuess(ksp,&guess);CHKERRQ(ierr);
-      ierr = KSPGuessSetUp(guess);CHKERRQ(ierr);
+      CHKERRQ(KSPCreate(PETSC_COMM_SELF,&ksp));
+      CHKERRQ(KSPSetOperators(ksp,A,A));
+      CHKERRQ(KSPSetFromOptions(ksp));
+      CHKERRQ(KSPGetGuess(ksp,&guess));
+      CHKERRQ(KSPGuessSetUp(guess));
 
       for (i = 0; i < 15; ++i) {
-        ierr = KSPGuessUpdate(guess,rhs,sol);CHKERRQ(ierr);
+        CHKERRQ(KSPGuessUpdate(guess,rhs,sol));
       }
-      ierr = KSPGuessFormGuess(guess,newrhs,newsol);CHKERRQ(ierr);
-      ierr = VecView(newsol,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      CHKERRQ(KSPGuessFormGuess(guess,newrhs,newsol));
+      CHKERRQ(VecView(newsol,PETSC_VIEWER_STDOUT_SELF));
 
-      ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+      CHKERRQ(KSPDestroy(&ksp));
     }
-    ierr = VecDestroy(&newsol);CHKERRQ(ierr);
-    ierr = VecDestroy(&newrhs);CHKERRQ(ierr);
-    ierr = VecDestroy(&rhs);CHKERRQ(ierr);
-    ierr = VecDestroy(&sol);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&newsol));
+    CHKERRQ(VecDestroy(&newrhs));
+    CHKERRQ(VecDestroy(&rhs));
+    CHKERRQ(VecDestroy(&sol));
 
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    CHKERRQ(MatDestroy(&A));
   }
 
   /* Test something triangular */
@@ -90,12 +90,12 @@ int main(int argc,char **args)
     PetscInt triangle_size = 10;
     Mat      A;
 
-    ierr = MatCreateSeqDense(PETSC_COMM_SELF,triangle_size,triangle_size,NULL,&A);CHKERRQ(ierr);
+    CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF,triangle_size,triangle_size,NULL,&A));
     for (i = 0; i < triangle_size; ++i) {
-      ierr = MatSetValue(A,i,i,1.0,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValue(A,i,i,1.0,INSERT_VALUES));
     }
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
     {
       KSP         ksp;
@@ -104,44 +104,44 @@ int main(int argc,char **args)
       PetscInt    j,indices[] = {0,1,2,3,4};
       PetscScalar values[] = {1.0,2.0,3.0,4.0,5.0};
 
-      ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-      ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-      ierr = KSPGetGuess(ksp,&guess);CHKERRQ(ierr);
-      ierr = KSPGuessSetUp(guess);CHKERRQ(ierr);
+      CHKERRQ(KSPCreate(PETSC_COMM_SELF,&ksp));
+      CHKERRQ(KSPSetOperators(ksp,A,A));
+      CHKERRQ(KSPSetFromOptions(ksp));
+      CHKERRQ(KSPGetGuess(ksp,&guess));
+      CHKERRQ(KSPGuessSetUp(guess));
 
       for (i = 0; i < 5; ++i) {
-        ierr = VecCreateSeq(PETSC_COMM_SELF,triangle_size,&sol);CHKERRQ(ierr);
-        ierr = VecCreateSeq(PETSC_COMM_SELF,triangle_size,&rhs);CHKERRQ(ierr);
+        CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,triangle_size,&sol));
+        CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,triangle_size,&rhs));
         for (j = 0; j < i; ++j) {
-          ierr = VecSetValue(sol,j,(PetscScalar)j,INSERT_VALUES);CHKERRQ(ierr);
-          ierr = VecSetValue(rhs,j,(PetscScalar)j,INSERT_VALUES);CHKERRQ(ierr);
+          CHKERRQ(VecSetValue(sol,j,(PetscScalar)j,INSERT_VALUES));
+          CHKERRQ(VecSetValue(rhs,j,(PetscScalar)j,INSERT_VALUES));
         }
-        ierr = VecAssemblyBegin(sol);CHKERRQ(ierr);
-        ierr = VecAssemblyBegin(rhs);CHKERRQ(ierr);
-        ierr = VecAssemblyEnd(sol);CHKERRQ(ierr);
-        ierr = VecAssemblyEnd(rhs);CHKERRQ(ierr);
+        CHKERRQ(VecAssemblyBegin(sol));
+        CHKERRQ(VecAssemblyBegin(rhs));
+        CHKERRQ(VecAssemblyEnd(sol));
+        CHKERRQ(VecAssemblyEnd(rhs));
 
-        ierr = KSPGuessUpdate(guess,rhs,sol);CHKERRQ(ierr);
+        CHKERRQ(KSPGuessUpdate(guess,rhs,sol));
 
-        ierr = VecDestroy(&rhs);CHKERRQ(ierr);
-        ierr = VecDestroy(&sol);CHKERRQ(ierr);
+        CHKERRQ(VecDestroy(&rhs));
+        CHKERRQ(VecDestroy(&sol));
       }
 
-      ierr = VecCreateSeq(PETSC_COMM_SELF,triangle_size,&sol);CHKERRQ(ierr);
-      ierr = VecCreateSeq(PETSC_COMM_SELF,triangle_size,&rhs);CHKERRQ(ierr);
-      ierr = VecSetValues(rhs,5,indices,values,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = VecAssemblyBegin(sol);CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(sol);CHKERRQ(ierr);
+      CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,triangle_size,&sol));
+      CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,triangle_size,&rhs));
+      CHKERRQ(VecSetValues(rhs,5,indices,values,INSERT_VALUES));
+      CHKERRQ(VecAssemblyBegin(sol));
+      CHKERRQ(VecAssemblyEnd(sol));
 
-      ierr = KSPGuessFormGuess(guess,rhs,sol);CHKERRQ(ierr);
-      ierr = VecView(sol,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      CHKERRQ(KSPGuessFormGuess(guess,rhs,sol));
+      CHKERRQ(VecView(sol,PETSC_VIEWER_STDOUT_SELF));
 
-      ierr = VecDestroy(&rhs);CHKERRQ(ierr);
-      ierr = VecDestroy(&sol);CHKERRQ(ierr);
-      ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+      CHKERRQ(VecDestroy(&rhs));
+      CHKERRQ(VecDestroy(&sol));
+      CHKERRQ(KSPDestroy(&ksp));
     }
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    CHKERRQ(MatDestroy(&A));
   }
   ierr = PetscFinalize();
   return ierr;

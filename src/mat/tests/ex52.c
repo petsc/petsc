@@ -13,47 +13,47 @@ int main(int argc,char **args)
   PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* Test MatSetValues() and MatGetValues() */
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-mat_size",&m,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mat_size",&m,NULL));
 
   M    = m*bs*size;
-  ierr = MatCreateBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,M,M,PETSC_DECIDE,NULL,PETSC_DECIDE,NULL,&A);CHKERRQ(ierr);
+  CHKERRQ(MatCreateBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,M,M,PETSC_DECIDE,NULL,PETSC_DECIDE,NULL,&A));
 
-  ierr = MatGetOwnershipRange(A,&start,&end);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-column_oriented",&flg);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(A,&start,&end));
+  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-column_oriented",&flg));
   if (flg) {
-    ierr = MatSetOption(A,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
+    CHKERRQ(MatSetOption(A,MAT_ROW_ORIENTED,PETSC_FALSE));
   }
 
   /* inproc assembly */
   for (row=start; row<end; row++) {
     for (col=start; col<end; col++,data+=1) {
-      ierr = MatSetValues(A,1,&row,1,&col,&data,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&row,1,&col,&data,INSERT_VALUES));
     }
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /* offproc assembly */
   data = 5.0;
   row  = (M+start-1)%M;
   for (col=0; col<M; col++) {
-    ierr = MatSetValues(A,1,&row,1,&col,&data,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&row,1,&col,&data,ADD_VALUES));
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /* Test MatSetValuesBlocked() */
-  ierr = PetscOptionsHasName(NULL,NULL,"-test_setvaluesblocked",&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-test_setvaluesblocked",&flg));
   if (flg) {
     PetscScalar *bval;
     row /= bs;
     col  = start/bs;
-    ierr = PetscMalloc1(bs*bs,&bval);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(bs*bs,&bval));
     k = 1;
     /* row oriented - default */
     for (i=0; i<bs; i++) {
@@ -61,14 +61,14 @@ int main(int argc,char **args)
         bval[i*bs+j] = (PetscScalar)k; k++;
       }
     }
-    ierr = MatSetValuesBlocked(A,1,&row,1,&col,bval,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = PetscFree(bval);CHKERRQ(ierr);
+    CHKERRQ(MatSetValuesBlocked(A,1,&row,1,&col,bval,INSERT_VALUES));
+    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(PetscFree(bval));
   }
 
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(MatDestroy(&A));
   ierr = PetscFinalize();
   return ierr;
 }
@@ -96,4 +96,3 @@ int main(int argc,char **args)
       args: -mat_block_size 1 -test_setvaluesblocked -column_oriented
 
 TEST*/
-

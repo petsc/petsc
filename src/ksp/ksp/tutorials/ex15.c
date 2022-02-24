@@ -54,8 +54,8 @@ int main(int argc,char **args)
   PetscBool      user_defined_pc = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
@@ -67,17 +67,17 @@ int main(int argc,char **args)
      runtime. Also, the parallel partioning of the matrix is
      determined by PETSc at runtime.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatSetUp(A));
 
   /*
      Currently, all PETSc parallel matrix formats are partitioned by
      contiguous chunks of rows across the processors.  Determine which
      rows of the matrix are locally owned.
   */
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(A,&Istart,&Iend));
 
   /*
      Set matrix elements for the 2-D, five-point stencil in parallel.
@@ -88,11 +88,11 @@ int main(int argc,char **args)
    */
   for (Ii=Istart; Ii<Iend; Ii++) {
     v = -1.0; i = Ii/n; j = Ii - i*n;
-    if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (j<n-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    v = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
+    if (i>0)   {J = Ii - n; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (i<m-1) {J = Ii + n; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (j>0)   {J = Ii - 1; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (j<n-1) {J = Ii + 1; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    v = 4.0; CHKERRQ(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
   }
 
   /*
@@ -101,8 +101,8 @@ int main(int argc,char **args)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /*
      Create parallel vectors.
@@ -111,17 +111,17 @@ int main(int argc,char **args)
         dimension; the parallel partitioning is determined at runtime.
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,m*n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
+  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,m*n));
+  CHKERRQ(VecSetFromOptions(u));
+  CHKERRQ(VecDuplicate(u,&b));
+  CHKERRQ(VecDuplicate(b,&x));
 
   /*
      Set exact solution; then compute right-hand-side vector.
   */
-  ierr = VecSet(u,one);CHKERRQ(ierr);
-  ierr = MatMult(A,u,b);CHKERRQ(ierr);
+  CHKERRQ(VecSet(u,one));
+  CHKERRQ(MatMult(A,u,b));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
@@ -130,13 +130,13 @@ int main(int argc,char **args)
   /*
      Create linear solver context
   */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
 
   /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  CHKERRQ(KSPSetOperators(ksp,A,A));
 
   /*
      Set linear solver defaults for this problem (optional).
@@ -144,38 +144,38 @@ int main(int argc,char **args)
        we can then directly call any KSP and PC routines
        to set various options.
   */
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  CHKERRQ(KSPGetPC(ksp,&pc));
   ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,
                           PETSC_DEFAULT);CHKERRQ(ierr);
 
   /*
      Set a user-defined "shell" preconditioner if desired
   */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-user_defined_pc",&user_defined_pc,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-user_defined_pc",&user_defined_pc,NULL));
   if (user_defined_pc) {
     /* (Required) Indicate to PETSc that we're using a "shell" preconditioner */
-    ierr = PCSetType(pc,PCSHELL);CHKERRQ(ierr);
+    CHKERRQ(PCSetType(pc,PCSHELL));
 
     /* (Optional) Create a context for the user-defined preconditioner; this
        context can be used to contain any application-specific data. */
-    ierr = SampleShellPCCreate(&shell);CHKERRQ(ierr);
+    CHKERRQ(SampleShellPCCreate(&shell));
 
     /* (Required) Set the user-defined routine for applying the preconditioner */
-    ierr = PCShellSetApply(pc,SampleShellPCApply);CHKERRQ(ierr);
-    ierr = PCShellSetContext(pc,shell);CHKERRQ(ierr);
+    CHKERRQ(PCShellSetApply(pc,SampleShellPCApply));
+    CHKERRQ(PCShellSetContext(pc,shell));
 
     /* (Optional) Set user-defined function to free objects used by custom preconditioner */
-    ierr = PCShellSetDestroy(pc,SampleShellPCDestroy);CHKERRQ(ierr);
+    CHKERRQ(PCShellSetDestroy(pc,SampleShellPCDestroy));
 
     /* (Optional) Set a name for the preconditioner, used for PCView() */
-    ierr = PCShellSetName(pc,"MyPreconditioner");CHKERRQ(ierr);
+    CHKERRQ(PCShellSetName(pc,"MyPreconditioner"));
 
     /* (Optional) Do any setup required for the preconditioner */
     /* Note: This function could be set with PCShellSetSetUp and it would be called when necessary */
-    ierr = SampleShellPCSetUp(pc,A,x);CHKERRQ(ierr);
+    CHKERRQ(SampleShellPCSetUp(pc,A,x));
 
   } else {
-    ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
+    CHKERRQ(PCSetType(pc,PCJACOBI));
   }
 
   /*
@@ -185,13 +185,13 @@ int main(int argc,char **args)
     KSPSetFromOptions() is called _after_ any other customization
     routines.
   */
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPSetFromOptions(ksp));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  CHKERRQ(KSPSolve(ksp,b,x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Check solution and clean up
@@ -200,18 +200,18 @@ int main(int argc,char **args)
   /*
      Check the error
   */
-  ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(x,none,u));
+  CHKERRQ(VecNorm(x,NORM_2,&norm));
+  CHKERRQ(KSPGetIterationNumber(ksp,&its));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %D\n",(double)norm,its));
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(VecDestroy(&u));  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&b));  CHKERRQ(MatDestroy(&A));
 
   ierr = PetscFinalize();
   return ierr;
@@ -232,9 +232,8 @@ int main(int argc,char **args)
 PetscErrorCode SampleShellPCCreate(SampleShellPC **shell)
 {
   SampleShellPC  *newctx;
-  PetscErrorCode ierr;
 
-  ierr         = PetscNew(&newctx);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(&newctx));
   newctx->diag = 0;
   *shell       = newctx;
   return 0;
@@ -262,12 +261,11 @@ PetscErrorCode SampleShellPCSetUp(PC pc,Mat pmat,Vec x)
 {
   SampleShellPC  *shell;
   Vec            diag;
-  PetscErrorCode ierr;
 
-  ierr = PCShellGetContext(pc,&shell);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&diag);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(pmat,diag);CHKERRQ(ierr);
-  ierr = VecReciprocal(diag);CHKERRQ(ierr);
+  CHKERRQ(PCShellGetContext(pc,&shell));
+  CHKERRQ(VecDuplicate(x,&diag));
+  CHKERRQ(MatGetDiagonal(pmat,diag));
+  CHKERRQ(VecReciprocal(diag));
 
   shell->diag = diag;
   return 0;
@@ -292,10 +290,9 @@ PetscErrorCode SampleShellPCSetUp(PC pc,Mat pmat,Vec x)
 PetscErrorCode SampleShellPCApply(PC pc,Vec x,Vec y)
 {
   SampleShellPC  *shell;
-  PetscErrorCode ierr;
 
-  ierr = PCShellGetContext(pc,&shell);CHKERRQ(ierr);
-  ierr = VecPointwiseMult(y,x,shell->diag);CHKERRQ(ierr);
+  CHKERRQ(PCShellGetContext(pc,&shell));
+  CHKERRQ(VecPointwiseMult(y,x,shell->diag));
 
   return 0;
 }
@@ -310,11 +307,10 @@ PetscErrorCode SampleShellPCApply(PC pc,Vec x,Vec y)
 PetscErrorCode SampleShellPCDestroy(PC pc)
 {
   SampleShellPC  *shell;
-  PetscErrorCode ierr;
 
-  ierr = PCShellGetContext(pc,&shell);CHKERRQ(ierr);
-  ierr = VecDestroy(&shell->diag);CHKERRQ(ierr);
-  ierr = PetscFree(shell);CHKERRQ(ierr);
+  CHKERRQ(PCShellGetContext(pc,&shell));
+  CHKERRQ(VecDestroy(&shell->diag));
+  CHKERRQ(PetscFree(shell));
 
   return 0;
 }

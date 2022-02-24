@@ -20,26 +20,26 @@ int main(int argc, char **argv)
     ierr = PetscInitialize(&argc, &argv, NULL, NULL);if (ierr) return ierr;
     c = PETSC_COMM_WORLD;
 
-    ierr = MatCreate(c, &A);CHKERRQ(ierr);
-    ierr = MatSetSizes(A, 1, 1, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-    ierr = MatSetUp(A);CHKERRQ(ierr);
-    ierr = KSPCreate(c, &ksp);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp, A, A);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-    ierr = DMShellCreate(c, &shell);CHKERRQ(ierr);
-    ierr = DMSetFromOptions(shell);CHKERRQ(ierr);
-    ierr = DMSetUp(shell);CHKERRQ(ierr);
-    ierr = KSPSetDM(ksp, shell);CHKERRQ(ierr);
+    CHKERRQ(MatCreate(c, &A));
+    CHKERRQ(MatSetSizes(A, 1, 1, PETSC_DECIDE, PETSC_DECIDE));
+    CHKERRQ(MatSetFromOptions(A));
+    CHKERRQ(MatSetUp(A));
+    CHKERRQ(KSPCreate(c, &ksp));
+    CHKERRQ(KSPSetOperators(ksp, A, A));
+    CHKERRQ(KSPSetFromOptions(ksp));
+    CHKERRQ(DMShellCreate(c, &shell));
+    CHKERRQ(DMSetFromOptions(shell));
+    CHKERRQ(DMSetUp(shell));
+    CHKERRQ(KSPSetDM(ksp, shell));
 
-    ierr = KSPCreateVecs(ksp, 1, &right, 1, &left);CHKERRQ(ierr);
-    ierr = VecView(right[0], PETSC_VIEWER_STDOUT_(c));CHKERRQ(ierr);
-    ierr = VecDestroyVecs(1,&right);CHKERRQ(ierr);
-    ierr = VecDestroyVecs(1,&left);CHKERRQ(ierr);
+    CHKERRQ(KSPCreateVecs(ksp, 1, &right, 1, &left));
+    CHKERRQ(VecView(right[0], PETSC_VIEWER_STDOUT_(c)));
+    CHKERRQ(VecDestroyVecs(1,&right));
+    CHKERRQ(VecDestroyVecs(1,&left));
 
-    ierr = DMDestroy(&shell);CHKERRQ(ierr);
-    ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    CHKERRQ(DMDestroy(&shell));
+    CHKERRQ(KSPDestroy(&ksp));
+    CHKERRQ(MatDestroy(&A));
     PetscFinalize();
     return 0;
 }

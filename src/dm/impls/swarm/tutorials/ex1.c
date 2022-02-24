@@ -25,106 +25,106 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   /* Create a mesh */
-  ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
-  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dm));
+  CHKERRQ(DMSetType(dm, DMPLEX));
+  CHKERRQ(DMSetFromOptions(dm));
+  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
 
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm, &dim));
   i    = dim;
-  ierr = PetscOptionsGetIntArray(NULL, NULL, "-dm_plex_box_faces", faces, &i, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, NULL, "-np", &Np, NULL);CHKERRQ(ierr);
-  ierr = DMGetBoundingBox(dm, lo, hi);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetIntArray(NULL, NULL, "-dm_plex_box_faces", faces, &i, NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL, NULL, "-np", &Np, NULL));
+  CHKERRQ(DMGetBoundingBox(dm, lo, hi));
   for (i=0;i<dim;i++) {
     h[i] = (hi[i] - lo[i])/faces[i];
-    ierr = PetscPrintf(PETSC_COMM_SELF," lo = %g hi = %g n = %D h = %g\n",lo[i],hi[i],faces[i],h[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF," lo = %g hi = %g n = %D h = %g\n",lo[i],hi[i],faces[i],h[i]));
   }
 
-  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, Nc, PETSC_FALSE, "", PETSC_DECIDE, &fe);CHKERRQ(ierr);
-  ierr = PetscFESetFromOptions(fe);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)fe, "fe");CHKERRQ(ierr);
-  ierr = DMSetField(dm, field, NULL, (PetscObject)fe);CHKERRQ(ierr);
-  ierr = DMCreateDS(dm);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, Nc, PETSC_FALSE, "", PETSC_DECIDE, &fe));
+  CHKERRQ(PetscFESetFromOptions(fe));
+  CHKERRQ(PetscObjectSetName((PetscObject)fe, "fe"));
+  CHKERRQ(DMSetField(dm, field, NULL, (PetscObject)fe));
+  CHKERRQ(DMCreateDS(dm));
+  CHKERRQ(PetscFEDestroy(&fe));
   /* Create particle swarm */
-  ierr = DMCreate(PETSC_COMM_SELF, &sw);CHKERRQ(ierr);
-  ierr = DMSetType(sw, DMSWARM);CHKERRQ(ierr);
-  ierr = DMSetDimension(sw, dim);CHKERRQ(ierr);
-  ierr = DMSwarmSetType(sw, DMSWARM_PIC);CHKERRQ(ierr);
-  ierr = DMSwarmSetCellDM(sw, dm);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(sw, "w_q", Nc, PETSC_SCALAR);CHKERRQ(ierr);
-  ierr = DMSwarmFinalizeFieldRegister(sw);CHKERRQ(ierr);
-  ierr = DMSwarmSetLocalSizes(sw, Np, zero);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(sw);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(sw, "w_q", &bs, &dtype, (void**)&wq);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords);CHKERRQ(ierr);
+  CHKERRQ(DMCreate(PETSC_COMM_SELF, &sw));
+  CHKERRQ(DMSetType(sw, DMSWARM));
+  CHKERRQ(DMSetDimension(sw, dim));
+  CHKERRQ(DMSwarmSetType(sw, DMSWARM_PIC));
+  CHKERRQ(DMSwarmSetCellDM(sw, dm));
+  CHKERRQ(DMSwarmRegisterPetscDatatypeField(sw, "w_q", Nc, PETSC_SCALAR));
+  CHKERRQ(DMSwarmFinalizeFieldRegister(sw));
+  CHKERRQ(DMSwarmSetLocalSizes(sw, Np, zero));
+  CHKERRQ(DMSetFromOptions(sw));
+  CHKERRQ(DMSwarmGetField(sw, "w_q", &bs, &dtype, (void**)&wq));
+  CHKERRQ(DMSwarmGetField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
   for (p=0,energy_0=0;p<Np;p++) {
     coords[p*2+0]  = -PetscCosReal((PetscReal)(p+1)/(PetscReal)(Np+1) * PETSC_PI);
     coords[p*2+1] =   PetscSinReal((PetscReal)(p+1)/(PetscReal)(Np+1) * PETSC_PI);
     wq[p]          = 1.0;
     energy_0 += wq[p]*(PetscSqr(coords[p*2+0])+PetscSqr(coords[p*2+1]));
   }
-  ierr = DMSwarmRestoreField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords);CHKERRQ(ierr);
-  ierr = DMSwarmRestoreField(sw, "w_q", &bs, &dtype, (void**)&wq);CHKERRQ(ierr);
-  ierr = DMSwarmMigrate(sw, removePoints);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)sw, "Particle Grid");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(sw, NULL, "-swarm_view");CHKERRQ(ierr);
+  CHKERRQ(DMSwarmRestoreField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
+  CHKERRQ(DMSwarmRestoreField(sw, "w_q", &bs, &dtype, (void**)&wq));
+  CHKERRQ(DMSwarmMigrate(sw, removePoints));
+  CHKERRQ(PetscObjectSetName((PetscObject)sw, "Particle Grid"));
+  CHKERRQ(DMViewFromOptions(sw, NULL, "-swarm_view"));
 
   /* Project particles to field */
   /* This gives M f = \int_\Omega \phi f, which looks like a rhs for a PDE */
-  ierr = DMCreateMassMatrix(sw, dm, &M_p);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dm, &rho);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)rho, "rho");CHKERRQ(ierr);
+  CHKERRQ(DMCreateMassMatrix(sw, dm, &M_p));
+  CHKERRQ(DMCreateGlobalVector(dm, &rho));
+  CHKERRQ(PetscObjectSetName((PetscObject)rho, "rho"));
 
-  ierr = DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)f, "weights");CHKERRQ(ierr);
-  ierr = MatMultTranspose(M_p, f, rho);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f));
+  CHKERRQ(PetscObjectSetName((PetscObject)f, "weights"));
+  CHKERRQ(MatMultTranspose(M_p, f, rho));
 
   /* Visualize mesh field */
-  ierr = DMSetOutputSequenceNumber(dm, timestep, time);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(rho, NULL, "-rho_view");CHKERRQ(ierr);
+  CHKERRQ(DMSetOutputSequenceNumber(dm, timestep, time));
+  CHKERRQ(VecViewFromOptions(rho, NULL, "-rho_view"));
 
   /* Project field to particles */
   /*   This gives f_p = M_p^+ M f */
-  ierr = DMCreateGlobalVector(dm, &rhs);CHKERRQ(ierr);
-  ierr = VecCopy(rho, rhs);CHKERRQ(ierr); /* Identity: M^1 M rho */
+  CHKERRQ(DMCreateGlobalVector(dm, &rhs));
+  CHKERRQ(VecCopy(rho, rhs)); /* Identity: M^1 M rho */
 
-  ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(ksp, "ftop_");CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD, &ksp));
+  CHKERRQ(KSPSetOptionsPrefix(ksp, "ftop_"));
+  CHKERRQ(KSPSetFromOptions(ksp));
+  CHKERRQ(KSPGetPC(ksp,&pc));
   ierr = PetscObjectTypeCompare((PetscObject)pc,PCBJACOBI,&is_bjac);
   if (is_bjac) {
-    ierr = DMSwarmCreateMassMatrixSquare(sw, dm, &PM_p);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp, M_p, PM_p);CHKERRQ(ierr);
+    CHKERRQ(DMSwarmCreateMassMatrixSquare(sw, dm, &PM_p));
+    CHKERRQ(KSPSetOperators(ksp, M_p, PM_p));
   } else {
-    ierr = KSPSetOperators(ksp, M_p, M_p);CHKERRQ(ierr);
+    CHKERRQ(KSPSetOperators(ksp, M_p, M_p));
   }
-  ierr = KSPSolveTranspose(ksp, rhs, f);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&rhs);CHKERRQ(ierr);
+  CHKERRQ(KSPSolveTranspose(ksp, rhs, f));
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(VecDestroy(&rhs));
 
   /* Visualize particle field */
-  ierr = DMSetOutputSequenceNumber(sw, timestep, time);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(f, NULL, "-weights_view");CHKERRQ(ierr);
-  ierr = VecNorm(f,NORM_1,&norm);CHKERRQ(ierr);
-  ierr = DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &f);CHKERRQ(ierr);
+  CHKERRQ(DMSetOutputSequenceNumber(sw, timestep, time));
+  CHKERRQ(VecViewFromOptions(f, NULL, "-weights_view"));
+  CHKERRQ(VecNorm(f,NORM_1,&norm));
+  CHKERRQ(DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &f));
 
   /* compute energy */
-  ierr = DMSwarmGetField(sw, "w_q", &bs, &dtype, (void**)&wq);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmGetField(sw, "w_q", &bs, &dtype, (void**)&wq));
+  CHKERRQ(DMSwarmGetField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
   for (p=0,energy_1=0;p<Np;p++) {
     energy_1 += wq[p]*(PetscSqr(coords[p*2+0])+PetscSqr(coords[p*2+1]));
   }
-  ierr = DMSwarmRestoreField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords);CHKERRQ(ierr);
-  ierr = DMSwarmRestoreField(sw, "w_q", &bs, &dtype, (void**)&wq);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Total number = %20.12e. energy = %20.12e error = %20.12e\n", norm, energy_0, (energy_1-energy_0)/energy_0);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmRestoreField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void**)&coords));
+  CHKERRQ(DMSwarmRestoreField(sw, "w_q", &bs, &dtype, (void**)&wq));
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Total number = %20.12e. energy = %20.12e error = %20.12e\n", norm, energy_0, (energy_1-energy_0)/energy_0));
   /* Cleanup */
-  ierr = MatDestroy(&M_p);CHKERRQ(ierr);
-  ierr = MatDestroy(&PM_p);CHKERRQ(ierr);
-  ierr = VecDestroy(&rho);CHKERRQ(ierr);
-  ierr = DMDestroy(&sw);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&M_p));
+  CHKERRQ(MatDestroy(&PM_p));
+  CHKERRQ(VecDestroy(&rho));
+  CHKERRQ(DMDestroy(&sw));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

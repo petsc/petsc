@@ -29,10 +29,10 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->ostep              = 100;
 
   ierr = PetscOptionsBegin(comm, "", "Vlasov Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-output_step", "Number of time steps between output", "ex4.c", options->ostep, &options->ostep, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-monitor", "Flag to use the TS monitor", "ex4.c", options->monitor, &options->monitor, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-error", "Flag to print the error", "ex4.c", options->error, &options->error, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-particles_per_circle", "Number of particles per circle", "ex4.c", options->particlesPerCircle, &options->particlesPerCircle, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsInt("-output_step", "Number of time steps between output", "ex4.c", options->ostep, &options->ostep, PETSC_NULL));
+  CHKERRQ(PetscOptionsBool("-monitor", "Flag to use the TS monitor", "ex4.c", options->monitor, &options->monitor, NULL));
+  CHKERRQ(PetscOptionsBool("-error", "Flag to print the error", "ex4.c", options->error, &options->error, NULL));
+  CHKERRQ(PetscOptionsInt("-particles_per_circle", "Number of particles per circle", "ex4.c", options->particlesPerCircle, &options->particlesPerCircle, NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -40,14 +40,12 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = DMGetDimension(*dm, &user->dim);CHKERRQ(ierr);
+  CHKERRQ(DMCreate(comm, dm));
+  CHKERRQ(DMSetType(*dm, DMPLEX));
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
+  CHKERRQ(DMGetDimension(*dm, &user->dim));
   PetscFunctionReturn(0);
 }
 
@@ -103,40 +101,39 @@ static PetscErrorCode SetInitialCoordinates(DM dmSw)
   const PetscSFNode *cells;
   PetscInt          dim, d, c, Np, p;
   PetscMPIInt       rank;
-  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetApplicationContext(dmSw, &ctx);CHKERRQ(ierr);
+  CHKERRQ(DMGetApplicationContext(dmSw, &ctx));
   Np   = ctx->particlesPerCircle;
-  ierr = DMSwarmGetCellDM(dmSw, &dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(dmSw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmGetCellDM(dmSw, &dm));
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(DMSwarmGetField(dmSw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords));
   for (c = 0; c < 2; ++c) {
     for (d = 0; d < dim; ++d) ctx->center[c*dim+d] = (!c && !d) ? 3.0 : 0.0;
     ctx->radius[c] = 3.*c+1.;
     for (p = 0; p < Np; ++p) {
       const PetscInt n = c*Np + p;
 
-      ierr = orbit(ctx, c, p, 0.0, &coords[n*dim], NULL);CHKERRQ(ierr);
+      CHKERRQ(orbit(ctx, c, p, 0.0, &coords[n*dim], NULL));
     }
   }
-  ierr = DMSwarmRestoreField(dmSw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmRestoreField(dmSw, DMSwarmPICField_coor, NULL, NULL, (void **) &coords));
 
-  ierr = DMSwarmCreateGlobalVectorFromField(dmSw, DMSwarmPICField_coor, &coordinates);CHKERRQ(ierr);
-  ierr = DMLocatePoints(dm, coordinates, DM_POINTLOCATION_NONE, &cellSF);CHKERRQ(ierr);
-  ierr = DMSwarmDestroyGlobalVectorFromField(dmSw, DMSwarmPICField_coor, &coordinates);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmCreateGlobalVectorFromField(dmSw, DMSwarmPICField_coor, &coordinates));
+  CHKERRQ(DMLocatePoints(dm, coordinates, DM_POINTLOCATION_NONE, &cellSF));
+  CHKERRQ(DMSwarmDestroyGlobalVectorFromField(dmSw, DMSwarmPICField_coor, &coordinates));
 
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dmSw), &rank);CHKERRMPI(ierr);
-  ierr = DMSwarmGetField(dmSw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid);CHKERRQ(ierr);
-  ierr = PetscSFGetGraph(cellSF, NULL, &Np, &found, &cells);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject) dmSw), &rank));
+  CHKERRQ(DMSwarmGetField(dmSw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid));
+  CHKERRQ(PetscSFGetGraph(cellSF, NULL, &Np, &found, &cells));
   for (p = 0; p < Np; ++p) {
     const PetscInt part = found ? found[p] : p;
 
     PetscCheckFalse(cells[p].rank != rank,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D not found in the mesh", part);
     cellid[part] = cells[p].index;
   }
-  ierr = DMSwarmRestoreField(dmSw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&cellSF);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmRestoreField(dmSw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid));
+  CHKERRQ(PetscSFDestroy(&cellSF));
   PetscFunctionReturn(0);
 }
 
@@ -146,45 +143,43 @@ static PetscErrorCode SetInitialConditions(DM dmSw, Vec u)
   AppCtx        *ctx;
   PetscScalar   *initialConditions;
   PetscInt       dim, cStart, cEnd, c, Np, p;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetApplicationContext(dmSw, &ctx);CHKERRQ(ierr);
+  CHKERRQ(DMGetApplicationContext(dmSw, &ctx));
   Np   = ctx->particlesPerCircle;
-  ierr = DMSwarmGetCellDM(dmSw, &dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = VecGetArray(u, &initialConditions);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmGetCellDM(dmSw, &dm));
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  CHKERRQ(VecGetArray(u, &initialConditions));
   for (c = 0; c < 2; ++c) {
     for (p = 0; p < Np; ++p) {
       const PetscInt n = c*Np + p;
 
-      ierr = orbit(ctx, c, p, 0.0, &initialConditions[(n*2 + 0)*dim], &initialConditions[(n*2 + 1)*dim]);CHKERRQ(ierr);
+      CHKERRQ(orbit(ctx, c, p, 0.0, &initialConditions[(n*2 + 0)*dim], &initialConditions[(n*2 + 1)*dim]));
     }
   }
-  ierr = VecRestoreArray(u, &initialConditions);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(u, &initialConditions));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
 {
   PetscInt       dim, Np = user->particlesPerCircle;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMCreate(PetscObjectComm((PetscObject) dm), sw);CHKERRQ(ierr);
-  ierr = DMSetType(*sw, DMSWARM);CHKERRQ(ierr);
-  ierr = DMSetDimension(*sw, dim);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(DMCreate(PetscObjectComm((PetscObject) dm), sw));
+  CHKERRQ(DMSetType(*sw, DMSWARM));
+  CHKERRQ(DMSetDimension(*sw, dim));
 
-  ierr = DMSwarmSetType(*sw, DMSWARM_PIC);CHKERRQ(ierr);
-  ierr = DMSwarmSetCellDM(*sw, dm);CHKERRQ(ierr);
-  ierr = DMSwarmRegisterPetscDatatypeField(*sw, "kinematics", 2*dim, PETSC_REAL);CHKERRQ(ierr);
-  ierr = DMSwarmFinalizeFieldRegister(*sw);CHKERRQ(ierr);
-  ierr = DMSwarmSetLocalSizes(*sw, 2 * Np, 0);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*sw);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *sw, "Particles");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*sw, NULL, "-sw_view");CHKERRQ(ierr);
+  CHKERRQ(DMSwarmSetType(*sw, DMSWARM_PIC));
+  CHKERRQ(DMSwarmSetCellDM(*sw, dm));
+  CHKERRQ(DMSwarmRegisterPetscDatatypeField(*sw, "kinematics", 2*dim, PETSC_REAL));
+  CHKERRQ(DMSwarmFinalizeFieldRegister(*sw));
+  CHKERRQ(DMSwarmSetLocalSizes(*sw, 2 * Np, 0));
+  CHKERRQ(DMSetFromOptions(*sw));
+  CHKERRQ(PetscObjectSetName((PetscObject) *sw, "Particles"));
+  CHKERRQ(DMViewFromOptions(*sw, NULL, "-sw_view"));
   PetscFunctionReturn(0);
 }
 
@@ -194,22 +189,21 @@ static PetscErrorCode RHSFunction1(TS ts, PetscReal t, Vec V, Vec Xres, void *ct
   const PetscScalar *v;
   PetscScalar       *xres;
   PetscInt          Np, p, dim, d;
-  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   /* The DM is not currently pushed down to the splits */
   dim  = ((AppCtx *) ctx)->dim;
-  ierr = VecGetLocalSize(Xres, &Np);CHKERRQ(ierr);
+  CHKERRQ(VecGetLocalSize(Xres, &Np));
   Np  /= dim;
-  ierr = VecGetArray(Xres, &xres);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(V, &v);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(Xres, &xres));
+  CHKERRQ(VecGetArrayRead(V, &v));
   for (p = 0; p < Np; ++p) {
      for (d = 0; d < dim; ++d) {
        xres[p*dim+d] = v[p*dim+d];
      }
   }
-  ierr = VecRestoreArrayRead(V,& v);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Xres, &xres);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(V,& v));
+  CHKERRQ(VecRestoreArray(Xres, &xres));
   PetscFunctionReturn(0);
 }
 
@@ -219,22 +213,21 @@ static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, void *us
   const PetscScalar *x;
   PetscScalar       *vres;
   PetscInt          Np, p, dim;
-  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   /* The DM is not currently pushed down to the splits */
   dim  = ctx->dim;
-  ierr = VecGetLocalSize(Vres, &Np);CHKERRQ(ierr);
+  CHKERRQ(VecGetLocalSize(Vres, &Np));
   Np  /= dim;
-  ierr = VecGetArray(Vres, &vres);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(Vres, &vres));
+  CHKERRQ(VecGetArrayRead(X, &x));
   for (p = 0; p < Np; ++p) {
     const PetscInt c = p / ctx->particlesPerCircle;
 
-    ierr = force(ctx, c, &x[p*dim], &vres[p*dim]);CHKERRQ(ierr);
+    CHKERRQ(force(ctx, c, &x[p*dim], &vres[p*dim]));
   }
-  ierr = VecRestoreArray(Vres, &vres);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(X, &x);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(Vres, &vres));
+  CHKERRQ(VecRestoreArrayRead(X, &x));
   PetscFunctionReturn(0);
 }
 
@@ -245,23 +238,22 @@ static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t , Vec U, Vec R, vo
   const PetscScalar *u;
   PetscScalar       *r;
   PetscInt          Np, p, dim, d;
-  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(U, &Np);CHKERRQ(ierr);
+  CHKERRQ(TSGetDM(ts, &dm));
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(VecGetLocalSize(U, &Np));
   Np  /= 2*dim;
-  ierr = VecGetArrayRead(U, &u);CHKERRQ(ierr);
-  ierr = VecGetArray(R, &r);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(U, &u));
+  CHKERRQ(VecGetArray(R, &r));
   for (p = 0; p < Np; ++p) {
     const PetscInt c = p / ctx->particlesPerCircle;
 
     for (d = 0; d < dim; ++d) r[(p*2 + 0)*dim + d] = u[(p*2 + 1)*dim + d];
-    ierr = force(ctx, c, &u[(p*2 + 0)*dim], &r[(p*2 + 1)*dim]);CHKERRQ(ierr);
+    CHKERRQ(force(ctx, c, &u[(p*2 + 0)*dim], &r[(p*2 + 1)*dim]));
   }
-  ierr = VecRestoreArrayRead(U, &u);CHKERRQ(ierr);
-  ierr = VecRestoreArray(R, &r);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(U, &u));
+  CHKERRQ(VecRestoreArray(R, &r));
   PetscFunctionReturn(0);
 }
 
@@ -269,13 +261,12 @@ static PetscErrorCode InitializeSolve(TS ts, Vec u)
 {
   DM             dm;
   AppCtx        *user;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(dm, &user);CHKERRQ(ierr);
-  ierr = SetInitialCoordinates(dm);CHKERRQ(ierr);
-  ierr = SetInitialConditions(dm, u);CHKERRQ(ierr);
+  CHKERRQ(TSGetDM(ts, &dm));
+  CHKERRQ(DMGetApplicationContext(dm, &user));
+  CHKERRQ(SetInitialCoordinates(dm));
+  CHKERRQ(SetInitialConditions(dm, u));
   PetscFunctionReturn(0);
 }
 
@@ -288,19 +279,18 @@ static PetscErrorCode ComputeError(TS ts, Vec U, Vec E)
   PetscScalar       *e;
   PetscReal          t;
   PetscInt           dim, Np, p, c;
-  PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscObjectGetComm((PetscObject) ts, &comm);CHKERRQ(ierr);
-  ierr = TSGetDM(ts, &sdm);CHKERRQ(ierr);
-  ierr = DMGetApplicationContext(sdm, &ctx);CHKERRQ(ierr);
-  ierr = DMGetDimension(sdm, &dim);CHKERRQ(ierr);
-  ierr = TSGetSolveTime(ts, &t);CHKERRQ(ierr);
-  ierr = VecGetArray(E, &e);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(U, &u);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(U, &Np);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject) ts, &comm));
+  CHKERRQ(TSGetDM(ts, &sdm));
+  CHKERRQ(DMGetApplicationContext(sdm, &ctx));
+  CHKERRQ(DMGetDimension(sdm, &dim));
+  CHKERRQ(TSGetSolveTime(ts, &t));
+  CHKERRQ(VecGetArray(E, &e));
+  CHKERRQ(VecGetArrayRead(U, &u));
+  CHKERRQ(VecGetLocalSize(U, &Np));
   Np  /= 2*dim*2;
-  ierr = DMSwarmGetField(sdm, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmGetField(sdm, DMSwarmPICField_coor, NULL, NULL, (void **) &coords));
   for (c = 0; c < 2; ++c) {
     for (p = 0; p < Np; ++p) {
       const PetscInt     n = c*Np + p;
@@ -309,17 +299,17 @@ static PetscErrorCode ComputeError(TS ts, Vec U, Vec E)
       PetscReal          xe[3], ve[3];
       PetscInt           d;
 
-      ierr = orbit(ctx, c, p, t, xe, ve);CHKERRQ(ierr);
+      CHKERRQ(orbit(ctx, c, p, t, xe, ve));
       for (d = 0; d < dim; ++d) {
         e[(p*2+0)*dim+d] = x[d] - xe[d];
         e[(p*2+1)*dim+d] = v[d] - ve[d];
       }
-      if (ctx->error) {ierr = PetscPrintf(comm, "p%D error [%.2g %.2g] sol [(%.6lf %.6lf) (%.6lf %.6lf)] exact [(%.6lf %.6lf) (%.6lf %.6lf)] energy/exact energy %g / %g\n", p, (double) DMPlex_NormD_Internal(dim, &e[(p*2+0)*dim]), (double) DMPlex_NormD_Internal(dim, &e[(p*2+1)*dim]), (double) x[0], (double) x[1], (double) v[0], (double) v[1], (double) xe[0], (double) xe[1], (double) ve[0], (double) ve[1], 0.5*DMPlex_NormD_Internal(dim, v), (double) energy(ctx, c));}
+      if (ctx->error) CHKERRQ(PetscPrintf(comm, "p%D error [%.2g %.2g] sol [(%.6lf %.6lf) (%.6lf %.6lf)] exact [(%.6lf %.6lf) (%.6lf %.6lf)] energy/exact energy %g / %g\n", p, (double) DMPlex_NormD_Internal(dim, &e[(p*2+0)*dim]), (double) DMPlex_NormD_Internal(dim, &e[(p*2+1)*dim]), (double) x[0], (double) x[1], (double) v[0], (double) v[1], (double) xe[0], (double) xe[1], (double) ve[0], (double) ve[1], 0.5*DMPlex_NormD_Internal(dim, v), (double) energy(ctx, c)));
     }
   }
-  ierr = DMSwarmRestoreField(sdm, DMSwarmPICField_coor, NULL, NULL, (void **) &coords);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(U, &u);CHKERRQ(ierr);
-  ierr = VecRestoreArray(E, &e);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmRestoreField(sdm, DMSwarmPICField_coor, NULL, NULL, (void **) &coords));
+  CHKERRQ(VecRestoreArrayRead(U, &u));
+  CHKERRQ(VecRestoreArray(E, &e));
   PetscFunctionReturn(0);
 }
 
@@ -340,67 +330,67 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = ProcessOptions(comm, &user);CHKERRQ(ierr);
+  CHKERRQ(ProcessOptions(comm, &user));
 
-  ierr = CreateMesh(comm, &dm, &user);CHKERRQ(ierr);
-  ierr = CreateParticles(dm, &sw, &user);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(sw, &user);CHKERRQ(ierr);
+  CHKERRQ(CreateMesh(comm, &dm, &user));
+  CHKERRQ(CreateParticles(dm, &sw, &user));
+  CHKERRQ(DMSetApplicationContext(sw, &user));
 
-  ierr = TSCreate(comm, &ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts, TSBASICSYMPLECTIC);CHKERRQ(ierr);
-  ierr = TSSetDM(ts, sw);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts, ftime);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts, 0.0001);CHKERRQ(ierr);
-  ierr = TSSetMaxSteps(ts, 10);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetTime(ts, 0.0);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts, NULL, RHSFunctionParticles, &user);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(comm, &ts));
+  CHKERRQ(TSSetType(ts, TSBASICSYMPLECTIC));
+  CHKERRQ(TSSetDM(ts, sw));
+  CHKERRQ(TSSetMaxTime(ts, ftime));
+  CHKERRQ(TSSetTimeStep(ts, 0.0001));
+  CHKERRQ(TSSetMaxSteps(ts, 10));
+  CHKERRQ(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));
+  CHKERRQ(TSSetTime(ts, 0.0));
+  CHKERRQ(TSSetRHSFunction(ts, NULL, RHSFunctionParticles, &user));
 
-  ierr = DMSwarmCreateGlobalVectorFromField(sw, "kinematics", &u);CHKERRQ(ierr);
-  ierr = DMGetDimension(sw, &dim);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(u, &locSize);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmCreateGlobalVectorFromField(sw, "kinematics", &u));
+  CHKERRQ(DMGetDimension(sw, &dim));
+  CHKERRQ(VecGetLocalSize(u, &locSize));
   Np   = locSize/(2*dim);
-  ierr = PetscMalloc1(locSize/2, &idx1);CHKERRQ(ierr);
-  ierr = PetscMalloc1(locSize/2, &idx2);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(locSize/2, &idx1));
+  CHKERRQ(PetscMalloc1(locSize/2, &idx2));
   for (p = 0; p < Np; ++p) {
     for (d = 0; d < dim; ++d) {
       idx1[p*dim+d] = (p*2+0)*dim + d;
       idx2[p*dim+d] = (p*2+1)*dim + d;
     }
   }
-  ierr = ISCreateGeneral(comm, locSize/2, idx1, PETSC_OWN_POINTER, &is1);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm, locSize/2, idx2, PETSC_OWN_POINTER, &is2);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetIS(ts, "position", is1);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetIS(ts, "momentum", is2);CHKERRQ(ierr);
-  ierr = ISDestroy(&is1);CHKERRQ(ierr);
-  ierr = ISDestroy(&is2);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetRHSFunction(ts,"position",NULL,RHSFunction1,&user);CHKERRQ(ierr);
-  ierr = TSRHSSplitSetRHSFunction(ts,"momentum",NULL,RHSFunction2,&user);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(comm, locSize/2, idx1, PETSC_OWN_POINTER, &is1));
+  CHKERRQ(ISCreateGeneral(comm, locSize/2, idx2, PETSC_OWN_POINTER, &is2));
+  CHKERRQ(TSRHSSplitSetIS(ts, "position", is1));
+  CHKERRQ(TSRHSSplitSetIS(ts, "momentum", is2));
+  CHKERRQ(ISDestroy(&is1));
+  CHKERRQ(ISDestroy(&is2));
+  CHKERRQ(TSRHSSplitSetRHSFunction(ts,"position",NULL,RHSFunction1,&user));
+  CHKERRQ(TSRHSSplitSetRHSFunction(ts,"momentum",NULL,RHSFunction2,&user));
 
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSSetComputeInitialCondition(ts, InitializeSolve);CHKERRQ(ierr);
-  ierr = TSSetComputeExactError(ts, ComputeError);CHKERRQ(ierr);
-  ierr = TSComputeInitialCondition(ts, u);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(u, NULL, "-init_view");CHKERRQ(ierr);
-  ierr = TSSolve(ts, u);CHKERRQ(ierr);
-  ierr = TSGetSolveTime(ts, &ftime);CHKERRQ(ierr);
-  ierr = TSGetConvergedReason(ts, &reason);CHKERRQ(ierr);
-  ierr = TSGetStepNumber(ts, &steps);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"%s at time %g after %D steps\n", TSConvergedReasons[reason], (double) ftime, steps);CHKERRQ(ierr);
+  CHKERRQ(TSSetFromOptions(ts));
+  CHKERRQ(TSSetComputeInitialCondition(ts, InitializeSolve));
+  CHKERRQ(TSSetComputeExactError(ts, ComputeError));
+  CHKERRQ(TSComputeInitialCondition(ts, u));
+  CHKERRQ(VecViewFromOptions(u, NULL, "-init_view"));
+  CHKERRQ(TSSolve(ts, u));
+  CHKERRQ(TSGetSolveTime(ts, &ftime));
+  CHKERRQ(TSGetConvergedReason(ts, &reason));
+  CHKERRQ(TSGetStepNumber(ts, &steps));
+  CHKERRQ(PetscPrintf(comm,"%s at time %g after %D steps\n", TSConvergedReasons[reason], (double) ftime, steps));
 
-  ierr = VecGetArrayRead(u, &endVals);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(u, &endVals));
   for (c = 0; c < 2; ++c) {
     for (p = 0; p < Np/2; ++p) {
       const PetscInt  n    = c*(Np/2) + p;
       const PetscReal norm = DMPlex_NormD_Internal(dim, &endVals[(n*2 + 1)*dim]);
-      ierr = PetscPrintf(comm, "Particle %D initial Energy: %g  Final Energy: %g\n", p, (double) (0.5*(1000./(3*c+1.))), (double) 0.5*PetscSqr(norm));CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(comm, "Particle %D initial Energy: %g  Final Energy: %g\n", p, (double) (0.5*(1000./(3*c+1.))), (double) 0.5*PetscSqr(norm)));
     }
   }
-  ierr = VecRestoreArrayRead(u, &endVals);CHKERRQ(ierr);
-  ierr = DMSwarmDestroyGlobalVectorFromField(sw, "kinematics", &u);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = DMDestroy(&sw);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(u, &endVals));
+  CHKERRQ(DMSwarmDestroyGlobalVectorFromField(sw, "kinematics", &u));
+  CHKERRQ(TSDestroy(&ts));
+  CHKERRQ(DMDestroy(&sw));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

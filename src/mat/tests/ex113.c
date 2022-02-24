@@ -17,40 +17,39 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /*  Load the matrix A */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
   PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate a file name for matrix A with the -f option.");
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatLoad(A,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatLoad(A,viewer));
+  CHKERRQ(PetscViewerDestroy(&viewer));
 
-  ierr = MatDuplicate(A,MAT_COPY_VALUES,&A1);CHKERRQ(ierr);
-  ierr = MatDuplicate(A,MAT_COPY_VALUES,&A2);CHKERRQ(ierr);
+  CHKERRQ(MatDuplicate(A,MAT_COPY_VALUES,&A1));
+  CHKERRQ(MatDuplicate(A,MAT_COPY_VALUES,&A2));
 
   /* dstMat = A*A1*A2 */
-  ierr = MatMatMult(A1,A2,MAT_INITIAL_MATRIX,fill,&Mtmp);CHKERRQ(ierr);
-  ierr = MatMatMult(A,Mtmp,MAT_INITIAL_MATRIX,fill,&dstMat);CHKERRQ(ierr);
-  ierr = MatDestroy(&Mtmp);CHKERRQ(ierr);
+  CHKERRQ(MatMatMult(A1,A2,MAT_INITIAL_MATRIX,fill,&Mtmp));
+  CHKERRQ(MatMatMult(A,Mtmp,MAT_INITIAL_MATRIX,fill,&dstMat));
+  CHKERRQ(MatDestroy(&Mtmp));
 
   /* dstMat += A1*A2 */
-  ierr = MatMatMult(A1,A2,MAT_INITIAL_MATRIX,fill,&Mtmp);CHKERRQ(ierr);
-  ierr = MatAXPY(dstMat,1.0,Mtmp,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatDestroy(&Mtmp);CHKERRQ(ierr);
+  CHKERRQ(MatMatMult(A1,A2,MAT_INITIAL_MATRIX,fill,&Mtmp));
+  CHKERRQ(MatAXPY(dstMat,1.0,Mtmp,SUBSET_NONZERO_PATTERN));
+  CHKERRQ(MatDestroy(&Mtmp));
 
   /* dstMat += A*A1 */
-  ierr = MatMatMult(A,A1,MAT_INITIAL_MATRIX,fill,&Mtmp);CHKERRQ(ierr);
-  ierr = MatAXPY(dstMat, 1.0, Mtmp,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatDestroy(&Mtmp);CHKERRQ(ierr);
+  CHKERRQ(MatMatMult(A,A1,MAT_INITIAL_MATRIX,fill,&Mtmp));
+  CHKERRQ(MatAXPY(dstMat, 1.0, Mtmp,SUBSET_NONZERO_PATTERN));
+  CHKERRQ(MatDestroy(&Mtmp));
 
   /* dstMat += A */
-  ierr = MatAXPY(dstMat, 1.0, A,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
+  CHKERRQ(MatAXPY(dstMat, 1.0, A,SUBSET_NONZERO_PATTERN));
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&A1);CHKERRQ(ierr);
-  ierr = MatDestroy(&A2);CHKERRQ(ierr);
-  ierr = MatDestroy(&dstMat);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&A1));
+  CHKERRQ(MatDestroy(&A2));
+  CHKERRQ(MatDestroy(&dstMat));
   ierr = PetscFinalize();
   return ierr;
 }
-

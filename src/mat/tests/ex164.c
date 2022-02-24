@@ -10,11 +10,11 @@ int main(int argc,char **args)
   PetscInt       n = 10;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MatCreateSeqDense(PETSC_COMM_WORLD,n,n,NULL,&A);CHKERRQ(ierr);
-  ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-  ierr = MatView(C,NULL);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSeqDense(PETSC_COMM_WORLD,n,n,NULL,&A));
+  CHKERRQ(MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&C));
+  CHKERRQ(MatView(C,NULL));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&C));
   ierr = PetscFinalize();
   return ierr;
 }

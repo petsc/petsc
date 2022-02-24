@@ -21,86 +21,86 @@ int main(int argc,char **argv)
   PetscBool              single,two;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,mx,my,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,mx,my,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  CHKERRQ(DMSetUp(da));
+  CHKERRQ(DMCreateMatrix(da,&A));
 
   /* as a test copy the matrices from the standard format to the compressed format; this is not scalable but is ok because just for testing */
   /*    first put the coloring in the global ordering */
-  ierr = DMCreateColoring(da,IS_COLORING_LOCAL,&iscoloring);CHKERRQ(ierr);
-  ierr = ISColoringGetColors(iscoloring,&n,&nc,&icolors);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(da,&ltog);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n,&map);CHKERRQ(ierr);
+  CHKERRQ(DMCreateColoring(da,IS_COLORING_LOCAL,&iscoloring));
+  CHKERRQ(ISColoringGetColors(iscoloring,&n,&nc,&icolors));
+  CHKERRQ(DMGetLocalToGlobalMapping(da,&ltog));
+  CHKERRQ(PetscMalloc1(n,&map));
   for (i=0; i<n; i++) map[i] = i;
-  ierr = ISLocalToGlobalMappingApply(ltog,n,map,map);CHKERRQ(ierr);
-  ierr = MatGetSize(A,&N,NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc1(N,&colors);CHKERRQ(ierr);
+  CHKERRQ(ISLocalToGlobalMappingApply(ltog,n,map,map));
+  CHKERRQ(MatGetSize(A,&N,NULL));
+  CHKERRQ(PetscMalloc1(N,&colors));
   for (i=0; i<N; i++) colors[i] = -1;
   for (i=0; i<n; i++) colors[map[i]]= icolors[i];
-  ierr = PetscFree(map);CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(MPI_COMM_WORLD,"[%d]Global colors \n",rank);CHKERRQ(ierr);
-  for (i=0; i<N; i++) {ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " %" PetscInt_FMT "\n",i,colors[i]);CHKERRQ(ierr);}
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(map));
+  CHKERRQ(PetscSynchronizedPrintf(MPI_COMM_WORLD,"[%d]Global colors \n",rank));
+  for (i=0; i<N; i++) CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " %" PetscInt_FMT "\n",i,colors[i]));
+  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout));
 
   /*   second, compress the A matrix */
-  ierr = MatSetRandom(A,NULL);CHKERRQ(ierr);
-  ierr = MatView(A,NULL);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&nrow,NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&rstart,NULL);CHKERRQ(ierr);
-  ierr = PetscCalloc1(nrow*nc,&cm);CHKERRQ(ierr);
+  CHKERRQ(MatSetRandom(A,NULL));
+  CHKERRQ(MatView(A,NULL));
+  CHKERRQ(MatGetLocalSize(A,&nrow,NULL));
+  CHKERRQ(MatGetOwnershipRange(A,&rstart,NULL));
+  CHKERRQ(PetscCalloc1(nrow*nc,&cm));
   for (i=0; i<nrow; i++) {
-    ierr = MatGetRow(A,rstart+i,&ncols,&cols,&vals);CHKERRQ(ierr);
+    CHKERRQ(MatGetRow(A,rstart+i,&ncols,&cols,&vals));
     for (j=0; j<ncols; j++) {
       PetscCheckFalse(colors[cols[j]] < 0,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Global column %" PetscInt_FMT " had no color",cols[j]);
       cm[i + nrow*colors[cols[j]]] = vals[j];
     }
-    ierr = MatRestoreRow(A,rstart+i,&ncols,&cols,&vals);CHKERRQ(ierr);
+    CHKERRQ(MatRestoreRow(A,rstart+i,&ncols,&cols,&vals));
   }
 
   /* print compressed matrix */
-  ierr = PetscSynchronizedPrintf(MPI_COMM_WORLD,"[%d] Compressed matrix \n",rank);CHKERRQ(ierr);
+  CHKERRQ(PetscSynchronizedPrintf(MPI_COMM_WORLD,"[%d] Compressed matrix \n",rank));
   for (i=0; i<nrow; i++) {
     for (j=0; j<nc; j++) {
-      ierr = PetscSynchronizedPrintf(MPI_COMM_WORLD,"%12.4e  ",(double)PetscAbsScalar(cm[i+nrow*j]));CHKERRQ(ierr);
+      CHKERRQ(PetscSynchronizedPrintf(MPI_COMM_WORLD,"%12.4e  ",(double)PetscAbsScalar(cm[i+nrow*j])));
     }
-    ierr = PetscSynchronizedPrintf(MPI_COMM_WORLD,"\n");CHKERRQ(ierr);
+    CHKERRQ(PetscSynchronizedPrintf(MPI_COMM_WORLD,"\n"));
   }
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
+  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout));
 
   /* put the compressed matrix into the standard matrix */
-  ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
-  ierr = MatZeroEntries(A);CHKERRQ(ierr);
-  ierr = MatView(B,0);CHKERRQ(ierr);
-  ierr = MatFDColoringCreate(A,iscoloring,&fdcoloring);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(NULL,NULL,"-single_block",&single);CHKERRQ(ierr);
+  CHKERRQ(MatDuplicate(A,MAT_COPY_VALUES,&B));
+  CHKERRQ(MatZeroEntries(A));
+  CHKERRQ(MatView(B,0));
+  CHKERRQ(MatFDColoringCreate(A,iscoloring,&fdcoloring));
+  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-single_block",&single));
   if (single) {
-    ierr = MatFDColoringSetBlockSize(fdcoloring,PETSC_DEFAULT,nc);CHKERRQ(ierr);
+    CHKERRQ(MatFDColoringSetBlockSize(fdcoloring,PETSC_DEFAULT,nc));
   }
-  ierr = PetscOptionsHasName(NULL,NULL,"-two_block",&two);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-two_block",&two));
   if (two) {
-    ierr = MatFDColoringSetBlockSize(fdcoloring,PETSC_DEFAULT,2);CHKERRQ(ierr);
+    CHKERRQ(MatFDColoringSetBlockSize(fdcoloring,PETSC_DEFAULT,2));
   }
-  ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
-  ierr = MatFDColoringSetUp(A,iscoloring,fdcoloring);CHKERRQ(ierr);
+  CHKERRQ(MatFDColoringSetFromOptions(fdcoloring));
+  CHKERRQ(MatFDColoringSetUp(A,iscoloring,fdcoloring));
 
-  ierr = MatFDColoringSetValues(A,fdcoloring,cm);CHKERRQ(ierr);
-  ierr = MatView(A,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatFDColoringSetValues(A,fdcoloring,cm));
+  CHKERRQ(MatView(A,NULL));
 
   /* check the values were put in the correct locations */
-  ierr = MatAXPY(A,-1.0,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = MatView(A,NULL);CHKERRQ(ierr);
-  ierr = MatNorm(A,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+  CHKERRQ(MatAXPY(A,-1.0,B,SAME_NONZERO_PATTERN));
+  CHKERRQ(MatView(A,NULL));
+  CHKERRQ(MatNorm(A,NORM_FROBENIUS,&norm));
   if (norm > PETSC_MACHINE_EPSILON) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrix is not identical, problem with MatFDColoringSetValues()\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Matrix is not identical, problem with MatFDColoringSetValues()\n"));
   }
-  ierr = PetscFree(colors);CHKERRQ(ierr);
-  ierr = PetscFree(cm);CHKERRQ(ierr);
-  ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-  ierr = MatFDColoringDestroy(&fdcoloring);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(colors));
+  CHKERRQ(PetscFree(cm));
+  CHKERRQ(ISColoringDestroy(&iscoloring));
+  CHKERRQ(MatFDColoringDestroy(&fdcoloring));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&B));
+  CHKERRQ(DMDestroy(&da));
   ierr = PetscFinalize();
   return ierr;
 }

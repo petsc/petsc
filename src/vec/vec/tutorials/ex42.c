@@ -14,12 +14,11 @@ int main(int argc,char **args)
   fd = PETSC_VIEWER_SOCKET_WORLD;
 
   for (i=0; i<1000; i++) {
-    ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-    ierr = VecLoad(b,fd);CHKERRQ(ierr);
-    ierr = VecView(b,fd);CHKERRQ(ierr);
-    ierr = VecDestroy(&b);CHKERRQ(ierr);
+    CHKERRQ(VecCreate(PETSC_COMM_WORLD,&b));
+    CHKERRQ(VecLoad(b,fd));
+    CHKERRQ(VecView(b,fd));
+    CHKERRQ(VecDestroy(&b));
   }
   ierr = PetscFinalize();
   return ierr;
 }
-

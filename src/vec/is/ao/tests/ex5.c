@@ -25,17 +25,17 @@ int main(int argc, char *argv[])
 
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help); if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm, &rank));
 
-  ierr = PetscLayoutCreate(comm, &layout);CHKERRQ(ierr);
-  ierr = PetscLayoutSetSize(layout, n_global);CHKERRQ(ierr);
-  ierr = PetscLayoutSetLocalSize(layout, PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
-  ierr = PetscLayoutGetLocalSize(layout, &local_size);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRange(layout, &start, &end);CHKERRQ(ierr);
+  CHKERRQ(PetscLayoutCreate(comm, &layout));
+  CHKERRQ(PetscLayoutSetSize(layout, n_global));
+  CHKERRQ(PetscLayoutSetLocalSize(layout, PETSC_DECIDE));
+  CHKERRQ(PetscLayoutSetUp(layout));
+  CHKERRQ(PetscLayoutGetLocalSize(layout, &local_size));
+  CHKERRQ(PetscLayoutGetRange(layout, &start, &end));
 
-  ierr = PetscMalloc1(local_size,&app_indices);CHKERRQ(ierr);
-  ierr = PetscMalloc1(local_size,&petsc_indices);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(local_size,&app_indices));
+  CHKERRQ(PetscMalloc1(local_size,&petsc_indices));
   /*  Add values for local indices for usual states */
   for (i = 0; i < local_size; ++i) {
     app_indices[i] = start + i;
@@ -43,19 +43,19 @@ int main(int argc, char *argv[])
   }
 
   /* Create the AO object that maps from lexicographic ordering to Petsc Vec ordering */
-  ierr = ISCreateGeneral(comm, local_size, &app_indices[0], PETSC_COPY_VALUES, &app_is);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm, local_size, &petsc_indices[0], PETSC_COPY_VALUES, &petsc_is);CHKERRQ(ierr);
-  ierr = AOCreate(comm, &app2petsc);CHKERRQ(ierr);
-  ierr = AOSetIS(app2petsc, app_is, petsc_is);CHKERRQ(ierr);
-  ierr = AOSetType(app2petsc, AOMEMORYSCALABLE);CHKERRQ(ierr);
-  ierr = AOSetFromOptions(app2petsc);CHKERRQ(ierr);
-  ierr = ISDestroy(&app_is);CHKERRQ(ierr);
-  ierr = ISDestroy(&petsc_is);CHKERRQ(ierr);
-  ierr = AOView(app2petsc, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(comm, local_size, &app_indices[0], PETSC_COPY_VALUES, &app_is));
+  CHKERRQ(ISCreateGeneral(comm, local_size, &petsc_indices[0], PETSC_COPY_VALUES, &petsc_is));
+  CHKERRQ(AOCreate(comm, &app2petsc));
+  CHKERRQ(AOSetIS(app2petsc, app_is, petsc_is));
+  CHKERRQ(AOSetType(app2petsc, AOMEMORYSCALABLE));
+  CHKERRQ(AOSetFromOptions(app2petsc));
+  CHKERRQ(ISDestroy(&app_is));
+  CHKERRQ(ISDestroy(&petsc_is));
+  CHKERRQ(AOView(app2petsc, PETSC_VIEWER_STDOUT_WORLD));
 
   /* Test AOApplicationToPetsc */
-  ierr = PetscMalloc1(n_loc,&ia);CHKERRQ(ierr);
-  ierr = PetscMalloc1(n_loc,&ia0);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(n_loc,&ia));
+  CHKERRQ(PetscMalloc1(n_loc,&ia0));
   if (rank == 0) {
     ia[0] = 0;
     ia[1] = -1;
@@ -75,20 +75,20 @@ int main(int argc, char *argv[])
     ia[6] = 13;
     ia[7] = 14;
   }
-  ierr = PetscArraycpy(ia0,ia,n_loc);CHKERRQ(ierr);
+  CHKERRQ(PetscArraycpy(ia0,ia,n_loc));
 
-  ierr = AOApplicationToPetsc(app2petsc, n_loc, ia);CHKERRQ(ierr);
+  CHKERRQ(AOApplicationToPetsc(app2petsc, n_loc, ia));
 
   for (i=0; i<n_loc; ++i) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"proc = %d : %" PetscInt_FMT " -> %" PetscInt_FMT " \n", rank, ia0[i], ia[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"proc = %d : %" PetscInt_FMT " -> %" PetscInt_FMT " \n", rank, ia0[i], ia[i]));
   }
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
-  ierr = AODestroy(&app2petsc);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
-  ierr = PetscFree(app_indices);CHKERRQ(ierr);
-  ierr = PetscFree(petsc_indices);CHKERRQ(ierr);
-  ierr = PetscFree(ia);CHKERRQ(ierr);
-  ierr = PetscFree(ia0);CHKERRQ(ierr);
+  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
+  CHKERRQ(AODestroy(&app2petsc));
+  CHKERRQ(PetscLayoutDestroy(&layout));
+  CHKERRQ(PetscFree(app_indices));
+  CHKERRQ(PetscFree(petsc_indices));
+  CHKERRQ(PetscFree(ia));
+  CHKERRQ(PetscFree(ia0));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -10,25 +10,23 @@
 
 PetscErrorCode MatDestroy_SeqAIJ_RARt(void *data)
 {
-  PetscErrorCode ierr;
   Mat_RARt       *rart = (Mat_RARt*)data;
 
   PetscFunctionBegin;
-  ierr = MatTransposeColoringDestroy(&rart->matcoloring);CHKERRQ(ierr);
-  ierr = MatDestroy(&rart->Rt);CHKERRQ(ierr);
-  ierr = MatDestroy(&rart->RARt);CHKERRQ(ierr);
-  ierr = MatDestroy(&rart->ARt);CHKERRQ(ierr);
-  ierr = PetscFree(rart->work);CHKERRQ(ierr);
+  CHKERRQ(MatTransposeColoringDestroy(&rart->matcoloring));
+  CHKERRQ(MatDestroy(&rart->Rt));
+  CHKERRQ(MatDestroy(&rart->RARt));
+  CHKERRQ(MatDestroy(&rart->ARt));
+  CHKERRQ(PetscFree(rart->work));
   if (rart->destroy) {
-    ierr = (*rart->destroy)(rart->data);CHKERRQ(ierr);
+    CHKERRQ((*rart->destroy)(rart->data));
   }
-  ierr = PetscFree(rart);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(rart));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat A,Mat R,PetscReal fill,Mat C)
 {
-  PetscErrorCode       ierr;
   Mat                  P;
   PetscInt             *rti,*rtj;
   Mat_RARt             *rart;
@@ -41,65 +39,65 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat A,Mat R,PetscReal fil
   MatCheckProduct(C,4);
   PetscCheckFalse(C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
   /* create symbolic P=Rt */
-  ierr = MatGetSymbolicTranspose_SeqAIJ(R,&rti,&rtj);CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,R->cmap->n,R->rmap->n,rti,rtj,NULL,&P);CHKERRQ(ierr);
+  CHKERRQ(MatGetSymbolicTranspose_SeqAIJ(R,&rti,&rtj));
+  CHKERRQ(MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,R->cmap->n,R->rmap->n,rti,rtj,NULL,&P));
 
   /* get symbolic C=Pt*A*P */
-  ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(A,P,fill,C);CHKERRQ(ierr);
-  ierr = MatSetBlockSizes(C,PetscAbs(R->rmap->bs),PetscAbs(R->rmap->bs));CHKERRQ(ierr);
+  CHKERRQ(MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(A,P,fill,C));
+  CHKERRQ(MatSetBlockSizes(C,PetscAbs(R->rmap->bs),PetscAbs(R->rmap->bs)));
   C->ops->rartnumeric = MatRARtNumeric_SeqAIJ_SeqAIJ_colorrart;
 
   /* create a supporting struct */
-  ierr = PetscNew(&rart);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(&rart));
   C->product->data    = rart;
   C->product->destroy = MatDestroy_SeqAIJ_RARt;
 
   /* ------ Use coloring ---------- */
   /* inode causes memory problem */
-  ierr = MatSetOption(C,MAT_USE_INODES,PETSC_FALSE);CHKERRQ(ierr);
+  CHKERRQ(MatSetOption(C,MAT_USE_INODES,PETSC_FALSE));
 
   /* Create MatTransposeColoring from symbolic C=R*A*R^T */
-  ierr = MatColoringCreate(C,&coloring);CHKERRQ(ierr);
-  ierr = MatColoringSetDistance(coloring,2);CHKERRQ(ierr);
-  ierr = MatColoringSetType(coloring,MATCOLORINGSL);CHKERRQ(ierr);
-  ierr = MatColoringSetFromOptions(coloring);CHKERRQ(ierr);
-  ierr = MatColoringApply(coloring,&iscoloring);CHKERRQ(ierr);
-  ierr = MatColoringDestroy(&coloring);CHKERRQ(ierr);
-  ierr = MatTransposeColoringCreate(C,iscoloring,&matcoloring);CHKERRQ(ierr);
+  CHKERRQ(MatColoringCreate(C,&coloring));
+  CHKERRQ(MatColoringSetDistance(coloring,2));
+  CHKERRQ(MatColoringSetType(coloring,MATCOLORINGSL));
+  CHKERRQ(MatColoringSetFromOptions(coloring));
+  CHKERRQ(MatColoringApply(coloring,&iscoloring));
+  CHKERRQ(MatColoringDestroy(&coloring));
+  CHKERRQ(MatTransposeColoringCreate(C,iscoloring,&matcoloring));
 
   rart->matcoloring = matcoloring;
-  ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
+  CHKERRQ(ISColoringDestroy(&iscoloring));
 
   /* Create Rt_dense */
-  ierr = MatCreate(PETSC_COMM_SELF,&Rt_dense);CHKERRQ(ierr);
-  ierr = MatSetSizes(Rt_dense,A->cmap->n,matcoloring->ncolors,A->cmap->n,matcoloring->ncolors);CHKERRQ(ierr);
-  ierr = MatSetType(Rt_dense,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(Rt_dense,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_SELF,&Rt_dense));
+  CHKERRQ(MatSetSizes(Rt_dense,A->cmap->n,matcoloring->ncolors,A->cmap->n,matcoloring->ncolors));
+  CHKERRQ(MatSetType(Rt_dense,MATSEQDENSE));
+  CHKERRQ(MatSeqDenseSetPreallocation(Rt_dense,NULL));
 
   Rt_dense->assembled = PETSC_TRUE;
   rart->Rt            = Rt_dense;
 
   /* Create RARt_dense = R*A*Rt_dense */
-  ierr = MatCreate(PETSC_COMM_SELF,&RARt_dense);CHKERRQ(ierr);
-  ierr = MatSetSizes(RARt_dense,C->rmap->n,matcoloring->ncolors,C->rmap->n,matcoloring->ncolors);CHKERRQ(ierr);
-  ierr = MatSetType(RARt_dense,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(RARt_dense,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_SELF,&RARt_dense));
+  CHKERRQ(MatSetSizes(RARt_dense,C->rmap->n,matcoloring->ncolors,C->rmap->n,matcoloring->ncolors));
+  CHKERRQ(MatSetType(RARt_dense,MATSEQDENSE));
+  CHKERRQ(MatSeqDenseSetPreallocation(RARt_dense,NULL));
 
   rart->RARt = RARt_dense;
 
   /* Allocate work array to store columns of A*R^T used in MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense() */
-  ierr = PetscMalloc1(A->rmap->n*4,&rart->work);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(A->rmap->n*4,&rart->work));
 
   /* clean up */
-  ierr = MatRestoreSymbolicTranspose_SeqAIJ(R,&rti,&rtj);CHKERRQ(ierr);
-  ierr = MatDestroy(&P);CHKERRQ(ierr);
+  CHKERRQ(MatRestoreSymbolicTranspose_SeqAIJ(R,&rti,&rtj));
+  CHKERRQ(MatDestroy(&P));
 
 #if defined(PETSC_USE_INFO)
   {
     Mat_SeqAIJ *c = (Mat_SeqAIJ*)C->data;
     PetscReal density = (PetscReal)(c->nz)/(RARt_dense->rmap->n*RARt_dense->cmap->n);
-    ierr = PetscInfo(C,"C=R*(A*Rt) via coloring C - use sparse-dense inner products\n");CHKERRQ(ierr);
-    ierr = PetscInfo(C,"RARt_den %" PetscInt_FMT " %" PetscInt_FMT "; Rt %" PetscInt_FMT " %" PetscInt_FMT " (RARt->nz %" PetscInt_FMT ")/(m*ncolors)=%g\n",RARt_dense->rmap->n,RARt_dense->cmap->n,R->cmap->n,R->rmap->n,c->nz,density);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(C,"C=R*(A*Rt) via coloring C - use sparse-dense inner products\n"));
+    CHKERRQ(PetscInfo(C,"RARt_den %" PetscInt_FMT " %" PetscInt_FMT "; Rt %" PetscInt_FMT " %" PetscInt_FMT " (RARt->nz %" PetscInt_FMT ")/(m*ncolors)=%g\n",RARt_dense->rmap->n,RARt_dense->cmap->n,R->cmap->n,R->rmap->n,c->nz,density));
   }
 #endif
   PetscFunctionReturn(0);
@@ -111,7 +109,6 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat A,Mat R,PetscReal fil
 PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R,Mat A,Mat B,Mat RAB,PetscScalar *work)
 {
   Mat_SeqAIJ        *a=(Mat_SeqAIJ*)A->data,*r=(Mat_SeqAIJ*)R->data;
-  PetscErrorCode    ierr;
   PetscScalar       r1,r2,r3,r4;
   const PetscScalar *b,*b1,*b2,*b3,*b4;
   MatScalar         *aa,*ra;
@@ -133,20 +130,20 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R,Mat A,Mat B,Mat
      AB_den=A*B takes almost all execution time in R*A*B for src/ksp/ksp/tutorials/ex56.c
      */
     PetscBool via_matmatmult=PETSC_FALSE;
-    ierr = PetscOptionsGetBool(NULL,NULL,"-matrart_via_matmatmult",&via_matmatmult,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-matrart_via_matmatmult",&via_matmatmult,NULL));
     if (via_matmatmult) {
       Mat AB_den = NULL;
-      ierr = MatCreate(PetscObjectComm((PetscObject)A),&AB_den);CHKERRQ(ierr);
-      ierr = MatMatMultSymbolic_SeqAIJ_SeqDense(A,B,0.0,AB_den);CHKERRQ(ierr);
-      ierr = MatMatMultNumeric_SeqAIJ_SeqDense(A,B,AB_den);CHKERRQ(ierr);
-      ierr = MatMatMultNumeric_SeqAIJ_SeqDense(R,AB_den,RAB);CHKERRQ(ierr);
-      ierr = MatDestroy(&AB_den);CHKERRQ(ierr);
+      CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&AB_den));
+      CHKERRQ(MatMatMultSymbolic_SeqAIJ_SeqDense(A,B,0.0,AB_den));
+      CHKERRQ(MatMatMultNumeric_SeqAIJ_SeqDense(A,B,AB_den));
+      CHKERRQ(MatMatMultNumeric_SeqAIJ_SeqDense(R,AB_den,RAB));
+      CHKERRQ(MatDestroy(&AB_den));
       PetscFunctionReturn(0);
     }
   }
 
-  ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(RAB,&d);CHKERRQ(ierr);
+  CHKERRQ(MatDenseGetArrayRead(B,&b));
+  CHKERRQ(MatDenseGetArray(RAB,&d));
   b1   = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
   c    = work; c2 = c + am; c3 = c2 + am; c4 = c3 + am;
   for (col=0; col<cn-4; col += 4) {  /* over columns of C */
@@ -214,18 +211,17 @@ PetscErrorCode MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(Mat R,Mat A,Mat B,Mat
       d[col*rm + i] = r1;
     }
   }
-  ierr = PetscLogFlops(cn*2.0*(a->nz + r->nz));CHKERRQ(ierr);
+  CHKERRQ(PetscLogFlops(cn*2.0*(a->nz + r->nz)));
 
-  ierr = MatDenseRestoreArrayRead(B,&b);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(RAB,&d);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(RAB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(RAB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatDenseRestoreArrayRead(B,&b));
+  CHKERRQ(MatDenseRestoreArray(RAB,&d));
+  CHKERRQ(MatAssemblyBegin(RAB,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(RAB,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ_colorrart(Mat A,Mat R,Mat C)
 {
-  PetscErrorCode       ierr;
   Mat_RARt             *rart;
   MatTransposeColoring matcoloring;
   Mat                  Rt,RARt;
@@ -238,20 +234,19 @@ PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ_colorrart(Mat A,Mat R,Mat C)
   /* Get dense Rt by Apply MatTransposeColoring to R */
   matcoloring = rart->matcoloring;
   Rt          = rart->Rt;
-  ierr  = MatTransColoringApplySpToDen(matcoloring,R,Rt);CHKERRQ(ierr);
+  CHKERRQ(MatTransColoringApplySpToDen(matcoloring,R,Rt));
 
   /* Get dense RARt = R*A*Rt -- dominates! */
   RARt = rart->RARt;
-  ierr = MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(R,A,Rt,RARt,rart->work);CHKERRQ(ierr);
+  CHKERRQ(MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense(R,A,Rt,RARt,rart->work));
 
   /* Recover C from C_dense */
-  ierr = MatTransColoringApplyDenToSp(matcoloring,RARt,C);CHKERRQ(ierr);
+  CHKERRQ(MatTransColoringApplyDenToSp(matcoloring,RARt,C));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_matmattransposemult(Mat A,Mat R,PetscReal fill,Mat C)
 {
-  PetscErrorCode ierr;
   Mat            ARt;
   Mat_RARt       *rart;
   char           *alg;
@@ -260,82 +255,79 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_matmattransposemult(Mat A,Mat R,Pet
   MatCheckProduct(C,4);
   PetscCheckFalse(C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
   /* create symbolic ARt = A*R^T  */
-  ierr = MatProductCreate(A,R,NULL,&ARt);CHKERRQ(ierr);
-  ierr = MatProductSetType(ARt,MATPRODUCT_ABt);CHKERRQ(ierr);
-  ierr = MatProductSetAlgorithm(ARt,"sorted");CHKERRQ(ierr);
-  ierr = MatProductSetFill(ARt,fill);CHKERRQ(ierr);
-  ierr = MatProductSetFromOptions(ARt);CHKERRQ(ierr);
-  ierr = MatProductSymbolic(ARt);CHKERRQ(ierr);
+  CHKERRQ(MatProductCreate(A,R,NULL,&ARt));
+  CHKERRQ(MatProductSetType(ARt,MATPRODUCT_ABt));
+  CHKERRQ(MatProductSetAlgorithm(ARt,"sorted"));
+  CHKERRQ(MatProductSetFill(ARt,fill));
+  CHKERRQ(MatProductSetFromOptions(ARt));
+  CHKERRQ(MatProductSymbolic(ARt));
 
   /* compute symbolic C = R*ARt */
   /* set algorithm for C = R*ARt */
-  ierr = PetscStrallocpy(C->product->alg,&alg);CHKERRQ(ierr);
-  ierr = MatProductSetAlgorithm(C,"sorted");CHKERRQ(ierr);
-  ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(R,ARt,fill,C);CHKERRQ(ierr);
+  CHKERRQ(PetscStrallocpy(C->product->alg,&alg));
+  CHKERRQ(MatProductSetAlgorithm(C,"sorted"));
+  CHKERRQ(MatMatMultSymbolic_SeqAIJ_SeqAIJ(R,ARt,fill,C));
   /* resume original algorithm for C */
-  ierr = MatProductSetAlgorithm(C,alg);CHKERRQ(ierr);
-  ierr = PetscFree(alg);CHKERRQ(ierr);
+  CHKERRQ(MatProductSetAlgorithm(C,alg));
+  CHKERRQ(PetscFree(alg));
 
   C->ops->rartnumeric = MatRARtNumeric_SeqAIJ_SeqAIJ_matmattransposemult;
 
-  ierr = PetscNew(&rart);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(&rart));
   rart->ARt = ARt;
   C->product->data    = rart;
   C->product->destroy = MatDestroy_SeqAIJ_RARt;
-  ierr = PetscInfo(C,"Use ARt=A*R^T, C=R*ARt via MatMatTransposeMult(). Coloring can be applied to A*R^T.\n");CHKERRQ(ierr);
+  CHKERRQ(PetscInfo(C,"Use ARt=A*R^T, C=R*ARt via MatMatTransposeMult(). Coloring can be applied to A*R^T.\n"));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ_matmattransposemult(Mat A,Mat R,Mat C)
 {
-  PetscErrorCode ierr;
   Mat_RARt       *rart;
 
   PetscFunctionBegin;
   MatCheckProduct(C,3);
   PetscCheckFalse(!C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
   rart = (Mat_RARt*)C->product->data;
-  ierr = MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(A,R,rart->ARt);CHKERRQ(ierr); /* dominate! */
-  ierr = MatMatMultNumeric_SeqAIJ_SeqAIJ(R,rart->ARt,C);CHKERRQ(ierr);
+  CHKERRQ(MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(A,R,rart->ARt)); /* dominate! */
+  CHKERRQ(MatMatMultNumeric_SeqAIJ_SeqAIJ(R,rart->ARt,C));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat R,PetscReal fill,Mat C)
 {
-  PetscErrorCode ierr;
   Mat            Rt;
   Mat_RARt       *rart;
 
   PetscFunctionBegin;
   MatCheckProduct(C,4);
   PetscCheckFalse(C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
-  ierr = MatTranspose_SeqAIJ(R,MAT_INITIAL_MATRIX,&Rt);CHKERRQ(ierr);
-  ierr = MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(R,A,Rt,fill,C);CHKERRQ(ierr);
+  CHKERRQ(MatTranspose_SeqAIJ(R,MAT_INITIAL_MATRIX,&Rt));
+  CHKERRQ(MatMatMatMultSymbolic_SeqAIJ_SeqAIJ_SeqAIJ(R,A,Rt,fill,C));
 
-  ierr = PetscNew(&rart);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(&rart));
   rart->data = C->product->data;
   rart->destroy = C->product->destroy;
   rart->Rt = Rt;
   C->product->data    = rart;
   C->product->destroy = MatDestroy_SeqAIJ_RARt;
   C->ops->rartnumeric = MatRARtNumeric_SeqAIJ_SeqAIJ;
-  ierr = PetscInfo(C,"Use Rt=R^T and C=R*A*Rt via MatMatMatMult() to avoid sparse inner products\n");CHKERRQ(ierr);
+  CHKERRQ(PetscInfo(C,"Use Rt=R^T and C=R*A*Rt via MatMatMatMult() to avoid sparse inner products\n"));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatRARtNumeric_SeqAIJ_SeqAIJ(Mat A,Mat R,Mat C)
 {
-  PetscErrorCode ierr;
   Mat_RARt       *rart;
 
   PetscFunctionBegin;
   MatCheckProduct(C,3);
   PetscCheckFalse(!C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
   rart = (Mat_RARt*)C->product->data;
-  ierr = MatTranspose_SeqAIJ(R,MAT_REUSE_MATRIX,&rart->Rt);CHKERRQ(ierr);
+  CHKERRQ(MatTranspose_SeqAIJ(R,MAT_REUSE_MATRIX,&rart->Rt));
   /* MatMatMatMultSymbolic used a different data */
   C->product->data = rart->data;
-  ierr = MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ(R,A,rart->Rt,C);CHKERRQ(ierr);
+  CHKERRQ(MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqAIJ(R,A,rart->Rt,C));
   C->product->data = rart;
   PetscFunctionReturn(0);
 }
@@ -349,38 +341,37 @@ PetscErrorCode MatRARt_SeqAIJ_SeqAIJ(Mat A,Mat R,MatReuse scall,PetscReal fill,M
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) {
     ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"MatRARt","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-matrart_via","Algorithmic approach","MatRARt",algTypes,3,algTypes[0],&alg,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsEList("-matrart_via","Algorithmic approach","MatRARt",algTypes,3,algTypes[0],&alg,NULL));
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-    ierr = PetscLogEventBegin(MAT_RARtSymbolic,A,R,0,0);CHKERRQ(ierr);
-    ierr = MatCreate(PETSC_COMM_SELF,C);CHKERRQ(ierr);
+    CHKERRQ(PetscLogEventBegin(MAT_RARtSymbolic,A,R,0,0));
+    CHKERRQ(MatCreate(PETSC_COMM_SELF,C));
     switch (alg) {
     case 1:
       /* via matmattransposemult: ARt=A*R^T, C=R*ARt - matrix coloring can be applied to A*R^T */
-      ierr = MatRARtSymbolic_SeqAIJ_SeqAIJ_matmattransposemult(A,R,fill,*C);CHKERRQ(ierr);
+      CHKERRQ(MatRARtSymbolic_SeqAIJ_SeqAIJ_matmattransposemult(A,R,fill,*C));
       break;
     case 2:
       /* via coloring_rart: apply coloring C = R*A*R^T                          */
-      ierr = MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(A,R,fill,*C);CHKERRQ(ierr);
+      CHKERRQ(MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(A,R,fill,*C));
       break;
     default:
       /* via matmatmatmult: Rt=R^T, C=R*A*Rt - avoid inefficient sparse inner products */
-      ierr = MatRARtSymbolic_SeqAIJ_SeqAIJ(A,R,fill,*C);CHKERRQ(ierr);
+      CHKERRQ(MatRARtSymbolic_SeqAIJ_SeqAIJ(A,R,fill,*C));
       break;
     }
-    ierr = PetscLogEventEnd(MAT_RARtSymbolic,A,R,0,0);CHKERRQ(ierr);
+    CHKERRQ(PetscLogEventEnd(MAT_RARtSymbolic,A,R,0,0));
   }
 
-  ierr = PetscLogEventBegin(MAT_RARtNumeric,A,R,0,0);CHKERRQ(ierr);
-  ierr = ((*C)->ops->rartnumeric)(A,R,*C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_RARtNumeric,A,R,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(MAT_RARtNumeric,A,R,0,0));
+  CHKERRQ(((*C)->ops->rartnumeric)(A,R,*C));
+  CHKERRQ(PetscLogEventEnd(MAT_RARtNumeric,A,R,0,0));
   PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------- */
 PetscErrorCode MatProductSymbolic_RARt_SeqAIJ_SeqAIJ(Mat C)
 {
-  PetscErrorCode      ierr;
   Mat_Product         *product = C->product;
   Mat                 A=product->A,R=product->B;
   MatProductAlgorithm alg=product->alg;
@@ -388,21 +379,21 @@ PetscErrorCode MatProductSymbolic_RARt_SeqAIJ_SeqAIJ(Mat C)
   PetscBool           flg;
 
   PetscFunctionBegin;
-  ierr = PetscStrcmp(alg,"r*a*rt",&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcmp(alg,"r*a*rt",&flg));
   if (flg) {
-    ierr = MatRARtSymbolic_SeqAIJ_SeqAIJ(A,R,fill,C);CHKERRQ(ierr);
+    CHKERRQ(MatRARtSymbolic_SeqAIJ_SeqAIJ(A,R,fill,C));
     goto next;
   }
 
-  ierr = PetscStrcmp(alg,"r*art",&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcmp(alg,"r*art",&flg));
   if (flg) {
-    ierr = MatRARtSymbolic_SeqAIJ_SeqAIJ_matmattransposemult(A,R,fill,C);CHKERRQ(ierr);
+    CHKERRQ(MatRARtSymbolic_SeqAIJ_SeqAIJ_matmattransposemult(A,R,fill,C));
     goto next;
   }
 
-  ierr = PetscStrcmp(alg,"coloring_rart",&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcmp(alg,"coloring_rart",&flg));
   if (flg) {
-    ierr = MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(A,R,fill,C);CHKERRQ(ierr);
+    CHKERRQ(MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(A,R,fill,C));
     goto next;
   }
 

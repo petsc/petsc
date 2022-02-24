@@ -24,18 +24,17 @@ static PetscErrorCode Event(TS ts,PetscReal t,Vec U,PetscScalar *fvalue,void *ct
   AppCtx            *app = (AppCtx*)ctx;
   Vec               V;
   const PetscScalar *u,*v;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   /* Event for ball height */
-  ierr = TS2GetSolution(ts,&U,&V);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(V,&v);CHKERRQ(ierr);
+  CHKERRQ(TS2GetSolution(ts,&U,&V));
+  CHKERRQ(VecGetArrayRead(U,&u));
+  CHKERRQ(VecGetArrayRead(V,&v));
   fvalue[0] = u[0];
   /* Event for number of bounces */
   fvalue[1] = app->maxbounces - app->bounces;
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(V,&v);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(U,&u));
+  CHKERRQ(VecRestoreArrayRead(V,&v));
   PetscFunctionReturn(0);
 }
 
@@ -45,23 +44,22 @@ static PetscErrorCode PostEvent(TS ts,PetscInt nevents,PetscInt event_list[],Pet
   Vec            V;
   PetscScalar    *u,*v;
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!nevents) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   if (event_list[0] == 0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Processor [%d]: Ball hit the ground at t = %5.2f seconds\n",rank,(double)t);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Processor [%d]: Ball hit the ground at t = %5.2f seconds\n",rank,(double)t));
     /* Set new initial conditions with .9 attenuation */
-    ierr = TS2GetSolution(ts,&U,&V);CHKERRQ(ierr);
-    ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-    ierr = VecGetArray(V,&v);CHKERRQ(ierr);
+    CHKERRQ(TS2GetSolution(ts,&U,&V));
+    CHKERRQ(VecGetArray(U,&u));
+    CHKERRQ(VecGetArray(V,&v));
     u[0] = 0.0; v[0] = -app->Cr*v[0];
-    ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-    ierr = VecRestoreArray(V,&v);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(U,&u));
+    CHKERRQ(VecRestoreArray(V,&v));
     app->bounces++;
   } else if (event_list[0] == 1) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Processor [%d]: Ball bounced %D times\n",rank,app->bounces);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Processor [%d]: Ball bounced %D times\n",rank,app->bounces));
   }
   PetscFunctionReturn(0);
 }
@@ -71,20 +69,19 @@ static PetscErrorCode I2Function(TS ts,PetscReal t,Vec U,Vec V,Vec A,Vec F,void 
   AppCtx            *app = (AppCtx*)ctx;
   const PetscScalar *u,*v,*a;
   PetscScalar       Res,*f;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(V,&v);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(A,&a);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(U,&u));
+  CHKERRQ(VecGetArrayRead(V,&v));
+  CHKERRQ(VecGetArrayRead(A,&a));
   Res = a[0] + 9.8 + 0.5 * app->Cd * v[0]*v[0] * PetscSignReal(PetscRealPart(v[0]));
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(V,&v);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(A,&a);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(U,&u));
+  CHKERRQ(VecRestoreArrayRead(V,&v));
+  CHKERRQ(VecRestoreArrayRead(A,&a));
 
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(F,&f));
   f[0] = Res;
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -94,24 +91,23 @@ static PetscErrorCode I2Jacobian(TS ts,PetscReal t,Vec U,Vec V,Vec A,PetscReal s
   const PetscScalar *u,*v,*a;
   PetscInt          i;
   PetscScalar       Jac;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(V,&v);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(A,&a);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(U,&u));
+  CHKERRQ(VecGetArrayRead(V,&v));
+  CHKERRQ(VecGetArrayRead(A,&a));
   Jac  = shiftA + shiftV * app->Cd * v[0];
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(V,&v);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(A,&a);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(U,&u));
+  CHKERRQ(VecRestoreArrayRead(V,&v));
+  CHKERRQ(VecRestoreArrayRead(A,&a));
 
-  ierr = MatGetOwnershipRange(P,&i,NULL);CHKERRQ(ierr);
-  ierr = MatSetValue(P,i,i,Jac,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(P,&i,NULL));
+  CHKERRQ(MatSetValue(P,i,i,Jac,INSERT_VALUES));
+  CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   if (J != P) {
-    ierr = MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }
@@ -131,58 +127,58 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   app.Cd = 0.0;
   app.Cr = 0.9;
   app.bounces = 0;
   app.maxbounces = 10;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex44 options","");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-Cd","Drag coefficient","",app.Cd,&app.Cd,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-Cr","Restitution coefficient","",app.Cr,&app.Cr,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-maxbounces","Maximum number of bounces","",app.maxbounces,&app.maxbounces,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsReal("-Cd","Drag coefficient","",app.Cd,&app.Cd,NULL));
+  CHKERRQ(PetscOptionsReal("-Cr","Restitution coefficient","",app.Cr,&app.Cr,NULL));
+  CHKERRQ(PetscOptionsInt("-maxbounces","Maximum number of bounces","",app.maxbounces,&app.maxbounces,NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  /*ierr = TSSetSaveTrajectory(ts);CHKERRQ(ierr);*/
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSALPHA2);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
+  /*CHKERRQ(TSSetSaveTrajectory(ts));*/
+  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
+  CHKERRQ(TSSetType(ts,TSALPHA2));
 
-  ierr = TSSetMaxTime(ts,PETSC_INFINITY);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,0.1);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = TSGetAdapt(ts,&adapt);CHKERRQ(ierr);
-  ierr = TSAdaptSetStepLimits(adapt,0.0,0.5);CHKERRQ(ierr);
+  CHKERRQ(TSSetMaxTime(ts,PETSC_INFINITY));
+  CHKERRQ(TSSetTimeStep(ts,0.1));
+  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  CHKERRQ(TSGetAdapt(ts,&adapt));
+  CHKERRQ(TSAdaptSetStepLimits(adapt,0.0,0.5));
 
   direction[0] = -1; terminate[0] = PETSC_FALSE;
   direction[1] = -1; terminate[1] = PETSC_TRUE;
-  ierr = TSSetEventHandler(ts,2,direction,terminate,Event,PostEvent,&app);CHKERRQ(ierr);
+  CHKERRQ(TSSetEventHandler(ts,2,direction,terminate,Event,PostEvent,&app));
 
-  ierr = MatCreateAIJ(PETSC_COMM_WORLD,1,1,PETSC_DECIDE,PETSC_DECIDE,1,NULL,0,NULL,&J);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(J);CHKERRQ(ierr);
-  ierr = MatSetUp(J);CHKERRQ(ierr);
-  ierr = MatCreateVecs(J,NULL,&F);CHKERRQ(ierr);
-  ierr = TSSetI2Function(ts,F,I2Function,&app);CHKERRQ(ierr);
-  ierr = TSSetI2Jacobian(ts,J,J,I2Jacobian,&app);CHKERRQ(ierr);
-  ierr = VecDestroy(&F);CHKERRQ(ierr);
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
+  CHKERRQ(MatCreateAIJ(PETSC_COMM_WORLD,1,1,PETSC_DECIDE,PETSC_DECIDE,1,NULL,0,NULL,&J));
+  CHKERRQ(MatSetFromOptions(J));
+  CHKERRQ(MatSetUp(J));
+  CHKERRQ(MatCreateVecs(J,NULL,&F));
+  CHKERRQ(TSSetI2Function(ts,F,I2Function,&app));
+  CHKERRQ(TSSetI2Jacobian(ts,J,J,I2Jacobian,&app));
+  CHKERRQ(VecDestroy(&F));
+  CHKERRQ(MatDestroy(&J));
 
-  ierr = TSGetI2Jacobian(ts,&J,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = MatCreateVecs(J,&U,NULL);CHKERRQ(ierr);
-  ierr = MatCreateVecs(J,&V,NULL);CHKERRQ(ierr);
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArray(V,&v);CHKERRQ(ierr);
+  CHKERRQ(TSGetI2Jacobian(ts,&J,NULL,NULL,NULL));
+  CHKERRQ(MatCreateVecs(J,&U,NULL));
+  CHKERRQ(MatCreateVecs(J,&V,NULL));
+  CHKERRQ(VecGetArray(U,&u));
+  CHKERRQ(VecGetArray(V,&v));
   u[0] = 5.0*rank; v[0] = 20.0;
-  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArray(V,&v);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(U,&u));
+  CHKERRQ(VecRestoreArray(V,&v));
 
-  ierr = TS2SetSolution(ts,U,V);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSSolve(ts,NULL);CHKERRQ(ierr);
+  CHKERRQ(TS2SetSolution(ts,U,V));
+  CHKERRQ(TSSetFromOptions(ts));
+  CHKERRQ(TSSolve(ts,NULL));
 
-  ierr = VecDestroy(&U);CHKERRQ(ierr);
-  ierr = VecDestroy(&V);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&U));
+  CHKERRQ(VecDestroy(&V));
+  CHKERRQ(TSDestroy(&ts));
 
   ierr = PetscFinalize();
   return ierr;

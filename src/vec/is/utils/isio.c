@@ -5,29 +5,28 @@
 
 PetscErrorCode ISView_Binary(IS is,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
   PetscBool      skipHeader;
   PetscLayout    map;
   PetscInt       tr[2],n,s,N;
   const PetscInt *iarray;
 
   PetscFunctionBegin;
-  ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerSetUp(viewer));
+  CHKERRQ(PetscViewerBinaryGetSkipHeader(viewer,&skipHeader));
 
-  ierr = ISGetLayout(is,&map);CHKERRQ(ierr);
-  ierr = PetscLayoutGetLocalSize(map,&n);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRange(map,&s,NULL);CHKERRQ(ierr);
-  ierr = PetscLayoutGetSize(map,&N);CHKERRQ(ierr);
+  CHKERRQ(ISGetLayout(is,&map));
+  CHKERRQ(PetscLayoutGetLocalSize(map,&n));
+  CHKERRQ(PetscLayoutGetRange(map,&s,NULL));
+  CHKERRQ(PetscLayoutGetSize(map,&N));
 
   /* write IS header */
   tr[0] = IS_FILE_CLASSID; tr[1] = N;
-  if (!skipHeader) {ierr = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);}
+  if (!skipHeader) CHKERRQ(PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT));
 
   /* write IS indices */
-  ierr = ISGetIndices(is,&iarray);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryWriteAll(viewer,iarray,n,s,N,PETSC_INT);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is,&iarray);CHKERRQ(ierr);
+  CHKERRQ(ISGetIndices(is,&iarray));
+  CHKERRQ(PetscViewerBinaryWriteAll(viewer,iarray,n,s,N,PETSC_INT));
+  CHKERRQ(ISRestoreIndices(is,&iarray));
   PetscFunctionReturn(0);
 }
 
@@ -41,7 +40,6 @@ PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
   hid_t           inttype;    /* int type (H5T_NATIVE_INT or H5T_NATIVE_LLONG) */
   PetscInt       *ind;
   const char     *isname;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscCheck(((PetscObject)is)->name, PetscObjectComm((PetscObject)is), PETSC_ERR_SUP, "IS name must be given using PetscObjectSetName() before ISLoad() since HDF5 can store multiple objects in a single file");
@@ -50,32 +48,31 @@ PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
 #else
   inttype = H5T_NATIVE_INT;
 #endif
-  ierr = PetscObjectGetName((PetscObject)is, &isname);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5Load(viewer, isname, is->map, inttype, (void**)&ind);CHKERRQ(ierr);
-  ierr = ISGeneralSetIndices(is, is->map->n, ind, PETSC_OWN_POINTER);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetName((PetscObject)is, &isname));
+  CHKERRQ(PetscViewerHDF5Load(viewer, isname, is->map, inttype, (void**)&ind));
+  CHKERRQ(ISGeneralSetIndices(is, is->map->n, ind, PETSC_OWN_POINTER));
   PetscFunctionReturn(0);
 }
 #endif
 
 PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer)
 {
-  PetscErrorCode ierr;
   PetscBool      isgeneral,skipHeader;
   PetscInt       tr[2],rows,N,n,s,*idx;
   PetscLayout    map;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)is,ISGENERAL,&isgeneral);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)is,ISGENERAL,&isgeneral));
   PetscCheck(isgeneral,PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_INCOMP,"IS must be of type ISGENERAL to load into it");
-  ierr = PetscViewerSetUp(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipHeader);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerSetUp(viewer));
+  CHKERRQ(PetscViewerBinaryGetSkipHeader(viewer,&skipHeader));
 
-  ierr = ISGetLayout(is,&map);CHKERRQ(ierr);
-  ierr = PetscLayoutGetSize(map,&N);CHKERRQ(ierr);
+  CHKERRQ(ISGetLayout(is,&map));
+  CHKERRQ(PetscLayoutGetSize(map,&N));
 
   /* read IS header */
   if (!skipHeader) {
-    ierr = PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT));
     PetscCheck(tr[0] == IS_FILE_CLASSID,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"Not an IS next in file");
     PetscCheck(tr[1] >= 0,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_UNEXPECTED,"IS size (%" PetscInt_FMT ") in file is negative",tr[1]);
     PetscCheckFalse(N >= 0 && N != tr[1],PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"IS in file different size (%" PetscInt_FMT ") than input IS (%" PetscInt_FMT ")",tr[1],N);
@@ -86,35 +83,34 @@ PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer)
   }
 
   /* set IS size if not already set */
-  if (N < 0) {ierr = PetscLayoutSetSize(map,rows);CHKERRQ(ierr);}
-  ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
+  if (N < 0) CHKERRQ(PetscLayoutSetSize(map,rows));
+  CHKERRQ(PetscLayoutSetUp(map));
 
   /* get IS sizes and check global size */
-  ierr = PetscLayoutGetSize(map,&N);CHKERRQ(ierr);
-  ierr = PetscLayoutGetLocalSize(map,&n);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRange(map,&s,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscLayoutGetSize(map,&N));
+  CHKERRQ(PetscLayoutGetLocalSize(map,&n));
+  CHKERRQ(PetscLayoutGetRange(map,&s,NULL));
   PetscCheck(N == rows,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"IS in file different size (%" PetscInt_FMT ") than input IS (%" PetscInt_FMT ")",rows,N);
 
   /* read IS indices */
-  ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryReadAll(viewer,idx,n,s,N,PETSC_INT);CHKERRQ(ierr);
-  ierr = ISGeneralSetIndices(is,n,idx,PETSC_OWN_POINTER);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(n,&idx));
+  CHKERRQ(PetscViewerBinaryReadAll(viewer,idx,n,s,N,PETSC_INT));
+  CHKERRQ(ISGeneralSetIndices(is,n,idx,PETSC_OWN_POINTER));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ISLoad_Default(IS is, PetscViewer viewer)
 {
   PetscBool      isbinary,ishdf5;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5));
   if (isbinary) {
-    ierr = ISLoad_Binary(is, viewer);CHKERRQ(ierr);
+    CHKERRQ(ISLoad_Binary(is, viewer));
   } else if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
-    ierr = ISLoad_HDF5(is, viewer);CHKERRQ(ierr);
+    CHKERRQ(ISLoad_HDF5(is, viewer));
 #endif
   }
   PetscFunctionReturn(0);

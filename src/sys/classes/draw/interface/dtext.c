@@ -23,13 +23,11 @@
 @*/
 PetscErrorCode  PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char text[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidCharPointer(text,5);
   PetscCheckFalse(!draw->ops->string,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing strings",((PetscObject)draw)->type_name);
-  ierr = (*draw->ops->string)(draw,xl,yl,cl,text);CHKERRQ(ierr);
+  CHKERRQ((*draw->ops->string)(draw,xl,yl,cl,text));
   PetscFunctionReturn(0);
 }
 
@@ -55,19 +53,18 @@ PetscErrorCode  PetscDrawStringVertical(PetscDraw draw,PetscReal xl,PetscReal yl
   int            i;
   char           chr[2] = {0, 0};
   PetscReal      tw,th;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidCharPointer(text,5);
 
   if (draw->ops->stringvertical) {
-    ierr = (*draw->ops->stringvertical)(draw,xl,yl,cl,text);CHKERRQ(ierr);
+    CHKERRQ((*draw->ops->stringvertical)(draw,xl,yl,cl,text));
     PetscFunctionReturn(0);
   }
-  ierr = PetscDrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawStringGetSize(draw,&tw,&th));
   for (i = 0; (chr[0] = text[i]); i++) {
-    ierr = PetscDrawString(draw,xl,yl-th*(i+1),cl,chr);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawString(draw,xl,yl-th*(i+1),cl,chr));
   }
   PetscFunctionReturn(0);
 }
@@ -92,7 +89,6 @@ PetscErrorCode  PetscDrawStringVertical(PetscDraw draw,PetscReal xl,PetscReal yl
 @*/
 PetscErrorCode  PetscDrawStringCentered(PetscDraw draw,PetscReal xc,PetscReal yl,int cl,const char text[])
 {
-  PetscErrorCode ierr;
   size_t         len;
   PetscReal      tw,th;
 
@@ -100,10 +96,10 @@ PetscErrorCode  PetscDrawStringCentered(PetscDraw draw,PetscReal xc,PetscReal yl
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidCharPointer(text,5);
 
-  ierr = PetscDrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
-  ierr = PetscStrlen(text,&len);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawStringGetSize(draw,&tw,&th));
+  CHKERRQ(PetscStrlen(text,&len));
   xc   = xc - len*tw/2;
-  ierr = PetscDrawString(draw,xc,yl,cl,text);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawString(draw,xc,yl,cl,text));
   PetscFunctionReturn(0);
 }
 
@@ -131,7 +127,6 @@ PetscErrorCode  PetscDrawStringCentered(PetscDraw draw,PetscReal xc,PetscReal yl
 @*/
 PetscErrorCode  PetscDrawStringBoxed(PetscDraw draw,PetscReal sxl,PetscReal syl,int sc,int bc,const char text[],PetscReal *w,PetscReal *h)
 {
-  PetscErrorCode ierr;
   PetscReal      top,left,right,bottom,tw,th;
   size_t         len,mlen = 0;
   char           **array;
@@ -142,17 +137,17 @@ PetscErrorCode  PetscDrawStringBoxed(PetscDraw draw,PetscReal sxl,PetscReal syl,
   PetscValidCharPointer(text,6);
 
   if (draw->ops->boxedstring) {
-    ierr = (*draw->ops->boxedstring)(draw,sxl,syl,sc,bc,text,w,h);CHKERRQ(ierr);
+    CHKERRQ((*draw->ops->boxedstring)(draw,sxl,syl,sc,bc,text,w,h));
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscStrToArray(text,'\n',&cnt,&array);CHKERRQ(ierr);
+  CHKERRQ(PetscStrToArray(text,'\n',&cnt,&array));
   for (i=0; i<cnt; i++) {
-    ierr = PetscStrlen(array[i],&len);CHKERRQ(ierr);
+    CHKERRQ(PetscStrlen(array[i],&len));
     mlen = PetscMax(mlen,len);
   }
 
-  ierr = PetscDrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawStringGetSize(draw,&tw,&th));
 
   top    = syl;
   left   = sxl - .5*(mlen + 2)*tw;
@@ -168,15 +163,15 @@ PetscErrorCode  PetscDrawStringBoxed(PetscDraw draw,PetscReal sxl,PetscReal syl,
   draw->boundbox_yr = PetscMax(draw->boundbox_yr,top);
 
   /* top, left, bottom, right lines */
-  ierr = PetscDrawLine(draw,left,top,right,top,bc);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,left,bottom,left,top,bc);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,right,bottom,right,top,bc);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,left,bottom,right,bottom,bc);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawLine(draw,left,top,right,top,bc));
+  CHKERRQ(PetscDrawLine(draw,left,bottom,left,top,bc));
+  CHKERRQ(PetscDrawLine(draw,right,bottom,right,top,bc));
+  CHKERRQ(PetscDrawLine(draw,left,bottom,right,bottom,bc));
 
   for  (i=0; i<cnt; i++) {
-    ierr = PetscDrawString(draw,left + tw,top - (1.5 + i)*th,sc,array[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawString(draw,left + tw,top - (1.5 + i)*th,sc,array[i]));
   }
-  ierr = PetscStrToArrayDestroy(cnt,array);CHKERRQ(ierr);
+  CHKERRQ(PetscStrToArrayDestroy(cnt,array));
   PetscFunctionReturn(0);
 }
 
@@ -201,12 +196,10 @@ PetscErrorCode  PetscDrawStringBoxed(PetscDraw draw,PetscReal sxl,PetscReal syl,
 @*/
 PetscErrorCode  PetscDrawStringSetSize(PetscDraw draw,PetscReal width,PetscReal height)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   if (draw->ops->stringsetsize) {
-    ierr = (*draw->ops->stringsetsize)(draw,width,height);CHKERRQ(ierr);
+    CHKERRQ((*draw->ops->stringsetsize)(draw,width,height));
   }
   PetscFunctionReturn(0);
 }
@@ -230,12 +223,9 @@ PetscErrorCode  PetscDrawStringSetSize(PetscDraw draw,PetscReal width,PetscReal 
 @*/
 PetscErrorCode  PetscDrawStringGetSize(PetscDraw draw,PetscReal *width,PetscReal *height)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscCheckFalse(!draw->ops->stringgetsize,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support getting string size",((PetscObject)draw)->type_name);
-  ierr = (*draw->ops->stringgetsize)(draw,width,height);CHKERRQ(ierr);
+  CHKERRQ((*draw->ops->stringgetsize)(draw,width,height));
   PetscFunctionReturn(0);
 }
-

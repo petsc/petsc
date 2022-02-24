@@ -9,8 +9,8 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* Construct a sequential ViennaCL matrix and vector */
   if (rank == 0) {
@@ -19,27 +19,27 @@ int main(int argc,char **args)
     PetscInt n = 17, m = 31,nz = 5,i,cnt,j;
     const PetscScalar val = 1.0;
 
-    ierr = MatCreateSeqAIJViennaCL(PETSC_COMM_SELF,m,n,nz,NULL,&A_vcl);CHKERRQ(ierr);
+    CHKERRQ(MatCreateSeqAIJViennaCL(PETSC_COMM_SELF,m,n,nz,NULL,&A_vcl));
 
     /* Add nz arbitrary entries per row in arbitrary columns */
     for (i=0;i<m;++i) {
       for (cnt = 0; cnt<nz; ++cnt) {
         j = (19 * cnt + (7*i + 3)) % n;
-        ierr = MatSetValue(A_vcl,i,j,(PetscScalar)(0.3 * i + j),INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValue(A_vcl,i,j,(PetscScalar)(0.3 * i + j),INSERT_VALUES));
       }
     }
-    ierr = MatAssemblyBegin(A_vcl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A_vcl,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(A_vcl,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(A_vcl,MAT_FINAL_ASSEMBLY));
 
-    ierr = VecCreateSeqViennaCL(PETSC_COMM_SELF,n,&v_vcl);CHKERRQ(ierr);
-    ierr = VecCreateSeqViennaCL(PETSC_COMM_SELF,m,&r_vcl);CHKERRQ(ierr);
-    ierr = VecSet(v_vcl,val);CHKERRQ(ierr);
+    CHKERRQ(VecCreateSeqViennaCL(PETSC_COMM_SELF,n,&v_vcl));
+    CHKERRQ(VecCreateSeqViennaCL(PETSC_COMM_SELF,m,&r_vcl));
+    CHKERRQ(VecSet(v_vcl,val));
 
-    ierr = MatMult(A_vcl,v_vcl,r_vcl);CHKERRQ(ierr);
+    CHKERRQ(MatMult(A_vcl,v_vcl,r_vcl));
 
-    ierr = VecDestroy(&v_vcl);CHKERRQ(ierr);
-    ierr = VecDestroy(&r_vcl);CHKERRQ(ierr);
-    ierr = MatDestroy(&A_vcl);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&v_vcl));
+    CHKERRQ(VecDestroy(&r_vcl));
+    CHKERRQ(MatDestroy(&A_vcl));
   }
 
   /* Create a sequential AIJ matrix on rank 0 convert it to a new ViennaCL matrix, and apply it to a ViennaCL vector */
@@ -51,48 +51,48 @@ int main(int argc,char **args)
     PetscReal         dnorm;
     const PetscReal   tol = 1e-5;
 
-    ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m,n,nz,NULL,&A);CHKERRQ(ierr);
+    CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_SELF,m,n,nz,NULL,&A));
 
     /* Add nz arbitrary entries per row in arbitrary columns */
     for (i=0;i<m;++i) {
       for (cnt = 0; cnt<nz; ++cnt) {
         j = (19 * cnt + (7*i + 3)) % n;
-        ierr = MatSetValue(A,i,j,(PetscScalar) (0.3 * i + j),INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValue(A,i,j,(PetscScalar) (0.3 * i + j),INSERT_VALUES));
       }
     }
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-    ierr = PetscObjectSetName((PetscObject)A,"Sequential CPU Matrix");CHKERRQ(ierr);
+    CHKERRQ(PetscObjectSetName((PetscObject)A,"Sequential CPU Matrix"));
 
-    ierr = VecCreateSeq(PETSC_COMM_SELF,n,&v);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,m,&r);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)r,"CPU result vector");CHKERRQ(ierr);
-    ierr = VecSet(v,val);CHKERRQ(ierr);
-    ierr = MatMult(A,v,r);CHKERRQ(ierr);
+    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&v));
+    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,m,&r));
+    CHKERRQ(PetscObjectSetName((PetscObject)r,"CPU result vector"));
+    CHKERRQ(VecSet(v,val));
+    CHKERRQ(MatMult(A,v,r));
 
-    ierr = MatConvert(A,MATSEQAIJVIENNACL,MAT_INITIAL_MATRIX,&A_vcl);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)A_vcl,"New ViennaCL Matrix");CHKERRQ(ierr);
+    CHKERRQ(MatConvert(A,MATSEQAIJVIENNACL,MAT_INITIAL_MATRIX,&A_vcl));
+    CHKERRQ(PetscObjectSetName((PetscObject)A_vcl,"New ViennaCL Matrix"));
 
-    ierr = VecCreateSeqViennaCL(PETSC_COMM_SELF,n,&v_vcl);CHKERRQ(ierr);
-    ierr = VecCreateSeqViennaCL(PETSC_COMM_SELF,m,&r_vcl);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)r_vcl,"ViennaCL result vector");CHKERRQ(ierr);
-    ierr = VecSet(v_vcl,val);CHKERRQ(ierr);
-    ierr = MatMult(A_vcl,v_vcl,r_vcl);CHKERRQ(ierr);
+    CHKERRQ(VecCreateSeqViennaCL(PETSC_COMM_SELF,n,&v_vcl));
+    CHKERRQ(VecCreateSeqViennaCL(PETSC_COMM_SELF,m,&r_vcl));
+    CHKERRQ(PetscObjectSetName((PetscObject)r_vcl,"ViennaCL result vector"));
+    CHKERRQ(VecSet(v_vcl,val));
+    CHKERRQ(MatMult(A_vcl,v_vcl,r_vcl));
 
-    ierr = VecDuplicate(r_vcl,&d_vcl);CHKERRQ(ierr);
-    ierr = VecCopy(r_vcl,d_vcl);CHKERRQ(ierr);
-    ierr = VecAXPY(d_vcl,-1.0,r_vcl);CHKERRQ(ierr);
-    ierr = VecNorm(d_vcl,NORM_INFINITY,&dnorm);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(r_vcl,&d_vcl));
+    CHKERRQ(VecCopy(r_vcl,d_vcl));
+    CHKERRQ(VecAXPY(d_vcl,-1.0,r_vcl));
+    CHKERRQ(VecNorm(d_vcl,NORM_INFINITY,&dnorm));
     PetscCheckFalse(dnorm > tol,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Sequential CPU and MPI ViennaCL vector results incompatible with inf norm greater than tolerance of %g",tol);
 
-    ierr = VecDestroy(&v);CHKERRQ(ierr);
-    ierr = VecDestroy(&r);CHKERRQ(ierr);
-    ierr = VecDestroy(&v_vcl);CHKERRQ(ierr);
-    ierr = VecDestroy(&r_vcl);CHKERRQ(ierr);
-    ierr = VecDestroy(&d_vcl);CHKERRQ(ierr);
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
-    ierr = MatDestroy(&A_vcl);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&v));
+    CHKERRQ(VecDestroy(&r));
+    CHKERRQ(VecDestroy(&v_vcl));
+    CHKERRQ(VecDestroy(&r_vcl));
+    CHKERRQ(VecDestroy(&d_vcl));
+    CHKERRQ(MatDestroy(&A));
+    CHKERRQ(MatDestroy(&A_vcl));
   }
 
   /* Create a sequential AIJ matrix on rank 0 convert it inplace to a new ViennaCL matrix, and apply it to a ViennaCL vector */
@@ -104,47 +104,47 @@ int main(int argc,char **args)
     PetscReal         dnorm;
     const PetscReal   tol = 1e-5;
 
-    ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,m,n,nz,NULL,&A);CHKERRQ(ierr);
+    CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_SELF,m,n,nz,NULL,&A));
 
     /* Add nz arbitrary entries per row in arbitrary columns */
     for (i=0;i<m;++i) {
       for (cnt = 0; cnt<nz; ++cnt) {
         j = (19 * cnt + (7*i + 3)) % n;
-        ierr = MatSetValue(A,i,j,(PetscScalar)(0.3 * i + j),INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValue(A,i,j,(PetscScalar)(0.3 * i + j),INSERT_VALUES));
       }
     }
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-    ierr = PetscObjectSetName((PetscObject)A,"Sequential CPU Matrix");CHKERRQ(ierr);
+    CHKERRQ(PetscObjectSetName((PetscObject)A,"Sequential CPU Matrix"));
 
-    ierr = VecCreateSeq(PETSC_COMM_SELF,n,&v);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,m,&r);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)r,"CPU result vector");CHKERRQ(ierr);
-    ierr = VecSet(v,val);CHKERRQ(ierr);
-    ierr = MatMult(A,v,r);CHKERRQ(ierr);
+    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&v));
+    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,m,&r));
+    CHKERRQ(PetscObjectSetName((PetscObject)r,"CPU result vector"));
+    CHKERRQ(VecSet(v,val));
+    CHKERRQ(MatMult(A,v,r));
 
-    ierr = MatConvert(A,MATSEQAIJVIENNACL,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)A,"Converted ViennaCL Matrix");CHKERRQ(ierr);
+    CHKERRQ(MatConvert(A,MATSEQAIJVIENNACL,MAT_INPLACE_MATRIX,&A));
+    CHKERRQ(PetscObjectSetName((PetscObject)A,"Converted ViennaCL Matrix"));
 
-    ierr = VecCreateSeqViennaCL(PETSC_COMM_SELF,n,&v_vcl);CHKERRQ(ierr);
-    ierr = VecCreateSeqViennaCL(PETSC_COMM_SELF,m,&r_vcl);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)r_vcl,"ViennaCL result vector");CHKERRQ(ierr);
-    ierr = VecSet(v_vcl,val);CHKERRQ(ierr);
-    ierr = MatMult(A,v_vcl,r_vcl);CHKERRQ(ierr);
+    CHKERRQ(VecCreateSeqViennaCL(PETSC_COMM_SELF,n,&v_vcl));
+    CHKERRQ(VecCreateSeqViennaCL(PETSC_COMM_SELF,m,&r_vcl));
+    CHKERRQ(PetscObjectSetName((PetscObject)r_vcl,"ViennaCL result vector"));
+    CHKERRQ(VecSet(v_vcl,val));
+    CHKERRQ(MatMult(A,v_vcl,r_vcl));
 
-    ierr = VecDuplicate(r_vcl,&d_vcl);CHKERRQ(ierr);
-    ierr = VecCopy(r_vcl,d_vcl);CHKERRQ(ierr);
-    ierr = VecAXPY(d_vcl,-1.0,r_vcl);CHKERRQ(ierr);
-    ierr = VecNorm(d_vcl,NORM_INFINITY,&dnorm);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(r_vcl,&d_vcl));
+    CHKERRQ(VecCopy(r_vcl,d_vcl));
+    CHKERRQ(VecAXPY(d_vcl,-1.0,r_vcl));
+    CHKERRQ(VecNorm(d_vcl,NORM_INFINITY,&dnorm));
     PetscCheckFalse(dnorm > tol,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MPI CPU and MPI ViennaCL Vector results incompatible with inf norm greater than tolerance of %g",tol);
 
-    ierr = VecDestroy(&v);CHKERRQ(ierr);
-    ierr = VecDestroy(&r);CHKERRQ(ierr);
-    ierr = VecDestroy(&v_vcl);CHKERRQ(ierr);
-    ierr = VecDestroy(&r_vcl);CHKERRQ(ierr);
-    ierr = VecDestroy(&d_vcl);CHKERRQ(ierr);
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&v));
+    CHKERRQ(VecDestroy(&r));
+    CHKERRQ(VecDestroy(&v_vcl));
+    CHKERRQ(VecDestroy(&r_vcl));
+    CHKERRQ(VecDestroy(&d_vcl));
+    CHKERRQ(MatDestroy(&A));
   }
 
   /* Create a parallel AIJ matrix, convert it to a new ViennaCL matrix, and apply it to a ViennaCL vector */
@@ -156,47 +156,47 @@ int main(int argc,char **args)
     PetscReal         dnorm;
     const PetscReal   tol=1e-5;
 
-    ierr = MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DETERMINE,PETSC_DETERMINE,M,N,nz,NULL,nz,NULL,&A);CHKERRQ(ierr);
+    CHKERRQ(MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DETERMINE,PETSC_DETERMINE,M,N,nz,NULL,nz,NULL,&A));
 
     /* Add nz arbitrary entries per row in arbitrary columns */
-    ierr = MatGetOwnershipRange(A,&rlow,&rhigh);CHKERRQ(ierr);
+    CHKERRQ(MatGetOwnershipRange(A,&rlow,&rhigh));
     for (i=rlow;i<rhigh;++i) {
       for (cnt = 0; cnt<nz; ++cnt) {
         j = (19 * cnt + (7*i + 3)) % N;
-        ierr = MatSetValue(A,i,j,(PetscScalar)(0.3 * i + j),INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValue(A,i,j,(PetscScalar)(0.3 * i + j),INSERT_VALUES));
       }
     }
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-    ierr = PetscObjectSetName((PetscObject)A,"MPI CPU Matrix");CHKERRQ(ierr);
+    CHKERRQ(PetscObjectSetName((PetscObject)A,"MPI CPU Matrix"));
 
-    ierr = MatCreateVecs(A,&v,&r);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)r,"MPI CPU result vector");CHKERRQ(ierr);
-    ierr = VecSet(v,val);CHKERRQ(ierr);
-    ierr = MatMult(A,v,r);CHKERRQ(ierr);
+    CHKERRQ(MatCreateVecs(A,&v,&r));
+    CHKERRQ(PetscObjectSetName((PetscObject)r,"MPI CPU result vector"));
+    CHKERRQ(VecSet(v,val));
+    CHKERRQ(MatMult(A,v,r));
 
-    ierr = MatConvert(A,MATMPIAIJVIENNACL,MAT_INITIAL_MATRIX,&A_vcl);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)A_vcl,"New MPI ViennaCL Matrix");CHKERRQ(ierr);
+    CHKERRQ(MatConvert(A,MATMPIAIJVIENNACL,MAT_INITIAL_MATRIX,&A_vcl));
+    CHKERRQ(PetscObjectSetName((PetscObject)A_vcl,"New MPI ViennaCL Matrix"));
 
-    ierr = MatCreateVecs(A_vcl,&v_vcl,&r_vcl);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)r_vcl,"ViennaCL result vector");CHKERRQ(ierr);
-    ierr = VecSet(v_vcl,val);CHKERRQ(ierr);
-    ierr = MatMult(A_vcl,v_vcl,r_vcl);CHKERRQ(ierr);
+    CHKERRQ(MatCreateVecs(A_vcl,&v_vcl,&r_vcl));
+    CHKERRQ(PetscObjectSetName((PetscObject)r_vcl,"ViennaCL result vector"));
+    CHKERRQ(VecSet(v_vcl,val));
+    CHKERRQ(MatMult(A_vcl,v_vcl,r_vcl));
 
-    ierr = VecDuplicate(r_vcl,&d_vcl);CHKERRQ(ierr);
-    ierr = VecCopy(r_vcl,d_vcl);CHKERRQ(ierr);
-    ierr = VecAXPY(d_vcl,-1.0,r_vcl);CHKERRQ(ierr);
-    ierr = VecNorm(d_vcl,NORM_INFINITY,&dnorm);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(r_vcl,&d_vcl));
+    CHKERRQ(VecCopy(r_vcl,d_vcl));
+    CHKERRQ(VecAXPY(d_vcl,-1.0,r_vcl));
+    CHKERRQ(VecNorm(d_vcl,NORM_INFINITY,&dnorm));
     PetscCheckFalse(dnorm > tol,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MPI CPU and MPI ViennaCL Vector results incompatible with inf norm greater than tolerance of %g",tol);
 
-    ierr = VecDestroy(&v);CHKERRQ(ierr);
-    ierr = VecDestroy(&r);CHKERRQ(ierr);
-    ierr = VecDestroy(&v_vcl);CHKERRQ(ierr);
-    ierr = VecDestroy(&r_vcl);CHKERRQ(ierr);
-    ierr = VecDestroy(&d_vcl);CHKERRQ(ierr);
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
-    ierr = MatDestroy(&A_vcl);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&v));
+    CHKERRQ(VecDestroy(&r));
+    CHKERRQ(VecDestroy(&v_vcl));
+    CHKERRQ(VecDestroy(&r_vcl));
+    CHKERRQ(VecDestroy(&d_vcl));
+    CHKERRQ(MatDestroy(&A));
+    CHKERRQ(MatDestroy(&A_vcl));
   }
 
   /* Create a parallel AIJ matrix, convert it in-place to a ViennaCL matrix, and apply it to a ViennaCL vector */
@@ -208,46 +208,46 @@ int main(int argc,char **args)
     PetscReal         dnorm;
     const PetscReal   tol=1e-5;
 
-    ierr = MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DETERMINE,PETSC_DETERMINE,M,N,nz,NULL,nz,NULL,&A);CHKERRQ(ierr);
+    CHKERRQ(MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DETERMINE,PETSC_DETERMINE,M,N,nz,NULL,nz,NULL,&A));
 
     /* Add nz arbitrary entries per row in arbitrary columns */
-    ierr = MatGetOwnershipRange(A,&rlow,&rhigh);CHKERRQ(ierr);
+    CHKERRQ(MatGetOwnershipRange(A,&rlow,&rhigh));
     for (i=rlow;i<rhigh;++i) {
       for (cnt = 0; cnt<nz; ++cnt) {
         j = (19 * cnt + (7*i + 3)) % N;
-        ierr = MatSetValue(A,i,j,(PetscScalar)(0.3 * i + j),INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValue(A,i,j,(PetscScalar)(0.3 * i + j),INSERT_VALUES));
       }
     }
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-    ierr = PetscObjectSetName((PetscObject)A,"MPI CPU Matrix");CHKERRQ(ierr);
+    CHKERRQ(PetscObjectSetName((PetscObject)A,"MPI CPU Matrix"));
 
-    ierr = MatCreateVecs(A,&v,&r);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)r,"MPI CPU result vector");CHKERRQ(ierr);
-    ierr = VecSet(v,val);CHKERRQ(ierr);
-    ierr = MatMult(A,v,r);CHKERRQ(ierr);
+    CHKERRQ(MatCreateVecs(A,&v,&r));
+    CHKERRQ(PetscObjectSetName((PetscObject)r,"MPI CPU result vector"));
+    CHKERRQ(VecSet(v,val));
+    CHKERRQ(MatMult(A,v,r));
 
-    ierr = MatConvert(A,MATMPIAIJVIENNACL,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)A,"Converted MPI ViennaCL Matrix");CHKERRQ(ierr);
+    CHKERRQ(MatConvert(A,MATMPIAIJVIENNACL,MAT_INPLACE_MATRIX,&A));
+    CHKERRQ(PetscObjectSetName((PetscObject)A,"Converted MPI ViennaCL Matrix"));
 
-    ierr = MatCreateVecs(A,&v_vcl,&r_vcl);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)r_vcl,"ViennaCL result vector");CHKERRQ(ierr);
-    ierr = VecSet(v_vcl,val);CHKERRQ(ierr);
-    ierr = MatMult(A,v_vcl,r_vcl);CHKERRQ(ierr);
+    CHKERRQ(MatCreateVecs(A,&v_vcl,&r_vcl));
+    CHKERRQ(PetscObjectSetName((PetscObject)r_vcl,"ViennaCL result vector"));
+    CHKERRQ(VecSet(v_vcl,val));
+    CHKERRQ(MatMult(A,v_vcl,r_vcl));
 
-    ierr = VecDuplicate(r_vcl,&d_vcl);CHKERRQ(ierr);
-    ierr = VecCopy(r_vcl,d_vcl);CHKERRQ(ierr);
-    ierr = VecAXPY(d_vcl,-1.0,r_vcl);CHKERRQ(ierr);
-    ierr = VecNorm(d_vcl,NORM_INFINITY,&dnorm);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(r_vcl,&d_vcl));
+    CHKERRQ(VecCopy(r_vcl,d_vcl));
+    CHKERRQ(VecAXPY(d_vcl,-1.0,r_vcl));
+    CHKERRQ(VecNorm(d_vcl,NORM_INFINITY,&dnorm));
     PetscCheckFalse(dnorm > tol,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MPI CPU and MPI ViennaCL Vector results incompatible with inf norm greater than tolerance of %g",tol);
 
-    ierr = VecDestroy(&v);CHKERRQ(ierr);
-    ierr = VecDestroy(&r);CHKERRQ(ierr);
-    ierr = VecDestroy(&v_vcl);CHKERRQ(ierr);
-    ierr = VecDestroy(&r_vcl);CHKERRQ(ierr);
-    ierr = VecDestroy(&d_vcl);CHKERRQ(ierr);
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&v));
+    CHKERRQ(VecDestroy(&r));
+    CHKERRQ(VecDestroy(&v_vcl));
+    CHKERRQ(VecDestroy(&r_vcl));
+    CHKERRQ(VecDestroy(&d_vcl));
+    CHKERRQ(MatDestroy(&A));
   }
 
   ierr = PetscFinalize();

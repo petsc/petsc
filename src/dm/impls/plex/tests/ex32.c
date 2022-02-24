@@ -4,24 +4,20 @@ static char help[] = "Tests for periodic mesh output\n\n";
 
 PetscErrorCode CheckMesh(DM dm)
 {
-  PetscReal      detJ, J[9], refVol = 1.0;
-  PetscReal      vol;
-  PetscInt       dim, depth, d, cStart, cEnd, c;
-  PetscErrorCode ierr;
+  PetscReal detJ, J[9];
+  PetscReal vol;
+  PetscInt  dim, depth, cStart, cEnd, c;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  for (d = 0; d < dim; ++d) {
-    refVol *= 2.0;
-  }
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(DMPlexGetDepth(dm, &depth));
+  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   for (c = cStart; c < cEnd; ++c) {
-    ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, NULL, J, NULL, &detJ);CHKERRQ(ierr);
-    PetscCheckFalse(detJ <= 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %d is inverted, |J| = %g", c, detJ);
+    CHKERRQ(DMPlexComputeCellGeometryFEM(dm, c, NULL, NULL, J, NULL, &detJ));
+    PetscCheck(detJ > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %" PetscInt_FMT " is inverted, |J| = %g", c, detJ);
     if (depth > 1) {
-      ierr = DMPlexComputeCellGeometryFVM(dm, c, &vol, NULL, NULL);CHKERRQ(ierr);
-      PetscCheckFalse(vol <= 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %d is inverted, vol = %g", c, vol);
+      CHKERRQ(DMPlexComputeCellGeometryFVM(dm, c, &vol, NULL, NULL));
+      PetscCheck(vol > 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mesh cell %" PetscInt_FMT " is inverted, vol = %g", c, vol);
     }
   }
   PetscFunctionReturn(0);
@@ -29,13 +25,11 @@ PetscErrorCode CheckMesh(DM dm)
 
 PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreate(comm, dm));
+  CHKERRQ(DMSetType(*dm, DMPLEX));
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -45,9 +39,9 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = CreateMesh(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
-  ierr = CheckMesh(dm);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &dm));
+  CHKERRQ(CheckMesh(dm));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -45,19 +45,19 @@ PetscErrorCode CreateGraph(MPI_Comm comm, PetscInt testnum, Mat *A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreate(comm, &G);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(comm, &G));
   /* The identity matrix */
   switch (testnum) {
   case 0:
   {
     Vec D;
 
-    ierr = MatSetSizes(G, PETSC_DETERMINE, PETSC_DETERMINE, 5, 5);CHKERRQ(ierr);
-    ierr = MatSetUp(G);CHKERRQ(ierr);
-    ierr = MatCreateVecs(G, &D, NULL);CHKERRQ(ierr);
-    ierr = VecSet(D, 1.0);CHKERRQ(ierr);
-    ierr = MatDiagonalSet(G, D, INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecDestroy(&D);CHKERRQ(ierr);
+    CHKERRQ(MatSetSizes(G, PETSC_DETERMINE, PETSC_DETERMINE, 5, 5));
+    CHKERRQ(MatSetUp(G));
+    CHKERRQ(MatCreateVecs(G, &D, NULL));
+    CHKERRQ(VecSet(D, 1.0));
+    CHKERRQ(MatDiagonalSet(G, D, INSERT_VALUES));
+    CHKERRQ(VecDestroy(&D));
   }
   break;
   case 1:
@@ -66,28 +66,28 @@ PetscErrorCode CreateGraph(MPI_Comm comm, PetscInt testnum, Mat *A)
     PetscInt    cols[3];
     PetscInt    rStart, rEnd, row;
 
-    ierr = MatSetSizes(G, PETSC_DETERMINE, PETSC_DETERMINE, 5, 5);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(G);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(G, 2, NULL);CHKERRQ(ierr);
-    ierr = MatSetUp(G);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(G, &rStart, &rEnd);CHKERRQ(ierr);
+    CHKERRQ(MatSetSizes(G, PETSC_DETERMINE, PETSC_DETERMINE, 5, 5));
+    CHKERRQ(MatSetFromOptions(G));
+    CHKERRQ(MatSeqAIJSetPreallocation(G, 2, NULL));
+    CHKERRQ(MatSetUp(G));
+    CHKERRQ(MatGetOwnershipRange(G, &rStart, &rEnd));
     row  = 0;
     cols[0] = 0; cols[1] = 1;
-    if ((row >= rStart) && (row < rEnd)) {ierr = MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);}
+    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
     row  = 1;
     cols[0] = 0; cols[1] = 1;
-    if ((row >= rStart) && (row < rEnd)) {ierr = MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);}
+    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
     row  = 2;
     cols[0] = 2; cols[1] = 3;
-    if ((row >= rStart) && (row < rEnd)) {ierr = MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);}
+    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
     row  = 3;
     cols[0] = 3; cols[1] = 4;
-    if ((row >= rStart) && (row < rEnd)) {ierr = MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);}
+    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
     row  = 4;
     cols[0] = 4; cols[1] = 2;
-    if ((row >= rStart) && (row < rEnd)) {ierr = MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);}
-    ierr = MatAssemblyBegin(G, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(G, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
+    CHKERRQ(MatAssemblyBegin(G, MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(G, MAT_FINAL_ASSEMBLY));
   }
   break;
   case 2:
@@ -96,28 +96,28 @@ PetscErrorCode CreateGraph(MPI_Comm comm, PetscInt testnum, Mat *A)
     PetscInt    cols[3];
     PetscInt    rStart, rEnd, row;
 
-    ierr = MatSetSizes(G, PETSC_DETERMINE, PETSC_DETERMINE, 5, 5);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(G);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation(G, 2, NULL);CHKERRQ(ierr);
-    ierr = MatSetUp(G);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(G, &rStart, &rEnd);CHKERRQ(ierr);
+    CHKERRQ(MatSetSizes(G, PETSC_DETERMINE, PETSC_DETERMINE, 5, 5));
+    CHKERRQ(MatSetFromOptions(G));
+    CHKERRQ(MatSeqAIJSetPreallocation(G, 2, NULL));
+    CHKERRQ(MatSetUp(G));
+    CHKERRQ(MatGetOwnershipRange(G, &rStart, &rEnd));
     row  = 0;
     cols[0] = 0; cols[1] = 4;
-    if ((row >= rStart) && (row < rEnd)) {ierr = MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);}
+    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
     row  = 1;
     cols[0] = 1; cols[1] = 2;
-    if ((row >= rStart) && (row < rEnd)) {ierr = MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);}
+    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
     row  = 2;
     cols[0] = 2; cols[1] = 3;
-    if ((row >= rStart) && (row < rEnd)) {ierr = MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);}
+    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
     row  = 3;
     cols[0] = 3; cols[1] = 1;
-    if ((row >= rStart) && (row < rEnd)) {ierr = MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);}
+    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
     row  = 4;
     cols[0] = 0; cols[1] = 4;
-    if ((row >= rStart) && (row < rEnd)) {ierr = MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES);CHKERRQ(ierr);}
-    ierr = MatAssemblyBegin(G, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(G, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    if ((row >= rStart) && (row < rEnd)) CHKERRQ(MatSetValues(G, 1, &row, 2, cols, vals, INSERT_VALUES));
+    CHKERRQ(MatAssemblyBegin(G, MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(G, MAT_FINAL_ASSEMBLY));
   }
   break;
   default:
@@ -141,49 +141,49 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(comm, &size));
   /* Use matrix to encode a graph */
-  ierr = PetscOptionsGetInt(NULL,NULL, "-testnum", &testnum, NULL);CHKERRQ(ierr);
-  ierr = CreateGraph(comm, testnum, &A);CHKERRQ(ierr);
-  ierr = MatGetSize(A, &V, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-testnum", &testnum, NULL));
+  CHKERRQ(CreateGraph(comm, testnum, &A));
+  CHKERRQ(MatGetSize(A, &V, NULL));
   /* Replace matrix-vector multiplication with one that calculates the minimum rather than the sum */
   if (size == 1) {
-    ierr = MatShellSetOperation(A, MATOP_MULT, (void (*)) MatMultMax_SeqAIJ);CHKERRQ(ierr);
+    CHKERRQ(MatShellSetOperation(A, MATOP_MULT, (void (*)) MatMultMax_SeqAIJ));
   } else {
     Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
 
-    ierr = MatShellSetOperation(a->A, MATOP_MULT, (void (*)) MatMultMax_SeqAIJ);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(a->B, MATOP_MULT, (void (*)) MatMultMax_SeqAIJ);CHKERRQ(ierr);
-    ierr = MatShellSetOperation(a->B, MATOP_MULT_ADD, (void (*)) MatMultAddMax_SeqAIJ);CHKERRQ(ierr);
+    CHKERRQ(MatShellSetOperation(a->A, MATOP_MULT, (void (*)) MatMultMax_SeqAIJ));
+    CHKERRQ(MatShellSetOperation(a->B, MATOP_MULT, (void (*)) MatMultMax_SeqAIJ));
+    CHKERRQ(MatShellSetOperation(a->B, MATOP_MULT_ADD, (void (*)) MatMultAddMax_SeqAIJ));
   }
   /* Initialize each vertex as a separate component */
-  ierr = MatCreateVecs(A, &c, NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = VecGetArray(c, &carray);CHKERRQ(ierr);
+  CHKERRQ(MatCreateVecs(A, &c, NULL));
+  CHKERRQ(MatGetOwnershipRange(A, &vStart, &vEnd));
+  CHKERRQ(VecGetArray(c, &carray));
   for (v = vStart; v < vEnd; ++v) {
     carray[v-vStart] = v;
   }
-  ierr = VecRestoreArray(c, &carray);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(c, &carray));
   /* Preprocess in parallel to find local components */
   /* Multiply until c does not change */
-  ierr = VecDuplicate(c, &cold);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(c, &cold));
   for (v = 0; v < V; ++v) {
     Vec       cnew = cold;
     PetscBool stop;
 
-    ierr = MatMult(A, c, cnew);CHKERRQ(ierr);
-    ierr = VecEqual(c, cnew, &stop);CHKERRQ(ierr);
+    CHKERRQ(MatMult(A, c, cnew));
+    CHKERRQ(VecEqual(c, cnew, &stop));
     if (stop) break;
     cold = c;
     c    = cnew;
   }
   /* Report */
-  ierr = VecUniqueEntries(c, &n, NULL);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "Components: %d Iterations: %d\n", n, v);CHKERRQ(ierr);
-  ierr = VecView(c, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecUniqueEntries(c, &n, NULL));
+  CHKERRQ(PetscPrintf(comm, "Components: %d Iterations: %d\n", n, v));
+  CHKERRQ(VecView(c, PETSC_VIEWER_STDOUT_WORLD));
   /* Cleanup */
-  ierr = VecDestroy(&c);CHKERRQ(ierr);
-  ierr = VecDestroy(&cold);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&c));
+  CHKERRQ(VecDestroy(&cold));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -4,7 +4,6 @@
 
 PetscErrorCode PumpHeadCurveResidual(SNES snes,Vec X, Vec F,void *ctx)
 {
-  PetscErrorCode ierr;
   const PetscScalar *x;
   PetscScalar *f;
   Pump        *pump=(Pump*)ctx;
@@ -12,8 +11,8 @@ PetscErrorCode PumpHeadCurveResidual(SNES snes,Vec X, Vec F,void *ctx)
   PetscInt i;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(X,&x));
+  CHKERRQ(VecGetArray(F,&f));
 
   f[0] = f[1] = f[2] = 0;
   for (i=0; i < pump->headcurve.npt;i++) {
@@ -22,15 +21,14 @@ PetscErrorCode PumpHeadCurveResidual(SNES snes,Vec X, Vec F,void *ctx)
     f[2] +=  (x[0] - x[1]*PetscPowScalar(flow[i],x[2]) - head[i])*-1*x[1]*x[2]*PetscPowScalar(flow[i],x[2]-1); /*Partial w.r.t x[2] */
   }
 
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(X,&x));
+  CHKERRQ(VecRestoreArray(F,&f));
 
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode SetPumpHeadCurveParams(Pump *pump)
 {
-  PetscErrorCode ierr;
   SNES           snes;
   Vec            X,F;
   PetscScalar   *head,*flow,*x;
@@ -48,37 +46,37 @@ PetscErrorCode SetPumpHeadCurveParams(Pump *pump)
     pump->headcurve.npt += 2;
   }
 
-  ierr = SNESCreate(PETSC_COMM_SELF,&snes);CHKERRQ(ierr);
+  CHKERRQ(SNESCreate(PETSC_COMM_SELF,&snes));
 
-  ierr = VecCreate(PETSC_COMM_SELF,&X);CHKERRQ(ierr);
-  ierr = VecSetSizes(X,3,3);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(X);CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_SELF,&X));
+  CHKERRQ(VecSetSizes(X,3,3));
+  CHKERRQ(VecSetFromOptions(X));
+  CHKERRQ(VecDuplicate(X,&F));
 
-  ierr = SNESSetFunction(snes,F,PumpHeadCurveResidual,(void*)pump);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,NULL,NULL,SNESComputeJacobianDefault,NULL);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+  CHKERRQ(SNESSetFunction(snes,F,PumpHeadCurveResidual,(void*)pump));
+  CHKERRQ(SNESSetJacobian(snes,NULL,NULL,SNESComputeJacobianDefault,NULL));
+  CHKERRQ(SNESSetFromOptions(snes));
 
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(X,&x));
   x[0] = head[1]; x[1] = 10; x[2] = 3;
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(X,&x));
 
-  ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
+  CHKERRQ(SNESSolve(snes,NULL,X));
 
-  ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
+  CHKERRQ(SNESGetConvergedReason(snes,&reason));
   if (reason < 0) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Pump head curve did not converge");
   }
 
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(X,&x));
   pump->h0 = x[0];
   pump->r  = x[1];
   pump->n  = x[2];
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(X,&x));
 
-  ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&F);CHKERRQ(ierr);
-  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&X));
+  CHKERRQ(VecDestroy(&F));
+  CHKERRQ(SNESDestroy(&snes));
   PetscFunctionReturn(0);
 }
 
@@ -134,7 +132,6 @@ PetscErrorCode GetDataSegment(FILE *fp,char *line,fpos_t *data_segment_start_pos
 PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
 {
   FILE           *fp=NULL;
-  PetscErrorCode ierr;
   VERTEX_Water   vert;
   EDGE_Water     edge;
   fpos_t         junc_start_pos,res_start_pos,tank_start_pos,pipe_start_pos,pump_start_pos;
@@ -198,8 +195,8 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   }
 
   /* Allocate vertex and edge data structs */
-  ierr = PetscCalloc1(water->nvertex,&water->vertex);CHKERRQ(ierr);
-  ierr = PetscCalloc1(water->nedge,&water->edge);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc1(water->nvertex,&water->vertex));
+  CHKERRQ(PetscCalloc1(water->nedge,&water->edge));
   vert = water->vertex;
   edge = water->edge;
 
@@ -329,7 +326,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
     pump = &water->edge[j].pump;
     if (strcmp(pump->param,"HEAD") == 0) {
       /* Head-flow curve */
-      ierr = SetPumpHeadCurveParams(pump);CHKERRQ(ierr);
+      CHKERRQ(SetPumpHeadCurveParams(pump));
     }
   }
   PetscFunctionReturn(0);

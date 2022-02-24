@@ -32,7 +32,6 @@ PetscErrorCode PetscSFSetUp_Allgather(PetscSF sf)
 
 static PetscErrorCode PetscSFBcastBegin_Allgather(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
 {
-  PetscErrorCode        ierr;
   PetscSFLink           link;
   PetscMPIInt           sendcount;
   MPI_Comm              comm;
@@ -40,20 +39,19 @@ static PetscErrorCode PetscSFBcastBegin_Allgather(PetscSF sf,MPI_Datatype unit,P
   MPI_Request           *req;
 
   PetscFunctionBegin;
-  ierr = PetscSFLinkCreate(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op,PETSCSF_BCAST,&link);CHKERRQ(ierr);
-  ierr = PetscSFLinkPackRootData(sf,link,PETSCSF_REMOTE,rootdata);CHKERRQ(ierr);
-  ierr = PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/* device2host before sending */);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
-  ierr = PetscMPIIntCast(sf->nroots,&sendcount);CHKERRQ(ierr);
-  ierr = PetscSFLinkGetMPIBuffersAndRequests(sf,link,PETSCSF_ROOT2LEAF,&rootbuf,&leafbuf,&req,NULL);CHKERRQ(ierr);
-  ierr = PetscSFLinkSyncStreamBeforeCallMPI(sf,link,PETSCSF_ROOT2LEAF);CHKERRQ(ierr);
-  ierr = MPIU_Iallgather(rootbuf,sendcount,unit,leafbuf,sendcount,unit,comm,req);CHKERRMPI(ierr);
+  CHKERRQ(PetscSFLinkCreate(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op,PETSCSF_BCAST,&link));
+  CHKERRQ(PetscSFLinkPackRootData(sf,link,PETSCSF_REMOTE,rootdata));
+  CHKERRQ(PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/* device2host before sending */));
+  CHKERRQ(PetscObjectGetComm((PetscObject)sf,&comm));
+  CHKERRQ(PetscMPIIntCast(sf->nroots,&sendcount));
+  CHKERRQ(PetscSFLinkGetMPIBuffersAndRequests(sf,link,PETSCSF_ROOT2LEAF,&rootbuf,&leafbuf,&req,NULL));
+  CHKERRQ(PetscSFLinkSyncStreamBeforeCallMPI(sf,link,PETSCSF_ROOT2LEAF));
+  CHKERRMPI(MPIU_Iallgather(rootbuf,sendcount,unit,leafbuf,sendcount,unit,comm,req));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscSFReduceBegin_Allgather(PetscSF sf,MPI_Datatype unit,PetscMemType leafmtype,const void *leafdata,PetscMemType rootmtype,void *rootdata,MPI_Op op)
 {
-  PetscErrorCode        ierr;
   PetscSFLink           link;
   PetscInt              rstart;
   MPI_Comm              comm;
@@ -63,52 +61,50 @@ static PetscErrorCode PetscSFReduceBegin_Allgather(PetscSF sf,MPI_Datatype unit,
   MPI_Request           *req;
 
   PetscFunctionBegin;
-  ierr = PetscSFLinkCreate(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op,PETSCSF_REDUCE,&link);CHKERRQ(ierr);
+  CHKERRQ(PetscSFLinkCreate(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op,PETSCSF_REDUCE,&link));
   if (op == MPI_REPLACE) {
     /* REPLACE is only meaningful when all processes have the same leafdata to reduce. Therefore copy from local leafdata is fine */
-    ierr = PetscLayoutGetRange(sf->map,&rstart,NULL);CHKERRQ(ierr);
-    ierr = (*link->Memcpy)(link,rootmtype,rootdata,leafmtype,(const char*)leafdata+(size_t)rstart*link->unitbytes,(size_t)sf->nroots*link->unitbytes);CHKERRQ(ierr);
-    if (PetscMemTypeDevice(leafmtype) && PetscMemTypeHost(rootmtype)) {ierr = (*link->SyncStream)(link);CHKERRQ(ierr);} /* Sync the device to host memcpy */
+    CHKERRQ(PetscLayoutGetRange(sf->map,&rstart,NULL));
+    CHKERRQ((*link->Memcpy)(link,rootmtype,rootdata,leafmtype,(const char*)leafdata+(size_t)rstart*link->unitbytes,(size_t)sf->nroots*link->unitbytes));
+    if (PetscMemTypeDevice(leafmtype) && PetscMemTypeHost(rootmtype)) CHKERRQ((*link->SyncStream)(link)); /* Sync the device to host memcpy */
   } else {
-    ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-    ierr = PetscSFLinkPackLeafData(sf,link,PETSCSF_REMOTE,leafdata);CHKERRQ(ierr);
-    ierr = PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/* device2host before sending */);CHKERRQ(ierr);
-    ierr = PetscSFLinkGetMPIBuffersAndRequests(sf,link,PETSCSF_LEAF2ROOT,&rootbuf,&leafbuf,&req,NULL);CHKERRQ(ierr);
-    ierr = PetscMPIIntCast(dat->rootbuflen[PETSCSF_REMOTE],&recvcount);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectGetComm((PetscObject)sf,&comm));
+    CHKERRMPI(MPI_Comm_rank(comm,&rank));
+    CHKERRQ(PetscSFLinkPackLeafData(sf,link,PETSCSF_REMOTE,leafdata));
+    CHKERRQ(PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/* device2host before sending */));
+    CHKERRQ(PetscSFLinkGetMPIBuffersAndRequests(sf,link,PETSCSF_LEAF2ROOT,&rootbuf,&leafbuf,&req,NULL));
+    CHKERRQ(PetscMPIIntCast(dat->rootbuflen[PETSCSF_REMOTE],&recvcount));
     if (rank == 0 && !link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi]) {
-      ierr = PetscSFMalloc(sf,link->leafmtype_mpi,sf->leafbuflen[PETSCSF_REMOTE]*link->unitbytes,(void**)&link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi]);CHKERRQ(ierr);
+      CHKERRQ(PetscSFMalloc(sf,link->leafmtype_mpi,sf->leafbuflen[PETSCSF_REMOTE]*link->unitbytes,(void**)&link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi]));
     }
     if (rank == 0 && link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi] == leafbuf) leafbuf = MPI_IN_PLACE;
-    ierr = PetscMPIIntCast(sf->nleaves*link->bs,&count);CHKERRQ(ierr);
-    ierr = PetscSFLinkSyncStreamBeforeCallMPI(sf,link,PETSCSF_LEAF2ROOT);CHKERRQ(ierr);
-    ierr = MPI_Reduce(leafbuf,link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi],count,link->basicunit,op,0,comm);CHKERRMPI(ierr); /* Must do reduce with MPI builltin datatype basicunit */
-    ierr = MPIU_Iscatter(link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi],recvcount,unit,rootbuf,recvcount,unit,0/*rank 0*/,comm,req);CHKERRMPI(ierr);
+    CHKERRQ(PetscMPIIntCast(sf->nleaves*link->bs,&count));
+    CHKERRQ(PetscSFLinkSyncStreamBeforeCallMPI(sf,link,PETSCSF_LEAF2ROOT));
+    CHKERRMPI(MPI_Reduce(leafbuf,link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi],count,link->basicunit,op,0,comm)); /* Must do reduce with MPI builltin datatype basicunit */
+    CHKERRMPI(MPIU_Iscatter(link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi],recvcount,unit,rootbuf,recvcount,unit,0/*rank 0*/,comm,req));
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscSFBcastToZero_Allgather(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata)
 {
-  PetscErrorCode        ierr;
   PetscSFLink           link;
   PetscMPIInt           rank;
 
   PetscFunctionBegin;
-  ierr = PetscSFBcastBegin_Gather(sf,unit,rootmtype,rootdata,leafmtype,leafdata,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFLinkGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,&link);CHKERRQ(ierr);
-  ierr = PetscSFLinkFinishCommunication(sf,link,PETSCSF_ROOT2LEAF);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRMPI(ierr);
+  CHKERRQ(PetscSFBcastBegin_Gather(sf,unit,rootmtype,rootdata,leafmtype,leafdata,MPI_REPLACE));
+  CHKERRQ(PetscSFLinkGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,&link));
+  CHKERRQ(PetscSFLinkFinishCommunication(sf,link,PETSCSF_ROOT2LEAF));
+  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank));
   if (rank == 0 && PetscMemTypeDevice(leafmtype) && !sf->use_gpu_aware_mpi) {
-    ierr = (*link->Memcpy)(link,PETSC_MEMTYPE_DEVICE,leafdata,PETSC_MEMTYPE_HOST,link->leafbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST],sf->leafbuflen[PETSCSF_REMOTE]*link->unitbytes);CHKERRQ(ierr);
+    CHKERRQ((*link->Memcpy)(link,PETSC_MEMTYPE_DEVICE,leafdata,PETSC_MEMTYPE_HOST,link->leafbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST],sf->leafbuflen[PETSCSF_REMOTE]*link->unitbytes));
   }
-  ierr = PetscSFLinkReclaim(sf,&link);CHKERRQ(ierr);
+  CHKERRQ(PetscSFLinkReclaim(sf,&link));
   PetscFunctionReturn(0);
 }
 
 PETSC_INTERN PetscErrorCode PetscSFCreate_Allgather(PetscSF sf)
 {
-  PetscErrorCode    ierr;
   PetscSF_Allgather *dat = (PetscSF_Allgather*)sf->data;
 
   PetscFunctionBegin;
@@ -131,7 +127,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Allgather(PetscSF sf)
   sf->ops->ReduceBegin     = PetscSFReduceBegin_Allgather;
   sf->ops->BcastToZero     = PetscSFBcastToZero_Allgather;
 
-  ierr = PetscNewLog(sf,&dat);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(sf,&dat));
   sf->data = (void*)dat;
   PetscFunctionReturn(0);
 }

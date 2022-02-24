@@ -21,40 +21,37 @@ static struct {
 /************************************************/
 static PetscErrorCode sourlj1d(DMDALocalInfo *info,PetscScalar *in,Mat A,Mat m,void *ptr)
 {
-  PetscErrorCode ierr;
   void (*func)(DMDALocalInfo*,PetscScalar*,Mat*,Mat*,void*,PetscErrorCode*),*ctx;
   DMSNES sdm;
 
   PetscFunctionBegin;
-  ierr = DMGetDMSNES(info->da,&sdm);CHKERRQ(ierr);
-  ierr = PetscObjectGetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,_cb.lj1d,(PetscVoidFunction*)&func,&ctx);CHKERRQ(ierr);
-  (*func)(info,&in[info->dof*info->gxs],&A,&m,ctx,&ierr);CHKERRQ(ierr);
+  CHKERRQ(DMGetDMSNES(info->da,&sdm));
+  CHKERRQ(PetscObjectGetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,_cb.lj1d,(PetscVoidFunction*)&func,&ctx));
+  CHKERR_FORTRAN_VOID_FUNCTION((*func)(info,&in[info->dof*info->gxs],&A,&m,ctx,&ierr));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode sourlj2d(DMDALocalInfo *info,PetscScalar **in,Mat A,Mat m,void *ptr)
 {
-  PetscErrorCode ierr;
   void (*func)(DMDALocalInfo*,PetscScalar*,Mat*,Mat*,void*,PetscErrorCode*),*ctx;
   DMSNES sdm;
 
   PetscFunctionBegin;
-  ierr = DMGetDMSNES(info->da,&sdm);CHKERRQ(ierr);
-  ierr = PetscObjectGetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,_cb.lj2d,(PetscVoidFunction*)&func,&ctx);CHKERRQ(ierr);
-  (*func)(info,&in[info->gys][info->dof*info->gxs],&A,&m,ctx,&ierr);CHKERRQ(ierr);
+  CHKERRQ(DMGetDMSNES(info->da,&sdm));
+  CHKERRQ(PetscObjectGetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,_cb.lj2d,(PetscVoidFunction*)&func,&ctx));
+  CHKERR_FORTRAN_VOID_FUNCTION((*func)(info,&in[info->gys][info->dof*info->gxs],&A,&m,ctx,&ierr));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode sourlj3d(DMDALocalInfo *info,PetscScalar ***in,Mat A,Mat m,void *ptr)
 {
-  PetscErrorCode ierr;
   void (*func)(DMDALocalInfo*,PetscScalar*,Mat*,Mat*,void*,PetscErrorCode*),*ctx;
   DMSNES sdm;
 
   PetscFunctionBegin;
-  ierr = DMGetDMSNES(info->da,&sdm);CHKERRQ(ierr);
-  ierr = PetscObjectGetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,_cb.lj2d,(PetscVoidFunction*)&func,&ctx);CHKERRQ(ierr);
-  (*func)(info,&in[info->gzs][info->gys][info->dof*info->gxs],&A,&m,ctx,&ierr);CHKERRQ(ierr);
+  CHKERRQ(DMGetDMSNES(info->da,&sdm));
+  CHKERRQ(PetscObjectGetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,_cb.lj2d,(PetscVoidFunction*)&func,&ctx));
+  CHKERR_FORTRAN_VOID_FUNCTION((*func)(info,&in[info->gzs][info->gys][info->dof*info->gxs],&A,&m,ctx,&ierr));
   PetscFunctionReturn(0);
 }
 
@@ -81,40 +78,37 @@ PETSC_EXTERN void dmdasnessetjacobianlocal_(DM *da,void (*jac)(DMDALocalInfo*,vo
 
 static PetscErrorCode sourlf1d(DMDALocalInfo *info,PetscScalar *in,PetscScalar *out,void *ptr)
 {
-  PetscErrorCode ierr;
   void (*func)(DMDALocalInfo*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*),*ctx;
   DMSNES sdm;
 
   PetscFunctionBegin;
-  ierr = DMGetDMSNES(info->da,&sdm);CHKERRQ(ierr);
-  ierr = PetscObjectGetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,_cb.lf1d,(PetscVoidFunction*)&func,&ctx);CHKERRQ(ierr);
-  (*func)(info,&in[info->dof*info->gxs],&out[info->dof*info->xs],ctx,&ierr);CHKERRQ(ierr);
+  CHKERRQ(DMGetDMSNES(info->da,&sdm));
+  CHKERRQ(PetscObjectGetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,_cb.lf1d,(PetscVoidFunction*)&func,&ctx));
+  CHKERR_FORTRAN_VOID_FUNCTION((*func)(info,&in[info->dof*info->gxs],&out[info->dof*info->xs],ctx,&ierr));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode sourlf2d(DMDALocalInfo *info,PetscScalar **in,PetscScalar **out,void *ptr)
 {
-  PetscErrorCode ierr;
   void (*func)(DMDALocalInfo*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*),*ctx;
   DMSNES sdm;
 
   PetscFunctionBegin;
-  ierr = DMGetDMSNES(info->da,&sdm);CHKERRQ(ierr);
-  ierr = PetscObjectGetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,_cb.lf2d,(PetscVoidFunction*)&func,&ctx);CHKERRQ(ierr);
-  (*func)(info,&in[info->gys][info->dof*info->gxs],&out[info->ys][info->dof*info->xs],ctx,&ierr);CHKERRQ(ierr);
+  CHKERRQ(DMGetDMSNES(info->da,&sdm));
+  CHKERRQ(PetscObjectGetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,_cb.lf2d,(PetscVoidFunction*)&func,&ctx));
+  CHKERR_FORTRAN_VOID_FUNCTION((*func)(info,&in[info->gys][info->dof*info->gxs],&out[info->ys][info->dof*info->xs],ctx,&ierr));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode sourlf3d(DMDALocalInfo *info,PetscScalar ***in,PetscScalar ***out,void *ptr)
 {
-  PetscErrorCode ierr;
   void (*func)(DMDALocalInfo*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*),*ctx;
   DMSNES sdm;
 
   PetscFunctionBegin;
-  ierr = DMGetDMSNES(info->da,&sdm);CHKERRQ(ierr);
-  ierr = PetscObjectGetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,_cb.lf3d,(PetscVoidFunction*)&func,&ctx);CHKERRQ(ierr);
-  (*func)(info,&in[info->gzs][info->gys][info->dof*info->gxs],&out[info->zs][info->ys][info->dof*info->xs],ctx,&ierr);CHKERRQ(ierr);
+  CHKERRQ(DMGetDMSNES(info->da,&sdm));
+  CHKERRQ(PetscObjectGetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,_cb.lf3d,(PetscVoidFunction*)&func,&ctx));
+  CHKERR_FORTRAN_VOID_FUNCTION((*func)(info,&in[info->gzs][info->gys][info->dof*info->gxs],&out[info->zs][info->ys][info->dof*info->xs],ctx,&ierr));
   PetscFunctionReturn(0);
 }
 
@@ -136,4 +130,3 @@ PETSC_EXTERN void dmdasnessetfunctionlocal_(DM *da,InsertMode *mode,void (*func)
     *ierr = DMDASNESSetFunctionLocal(*da,*mode,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))sourlf1d,NULL);
   } else *ierr = 1;
 }
-

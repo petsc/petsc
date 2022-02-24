@@ -15,25 +15,25 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* Determine file from which we read the matrix A */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
   PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
 
   /* Load matrix A */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,&x,NULL);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(A,x);CHKERRQ(ierr);
-  ierr = VecScale(x,-1.0);CHKERRQ(ierr);
-  ierr = MatDiagonalSet(A,x,ADD_VALUES);CHKERRQ(ierr);
-  ierr = MatGetDiagonal(A,x);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm %g\n",(double)norm);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatLoad(A,fd));
+  CHKERRQ(PetscViewerDestroy(&fd));
+  CHKERRQ(MatCreateVecs(A,&x,NULL));
+  CHKERRQ(MatGetDiagonal(A,x));
+  CHKERRQ(VecScale(x,-1.0));
+  CHKERRQ(MatDiagonalSet(A,x,ADD_VALUES));
+  CHKERRQ(MatGetDiagonal(A,x));
+  CHKERRQ(VecNorm(x,NORM_2,&norm));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm %g\n",(double)norm));
 
   /* Free data structures */
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(VecDestroy(&x));
   ierr = PetscFinalize();
   return ierr;
 }

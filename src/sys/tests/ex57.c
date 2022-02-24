@@ -11,21 +11,21 @@ int main(int argc,char **argv)
   PetscRandom    rand;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)rand,&comm);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rand));
+  CHKERRQ(PetscObjectGetComm((PetscObject)rand,&comm));
   for (i=0; i<10; i++) {
-    ierr = PetscCommGetComm(comm,&comms[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscCommGetComm(comm,&comms[i]));
   }
   for (i=0; i<5; i++) {
-    ierr = PetscCommRestoreComm(comm,&comms[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscCommRestoreComm(comm,&comms[i]));
   }
   for (i=0; i<5; i++) {
-    ierr = PetscCommGetComm(comm,&comms[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscCommGetComm(comm,&comms[i]));
   }
   for (i=0; i<10; i++) {
-    ierr = PetscCommRestoreComm(comm,&comms[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscCommRestoreComm(comm,&comms[i]));
   }
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomDestroy(&rand));
   ierr = PetscFinalize();
   return ierr;
 }

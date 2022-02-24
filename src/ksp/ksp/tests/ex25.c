@@ -17,56 +17,56 @@ int main(int argc,char **args)
   char           filein[128];     /* input file name */
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* Load the binary data file "filein". Set runtime option: -f filein */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n Load dataset ...\n");CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",filein,sizeof(filein),NULL);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filein,FILE_MODE_READ,&view);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
-  ierr = MatSetType(C,MATMPISBAIJ);CHKERRQ(ierr);
-  ierr = MatLoad(C,view);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecLoad(b,view);CHKERRQ(ierr);
-  ierr = VecLoad(u,view);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
-  /* ierr = VecView(b,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-  /* ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n Load dataset ...\n"));
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",filein,sizeof(filein),NULL));
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,filein,FILE_MODE_READ,&view));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
+  CHKERRQ(MatSetType(C,MATMPISBAIJ));
+  CHKERRQ(MatLoad(C,view));
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&b));
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
+  CHKERRQ(VecLoad(b,view));
+  CHKERRQ(VecLoad(u,view));
+  CHKERRQ(PetscViewerDestroy(&view));
+  /* CHKERRQ(VecView(b,VIEWER_STDOUT_WORLD)); */
+  /* CHKERRQ(MatView(C,VIEWER_STDOUT_WORLD)); */
 
-  ierr = VecDuplicate(u,&u_tmp);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(u,&u_tmp));
 
   /* Check accuracy of the data */
   /*
-  ierr = MatMult(C,u,u_tmp);CHKERRQ(ierr);
-  ierr = VecAXPY(u_tmp,none,b);CHKERRQ(ierr);
-  ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Accuracy of the loading data: | b - A*u |_2 : %g \n",(double)res_norm);CHKERRQ(ierr);
+  CHKERRQ(MatMult(C,u,u_tmp));
+  CHKERRQ(VecAXPY(u_tmp,none,b));
+  CHKERRQ(VecNorm(u_tmp,NORM_2,&res_norm));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Accuracy of the loading data: | b - A*u |_2 : %g \n",(double)res_norm));
   */
 
   /* Setup and solve for system */
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(b,&x));
   for (k=0; k<3; k++) {
     if (k == 0) {                              /* CG  */
-      ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"\n CG: \n");CHKERRQ(ierr);
+      CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+      CHKERRQ(KSPSetType(ksp,KSPCG));
+      CHKERRQ(KSPSetOperators(ksp,C,C));
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n CG: \n"));
     } else if (k == 1) {                       /* MINRES */
-      ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetType(ksp,KSPMINRES);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"\n MINRES: \n");CHKERRQ(ierr);
+      CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+      CHKERRQ(KSPSetType(ksp,KSPMINRES));
+      CHKERRQ(KSPSetOperators(ksp,C,C));
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n MINRES: \n"));
     } else {                                 /* SYMMLQ */
-      ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
-      ierr = KSPSetType(ksp,KSPSYMMLQ);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"\n SYMMLQ: \n");CHKERRQ(ierr);
+      CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+      CHKERRQ(KSPSetOperators(ksp,C,C));
+      CHKERRQ(KSPSetType(ksp,KSPSYMMLQ));
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n SYMMLQ: \n"));
     }
 
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+    CHKERRQ(KSPGetPC(ksp,&pc));
+    CHKERRQ(PCSetType(pc,PCNONE));
 
     /*
     Set runtime options, e.g.,
@@ -75,36 +75,36 @@ int main(int argc,char **args)
     These options will override those specified above as long as
     KSPSetFromOptions() is called _after_ any other customization routines.
     */
-    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+    CHKERRQ(KSPSetFromOptions(ksp));
 
     /* Solve linear system; */
-    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+    CHKERRQ(KSPSolve(ksp,b,x));
+    CHKERRQ(KSPGetIterationNumber(ksp,&its));
 
     /* Check error */
-    ierr = VecCopy(u,u_tmp);CHKERRQ(ierr);
-    ierr = VecAXPY(u_tmp,none,x);CHKERRQ(ierr);
-    ierr = VecNorm(u_tmp,NORM_2,&err_norm);CHKERRQ(ierr);
-    ierr = MatMult(C,x,u_tmp);CHKERRQ(ierr);
-    ierr = VecAXPY(u_tmp,none,b);CHKERRQ(ierr);
-    ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(u,u_tmp));
+    CHKERRQ(VecAXPY(u_tmp,none,x));
+    CHKERRQ(VecNorm(u_tmp,NORM_2,&err_norm));
+    CHKERRQ(MatMult(C,x,u_tmp));
+    CHKERRQ(VecAXPY(u_tmp,none,b));
+    CHKERRQ(VecNorm(u_tmp,NORM_2,&res_norm));
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm: %g;",(double)res_norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm: %g.\n",(double)err_norm);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Residual norm: %g;",(double)res_norm));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"  Error norm: %g.\n",(double)err_norm));
 
-    ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+    CHKERRQ(KSPDestroy(&ksp));
   }
 
   /*
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
   */
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&u_tmp);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(VecDestroy(&u));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&u_tmp));
+  CHKERRQ(MatDestroy(&C));
 
   ierr = PetscFinalize();
   return ierr;

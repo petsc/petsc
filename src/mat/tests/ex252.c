@@ -11,14 +11,14 @@ int main(int argc, char **args)
 
   ierr = PetscInitialize(&argc, &args, (char*) 0, help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL);CHKERRQ(ierr);
-  ierr = MatCreate(comm, &A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A, 3, NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A, 3, NULL, 2, NULL);CHKERRQ(ierr);
-  ierr = MatZeroEntries(A);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL));
+  CHKERRQ(MatCreate(comm, &A));
+  CHKERRQ(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatSeqAIJSetPreallocation(A, 3, NULL));
+  CHKERRQ(MatMPIAIJSetPreallocation(A, 3, NULL, 2, NULL));
+  CHKERRQ(MatZeroEntries(A));
+  CHKERRQ(MatDestroy(&A));
   ierr = PetscFinalize();
   return ierr;
 }
@@ -30,4 +30,3 @@ int main(int argc, char **args)
       output_file: output/ex252_1.out
       args: -mat_type aijkokkos
 TEST*/
-

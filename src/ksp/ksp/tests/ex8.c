@@ -25,44 +25,44 @@ int main(int argc,char **args)
 #endif
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,5,NULL,5,NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A,5,NULL);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatMPIAIJSetPreallocation(A,5,NULL,5,NULL));
+  CHKERRQ(MatSeqAIJSetPreallocation(A,5,NULL));
+  CHKERRQ(MatSetUp(A));
 
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(A,&Istart,&Iend));
 
-  ierr = PetscLogStageRegister("Assembly", &stage);CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
+  CHKERRQ(PetscLogStageRegister("Assembly", &stage));
+  CHKERRQ(PetscLogStagePush(stage));
   for (Ii=Istart; Ii<Iend; Ii++) {
     v = -1.0; i = Ii/n; j = Ii - i*n;
-    if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (i<m-1) {J = Ii + n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (j>0)   {J = Ii - 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    if (j<n-1) {J = Ii + 1; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
-    v = 4.0; ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
+    if (i>0)   {J = Ii - n; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (i<m-1) {J = Ii + n; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (j>0)   {J = Ii - 1; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    if (j<n-1) {J = Ii + 1; CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));}
+    v = 4.0; CHKERRQ(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(PetscLogStagePop());
 
   /* A is symmetric. Set symmetric flag to enable ICC/Cholesky preconditioner */
-  ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
 
   /* Create parallel vectors. */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,m*n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
+  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,m*n));
+  CHKERRQ(VecSetFromOptions(u));
+  CHKERRQ(VecDuplicate(u,&b));
+  CHKERRQ(VecDuplicate(b,&x));
 
   /*
      Set exact solution; then compute right-hand-side vector.
@@ -70,92 +70,92 @@ int main(int argc,char **args)
      elements of 1.0;  Alternatively, using the runtime option
      -random_sol forms a solution vector with random components.
   */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-random_exact_sol",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-random_exact_sol",&flg,NULL));
   if (flg) {
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
-    ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-    ierr = VecSetRandom(u,rctx);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
+    CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
+    CHKERRQ(PetscRandomSetFromOptions(rctx));
+    CHKERRQ(VecSetRandom(u,rctx));
+    CHKERRQ(PetscRandomDestroy(&rctx));
   } else {
-    ierr = VecSet(u,1.0);CHKERRQ(ierr);
+    CHKERRQ(VecSet(u,1.0));
   }
-  ierr = MatMult(A,u,b);CHKERRQ(ierr);
+  CHKERRQ(MatMult(A,u,b));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /* Create linear solver context */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
 
   /* Set operators. */
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  CHKERRQ(KSPSetOperators(ksp,A,A));
 
-  ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+  CHKERRQ(KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-setfromoptions_first",&setfromoptions_first,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-setfromoptions_first",&setfromoptions_first,NULL));
   if (setfromoptions_first) {
     /* code path for changing from KSPLSQR to KSPREONLY */
-    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+    CHKERRQ(KSPSetFromOptions(ksp));
   }
-  ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp, &pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr);
+  CHKERRQ(KSPSetType(ksp,KSPPREONLY));
+  CHKERRQ(KSPGetPC(ksp, &pc));
+  CHKERRQ(PCSetType(pc,PCCHOLESKY));
 #if defined(PETSC_HAVE_MUMPS)
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Spectrum slicing with MUMPS is not available for complex scalars");
 #endif
-  ierr = PCFactorSetMatSolverType(pc,MATSOLVERMUMPS);CHKERRQ(ierr);
+  CHKERRQ(PCFactorSetMatSolverType(pc,MATSOLVERMUMPS));
   /*
      must use runtime option '-mat_mumps_icntl_13 1' (turn off ScaLAPACK for
      matrix inertia), currently there is no better way of setting this in program
   */
-  ierr = PetscOptionsInsertString(NULL,"-mat_mumps_icntl_13 1");CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsInsertString(NULL,"-mat_mumps_icntl_13 1"));
 #else
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size>1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Configure with MUMPS if you want to run this example in parallel");
 #endif
 
   if (!setfromoptions_first) {
     /* when -setfromoptions_first is true, do not call KSPSetFromOptions() again and stick to KSPPREONLY */
-    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+    CHKERRQ(KSPSetFromOptions(ksp));
   }
 
   /* get inertia */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-solve",&solve,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-sameA",&sameA,NULL);CHKERRQ(ierr);
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
-  ierr = MatGetInertia(F,&in,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"INERTIA=%D\n",in);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-solve",&solve,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-sameA",&sameA,NULL));
+  CHKERRQ(KSPSetUp(ksp));
+  CHKERRQ(PCFactorGetMatrix(pc,&F));
+  CHKERRQ(MatGetInertia(F,&in,NULL,NULL));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"INERTIA=%D\n",in));
   if (solve) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving the intermediate KSP\n");CHKERRQ(ierr);
-    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  } else {ierr = PetscPrintf(PETSC_COMM_WORLD,"NOT Solving the intermediate KSP\n");CHKERRQ(ierr);}
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Solving the intermediate KSP\n"));
+    CHKERRQ(KSPSolve(ksp,b,x));
+  } else CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"NOT Solving the intermediate KSP\n"));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  CHKERRQ(MatDuplicate(A,MAT_COPY_VALUES,&B));
   if (sameA) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Setting A\n");CHKERRQ(ierr);
-    ierr = MatAXPY(A,1.1,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Setting A\n"));
+    CHKERRQ(MatAXPY(A,1.1,B,DIFFERENT_NONZERO_PATTERN));
+    CHKERRQ(KSPSetOperators(ksp,A,A));
   } else {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Setting B\n");CHKERRQ(ierr);
-    ierr = MatAXPY(B,1.1,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp,B,B);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Setting B\n"));
+    CHKERRQ(MatAXPY(B,1.1,A,DIFFERENT_NONZERO_PATTERN));
+    CHKERRQ(KSPSetOperators(ksp,B,B));
   }
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
-  ierr = MatGetInertia(F,&in,NULL,NULL);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"INERTIA=%D\n",in);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  CHKERRQ(KSPSetUp(ksp));
+  CHKERRQ(PCFactorGetMatrix(pc,&F));
+  CHKERRQ(MatGetInertia(F,&in,NULL,NULL));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"INERTIA=%D\n",in));
+  CHKERRQ(KSPSolve(ksp,b,x));
+  CHKERRQ(MatDestroy(&B));
 
   /* Free work space.*/
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(VecDestroy(&u));  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&b));  CHKERRQ(MatDestroy(&A));
 
   ierr = PetscFinalize();
   return ierr;

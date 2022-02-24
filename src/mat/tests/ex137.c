@@ -12,8 +12,8 @@ int main(int argc,char **args)
   PetscScalar    aa[7];
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for two processes");
 
   if (rank == 0) {
@@ -32,9 +32,9 @@ int main(int argc,char **args)
                6 7
                  7 */
   }
-  ierr = MatCreateMPISBAIJWithArrays(PETSC_COMM_WORLD,bs,m,m,PETSC_DECIDE,PETSC_DECIDE,ii,jj,aa,&A);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(MatCreateMPISBAIJWithArrays(PETSC_COMM_WORLD,bs,m,m,PETSC_DECIDE,PETSC_DECIDE,ii,jj,aa,&A));
+  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(MatDestroy(&A));
   ierr = PetscFinalize();
   return ierr;
 }

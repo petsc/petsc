@@ -9,7 +9,6 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt*, 
 
 PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J)
 {
-  PetscErrorCode  ierr;
   PetscInt        innz = 0, ionz = 0, nlsiz;
   DM_Moab         *dmmoab = (DM_Moab*)dm->data;
   PetscInt        *nnz = 0, *onz = 0;
@@ -23,37 +22,37 @@ PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J)
 
   /* next, need to allocate the non-zero arrays to enable pre-allocation */
   mtype = dm->mattype;
-  ierr = PetscStrstr(mtype, MATBAIJ, &tmp);CHKERRQ(ierr);
+  CHKERRQ(PetscStrstr(mtype, MATBAIJ, &tmp));
   nlsiz = (tmp ? dmmoab->nloc : dmmoab->nloc * dmmoab->numFields);
 
   /* allocate the nnz, onz arrays based on block size and local nodes */
-  ierr = PetscCalloc2(nlsiz, &nnz, nlsiz, &onz);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc2(nlsiz, &nnz, nlsiz, &onz));
 
   /* compute the nonzero pattern based on MOAB connectivity data for local elements */
-  ierr = DMMoab_Compute_NNZ_From_Connectivity(dm, &innz, nnz, &ionz, onz, (tmp ? PETSC_TRUE : PETSC_FALSE));CHKERRQ(ierr);
+  CHKERRQ(DMMoab_Compute_NNZ_From_Connectivity(dm, &innz, nnz, &ionz, onz, (tmp ? PETSC_TRUE : PETSC_FALSE)));
 
   /* create the Matrix and set its type as specified by user */
-  ierr = MatCreate((((PetscObject)dm)->comm), &A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A, dmmoab->nloc * dmmoab->numFields, dmmoab->nloc * dmmoab->numFields, PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(A, mtype);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(A, dmmoab->bs);CHKERRQ(ierr);
-  ierr = MatSetDM(A, dm);CHKERRQ(ierr); /* set DM reference */
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate((((PetscObject)dm)->comm), &A));
+  CHKERRQ(MatSetSizes(A, dmmoab->nloc * dmmoab->numFields, dmmoab->nloc * dmmoab->numFields, PETSC_DETERMINE, PETSC_DETERMINE));
+  CHKERRQ(MatSetType(A, mtype));
+  CHKERRQ(MatSetBlockSize(A, dmmoab->bs));
+  CHKERRQ(MatSetDM(A, dm)); /* set DM reference */
+  CHKERRQ(MatSetFromOptions(A));
 
   PetscCheck(dmmoab->ltog_map,(((PetscObject)dm)->comm), PETSC_ERR_ORDER, "Cannot create a DMMoab Mat without calling DMSetUp first.");
-  ierr = MatSetLocalToGlobalMapping(A, dmmoab->ltog_map, dmmoab->ltog_map);CHKERRQ(ierr);
+  CHKERRQ(MatSetLocalToGlobalMapping(A, dmmoab->ltog_map, dmmoab->ltog_map));
 
   /* set preallocation based on different supported Mat types */
-  ierr = MatSeqAIJSetPreallocation(A, innz, nnz);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A, innz, nnz, ionz, onz);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(A, dmmoab->bs, innz, nnz);CHKERRQ(ierr);
-  ierr = MatMPIBAIJSetPreallocation(A, dmmoab->bs, innz, nnz, ionz, onz);CHKERRQ(ierr);
+  CHKERRQ(MatSeqAIJSetPreallocation(A, innz, nnz));
+  CHKERRQ(MatMPIAIJSetPreallocation(A, innz, nnz, ionz, onz));
+  CHKERRQ(MatSeqBAIJSetPreallocation(A, dmmoab->bs, innz, nnz));
+  CHKERRQ(MatMPIBAIJSetPreallocation(A, dmmoab->bs, innz, nnz, ionz, onz));
 
   /* clean up temporary memory */
-  ierr = PetscFree2(nnz, onz);CHKERRQ(ierr);
+  CHKERRQ(PetscFree2(nnz, onz));
 
   /* set up internal matrix data-structures */
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  CHKERRQ(MatSetUp(A));
 
   /* MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE); */
 
@@ -188,12 +187,11 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt
 
 static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w, const PetscInt *fill, PetscInt **rfill)
 {
-  PetscErrorCode ierr;
   PetscInt       i, j, *ifill;
 
   PetscFunctionBegin;
   if (!fill) PetscFunctionReturn(0);
-  ierr  = PetscMalloc1(w * w, &ifill);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(w * w, &ifill));
   for (i = 0; i < w; i++) {
     for (j = 0; j < w; j++)
       ifill[i * w + j] = fill[i * w + j];
@@ -240,11 +238,10 @@ $                         0, 1, 1}
 PetscErrorCode  DMMoabSetBlockFills(DM dm, const PetscInt *dfill, const PetscInt *ofill)
 {
   DM_Moab       *dmmoab = (DM_Moab*)dm->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMMoabSetBlockFills_Private(dmmoab->numFields, dfill, &dmmoab->dfill);CHKERRQ(ierr);
-  ierr = DMMoabSetBlockFills_Private(dmmoab->numFields, ofill, &dmmoab->ofill);CHKERRQ(ierr);
+  CHKERRQ(DMMoabSetBlockFills_Private(dmmoab->numFields, dfill, &dmmoab->dfill));
+  CHKERRQ(DMMoabSetBlockFills_Private(dmmoab->numFields, ofill, &dmmoab->ofill));
   PetscFunctionReturn(0);
 }

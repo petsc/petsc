@@ -120,7 +120,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
     PetscScalar    *work;
     PetscContainer container;
 
-    ierr = PetscMalloc1(N+align,&work);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(N+align,&work));
 
     /* recompute shift for newly allocated space */
     tmp3 = (size_t) work;
@@ -132,14 +132,14 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
 
     /* shift work by that number of bytes */
     work = (PetscScalar*)(((char*)work) + shift);
-    ierr = PetscArraycpy(work,addr,N);CHKERRQ(ierr);
+    CHKERRQ(PetscArraycpy(work,addr,N));
 
     /* store in the first location in addr how much you shift it */
     ((PetscInt*)addr)[0] = shift;
 
-    ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
-    ierr = PetscContainerSetPointer(container,addr);CHKERRQ(ierr);
-    ierr = PetscObjectCompose(obj,"GetArrayPtr",(PetscObject)container);CHKERRQ(ierr);
+    CHKERRQ(PetscContainerCreate(PETSC_COMM_SELF,&container));
+    CHKERRQ(PetscContainerSetPointer(container,addr));
+    CHKERRQ(PetscObjectCompose(obj,"GetArrayPtr",(PetscObject)container));
 
     tmp3 = (size_t) work;
     if (tmp3 > tmp1) {  /* C is bigger than Fortran */
@@ -174,23 +174,22 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
 */
 PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,size_t addr,PetscInt N,PetscScalar **lx)
 {
-  PetscErrorCode ierr;
   PetscInt       shift;
   PetscContainer container;
   PetscScalar    *tlx;
 
-  ierr = PetscObjectQuery(obj,"GetArrayPtr",(PetscObject*)&container);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectQuery(obj,"GetArrayPtr",(PetscObject*)&container));
   if (container) {
-    ierr = PetscContainerGetPointer(container,(void**)lx);CHKERRQ(ierr);
+    CHKERRQ(PetscContainerGetPointer(container,(void**)lx));
     tlx  = base + addr;
 
     shift = *(PetscInt*)*lx;
-    ierr  = PetscArraycpy(*lx,tlx,N);CHKERRQ(ierr);
+    CHKERRQ(PetscArraycpy(*lx,tlx,N));
     tlx   = (PetscScalar*)(((char*)tlx) - shift);
 
-    ierr = PetscFree(tlx);CHKERRQ(ierr);
-    ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
-    ierr = PetscObjectCompose(obj,"GetArrayPtr",0);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(tlx));
+    CHKERRQ(PetscContainerDestroy(&container));
+    CHKERRQ(PetscObjectCompose(obj,"GetArrayPtr",0));
   } else {
     *lx = base + addr;
   }
@@ -214,4 +213,3 @@ PETSC_EXTERN PetscBool petscisinfornanreal_(PetscReal *v)
 {
   return (PetscBool) PetscIsInfOrNanReal(*v);
 }
-

@@ -41,15 +41,15 @@ static inline PetscErrorCode PetscMallocWithMemType(PetscMemType mtype,size_t si
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) {
     #if defined(PETSC_HAVE_GETPAGESIZE)
-      ierr = posix_memalign(ptr,getpagesize(),size);CHKERRQ(ierr);
+      CHKERRQ(posix_memalign(ptr,getpagesize(),size));
     #else
-      ierr = PetscMalloc(size,ptr);CHKERRQ(ierr);
+      CHKERRQ(PetscMalloc(size,ptr));
     #endif
   }
 #if defined(PETSC_HAVE_CUDA)
-  else if (PetscMemTypeCUDA(mtype)) {cudaError_t cerr = cudaMalloc(ptr,size);CHKERRCUDA(cerr);}
+  else if (PetscMemTypeCUDA(mtype)) CHKERRCUDA(cudaMalloc(ptr,size));
 #elif defined(PETSC_HAVE_HIP)
-  else if (PetscMemTypeHIP(mtype))  {hipError_t cerr  = hipMalloc(ptr,size);CHKERRHIP(cerr);}
+  else if (PetscMemTypeHIP(mtype))  CHKERRHIP(hipMalloc(ptr,size));
 #endif
   PetscFunctionReturn(0);
 }
@@ -59,9 +59,9 @@ static inline PetscErrorCode PetscFreeWithMemType_Private(PetscMemType mtype,voi
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) {free(ptr);}
 #if defined(PETSC_HAVE_CUDA)
-  else if (PetscMemTypeCUDA(mtype)) {cudaError_t cerr = cudaFree(ptr);CHKERRCUDA(cerr);}
+  else if (PetscMemTypeCUDA(mtype)) CHKERRCUDA(cudaFree(ptr));
 #elif defined(PETSC_HAVE_HIP)
-  else if (PetscMemTypeHIP(mtype))  {hipError_t cerr  = hipFree(ptr);CHKERRHIP(cerr);}
+  else if (PetscMemTypeHIP(mtype))  CHKERRHIP(hipFree(ptr));
 #endif
   PetscFunctionReturn(0);
 }
@@ -74,11 +74,11 @@ static inline PetscErrorCode PetscMemcpyFromHostWithMemType(PetscMemType mtype,v
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (PetscMemTypeHost(mtype)) {ierr = PetscMemcpy(dst,src,n);CHKERRQ(ierr);}
+  if (PetscMemTypeHost(mtype)) CHKERRQ(PetscMemcpy(dst,src,n));
 #if defined(PETSC_HAVE_CUDA)
-  else if (PetscMemTypeCUDA(mtype)) {cudaError_t cerr = cudaMemcpy(dst,src,n,cudaMemcpyHostToDevice);CHKERRCUDA(cerr);}
+  else if (PetscMemTypeCUDA(mtype)) CHKERRCUDA(cudaMemcpy(dst,src,n,cudaMemcpyHostToDevice));
 #elif defined(PETSC_HAVE_HIP)
-  else if (PetscMemTypeHIP(mtype))  {hipError_t cerr  = hipMemcpy(dst,src,n,hipMemcpyHostToDevice);CHKERRHIP(cerr);}
+  else if (PetscMemTypeHIP(mtype))  CHKERRHIP(hipMemcpy(dst,src,n,hipMemcpyHostToDevice));
 #endif
   PetscFunctionReturn(0);
 }
@@ -103,24 +103,24 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   /* Must init the device first if one wants to call PetscGetMemType() without creating PETSc device objects */
 #if defined(PETSC_HAVE_CUDA)
-  ierr = PetscDeviceInitialize(PETSC_DEVICE_CUDA);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
 #elif defined(PETSC_HAVE_HIP)
-  ierr = PetscDeviceInitialize(PETSC_DEVICE_HIP);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceInitialize(PETSC_DEVICE_HIP));
 #endif
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCheck(size == 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 2 processes");
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-maxn",&maxn,NULL);CHKERRQ(ierr); /* maxn PetscScalars */
-  ierr = PetscOptionsGetInt(NULL,NULL,"-skipSmall",&skipSmall,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-loopSmall",&loopSmall,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-maxn",&maxn,NULL)); /* maxn PetscScalars */
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-skipSmall",&skipSmall,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-loopSmall",&loopSmall,NULL));
 
-  ierr = PetscMalloc1(maxn,&iremote);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-mtype",mstring,16,&set);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(maxn,&iremote));
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-mtype",mstring,16,&set));
   if (set) {
-    ierr = PetscStrcasecmp(mstring,"cuda",&isCuda);CHKERRQ(ierr);
-    ierr = PetscStrcasecmp(mstring,"hip",&isHip);CHKERRQ(ierr);
-    ierr = PetscStrcasecmp(mstring,"host",&isHost);CHKERRQ(ierr);
+    CHKERRQ(PetscStrcasecmp(mstring,"cuda",&isCuda));
+    CHKERRQ(PetscStrcasecmp(mstring,"hip",&isHip));
+    CHKERRQ(PetscStrcasecmp(mstring,"host",&isHost));
 
     if (isHost) mtype = PETSC_MEMTYPE_HOST;
     else if (isCuda) mtype = PETSC_MEMTYPE_CUDA;
@@ -128,18 +128,18 @@ int main(int argc,char **argv)
     else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Unknown memory type: %s",mstring);
   }
 
-  ierr = PetscMallocWithMemType(mtype,sizeof(PetscScalar)*maxn,(void**)&rootdata);CHKERRQ(ierr);
-  ierr = PetscMallocWithMemType(mtype,sizeof(PetscScalar)*maxn,(void**)&leafdata);CHKERRQ(ierr);
+  CHKERRQ(PetscMallocWithMemType(mtype,sizeof(PetscScalar)*maxn,(void**)&rootdata));
+  CHKERRQ(PetscMallocWithMemType(mtype,sizeof(PetscScalar)*maxn,(void**)&leafdata));
 
-  ierr = PetscMalloc2(maxn,&pbuf,maxn,&ebuf);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc2(maxn,&pbuf,maxn,&ebuf));
   for (i=0; i<maxn; i++) {
     pbuf[i] = 123.0;
     ebuf[i] = 456.0;
   }
 
   for (n=1,i=0; n<=maxn; n*=2,i++) {
-    ierr = PetscSFCreate(PETSC_COMM_WORLD,&sf[i]);CHKERRQ(ierr);
-    ierr = PetscSFSetFromOptions(sf[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf[i]));
+    CHKERRQ(PetscSFSetFromOptions(sf[i]));
     if (!rank) {
       nroots  = n;
       nleaves = 0;
@@ -151,8 +151,8 @@ int main(int argc,char **argv)
         iremote[j].index = j;
       }
     }
-    ierr = PetscSFSetGraph(sf[i],nroots,nleaves,NULL,PETSC_COPY_VALUES,iremote,PETSC_COPY_VALUES);CHKERRQ(ierr);
-    ierr = PetscSFSetUp(sf[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscSFSetGraph(sf[i],nroots,nleaves,NULL,PETSC_COPY_VALUES,iremote,PETSC_COPY_VALUES));
+    CHKERRQ(PetscSFSetUp(sf[i]));
   }
 
   if (loopSmall > 0) {
@@ -165,50 +165,50 @@ int main(int argc,char **argv)
 
   for (n=1,j=0; n<=maxn; n*=2,j++) {
     msgsize = sizeof(PetscScalar)*n;
-    ierr = PetscMemcpyFromHostWithMemType(mtype,rootdata,pbuf,msgsize);CHKERRQ(ierr);
-    ierr = PetscMemcpyFromHostWithMemType(mtype,leafdata,ebuf,msgsize);CHKERRQ(ierr);
+    CHKERRQ(PetscMemcpyFromHostWithMemType(mtype,rootdata,pbuf,msgsize));
+    CHKERRQ(PetscMemcpyFromHostWithMemType(mtype,leafdata,ebuf,msgsize));
 
     if (msgsize > LARGE_MESSAGE_SIZE) {
       nskip = LAT_SKIP_LARGE;
       niter = LAT_LOOP_LARGE;
     }
-    ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Barrier(MPI_COMM_WORLD));
 
     for (i=0; i<niter + nskip; i++) {
       if (i == nskip) {
        #if defined(PETSC_HAVE_CUDA)
-        {cudaError_t cerr = cudaDeviceSynchronize();CHKERRCUDA(cerr);}
+        CHKERRCUDA(cudaDeviceSynchronize());
        #elif defined(PETSC_HAVE_HIP)
-        {hipError_t  cerr = hipDeviceSynchronize();CHKERRHIP(cerr);}
+        CHKERRHIP(hipDeviceSynchronize());
        #endif
-        ierr    = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
+        CHKERRMPI(MPI_Barrier(PETSC_COMM_WORLD));
         t_start = MPI_Wtime();
       }
-      ierr = PetscSFBcastWithMemTypeBegin(sf[j],MPIU_SCALAR,mtype,rootdata,mtype,leafdata,op);CHKERRQ(ierr);
-      ierr = PetscSFBcastEnd(sf[j],MPIU_SCALAR,rootdata,leafdata,op);CHKERRQ(ierr);
-      ierr = PetscSFReduceWithMemTypeBegin(sf[j],MPIU_SCALAR,mtype,leafdata,mtype,rootdata,op);CHKERRQ(ierr);
-      ierr = PetscSFReduceEnd(sf[j],MPIU_SCALAR,leafdata,rootdata,op);CHKERRQ(ierr);
+      CHKERRQ(PetscSFBcastWithMemTypeBegin(sf[j],MPIU_SCALAR,mtype,rootdata,mtype,leafdata,op));
+      CHKERRQ(PetscSFBcastEnd(sf[j],MPIU_SCALAR,rootdata,leafdata,op));
+      CHKERRQ(PetscSFReduceWithMemTypeBegin(sf[j],MPIU_SCALAR,mtype,leafdata,mtype,rootdata,op));
+      CHKERRQ(PetscSFReduceEnd(sf[j],MPIU_SCALAR,leafdata,rootdata,op));
     }
    #if defined(PETSC_HAVE_CUDA)
-    {cudaError_t cerr = cudaDeviceSynchronize();CHKERRCUDA(cerr);}
+    CHKERRCUDA(cudaDeviceSynchronize());
    #elif defined(PETSC_HAVE_HIP)
-    {hipError_t  cerr = hipDeviceSynchronize();CHKERRHIP(cerr);}
+    CHKERRHIP(hipDeviceSynchronize());
    #endif
-    ierr    = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Barrier(PETSC_COMM_WORLD));
     t_end   = MPI_Wtime();
     time[j] = (t_end - t_start)*1e6 / (niter*2);
   }
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\t##  PetscSF Ping-pong test on %s ##\n  Message(Bytes) \t\tLatency(us)\n", mtype==PETSC_MEMTYPE_HOST? "Host" : "Device");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\t##  PetscSF Ping-pong test on %s ##\n  Message(Bytes) \t\tLatency(us)\n", mtype==PETSC_MEMTYPE_HOST? "Host" : "Device"));
   for (n=1,j=0; n<=maxn; n*=2,j++) {
-    ierr = PetscSFDestroy(&sf[j]);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%16D \t %16.4f\n",sizeof(PetscScalar)*n,time[j]);CHKERRQ(ierr);
+    CHKERRQ(PetscSFDestroy(&sf[j]));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%16D \t %16.4f\n",sizeof(PetscScalar)*n,time[j]));
   }
 
-  ierr = PetscFree2(pbuf,ebuf);CHKERRQ(ierr);
-  ierr = PetscFreeWithMemType(mtype,rootdata);CHKERRQ(ierr);
-  ierr = PetscFreeWithMemType(mtype,leafdata);CHKERRQ(ierr);
-  ierr = PetscFree(iremote);CHKERRQ(ierr);
+  CHKERRQ(PetscFree2(pbuf,ebuf));
+  CHKERRQ(PetscFreeWithMemType(mtype,rootdata));
+  CHKERRQ(PetscFreeWithMemType(mtype,leafdata));
+  CHKERRQ(PetscFree(iremote));
   ierr = PetscFinalize();
   return ierr;
 }

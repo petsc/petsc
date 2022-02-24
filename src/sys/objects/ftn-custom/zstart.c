@@ -145,12 +145,11 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 #else
   int            i;
 #endif
-  PetscErrorCode ierr;
   int            warg = 256;
   PetscMPIInt    rank;
   char           *p;
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   if (rank == 0) {
 #if defined(PETSC_HAVE_IARG_COUNT_PROGNAME)
     *argc = iargc_();
@@ -159,14 +158,14 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
     *argc = 1 + iargc_();
 #endif
   }
-  ierr = MPI_Bcast(argc,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Bcast(argc,1,MPI_INT,0,PETSC_COMM_WORLD));
 
   /* PetscTrMalloc() not yet set, so don't use PetscMalloc() */
-  ierr = PetscMallocAlign((*argc+1)*(warg*sizeof(char)+sizeof(char*)),PETSC_FALSE,0,0,0,(void**)argv);CHKERRQ(ierr);
+  CHKERRQ(PetscMallocAlign((*argc+1)*(warg*sizeof(char)+sizeof(char*)),PETSC_FALSE,0,0,0,(void**)argv));
   (*argv)[0] = (char*)(*argv + *argc + 1);
 
   if (rank == 0) {
-    ierr = PetscMemzero((*argv)[0],(*argc)*warg*sizeof(char));CHKERRQ(ierr);
+    CHKERRQ(PetscMemzero((*argv)[0],(*argc)*warg*sizeof(char)));
     for (i=0; i<*argc; i++) {
       (*argv)[i+1] = (*argv)[i] + warg;
 #if defined (PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT) /* same as 'else' case */
@@ -174,7 +173,7 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 #elif defined(PETSC_HAVE_PXFGETARG_NEW)
       {char *tmp = (*argv)[i];
       int ilen;
-      getarg_(&i,tmp,&ilen,&ierr,warg);CHKERRQ(ierr);
+      CHKERR_FORTRAN_VOID_FUNCTION(getarg_(&i,tmp,&ilen,&ierr,warg));
       tmp[ilen] = 0;}
 #elif defined(PETSC_USE_NARGS)
       GETARG(&i,(*argv)[i],warg,&flg);
@@ -196,7 +195,7 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
       }
     }
   }
-  ierr = MPI_Bcast((*argv)[0],*argc*warg,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Bcast((*argv)[0],*argc*warg,MPI_CHAR,0,PETSC_COMM_WORLD));
   if (rank) {
     for (i=0; i<*argc; i++) (*argv)[i+1] = (*argv)[i] + warg;
   }
@@ -209,20 +208,19 @@ PETSC_INTERN PetscErrorCode PetscPreMPIInit_Private();
 
 PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool readarguments,const char *filename,PetscInt len)
 {
-  PetscErrorCode ierr;
   char           *tmp = NULL;
 
   PetscFunctionBegin;
-  ierr = PetscInitializeFortran();CHKERRQ(ierr);
+  CHKERRQ(PetscInitializeFortran());
   if (readarguments) {
-    ierr = PETScParseFortranArgs_Private(&PetscGlobalArgc,&PetscGlobalArgs);CHKERRQ(ierr);
+    CHKERRQ(PETScParseFortranArgs_Private(&PetscGlobalArgc,&PetscGlobalArgs));
     if (filename != PETSC_NULL_CHARACTER_Fortran) {  /* FIXCHAR */
       while ((len > 0) && (filename[len-1] == ' ')) len--;
-      ierr = PetscMalloc1(len+1,&tmp);CHKERRQ(ierr);
-      ierr = PetscStrncpy(tmp,filename,len+1);CHKERRQ(ierr);
+      CHKERRQ(PetscMalloc1(len+1,&tmp));
+      CHKERRQ(PetscStrncpy(tmp,filename,len+1));
     }
-    ierr = PetscOptionsInsert(NULL,&PetscGlobalArgc,&PetscGlobalArgs,tmp);CHKERRQ(ierr);
-    ierr = PetscFree(tmp);CHKERRQ(ierr); /* FREECHAR */
+    CHKERRQ(PetscOptionsInsert(NULL,&PetscGlobalArgc,&PetscGlobalArgs,tmp));
+    CHKERRQ(PetscFree(tmp)); /* FREECHAR */
   }
   PetscFunctionReturn(0);
 }

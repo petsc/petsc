@@ -10,32 +10,32 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
   /* To take care of paging effects */
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*0);CHKERRQ(ierr);
-  ierr = PetscTime(&x);CHKERRQ(ierr);
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*0));
+  CHKERRQ(PetscTime(&x));
 
-  ierr = PetscTime(&x);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*10000);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*10000);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*10000);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*10000);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*10000);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*10000);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*10000);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*10000);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*10000);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*10000);CHKERRQ(ierr);
-  ierr = PetscTime(&y);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*0);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*0);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*0);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*0);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*0);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*0);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*0);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*0);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*0);CHKERRQ(ierr);
-  ierr = PetscMemzero(A,sizeof(PetscScalar)*0);CHKERRQ(ierr);
-  ierr = PetscTime(&z);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&x));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*10000));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*10000));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*10000));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*10000));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*10000));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*10000));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*10000));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*10000));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*10000));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*10000));
+  CHKERRQ(PetscTime(&y));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*0));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*0));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*0));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*0));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*0));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*0));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*0));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*0));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*0));
+  CHKERRQ(PetscMemzero(A,sizeof(PetscScalar)*0));
+  CHKERRQ(PetscTime(&z));
 
   fprintf(stdout,"%s : \n","PetscMemzero");
   fprintf(stdout,"    %-15s : %e sec\n","Latency",(z-y)/10.0);

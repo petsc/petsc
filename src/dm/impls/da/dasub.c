@@ -32,7 +32,6 @@
 @*/
 PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,PetscScalar z,PetscInt *II,PetscInt *JJ,PetscInt *KK,PetscScalar *X,PetscScalar *Y,PetscScalar *Z)
 {
-  PetscErrorCode ierr;
   Vec            coors;
   DM             dacoors;
   DMDACoor2d     **c;
@@ -47,10 +46,10 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
   *II = -1;
   *JJ = -1;
 
-  ierr = DMGetCoordinateDM(da,&dacoors);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(dacoors,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
-  ierr = DMGetCoordinates(da,&coors);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayRead(dacoors,coors,&c);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoordinateDM(da,&dacoors));
+  CHKERRQ(DMDAGetCorners(dacoors,&xs,&ys,NULL,&xm,&ym,NULL));
+  CHKERRQ(DMGetCoordinates(da,&coors));
+  CHKERRQ(DMDAVecGetArrayRead(dacoors,coors,&c));
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
       d = PetscSqrtReal(PetscRealPart((c[j][i].x - x)*(c[j][i].x - x) + (c[j][i].y - y)*(c[j][i].y - y)));
@@ -61,7 +60,7 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
       }
     }
   }
-  ierr = MPIU_Allreduce(&D,&Dv,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
+  CHKERRMPI(MPIU_Allreduce(&D,&Dv,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)da)));
   if (D != Dv) {
     *II  = -1;
     *JJ  = -1;
@@ -69,14 +68,14 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
   } else {
     *X = c[*JJ][*II].x;
     *Y = c[*JJ][*II].y;
-    ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank));
     rank++;
   }
-  ierr = MPIU_Allreduce(&rank,&root,1,MPI_INT,MPI_SUM,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
+  CHKERRMPI(MPIU_Allreduce(&rank,&root,1,MPI_INT,MPI_SUM,PetscObjectComm((PetscObject)da)));
   root--;
-  ierr = MPI_Bcast(X,1,MPIU_SCALAR,root,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
-  ierr = MPI_Bcast(Y,1,MPIU_SCALAR,root,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
-  ierr = DMDAVecRestoreArrayRead(dacoors,coors,&c);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Bcast(X,1,MPIU_SCALAR,root,PetscObjectComm((PetscObject)da)));
+  CHKERRMPI(MPI_Bcast(Y,1,MPIU_SCALAR,root,PetscObjectComm((PetscObject)da)));
+  CHKERRQ(DMDAVecRestoreArrayRead(dacoors,coors,&c));
   PetscFunctionReturn(0);
 }
 
@@ -104,7 +103,6 @@ PetscErrorCode  DMDAGetRay(DM da,DMDirection dir,PetscInt gp,Vec *newvec,VecScat
 {
   PetscMPIInt    rank;
   DM_DA          *dd = (DM_DA*)da->data;
-  PetscErrorCode ierr;
   IS             is;
   AO             ao;
   Vec            vec;
@@ -112,58 +110,58 @@ PetscErrorCode  DMDAGetRay(DM da,DMDirection dir,PetscInt gp,Vec *newvec,VecScat
 
   PetscFunctionBegin;
   PetscCheckFalse(da->dim == 3,PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get slice from 3d DMDA");
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) da), &rank);CHKERRMPI(ierr);
-  ierr = DMDAGetAO(da, &ao);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject) da), &rank));
+  CHKERRQ(DMDAGetAO(da, &ao));
   if (rank == 0) {
     if (da->dim == 1) {
       if (dir == DM_X) {
-        ierr = PetscMalloc1(dd->w, &indices);CHKERRQ(ierr);
+        CHKERRQ(PetscMalloc1(dd->w, &indices));
         indices[0] = dd->w*gp;
         for (i = 1; i < dd->w; ++i) indices[i] = indices[i-1] + 1;
-        ierr = AOApplicationToPetsc(ao, dd->w, indices);CHKERRQ(ierr);
-        ierr = VecCreate(PETSC_COMM_SELF, newvec);CHKERRQ(ierr);
-        ierr = VecSetBlockSize(*newvec, dd->w);CHKERRQ(ierr);
-        ierr = VecSetSizes(*newvec, dd->w, PETSC_DETERMINE);CHKERRQ(ierr);
-        ierr = VecSetType(*newvec, VECSEQ);CHKERRQ(ierr);
-        ierr = ISCreateGeneral(PETSC_COMM_SELF, dd->w, indices, PETSC_OWN_POINTER, &is);CHKERRQ(ierr);
+        CHKERRQ(AOApplicationToPetsc(ao, dd->w, indices));
+        CHKERRQ(VecCreate(PETSC_COMM_SELF, newvec));
+        CHKERRQ(VecSetBlockSize(*newvec, dd->w));
+        CHKERRQ(VecSetSizes(*newvec, dd->w, PETSC_DETERMINE));
+        CHKERRQ(VecSetType(*newvec, VECSEQ));
+        CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF, dd->w, indices, PETSC_OWN_POINTER, &is));
       } else PetscCheckFalse(dir == DM_Y,PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get Y slice from 1d DMDA");
       else SETERRQ(PetscObjectComm((PetscObject) da), PETSC_ERR_ARG_OUTOFRANGE, "Unknown DMDirection");
     } else {
       if (dir == DM_Y) {
-        ierr       = PetscMalloc1(dd->w*dd->M,&indices);CHKERRQ(ierr);
+        CHKERRQ(PetscMalloc1(dd->w*dd->M,&indices));
         indices[0] = gp*dd->M*dd->w;
         for (i=1; i<dd->M*dd->w; i++) indices[i] = indices[i-1] + 1;
 
-        ierr = AOApplicationToPetsc(ao,dd->M*dd->w,indices);CHKERRQ(ierr);
-        ierr = VecCreate(PETSC_COMM_SELF,newvec);CHKERRQ(ierr);
-        ierr = VecSetBlockSize(*newvec,dd->w);CHKERRQ(ierr);
-        ierr = VecSetSizes(*newvec,dd->M*dd->w,PETSC_DETERMINE);CHKERRQ(ierr);
-        ierr = VecSetType(*newvec,VECSEQ);CHKERRQ(ierr);
-        ierr = ISCreateGeneral(PETSC_COMM_SELF,dd->w*dd->M,indices,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+        CHKERRQ(AOApplicationToPetsc(ao,dd->M*dd->w,indices));
+        CHKERRQ(VecCreate(PETSC_COMM_SELF,newvec));
+        CHKERRQ(VecSetBlockSize(*newvec,dd->w));
+        CHKERRQ(VecSetSizes(*newvec,dd->M*dd->w,PETSC_DETERMINE));
+        CHKERRQ(VecSetType(*newvec,VECSEQ));
+        CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,dd->w*dd->M,indices,PETSC_OWN_POINTER,&is));
       } else if (dir == DM_X) {
-        ierr       = PetscMalloc1(dd->w*dd->N,&indices);CHKERRQ(ierr);
+        CHKERRQ(PetscMalloc1(dd->w*dd->N,&indices));
         indices[0] = dd->w*gp;
         for (j=1; j<dd->w; j++) indices[j] = indices[j-1] + 1;
         for (i=1; i<dd->N; i++) {
           indices[i*dd->w] = indices[i*dd->w-1] + dd->w*dd->M - dd->w + 1;
           for (j=1; j<dd->w; j++) indices[i*dd->w + j] = indices[i*dd->w + j - 1] + 1;
         }
-        ierr = AOApplicationToPetsc(ao,dd->w*dd->N,indices);CHKERRQ(ierr);
-        ierr = VecCreate(PETSC_COMM_SELF,newvec);CHKERRQ(ierr);
-        ierr = VecSetBlockSize(*newvec,dd->w);CHKERRQ(ierr);
-        ierr = VecSetSizes(*newvec,dd->N*dd->w,PETSC_DETERMINE);CHKERRQ(ierr);
-        ierr = VecSetType(*newvec,VECSEQ);CHKERRQ(ierr);
-        ierr = ISCreateGeneral(PETSC_COMM_SELF,dd->w*dd->N,indices,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+        CHKERRQ(AOApplicationToPetsc(ao,dd->w*dd->N,indices));
+        CHKERRQ(VecCreate(PETSC_COMM_SELF,newvec));
+        CHKERRQ(VecSetBlockSize(*newvec,dd->w));
+        CHKERRQ(VecSetSizes(*newvec,dd->N*dd->w,PETSC_DETERMINE));
+        CHKERRQ(VecSetType(*newvec,VECSEQ));
+        CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,dd->w*dd->N,indices,PETSC_OWN_POINTER,&is));
       } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown DMDirection");
     }
   } else {
-    ierr = VecCreateSeq(PETSC_COMM_SELF, 0, newvec);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF, 0, NULL, PETSC_COPY_VALUES, &is);CHKERRQ(ierr);
+    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF, 0, newvec));
+    CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF, 0, NULL, PETSC_COPY_VALUES, &is));
   }
-  ierr = DMGetGlobalVector(da, &vec);CHKERRQ(ierr);
-  ierr = VecScatterCreate(vec, is, *newvec, NULL, scatter);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(da, &vec);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  CHKERRQ(DMGetGlobalVector(da, &vec));
+  CHKERRQ(VecScatterCreate(vec, is, *newvec, NULL, scatter));
+  CHKERRQ(DMRestoreGlobalVector(da, &vec));
+  CHKERRQ(ISDestroy(&is));
   PetscFunctionReturn(0);
 }
 
@@ -199,7 +197,6 @@ PetscErrorCode  DMDAGetRay(DM da,DMDirection dir,PetscInt gp,Vec *newvec,VecScat
 PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDirection dir,PetscInt gp,MPI_Comm *comm)
 {
   MPI_Group      group,subgroup;
-  PetscErrorCode ierr;
   PetscInt       i,ict,flag,*owners,xs,xm,ys,ym,zs,zm;
   PetscMPIInt    size,*ranks = NULL;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -207,8 +204,8 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDirection dir,PetscInt gp,MPI_Com
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   flag = 0;
-  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRMPI(ierr);
+  CHKERRQ(DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm));
+  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)da),&size));
   if (dir == DM_Z) {
     PetscCheckFalse(da->dim < 3,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"DM_Z invalid for DMDA dim < 3");
     PetscCheckFalse(gp < 0 || gp > dd->P,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
@@ -222,23 +219,23 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDirection dir,PetscInt gp,MPI_Com
     if (gp >= xs && gp < xs+xm) flag = 1;
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
 
-  ierr = PetscMalloc2(size,&owners,size,&ranks);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&flag,1,MPIU_INT,owners,1,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
+  CHKERRQ(PetscMalloc2(size,&owners,size,&ranks));
+  CHKERRMPI(MPI_Allgather(&flag,1,MPIU_INT,owners,1,MPIU_INT,PetscObjectComm((PetscObject)da)));
   ict  = 0;
-  ierr = PetscInfo(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir);CHKERRQ(ierr);
+  CHKERRQ(PetscInfo(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir));
   for (i=0; i<size; i++) {
     if (owners[i]) {
       ranks[ict] = i; ict++;
-      ierr       = PetscInfo(da,"%D ",i);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(da,"%D ",i));
     }
   }
-  ierr = PetscInfo(da,"\n");CHKERRQ(ierr);
-  ierr = MPI_Comm_group(PetscObjectComm((PetscObject)da),&group);CHKERRMPI(ierr);
-  ierr = MPI_Group_incl(group,ict,ranks,&subgroup);CHKERRMPI(ierr);
-  ierr = MPI_Comm_create(PetscObjectComm((PetscObject)da),subgroup,comm);CHKERRMPI(ierr);
-  ierr = MPI_Group_free(&subgroup);CHKERRMPI(ierr);
-  ierr = MPI_Group_free(&group);CHKERRMPI(ierr);
-  ierr = PetscFree2(owners,ranks);CHKERRQ(ierr);
+  CHKERRQ(PetscInfo(da,"\n"));
+  CHKERRMPI(MPI_Comm_group(PetscObjectComm((PetscObject)da),&group));
+  CHKERRMPI(MPI_Group_incl(group,ict,ranks,&subgroup));
+  CHKERRMPI(MPI_Comm_create(PetscObjectComm((PetscObject)da),subgroup,comm));
+  CHKERRMPI(MPI_Group_free(&subgroup));
+  CHKERRMPI(MPI_Group_free(&group));
+  CHKERRQ(PetscFree2(owners,ranks));
   PetscFunctionReturn(0);
 }
 
@@ -274,13 +271,12 @@ PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDirection dir, MPI_Comm *subcom
   PetscInt       *firstPoints;
   PetscMPIInt    size, *subgroupRanks = NULL;
   PetscInt       xs, xm, ys, ym, zs, zm, firstPoint, p;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1,DMDA);
-  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)da,&comm));
+  CHKERRQ(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
+  CHKERRMPI(MPI_Comm_size(comm, &size));
   if (dir == DM_Z) {
     PetscCheckFalse(da->dim < 3,comm,PETSC_ERR_ARG_OUTOFRANGE,"DM_Z invalid for DMDA dim < 3");
     firstPoint = zs;
@@ -291,21 +287,21 @@ PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDirection dir, MPI_Comm *subcom
     firstPoint = xs;
   } else SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
 
-  ierr = PetscMalloc2(size, &firstPoints, size, &subgroupRanks);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&firstPoint, 1, MPIU_INT, firstPoints, 1, MPIU_INT, comm);CHKERRMPI(ierr);
-  ierr = PetscInfo(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc2(size, &firstPoints, size, &subgroupRanks));
+  CHKERRMPI(MPI_Allgather(&firstPoint, 1, MPIU_INT, firstPoints, 1, MPIU_INT, comm));
+  CHKERRQ(PetscInfo(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir));
   for (p = 0; p < size; ++p) {
     if (firstPoints[p] == firstPoint) {
       subgroupRanks[subgroupSize++] = p;
-      ierr = PetscInfo(da, "%D ", p);CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(da, "%D ", p));
     }
   }
-  ierr = PetscInfo(da, "\n");CHKERRQ(ierr);
-  ierr = MPI_Comm_group(comm, &group);CHKERRMPI(ierr);
-  ierr = MPI_Group_incl(group, subgroupSize, subgroupRanks, &subgroup);CHKERRMPI(ierr);
-  ierr = MPI_Comm_create(comm, subgroup, subcomm);CHKERRMPI(ierr);
-  ierr = MPI_Group_free(&subgroup);CHKERRMPI(ierr);
-  ierr = MPI_Group_free(&group);CHKERRMPI(ierr);
-  ierr = PetscFree2(firstPoints, subgroupRanks);CHKERRQ(ierr);
+  CHKERRQ(PetscInfo(da, "\n"));
+  CHKERRMPI(MPI_Comm_group(comm, &group));
+  CHKERRMPI(MPI_Group_incl(group, subgroupSize, subgroupRanks, &subgroup));
+  CHKERRMPI(MPI_Comm_create(comm, subgroup, subcomm));
+  CHKERRMPI(MPI_Group_free(&subgroup));
+  CHKERRMPI(MPI_Group_free(&group));
+  CHKERRQ(PetscFree2(firstPoints, subgroupRanks));
   PetscFunctionReturn(0);
 }

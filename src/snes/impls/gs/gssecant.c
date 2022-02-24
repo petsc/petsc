@@ -2,7 +2,6 @@
 
 PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes,Vec X,Vec B,void *ctx)
 {
-  PetscErrorCode    ierr;
   SNES_NGS          *gs = (SNES_NGS*)snes->data;
   PetscInt          i,j,k,ncolors;
   DM                dm;
@@ -26,62 +25,62 @@ PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes,Vec X,Vec B,vo
 
   PetscFunctionBegin;
   if (snes->nwork < 3) {
-    ierr = SNESSetWorkVecs(snes,3);CHKERRQ(ierr);
+    CHKERRQ(SNESSetWorkVecs(snes,3));
   }
   W = snes->work[0];
   G = snes->work[1];
   F = snes->work[2];
-  ierr = VecGetOwnershipRange(X,&s,NULL);CHKERRQ(ierr);
-  ierr = SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&its);CHKERRQ(ierr);
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = SNESGetFunction(snes,NULL,&func,&fctx);CHKERRQ(ierr);
+  CHKERRQ(VecGetOwnershipRange(X,&s,NULL));
+  CHKERRQ(SNESNGSGetTolerances(snes,&atol,&rtol,&stol,&its));
+  CHKERRQ(SNESGetDM(snes,&dm));
+  CHKERRQ(SNESGetFunction(snes,NULL,&func,&fctx));
   if (!coloring) {
     /* create the coloring */
-    ierr = DMHasColoring(dm,&flg);CHKERRQ(ierr);
+    CHKERRQ(DMHasColoring(dm,&flg));
     if (flg && !mat) {
-      ierr = DMCreateColoring(dm,IS_COLORING_GLOBAL,&coloring);CHKERRQ(ierr);
+      CHKERRQ(DMCreateColoring(dm,IS_COLORING_GLOBAL,&coloring));
     } else {
-      if (!snes->jacobian) {ierr = SNESSetUpMatrices(snes);CHKERRQ(ierr);}
-      ierr = MatColoringCreate(snes->jacobian,&mc);CHKERRQ(ierr);
-      ierr = MatColoringSetDistance(mc,1);CHKERRQ(ierr);
-      ierr = MatColoringSetFromOptions(mc);CHKERRQ(ierr);
-      ierr = MatColoringApply(mc,&coloring);CHKERRQ(ierr);
-      ierr = MatColoringDestroy(&mc);CHKERRQ(ierr);
+      if (!snes->jacobian) CHKERRQ(SNESSetUpMatrices(snes));
+      CHKERRQ(MatColoringCreate(snes->jacobian,&mc));
+      CHKERRQ(MatColoringSetDistance(mc,1));
+      CHKERRQ(MatColoringSetFromOptions(mc));
+      CHKERRQ(MatColoringApply(mc,&coloring));
+      CHKERRQ(MatColoringDestroy(&mc));
     }
     gs->coloring = coloring;
   }
-  ierr = ISColoringGetIS(coloring,PETSC_USE_POINTER,&ncolors,&coloris);CHKERRQ(ierr);
-  ierr = VecEqual(X,snes->vec_sol,&equal);CHKERRQ(ierr);
+  CHKERRQ(ISColoringGetIS(coloring,PETSC_USE_POINTER,&ncolors,&coloris));
+  CHKERRQ(VecEqual(X,snes->vec_sol,&equal));
   if (equal && snes->normschedule == SNES_NORM_ALWAYS) {
     /* assume that the function is already computed */
-    ierr = VecCopy(snes->vec_func,F);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(snes->vec_func,F));
   } else {
-    ierr = PetscLogEventBegin(SNES_NGSFuncEval,snes,X,B,0);CHKERRQ(ierr);
-    ierr = (*func)(snes,X,F,fctx);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(SNES_NGSFuncEval,snes,X,B,0);CHKERRQ(ierr);
-    if (B) {ierr = VecAXPY(F,-1.0,B);CHKERRQ(ierr);}
+    CHKERRQ(PetscLogEventBegin(SNES_NGSFuncEval,snes,X,B,0));
+    CHKERRQ((*func)(snes,X,F,fctx));
+    CHKERRQ(PetscLogEventEnd(SNES_NGSFuncEval,snes,X,B,0));
+    if (B) CHKERRQ(VecAXPY(F,-1.0,B));
   }
   for (i=0;i<ncolors;i++) {
-    ierr = ISGetIndices(coloris[i],&idx);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(coloris[i],&size);CHKERRQ(ierr);
-    ierr = VecCopy(X,W);CHKERRQ(ierr);
-    ierr = VecGetArray(W,&wa);CHKERRQ(ierr);
+    CHKERRQ(ISGetIndices(coloris[i],&idx));
+    CHKERRQ(ISGetLocalSize(coloris[i],&size));
+    CHKERRQ(VecCopy(X,W));
+    CHKERRQ(VecGetArray(W,&wa));
     for (j=0;j<size;j++) {
       wa[idx[j]-s] += h;
     }
-    ierr = VecRestoreArray(W,&wa);CHKERRQ(ierr);
-    ierr = PetscLogEventBegin(SNES_NGSFuncEval,snes,X,B,0);CHKERRQ(ierr);
-    ierr = (*func)(snes,W,G,fctx);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(SNES_NGSFuncEval,snes,X,B,0);CHKERRQ(ierr);
-    if (B) {ierr = VecAXPY(G,-1.0,B);CHKERRQ(ierr);}
+    CHKERRQ(VecRestoreArray(W,&wa));
+    CHKERRQ(PetscLogEventBegin(SNES_NGSFuncEval,snes,X,B,0));
+    CHKERRQ((*func)(snes,W,G,fctx));
+    CHKERRQ(PetscLogEventEnd(SNES_NGSFuncEval,snes,X,B,0));
+    if (B) CHKERRQ(VecAXPY(G,-1.0,B));
     for (k=0;k<its;k++) {
       dxt = 0.;
       xt = 0.;
       ft = 0.;
-      ierr = VecGetArray(W,&wa);CHKERRQ(ierr);
-      ierr = VecGetArray(X,&xa);CHKERRQ(ierr);
-      ierr = VecGetArrayRead(F,&fa);CHKERRQ(ierr);
-      ierr = VecGetArrayRead(G,&ga);CHKERRQ(ierr);
+      CHKERRQ(VecGetArray(W,&wa));
+      CHKERRQ(VecGetArray(X,&xa));
+      CHKERRQ(VecGetArrayRead(F,&fa));
+      CHKERRQ(VecGetArrayRead(G,&ga));
       for (j=0;j<size;j++) {
         f = fa[idx[j]-s];
         x = xa[idx[j]-s];
@@ -98,10 +97,10 @@ PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes,Vec X,Vec B,vo
         ft += PetscRealPart(PetscSqr(f));
         xa[idx[j]-s] = d;
       }
-      ierr = VecRestoreArray(X,&xa);CHKERRQ(ierr);
-      ierr = VecRestoreArrayRead(F,&fa);CHKERRQ(ierr);
-      ierr = VecRestoreArrayRead(G,&ga);CHKERRQ(ierr);
-      ierr = VecRestoreArray(W,&wa);CHKERRQ(ierr);
+      CHKERRQ(VecRestoreArray(X,&xa));
+      CHKERRQ(VecRestoreArrayRead(F,&fa));
+      CHKERRQ(VecRestoreArrayRead(G,&ga));
+      CHKERRQ(VecRestoreArray(W,&wa));
 
       if (k == 0) ft1 = PetscSqrtReal(ft);
       if (k<its-1) {
@@ -109,21 +108,21 @@ PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes,Vec X,Vec B,vo
         if (stol*PetscSqrtReal(xt) > PetscSqrtReal(dxt)) isdone = PETSC_TRUE;
         if (PetscSqrtReal(ft) < atol) isdone = PETSC_TRUE;
         if (rtol*ft1 > PetscSqrtReal(ft)) isdone = PETSC_TRUE;
-        ierr = MPIU_Allreduce(&isdone,&alldone,1,MPIU_BOOL,MPI_BAND,PetscObjectComm((PetscObject)snes));CHKERRMPI(ierr);
+        CHKERRMPI(MPIU_Allreduce(&isdone,&alldone,1,MPIU_BOOL,MPI_BAND,PetscObjectComm((PetscObject)snes)));
         if (alldone) break;
       }
       if (i < ncolors-1 || k < its-1) {
-        ierr = PetscLogEventBegin(SNES_NGSFuncEval,snes,X,B,0);CHKERRQ(ierr);
-        ierr = (*func)(snes,X,F,fctx);CHKERRQ(ierr);
-        ierr = PetscLogEventEnd(SNES_NGSFuncEval,snes,X,B,0);CHKERRQ(ierr);
-        if (B) {ierr = VecAXPY(F,-1.0,B);CHKERRQ(ierr);}
+        CHKERRQ(PetscLogEventBegin(SNES_NGSFuncEval,snes,X,B,0));
+        CHKERRQ((*func)(snes,X,F,fctx));
+        CHKERRQ(PetscLogEventEnd(SNES_NGSFuncEval,snes,X,B,0));
+        if (B) CHKERRQ(VecAXPY(F,-1.0,B));
       }
       if (k<its-1) {
-        ierr = VecSwap(X,W);CHKERRQ(ierr);
-        ierr = VecSwap(F,G);CHKERRQ(ierr);
+        CHKERRQ(VecSwap(X,W));
+        CHKERRQ(VecSwap(F,G));
       }
     }
   }
-  ierr = ISColoringRestoreIS(coloring,PETSC_USE_POINTER,&coloris);CHKERRQ(ierr);
+  CHKERRQ(ISColoringRestoreIS(coloring,PETSC_USE_POINTER,&coloris));
   PetscFunctionReturn(0);
 }

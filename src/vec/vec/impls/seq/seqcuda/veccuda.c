@@ -38,27 +38,26 @@ PetscErrorCode VecCUDAGetArrays_Private(Vec v,const PetscScalar** x,const PetscS
  */
 PetscErrorCode VecCUDAAllocateCheckHost(Vec v)
 {
-  PetscErrorCode ierr;
   PetscScalar    *array;
   Vec_Seq        *s = (Vec_Seq*)v->data;
   PetscInt       n = v->map->n;
 
   PetscFunctionBegin;
   if (!s) {
-    ierr = PetscNewLog((PetscObject)v,&s);CHKERRQ(ierr);
+    CHKERRQ(PetscNewLog((PetscObject)v,&s));
     v->data = s;
   }
   if (!s->array) {
     if (n*sizeof(PetscScalar) > v->minimum_bytes_pinned_memory) {
-      ierr = PetscMallocSetCUDAHost();CHKERRQ(ierr);
+      CHKERRQ(PetscMallocSetCUDAHost());
       v->pinned_memory = PETSC_TRUE;
     }
-    ierr = PetscMalloc1(n,&array);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar));CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(n,&array));
+    CHKERRQ(PetscLogObjectMemory((PetscObject)v,n*sizeof(PetscScalar)));
     s->array           = array;
     s->array_allocated = array;
     if (n*sizeof(PetscScalar) > v->minimum_bytes_pinned_memory) {
-      ierr = PetscMallocResetCUDAHost();CHKERRQ(ierr);
+      CHKERRQ(PetscMallocResetCUDAHost());
     }
     if (v->offloadmask == PETSC_OFFLOAD_UNALLOCATED) {
       v->offloadmask = PETSC_OFFLOAD_CPU;
@@ -71,40 +70,38 @@ PetscErrorCode VecCopy_SeqCUDA_Private(Vec xin,Vec yin)
 {
   PetscScalar       *ya;
   const PetscScalar *xa;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = VecCUDAAllocateCheckHost(xin);CHKERRQ(ierr);
-  ierr = VecCUDAAllocateCheckHost(yin);CHKERRQ(ierr);
+  CHKERRQ(VecCUDAAllocateCheckHost(xin));
+  CHKERRQ(VecCUDAAllocateCheckHost(yin));
   if (xin != yin) {
-    ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
-    ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
-    ierr = PetscArraycpy(ya,xa,xin->map->n);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
-    ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
+    CHKERRQ(VecGetArrayRead(xin,&xa));
+    CHKERRQ(VecGetArray(yin,&ya));
+    CHKERRQ(PetscArraycpy(ya,xa,xin->map->n));
+    CHKERRQ(VecRestoreArrayRead(xin,&xa));
+    CHKERRQ(VecRestoreArray(yin,&ya));
   }
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode VecSetRandom_SeqCUDA(Vec xin,PetscRandom r)
 {
-  PetscErrorCode ierr;
   PetscInt       n = xin->map->n;
   PetscBool      iscurand;
   PetscScalar    *xx;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)r,PETSCCURAND,&iscurand);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)r,PETSCCURAND,&iscurand));
   if (iscurand) {
-    ierr = VecCUDAGetArrayWrite(xin,&xx);CHKERRQ(ierr);
+    CHKERRQ(VecCUDAGetArrayWrite(xin,&xx));
   } else {
-    ierr = VecGetArrayWrite(xin,&xx);CHKERRQ(ierr);
+    CHKERRQ(VecGetArrayWrite(xin,&xx));
   }
-  ierr = PetscRandomGetValues(r,n,xx);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomGetValues(r,n,xx));
   if (iscurand) {
-    ierr = VecCUDARestoreArrayWrite(xin,&xx);CHKERRQ(ierr);
+    CHKERRQ(VecCUDARestoreArrayWrite(xin,&xx));
   } else {
-    ierr = VecRestoreArrayWrite(xin,&xx);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArrayWrite(xin,&xx));
   }
   PetscFunctionReturn(0);
 }
@@ -112,25 +109,24 @@ PetscErrorCode VecSetRandom_SeqCUDA(Vec xin,PetscRandom r)
 PetscErrorCode VecDestroy_SeqCUDA_Private(Vec v)
 {
   Vec_Seq        *vs = (Vec_Seq*)v->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectSAWsViewOff(v);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSAWsViewOff(v));
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)v,"Length=%" PetscInt_FMT,v->map->n);
 #endif
   if (vs) {
     if (vs->array_allocated) {
       if (v->pinned_memory) {
-        ierr = PetscMallocSetCUDAHost();CHKERRQ(ierr);
+        CHKERRQ(PetscMallocSetCUDAHost());
       }
-      ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);
+      CHKERRQ(PetscFree(vs->array_allocated));
       if (v->pinned_memory) {
-        ierr = PetscMallocResetCUDAHost();CHKERRQ(ierr);
+        CHKERRQ(PetscMallocResetCUDAHost());
         v->pinned_memory = PETSC_FALSE;
       }
     }
-    ierr = PetscFree(vs);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(vs));
   }
   PetscFunctionReturn(0);
 }
@@ -147,43 +143,38 @@ PetscErrorCode VecResetArray_SeqCUDA_Private(Vec vin)
 
 PetscErrorCode VecResetArray_SeqCUDA(Vec vin)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecCUDACopyFromGPU(vin);CHKERRQ(ierr);
-  ierr = VecResetArray_SeqCUDA_Private(vin);CHKERRQ(ierr);
+  CHKERRQ(VecCUDACopyFromGPU(vin));
+  CHKERRQ(VecResetArray_SeqCUDA_Private(vin));
   vin->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode VecPlaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecCUDACopyFromGPU(vin);CHKERRQ(ierr);
-  ierr = VecPlaceArray_Seq(vin,a);CHKERRQ(ierr);
+  CHKERRQ(VecCUDACopyFromGPU(vin));
+  CHKERRQ(VecPlaceArray_Seq(vin,a));
   vin->offloadmask = PETSC_OFFLOAD_CPU;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode VecReplaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
 {
-  PetscErrorCode ierr;
   Vec_Seq        *vs = (Vec_Seq*)vin->data;
 
   PetscFunctionBegin;
   if (vs->array != vs->array_allocated) {
     /* make sure the users array has the latest values */
-    ierr = VecCUDACopyFromGPU(vin);CHKERRQ(ierr);
+    CHKERRQ(VecCUDACopyFromGPU(vin));
   }
   if (vs->array_allocated) {
     if (vin->pinned_memory) {
-      ierr = PetscMallocSetCUDAHost();CHKERRQ(ierr);
+      CHKERRQ(PetscMallocSetCUDAHost());
     }
-    ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(vs->array_allocated));
     if (vin->pinned_memory) {
-      ierr = PetscMallocResetCUDAHost();CHKERRQ(ierr);
+      CHKERRQ(PetscMallocResetCUDAHost());
     }
   }
   vin->pinned_memory = PETSC_FALSE;
@@ -214,38 +205,32 @@ PetscErrorCode VecReplaceArray_SeqCUDA(Vec vin,const PetscScalar *a)
  @*/
 PetscErrorCode VecCreateSeqCUDA(MPI_Comm comm,PetscInt n,Vec *v)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecCreate(comm,v);CHKERRQ(ierr);
-  ierr = VecSetSizes(*v,n,n);CHKERRQ(ierr);
-  ierr = VecSetType(*v,VECSEQCUDA);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(comm,v));
+  CHKERRQ(VecSetSizes(*v,n,n));
+  CHKERRQ(VecSetType(*v,VECSEQCUDA));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode VecDuplicate_SeqCUDA(Vec win,Vec *V)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecCreateSeqCUDA(PetscObjectComm((PetscObject)win),win->map->n,V);CHKERRQ(ierr);
-  ierr = PetscLayoutReference(win->map,&(*V)->map);CHKERRQ(ierr);
-  ierr = PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*V))->olist);CHKERRQ(ierr);
-  ierr = PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*V))->qlist);CHKERRQ(ierr);
+  CHKERRQ(VecCreateSeqCUDA(PetscObjectComm((PetscObject)win),win->map->n,V));
+  CHKERRQ(PetscLayoutReference(win->map,&(*V)->map));
+  CHKERRQ(PetscObjectListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*V))->olist));
+  CHKERRQ(PetscFunctionListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*V))->qlist));
   (*V)->stash.ignorenegidx = win->stash.ignorenegidx;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode VecCreate_SeqCUDA(Vec V)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscDeviceInitialize(PETSC_DEVICE_CUDA);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(V->map);CHKERRQ(ierr);
-  ierr = VecCUDAAllocateCheck(V);CHKERRQ(ierr);
-  ierr = VecCreate_SeqCUDA_Private(V,((Vec_CUDA*)V->spptr)->GPUarray_allocated);CHKERRQ(ierr);
-  ierr = VecSet_SeqCUDA(V,0.0);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
+  CHKERRQ(PetscLayoutSetUp(V->map));
+  CHKERRQ(VecCUDAAllocateCheck(V));
+  CHKERRQ(VecCreate_SeqCUDA_Private(V,((Vec_CUDA*)V->spptr)->GPUarray_allocated));
+  CHKERRQ(VecSet_SeqCUDA(V,0.0));
   PetscFunctionReturn(0);
 }
 
@@ -283,14 +268,12 @@ PetscErrorCode VecCreate_SeqCUDA(Vec V)
 @*/
 PetscErrorCode  VecCreateSeqCUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscScalar array[],Vec *V)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscDeviceInitialize(PETSC_DEVICE_CUDA);CHKERRQ(ierr);
-  ierr = VecCreate(comm,V);CHKERRQ(ierr);
-  ierr = VecSetSizes(*V,n,n);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(*V,bs);CHKERRQ(ierr);
-  ierr = VecCreate_SeqCUDA_Private(*V,array);CHKERRQ(ierr);
+  CHKERRQ(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
+  CHKERRQ(VecCreate(comm,V));
+  CHKERRQ(VecSetSizes(*V,n,n));
+  CHKERRQ(VecSetBlockSize(*V,bs));
+  CHKERRQ(VecCreate_SeqCUDA_Private(*V,array));
   PetscFunctionReturn(0);
 }
 
@@ -326,11 +309,9 @@ PetscErrorCode  VecCreateSeqCUDAWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,c
 @*/
 PetscErrorCode  VecCreateSeqCUDAWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscScalar cpuarray[],const PetscScalar gpuarray[],Vec *V)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   // set V's gpuarray to be gpuarray, do not allocate memory on host yet.
-  ierr = VecCreateSeqCUDAWithArray(comm,bs,n,gpuarray,V);CHKERRQ(ierr);
+  CHKERRQ(VecCreateSeqCUDAWithArray(comm,bs,n,gpuarray,V));
 
   if (cpuarray && gpuarray) {
     Vec_Seq *s = (Vec_Seq*)((*V)->data);
@@ -351,10 +332,8 @@ PetscErrorCode  VecCreateSeqCUDAWithArrays(MPI_Comm comm,PetscInt bs,PetscInt n,
 
 PetscErrorCode VecGetArray_SeqCUDA(Vec v,PetscScalar **a)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecCUDACopyFromGPU(v);CHKERRQ(ierr);
+  CHKERRQ(VecCUDACopyFromGPU(v));
   *a = *((PetscScalar**)v->data);
   PetscFunctionReturn(0);
 }
@@ -368,20 +347,16 @@ PetscErrorCode VecRestoreArray_SeqCUDA(Vec v,PetscScalar **a)
 
 PetscErrorCode VecGetArrayWrite_SeqCUDA(Vec v,PetscScalar **a)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecCUDAAllocateCheckHost(v);CHKERRQ(ierr);
+  CHKERRQ(VecCUDAAllocateCheckHost(v));
   *a   = *((PetscScalar**)v->data);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode VecGetArrayAndMemType_SeqCUDA(Vec v,PetscScalar** a,PetscMemType *mtype)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecCUDACopyToGPU(v);CHKERRQ(ierr);
+  CHKERRQ(VecCUDACopyToGPU(v));
   *a   = ((Vec_CUDA*)v->spptr)->GPUarray;
   if (mtype) *mtype = ((Vec_CUDA*)v->spptr)->nvshmem ? PETSC_MEMTYPE_NVSHMEM : PETSC_MEMTYPE_CUDA;
   PetscFunctionReturn(0);
@@ -396,11 +371,9 @@ PetscErrorCode VecRestoreArrayAndMemType_SeqCUDA(Vec v,PetscScalar** a)
 
 PetscErrorCode VecGetArrayWriteAndMemType_SeqCUDA(Vec v,PetscScalar** a,PetscMemType *mtype)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   /* Allocate memory (not zeroed) on device if not yet, but no need to sync data from host to device */
-  ierr = VecCUDAAllocateCheck(v);CHKERRQ(ierr);
+  CHKERRQ(VecCUDAAllocateCheck(v));
   *a   = ((Vec_CUDA*)v->spptr)->GPUarray;
   if (mtype) *mtype = ((Vec_CUDA*)v->spptr)->nvshmem ? PETSC_MEMTYPE_NVSHMEM : PETSC_MEMTYPE_CUDA;
   PetscFunctionReturn(0);
@@ -408,12 +381,10 @@ PetscErrorCode VecGetArrayWriteAndMemType_SeqCUDA(Vec v,PetscScalar** a,PetscMem
 
 PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool bind)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   V->boundtocpu = bind;
   if (bind) {
-    ierr = VecCUDACopyFromGPU(V);CHKERRQ(ierr);
+    CHKERRQ(VecCUDACopyFromGPU(V));
     V->offloadmask                 = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
     V->ops->dot                    = VecDot_Seq;
     V->ops->norm                   = VecNorm_Seq;
@@ -458,8 +429,8 @@ PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool bind)
     V->ops->sum                    = NULL;
     V->ops->shift                  = NULL;
     /* default random number generator */
-    ierr = PetscFree(V->defaultrandtype);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(PETSCRANDER48,&V->defaultrandtype);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(V->defaultrandtype));
+    CHKERRQ(PetscStrallocpy(PETSCRANDER48,&V->defaultrandtype));
   } else {
     V->ops->dot                    = VecDot_SeqCUDA;
     V->ops->norm                   = VecNorm_SeqCUDA;
@@ -506,8 +477,8 @@ PetscErrorCode VecBindToCPU_SeqCUDA(Vec V,PetscBool bind)
     V->ops->shift                  = VecShift_SeqCUDA;
 
     /* default random number generator */
-    ierr = PetscFree(V->defaultrandtype);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(PETSCCURAND,&V->defaultrandtype);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(V->defaultrandtype));
+    CHKERRQ(PetscStrallocpy(PETSCCURAND,&V->defaultrandtype));
   }
   PetscFunctionReturn(0);
 }
@@ -520,18 +491,18 @@ PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
   PetscBool      option_set;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)V),&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)V),&size));
   PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQCUDA on more than one process");
-  ierr = VecCreate_Seq_Private(V,0);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQCUDA);CHKERRQ(ierr);
-  ierr = VecBindToCPU_SeqCUDA(V,PETSC_FALSE);CHKERRQ(ierr);
+  CHKERRQ(VecCreate_Seq_Private(V,0));
+  CHKERRQ(PetscObjectChangeTypeName((PetscObject)V,VECSEQCUDA));
+  CHKERRQ(VecBindToCPU_SeqCUDA(V,PETSC_FALSE));
   V->ops->bindtocpu = VecBindToCPU_SeqCUDA;
 
   /* Later, functions check for the Vec_CUDA structure existence, so do not create it without array */
   if (array) {
     if (!V->spptr) {
       PetscReal pinned_memory_min;
-      ierr = PetscCalloc(sizeof(Vec_CUDA),&V->spptr);CHKERRQ(ierr);
+      CHKERRQ(PetscCalloc(sizeof(Vec_CUDA),&V->spptr));
       veccuda = (Vec_CUDA*)V->spptr;
       V->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
 
@@ -539,7 +510,7 @@ PetscErrorCode VecCreate_SeqCUDA_Private(Vec V,const PetscScalar *array)
       /* Need to parse command line for minimum size to use for pinned memory allocations on host here.
          Note: This same code duplicated in VecCUDAAllocateCheck() and VecCreate_MPICUDA_Private(). Is there a good way to avoid this? */
       ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)V),((PetscObject)V)->prefix,"VECCUDA Options","Vec");CHKERRQ(ierr);
-      ierr = PetscOptionsReal("-vec_pinned_memory_min","Minimum size (in bytes) for an allocation to use pinned memory on host","VecSetPinnedMemoryMin",pinned_memory_min,&pinned_memory_min,&option_set);CHKERRQ(ierr);
+      CHKERRQ(PetscOptionsReal("-vec_pinned_memory_min","Minimum size (in bytes) for an allocation to use pinned memory on host","VecSetPinnedMemoryMin",pinned_memory_min,&pinned_memory_min,&option_set));
       if (option_set) V->minimum_bytes_pinned_memory = pinned_memory_min;
       ierr = PetscOptionsEnd();CHKERRQ(ierr);
     }

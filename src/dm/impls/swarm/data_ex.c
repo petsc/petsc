@@ -83,13 +83,12 @@ PETSC_EXTERN PetscLogEvent DMSWARM_DataExchangerPack;
 
 PetscErrorCode DMSwarmDataExCreate(MPI_Comm comm,const PetscInt count, DMSwarmDataEx *ex)
 {
-  PetscErrorCode ierr;
   DMSwarmDataEx  d;
 
   PetscFunctionBegin;
-  ierr = PetscNew(&d);CHKERRQ(ierr);
-  ierr = MPI_Comm_dup(comm,&d->comm);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(d->comm,&d->rank);CHKERRMPI(ierr);
+  CHKERRQ(PetscNew(&d));
+  CHKERRMPI(MPI_Comm_dup(comm,&d->comm));
+  CHKERRMPI(MPI_Comm_rank(d->comm,&d->rank));
 
   d->instance = count;
 
@@ -131,34 +130,33 @@ PetscErrorCode DMSwarmDataExCreate(MPI_Comm comm,const PetscInt count, DMSwarmDa
 PetscErrorCode DMSwarmDataExView(DMSwarmDataEx d)
 {
   PetscMPIInt    p;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf( PETSC_COMM_WORLD, "DMSwarmDataEx: instance=%D\n",d->instance);CHKERRQ(ierr);
-  ierr = PetscPrintf( PETSC_COMM_WORLD, "  topology status:        %s \n", status_names[d->topology_status]);CHKERRQ(ierr);
-  ierr = PetscPrintf( PETSC_COMM_WORLD, "  message lengths status: %s \n", status_names[d->message_lengths_status]);CHKERRQ(ierr);
-  ierr = PetscPrintf( PETSC_COMM_WORLD, "  packer status status:   %s \n", status_names[d->packer_status]);CHKERRQ(ierr);
-  ierr = PetscPrintf( PETSC_COMM_WORLD, "  communication status:   %s \n", status_names[d->communication_status]);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf( PETSC_COMM_WORLD, "DMSwarmDataEx: instance=%D\n",d->instance));
+  CHKERRQ(PetscPrintf( PETSC_COMM_WORLD, "  topology status:        %s \n", status_names[d->topology_status]));
+  CHKERRQ(PetscPrintf( PETSC_COMM_WORLD, "  message lengths status: %s \n", status_names[d->message_lengths_status]));
+  CHKERRQ(PetscPrintf( PETSC_COMM_WORLD, "  packer status status:   %s \n", status_names[d->packer_status]));
+  CHKERRQ(PetscPrintf( PETSC_COMM_WORLD, "  communication status:   %s \n", status_names[d->communication_status]));
 
   if (d->topology_status == DEOBJECT_FINALIZED) {
-    ierr = PetscPrintf( PETSC_COMM_WORLD, "  Topology:\n");CHKERRQ(ierr);
-    ierr = PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] neighbours: %d \n", d->rank, d->n_neighbour_procs);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf( PETSC_COMM_WORLD, "  Topology:\n"));
+    CHKERRQ(PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] neighbours: %d \n", d->rank, d->n_neighbour_procs));
     for (p=0; p<d->n_neighbour_procs; p++) {
-      ierr = PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d]   neighbour[%d] = %d \n", d->rank, p, d->neighbour_procs[p]);CHKERRQ(ierr);
+      CHKERRQ(PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d]   neighbour[%d] = %d \n", d->rank, p, d->neighbour_procs[p]));
     }
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
+    CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout));
   }
 
   if (d->message_lengths_status == DEOBJECT_FINALIZED) {
-    ierr = PetscPrintf( PETSC_COMM_WORLD, "  Message lengths:\n");CHKERRQ(ierr);
-    ierr = PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] atomic size: %ld \n", d->rank, (long int)d->unit_message_size);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf( PETSC_COMM_WORLD, "  Message lengths:\n"));
+    CHKERRQ(PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] atomic size: %ld \n", d->rank, (long int)d->unit_message_size));
     for (p=0; p<d->n_neighbour_procs; p++) {
-      ierr = PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] >>>>> ( %D units :: tag = %d) >>>>> [%d] \n", d->rank, d->messages_to_be_sent[p], d->send_tags[p], d->neighbour_procs[p]);CHKERRQ(ierr);
+      CHKERRQ(PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] >>>>> ( %D units :: tag = %d) >>>>> [%d] \n", d->rank, d->messages_to_be_sent[p], d->send_tags[p], d->neighbour_procs[p]));
     }
     for (p=0; p<d->n_neighbour_procs; p++) {
-      ierr = PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] <<<<< ( %D units :: tag = %d) <<<<< [%d] \n", d->rank, d->messages_to_be_recvieved[p], d->recv_tags[p], d->neighbour_procs[p]);CHKERRQ(ierr);
+      CHKERRQ(PetscSynchronizedPrintf( PETSC_COMM_WORLD, "    [%d] <<<<< ( %D units :: tag = %d) <<<<< [%d] \n", d->rank, d->messages_to_be_recvieved[p], d->recv_tags[p], d->neighbour_procs[p]));
     }
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
+    CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout));
   }
   if (d->packer_status == DEOBJECT_FINALIZED) {}
   if (d->communication_status == DEOBJECT_FINALIZED) {}
@@ -167,22 +165,20 @@ PetscErrorCode DMSwarmDataExView(DMSwarmDataEx d)
 
 PetscErrorCode DMSwarmDataExDestroy(DMSwarmDataEx d)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MPI_Comm_free(&d->comm);CHKERRMPI(ierr);
-  if (d->neighbour_procs) {ierr = PetscFree(d->neighbour_procs);CHKERRQ(ierr);}
-  if (d->messages_to_be_sent) {ierr = PetscFree(d->messages_to_be_sent);CHKERRQ(ierr);}
-  if (d->message_offsets) {ierr = PetscFree(d->message_offsets);CHKERRQ(ierr);}
-  if (d->messages_to_be_recvieved) {ierr = PetscFree(d->messages_to_be_recvieved);CHKERRQ(ierr);}
-  if (d->send_message) {ierr = PetscFree(d->send_message);CHKERRQ(ierr);}
-  if (d->recv_message) {ierr = PetscFree(d->recv_message);CHKERRQ(ierr);}
-  if (d->pack_cnt) {ierr = PetscFree(d->pack_cnt);CHKERRQ(ierr);}
-  if (d->send_tags) {ierr = PetscFree(d->send_tags);CHKERRQ(ierr);}
-  if (d->recv_tags) {ierr = PetscFree(d->recv_tags);CHKERRQ(ierr);}
-  if (d->_stats) {ierr = PetscFree(d->_stats);CHKERRQ(ierr);}
-  if (d->_requests) {ierr = PetscFree(d->_requests);CHKERRQ(ierr);}
-  ierr = PetscFree(d);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_free(&d->comm));
+  if (d->neighbour_procs) CHKERRQ(PetscFree(d->neighbour_procs));
+  if (d->messages_to_be_sent) CHKERRQ(PetscFree(d->messages_to_be_sent));
+  if (d->message_offsets) CHKERRQ(PetscFree(d->message_offsets));
+  if (d->messages_to_be_recvieved) CHKERRQ(PetscFree(d->messages_to_be_recvieved));
+  if (d->send_message) CHKERRQ(PetscFree(d->send_message));
+  if (d->recv_message) CHKERRQ(PetscFree(d->recv_message));
+  if (d->pack_cnt) CHKERRQ(PetscFree(d->pack_cnt));
+  if (d->send_tags) CHKERRQ(PetscFree(d->send_tags));
+  if (d->recv_tags) CHKERRQ(PetscFree(d->recv_tags));
+  if (d->_stats) CHKERRQ(PetscFree(d->_stats));
+  if (d->_requests) CHKERRQ(PetscFree(d->_requests));
+  CHKERRQ(PetscFree(d));
   PetscFunctionReturn(0);
 }
 
@@ -190,18 +186,16 @@ PetscErrorCode DMSwarmDataExDestroy(DMSwarmDataEx d)
 
 PetscErrorCode DMSwarmDataExTopologyInitialize(DMSwarmDataEx d)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   d->topology_status = DEOBJECT_INITIALIZED;
   d->n_neighbour_procs = 0;
-  ierr = PetscFree(d->neighbour_procs);CHKERRQ(ierr);
-  ierr = PetscFree(d->messages_to_be_sent);CHKERRQ(ierr);
-  ierr = PetscFree(d->message_offsets);CHKERRQ(ierr);
-  ierr = PetscFree(d->messages_to_be_recvieved);CHKERRQ(ierr);
-  ierr = PetscFree(d->pack_cnt);CHKERRQ(ierr);
-  ierr = PetscFree(d->send_tags);CHKERRQ(ierr);
-  ierr = PetscFree(d->recv_tags);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(d->neighbour_procs));
+  CHKERRQ(PetscFree(d->messages_to_be_sent));
+  CHKERRQ(PetscFree(d->message_offsets));
+  CHKERRQ(PetscFree(d->messages_to_be_recvieved));
+  CHKERRQ(PetscFree(d->pack_cnt));
+  CHKERRQ(PetscFree(d->send_tags));
+  CHKERRQ(PetscFree(d->recv_tags));
   PetscFunctionReturn(0);
 }
 
@@ -209,7 +203,6 @@ PetscErrorCode DMSwarmDataExTopologyAddNeighbour(DMSwarmDataEx d,const PetscMPII
 {
   PetscMPIInt    n,found;
   PetscMPIInt    size;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheckFalse(d->topology_status == DEOBJECT_FINALIZED,d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology has been finalized. To modify or update call DMSwarmDataExTopologyInitialize() first");
@@ -218,9 +211,9 @@ PetscErrorCode DMSwarmDataExTopologyAddNeighbour(DMSwarmDataEx d,const PetscMPII
   /* error on negative entries */
   PetscCheckFalse(proc_id < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to set proc neighbour with a rank < 0");
   /* error on ranks larger than number of procs in communicator */
-  ierr = MPI_Comm_size(d->comm,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(d->comm,&size));
   PetscCheckFalse(proc_id >= size,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Trying to set proc neighbour %d with a rank >= size %d",proc_id,size);
-  if (d->n_neighbour_procs == 0) {ierr = PetscMalloc1(1, &d->neighbour_procs);CHKERRQ(ierr);}
+  if (d->n_neighbour_procs == 0) CHKERRQ(PetscMalloc1(1, &d->neighbour_procs));
   /* check for proc_id */
   found = 0;
   for (n = 0; n < d->n_neighbour_procs; n++) {
@@ -229,7 +222,7 @@ PetscErrorCode DMSwarmDataExTopologyAddNeighbour(DMSwarmDataEx d,const PetscMPII
     }
   }
   if (found == 0) { /* add it to list */
-    ierr = PetscRealloc(sizeof(PetscMPIInt)*(d->n_neighbour_procs+1), &d->neighbour_procs);CHKERRQ(ierr);
+    CHKERRQ(PetscRealloc(sizeof(PetscMPIInt)*(d->n_neighbour_procs+1), &d->neighbour_procs));
     d->neighbour_procs[ d->n_neighbour_procs ] = proc_id;
     d->n_neighbour_procs++;
   }
@@ -294,89 +287,87 @@ PetscErrorCode _DMSwarmDataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt 
   const PetscInt    *cols;
   const PetscScalar *red_vals;
   PetscMPIInt       _n_new, *_proc_neighbours_new;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   n_ = n;
-  ierr = PetscMalloc(sizeof(PetscInt) * n_, &proc_neighbours_);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc(sizeof(PetscInt) * n_, &proc_neighbours_));
   for (i = 0; i < n_; ++i) {
     proc_neighbours_[i] = proc_neighbours[i];
   }
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(comm,&size));
+  CHKERRMPI(MPI_Comm_rank(comm,&rank));
   rank_ = rank;
 
-  ierr = MatCreate(comm,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,size,size);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A,1,NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,n_,NULL,n_,NULL);CHKERRQ(ierr);
-  ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(comm,&A));
+  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,size,size));
+  CHKERRQ(MatSetType(A,MATAIJ));
+  CHKERRQ(MatSeqAIJSetPreallocation(A,1,NULL));
+  CHKERRQ(MatMPIAIJSetPreallocation(A,n_,NULL,n_,NULL));
+  CHKERRQ(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
   /* Build original map */
-  ierr = PetscMalloc1(n_, &vals);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(n_, &vals));
   for (i = 0; i < n_; ++i) {
     vals[i] = 1.0;
   }
-  ierr = MatSetValues( A, 1,&rank_, n_,proc_neighbours_, vals, INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues( A, 1,&rank_, n_,proc_neighbours_, vals, INSERT_VALUES));
+  CHKERRQ(MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY));
   /* Now force all other connections if they are not already there */
   /* It's more efficient to do them all at once */
   for (i = 0; i < n_; ++i) {
     vals[i] = 2.0;
   }
-  ierr = MatSetValues( A, n_,proc_neighbours_, 1,&rank_, vals, INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues( A, n_,proc_neighbours_, 1,&rank_, vals, INSERT_VALUES));
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 /*
-  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO));
+  CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
 */
   if ((n_new != NULL) && (proc_neighbours_new != NULL)) {
-    ierr = MatGetRow(A, rank_, &nc, &cols, &red_vals);CHKERRQ(ierr);
+    CHKERRQ(MatGetRow(A, rank_, &nc, &cols, &red_vals));
     _n_new = (PetscMPIInt) nc;
-    ierr = PetscMalloc1(_n_new, &_proc_neighbours_new);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(_n_new, &_proc_neighbours_new));
     for (j = 0; j < nc; ++j) {
       _proc_neighbours_new[j] = (PetscMPIInt)cols[j];
     }
-    ierr = MatRestoreRow( A, rank_, &nc, &cols, &red_vals);CHKERRQ(ierr);
+    CHKERRQ(MatRestoreRow( A, rank_, &nc, &cols, &red_vals));
     *n_new               = (PetscMPIInt)_n_new;
     *proc_neighbours_new = (PetscMPIInt*)_proc_neighbours_new;
   }
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscFree(vals);CHKERRQ(ierr);
-  ierr = PetscFree(proc_neighbours_);CHKERRQ(ierr);
-  ierr = MPI_Barrier(comm);CHKERRMPI(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(PetscFree(vals));
+  CHKERRQ(PetscFree(proc_neighbours_));
+  CHKERRMPI(MPI_Barrier(comm));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMSwarmDataExTopologyFinalize(DMSwarmDataEx d)
 {
   PetscMPIInt    symm_nn, *symm_procs, r0,n,st,rt, size;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheckFalse(d->topology_status != DEOBJECT_INITIALIZED,d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be initialised. Call DMSwarmDataExTopologyInitialize() first");
 
-  ierr = PetscLogEventBegin(DMSWARM_DataExchangerTopologySetup,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(DMSWARM_DataExchangerTopologySetup,0,0,0,0));
   /* given information about all my neighbours, make map symmetric */
-  ierr = _DMSwarmDataExCompleteCommunicationMap( d->comm,d->n_neighbour_procs,d->neighbour_procs, &symm_nn, &symm_procs);CHKERRQ(ierr);
+  CHKERRQ(_DMSwarmDataExCompleteCommunicationMap( d->comm,d->n_neighbour_procs,d->neighbour_procs, &symm_nn, &symm_procs));
   /* update my arrays */
-  ierr = PetscFree(d->neighbour_procs);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(d->neighbour_procs));
   d->n_neighbour_procs = symm_nn;
   d->neighbour_procs   = symm_procs;
   /* allocates memory */
-  if (!d->messages_to_be_sent) {ierr = PetscMalloc1(d->n_neighbour_procs+1, &d->messages_to_be_sent);CHKERRQ(ierr);}
-  if (!d->message_offsets) {ierr = PetscMalloc1(d->n_neighbour_procs+1, &d->message_offsets);CHKERRQ(ierr);}
-  if (!d->messages_to_be_recvieved) {ierr = PetscMalloc1(d->n_neighbour_procs+1, &d->messages_to_be_recvieved);CHKERRQ(ierr);}
-  if (!d->pack_cnt) {ierr = PetscMalloc(sizeof(PetscInt) * d->n_neighbour_procs, &d->pack_cnt);CHKERRQ(ierr);}
-  if (!d->_stats) {ierr = PetscMalloc(sizeof(MPI_Status) * 2*d->n_neighbour_procs, &d->_stats);CHKERRQ(ierr);}
-  if (!d->_requests) {ierr = PetscMalloc(sizeof(MPI_Request) * 2*d->n_neighbour_procs, &d->_requests);CHKERRQ(ierr);}
-  if (!d->send_tags) {ierr = PetscMalloc(sizeof(int) * d->n_neighbour_procs, &d->send_tags);CHKERRQ(ierr);}
-  if (!d->recv_tags) {ierr = PetscMalloc(sizeof(int) * d->n_neighbour_procs, &d->recv_tags);CHKERRQ(ierr);}
+  if (!d->messages_to_be_sent) CHKERRQ(PetscMalloc1(d->n_neighbour_procs+1, &d->messages_to_be_sent));
+  if (!d->message_offsets) CHKERRQ(PetscMalloc1(d->n_neighbour_procs+1, &d->message_offsets));
+  if (!d->messages_to_be_recvieved) CHKERRQ(PetscMalloc1(d->n_neighbour_procs+1, &d->messages_to_be_recvieved));
+  if (!d->pack_cnt) CHKERRQ(PetscMalloc(sizeof(PetscInt) * d->n_neighbour_procs, &d->pack_cnt));
+  if (!d->_stats) CHKERRQ(PetscMalloc(sizeof(MPI_Status) * 2*d->n_neighbour_procs, &d->_stats));
+  if (!d->_requests) CHKERRQ(PetscMalloc(sizeof(MPI_Request) * 2*d->n_neighbour_procs, &d->_requests));
+  if (!d->send_tags) CHKERRQ(PetscMalloc(sizeof(int) * d->n_neighbour_procs, &d->send_tags));
+  if (!d->recv_tags) CHKERRQ(PetscMalloc(sizeof(int) * d->n_neighbour_procs, &d->recv_tags));
   /* compute message tags */
-  ierr = MPI_Comm_size(d->comm,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(d->comm,&size));
   r0 = d->rank;
   for (n = 0; n < d->n_neighbour_procs; ++n) {
     PetscMPIInt r1 = d->neighbour_procs[n];
@@ -386,7 +377,7 @@ PetscErrorCode DMSwarmDataExTopologyFinalize(DMSwarmDataEx d)
     d->recv_tags[n] = (int)rt;
   }
   d->topology_status = DEOBJECT_FINALIZED;
-  ierr = PetscLogEventEnd(DMSWARM_DataExchangerTopologySetup,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventEnd(DMSWARM_DataExchangerTopologySetup,0,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -410,11 +401,10 @@ PetscErrorCode _DMSwarmDataExConvertProcIdToLocalIndex(DMSwarmDataEx de,PetscMPI
 PetscErrorCode DMSwarmDataExInitializeSendCount(DMSwarmDataEx de)
 {
   PetscMPIInt    i;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheckFalse(de->topology_status != DEOBJECT_FINALIZED,de->comm, PETSC_ERR_ORDER, "Topology not finalized");
-  ierr = PetscLogEventBegin(DMSWARM_DataExchangerSendCount,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(DMSWARM_DataExchangerSendCount,0,0,0,0));
   de->message_lengths_status = DEOBJECT_INITIALIZED;
   for (i = 0; i < de->n_neighbour_procs; ++i) {
     de->messages_to_be_sent[i] = 0;
@@ -428,13 +418,12 @@ PetscErrorCode DMSwarmDataExInitializeSendCount(DMSwarmDataEx de)
 PetscErrorCode DMSwarmDataExAddToSendCount(DMSwarmDataEx de,const PetscMPIInt proc_id,const PetscInt count)
 {
   PetscMPIInt    local_val;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheckFalse(de->message_lengths_status == DEOBJECT_FINALIZED, de->comm, PETSC_ERR_ORDER, "Message lengths have been defined. To modify these call DMSwarmDataExInitializeSendCount() first");
   else PetscCheckFalse(de->message_lengths_status != DEOBJECT_INITIALIZED, de->comm, PETSC_ERR_ORDER, "Message lengths must be defined. Call DMSwarmDataExInitializeSendCount() first");
 
-  ierr = _DMSwarmDataExConvertProcIdToLocalIndex( de, proc_id, &local_val);CHKERRQ(ierr);
+  CHKERRQ(_DMSwarmDataExConvertProcIdToLocalIndex( de, proc_id, &local_val));
   PetscCheckFalse(local_val == -1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG,"Proc %d is not a valid neighbour rank", (int)proc_id);
 
   de->messages_to_be_sent[local_val] = de->messages_to_be_sent[local_val] + count;
@@ -443,13 +432,11 @@ PetscErrorCode DMSwarmDataExAddToSendCount(DMSwarmDataEx de,const PetscMPIInt pr
 
 PetscErrorCode DMSwarmDataExFinalizeSendCount(DMSwarmDataEx de)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscCheckFalse(de->message_lengths_status != DEOBJECT_INITIALIZED, de->comm, PETSC_ERR_ORDER, "Message lengths must be defined. Call DMSwarmDataExInitializeSendCount() first");
 
   de->message_lengths_status = DEOBJECT_FINALIZED;
-  ierr = PetscLogEventEnd(DMSWARM_DataExchangerSendCount,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventEnd(DMSWARM_DataExchangerSendCount,0,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -464,7 +451,6 @@ PetscErrorCode DMSwarmDataExFinalizeSendCount(DMSwarmDataEx de)
 PetscErrorCode _DMSwarmDataExInitializeTmpStorage(DMSwarmDataEx de)
 {
   PetscMPIInt    i, np;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   np = de->n_neighbour_procs;
@@ -472,8 +458,8 @@ PetscErrorCode _DMSwarmDataExInitializeTmpStorage(DMSwarmDataEx de)
     /*  de->messages_to_be_sent[i] = -1; */
     de->messages_to_be_recvieved[i] = -1;
   }
-  ierr = PetscFree(de->send_message);CHKERRQ(ierr);
-  ierr = PetscFree(de->recv_message);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(de->send_message));
+  CHKERRQ(PetscFree(de->recv_message));
   PetscFunctionReturn(0);
 }
 
@@ -487,14 +473,13 @@ PetscErrorCode DMSwarmDataExPackInitialize(DMSwarmDataEx de,size_t unit_message_
 {
   PetscMPIInt    i,np;
   PetscInt       total;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheckFalse(de->topology_status != DEOBJECT_FINALIZED, de->comm, PETSC_ERR_ORDER, "Topology not finalized");
   PetscCheckFalse(de->message_lengths_status != DEOBJECT_FINALIZED, de->comm, PETSC_ERR_ORDER, "Message lengths not finalized");
-  ierr = PetscLogEventBegin(DMSWARM_DataExchangerPack,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(DMSWARM_DataExchangerPack,0,0,0,0));
   de->packer_status = DEOBJECT_INITIALIZED;
-  ierr = _DMSwarmDataExInitializeTmpStorage(de);CHKERRQ(ierr);
+  CHKERRQ(_DMSwarmDataExInitializeTmpStorage(de));
   np = de->n_neighbour_procs;
   de->unit_message_size = unit_message_size;
   total = 0;
@@ -506,9 +491,9 @@ PetscErrorCode DMSwarmDataExPackInitialize(DMSwarmDataEx de,size_t unit_message_
     total = total + de->messages_to_be_sent[i];
   }
   /* create space for the data to be sent */
-  ierr = PetscMalloc(unit_message_size * (total + 1), &de->send_message);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc(unit_message_size * (total + 1), &de->send_message));
   /* initialize memory */
-  ierr = PetscMemzero(de->send_message, unit_message_size * (total + 1));CHKERRQ(ierr);
+  CHKERRQ(PetscMemzero(de->send_message, unit_message_size * (total + 1)));
   /* set total items to send */
   de->send_message_length = total;
   de->message_offsets[0] = 0;
@@ -533,14 +518,13 @@ PetscErrorCode DMSwarmDataExPackData(DMSwarmDataEx de,PetscMPIInt proc_id,PetscI
   PetscMPIInt    local;
   PetscInt       insert_location;
   void           *dest;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheckFalse(de->packer_status == DEOBJECT_FINALIZED, de->comm, PETSC_ERR_ORDER, "Packed data have been defined. To modify these call DMSwarmDataExInitializeSendCount(), DMSwarmDataExAddToSendCount(), DMSwarmDataExPackInitialize() first");
   else PetscCheckFalse(de->packer_status != DEOBJECT_INITIALIZED, de->comm, PETSC_ERR_ORDER, "Packed data must be defined. Call DMSwarmDataExInitializeSendCount(), DMSwarmDataExAddToSendCount(), DMSwarmDataExPackInitialize() first");
 
   PetscCheckFalse(!de->send_message, de->comm, PETSC_ERR_ORDER, "send_message is not initialized. Call DMSwarmDataExPackInitialize() first");
-  ierr = _DMSwarmDataExConvertProcIdToLocalIndex( de, proc_id, &local);CHKERRQ(ierr);
+  CHKERRQ(_DMSwarmDataExConvertProcIdToLocalIndex( de, proc_id, &local));
   PetscCheckFalse(local == -1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "proc_id %d is not registered neighbour", (int)proc_id);
   PetscCheckFalse(n+de->pack_cnt[local] > de->messages_to_be_sent[local], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Trying to pack too many entries to be sent to proc %d. Space requested = %D: Attempt to insert %D",
               (int)proc_id, de->messages_to_be_sent[local], n+de->pack_cnt[local]);
@@ -548,7 +532,7 @@ PetscErrorCode DMSwarmDataExPackData(DMSwarmDataEx de,PetscMPIInt proc_id,PetscI
   /* copy memory */
   insert_location = de->message_offsets[local] + de->pack_cnt[local];
   dest = ((char*)de->send_message) + de->unit_message_size*insert_location;
-  ierr = PetscMemcpy(dest, data, de->unit_message_size * n);CHKERRQ(ierr);
+  CHKERRQ(PetscMemcpy(dest, data, de->unit_message_size * n));
   /* increment counter */
   de->pack_cnt[local] = de->pack_cnt[local] + n;
   PetscFunctionReturn(0);
@@ -561,7 +545,6 @@ PetscErrorCode DMSwarmDataExPackFinalize(DMSwarmDataEx de)
 {
   PetscMPIInt    i,np;
   PetscInt       total;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheckFalse(de->packer_status != DEOBJECT_INITIALIZED, de->comm, PETSC_ERR_ORDER, "Packer has not been initialized. Must call DMSwarmDataExPackInitialize() first.");
@@ -576,25 +559,25 @@ PetscErrorCode DMSwarmDataExPackFinalize(DMSwarmDataEx de)
   }
   /* figure out the recv counts here */
   for (i = 0; i < np; ++i) {
-    ierr = MPI_Isend(&de->messages_to_be_sent[i], 1, MPIU_INT, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i]);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Isend(&de->messages_to_be_sent[i], 1, MPIU_INT, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i]));
   }
   for (i = 0; i < np; ++i) {
-    ierr = MPI_Irecv(&de->messages_to_be_recvieved[i], 1, MPIU_INT, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np+i]);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Irecv(&de->messages_to_be_recvieved[i], 1, MPIU_INT, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np+i]));
   }
-  ierr = MPI_Waitall(2*np, de->_requests, de->_stats);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Waitall(2*np, de->_requests, de->_stats));
   /* create space for the data to be recvieved */
   total = 0;
   for (i = 0; i < np; ++i) {
     total = total + de->messages_to_be_recvieved[i];
   }
-  ierr = PetscMalloc(de->unit_message_size * (total + 1), &de->recv_message);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc(de->unit_message_size * (total + 1), &de->recv_message));
   /* initialize memory */
-  ierr = PetscMemzero(de->recv_message, de->unit_message_size * (total + 1));CHKERRQ(ierr);
+  CHKERRQ(PetscMemzero(de->recv_message, de->unit_message_size * (total + 1)));
   /* set total items to receive */
   de->recv_message_length = total;
   de->packer_status = DEOBJECT_FINALIZED;
   de->communication_status = DEOBJECT_INITIALIZED;
-  ierr = PetscLogEventEnd(DMSWARM_DataExchangerPack,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventEnd(DMSWARM_DataExchangerPack,0,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -604,7 +587,6 @@ PetscErrorCode DMSwarmDataExBegin(DMSwarmDataEx de)
   PetscMPIInt    i,np;
   void           *dest;
   PetscInt       length;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheckFalse(de->topology_status != DEOBJECT_FINALIZED, de->comm, PETSC_ERR_ORDER, "Topology not finalized");
@@ -612,15 +594,15 @@ PetscErrorCode DMSwarmDataExBegin(DMSwarmDataEx de)
   PetscCheckFalse(de->packer_status != DEOBJECT_FINALIZED, de->comm, PETSC_ERR_ORDER, "Packer not finalized");
   PetscCheckFalse(de->communication_status == DEOBJECT_FINALIZED, de->comm, PETSC_ERR_ORDER, "Communication has already been finalized. Must call DMSwarmDataExInitialize() first.");
   PetscCheckFalse(!de->recv_message, de->comm, PETSC_ERR_ORDER, "recv_message has not been initialized. Must call DMSwarmDataExPackFinalize() first");
-  ierr = PetscLogEventBegin(DMSWARM_DataExchangerBegin,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(DMSWARM_DataExchangerBegin,0,0,0,0));
   np = de->n_neighbour_procs;
   /* == NON BLOCKING == */
   for (i = 0; i < np; ++i) {
     length = de->messages_to_be_sent[i] * de->unit_message_size;
     dest = ((char*)de->send_message) + de->unit_message_size * de->message_offsets[i];
-    ierr = MPI_Isend( dest, length, MPI_CHAR, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i]);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Isend( dest, length, MPI_CHAR, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i]));
   }
-  ierr = PetscLogEventEnd(DMSWARM_DataExchangerBegin,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventEnd(DMSWARM_DataExchangerBegin,0,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -632,14 +614,13 @@ PetscErrorCode DMSwarmDataExEnd(DMSwarmDataEx de)
   PetscInt       *message_recv_offsets;
   void           *dest;
   PetscInt       length;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheckFalse(de->communication_status != DEOBJECT_INITIALIZED, de->comm, PETSC_ERR_ORDER, "Communication has not been initialized. Must call DMSwarmDataExInitialize() first.");
   PetscCheckFalse(!de->recv_message, de->comm, PETSC_ERR_ORDER, "recv_message has not been initialized. Must call DMSwarmDataExPackFinalize() first");
-  ierr = PetscLogEventBegin(DMSWARM_DataExchangerEnd,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(DMSWARM_DataExchangerEnd,0,0,0,0));
   np = de->n_neighbour_procs;
-  ierr = PetscMalloc1(np+1, &message_recv_offsets);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(np+1, &message_recv_offsets));
   message_recv_offsets[0] = 0;
   total = de->messages_to_be_recvieved[0];
   for (i = 1; i < np; ++i) {
@@ -650,12 +631,12 @@ PetscErrorCode DMSwarmDataExEnd(DMSwarmDataEx de)
   for (i = 0; i < np; ++i) {
     length = de->messages_to_be_recvieved[i] * de->unit_message_size;
     dest = ((char*)de->recv_message) + de->unit_message_size * message_recv_offsets[i];
-    ierr = MPI_Irecv( dest, length, MPI_CHAR, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np+i]);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Irecv( dest, length, MPI_CHAR, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np+i]));
   }
-  ierr = MPI_Waitall( 2*np, de->_requests, de->_stats);CHKERRMPI(ierr);
-  ierr = PetscFree(message_recv_offsets);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Waitall( 2*np, de->_requests, de->_stats));
+  CHKERRQ(PetscFree(message_recv_offsets));
   de->communication_status = DEOBJECT_FINALIZED;
-  ierr = PetscLogEventEnd(DMSWARM_DataExchangerEnd,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventEnd(DMSWARM_DataExchangerEnd,0,0,0,0));
   PetscFunctionReturn(0);
 }
 

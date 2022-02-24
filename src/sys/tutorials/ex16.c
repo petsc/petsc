@@ -30,9 +30,9 @@ int main(int argc,char **argv)
   */
   ierr = PetscOptionsSetValue(NULL,"-no_signal_handler","true");if (ierr) return ierr;
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of processors = %d, rank = %d\n",size,rank);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Number of processors = %d, rank = %d\n",size,rank));
   ierr = PetscFinalize();
   return ierr;
 }

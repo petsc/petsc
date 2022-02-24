@@ -1,4 +1,4 @@
-#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include "../mmgcommon.h"   /*I      "petscdmplex.h"   I*/
 #include <mmg/libmmg.h>
 
 PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DMLabel rgLabel, DM *dmNew)
@@ -22,105 +22,104 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   PetscBool          flg = PETSC_FALSE, noInsert, noSwap, noMove, noSurf, isotropic, uniform;
   MMG5_pMesh         mmg_mesh = NULL;
   MMG5_pSol          mmg_metric = NULL;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject) dm, &comm));
   if (bdLabel) {
-    ierr = PetscObjectGetName((PetscObject) bdLabel, &bdLabelName);CHKERRQ(ierr);
-    ierr = PetscStrcmp(bdLabelName, bdName, &flg);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectGetName((PetscObject) bdLabel, &bdLabelName));
+    CHKERRQ(PetscStrcmp(bdLabelName, bdName, &flg));
     PetscCheckFalse(flg,comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
   }
   if (rgLabel) {
-    ierr = PetscObjectGetName((PetscObject) rgLabel, &rgLabelName);CHKERRQ(ierr);
-    ierr = PetscStrcmp(rgLabelName, rgName, &flg);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectGetName((PetscObject) rgLabel, &rgLabelName));
+    CHKERRQ(PetscStrcmp(rgLabelName, rgName, &flg));
     PetscCheckFalse(flg,comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for element tags", rgLabelName);
   }
 
   /* Get mesh information */
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm, &dim));
   Neq  = (dim*(dim+1))/2;
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = DMPlexUninterpolate(dm, &udm);CHKERRQ(ierr);
-  ierr = DMPlexGetMaxSizes(udm, &maxConeSize, NULL);CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  CHKERRQ(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
+  CHKERRQ(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+  CHKERRQ(DMPlexUninterpolate(dm, &udm));
+  CHKERRQ(DMPlexGetMaxSizes(udm, &maxConeSize, NULL));
   numCells    = cEnd - cStart;
   numVertices = vEnd - vStart;
 
   /* Get cell offsets */
-  ierr = PetscMalloc1(numCells*maxConeSize, &cells);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(numCells*maxConeSize, &cells));
   for (c = 0, coff = 0; c < numCells; ++c) {
     const PetscInt *cone;
     PetscInt        coneSize, cl;
 
-    ierr = DMPlexGetConeSize(udm, c, &coneSize);CHKERRQ(ierr);
-    ierr = DMPlexGetCone(udm, c, &cone);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetConeSize(udm, c, &coneSize));
+    CHKERRQ(DMPlexGetCone(udm, c, &cone));
     for (cl = 0; cl < coneSize; ++cl) cells[coff++] = cone[cl] - vStart + 1;
   }
 
   /* Get vertex coordinate array */
-  ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-  ierr = DMGetLocalSection(cdm, &coordSection);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
-  ierr = PetscMalloc2(numVertices*Neq, &metric, dim*numVertices, &vertices);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoordinateDM(dm, &cdm));
+  CHKERRQ(DMGetLocalSection(cdm, &coordSection));
+  CHKERRQ(DMGetCoordinatesLocal(dm, &coordinates));
+  CHKERRQ(VecGetArrayRead(coordinates, &coords));
+  CHKERRQ(PetscMalloc2(numVertices*Neq, &metric, dim*numVertices, &vertices));
   for (v = 0; v < vEnd-vStart; ++v) {
-    ierr = PetscSectionGetOffset(coordSection, v+vStart, &off);CHKERRQ(ierr);
+    CHKERRQ(PetscSectionGetOffset(coordSection, v+vStart, &off));
     for (i = 0; i < dim; ++i) vertices[dim*v+i] = PetscRealPart(coords[off+i]);
   }
-  ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
-  ierr = DMDestroy(&udm);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(coordinates, &coords));
+  CHKERRQ(DMDestroy(&udm));
 
   /* Get face tags */
   if (!bdLabel) {
     flg = PETSC_TRUE;
-    ierr = DMLabelCreate(PETSC_COMM_SELF, bdName, &bdLabel);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(dm, 1, bdLabel);CHKERRQ(ierr);
+    CHKERRQ(DMLabelCreate(PETSC_COMM_SELF, bdName, &bdLabel));
+    CHKERRQ(DMPlexMarkBoundaryFaces(dm, 1, bdLabel));
   }
-  ierr = DMLabelGetBounds(bdLabel, &pStart, &pEnd);CHKERRQ(ierr);
+  CHKERRQ(DMLabelGetBounds(bdLabel, &pStart, &pEnd));
   for (f = pStart, bdSize = 0, numFaceTags = 0; f < pEnd; ++f) {
     PetscBool hasPoint;
     PetscInt *closure = NULL, closureSize, cl;
 
-    ierr = DMLabelHasPoint(bdLabel, f, &hasPoint);CHKERRQ(ierr);
+    CHKERRQ(DMLabelHasPoint(bdLabel, f, &hasPoint));
     if ((!hasPoint) || (f < fStart) || (f >= fEnd)) continue;
     numFaceTags++;
 
-    ierr = DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));
     for (cl = 0; cl < closureSize*2; cl += 2) {
       if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) ++bdSize;
     }
-    ierr = DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    CHKERRQ(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));
   }
-  ierr = PetscMalloc2(bdSize, &bdFaces, numFaceTags, &faceTags);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc2(bdSize, &bdFaces, numFaceTags, &faceTags));
   for (f = pStart, bdSize = 0, numFaceTags = 0; f < pEnd; ++f) {
     PetscBool hasPoint;
     PetscInt *closure = NULL, closureSize, cl;
 
-    ierr = DMLabelHasPoint(bdLabel, f, &hasPoint);CHKERRQ(ierr);
+    CHKERRQ(DMLabelHasPoint(bdLabel, f, &hasPoint));
     if ((!hasPoint) || (f < fStart) || (f >= fEnd)) continue;
 
-    ierr = DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));
     for (cl = 0; cl < closureSize*2; cl += 2) {
       if ((closure[cl] >= vStart) && (closure[cl] < vEnd)) bdFaces[bdSize++] = closure[cl] - vStart + 1;
     }
-    ierr = DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
-    ierr = DMLabelGetValue(bdLabel, f, &faceTags[numFaceTags++]);CHKERRQ(ierr);
+    CHKERRQ(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &closureSize, &closure));
+    CHKERRQ(DMLabelGetValue(bdLabel, f, &faceTags[numFaceTags++]));
   }
-  if (flg) { ierr = DMLabelDestroy(&bdLabel);CHKERRQ(ierr); }
+  if (flg) CHKERRQ(DMLabelDestroy(&bdLabel));
 
   /* Get cell tags */
-  ierr = PetscCalloc2(numVertices, &verTags, numCells, &cellTags);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc2(numVertices, &verTags, numCells, &cellTags));
   if (rgLabel) {
-    for (c = cStart; c < cEnd; ++c) { ierr = DMLabelGetValue(rgLabel, c, &cellTags[c]);CHKERRQ(ierr); }
+    for (c = cStart; c < cEnd; ++c) CHKERRQ(DMLabelGetValue(rgLabel, c, &cellTags[c]));
   }
 
   /* Get metric */
-  ierr = VecViewFromOptions(vertexMetric, NULL, "-adapt_metric_view");CHKERRQ(ierr);
-  ierr = VecGetArrayRead(vertexMetric, &met);CHKERRQ(ierr);
-  ierr = DMPlexMetricIsIsotropic(dm, &isotropic);CHKERRQ(ierr);
-  ierr = DMPlexMetricIsUniform(dm, &uniform);CHKERRQ(ierr);
+  CHKERRQ(VecViewFromOptions(vertexMetric, NULL, "-adapt_metric_view"));
+  CHKERRQ(VecGetArrayRead(vertexMetric, &met));
+  CHKERRQ(DMPlexMetricIsIsotropic(dm, &isotropic));
+  CHKERRQ(DMPlexMetricIsUniform(dm, &uniform));
   for (v = 0; v < (vEnd-vStart); ++v) {
     for (i = 0, k = 0; i < dim; ++i) {
       for (j = i; j < dim; ++j) {
@@ -136,133 +135,133 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
       }
     }
   }
-  ierr = VecRestoreArrayRead(vertexMetric, &met);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(vertexMetric, &met));
 
   /* Send mesh to Mmg and remesh */
-  ierr = DMPlexMetricGetVerbosity(dm, &verbosity);CHKERRQ(ierr);
-  ierr = DMPlexMetricGetGradationFactor(dm, &gradationFactor);CHKERRQ(ierr);
-  ierr = DMPlexMetricGetHausdorffNumber(dm, &hausdorffNumber);CHKERRQ(ierr);
-  ierr = DMPlexMetricNoInsertion(dm, &noInsert);CHKERRQ(ierr);
-  ierr = DMPlexMetricNoSwapping(dm, &noSwap);CHKERRQ(ierr);
-  ierr = DMPlexMetricNoMovement(dm, &noMove);CHKERRQ(ierr);
-  ierr = DMPlexMetricNoSurf(dm, &noSurf);CHKERRQ(ierr);
+  CHKERRQ(DMPlexMetricGetVerbosity(dm, &verbosity));
+  CHKERRQ(DMPlexMetricGetGradationFactor(dm, &gradationFactor));
+  CHKERRQ(DMPlexMetricGetHausdorffNumber(dm, &hausdorffNumber));
+  CHKERRQ(DMPlexMetricNoInsertion(dm, &noInsert));
+  CHKERRQ(DMPlexMetricNoSwapping(dm, &noSwap));
+  CHKERRQ(DMPlexMetricNoMovement(dm, &noMove));
+  CHKERRQ(DMPlexMetricNoSurf(dm, &noSurf));
   switch (dim) {
   case 2:
-    ierr = MMG2D_Init_mesh(MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end);
-    ierr = MMG2D_Set_iparameter(mmg_mesh, mmg_metric, MMG2D_IPARAM_noinsert, noInsert);
-    ierr = MMG2D_Set_iparameter(mmg_mesh, mmg_metric, MMG2D_IPARAM_noswap, noSwap);
-    ierr = MMG2D_Set_iparameter(mmg_mesh, mmg_metric, MMG2D_IPARAM_nomove, noMove);
-    ierr = MMG2D_Set_iparameter(mmg_mesh, mmg_metric, MMG2D_IPARAM_nosurf, noSurf);
-    ierr = MMG2D_Set_iparameter(mmg_mesh, mmg_metric, MMG2D_IPARAM_verbose, verbosity);
-    ierr = MMG2D_Set_dparameter(mmg_mesh, mmg_metric, MMG2D_DPARAM_hgrad, gradationFactor);
-    ierr = MMG2D_Set_dparameter(mmg_mesh, mmg_metric, MMG2D_DPARAM_hausd, hausdorffNumber);
-    ierr = MMG2D_Set_meshSize(mmg_mesh, numVertices, numCells, 0, numFaceTags);
-    ierr = MMG2D_Set_vertices(mmg_mesh, vertices, verTags);
-    ierr = MMG2D_Set_triangles(mmg_mesh, cells, cellTags);
-    ierr = MMG2D_Set_edges(mmg_mesh, bdFaces, faceTags);
-    ierr = MMG2D_Set_solSize(mmg_mesh, mmg_metric, MMG5_Vertex, numVertices, MMG5_Tensor);
-    ierr = MMG2D_Set_tensorSols(mmg_metric, metric);
-    ierr = MMG2D_mmg2dlib(mmg_mesh, mmg_metric);
+    CHKERRMMG_NONSTANDARD(MMG2D_Init_mesh(MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end));
+    CHKERRMMG_NONSTANDARD(MMG2D_Set_iparameter(mmg_mesh, mmg_metric, MMG2D_IPARAM_noinsert, noInsert));
+    CHKERRMMG_NONSTANDARD(MMG2D_Set_iparameter(mmg_mesh, mmg_metric, MMG2D_IPARAM_noswap, noSwap));
+    CHKERRMMG_NONSTANDARD(MMG2D_Set_iparameter(mmg_mesh, mmg_metric, MMG2D_IPARAM_nomove, noMove));
+    CHKERRMMG_NONSTANDARD(MMG2D_Set_iparameter(mmg_mesh, mmg_metric, MMG2D_IPARAM_nosurf, noSurf));
+    CHKERRMMG_NONSTANDARD(MMG2D_Set_iparameter(mmg_mesh, mmg_metric, MMG2D_IPARAM_verbose, verbosity));
+    CHKERRMMG_NONSTANDARD(MMG2D_Set_dparameter(mmg_mesh, mmg_metric, MMG2D_DPARAM_hgrad, gradationFactor));
+    CHKERRMMG_NONSTANDARD(MMG2D_Set_dparameter(mmg_mesh, mmg_metric, MMG2D_DPARAM_hausd, hausdorffNumber));
+    CHKERRMMG_NONSTANDARD(MMG2D_Set_meshSize(mmg_mesh, numVertices, numCells, 0, numFaceTags));
+    CHKERRMMG_NONSTANDARD(MMG2D_Set_vertices(mmg_mesh, vertices, verTags));
+    CHKERRMMG_NONSTANDARD(MMG2D_Set_triangles(mmg_mesh, cells, cellTags));
+    CHKERRMMG_NONSTANDARD(MMG2D_Set_edges(mmg_mesh, bdFaces, faceTags));
+    CHKERRMMG_NONSTANDARD(MMG2D_Set_solSize(mmg_mesh, mmg_metric, MMG5_Vertex, numVertices, MMG5_Tensor));
+    CHKERRMMG_NONSTANDARD(MMG2D_Set_tensorSols(mmg_metric, metric));
+    CHKERRMMG(MMG2D_mmg2dlib(mmg_mesh, mmg_metric));
     break;
   case 3:
-    ierr = MMG3D_Init_mesh(MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end);
-    ierr = MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_noinsert, noInsert);
-    ierr = MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_noswap, noSwap);
-    ierr = MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_nomove, noMove);
-    ierr = MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_nosurf, noSurf);
-    ierr = MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_verbose, verbosity);
-    ierr = MMG3D_Set_dparameter(mmg_mesh, mmg_metric, MMG3D_DPARAM_hgrad, gradationFactor);
-    ierr = MMG3D_Set_dparameter(mmg_mesh, mmg_metric, MMG2D_DPARAM_hausd, hausdorffNumber);
-    ierr = MMG3D_Set_meshSize(mmg_mesh, numVertices, numCells, 0, numFaceTags, 0, 0);
-    ierr = MMG3D_Set_vertices(mmg_mesh, vertices, verTags);
-    ierr = MMG3D_Set_tetrahedra(mmg_mesh, cells, cellTags);
-    ierr = MMG3D_Set_triangles(mmg_mesh, bdFaces, faceTags);
-    ierr = MMG3D_Set_solSize(mmg_mesh, mmg_metric, MMG5_Vertex, numVertices, MMG5_Tensor);
-    ierr = MMG3D_Set_tensorSols(mmg_metric, metric);
-    ierr = MMG3D_mmg3dlib(mmg_mesh, mmg_metric);
+    CHKERRMMG_NONSTANDARD(MMG3D_Init_mesh(MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end));
+    CHKERRMMG_NONSTANDARD(MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_noinsert, noInsert));
+    CHKERRMMG_NONSTANDARD(MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_noswap, noSwap));
+    CHKERRMMG_NONSTANDARD(MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_nomove, noMove));
+    CHKERRMMG_NONSTANDARD(MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_nosurf, noSurf));
+    CHKERRMMG_NONSTANDARD(MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_verbose, verbosity));
+    CHKERRMMG_NONSTANDARD(MMG3D_Set_dparameter(mmg_mesh, mmg_metric, MMG3D_DPARAM_hgrad, gradationFactor));
+    CHKERRMMG_NONSTANDARD(MMG3D_Set_dparameter(mmg_mesh, mmg_metric, MMG2D_DPARAM_hausd, hausdorffNumber));
+    CHKERRMMG_NONSTANDARD(MMG3D_Set_meshSize(mmg_mesh, numVertices, numCells, 0, numFaceTags, 0, 0));
+    CHKERRMMG_NONSTANDARD(MMG3D_Set_vertices(mmg_mesh, vertices, verTags));
+    CHKERRMMG_NONSTANDARD(MMG3D_Set_tetrahedra(mmg_mesh, cells, cellTags));
+    CHKERRMMG_NONSTANDARD(MMG3D_Set_triangles(mmg_mesh, bdFaces, faceTags));
+    CHKERRMMG_NONSTANDARD(MMG3D_Set_solSize(mmg_mesh, mmg_metric, MMG5_Vertex, numVertices, MMG5_Tensor));
+    CHKERRMMG_NONSTANDARD(MMG3D_Set_tensorSols(mmg_metric, metric));
+    CHKERRMMG(MMG3D_mmg3dlib(mmg_mesh, mmg_metric));
     break;
-  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Mmg adaptation defined for dimension %D", dim);
+  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Mmg adaptation defined for dimension %" PetscInt_FMT, dim);
   }
-  ierr = PetscFree(cells);CHKERRQ(ierr);
-  ierr = PetscFree2(metric, vertices);CHKERRQ(ierr);
-  ierr = PetscFree2(bdFaces, faceTags);CHKERRQ(ierr);
-  ierr = PetscFree2(verTags, cellTags);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(cells));
+  CHKERRQ(PetscFree2(metric, vertices));
+  CHKERRQ(PetscFree2(bdFaces, faceTags));
+  CHKERRQ(PetscFree2(verTags, cellTags));
 
   /* Retrieve mesh from Mmg */
   switch (dim) {
   case 2:
     numCornersNew = 3;
-    ierr = MMG2D_Get_meshSize(mmg_mesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew);
-    ierr = PetscMalloc4(2*numVerticesNew, &verticesNew, numVerticesNew, &verTagsNew, numVerticesNew, &corners, numVerticesNew, &requiredVer);CHKERRQ(ierr);
-    ierr = PetscMalloc3(3*numCellsNew, &cellsNew, numCellsNew, &cellTagsNew, numCellsNew, &requiredCells);CHKERRQ(ierr);
-    ierr = PetscMalloc4(2*numFacesNew, &facesNew, numFacesNew, &faceTagsNew, numFacesNew, &ridges, numFacesNew, &requiredFaces);CHKERRQ(ierr);
-    ierr = MMG2D_Get_vertices(mmg_mesh, verticesNew, verTagsNew, corners, requiredVer);
-    ierr = MMG2D_Get_triangles(mmg_mesh, cellsNew, cellTagsNew, requiredCells);
-    ierr = MMG2D_Get_edges(mmg_mesh, facesNew, faceTagsNew, ridges, requiredFaces);
+    CHKERRMMG_NONSTANDARD(MMG2D_Get_meshSize, mmg_mesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew);
+    CHKERRQ(PetscMalloc4(2*numVerticesNew, &verticesNew, numVerticesNew, &verTagsNew, numVerticesNew, &corners, numVerticesNew, &requiredVer));
+    CHKERRQ(PetscMalloc3(3*numCellsNew, &cellsNew, numCellsNew, &cellTagsNew, numCellsNew, &requiredCells));
+    CHKERRQ(PetscMalloc4(2*numFacesNew, &facesNew, numFacesNew, &faceTagsNew, numFacesNew, &ridges, numFacesNew, &requiredFaces));
+    CHKERRMMG_NONSTANDARD(MMG2D_Get_vertices, mmg_mesh, verticesNew, verTagsNew, corners, requiredVer);
+    CHKERRMMG_NONSTANDARD(MMG2D_Get_triangles, mmg_mesh, cellsNew, cellTagsNew, requiredCells);
+    CHKERRMMG_NONSTANDARD(MMG2D_Get_edges, mmg_mesh, facesNew, faceTagsNew, ridges, requiredFaces);
     break;
   case 3:
     numCornersNew = 4;
-    ierr = MMG3D_Get_meshSize(mmg_mesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew, 0, 0);
-    ierr = PetscMalloc4(3*numVerticesNew, &verticesNew, numVerticesNew, &verTagsNew, numVerticesNew, &corners, numVerticesNew, &requiredVer);CHKERRQ(ierr);
-    ierr = PetscMalloc3(4*numCellsNew, &cellsNew, numCellsNew, &cellTagsNew, numCellsNew, &requiredCells);CHKERRQ(ierr);
-    ierr = PetscMalloc4(3*numFacesNew, &facesNew, numFacesNew, &faceTagsNew, numFacesNew, &ridges, numFacesNew, &requiredFaces);CHKERRQ(ierr);
-    ierr = MMG3D_Get_vertices(mmg_mesh, verticesNew, verTagsNew, corners, requiredVer);
-    ierr = MMG3D_Get_tetrahedra(mmg_mesh, cellsNew, cellTagsNew, requiredCells);
-    ierr = MMG3D_Get_triangles(mmg_mesh, facesNew, faceTagsNew, requiredFaces);
+    CHKERRMMG_NONSTANDARD(MMG3D_Get_meshSize, mmg_mesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew, 0, 0);
+    CHKERRQ(PetscMalloc4(3*numVerticesNew, &verticesNew, numVerticesNew, &verTagsNew, numVerticesNew, &corners, numVerticesNew, &requiredVer));
+    CHKERRQ(PetscMalloc3(4*numCellsNew, &cellsNew, numCellsNew, &cellTagsNew, numCellsNew, &requiredCells));
+    CHKERRQ(PetscMalloc4(3*numFacesNew, &facesNew, numFacesNew, &faceTagsNew, numFacesNew, &ridges, numFacesNew, &requiredFaces));
+    CHKERRMMG_NONSTANDARD(MMG3D_Get_vertices, mmg_mesh, verticesNew, verTagsNew, corners, requiredVer);
+    CHKERRMMG_NONSTANDARD(MMG3D_Get_tetrahedra, mmg_mesh, cellsNew, cellTagsNew, requiredCells);
+    CHKERRMMG_NONSTANDARD(MMG3D_Get_triangles, mmg_mesh, facesNew, faceTagsNew, requiredFaces);
 
     /* Reorder for consistency with DMPlex */
-    for (i = 0; i < numCellsNew; ++i) { ierr = DMPlexInvertCell(DM_POLYTOPE_TETRAHEDRON, &cellsNew[4*i]);CHKERRQ(ierr); }
+    for (i = 0; i < numCellsNew; ++i) CHKERRQ(DMPlexInvertCell(DM_POLYTOPE_TETRAHEDRON, &cellsNew[4*i]));
     break;
 
-  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Mmg adaptation defined for dimension %D", dim);
+  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Mmg adaptation defined for dimension %" PetscInt_FMT, dim);
   }
 
   /* Create new Plex */
   for (i = 0; i < (dim+1)*numCellsNew; i++) cellsNew[i] -= 1;
   for (i = 0; i < dim*numFacesNew; i++) facesNew[i] -= 1;
-  ierr = DMPlexCreateFromCellListParallelPetsc(comm, dim, numCellsNew, numVerticesNew, PETSC_DECIDE, numCornersNew, PETSC_TRUE, cellsNew, dim, verticesNew, NULL, NULL, dmNew);CHKERRQ(ierr);
+  CHKERRQ(DMPlexCreateFromCellListParallelPetsc(comm, dim, numCellsNew, numVerticesNew, PETSC_DECIDE, numCornersNew, PETSC_TRUE, cellsNew, dim, verticesNew, NULL, NULL, dmNew));
   switch (dim) {
   case 2:
-    ierr = MMG2D_Free_all(MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end);
+    CHKERRMMG_NONSTANDARD(MMG2D_Free_all, MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end);
     break;
   case 3:
-    ierr = MMG3D_Free_all(MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end);
+    CHKERRMMG_NONSTANDARD(MMG3D_Free_all, MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end);
     break;
-  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Mmg adaptation defined for dimension %D", dim);
+  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Mmg adaptation defined for dimension %" PetscInt_FMT, dim);
   }
-  ierr = PetscFree4(verticesNew, verTagsNew, corners, requiredVer);CHKERRQ(ierr);
+  CHKERRQ(PetscFree4(verticesNew, verTagsNew, corners, requiredVer));
 
   /* Get adapted mesh information */
-  ierr = DMPlexGetHeightStratum(*dmNew, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(*dmNew, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(*dmNew, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetHeightStratum(*dmNew, 0, &cStart, &cEnd));
+  CHKERRQ(DMPlexGetHeightStratum(*dmNew, 1, &fStart, &fEnd));
+  CHKERRQ(DMPlexGetDepthStratum(*dmNew, 0, &vStart, &vEnd));
 
   /* Rebuild boundary labels */
-  ierr = DMCreateLabel(*dmNew, flg ? bdName : bdLabelName);CHKERRQ(ierr);
-  ierr = DMGetLabel(*dmNew, flg ? bdName : bdLabelName, &bdLabelNew);CHKERRQ(ierr);
+  CHKERRQ(DMCreateLabel(*dmNew, flg ? bdName : bdLabelName));
+  CHKERRQ(DMGetLabel(*dmNew, flg ? bdName : bdLabelName, &bdLabelNew));
   for (i = 0; i < numFacesNew; i++) {
     PetscInt        numCoveredPoints, numFaces = 0, facePoints[3];
     const PetscInt *coveredPoints = NULL;
 
     for (j = 0; j < dim; ++j) facePoints[j] = facesNew[i*dim+j]+vStart;
-    ierr = DMPlexGetFullJoin(*dmNew, dim, facePoints, &numCoveredPoints, &coveredPoints);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetFullJoin(*dmNew, dim, facePoints, &numCoveredPoints, &coveredPoints));
     for (j = 0; j < numCoveredPoints; ++j) {
       if (coveredPoints[j] >= fStart && coveredPoints[j] < fEnd) {
         numFaces++;
         f = j;
       }
     }
-    PetscCheckFalse(numFaces != 1,comm, PETSC_ERR_ARG_OUTOFRANGE, "%d vertices cannot define more than 1 facet (%d)", dim, numFaces);
-    ierr = DMLabelSetValue(bdLabelNew, coveredPoints[f], faceTagsNew[i]);CHKERRQ(ierr);
-    ierr = DMPlexRestoreJoin(*dmNew, dim, facePoints, &numCoveredPoints, &coveredPoints);CHKERRQ(ierr);
+    PetscCheck(numFaces == 1,comm, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " vertices cannot define more than 1 facet (%" PetscInt_FMT ")", dim, numFaces);
+    CHKERRQ(DMLabelSetValue(bdLabelNew, coveredPoints[f], faceTagsNew[i]));
+    CHKERRQ(DMPlexRestoreJoin(*dmNew, dim, facePoints, &numCoveredPoints, &coveredPoints));
   }
-  ierr = PetscFree4(facesNew, faceTagsNew, ridges, requiredFaces);CHKERRQ(ierr);
+  CHKERRQ(PetscFree4(facesNew, faceTagsNew, ridges, requiredFaces));
 
   /* Rebuild cell labels */
-  ierr = DMCreateLabel(*dmNew, rgLabel ? rgLabelName : rgName);CHKERRQ(ierr);
-  ierr = DMGetLabel(*dmNew, rgLabel ? rgLabelName : rgName, &rgLabelNew);CHKERRQ(ierr);
-  for (c = cStart; c < cEnd; ++c) { ierr = DMLabelSetValue(rgLabelNew, c, cellTagsNew[c-cStart]);CHKERRQ(ierr); }
-  ierr = PetscFree3(cellsNew, cellTagsNew, requiredCells);CHKERRQ(ierr);
+  CHKERRQ(DMCreateLabel(*dmNew, rgLabel ? rgLabelName : rgName));
+  CHKERRQ(DMGetLabel(*dmNew, rgLabel ? rgLabelName : rgName, &rgLabelNew));
+  for (c = cStart; c < cEnd; ++c) CHKERRQ(DMLabelSetValue(rgLabelNew, c, cellTagsNew[c-cStart]));
+  CHKERRQ(PetscFree3(cellsNew, cellTagsNew, requiredCells));
 
   PetscFunctionReturn(0);
 }

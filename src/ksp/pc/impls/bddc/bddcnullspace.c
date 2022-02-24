@@ -7,22 +7,21 @@ static PetscErrorCode PCBDDCNullSpaceCorrPreSolve(KSP ksp,Vec y,Vec x, void* ctx
 {
   NullSpaceCorrection_ctx corr_ctx = (NullSpaceCorrection_ctx)ctx;
   Mat                     K;
-  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(corr_ctx->evapply,ksp,0,0,0);CHKERRQ(ierr);
-  ierr = MatMultTranspose(corr_ctx->basis_mat,y,corr_ctx->sw[0]);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(corr_ctx->evapply,ksp,0,0,0));
+  CHKERRQ(MatMultTranspose(corr_ctx->basis_mat,y,corr_ctx->sw[0]));
   if (corr_ctx->symm) {
-    ierr = MatMult(corr_ctx->inv_smat,corr_ctx->sw[0],corr_ctx->sw[1]);CHKERRQ(ierr);
+    CHKERRQ(MatMult(corr_ctx->inv_smat,corr_ctx->sw[0],corr_ctx->sw[1]));
   } else {
-    ierr = MatMultTranspose(corr_ctx->inv_smat,corr_ctx->sw[0],corr_ctx->sw[1]);CHKERRQ(ierr);
+    CHKERRQ(MatMultTranspose(corr_ctx->inv_smat,corr_ctx->sw[0],corr_ctx->sw[1]));
   }
-  ierr = VecScale(corr_ctx->sw[1],-1.0);CHKERRQ(ierr);
-  ierr = MatMult(corr_ctx->basis_mat,corr_ctx->sw[1],corr_ctx->fw[0]);CHKERRQ(ierr);
-  ierr = VecScale(corr_ctx->sw[1],-1.0);CHKERRQ(ierr);
-  ierr = KSPGetOperators(ksp,&K,NULL);CHKERRQ(ierr);
-  ierr = MatMultAdd(K,corr_ctx->fw[0],y,y);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(corr_ctx->evapply,ksp,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(VecScale(corr_ctx->sw[1],-1.0));
+  CHKERRQ(MatMult(corr_ctx->basis_mat,corr_ctx->sw[1],corr_ctx->fw[0]));
+  CHKERRQ(VecScale(corr_ctx->sw[1],-1.0));
+  CHKERRQ(KSPGetOperators(ksp,&K,NULL));
+  CHKERRQ(MatMultAdd(K,corr_ctx->fw[0],y,y));
+  CHKERRQ(PetscLogEventEnd(corr_ctx->evapply,ksp,0,0,0));
   PetscFunctionReturn(0);
 }
 
@@ -30,39 +29,37 @@ static PetscErrorCode PCBDDCNullSpaceCorrPreSolve(KSP ksp,Vec y,Vec x, void* ctx
 static PetscErrorCode PCBDDCNullSpaceCorrPostSolve(KSP ksp,Vec y,Vec x, void* ctx)
 {
   NullSpaceCorrection_ctx corr_ctx = (NullSpaceCorrection_ctx)ctx;
-  PetscErrorCode          ierr;
   Mat                     K;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(corr_ctx->evapply,ksp,0,0,0);CHKERRQ(ierr);
-  ierr = KSPGetOperators(ksp,&K,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(corr_ctx->evapply,ksp,0,0,0));
+  CHKERRQ(KSPGetOperators(ksp,&K,NULL));
   if (corr_ctx->symm) {
-    ierr = MatMult(K,x,corr_ctx->fw[0]);CHKERRQ(ierr);
+    CHKERRQ(MatMult(K,x,corr_ctx->fw[0]));
   } else {
-    ierr = MatMultTranspose(K,x,corr_ctx->fw[0]);CHKERRQ(ierr);
+    CHKERRQ(MatMultTranspose(K,x,corr_ctx->fw[0]));
   }
-  ierr = MatMultTranspose(corr_ctx->basis_mat,corr_ctx->fw[0],corr_ctx->sw[0]);CHKERRQ(ierr);
-  ierr = VecScale(corr_ctx->sw[0],-1.0);CHKERRQ(ierr);
-  ierr = MatMult(corr_ctx->inv_smat,corr_ctx->sw[0],corr_ctx->sw[2]);CHKERRQ(ierr);
-  ierr = MatMultAdd(corr_ctx->basis_mat,corr_ctx->sw[2],x,corr_ctx->fw[0]);CHKERRQ(ierr);
-  ierr = VecScale(corr_ctx->fw[0],corr_ctx->scale);CHKERRQ(ierr);
+  CHKERRQ(MatMultTranspose(corr_ctx->basis_mat,corr_ctx->fw[0],corr_ctx->sw[0]));
+  CHKERRQ(VecScale(corr_ctx->sw[0],-1.0));
+  CHKERRQ(MatMult(corr_ctx->inv_smat,corr_ctx->sw[0],corr_ctx->sw[2]));
+  CHKERRQ(MatMultAdd(corr_ctx->basis_mat,corr_ctx->sw[2],x,corr_ctx->fw[0]));
+  CHKERRQ(VecScale(corr_ctx->fw[0],corr_ctx->scale));
   /* Sum contributions from approximate solver and projected system */
-  ierr = MatMultAdd(corr_ctx->basis_mat,corr_ctx->sw[1],corr_ctx->fw[0],x);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(corr_ctx->evapply,ksp,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(MatMultAdd(corr_ctx->basis_mat,corr_ctx->sw[1],corr_ctx->fw[0],x));
+  CHKERRQ(PetscLogEventEnd(corr_ctx->evapply,ksp,0,0,0));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCBDDCNullSpaceCorrDestroy(void * ctx)
 {
   NullSpaceCorrection_ctx corr_ctx = (NullSpaceCorrection_ctx)ctx;
-  PetscErrorCode          ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroyVecs(3,&corr_ctx->sw);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(1,&corr_ctx->fw);CHKERRQ(ierr);
-  ierr = MatDestroy(&corr_ctx->basis_mat);CHKERRQ(ierr);
-  ierr = MatDestroy(&corr_ctx->inv_smat);CHKERRQ(ierr);
-  ierr = PetscFree(corr_ctx);CHKERRQ(ierr);
+  CHKERRQ(VecDestroyVecs(3,&corr_ctx->sw));
+  CHKERRQ(VecDestroyVecs(1,&corr_ctx->fw));
+  CHKERRQ(MatDestroy(&corr_ctx->basis_mat));
+  CHKERRQ(MatDestroy(&corr_ctx->inv_smat));
+  CHKERRQ(PetscFree(corr_ctx));
   PetscFunctionReturn(0);
 }
 
@@ -78,86 +75,85 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   PetscInt                 basis_size;
   IS                       zerorows;
   PetscBool                iscusp;
-  PetscErrorCode           ierr;
 
   PetscFunctionBegin;
   if (isdir) local_ksp = pcbddc->ksp_D; /* Dirichlet solver */
   else local_ksp = pcbddc->ksp_R; /* Neumann solver */
-  ierr = KSPGetOperators(local_ksp,&local_mat,&local_pmat);CHKERRQ(ierr);
-  ierr = MatGetNearNullSpace(local_pmat,&NullSpace);CHKERRQ(ierr);
+  CHKERRQ(KSPGetOperators(local_ksp,&local_mat,&local_pmat));
+  CHKERRQ(MatGetNearNullSpace(local_pmat,&NullSpace));
   if (!NullSpace) {
     if (pcbddc->dbg_flag) {
-      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d doesn't have local (near) nullspace: no need for correction in %s solver \n",PetscGlobalRank,isdir ? "Dirichlet" : "Neumann");CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d doesn't have local (near) nullspace: no need for correction in %s solver \n",PetscGlobalRank,isdir ? "Dirichlet" : "Neumann"));
     }
     PetscFunctionReturn(0);
   }
-  ierr = PetscObjectQuery((PetscObject)NullSpace,"_PBDDC_Null_dmat",(PetscObject*)&dmat);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectQuery((PetscObject)NullSpace,"_PBDDC_Null_dmat",(PetscObject*)&dmat));
   PetscCheckFalse(!dmat,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing dense matrix");
-  ierr = PetscLogEventBegin(PC_BDDC_ApproxSetUp[pcbddc->current_level],pc,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(PC_BDDC_ApproxSetUp[pcbddc->current_level],pc,0,0,0));
 
-  ierr = PetscNew(&shell_ctx);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(&shell_ctx));
   shell_ctx->scale = 1.0;
-  ierr = PetscObjectReference((PetscObject)dmat);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectReference((PetscObject)dmat));
   shell_ctx->basis_mat = dmat;
-  ierr = MatGetSize(dmat,NULL,&basis_size);CHKERRQ(ierr);
+  CHKERRQ(MatGetSize(dmat,NULL,&basis_size));
   shell_ctx->evapply = PC_BDDC_ApproxApply[pcbddc->current_level];
 
-  ierr = MatGetOption(local_mat,MAT_SYMMETRIC,&shell_ctx->symm);CHKERRQ(ierr);
+  CHKERRQ(MatGetOption(local_mat,MAT_SYMMETRIC,&shell_ctx->symm));
 
   /* explicit construct (Phi^T K Phi)^-1 */
-  ierr = PetscObjectTypeCompare((PetscObject)local_mat,MATSEQAIJCUSPARSE,&iscusp);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)local_mat,MATSEQAIJCUSPARSE,&iscusp));
   if (iscusp) {
-    ierr = MatConvert(shell_ctx->basis_mat,MATSEQDENSECUDA,MAT_INPLACE_MATRIX,&shell_ctx->basis_mat);CHKERRQ(ierr);
+    CHKERRQ(MatConvert(shell_ctx->basis_mat,MATSEQDENSECUDA,MAT_INPLACE_MATRIX,&shell_ctx->basis_mat));
   }
-  ierr = MatMatMult(local_mat,shell_ctx->basis_mat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&Kbasis_mat);CHKERRQ(ierr);
-  ierr = MatTransposeMatMult(Kbasis_mat,shell_ctx->basis_mat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&shell_ctx->inv_smat);CHKERRQ(ierr);
-  ierr = MatDestroy(&Kbasis_mat);CHKERRQ(ierr);
-  ierr = MatBindToCPU(shell_ctx->inv_smat,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatFindZeroRows(shell_ctx->inv_smat,&zerorows);CHKERRQ(ierr);
+  CHKERRQ(MatMatMult(local_mat,shell_ctx->basis_mat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&Kbasis_mat));
+  CHKERRQ(MatTransposeMatMult(Kbasis_mat,shell_ctx->basis_mat,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&shell_ctx->inv_smat));
+  CHKERRQ(MatDestroy(&Kbasis_mat));
+  CHKERRQ(MatBindToCPU(shell_ctx->inv_smat,PETSC_TRUE));
+  CHKERRQ(MatFindZeroRows(shell_ctx->inv_smat,&zerorows));
   if (zerorows) { /* linearly dependent basis */
     const PetscInt *idxs;
     PetscInt       i,nz;
 
-    ierr = ISGetLocalSize(zerorows,&nz);CHKERRQ(ierr);
-    ierr = ISGetIndices(zerorows,&idxs);CHKERRQ(ierr);
+    CHKERRQ(ISGetLocalSize(zerorows,&nz));
+    CHKERRQ(ISGetIndices(zerorows,&idxs));
     for (i=0;i<nz;i++) {
-      ierr = MatSetValue(shell_ctx->inv_smat,idxs[i],idxs[i],1.0,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValue(shell_ctx->inv_smat,idxs[i],idxs[i],1.0,INSERT_VALUES));
     }
-    ierr = ISRestoreIndices(zerorows,&idxs);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(shell_ctx->inv_smat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(shell_ctx->inv_smat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(ISRestoreIndices(zerorows,&idxs));
+    CHKERRQ(MatAssemblyBegin(shell_ctx->inv_smat,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(shell_ctx->inv_smat,MAT_FINAL_ASSEMBLY));
   }
-  ierr = MatLUFactor(shell_ctx->inv_smat,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = MatSeqDenseInvertFactors_Private(shell_ctx->inv_smat);CHKERRQ(ierr);
+  CHKERRQ(MatLUFactor(shell_ctx->inv_smat,NULL,NULL,NULL));
+  CHKERRQ(MatSeqDenseInvertFactors_Private(shell_ctx->inv_smat));
   if (zerorows) { /* linearly dependent basis */
     const PetscInt *idxs;
     PetscInt       i,nz;
 
-    ierr = ISGetLocalSize(zerorows,&nz);CHKERRQ(ierr);
-    ierr = ISGetIndices(zerorows,&idxs);CHKERRQ(ierr);
+    CHKERRQ(ISGetLocalSize(zerorows,&nz));
+    CHKERRQ(ISGetIndices(zerorows,&idxs));
     for (i=0;i<nz;i++) {
-      ierr = MatSetValue(shell_ctx->inv_smat,idxs[i],idxs[i],0.0,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValue(shell_ctx->inv_smat,idxs[i],idxs[i],0.0,INSERT_VALUES));
     }
-    ierr = ISRestoreIndices(zerorows,&idxs);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(shell_ctx->inv_smat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(shell_ctx->inv_smat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(ISRestoreIndices(zerorows,&idxs));
+    CHKERRQ(MatAssemblyBegin(shell_ctx->inv_smat,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(shell_ctx->inv_smat,MAT_FINAL_ASSEMBLY));
   }
-  ierr = ISDestroy(&zerorows);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&zerorows));
 
   /* Create work vectors in shell context */
-  ierr = MatCreateVecs(shell_ctx->inv_smat,&v,NULL);CHKERRQ(ierr);
-  ierr = KSPCreateVecs(local_ksp,1,&shell_ctx->fw,0,NULL);CHKERRQ(ierr);
-  ierr = VecDuplicateVecs(v,3,&shell_ctx->sw);CHKERRQ(ierr);
-  ierr = VecDestroy(&v);CHKERRQ(ierr);
+  CHKERRQ(MatCreateVecs(shell_ctx->inv_smat,&v,NULL));
+  CHKERRQ(KSPCreateVecs(local_ksp,1,&shell_ctx->fw,0,NULL));
+  CHKERRQ(VecDuplicateVecs(v,3,&shell_ctx->sw));
+  CHKERRQ(VecDestroy(&v));
 
   /* add special pre/post solve to KSP (see [1], eq. 48) */
-  ierr = KSPSetPreSolve(local_ksp,PCBDDCNullSpaceCorrPreSolve,shell_ctx);CHKERRQ(ierr);
-  ierr = KSPSetPostSolve(local_ksp,PCBDDCNullSpaceCorrPostSolve,shell_ctx);CHKERRQ(ierr);
-  ierr = PetscContainerCreate(PetscObjectComm((PetscObject)local_ksp),&c);CHKERRQ(ierr);
-  ierr = PetscContainerSetPointer(c,shell_ctx);CHKERRQ(ierr);
-  ierr = PetscContainerSetUserDestroy(c,PCBDDCNullSpaceCorrDestroy);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)local_ksp,"_PCBDDC_Null_PrePost_ctx",(PetscObject)c);CHKERRQ(ierr);
-  ierr = PetscContainerDestroy(&c);CHKERRQ(ierr);
+  CHKERRQ(KSPSetPreSolve(local_ksp,PCBDDCNullSpaceCorrPreSolve,shell_ctx));
+  CHKERRQ(KSPSetPostSolve(local_ksp,PCBDDCNullSpaceCorrPostSolve,shell_ctx));
+  CHKERRQ(PetscContainerCreate(PetscObjectComm((PetscObject)local_ksp),&c));
+  CHKERRQ(PetscContainerSetPointer(c,shell_ctx));
+  CHKERRQ(PetscContainerSetUserDestroy(c,PCBDDCNullSpaceCorrDestroy));
+  CHKERRQ(PetscObjectCompose((PetscObject)local_ksp,"_PCBDDC_Null_PrePost_ctx",(PetscObject)c));
+  CHKERRQ(PetscContainerDestroy(&c));
 
   /* Create ksp object suitable for extreme eigenvalues' estimation */
   if (needscaling || pcbddc->dbg_flag) {
@@ -168,42 +164,42 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
     PetscReal   test_err,lambda_min,lambda_max;
     PetscInt    k,maxit;
 
-    ierr = VecDuplicate(shell_ctx->fw[0],&work1);CHKERRQ(ierr);
-    ierr = VecDuplicate(shell_ctx->fw[0],&work2);CHKERRQ(ierr);
-    ierr = KSPCreate(PETSC_COMM_SELF,&check_ksp);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(shell_ctx->fw[0],&work1));
+    CHKERRQ(VecDuplicate(shell_ctx->fw[0],&work2));
+    CHKERRQ(KSPCreate(PETSC_COMM_SELF,&check_ksp));
     if (local_mat->spd) {
-      ierr = KSPSetType(check_ksp,KSPCG);CHKERRQ(ierr);
+      CHKERRQ(KSPSetType(check_ksp,KSPCG));
     }
-    ierr = PetscObjectIncrementTabLevel((PetscObject)check_ksp,(PetscObject)local_ksp,0);CHKERRQ(ierr);
-    ierr = KSPGetOptionsPrefix(local_ksp,&prefix);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(check_ksp,prefix);CHKERRQ(ierr);
-    ierr = KSPAppendOptionsPrefix(check_ksp,"approximate_scale_");CHKERRQ(ierr);
-    ierr = KSPSetErrorIfNotConverged(check_ksp,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = KSPSetOperators(check_ksp,local_mat,local_pmat);CHKERRQ(ierr);
-    ierr = KSPSetComputeSingularValues(check_ksp,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = KSPSetPreSolve(check_ksp,PCBDDCNullSpaceCorrPreSolve,shell_ctx);CHKERRQ(ierr);
-    ierr = KSPSetPostSolve(check_ksp,PCBDDCNullSpaceCorrPostSolve,shell_ctx);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(check_ksp,PETSC_SMALL,PETSC_SMALL,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(check_ksp);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectIncrementTabLevel((PetscObject)check_ksp,(PetscObject)local_ksp,0));
+    CHKERRQ(KSPGetOptionsPrefix(local_ksp,&prefix));
+    CHKERRQ(KSPSetOptionsPrefix(check_ksp,prefix));
+    CHKERRQ(KSPAppendOptionsPrefix(check_ksp,"approximate_scale_"));
+    CHKERRQ(KSPSetErrorIfNotConverged(check_ksp,PETSC_FALSE));
+    CHKERRQ(KSPSetOperators(check_ksp,local_mat,local_pmat));
+    CHKERRQ(KSPSetComputeSingularValues(check_ksp,PETSC_TRUE));
+    CHKERRQ(KSPSetPreSolve(check_ksp,PCBDDCNullSpaceCorrPreSolve,shell_ctx));
+    CHKERRQ(KSPSetPostSolve(check_ksp,PCBDDCNullSpaceCorrPostSolve,shell_ctx));
+    CHKERRQ(KSPSetTolerances(check_ksp,PETSC_SMALL,PETSC_SMALL,PETSC_DEFAULT,PETSC_DEFAULT));
+    CHKERRQ(KSPSetFromOptions(check_ksp));
     /* setup with default maxit, then set maxit to min(10,any_set_from_command_line) (bug in computing eigenvalues when chaning the number of iterations */
-    ierr = KSPSetUp(check_ksp);CHKERRQ(ierr);
-    ierr = KSPGetPC(local_ksp,&local_pc);CHKERRQ(ierr);
-    ierr = KSPSetPC(check_ksp,local_pc);CHKERRQ(ierr);
-    ierr = KSPGetTolerances(check_ksp,NULL,NULL,NULL,&maxit);CHKERRQ(ierr);
-    ierr = KSPSetTolerances(check_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,PetscMin(10,maxit));CHKERRQ(ierr);
-    ierr = VecSetRandom(work2,NULL);CHKERRQ(ierr);
-    ierr = MatMult(local_mat,work2,work1);CHKERRQ(ierr);
-    ierr = KSPSolve(check_ksp,work1,work1);CHKERRQ(ierr);
-    ierr = KSPCheckSolve(check_ksp,pc,work1);CHKERRQ(ierr);
-    ierr = VecAXPY(work1,-1.,work2);CHKERRQ(ierr);
-    ierr = VecNorm(work1,NORM_INFINITY,&test_err);CHKERRQ(ierr);
-    ierr = KSPComputeExtremeSingularValues(check_ksp,&lambda_max,&lambda_min);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(check_ksp,&k);CHKERRQ(ierr);
+    CHKERRQ(KSPSetUp(check_ksp));
+    CHKERRQ(KSPGetPC(local_ksp,&local_pc));
+    CHKERRQ(KSPSetPC(check_ksp,local_pc));
+    CHKERRQ(KSPGetTolerances(check_ksp,NULL,NULL,NULL,&maxit));
+    CHKERRQ(KSPSetTolerances(check_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,PetscMin(10,maxit)));
+    CHKERRQ(VecSetRandom(work2,NULL));
+    CHKERRQ(MatMult(local_mat,work2,work1));
+    CHKERRQ(KSPSolve(check_ksp,work1,work1));
+    CHKERRQ(KSPCheckSolve(check_ksp,pc,work1));
+    CHKERRQ(VecAXPY(work1,-1.,work2));
+    CHKERRQ(VecNorm(work1,NORM_INFINITY,&test_err));
+    CHKERRQ(KSPComputeExtremeSingularValues(check_ksp,&lambda_max,&lambda_min));
+    CHKERRQ(KSPGetIterationNumber(check_ksp,&k));
     if (pcbddc->dbg_flag) {
       if (isdir) {
-        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet adapted solver (no scale) %1.14e (it %D, eigs %1.6e %1.6e)\n",PetscGlobalRank,test_err,k,lambda_min,lambda_max);CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet adapted solver (no scale) %1.14e (it %D, eigs %1.6e %1.6e)\n",PetscGlobalRank,test_err,k,lambda_min,lambda_max));
       } else {
-        ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann adapted solver (no scale) %1.14e (it %D, eigs %1.6e %1.6e)\n",PetscGlobalRank,test_err,k,lambda_min,lambda_max);CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann adapted solver (no scale) %1.14e (it %D, eigs %1.6e %1.6e)\n",PetscGlobalRank,test_err,k,lambda_min,lambda_max));
       }
     }
     if (needscaling) shell_ctx->scale = 1.0/lambda_max;
@@ -211,60 +207,60 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
     if (needscaling && pcbddc->dbg_flag) { /* test for scaling factor */
       PC new_pc;
 
-      ierr = VecSetRandom(work2,NULL);CHKERRQ(ierr);
-      ierr = MatMult(local_mat,work2,work1);CHKERRQ(ierr);
-      ierr = PCCreate(PetscObjectComm((PetscObject)check_ksp),&new_pc);CHKERRQ(ierr);
-      ierr = PCSetType(new_pc,PCKSP);CHKERRQ(ierr);
-      ierr = PCSetOperators(new_pc,local_mat,local_pmat);CHKERRQ(ierr);
-      ierr = PCKSPSetKSP(new_pc,local_ksp);CHKERRQ(ierr);
-      ierr = KSPSetPC(check_ksp,new_pc);CHKERRQ(ierr);
-      ierr = PCDestroy(&new_pc);CHKERRQ(ierr);
-      ierr = KSPSetTolerances(check_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,maxit);CHKERRQ(ierr);
-      ierr = KSPSetPreSolve(check_ksp,NULL,NULL);CHKERRQ(ierr);
-      ierr = KSPSetPostSolve(check_ksp,NULL,NULL);CHKERRQ(ierr);
-      ierr = KSPSolve(check_ksp,work1,work1);CHKERRQ(ierr);
-      ierr = KSPCheckSolve(check_ksp,pc,work1);CHKERRQ(ierr);
-      ierr = VecAXPY(work1,-1.,work2);CHKERRQ(ierr);
-      ierr = VecNorm(work1,NORM_INFINITY,&test_err);CHKERRQ(ierr);
-      ierr = KSPComputeExtremeSingularValues(check_ksp,&lambda_max,&lambda_min);CHKERRQ(ierr);
-      ierr = KSPGetIterationNumber(check_ksp,&k);CHKERRQ(ierr);
+      CHKERRQ(VecSetRandom(work2,NULL));
+      CHKERRQ(MatMult(local_mat,work2,work1));
+      CHKERRQ(PCCreate(PetscObjectComm((PetscObject)check_ksp),&new_pc));
+      CHKERRQ(PCSetType(new_pc,PCKSP));
+      CHKERRQ(PCSetOperators(new_pc,local_mat,local_pmat));
+      CHKERRQ(PCKSPSetKSP(new_pc,local_ksp));
+      CHKERRQ(KSPSetPC(check_ksp,new_pc));
+      CHKERRQ(PCDestroy(&new_pc));
+      CHKERRQ(KSPSetTolerances(check_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,maxit));
+      CHKERRQ(KSPSetPreSolve(check_ksp,NULL,NULL));
+      CHKERRQ(KSPSetPostSolve(check_ksp,NULL,NULL));
+      CHKERRQ(KSPSolve(check_ksp,work1,work1));
+      CHKERRQ(KSPCheckSolve(check_ksp,pc,work1));
+      CHKERRQ(VecAXPY(work1,-1.,work2));
+      CHKERRQ(VecNorm(work1,NORM_INFINITY,&test_err));
+      CHKERRQ(KSPComputeExtremeSingularValues(check_ksp,&lambda_max,&lambda_min));
+      CHKERRQ(KSPGetIterationNumber(check_ksp,&k));
       if (pcbddc->dbg_flag) {
         if (isdir) {
-          ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet adapted solver (scale %g) %1.14e (it %D, eigs %1.6e %1.6e)\n",PetscGlobalRank,(double)PetscRealPart(shell_ctx->scale),test_err,k,lambda_min,lambda_max);CHKERRQ(ierr);
+          CHKERRQ(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet adapted solver (scale %g) %1.14e (it %D, eigs %1.6e %1.6e)\n",PetscGlobalRank,(double)PetscRealPart(shell_ctx->scale),test_err,k,lambda_min,lambda_max));
         } else {
-          ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann adapted solver (scale %g) %1.14e (it %D, eigs %1.6e %1.6e)\n",PetscGlobalRank,(double)PetscRealPart(shell_ctx->scale),test_err,k,lambda_min,lambda_max);CHKERRQ(ierr);
+          CHKERRQ(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann adapted solver (scale %g) %1.14e (it %D, eigs %1.6e %1.6e)\n",PetscGlobalRank,(double)PetscRealPart(shell_ctx->scale),test_err,k,lambda_min,lambda_max));
         }
       }
     }
-    ierr = KSPDestroy(&check_ksp);CHKERRQ(ierr);
-    ierr = VecDestroy(&work1);CHKERRQ(ierr);
-    ierr = VecDestroy(&work2);CHKERRQ(ierr);
+    CHKERRQ(KSPDestroy(&check_ksp));
+    CHKERRQ(VecDestroy(&work1));
+    CHKERRQ(VecDestroy(&work2));
   }
-  ierr = PetscLogEventEnd(PC_BDDC_ApproxSetUp[pcbddc->current_level],pc,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventEnd(PC_BDDC_ApproxSetUp[pcbddc->current_level],pc,0,0,0));
 
   if (pcbddc->dbg_flag) {
     Vec       work1,work2,work3;
     PetscReal test_err;
 
     /* check nullspace basis is solved exactly */
-    ierr = VecDuplicate(shell_ctx->fw[0],&work1);CHKERRQ(ierr);
-    ierr = VecDuplicate(shell_ctx->fw[0],&work2);CHKERRQ(ierr);
-    ierr = VecDuplicate(shell_ctx->fw[0],&work3);CHKERRQ(ierr);
-    ierr = VecSetRandom(shell_ctx->sw[0],NULL);CHKERRQ(ierr);
-    ierr = MatMult(shell_ctx->basis_mat,shell_ctx->sw[0],work1);CHKERRQ(ierr);
-    ierr = VecCopy(work1,work2);CHKERRQ(ierr);
-    ierr = MatMult(local_mat,work1,work3);CHKERRQ(ierr);
-    ierr = KSPSolve(local_ksp,work3,work1);CHKERRQ(ierr);
-    ierr = VecAXPY(work1,-1.,work2);CHKERRQ(ierr);
-    ierr = VecNorm(work1,NORM_INFINITY,&test_err);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(shell_ctx->fw[0],&work1));
+    CHKERRQ(VecDuplicate(shell_ctx->fw[0],&work2));
+    CHKERRQ(VecDuplicate(shell_ctx->fw[0],&work3));
+    CHKERRQ(VecSetRandom(shell_ctx->sw[0],NULL));
+    CHKERRQ(MatMult(shell_ctx->basis_mat,shell_ctx->sw[0],work1));
+    CHKERRQ(VecCopy(work1,work2));
+    CHKERRQ(MatMult(local_mat,work1,work3));
+    CHKERRQ(KSPSolve(local_ksp,work3,work1));
+    CHKERRQ(VecAXPY(work1,-1.,work2));
+    CHKERRQ(VecNorm(work1,NORM_INFINITY,&test_err));
     if (isdir) {
-      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet nullspace correction solver: %1.14e\n",PetscGlobalRank,test_err);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Dirichlet nullspace correction solver: %1.14e\n",PetscGlobalRank,test_err));
     } else {
-      ierr = PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann nullspace correction solver: %1.14e\n",PetscGlobalRank,test_err);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer,"Subdomain %04d infinity error for Neumann nullspace correction solver: %1.14e\n",PetscGlobalRank,test_err));
     }
-    ierr = VecDestroy(&work1);CHKERRQ(ierr);
-    ierr = VecDestroy(&work2);CHKERRQ(ierr);
-    ierr = VecDestroy(&work3);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&work1));
+    CHKERRQ(VecDestroy(&work2));
+    CHKERRQ(VecDestroy(&work3));
   }
   PetscFunctionReturn(0);
 }

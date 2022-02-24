@@ -28,8 +28,7 @@ $       comm = PetscObjectComm((PetscObject)obj);
 @*/
 MPI_Comm  PetscObjectComm(PetscObject obj)
 {
-  if (!obj) return MPI_COMM_NULL;
-  return obj->comm;
+  return obj ? obj->comm : MPI_COMM_NULL;
 }
 
 /*@C
@@ -52,14 +51,11 @@ MPI_Comm  PetscObjectComm(PetscObject obj)
 @*/
 PetscErrorCode  PetscObjectGetComm(PetscObject obj,MPI_Comm *comm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   PetscValidPointer(comm,2);
-  if (obj->bops->getcomm) {
-    ierr = obj->bops->getcomm(obj,comm);CHKERRQ(ierr);
-  } else *comm = obj->comm;
+  if (obj->bops->getcomm) CHKERRQ(obj->bops->getcomm(obj,comm));
+  else *comm = obj->comm;
   PetscFunctionReturn(0);
 }
 
@@ -90,6 +86,7 @@ PetscErrorCode  PetscObjectGetTabLevel(PetscObject obj,PetscInt *tab)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
+  PetscValidIntPointer(tab,2);
   *tab = obj->tablevel;
   PetscFunctionReturn(0);
 }
@@ -145,10 +142,9 @@ PetscErrorCode  PetscObjectSetTabLevel(PetscObject obj,PetscInt tab)
 @*/
 PetscErrorCode  PetscObjectIncrementTabLevel(PetscObject obj,PetscObject oldobj,PetscInt tab)
 {
-
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  if (oldobj) obj->tablevel = oldobj->tablevel + tab;
-  else obj->tablevel = tab;
+  if (oldobj) PetscValidHeader(oldobj,2);
+  obj->tablevel = (oldobj ? oldobj->tablevel : 0)+tab;
   PetscFunctionReturn(0);
 }

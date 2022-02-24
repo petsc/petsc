@@ -20,10 +20,8 @@ static PetscBool DMPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  DMFinalizePackage(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&DMList);CHKERRQ(ierr);
+  CHKERRQ(PetscFunctionListDestroy(&DMList));
   DMPackageInitialized = PETSC_FALSE;
   DMRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -47,120 +45,119 @@ PetscErrorCode DMInitializePackage(void)
 {
   char           logList[256];
   PetscBool      opt,pkg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (DMPackageInitialized) PetscFunctionReturn(0);
   DMPackageInitialized = PETSC_TRUE;
 
   /* Register Classes */
-  ierr = PetscClassIdRegister("Distributed Mesh",&DM_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("DM Label",&DMLABEL_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("Quadrature",&PETSCQUADRATURE_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("Mesh Transform",&DMPLEXTRANSFORM_CLASSID);CHKERRQ(ierr);
+  CHKERRQ(PetscClassIdRegister("Distributed Mesh",&DM_CLASSID));
+  CHKERRQ(PetscClassIdRegister("DM Label",&DMLABEL_CLASSID));
+  CHKERRQ(PetscClassIdRegister("Quadrature",&PETSCQUADRATURE_CLASSID));
+  CHKERRQ(PetscClassIdRegister("Mesh Transform",&DMPLEXTRANSFORM_CLASSID));
 
 #if defined(PETSC_HAVE_HYPRE)
-  ierr = MatRegister(MATHYPRESTRUCT, MatCreate_HYPREStruct);CHKERRQ(ierr);
-  ierr = MatRegister(MATHYPRESSTRUCT, MatCreate_HYPRESStruct);CHKERRQ(ierr);
+  CHKERRQ(MatRegister(MATHYPRESTRUCT, MatCreate_HYPREStruct));
+  CHKERRQ(MatRegister(MATHYPRESSTRUCT, MatCreate_HYPRESStruct));
 #endif
-  ierr = PetscSectionSymRegister(PETSCSECTIONSYMLABEL,PetscSectionSymCreate_Label);CHKERRQ(ierr);
+  CHKERRQ(PetscSectionSymRegister(PETSCSECTIONSYMLABEL,PetscSectionSymCreate_Label));
 
   /* Register Constructors */
-  ierr = DMRegisterAll();CHKERRQ(ierr);
+  CHKERRQ(DMRegisterAll());
   /* Register Events */
-  ierr = PetscLogEventRegister("DMConvert",              DM_CLASSID,&DM_Convert);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMGlobalToLocal",        DM_CLASSID,&DM_GlobalToLocal);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMLocalToGlobal",        DM_CLASSID,&DM_LocalToGlobal);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMLocatePoints",         DM_CLASSID,&DM_LocatePoints);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMCoarsen",              DM_CLASSID,&DM_Coarsen);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMCreateInterp",         DM_CLASSID,&DM_CreateInterpolation);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMCreateRestrict",       DM_CLASSID,&DM_CreateRestriction);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMCreateInject",         DM_CLASSID,&DM_CreateInjection);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMCreateMat",            DM_CLASSID,&DM_CreateMatrix);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMLoad",                 DM_CLASSID,&DM_Load);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMAdaptInterp",          DM_CLASSID,&DM_AdaptInterpolator);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventRegister("DMConvert",              DM_CLASSID,&DM_Convert));
+  CHKERRQ(PetscLogEventRegister("DMGlobalToLocal",        DM_CLASSID,&DM_GlobalToLocal));
+  CHKERRQ(PetscLogEventRegister("DMLocalToGlobal",        DM_CLASSID,&DM_LocalToGlobal));
+  CHKERRQ(PetscLogEventRegister("DMLocatePoints",         DM_CLASSID,&DM_LocatePoints));
+  CHKERRQ(PetscLogEventRegister("DMCoarsen",              DM_CLASSID,&DM_Coarsen));
+  CHKERRQ(PetscLogEventRegister("DMCreateInterp",         DM_CLASSID,&DM_CreateInterpolation));
+  CHKERRQ(PetscLogEventRegister("DMCreateRestrict",       DM_CLASSID,&DM_CreateRestriction));
+  CHKERRQ(PetscLogEventRegister("DMCreateInject",         DM_CLASSID,&DM_CreateInjection));
+  CHKERRQ(PetscLogEventRegister("DMCreateMat",            DM_CLASSID,&DM_CreateMatrix));
+  CHKERRQ(PetscLogEventRegister("DMLoad",                 DM_CLASSID,&DM_Load));
+  CHKERRQ(PetscLogEventRegister("DMAdaptInterp",          DM_CLASSID,&DM_AdaptInterpolator));
 
-  ierr = PetscLogEventRegister("DMPlexBuFrCeLi",         DM_CLASSID,&DMPLEX_BuildFromCellList);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexBuCoFrCeLi",       DM_CLASSID,&DMPLEX_BuildCoordinatesFromCellList);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexCreateGmsh",       DM_CLASSID,&DMPLEX_CreateGmsh);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexCrFromFile",       DM_CLASSID,&DMPLEX_CreateFromFile);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("Mesh Partition",         DM_CLASSID,&DMPLEX_Partition);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("Mesh Migration",         DM_CLASSID,&DMPLEX_Migrate);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexPartSelf",         DM_CLASSID,&DMPLEX_PartSelf);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexPartLblInv",       DM_CLASSID,&DMPLEX_PartLabelInvert);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexPartLblSF",        DM_CLASSID,&DMPLEX_PartLabelCreateSF);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexPartStrtSF",       DM_CLASSID,&DMPLEX_PartStratSF);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexPointSF",          DM_CLASSID,&DMPLEX_CreatePointSF);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexInterp",           DM_CLASSID,&DMPLEX_Interpolate);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexDistribute",       DM_CLASSID,&DMPLEX_Distribute);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexDistCones",        DM_CLASSID,&DMPLEX_DistributeCones);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexDistLabels",       DM_CLASSID,&DMPLEX_DistributeLabels);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexDistSF",           DM_CLASSID,&DMPLEX_DistributeSF);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexDistOvrlp",        DM_CLASSID,&DMPLEX_DistributeOverlap);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexDistField",        DM_CLASSID,&DMPLEX_DistributeField);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexDistData",         DM_CLASSID,&DMPLEX_DistributeData);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexInterpSF",         DM_CLASSID,&DMPLEX_InterpolateSF);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexGToNBegin",        DM_CLASSID,&DMPLEX_GlobalToNaturalBegin);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexGToNEnd",          DM_CLASSID,&DMPLEX_GlobalToNaturalEnd);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexNToGBegin",        DM_CLASSID,&DMPLEX_NaturalToGlobalBegin);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexNToGEnd",          DM_CLASSID,&DMPLEX_NaturalToGlobalEnd);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexStratify",         DM_CLASSID,&DMPLEX_Stratify);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexSymmetrize",       DM_CLASSID,&DMPLEX_Symmetrize);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexPrealloc",         DM_CLASSID,&DMPLEX_Preallocate);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexResidualFE",       DM_CLASSID,&DMPLEX_ResidualFEM);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexJacobianFE",       DM_CLASSID,&DMPLEX_JacobianFEM);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexInterpFE",         DM_CLASSID,&DMPLEX_InterpolatorFEM);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexInjectorFE",       DM_CLASSID,&DMPLEX_InjectorFEM);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexIntegralFEM",      DM_CLASSID,&DMPLEX_IntegralFEM);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexRebalance",        DM_CLASSID,&DMPLEX_RebalanceSharedPoints);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexLocatePoints",     DM_CLASSID,&DMPLEX_LocatePoints);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexTopologyView",     DM_CLASSID,&DMPLEX_TopologyView);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexLabelsView",       DM_CLASSID,&DMPLEX_LabelsView);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexCoordinatesView",  DM_CLASSID,&DMPLEX_CoordinatesView);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexSectionView",      DM_CLASSID,&DMPLEX_SectionView);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexGlobalVectorView", DM_CLASSID,&DMPLEX_GlobalVectorView);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexLocalVectorView",  DM_CLASSID,&DMPLEX_LocalVectorView);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexTopologyLoad",     DM_CLASSID,&DMPLEX_TopologyLoad);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexLabelsLoad",       DM_CLASSID,&DMPLEX_LabelsLoad);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexCoordinatesLoad",  DM_CLASSID,&DMPLEX_CoordinatesLoad);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexSectionLoad",      DM_CLASSID,&DMPLEX_SectionLoad);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexGlobalVectorLoad", DM_CLASSID,&DMPLEX_GlobalVectorLoad);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexLocalVectorLoad",  DM_CLASSID,&DMPLEX_LocalVectorLoad);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexMetricEnforceSPD", DM_CLASSID,&DMPLEX_MetricEnforceSPD);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexMetricNormalize",  DM_CLASSID,&DMPLEX_MetricNormalize);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexMetricAverage",    DM_CLASSID,&DMPLEX_MetricAverage);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMPlexMetricIntersect",  DM_CLASSID,&DMPLEX_MetricIntersection);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventRegister("DMPlexBuFrCeLi",         DM_CLASSID,&DMPLEX_BuildFromCellList));
+  CHKERRQ(PetscLogEventRegister("DMPlexBuCoFrCeLi",       DM_CLASSID,&DMPLEX_BuildCoordinatesFromCellList));
+  CHKERRQ(PetscLogEventRegister("DMPlexCreateGmsh",       DM_CLASSID,&DMPLEX_CreateGmsh));
+  CHKERRQ(PetscLogEventRegister("DMPlexCrFromFile",       DM_CLASSID,&DMPLEX_CreateFromFile));
+  CHKERRQ(PetscLogEventRegister("Mesh Partition",         DM_CLASSID,&DMPLEX_Partition));
+  CHKERRQ(PetscLogEventRegister("Mesh Migration",         DM_CLASSID,&DMPLEX_Migrate));
+  CHKERRQ(PetscLogEventRegister("DMPlexPartSelf",         DM_CLASSID,&DMPLEX_PartSelf));
+  CHKERRQ(PetscLogEventRegister("DMPlexPartLblInv",       DM_CLASSID,&DMPLEX_PartLabelInvert));
+  CHKERRQ(PetscLogEventRegister("DMPlexPartLblSF",        DM_CLASSID,&DMPLEX_PartLabelCreateSF));
+  CHKERRQ(PetscLogEventRegister("DMPlexPartStrtSF",       DM_CLASSID,&DMPLEX_PartStratSF));
+  CHKERRQ(PetscLogEventRegister("DMPlexPointSF",          DM_CLASSID,&DMPLEX_CreatePointSF));
+  CHKERRQ(PetscLogEventRegister("DMPlexInterp",           DM_CLASSID,&DMPLEX_Interpolate));
+  CHKERRQ(PetscLogEventRegister("DMPlexDistribute",       DM_CLASSID,&DMPLEX_Distribute));
+  CHKERRQ(PetscLogEventRegister("DMPlexDistCones",        DM_CLASSID,&DMPLEX_DistributeCones));
+  CHKERRQ(PetscLogEventRegister("DMPlexDistLabels",       DM_CLASSID,&DMPLEX_DistributeLabels));
+  CHKERRQ(PetscLogEventRegister("DMPlexDistSF",           DM_CLASSID,&DMPLEX_DistributeSF));
+  CHKERRQ(PetscLogEventRegister("DMPlexDistOvrlp",        DM_CLASSID,&DMPLEX_DistributeOverlap));
+  CHKERRQ(PetscLogEventRegister("DMPlexDistField",        DM_CLASSID,&DMPLEX_DistributeField));
+  CHKERRQ(PetscLogEventRegister("DMPlexDistData",         DM_CLASSID,&DMPLEX_DistributeData));
+  CHKERRQ(PetscLogEventRegister("DMPlexInterpSF",         DM_CLASSID,&DMPLEX_InterpolateSF));
+  CHKERRQ(PetscLogEventRegister("DMPlexGToNBegin",        DM_CLASSID,&DMPLEX_GlobalToNaturalBegin));
+  CHKERRQ(PetscLogEventRegister("DMPlexGToNEnd",          DM_CLASSID,&DMPLEX_GlobalToNaturalEnd));
+  CHKERRQ(PetscLogEventRegister("DMPlexNToGBegin",        DM_CLASSID,&DMPLEX_NaturalToGlobalBegin));
+  CHKERRQ(PetscLogEventRegister("DMPlexNToGEnd",          DM_CLASSID,&DMPLEX_NaturalToGlobalEnd));
+  CHKERRQ(PetscLogEventRegister("DMPlexStratify",         DM_CLASSID,&DMPLEX_Stratify));
+  CHKERRQ(PetscLogEventRegister("DMPlexSymmetrize",       DM_CLASSID,&DMPLEX_Symmetrize));
+  CHKERRQ(PetscLogEventRegister("DMPlexPrealloc",         DM_CLASSID,&DMPLEX_Preallocate));
+  CHKERRQ(PetscLogEventRegister("DMPlexResidualFE",       DM_CLASSID,&DMPLEX_ResidualFEM));
+  CHKERRQ(PetscLogEventRegister("DMPlexJacobianFE",       DM_CLASSID,&DMPLEX_JacobianFEM));
+  CHKERRQ(PetscLogEventRegister("DMPlexInterpFE",         DM_CLASSID,&DMPLEX_InterpolatorFEM));
+  CHKERRQ(PetscLogEventRegister("DMPlexInjectorFE",       DM_CLASSID,&DMPLEX_InjectorFEM));
+  CHKERRQ(PetscLogEventRegister("DMPlexIntegralFEM",      DM_CLASSID,&DMPLEX_IntegralFEM));
+  CHKERRQ(PetscLogEventRegister("DMPlexRebalance",        DM_CLASSID,&DMPLEX_RebalanceSharedPoints));
+  CHKERRQ(PetscLogEventRegister("DMPlexLocatePoints",     DM_CLASSID,&DMPLEX_LocatePoints));
+  CHKERRQ(PetscLogEventRegister("DMPlexTopologyView",     DM_CLASSID,&DMPLEX_TopologyView));
+  CHKERRQ(PetscLogEventRegister("DMPlexLabelsView",       DM_CLASSID,&DMPLEX_LabelsView));
+  CHKERRQ(PetscLogEventRegister("DMPlexCoordinatesView",  DM_CLASSID,&DMPLEX_CoordinatesView));
+  CHKERRQ(PetscLogEventRegister("DMPlexSectionView",      DM_CLASSID,&DMPLEX_SectionView));
+  CHKERRQ(PetscLogEventRegister("DMPlexGlobalVectorView", DM_CLASSID,&DMPLEX_GlobalVectorView));
+  CHKERRQ(PetscLogEventRegister("DMPlexLocalVectorView",  DM_CLASSID,&DMPLEX_LocalVectorView));
+  CHKERRQ(PetscLogEventRegister("DMPlexTopologyLoad",     DM_CLASSID,&DMPLEX_TopologyLoad));
+  CHKERRQ(PetscLogEventRegister("DMPlexLabelsLoad",       DM_CLASSID,&DMPLEX_LabelsLoad));
+  CHKERRQ(PetscLogEventRegister("DMPlexCoordinatesLoad",  DM_CLASSID,&DMPLEX_CoordinatesLoad));
+  CHKERRQ(PetscLogEventRegister("DMPlexSectionLoad",      DM_CLASSID,&DMPLEX_SectionLoad));
+  CHKERRQ(PetscLogEventRegister("DMPlexGlobalVectorLoad", DM_CLASSID,&DMPLEX_GlobalVectorLoad));
+  CHKERRQ(PetscLogEventRegister("DMPlexLocalVectorLoad",  DM_CLASSID,&DMPLEX_LocalVectorLoad));
+  CHKERRQ(PetscLogEventRegister("DMPlexMetricEnforceSPD", DM_CLASSID,&DMPLEX_MetricEnforceSPD));
+  CHKERRQ(PetscLogEventRegister("DMPlexMetricNormalize",  DM_CLASSID,&DMPLEX_MetricNormalize));
+  CHKERRQ(PetscLogEventRegister("DMPlexMetricAverage",    DM_CLASSID,&DMPLEX_MetricAverage));
+  CHKERRQ(PetscLogEventRegister("DMPlexMetricIntersect",  DM_CLASSID,&DMPLEX_MetricIntersection));
 
-  ierr = PetscLogEventRegister("DMSwarmMigrate",         DM_CLASSID,&DMSWARM_Migrate);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMSwarmDETSetup",        DM_CLASSID,&DMSWARM_DataExchangerTopologySetup);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMSwarmDExBegin",        DM_CLASSID,&DMSWARM_DataExchangerBegin);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMSwarmDExEnd",          DM_CLASSID,&DMSWARM_DataExchangerEnd);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMSwarmDESendCnt",       DM_CLASSID,&DMSWARM_DataExchangerSendCount);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMSwarmDEPack",          DM_CLASSID,&DMSWARM_DataExchangerPack);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMSwarmAddPnts",         DM_CLASSID,&DMSWARM_AddPoints);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMSwarmRmvPnts",         DM_CLASSID,&DMSWARM_RemovePoints);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMSwarmSort",            DM_CLASSID,&DMSWARM_Sort);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMSwarmSetSizes",        DM_CLASSID,&DMSWARM_SetSizes);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventRegister("DMSwarmMigrate",         DM_CLASSID,&DMSWARM_Migrate));
+  CHKERRQ(PetscLogEventRegister("DMSwarmDETSetup",        DM_CLASSID,&DMSWARM_DataExchangerTopologySetup));
+  CHKERRQ(PetscLogEventRegister("DMSwarmDExBegin",        DM_CLASSID,&DMSWARM_DataExchangerBegin));
+  CHKERRQ(PetscLogEventRegister("DMSwarmDExEnd",          DM_CLASSID,&DMSWARM_DataExchangerEnd));
+  CHKERRQ(PetscLogEventRegister("DMSwarmDESendCnt",       DM_CLASSID,&DMSWARM_DataExchangerSendCount));
+  CHKERRQ(PetscLogEventRegister("DMSwarmDEPack",          DM_CLASSID,&DMSWARM_DataExchangerPack));
+  CHKERRQ(PetscLogEventRegister("DMSwarmAddPnts",         DM_CLASSID,&DMSWARM_AddPoints));
+  CHKERRQ(PetscLogEventRegister("DMSwarmRmvPnts",         DM_CLASSID,&DMSWARM_RemovePoints));
+  CHKERRQ(PetscLogEventRegister("DMSwarmSort",            DM_CLASSID,&DMSWARM_Sort));
+  CHKERRQ(PetscLogEventRegister("DMSwarmSetSizes",        DM_CLASSID,&DMSWARM_SetSizes));
   /* Process Info */
   {
     PetscClassId  classids[1];
 
     classids[0] = DM_CLASSID;
-    ierr = PetscInfoProcessClass("dm", 1, classids);CHKERRQ(ierr);
+    CHKERRQ(PetscInfoProcessClass("dm", 1, classids));
   }
 
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
   if (opt) {
-    ierr = PetscStrInList("dm",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventExcludeClass(DM_CLASSID);CHKERRQ(ierr);}
+    CHKERRQ(PetscStrInList("dm",logList,',',&pkg));
+    if (pkg) CHKERRQ(PetscLogEventExcludeClass(DM_CLASSID));
   }
 
-  ierr = DMGenerateRegisterAll();CHKERRQ(ierr);
-  ierr = PetscRegisterFinalize(DMGenerateRegisterDestroy);CHKERRQ(ierr);
-  ierr = DMPlexTransformRegisterAll();CHKERRQ(ierr);
-  ierr = PetscRegisterFinalize(DMPlexTransformRegisterDestroy);CHKERRQ(ierr);
-  ierr = PetscRegisterFinalize(DMFinalizePackage);CHKERRQ(ierr);
+  CHKERRQ(DMGenerateRegisterAll());
+  CHKERRQ(PetscRegisterFinalize(DMGenerateRegisterDestroy));
+  CHKERRQ(DMPlexTransformRegisterAll());
+  CHKERRQ(PetscRegisterFinalize(DMPlexTransformRegisterDestroy));
+  CHKERRQ(PetscRegisterFinalize(DMFinalizePackage));
   PetscFunctionReturn(0);
 }
 #include <petscfe.h>
@@ -176,12 +173,10 @@ static PetscBool PetscFEPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode PetscFEFinalizePackage(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&PetscSpaceList);CHKERRQ(ierr);
-  ierr = PetscFunctionListDestroy(&PetscDualSpaceList);CHKERRQ(ierr);
-  ierr = PetscFunctionListDestroy(&PetscFEList);CHKERRQ(ierr);
+  CHKERRQ(PetscFunctionListDestroy(&PetscSpaceList));
+  CHKERRQ(PetscFunctionListDestroy(&PetscDualSpaceList));
+  CHKERRQ(PetscFunctionListDestroy(&PetscFEList));
   PetscFEPackageInitialized       = PETSC_FALSE;
   PetscSpaceRegisterAllCalled     = PETSC_FALSE;
   PetscDualSpaceRegisterAllCalled = PETSC_FALSE;
@@ -202,23 +197,22 @@ PetscErrorCode PetscFEInitializePackage(void)
 {
   char           logList[256];
   PetscBool      opt,pkg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (PetscFEPackageInitialized) PetscFunctionReturn(0);
   PetscFEPackageInitialized = PETSC_TRUE;
 
   /* Register Classes */
-  ierr = PetscClassIdRegister("Linear Space", &PETSCSPACE_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("Dual Space",   &PETSCDUALSPACE_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("FE Space",     &PETSCFE_CLASSID);CHKERRQ(ierr);
+  CHKERRQ(PetscClassIdRegister("Linear Space", &PETSCSPACE_CLASSID));
+  CHKERRQ(PetscClassIdRegister("Dual Space",   &PETSCDUALSPACE_CLASSID));
+  CHKERRQ(PetscClassIdRegister("FE Space",     &PETSCFE_CLASSID));
   /* Register Constructors */
-  ierr = PetscSpaceRegisterAll();CHKERRQ(ierr);
-  ierr = PetscDualSpaceRegisterAll();CHKERRQ(ierr);
-  ierr = PetscFERegisterAll();CHKERRQ(ierr);
+  CHKERRQ(PetscSpaceRegisterAll());
+  CHKERRQ(PetscDualSpaceRegisterAll());
+  CHKERRQ(PetscFERegisterAll());
   /* Register Events */
-  ierr = PetscLogEventRegister("DualSpaceSetUp", PETSCDUALSPACE_CLASSID, &PETSCDUALSPACE_SetUp);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("FESetUp",        PETSCFE_CLASSID,        &PETSCFE_SetUp);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventRegister("DualSpaceSetUp", PETSCDUALSPACE_CLASSID, &PETSCDUALSPACE_SetUp));
+  CHKERRQ(PetscLogEventRegister("FESetUp",        PETSCFE_CLASSID,        &PETSCFE_SetUp));
   /* Process Info */
   {
     PetscClassId  classids[3];
@@ -226,18 +220,18 @@ PetscErrorCode PetscFEInitializePackage(void)
     classids[0] = PETSCFE_CLASSID;
     classids[1] = PETSCSPACE_CLASSID;
     classids[2] = PETSCDUALSPACE_CLASSID;
-    ierr = PetscInfoProcessClass("fe", 1, classids);CHKERRQ(ierr);
-    ierr = PetscInfoProcessClass("space", 1, &classids[1]);CHKERRQ(ierr);
-    ierr = PetscInfoProcessClass("dualspace", 1, &classids[2]);CHKERRQ(ierr);
+    CHKERRQ(PetscInfoProcessClass("fe", 1, classids));
+    CHKERRQ(PetscInfoProcessClass("space", 1, &classids[1]));
+    CHKERRQ(PetscInfoProcessClass("dualspace", 1, &classids[2]));
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
   if (opt) {
-    ierr = PetscStrInList("fe",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventExcludeClass(PETSCFE_CLASSID);CHKERRQ(ierr);}
+    CHKERRQ(PetscStrInList("fe",logList,',',&pkg));
+    if (pkg) CHKERRQ(PetscLogEventExcludeClass(PETSCFE_CLASSID));
   }
   /* Register package finalizer */
-  ierr = PetscRegisterFinalize(PetscFEFinalizePackage);CHKERRQ(ierr);
+  CHKERRQ(PetscRegisterFinalize(PetscFEFinalizePackage));
   PetscFunctionReturn(0);
 }
 #include <petscfv.h>
@@ -253,11 +247,9 @@ static PetscBool PetscFVPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode PetscFVFinalizePackage(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&PetscLimiterList);CHKERRQ(ierr);
-  ierr = PetscFunctionListDestroy(&PetscFVList);CHKERRQ(ierr);
+  CHKERRQ(PetscFunctionListDestroy(&PetscLimiterList));
+  CHKERRQ(PetscFunctionListDestroy(&PetscFVList));
   PetscFVPackageInitialized     = PETSC_FALSE;
   PetscFVRegisterAllCalled      = PETSC_FALSE;
   PetscLimiterRegisterAllCalled = PETSC_FALSE;
@@ -277,17 +269,16 @@ PetscErrorCode PetscFVInitializePackage(void)
 {
   char           logList[256];
   PetscBool      opt,pkg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (PetscFVPackageInitialized) PetscFunctionReturn(0);
   PetscFVPackageInitialized = PETSC_TRUE;
 
   /* Register Classes */
-  ierr = PetscClassIdRegister("FV Space", &PETSCFV_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("Limiter",  &PETSCLIMITER_CLASSID);CHKERRQ(ierr);
+  CHKERRQ(PetscClassIdRegister("FV Space", &PETSCFV_CLASSID));
+  CHKERRQ(PetscClassIdRegister("Limiter",  &PETSCLIMITER_CLASSID));
   /* Register Constructors */
-  ierr = PetscFVRegisterAll();CHKERRQ(ierr);
+  CHKERRQ(PetscFVRegisterAll());
   /* Register Events */
   /* Process Info */
   {
@@ -295,19 +286,19 @@ PetscErrorCode PetscFVInitializePackage(void)
 
     classids[0] = PETSCFV_CLASSID;
     classids[1] = PETSCLIMITER_CLASSID;
-    ierr = PetscInfoProcessClass("fv", 1, classids);CHKERRQ(ierr);
-    ierr = PetscInfoProcessClass("limiter", 1, &classids[1]);CHKERRQ(ierr);
+    CHKERRQ(PetscInfoProcessClass("fv", 1, classids));
+    CHKERRQ(PetscInfoProcessClass("limiter", 1, &classids[1]));
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
   if (opt) {
-    ierr = PetscStrInList("fv",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventExcludeClass(PETSCFV_CLASSID);CHKERRQ(ierr);}
-    ierr = PetscStrInList("limiter",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventExcludeClass(PETSCLIMITER_CLASSID);CHKERRQ(ierr);}
+    CHKERRQ(PetscStrInList("fv",logList,',',&pkg));
+    if (pkg) CHKERRQ(PetscLogEventExcludeClass(PETSCFV_CLASSID));
+    CHKERRQ(PetscStrInList("limiter",logList,',',&pkg));
+    if (pkg) CHKERRQ(PetscLogEventExcludeClass(PETSCLIMITER_CLASSID));
   }
   /* Register package finalizer */
-  ierr = PetscRegisterFinalize(PetscFVFinalizePackage);CHKERRQ(ierr);
+  CHKERRQ(PetscRegisterFinalize(PetscFVFinalizePackage));
   PetscFunctionReturn(0);
 }
 #include <petscds.h>
@@ -323,10 +314,8 @@ static PetscBool PetscDSPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode PetscDSFinalizePackage(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&PetscDSList);CHKERRQ(ierr);
+  CHKERRQ(PetscFunctionListDestroy(&PetscDSList));
   PetscDSPackageInitialized = PETSC_FALSE;
   PetscDSRegisterAllCalled  = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -345,33 +334,32 @@ PetscErrorCode PetscDSInitializePackage(void)
 {
   char           logList[256];
   PetscBool      opt,pkg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (PetscDSPackageInitialized) PetscFunctionReturn(0);
   PetscDSPackageInitialized = PETSC_TRUE;
 
   /* Register Classes */
-  ierr = PetscClassIdRegister("Discrete System", &PETSCDS_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("Weak Form",       &PETSCWEAKFORM_CLASSID);CHKERRQ(ierr);
+  CHKERRQ(PetscClassIdRegister("Discrete System", &PETSCDS_CLASSID));
+  CHKERRQ(PetscClassIdRegister("Weak Form",       &PETSCWEAKFORM_CLASSID));
   /* Register Constructors */
-  ierr = PetscDSRegisterAll();CHKERRQ(ierr);
+  CHKERRQ(PetscDSRegisterAll());
   /* Register Events */
   /* Process Info */
   {
     PetscClassId  classids[1];
 
     classids[0] = PETSCDS_CLASSID;
-    ierr = PetscInfoProcessClass("ds", 1, classids);CHKERRQ(ierr);
+    CHKERRQ(PetscInfoProcessClass("ds", 1, classids));
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
   if (opt) {
-    ierr = PetscStrInList("ds",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventExcludeClass(PETSCDS_CLASSID);CHKERRQ(ierr);}
+    CHKERRQ(PetscStrInList("ds",logList,',',&pkg));
+    if (pkg) CHKERRQ(PetscLogEventExcludeClass(PETSCDS_CLASSID));
   }
   /* Register package finalizer */
-  ierr = PetscRegisterFinalize(PetscDSFinalizePackage);CHKERRQ(ierr);
+  CHKERRQ(PetscRegisterFinalize(PetscDSFinalizePackage));
   PetscFunctionReturn(0);
 }
 
@@ -385,15 +373,13 @@ PetscErrorCode PetscDSInitializePackage(void)
 */
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = AOInitializePackage();CHKERRQ(ierr);
-  ierr = PetscPartitionerInitializePackage();CHKERRQ(ierr);
-  ierr = DMInitializePackage();CHKERRQ(ierr);
-  ierr = PetscFEInitializePackage();CHKERRQ(ierr);
-  ierr = PetscFVInitializePackage();CHKERRQ(ierr);
-  ierr = DMFieldInitializePackage();CHKERRQ(ierr);
+  CHKERRQ(AOInitializePackage());
+  CHKERRQ(PetscPartitionerInitializePackage());
+  CHKERRQ(DMInitializePackage());
+  CHKERRQ(PetscFEInitializePackage());
+  CHKERRQ(PetscFVInitializePackage());
+  CHKERRQ(DMFieldInitializePackage());
   PetscFunctionReturn(0);
 }
 

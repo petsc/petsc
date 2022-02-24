@@ -8,15 +8,14 @@ static PetscErrorCode CreateIS(MPI_Comm comm, PetscInt n, PetscInt first, PetscI
 {
   PetscInt       *idx, i, j;
   PetscMPIInt    rank;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm,&rank));
   *is = NULL;
   first += rank;
-  ierr = PetscMalloc1(n,&idx);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(n,&idx));
   for (i=0,j=first; i<n; i++,j+=step) idx[i] = j;
-  ierr = ISCreateGeneral(comm,n,idx,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(comm,n,idx,PETSC_OWN_POINTER,is));
   PetscFunctionReturn(0);
 }
 
@@ -30,21 +29,21 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-first",&first,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-step",&step,NULL);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm,&rank));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-first",&first,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-step",&step,NULL));
   start = 0; end = n;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-start",&start,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-end",&end,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-start",&start,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-end",&end,NULL));
 
-  ierr = CreateIS(comm, n, first, step, &is);CHKERRQ(ierr);
-  ierr = ISGeneralFilter(is, start, end);CHKERRQ(ierr);
-  ierr = ISView(is,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
-  ierr = ISGetSize(is, &N);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(comm), "global size: %" PetscInt_FMT "\n", N);CHKERRQ(ierr);
+  CHKERRQ(CreateIS(comm, n, first, step, &is));
+  CHKERRQ(ISGeneralFilter(is, start, end));
+  CHKERRQ(ISView(is,PETSC_VIEWER_STDOUT_(comm)));
+  CHKERRQ(ISGetSize(is, &N));
+  CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(comm), "global size: %" PetscInt_FMT "\n", N));
 
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&is));
   ierr = PetscFinalize();
   return ierr;
 }

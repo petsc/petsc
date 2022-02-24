@@ -32,15 +32,15 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->use_low_level_functions = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-compare", "Compare the meshes using DMPlexEqual()", "ex55.c", options->compare, &options->compare, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-compare_labels", "Compare labels in the meshes using DMCompareLabels()", "ex55.c", options->compare_labels, &options->compare_labels, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-distribute", "Distribute the mesh", "ex55.c", options->distribute, &options->distribute, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex55.c", options->interpolate, &options->interpolate, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-filename", "The mesh file", "ex55.c", options->filename, options->filename, sizeof(options->filename), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-meshname", "The mesh file", "ex55.c", options->meshname, options->meshname, sizeof(options->meshname), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-format", "Format to write and read", "ex55.c", PetscViewerFormats, (PetscEnum)options->format, (PetscEnum*)&options->format, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-second_write_read", "Write and read for the 2nd time", "ex55.c", options->second_write_read, &options->second_write_read, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-use_low_level_functions", "Use low level functions for viewing and loading", "ex55.c", options->use_low_level_functions, &options->use_low_level_functions, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-compare", "Compare the meshes using DMPlexEqual()", "ex55.c", options->compare, &options->compare, NULL));
+  CHKERRQ(PetscOptionsBool("-compare_labels", "Compare labels in the meshes using DMCompareLabels()", "ex55.c", options->compare_labels, &options->compare_labels, NULL));
+  CHKERRQ(PetscOptionsBool("-distribute", "Distribute the mesh", "ex55.c", options->distribute, &options->distribute, NULL));
+  CHKERRQ(PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex55.c", options->interpolate, &options->interpolate, NULL));
+  CHKERRQ(PetscOptionsString("-filename", "The mesh file", "ex55.c", options->filename, options->filename, sizeof(options->filename), NULL));
+  CHKERRQ(PetscOptionsString("-meshname", "The mesh file", "ex55.c", options->meshname, options->meshname, sizeof(options->meshname), NULL));
+  CHKERRQ(PetscOptionsEnum("-format", "Format to write and read", "ex55.c", PetscViewerFormats, (PetscEnum)options->format, (PetscEnum*)&options->format, NULL));
+  CHKERRQ(PetscOptionsBool("-second_write_read", "Write and read for the 2nd time", "ex55.c", options->second_write_read, &options->second_write_read, NULL));
+  CHKERRQ(PetscOptionsBool("-use_low_level_functions", "Use low level functions for viewing and loading", "ex55.c", options->use_low_level_functions, &options->use_low_level_functions, NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 };
@@ -51,39 +51,38 @@ static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], const
   const char     savedName[]  = "Mesh";
   const char     loadedName[] = "Mesh_new";
   PetscViewer    v;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscViewerHDF5Open(PetscObjectComm((PetscObject) dm), filename, FILE_MODE_WRITE, &v);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(v, user.format);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) dm, savedName);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5Open(PetscObjectComm((PetscObject) dm), filename, FILE_MODE_WRITE, &v));
+  CHKERRQ(PetscViewerPushFormat(v, user.format));
+  CHKERRQ(PetscObjectSetName((PetscObject) dm, savedName));
   if (user.use_low_level_functions) {
-    ierr = DMPlexTopologyView(dm, v);CHKERRQ(ierr);
-    ierr = DMPlexCoordinatesView(dm, v);CHKERRQ(ierr);
-    ierr = DMPlexLabelsView(dm, v);CHKERRQ(ierr);
+    CHKERRQ(DMPlexTopologyView(dm, v));
+    CHKERRQ(DMPlexCoordinatesView(dm, v));
+    CHKERRQ(DMPlexLabelsView(dm, v));
   } else {
-    ierr = DMView(dm, v);CHKERRQ(ierr);
+    CHKERRQ(DMView(dm, v));
   }
 
-  ierr = PetscViewerFileSetMode(v, FILE_MODE_READ);CHKERRQ(ierr);
-  ierr = DMCreate(PETSC_COMM_WORLD, &dmnew);CHKERRQ(ierr);
-  ierr = DMSetType(dmnew, DMPLEX);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) dmnew, savedName);CHKERRQ(ierr);
-  ierr = DMSetOptionsPrefix(dmnew, prefix);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerFileSetMode(v, FILE_MODE_READ));
+  CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dmnew));
+  CHKERRQ(DMSetType(dmnew, DMPLEX));
+  CHKERRQ(PetscObjectSetName((PetscObject) dmnew, savedName));
+  CHKERRQ(DMSetOptionsPrefix(dmnew, prefix));
   if (user.use_low_level_functions) {
     PetscSF  sfXC;
 
-    ierr = DMPlexTopologyLoad(dmnew, v, &sfXC);CHKERRQ(ierr);
-    ierr = DMPlexCoordinatesLoad(dmnew, v, sfXC);CHKERRQ(ierr);
-    ierr = DMPlexLabelsLoad(dmnew, v, sfXC);CHKERRQ(ierr);
-    ierr = PetscSFDestroy(&sfXC);CHKERRQ(ierr);
+    CHKERRQ(DMPlexTopologyLoad(dmnew, v, &sfXC));
+    CHKERRQ(DMPlexCoordinatesLoad(dmnew, v, sfXC));
+    CHKERRQ(DMPlexLabelsLoad(dmnew, v, sfXC));
+    CHKERRQ(PetscSFDestroy(&sfXC));
   } else {
-    ierr = DMLoad(dmnew, v);CHKERRQ(ierr);
+    CHKERRQ(DMLoad(dmnew, v));
   }
-  ierr = PetscObjectSetName((PetscObject)dmnew,loadedName);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetName((PetscObject)dmnew,loadedName));
 
-  ierr = PetscViewerPopFormat(v);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerPopFormat(v));
+  CHKERRQ(PetscViewerDestroy(&v));
   *dm_new = dmnew;
   PetscFunctionReturn(0);
 }
@@ -97,53 +96,53 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, user.meshname, user.interpolate, &dm);CHKERRQ(ierr);
-  ierr = DMSetOptionsPrefix(dm,"orig_");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
+  CHKERRQ(DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, user.meshname, user.interpolate, &dm));
+  CHKERRQ(DMSetOptionsPrefix(dm,"orig_"));
+  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
 
   if (user.distribute) {
     DM dmdist;
 
-    ierr = DMPlexGetPartitioner(dm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
-    ierr = DMPlexDistribute(dm, 0, NULL, &dmdist);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetPartitioner(dm, &part));
+    CHKERRQ(PetscPartitionerSetFromOptions(part));
+    CHKERRQ(DMPlexDistribute(dm, 0, NULL, &dmdist));
     if (dmdist) {
-      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      CHKERRQ(DMDestroy(&dm));
       dm   = dmdist;
     }
   }
 
-  ierr = DMSetOptionsPrefix(dm,NULL);CHKERRQ(ierr);
-  ierr = DMPlexDistributeSetDefault(dm, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMSetOptionsPrefix(dm,NULL));
+  CHKERRQ(DMPlexDistributeSetDefault(dm, PETSC_FALSE));
+  CHKERRQ(DMSetFromOptions(dm));
+  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
 
-  ierr = DMPlexWriteAndReadHDF5(dm, "dmdist.h5", "new_", user, &dmnew);CHKERRQ(ierr);
+  CHKERRQ(DMPlexWriteAndReadHDF5(dm, "dmdist.h5", "new_", user, &dmnew));
 
   if (user.second_write_read) {
-    ierr = DMDestroy(&dm);CHKERRQ(ierr);
+    CHKERRQ(DMDestroy(&dm));
     dm = dmnew;
-    ierr = DMPlexWriteAndReadHDF5(dm, "dmdist.h5", "new_", user, &dmnew);CHKERRQ(ierr);
+    CHKERRQ(DMPlexWriteAndReadHDF5(dm, "dmdist.h5", "new_", user, &dmnew));
   }
 
-  ierr = DMViewFromOptions(dmnew, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMViewFromOptions(dmnew, NULL, "-dm_view"));
   /* TODO: Is it still true? */
   /* The NATIVE format for coordiante viewing is killing parallel output, since we have a local vector. Map it to global, and it will work. */
 
   /* This currently makes sense only for sequential meshes. */
   if (user.compare) {
-    ierr = DMPlexEqual(dmnew, dm, &flg);CHKERRQ(ierr);
+    CHKERRQ(DMPlexEqual(dmnew, dm, &flg));
     PetscCheckFalse(!flg,PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "DMs are not equal");
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"DMs equal\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"DMs equal\n"));
   }
   if (user.compare_labels) {
-    ierr = DMCompareLabels(dmnew, dm, NULL, NULL);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"DMLabels equal\n");CHKERRQ(ierr);
+    CHKERRQ(DMCompareLabels(dmnew, dm, NULL, NULL));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"DMLabels equal\n"));
   }
 
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmnew);CHKERRQ(ierr);
+  CHKERRQ(DMDestroy(&dm));
+  CHKERRQ(DMDestroy(&dmnew));
   ierr = PetscFinalize();
   return ierr;
 }

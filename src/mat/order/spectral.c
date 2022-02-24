@@ -23,16 +23,15 @@ PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat 
   PetscInt       rStart, rEnd, r, colMax = 0;
   PetscInt      *dnnz, *onnz;
   PetscInt       m, n, M, N;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheck(!weighted,PetscObjectComm((PetscObject) A), PETSC_ERR_SUP, "Will get to this soon");
-  ierr = MatCreate(PetscObjectComm((PetscObject) A), L);CHKERRQ(ierr);
-  ierr = MatGetSize(A, &M, &N);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A, &m, &n);CHKERRQ(ierr);
-  ierr = MatSetSizes(*L, m, n, M, N);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A, &rStart, &rEnd);CHKERRQ(ierr);
-  ierr = PetscMalloc2(m,&dnnz,m,&onnz);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PetscObjectComm((PetscObject) A), L));
+  CHKERRQ(MatGetSize(A, &M, &N));
+  CHKERRQ(MatGetLocalSize(A, &m, &n));
+  CHKERRQ(MatSetSizes(*L, m, n, M, N));
+  CHKERRQ(MatGetOwnershipRange(A, &rStart, &rEnd));
+  CHKERRQ(PetscMalloc2(m,&dnnz,m,&onnz));
   for (r = rStart; r < rEnd; ++r) {
     const PetscScalar *vals;
     const PetscInt    *cols;
@@ -40,7 +39,7 @@ PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat 
     PetscBool          hasdiag = PETSC_FALSE;
 
     dnnz[r-rStart] = onnz[r-rStart] = 0;
-    ierr = MatGetRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
+    CHKERRQ(MatGetRow(A, r, &ncols, &cols, &vals));
     for (c = 0, newcols = 0; c < ncols; ++c) {
       if (cols[c] == r) {
         ++newcols;
@@ -54,19 +53,19 @@ PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat 
     }
     if (!hasdiag) {++newcols; ++dnnz[r-rStart];}
     colMax = PetscMax(colMax, newcols);
-    ierr = MatRestoreRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
+    CHKERRQ(MatRestoreRow(A, r, &ncols, &cols, &vals));
   }
-  ierr = MatSetFromOptions(*L);CHKERRQ(ierr);
-  ierr = MatXAIJSetPreallocation(*L, 1, dnnz, onnz, NULL, NULL);CHKERRQ(ierr);
-  ierr = MatSetUp(*L);CHKERRQ(ierr);
-  ierr = PetscMalloc2(colMax,&newCols,colMax,&newVals);CHKERRQ(ierr);
+  CHKERRQ(MatSetFromOptions(*L));
+  CHKERRQ(MatXAIJSetPreallocation(*L, 1, dnnz, onnz, NULL, NULL));
+  CHKERRQ(MatSetUp(*L));
+  CHKERRQ(PetscMalloc2(colMax,&newCols,colMax,&newVals));
   for (r = rStart; r < rEnd; ++r) {
     const PetscScalar *vals;
     const PetscInt    *cols;
     PetscInt           ncols, newcols, c;
     PetscBool          hasdiag = PETSC_FALSE;
 
-    ierr = MatGetRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
+    CHKERRQ(MatGetRow(A, r, &ncols, &cols, &vals));
     for (c = 0, newcols = 0; c < ncols; ++c) {
       if (cols[c] == r) {
         newCols[newcols] = cols[c];
@@ -85,13 +84,13 @@ PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat 
       newVals[newcols] = dnnz[r-rStart]+onnz[r-rStart]-1;
       ++newcols;
     }
-    ierr = MatRestoreRow(A, r, &ncols, &cols, &vals);CHKERRQ(ierr);
-    ierr = MatSetValues(*L, 1, &r, newcols, newCols, newVals, INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatRestoreRow(A, r, &ncols, &cols, &vals));
+    CHKERRQ(MatSetValues(*L, 1, &r, newcols, newCols, newVals, INSERT_VALUES));
   }
-  ierr = PetscFree2(dnnz,onnz);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*L, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*L, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscFree2(newCols,newVals);CHKERRQ(ierr);
+  CHKERRQ(PetscFree2(dnnz,onnz));
+  CHKERRQ(MatAssemblyBegin(*L, MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(*L, MAT_FINAL_ASSEMBLY));
+  CHKERRQ(PetscFree2(newCols,newVals));
   PetscFunctionReturn(0);
 }
 
@@ -102,23 +101,22 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
 {
   Mat             L;
   const PetscReal eps = 1.0e-12;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreateLaplacian(A, eps, PETSC_FALSE, &L);CHKERRQ(ierr);
+  CHKERRQ(MatCreateLaplacian(A, eps, PETSC_FALSE, &L));
   {
     /* Check Laplacian */
     PetscReal norm;
     Vec       x, y;
 
-    ierr = MatCreateVecs(L, &x, NULL);CHKERRQ(ierr);
-    ierr = VecDuplicate(x, &y);CHKERRQ(ierr);
-    ierr = VecSet(x, 1.0);CHKERRQ(ierr);
-    ierr = MatMult(L, x, y);CHKERRQ(ierr);
-    ierr = VecNorm(y, NORM_INFINITY, &norm);CHKERRQ(ierr);
+    CHKERRQ(MatCreateVecs(L, &x, NULL));
+    CHKERRQ(VecDuplicate(x, &y));
+    CHKERRQ(VecSet(x, 1.0));
+    CHKERRQ(MatMult(L, x, y));
+    CHKERRQ(VecNorm(y, NORM_INFINITY, &norm));
     PetscCheck(norm <= 1.0e-10,PetscObjectComm((PetscObject) y), PETSC_ERR_PLIB, "Invalid graph Laplacian");
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
-    ierr = VecDestroy(&y);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&x));
+    CHKERRQ(VecDestroy(&y));
   }
   /* Compute Fiedler vector (right now, all eigenvectors) */
 #if defined(PETSC_USE_COMPLEX)
@@ -132,24 +130,24 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
     PetscBLASInt bn, bN, lwork = 0, lierr, idummy;
     PetscInt     n, i, evInd, *perm, tmp;
 
-    ierr = MatConvert(L, MATDENSE, MAT_INITIAL_MATRIX, &LD);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(LD, &n, NULL);CHKERRQ(ierr);
-    ierr = MatDenseGetArray(LD, &a);CHKERRQ(ierr);
-    ierr = PetscBLASIntCast(n, &bn);CHKERRQ(ierr);
-    ierr = PetscBLASIntCast(n, &bN);CHKERRQ(ierr);
-    ierr = PetscBLASIntCast(5*n,&lwork);CHKERRQ(ierr);
-    ierr = PetscBLASIntCast(1,&idummy);CHKERRQ(ierr);
-    ierr = PetscMalloc4(n,&realpart,n,&imagpart,n*n,&eigvec,lwork,&work);CHKERRQ(ierr);
-    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+    CHKERRQ(MatConvert(L, MATDENSE, MAT_INITIAL_MATRIX, &LD));
+    CHKERRQ(MatGetLocalSize(LD, &n, NULL));
+    CHKERRQ(MatDenseGetArray(LD, &a));
+    CHKERRQ(PetscBLASIntCast(n, &bn));
+    CHKERRQ(PetscBLASIntCast(n, &bN));
+    CHKERRQ(PetscBLASIntCast(5*n,&lwork));
+    CHKERRQ(PetscBLASIntCast(1,&idummy));
+    CHKERRQ(PetscMalloc4(n,&realpart,n,&imagpart,n*n,&eigvec,lwork,&work));
+    CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscStackCallBLAS("LAPACKgeev", LAPACKgeev_("N","V",&bn,a,&bN,realpart,imagpart,&sdummy,&idummy,eigvec,&bN,work,&lwork,&lierr));
     PetscCheck(!lierr,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %d", (int) lierr);
-    ierr = PetscFPTrapPop();CHKERRQ(ierr);
-    ierr = MatDenseRestoreArray(LD,&a);CHKERRQ(ierr);
-    ierr = MatDestroy(&LD);CHKERRQ(ierr);
+    CHKERRQ(PetscFPTrapPop());
+    CHKERRQ(MatDenseRestoreArray(LD,&a));
+    CHKERRQ(MatDestroy(&LD));
     /* Check lowest eigenvalue and eigenvector */
-    ierr = PetscMalloc1(n, &perm);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(n, &perm));
     for (i = 0; i < n; ++i) perm[i] = i;
-    ierr = PetscSortRealWithPermutation(n,realpart,perm);CHKERRQ(ierr);
+    CHKERRQ(PetscSortRealWithPermutation(n,realpart,perm));
     evInd = perm[0];
     PetscCheck(realpart[evInd] <= 1.0e-12 && imagpart[evInd] <= 1.0e-12,PetscObjectComm((PetscObject) L), PETSC_ERR_PLIB, "Graph Laplacian must have lowest eigenvalue 0");
     evInd = perm[1];
@@ -161,18 +159,18 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
     /* Construct Fiedler partition */
     evInd = perm[1];
     for (i = 0; i < n; ++i) perm[i] = i;
-    ierr = PetscSortRealWithPermutation(n, &eigvec[evInd*n], perm);CHKERRQ(ierr);
+    CHKERRQ(PetscSortRealWithPermutation(n, &eigvec[evInd*n], perm));
     for (i = 0; i < n/2; ++i) {
       tmp          = perm[n-1-i];
       perm[n-1-i] = perm[i];
       perm[i]     = tmp;
     }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF, n, perm, PETSC_OWN_POINTER, row);CHKERRQ(ierr);
-    ierr = PetscObjectReference((PetscObject) *row);CHKERRQ(ierr);
+    CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF, n, perm, PETSC_OWN_POINTER, row));
+    CHKERRQ(PetscObjectReference((PetscObject) *row));
     *col = *row;
 
-    ierr = PetscFree4(realpart,imagpart,eigvec,work);CHKERRQ(ierr);
-    ierr = MatDestroy(&L);CHKERRQ(ierr);
+    CHKERRQ(PetscFree4(realpart,imagpart,eigvec,work));
+    CHKERRQ(MatDestroy(&L));
     PetscFunctionReturn(0);
   }
 #endif

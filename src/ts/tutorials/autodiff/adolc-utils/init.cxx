@@ -56,15 +56,14 @@ template <class T> PetscErrorCode AdolcFree2(T **A)
 */
 template <class T> PetscErrorCode GiveGhostPoints(DM da,T *cgs,void *array)
 {
-  PetscErrorCode ierr;
-  PetscInt       dim;
+  PetscInt dim;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0,0,0));
   if (dim == 1) {
-    ierr = GiveGhostPoints1d(da,(T**)array);CHKERRQ(ierr);
+    CHKERRQ(GiveGhostPoints1d(da,(T**)array));
   } else if (dim == 2) {
-    ierr = GiveGhostPoints2d(da,cgs,(T***)array);CHKERRQ(ierr);
+    CHKERRQ(GiveGhostPoints2d(da,cgs,(T***)array));
   } else PetscCheckFalse(dim == 3,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"GiveGhostPoints3d not yet implemented"); // TODO
   PetscFunctionReturn(0);
 }
@@ -81,11 +80,10 @@ template <class T> PetscErrorCode GiveGhostPoints(DM da,T *cgs,void *array)
 */
 template <class T> PetscErrorCode GiveGhostPoints1d(DM da,T *a1d[])
 {
-  PetscErrorCode ierr;
-  PetscInt       gxs;
+  PetscInt gxs;
 
   PetscFunctionBegin;
-  ierr = DMDAGetGhostCorners(da,&gxs,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetGhostCorners(da,&gxs,NULL,NULL,NULL,NULL,NULL));
   *a1d -= gxs;
   PetscFunctionReturn(0);
 }
@@ -105,13 +103,11 @@ template <class T> PetscErrorCode GiveGhostPoints1d(DM da,T *a1d[])
 */
 template <class T> PetscErrorCode GiveGhostPoints2d(DM da,T *cgs,T **a2d[])
 {
-  PetscErrorCode ierr;
-  PetscInt       gxs,gys,gxm,gym,j;
+  PetscInt gxs,gys,gxm,gym;
 
   PetscFunctionBegin;
-  ierr = DMDAGetGhostCorners(da,&gxs,&gys,NULL,&gxm,&gym,NULL);CHKERRQ(ierr);
-  for (j=0; j<gym; j++)
-    (*a2d)[j] = cgs + j*gxm - gxs;
+  CHKERRQ(DMDAGetGhostCorners(da,&gxs,&gys,NULL,&gxm,&gym,NULL));
+  for (PetscInt j=0; j<gym; j++) (*a2d)[j] = cgs + j*gxm - gxs;
   *a2d -= gys;
   PetscFunctionReturn(0);
 }
@@ -146,9 +142,7 @@ template <class T> PetscErrorCode Subidentity(PetscInt n,PetscInt s,T **S)
 */
 template <class T> PetscErrorCode Identity(PetscInt n,T **I)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = Subidentity(n,0,I);CHKERRQ(ierr);
+  CHKERRQ(Subidentity(n,0,I));
   PetscFunctionReturn(0);
 }

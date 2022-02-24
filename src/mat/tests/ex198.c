@@ -15,48 +15,48 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   /* read matrices A, B and C */
-  ierr = PetscOptionsGetString(NULL,NULL,"-fA",file[0],sizeof(file[0]),&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-fA",file[0],sizeof(file[0]),&flg));
   PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_USER,"Must indicate binary file with the -fA options");
 
-  ierr = PetscOptionsGetString(NULL,NULL,"-fB",file[1],sizeof(file[1]),&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-fB",file[1],sizeof(file[1]),&flg));
   PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_USER,"Must indicate binary file with the -fB options");
 
-  ierr = PetscOptionsGetString(NULL,NULL,"-fC",file[2],sizeof(file[2]),&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-fC",file[2],sizeof(file[2]),&flg));
   PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_USER,"Must indicate binary file with the -fC options");
 
   /* Load matrices */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&fd));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatLoad(A,fd));
+  CHKERRQ(PetscViewerDestroy(&fd));
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-  ierr = MatLoad(B,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&fd));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&B));
+  CHKERRQ(MatLoad(B,fd));
+  CHKERRQ(PetscViewerDestroy(&fd));
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
-  ierr = MatLoad(C,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
+  CHKERRQ(MatLoad(C,fd));
+  CHKERRQ(PetscViewerDestroy(&fd));
 
   /* Test MatMatMult() */
-  ierr = MatMatMult(B,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&BC);CHKERRQ(ierr);
-  ierr = MatMatMult(A,BC,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&ABC);CHKERRQ(ierr);
+  CHKERRQ(MatMatMult(B,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&BC));
+  CHKERRQ(MatMatMult(A,BC,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&ABC));
 
-  ierr = MatMatMatMult(A,B,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&D);CHKERRQ(ierr);
-  ierr = MatMatMatMult(A,B,C,MAT_REUSE_MATRIX,PETSC_DEFAULT,&D);CHKERRQ(ierr);
-  /* ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  CHKERRQ(MatMatMatMult(A,B,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&D));
+  CHKERRQ(MatMatMatMult(A,B,C,MAT_REUSE_MATRIX,PETSC_DEFAULT,&D));
+  /* CHKERRQ(MatView(D,PETSC_VIEWER_STDOUT_WORLD)); */
 
-  ierr = MatEqual(ABC,D,&flg);CHKERRQ(ierr);
+  CHKERRQ(MatEqual(ABC,D,&flg));
   PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"ABC != D");
 
-  ierr = MatDestroy(&ABC);CHKERRQ(ierr);
-  ierr = MatDestroy(&BC);CHKERRQ(ierr);
-  ierr = MatDestroy(&D);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&ABC));
+  CHKERRQ(MatDestroy(&BC));
+  CHKERRQ(MatDestroy(&D));
+  CHKERRQ(MatDestroy(&C));
+  CHKERRQ(MatDestroy(&B));
+  CHKERRQ(MatDestroy(&A));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -61,55 +61,55 @@ int main(int argc, char **argv)
   ctxt.physics_type = PHYSICS_DIFFUSION;
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"IRK options","");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-a","diffusion coefficient","<1.0>",ctxt.a,&ctxt.a,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt ("-imax","grid size","<20>",ctxt.imax,&ctxt.imax,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-xmin","xmin","<0.0>",ctxt.xmin,&ctxt.xmin,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-xmax","xmax","<1.0>",ctxt.xmax,&ctxt.xmax,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-physics_type","Type of process to discretize","",PhysicsTypes,(PetscEnum)ctxt.physics_type,(PetscEnum*)&ctxt.physics_type,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsReal("-a","diffusion coefficient","<1.0>",ctxt.a,&ctxt.a,NULL));
+  CHKERRQ(PetscOptionsInt ("-imax","grid size","<20>",ctxt.imax,&ctxt.imax,NULL));
+  CHKERRQ(PetscOptionsReal("-xmin","xmin","<0.0>",ctxt.xmin,&ctxt.xmin,NULL));
+  CHKERRQ(PetscOptionsReal("-xmax","xmax","<1.0>",ctxt.xmax,&ctxt.xmax,NULL));
+  CHKERRQ(PetscOptionsEnum("-physics_type","Type of process to discretize","",PhysicsTypes,(PetscEnum)ctxt.physics_type,(PetscEnum*)&ctxt.physics_type,NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* allocate and initialize solution vector and exact solution */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,ctxt.imax);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&uex);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
+  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,ctxt.imax));
+  CHKERRQ(VecSetFromOptions(u));
+  CHKERRQ(VecDuplicate(u,&uex));
   /* initial solution */
-  ierr = ExactSolution(u,&ctxt,0.0);CHKERRQ(ierr);
+  CHKERRQ(ExactSolution(u,&ctxt,0.0));
 
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,ctxt.imax,ctxt.imax);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetType(A,MATAIJ));
+  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,ctxt.imax,ctxt.imax));
+  CHKERRQ(MatSetUp(A));
 
   /* Create and set options for TS */
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_LINEAR);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,0.125);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
-  ierr = TSSetMaxSteps(ts,10);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts,1.0);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&ctxt);CHKERRQ(ierr);
-  ierr = RHSJacobian(ts,0,u,A,A,&ctxt);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,&ctxt);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSSolve(ts,u);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
+  CHKERRQ(TSSetProblemType(ts,TS_LINEAR));
+  CHKERRQ(TSSetTimeStep(ts,0.125));
+  CHKERRQ(TSSetSolution(ts,u));
+  CHKERRQ(TSSetMaxSteps(ts,10));
+  CHKERRQ(TSSetMaxTime(ts,1.0));
+  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  CHKERRQ(TSSetRHSFunction(ts,NULL,TSComputeRHSFunctionLinear,&ctxt));
+  CHKERRQ(RHSJacobian(ts,0,u,A,A,&ctxt));
+  CHKERRQ(TSSetRHSJacobian(ts,A,A,TSComputeRHSJacobianConstant,&ctxt));
+  CHKERRQ(TSSetFromOptions(ts));
+  CHKERRQ(TSSolve(ts,u));
 
-  ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
+  CHKERRQ(TSGetSolveTime(ts,&ftime));
   /* exact   solution */
-  ierr = ExactSolution(uex,&ctxt,ftime);CHKERRQ(ierr);
+  CHKERRQ(ExactSolution(uex,&ctxt,ftime));
 
   /* Calculate error in final solution */
-  ierr = VecAYPX(uex,-1.0,u);CHKERRQ(ierr);
-  ierr = VecNorm(uex,NORM_2,&err);CHKERRQ(ierr);
+  CHKERRQ(VecAYPX(uex,-1.0,u));
+  CHKERRQ(VecNorm(uex,NORM_2,&err));
   err  = PetscSqrtReal(err*err/((PetscReal)ctxt.imax));
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"L2 norm of the numerical error = %g (time=%g)\n",(double)err,(double)ftime);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"L2 norm of the numerical error = %g (time=%g)\n",(double)err,(double)ftime));
 
   /* Free up memory */
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&uex);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  CHKERRQ(TSDestroy(&ts));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(VecDestroy(&uex));
+  CHKERRQ(VecDestroy(&u));
   ierr = PetscFinalize();
   return ierr;
 }
@@ -117,15 +117,14 @@ int main(int argc, char **argv)
 PetscErrorCode ExactSolution(Vec u,void *c,PetscReal t)
 {
   UserContext     *ctxt = (UserContext*) c;
-  PetscErrorCode  ierr;
   PetscInt        i,is,ie;
   PetscScalar     *uarr;
   PetscReal       x,dx,a=ctxt->a,pi=PETSC_PI;
 
   PetscFunctionBegin;
   dx = (ctxt->xmax - ctxt->xmin)/((PetscReal) ctxt->imax);
-  ierr = VecGetOwnershipRange(u,&is,&ie);CHKERRQ(ierr);
-  ierr = VecGetArray(u,&uarr);CHKERRQ(ierr);
+  CHKERRQ(VecGetOwnershipRange(u,&is,&ie));
+  CHKERRQ(VecGetArray(u,&uarr));
   for (i=is; i<ie; i++) {
     x          = i * dx;
     switch (ctxt->physics_type) {
@@ -138,7 +137,7 @@ PetscErrorCode ExactSolution(Vec u,void *c,PetscReal t)
     default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for physics type %s",PhysicsTypes[ctxt->physics_type]);
     }
   }
-  ierr = VecRestoreArray(u,&uarr);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(u,&uarr));
   PetscFunctionReturn(0);
 }
 
@@ -147,11 +146,10 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat J,Mat Jpre,void *c
   UserContext    *user = (UserContext*) ctx;
   PetscInt       matis,matie,i;
   PetscReal      dx,dx2;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   dx = (user->xmax - user->xmin)/((PetscReal)user->imax); dx2 = dx*dx;
-  ierr = MatGetOwnershipRange(J,&matis,&matie);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(J,&matis,&matie));
   for (i=matis; i<matie; i++) {
     PetscScalar values[3];
     PetscInt    col[3];
@@ -182,10 +180,10 @@ static PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec U,Mat J,Mat Jpre,void *c
       col[1] = i;
       col[2] = i+1;
     }
-    ierr = MatSetValues(J,1,&i,3,col,values,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(J,1,&i,3,col,values,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 

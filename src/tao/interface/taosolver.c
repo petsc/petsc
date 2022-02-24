@@ -55,14 +55,13 @@ struct _n_TaoMonitorDrawCtx {
 @*/
 PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
 {
-  PetscErrorCode ierr;
   Tao            tao;
 
   PetscFunctionBegin;
   PetscValidPointer(newtao,2);
-  ierr = TaoInitializePackage();CHKERRQ(ierr);
-  ierr = TaoLineSearchInitializePackage();CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(tao,TAO_CLASSID,"Tao","Optimization solver","Tao",comm,TaoDestroy,TaoView);CHKERRQ(ierr);
+  CHKERRQ(TaoInitializePackage());
+  CHKERRQ(TaoLineSearchInitializePackage());
+  CHKERRQ(PetscHeaderCreate(tao,TAO_CLASSID,"Tao","Optimization solver","Tao",comm,TaoDestroy,TaoView));
 
   /* Set non-NULL defaults */
   tao->ops->convergencetest = TaoDefaultConvergenceTest;
@@ -87,7 +86,7 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
 
   tao->hist_reset  = PETSC_TRUE;
 
-  ierr = TaoResetStatistics(tao);CHKERRQ(ierr);
+  CHKERRQ(TaoResetStatistics(tao));
   *newtao = tao;
   PetscFunctionReturn(0);
 }
@@ -127,26 +126,26 @@ PetscErrorCode TaoSolve(Tao tao)
                                 "Number = {ANL/MCS-TM-322 - Revision 3.5},\n"
                                 "url    = {https://www.mcs.anl.gov/research/projects/tao/}\n}\n",&set);CHKERRQ(ierr);
   tao->header_printed = PETSC_FALSE;
-  ierr = TaoSetUp(tao);CHKERRQ(ierr);
-  ierr = TaoResetStatistics(tao);CHKERRQ(ierr);
+  CHKERRQ(TaoSetUp(tao));
+  CHKERRQ(TaoResetStatistics(tao));
   if (tao->linesearch) {
-    ierr = TaoLineSearchReset(tao->linesearch);CHKERRQ(ierr);
+    CHKERRQ(TaoLineSearchReset(tao->linesearch));
   }
 
-  ierr = PetscLogEventBegin(TAO_Solve,tao,0,0,0);CHKERRQ(ierr);
-  if (tao->ops->solve) { ierr = (*tao->ops->solve)(tao);CHKERRQ(ierr); }
-  ierr = PetscLogEventEnd(TAO_Solve,tao,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(TAO_Solve,tao,0,0,0));
+  if (tao->ops->solve) CHKERRQ((*tao->ops->solve)(tao));
+  CHKERRQ(PetscLogEventEnd(TAO_Solve,tao,0,0,0));
 
-  ierr = VecViewFromOptions(tao->solution,(PetscObject)tao,"-tao_view_solution");CHKERRQ(ierr);
+  CHKERRQ(VecViewFromOptions(tao->solution,(PetscObject)tao,"-tao_view_solution"));
 
   tao->ntotalits += tao->niter;
-  ierr = TaoViewFromOptions(tao,NULL,"-tao_view");CHKERRQ(ierr);
+  CHKERRQ(TaoViewFromOptions(tao,NULL,"-tao_view"));
 
   if (tao->printreason) {
     if (tao->reason > 0) {
-      ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve converged due to %s iterations %D\n",TaoConvergedReasons[tao->reason],tao->niter);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(((PetscObject)tao)->comm,"TAO solve converged due to %s iterations %D\n",TaoConvergedReasons[tao->reason],tao->niter));
     } else {
-      ierr = PetscPrintf(((PetscObject)tao)->comm,"TAO solve did not converge due to %s iteration %D\n",TaoConvergedReasons[tao->reason],tao->niter);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(((PetscObject)tao)->comm,"TAO solve did not converge due to %s iteration %D\n",TaoConvergedReasons[tao->reason],tao->niter));
     }
   }
   PetscFunctionReturn(0);
@@ -173,14 +172,12 @@ PetscErrorCode TaoSolve(Tao tao)
 @*/
 PetscErrorCode TaoSetUp(Tao tao)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID,1);
   if (tao->setupcalled) PetscFunctionReturn(0);
   PetscCheck(tao->solution,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetSolution");
   if (tao->ops->setup) {
-    ierr = (*tao->ops->setup)(tao);CHKERRQ(ierr);
+    CHKERRQ((*tao->ops->setup)(tao));
   }
   tao->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -201,71 +198,69 @@ PetscErrorCode TaoSetUp(Tao tao)
 @*/
 PetscErrorCode TaoDestroy(Tao *tao)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!*tao) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*tao,TAO_CLASSID,1);
   if (--((PetscObject)*tao)->refct > 0) {*tao = NULL;PetscFunctionReturn(0);}
 
   if ((*tao)->ops->destroy) {
-    ierr = (*((*tao))->ops->destroy)(*tao);CHKERRQ(ierr);
+    CHKERRQ((*((*tao))->ops->destroy)(*tao));
   }
-  ierr = KSPDestroy(&(*tao)->ksp);CHKERRQ(ierr);
-  ierr = TaoLineSearchDestroy(&(*tao)->linesearch);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&(*tao)->ksp));
+  CHKERRQ(TaoLineSearchDestroy(&(*tao)->linesearch));
 
   if ((*tao)->ops->convergencedestroy) {
-    ierr = (*(*tao)->ops->convergencedestroy)((*tao)->cnvP);CHKERRQ(ierr);
+    CHKERRQ((*(*tao)->ops->convergencedestroy)((*tao)->cnvP));
     if ((*tao)->jacobian_state_inv) {
-      ierr = MatDestroy(&(*tao)->jacobian_state_inv);CHKERRQ(ierr);
+      CHKERRQ(MatDestroy(&(*tao)->jacobian_state_inv));
     }
   }
-  ierr = VecDestroy(&(*tao)->solution);CHKERRQ(ierr);
-  ierr = VecDestroy(&(*tao)->gradient);CHKERRQ(ierr);
-  ierr = VecDestroy(&(*tao)->ls_res);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&(*tao)->solution));
+  CHKERRQ(VecDestroy(&(*tao)->gradient));
+  CHKERRQ(VecDestroy(&(*tao)->ls_res));
 
   if ((*tao)->gradient_norm) {
-    ierr = PetscObjectDereference((PetscObject)(*tao)->gradient_norm);CHKERRQ(ierr);
-    ierr = VecDestroy(&(*tao)->gradient_norm_tmp);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectDereference((PetscObject)(*tao)->gradient_norm));
+    CHKERRQ(VecDestroy(&(*tao)->gradient_norm_tmp));
   }
 
-  ierr = VecDestroy(&(*tao)->XL);CHKERRQ(ierr);
-  ierr = VecDestroy(&(*tao)->XU);CHKERRQ(ierr);
-  ierr = VecDestroy(&(*tao)->IL);CHKERRQ(ierr);
-  ierr = VecDestroy(&(*tao)->IU);CHKERRQ(ierr);
-  ierr = VecDestroy(&(*tao)->DE);CHKERRQ(ierr);
-  ierr = VecDestroy(&(*tao)->DI);CHKERRQ(ierr);
-  ierr = VecDestroy(&(*tao)->constraints);CHKERRQ(ierr);
-  ierr = VecDestroy(&(*tao)->constraints_equality);CHKERRQ(ierr);
-  ierr = VecDestroy(&(*tao)->constraints_inequality);CHKERRQ(ierr);
-  ierr = VecDestroy(&(*tao)->stepdirection);CHKERRQ(ierr);
-  ierr = MatDestroy(&(*tao)->hessian_pre);CHKERRQ(ierr);
-  ierr = MatDestroy(&(*tao)->hessian);CHKERRQ(ierr);
-  ierr = MatDestroy(&(*tao)->ls_jac);CHKERRQ(ierr);
-  ierr = MatDestroy(&(*tao)->ls_jac_pre);CHKERRQ(ierr);
-  ierr = MatDestroy(&(*tao)->jacobian_pre);CHKERRQ(ierr);
-  ierr = MatDestroy(&(*tao)->jacobian);CHKERRQ(ierr);
-  ierr = MatDestroy(&(*tao)->jacobian_state_pre);CHKERRQ(ierr);
-  ierr = MatDestroy(&(*tao)->jacobian_state);CHKERRQ(ierr);
-  ierr = MatDestroy(&(*tao)->jacobian_state_inv);CHKERRQ(ierr);
-  ierr = MatDestroy(&(*tao)->jacobian_design);CHKERRQ(ierr);
-  ierr = MatDestroy(&(*tao)->jacobian_equality);CHKERRQ(ierr);
-  ierr = MatDestroy(&(*tao)->jacobian_equality_pre);CHKERRQ(ierr);
-  ierr = MatDestroy(&(*tao)->jacobian_inequality);CHKERRQ(ierr);
-  ierr = MatDestroy(&(*tao)->jacobian_inequality_pre);CHKERRQ(ierr);
-  ierr = ISDestroy(&(*tao)->state_is);CHKERRQ(ierr);
-  ierr = ISDestroy(&(*tao)->design_is);CHKERRQ(ierr);
-  ierr = VecDestroy(&(*tao)->res_weights_v);CHKERRQ(ierr);
-  ierr = TaoCancelMonitors(*tao);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&(*tao)->XL));
+  CHKERRQ(VecDestroy(&(*tao)->XU));
+  CHKERRQ(VecDestroy(&(*tao)->IL));
+  CHKERRQ(VecDestroy(&(*tao)->IU));
+  CHKERRQ(VecDestroy(&(*tao)->DE));
+  CHKERRQ(VecDestroy(&(*tao)->DI));
+  CHKERRQ(VecDestroy(&(*tao)->constraints));
+  CHKERRQ(VecDestroy(&(*tao)->constraints_equality));
+  CHKERRQ(VecDestroy(&(*tao)->constraints_inequality));
+  CHKERRQ(VecDestroy(&(*tao)->stepdirection));
+  CHKERRQ(MatDestroy(&(*tao)->hessian_pre));
+  CHKERRQ(MatDestroy(&(*tao)->hessian));
+  CHKERRQ(MatDestroy(&(*tao)->ls_jac));
+  CHKERRQ(MatDestroy(&(*tao)->ls_jac_pre));
+  CHKERRQ(MatDestroy(&(*tao)->jacobian_pre));
+  CHKERRQ(MatDestroy(&(*tao)->jacobian));
+  CHKERRQ(MatDestroy(&(*tao)->jacobian_state_pre));
+  CHKERRQ(MatDestroy(&(*tao)->jacobian_state));
+  CHKERRQ(MatDestroy(&(*tao)->jacobian_state_inv));
+  CHKERRQ(MatDestroy(&(*tao)->jacobian_design));
+  CHKERRQ(MatDestroy(&(*tao)->jacobian_equality));
+  CHKERRQ(MatDestroy(&(*tao)->jacobian_equality_pre));
+  CHKERRQ(MatDestroy(&(*tao)->jacobian_inequality));
+  CHKERRQ(MatDestroy(&(*tao)->jacobian_inequality_pre));
+  CHKERRQ(ISDestroy(&(*tao)->state_is));
+  CHKERRQ(ISDestroy(&(*tao)->design_is));
+  CHKERRQ(VecDestroy(&(*tao)->res_weights_v));
+  CHKERRQ(TaoCancelMonitors(*tao));
   if ((*tao)->hist_malloc) {
-    ierr = PetscFree4((*tao)->hist_obj,(*tao)->hist_resid,(*tao)->hist_cnorm,(*tao)->hist_lits);CHKERRQ(ierr);
+    CHKERRQ(PetscFree4((*tao)->hist_obj,(*tao)->hist_resid,(*tao)->hist_cnorm,(*tao)->hist_lits));
   }
   if ((*tao)->res_weights_n) {
-    ierr = PetscFree((*tao)->res_weights_rows);CHKERRQ(ierr);
-    ierr = PetscFree((*tao)->res_weights_cols);CHKERRQ(ierr);
-    ierr = PetscFree((*tao)->res_weights_w);CHKERRQ(ierr);
+    CHKERRQ(PetscFree((*tao)->res_weights_rows));
+    CHKERRQ(PetscFree((*tao)->res_weights_cols));
+    CHKERRQ(PetscFree((*tao)->res_weights_w));
   }
-  ierr = PetscHeaderDestroy(tao);CHKERRQ(ierr);
+  CHKERRQ(PetscHeaderDestroy(tao));
   PetscFunctionReturn(0);
 }
 
@@ -322,155 +317,155 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  ierr = PetscObjectGetComm((PetscObject)tao,&comm);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)tao,&comm));
 
   /* So no warnings are given about unused options */
-  ierr = PetscOptionsHasName(((PetscObject)tao)->options,((PetscObject)tao)->prefix,"-tao_ls_type",&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHasName(((PetscObject)tao)->options,((PetscObject)tao)->prefix,"-tao_ls_type",&flg));
 
   ierr = PetscObjectOptionsBegin((PetscObject)tao);CHKERRQ(ierr);
   {
     if (((PetscObject)tao)->type_name) default_type = ((PetscObject)tao)->type_name;
     /* Check for type from options */
-    ierr = PetscOptionsFList("-tao_type","Tao Solver type","TaoSetType",TaoList,default_type,type,256,&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsFList("-tao_type","Tao Solver type","TaoSetType",TaoList,default_type,type,256,&flg));
     if (flg) {
-      ierr = TaoSetType(tao,type);CHKERRQ(ierr);
+      CHKERRQ(TaoSetType(tao,type));
     } else if (!((PetscObject)tao)->type_name) {
-      ierr = TaoSetType(tao,default_type);CHKERRQ(ierr);
+      CHKERRQ(TaoSetType(tao,default_type));
     }
 
-    ierr = PetscOptionsReal("-tao_catol","Stop if constraints violations within","TaoSetConstraintTolerances",tao->catol,&tao->catol,&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsReal("-tao_catol","Stop if constraints violations within","TaoSetConstraintTolerances",tao->catol,&tao->catol,&flg));
     if (flg) tao->catol_changed = PETSC_TRUE;
-    ierr = PetscOptionsReal("-tao_crtol","Stop if relative contraint violations within","TaoSetConstraintTolerances",tao->crtol,&tao->crtol,&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsReal("-tao_crtol","Stop if relative contraint violations within","TaoSetConstraintTolerances",tao->crtol,&tao->crtol,&flg));
     if (flg) tao->crtol_changed = PETSC_TRUE;
-    ierr = PetscOptionsReal("-tao_gatol","Stop if norm of gradient less than","TaoSetTolerances",tao->gatol,&tao->gatol,&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsReal("-tao_gatol","Stop if norm of gradient less than","TaoSetTolerances",tao->gatol,&tao->gatol,&flg));
     if (flg) tao->gatol_changed = PETSC_TRUE;
-    ierr = PetscOptionsReal("-tao_grtol","Stop if norm of gradient divided by the function value is less than","TaoSetTolerances",tao->grtol,&tao->grtol,&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsReal("-tao_grtol","Stop if norm of gradient divided by the function value is less than","TaoSetTolerances",tao->grtol,&tao->grtol,&flg));
     if (flg) tao->grtol_changed = PETSC_TRUE;
-    ierr = PetscOptionsReal("-tao_gttol","Stop if the norm of the gradient is less than the norm of the initial gradient times tol","TaoSetTolerances",tao->gttol,&tao->gttol,&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsReal("-tao_gttol","Stop if the norm of the gradient is less than the norm of the initial gradient times tol","TaoSetTolerances",tao->gttol,&tao->gttol,&flg));
     if (flg) tao->gttol_changed = PETSC_TRUE;
-    ierr = PetscOptionsInt("-tao_max_it","Stop if iteration number exceeds","TaoSetMaximumIterations",tao->max_it,&tao->max_it,&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsInt("-tao_max_it","Stop if iteration number exceeds","TaoSetMaximumIterations",tao->max_it,&tao->max_it,&flg));
     if (flg) tao->max_it_changed = PETSC_TRUE;
-    ierr = PetscOptionsInt("-tao_max_funcs","Stop if number of function evaluations exceeds","TaoSetMaximumFunctionEvaluations",tao->max_funcs,&tao->max_funcs,&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsInt("-tao_max_funcs","Stop if number of function evaluations exceeds","TaoSetMaximumFunctionEvaluations",tao->max_funcs,&tao->max_funcs,&flg));
     if (flg) tao->max_funcs_changed = PETSC_TRUE;
-    ierr = PetscOptionsReal("-tao_fmin","Stop if function less than","TaoSetFunctionLowerBound",tao->fmin,&tao->fmin,&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsReal("-tao_fmin","Stop if function less than","TaoSetFunctionLowerBound",tao->fmin,&tao->fmin,&flg));
     if (flg) tao->fmin_changed = PETSC_TRUE;
-    ierr = PetscOptionsReal("-tao_steptol","Stop if step size or trust region radius less than","",tao->steptol,&tao->steptol,&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsReal("-tao_steptol","Stop if step size or trust region radius less than","",tao->steptol,&tao->steptol,&flg));
     if (flg) tao->steptol_changed = PETSC_TRUE;
-    ierr = PetscOptionsReal("-tao_trust0","Initial trust region radius","TaoSetTrustRegionRadius",tao->trust0,&tao->trust0,&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsReal("-tao_trust0","Initial trust region radius","TaoSetTrustRegionRadius",tao->trust0,&tao->trust0,&flg));
     if (flg) tao->trust0_changed = PETSC_TRUE;
-    ierr = PetscOptionsString("-tao_view_solution","view solution vector after each evaluation","TaoSetMonitor","stdout",monfilename,sizeof(monfilename),&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsString("-tao_view_solution","view solution vector after each evaluation","TaoSetMonitor","stdout",monfilename,sizeof(monfilename),&flg));
     if (flg) {
-      ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = TaoSetMonitor(tao,TaoSolutionMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIOpen(comm,monfilename,&monviewer));
+      CHKERRQ(TaoSetMonitor(tao,TaoSolutionMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy));
     }
 
-    ierr = PetscOptionsBool("-tao_converged_reason","Print reason for TAO converged","TaoSolve",tao->printreason,&tao->printreason,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-tao_view_gradient","view gradient vector after each evaluation","TaoSetMonitor","stdout",monfilename,sizeof(monfilename),&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsBool("-tao_converged_reason","Print reason for TAO converged","TaoSolve",tao->printreason,&tao->printreason,NULL));
+    CHKERRQ(PetscOptionsString("-tao_view_gradient","view gradient vector after each evaluation","TaoSetMonitor","stdout",monfilename,sizeof(monfilename),&flg));
     if (flg) {
-      ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = TaoSetMonitor(tao,TaoGradientMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIOpen(comm,monfilename,&monviewer));
+      CHKERRQ(TaoSetMonitor(tao,TaoGradientMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy));
     }
 
-    ierr = PetscOptionsString("-tao_view_stepdirection","view step direction vector after each iteration","TaoSetMonitor","stdout",monfilename,sizeof(monfilename),&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsString("-tao_view_stepdirection","view step direction vector after each iteration","TaoSetMonitor","stdout",monfilename,sizeof(monfilename),&flg));
     if (flg) {
-      ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = TaoSetMonitor(tao,TaoStepDirectionMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIOpen(comm,monfilename,&monviewer));
+      CHKERRQ(TaoSetMonitor(tao,TaoStepDirectionMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy));
     }
 
-    ierr = PetscOptionsString("-tao_view_residual","view least-squares residual vector after each evaluation","TaoSetMonitor","stdout",monfilename,sizeof(monfilename),&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsString("-tao_view_residual","view least-squares residual vector after each evaluation","TaoSetMonitor","stdout",monfilename,sizeof(monfilename),&flg));
     if (flg) {
-      ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = TaoSetMonitor(tao,TaoResidualMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIOpen(comm,monfilename,&monviewer));
+      CHKERRQ(TaoSetMonitor(tao,TaoResidualMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy));
     }
 
-    ierr = PetscOptionsString("-tao_monitor","Use the default convergence monitor","TaoSetMonitor","stdout",monfilename,sizeof(monfilename),&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsString("-tao_monitor","Use the default convergence monitor","TaoSetMonitor","stdout",monfilename,sizeof(monfilename),&flg));
     if (flg) {
-      ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = TaoSetMonitor(tao,TaoMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIOpen(comm,monfilename,&monviewer));
+      CHKERRQ(TaoSetMonitor(tao,TaoMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy));
     }
 
-    ierr = PetscOptionsString("-tao_gmonitor","Use the convergence monitor with extra globalization info","TaoSetMonitor","stdout",monfilename,sizeof(monfilename),&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsString("-tao_gmonitor","Use the convergence monitor with extra globalization info","TaoSetMonitor","stdout",monfilename,sizeof(monfilename),&flg));
     if (flg) {
-      ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = TaoSetMonitor(tao,TaoDefaultGMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIOpen(comm,monfilename,&monviewer));
+      CHKERRQ(TaoSetMonitor(tao,TaoDefaultGMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy));
     }
 
-    ierr = PetscOptionsString("-tao_smonitor","Use the short convergence monitor","TaoSetMonitor","stdout",monfilename,sizeof(monfilename),&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsString("-tao_smonitor","Use the short convergence monitor","TaoSetMonitor","stdout",monfilename,sizeof(monfilename),&flg));
     if (flg) {
-      ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = TaoSetMonitor(tao,TaoDefaultSMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIOpen(comm,monfilename,&monviewer));
+      CHKERRQ(TaoSetMonitor(tao,TaoDefaultSMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy));
     }
 
-    ierr = PetscOptionsString("-tao_cmonitor","Use the default convergence monitor with constraint norm","TaoSetMonitor","stdout",monfilename,sizeof(monfilename),&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsString("-tao_cmonitor","Use the default convergence monitor with constraint norm","TaoSetMonitor","stdout",monfilename,sizeof(monfilename),&flg));
     if (flg) {
-      ierr = PetscViewerASCIIOpen(comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = TaoSetMonitor(tao,TaoDefaultCMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIOpen(comm,monfilename,&monviewer));
+      CHKERRQ(TaoSetMonitor(tao,TaoDefaultCMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy));
     }
 
     flg = PETSC_FALSE;
-    ierr = PetscOptionsBool("-tao_cancelmonitors","cancel all monitors and call any registered destroy routines","TaoCancelMonitors",flg,&flg,NULL);CHKERRQ(ierr);
-    if (flg) {ierr = TaoCancelMonitors(tao);CHKERRQ(ierr);}
+    CHKERRQ(PetscOptionsBool("-tao_cancelmonitors","cancel all monitors and call any registered destroy routines","TaoCancelMonitors",flg,&flg,NULL));
+    if (flg) CHKERRQ(TaoCancelMonitors(tao));
 
     flg = PETSC_FALSE;
-    ierr = PetscOptionsBool("-tao_draw_solution","Plot solution vector at each iteration","TaoSetMonitor",flg,&flg,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsBool("-tao_draw_solution","Plot solution vector at each iteration","TaoSetMonitor",flg,&flg,NULL));
     if (flg) {
       TaoMonitorDrawCtx drawctx;
       PetscInt          howoften = 1;
-      ierr = TaoMonitorDrawCtxCreate(PetscObjectComm((PetscObject)tao),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&drawctx);CHKERRQ(ierr);
-      ierr = TaoSetMonitor(tao,TaoDrawSolutionMonitor,drawctx,(PetscErrorCode (*)(void**))TaoMonitorDrawCtxDestroy);CHKERRQ(ierr);
+      CHKERRQ(TaoMonitorDrawCtxCreate(PetscObjectComm((PetscObject)tao),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&drawctx));
+      CHKERRQ(TaoSetMonitor(tao,TaoDrawSolutionMonitor,drawctx,(PetscErrorCode (*)(void**))TaoMonitorDrawCtxDestroy));
     }
 
     flg = PETSC_FALSE;
-    ierr = PetscOptionsBool("-tao_draw_step","plots step direction at each iteration","TaoSetMonitor",flg,&flg,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsBool("-tao_draw_step","plots step direction at each iteration","TaoSetMonitor",flg,&flg,NULL));
     if (flg) {
-      ierr = TaoSetMonitor(tao,TaoDrawStepMonitor,NULL,NULL);CHKERRQ(ierr);
+      CHKERRQ(TaoSetMonitor(tao,TaoDrawStepMonitor,NULL,NULL));
     }
 
     flg = PETSC_FALSE;
-    ierr = PetscOptionsBool("-tao_draw_gradient","plots gradient at each iteration","TaoSetMonitor",flg,&flg,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsBool("-tao_draw_gradient","plots gradient at each iteration","TaoSetMonitor",flg,&flg,NULL));
     if (flg) {
       TaoMonitorDrawCtx drawctx;
       PetscInt          howoften = 1;
-      ierr = TaoMonitorDrawCtxCreate(PetscObjectComm((PetscObject)tao),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&drawctx);CHKERRQ(ierr);
-      ierr = TaoSetMonitor(tao,TaoDrawGradientMonitor,drawctx,(PetscErrorCode (*)(void**))TaoMonitorDrawCtxDestroy);CHKERRQ(ierr);
+      CHKERRQ(TaoMonitorDrawCtxCreate(PetscObjectComm((PetscObject)tao),NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,300,300,howoften,&drawctx));
+      CHKERRQ(TaoSetMonitor(tao,TaoDrawGradientMonitor,drawctx,(PetscErrorCode (*)(void**))TaoMonitorDrawCtxDestroy));
     }
     flg = PETSC_FALSE;
-    ierr = PetscOptionsBool("-tao_fd_gradient","compute gradient using finite differences","TaoDefaultComputeGradient",flg,&flg,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsBool("-tao_fd_gradient","compute gradient using finite differences","TaoDefaultComputeGradient",flg,&flg,NULL));
     if (flg) {
-      ierr = TaoSetGradient(tao,NULL,TaoDefaultComputeGradient,NULL);CHKERRQ(ierr);
+      CHKERRQ(TaoSetGradient(tao,NULL,TaoDefaultComputeGradient,NULL));
     }
     flg = PETSC_FALSE;
-    ierr = PetscOptionsBool("-tao_fd_hessian","compute hessian using finite differences","TaoDefaultComputeHessian",flg,&flg,NULL);CHKERRQ(ierr);
-    if (flg) {
-      Mat H;
-
-      ierr = MatCreate(PetscObjectComm((PetscObject)tao),&H);CHKERRQ(ierr);
-      ierr = MatSetType(H,MATAIJ);CHKERRQ(ierr);
-      ierr = TaoSetHessian(tao,H,H,TaoDefaultComputeHessian,NULL);CHKERRQ(ierr);
-      ierr = MatDestroy(&H);CHKERRQ(ierr);
-    }
-    flg = PETSC_FALSE;
-    ierr = PetscOptionsBool("-tao_mf_hessian","compute matrix-free hessian using finite differences","TaoDefaultComputeHessianMFFD",flg,&flg,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsBool("-tao_fd_hessian","compute hessian using finite differences","TaoDefaultComputeHessian",flg,&flg,NULL));
     if (flg) {
       Mat H;
 
-      ierr = MatCreate(PetscObjectComm((PetscObject)tao),&H);CHKERRQ(ierr);
-      ierr = TaoSetHessian(tao,H,H,TaoDefaultComputeHessianMFFD,NULL);CHKERRQ(ierr);
-      ierr = MatDestroy(&H);CHKERRQ(ierr);
+      CHKERRQ(MatCreate(PetscObjectComm((PetscObject)tao),&H));
+      CHKERRQ(MatSetType(H,MATAIJ));
+      CHKERRQ(TaoSetHessian(tao,H,H,TaoDefaultComputeHessian,NULL));
+      CHKERRQ(MatDestroy(&H));
     }
     flg = PETSC_FALSE;
-    ierr = PetscOptionsBool("-tao_recycle_history","enable recycling/re-using information from the previous TaoSolve() call for some algorithms","TaoSetRecycleHistory",flg,&flg,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsBool("-tao_mf_hessian","compute matrix-free hessian using finite differences","TaoDefaultComputeHessianMFFD",flg,&flg,NULL));
     if (flg) {
-      ierr = TaoSetRecycleHistory(tao,PETSC_TRUE);CHKERRQ(ierr);
+      Mat H;
+
+      CHKERRQ(MatCreate(PetscObjectComm((PetscObject)tao),&H));
+      CHKERRQ(TaoSetHessian(tao,H,H,TaoDefaultComputeHessianMFFD,NULL));
+      CHKERRQ(MatDestroy(&H));
     }
-    ierr = PetscOptionsEnum("-tao_subset_type","subset type","",TaoSubSetTypes,(PetscEnum)tao->subset_type,(PetscEnum*)&tao->subset_type,NULL);CHKERRQ(ierr);
+    flg = PETSC_FALSE;
+    CHKERRQ(PetscOptionsBool("-tao_recycle_history","enable recycling/re-using information from the previous TaoSolve() call for some algorithms","TaoSetRecycleHistory",flg,&flg,NULL));
+    if (flg) {
+      CHKERRQ(TaoSetRecycleHistory(tao,PETSC_TRUE));
+    }
+    CHKERRQ(PetscOptionsEnum("-tao_subset_type","subset type","",TaoSubSetTypes,(PetscEnum)tao->subset_type,(PetscEnum*)&tao->subset_type,NULL));
 
     if (tao->linesearch) {
-      ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
+      CHKERRQ(TaoLineSearchSetFromOptions(tao->linesearch));
     }
 
     if (tao->ops->setfromoptions) {
-      ierr = (*tao->ops->setfromoptions)(PetscOptionsObject,tao);CHKERRQ(ierr);
+      CHKERRQ((*tao->ops->setfromoptions)(PetscOptionsObject,tao));
     }
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -492,11 +487,9 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 @*/
 PetscErrorCode  TaoViewFromOptions(Tao A,PetscObject obj,const char name[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,TAO_CLASSID,1);
-  ierr = PetscObjectViewFromOptions((PetscObject)A,obj,name);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectViewFromOptions((PetscObject)A,obj,name));
   PetscFunctionReturn(0);
 }
 
@@ -526,148 +519,147 @@ PetscErrorCode  TaoViewFromOptions(Tao A,PetscObject obj,const char name[])
 @*/
 PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
 {
-  PetscErrorCode      ierr;
   PetscBool           isascii,isstring;
   TaoType             type;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)tao)->comm,&viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIGetStdout(((PetscObject)tao)->comm,&viewer));
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   PetscCheckSameComm(tao,1,viewer,2);
 
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring));
   if (isascii) {
-    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)tao,viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectPrintClassNamePrefixType((PetscObject)tao,viewer));
 
     if (tao->ops->view) {
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = (*tao->ops->view)(tao,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPushTab(viewer));
+      CHKERRQ((*tao->ops->view)(tao,viewer));
+      CHKERRQ(PetscViewerASCIIPopTab(viewer));
     }
     if (tao->linesearch) {
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = TaoLineSearchView(tao->linesearch,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPushTab(viewer));
+      CHKERRQ(TaoLineSearchView(tao->linesearch,viewer));
+      CHKERRQ(PetscViewerASCIIPopTab(viewer));
     }
     if (tao->ksp) {
-      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = KSPView(tao->ksp,viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"total KSP iterations: %D\n",tao->ksp_tot_its);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPushTab(viewer));
+      CHKERRQ(KSPView(tao->ksp,viewer));
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"total KSP iterations: %D\n",tao->ksp_tot_its));
+      CHKERRQ(PetscViewerASCIIPopTab(viewer));
     }
 
-    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPushTab(viewer));
 
     if (tao->XL || tao->XU) {
-      ierr = PetscViewerASCIIPrintf(viewer,"Active Set subset type: %s\n",TaoSubSetTypes[tao->subset_type]);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Active Set subset type: %s\n",TaoSubSetTypes[tao->subset_type]));
     }
 
-    ierr = PetscViewerASCIIPrintf(viewer,"convergence tolerances: gatol=%g,",(double)tao->gatol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer," steptol=%g,",(double)tao->steptol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer," gttol=%g\n",(double)tao->gttol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Residual in Function/Gradient:=%g\n",(double)tao->residual);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"convergence tolerances: gatol=%g,",(double)tao->gatol));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer," steptol=%g,",(double)tao->steptol));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer," gttol=%g\n",(double)tao->gttol));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Residual in Function/Gradient:=%g\n",(double)tao->residual));
 
     if (tao->constrained) {
-      ierr = PetscViewerASCIIPrintf(viewer,"convergence tolerances:");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer," catol=%g,",(double)tao->catol);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer," crtol=%g\n",(double)tao->crtol);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"Residual in Constraints:=%g\n",(double)tao->cnorm);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"convergence tolerances:"));
+      CHKERRQ(PetscViewerASCIIPrintf(viewer," catol=%g,",(double)tao->catol));
+      CHKERRQ(PetscViewerASCIIPrintf(viewer," crtol=%g\n",(double)tao->crtol));
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Residual in Constraints:=%g\n",(double)tao->cnorm));
     }
 
     if (tao->trust < tao->steptol) {
-      ierr = PetscViewerASCIIPrintf(viewer,"convergence tolerances: steptol=%g\n",(double)tao->steptol);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"Final trust region radius:=%g\n",(double)tao->trust);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"convergence tolerances: steptol=%g\n",(double)tao->steptol));
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Final trust region radius:=%g\n",(double)tao->trust));
     }
 
     if (tao->fmin>-1.e25) {
-      ierr = PetscViewerASCIIPrintf(viewer,"convergence tolerances: function minimum=%g\n",(double)tao->fmin);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"convergence tolerances: function minimum=%g\n",(double)tao->fmin));
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"Objective value=%g\n",(double)tao->fc);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Objective value=%g\n",(double)tao->fc));
 
-    ierr = PetscViewerASCIIPrintf(viewer,"total number of iterations=%D,          ",tao->niter);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"              (max: %D)\n",tao->max_it);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"total number of iterations=%D,          ",tao->niter));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"              (max: %D)\n",tao->max_it));
 
     if (tao->nfuncs>0) {
-      ierr = PetscViewerASCIIPrintf(viewer,"total number of function evaluations=%D,",tao->nfuncs);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"                max: %D\n",tao->max_funcs);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"total number of function evaluations=%D,",tao->nfuncs));
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"                max: %D\n",tao->max_funcs));
     }
     if (tao->ngrads>0) {
-      ierr = PetscViewerASCIIPrintf(viewer,"total number of gradient evaluations=%D,",tao->ngrads);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"                max: %D\n",tao->max_funcs);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"total number of gradient evaluations=%D,",tao->ngrads));
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"                max: %D\n",tao->max_funcs));
     }
     if (tao->nfuncgrads>0) {
-      ierr = PetscViewerASCIIPrintf(viewer,"total number of function/gradient evaluations=%D,",tao->nfuncgrads);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"    (max: %D)\n",tao->max_funcs);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"total number of function/gradient evaluations=%D,",tao->nfuncgrads));
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"    (max: %D)\n",tao->max_funcs));
     }
     if (tao->nhess>0) {
-      ierr = PetscViewerASCIIPrintf(viewer,"total number of Hessian evaluations=%D\n",tao->nhess);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"total number of Hessian evaluations=%D\n",tao->nhess));
     }
     if (tao->nconstraints>0) {
-      ierr = PetscViewerASCIIPrintf(viewer,"total number of constraint function evaluations=%D\n",tao->nconstraints);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"total number of constraint function evaluations=%D\n",tao->nconstraints));
     }
     if (tao->njac>0) {
-      ierr = PetscViewerASCIIPrintf(viewer,"total number of Jacobian evaluations=%D\n",tao->njac);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"total number of Jacobian evaluations=%D\n",tao->njac));
     }
 
     if (tao->reason>0) {
-      ierr = PetscViewerASCIIPrintf(viewer,    "Solution converged: ");CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,    "Solution converged: "));
       switch (tao->reason) {
       case TAO_CONVERGED_GATOL:
-        ierr = PetscViewerASCIIPrintf(viewer," ||g(X)|| <= gatol\n");CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer," ||g(X)|| <= gatol\n"));
         break;
       case TAO_CONVERGED_GRTOL:
-        ierr = PetscViewerASCIIPrintf(viewer," ||g(X)||/|f(X)| <= grtol\n");CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer," ||g(X)||/|f(X)| <= grtol\n"));
         break;
       case TAO_CONVERGED_GTTOL:
-        ierr = PetscViewerASCIIPrintf(viewer," ||g(X)||/||g(X0)|| <= gttol\n");CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer," ||g(X)||/||g(X0)|| <= gttol\n"));
         break;
       case TAO_CONVERGED_STEPTOL:
-        ierr = PetscViewerASCIIPrintf(viewer," Steptol -- step size small\n");CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer," Steptol -- step size small\n"));
         break;
       case TAO_CONVERGED_MINF:
-        ierr = PetscViewerASCIIPrintf(viewer," Minf --  f < fmin\n");CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer," Minf --  f < fmin\n"));
         break;
       case TAO_CONVERGED_USER:
-        ierr = PetscViewerASCIIPrintf(viewer," User Terminated\n");CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer," User Terminated\n"));
         break;
       default:
-        ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer,"\n"));
         break;
       }
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"Solver terminated: %d",tao->reason);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(viewer,"Solver terminated: %d",tao->reason));
       switch (tao->reason) {
       case TAO_DIVERGED_MAXITS:
-        ierr = PetscViewerASCIIPrintf(viewer," Maximum Iterations\n");CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer," Maximum Iterations\n"));
         break;
       case TAO_DIVERGED_NAN:
-        ierr = PetscViewerASCIIPrintf(viewer," NAN or Inf encountered\n");CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer," NAN or Inf encountered\n"));
         break;
       case TAO_DIVERGED_MAXFCN:
-        ierr = PetscViewerASCIIPrintf(viewer," Maximum Function Evaluations\n");CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer," Maximum Function Evaluations\n"));
         break;
       case TAO_DIVERGED_LS_FAILURE:
-        ierr = PetscViewerASCIIPrintf(viewer," Line Search Failure\n");CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer," Line Search Failure\n"));
         break;
       case TAO_DIVERGED_TR_REDUCTION:
-        ierr = PetscViewerASCIIPrintf(viewer," Trust Region too small\n");CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer," Trust Region too small\n"));
         break;
       case TAO_DIVERGED_USER:
-        ierr = PetscViewerASCIIPrintf(viewer," User Terminated\n");CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer," User Terminated\n"));
         break;
       default:
-        ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+        CHKERRQ(PetscViewerASCIIPrintf(viewer,"\n"));
         break;
       }
     }
-    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPopTab(viewer));
   } else if (isstring) {
-    ierr = TaoGetType(tao,&type);CHKERRQ(ierr);
-    ierr = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(ierr);
+    CHKERRQ(TaoGetType(tao,&type));
+    CHKERRQ(PetscViewerStringSPrintf(viewer," %-3.3s",type));
   }
   PetscFunctionReturn(0);
 }
@@ -769,8 +761,6 @@ $ ||g(X)|| / ||g(X0)||                <= gttol
 @*/
 PetscErrorCode TaoSetTolerances(Tao tao, PetscReal gatol, PetscReal grtol, PetscReal gttol)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidLogicalCollectiveReal(tao,gatol,2);
@@ -779,7 +769,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal gatol, PetscReal grtol, Petsc
 
   if (gatol != PETSC_DEFAULT) {
     if (gatol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative gatol -- ignored.\n");CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(tao,"Tried to set negative gatol -- ignored.\n"));
     } else {
       tao->gatol = PetscMax(0,gatol);
       tao->gatol_changed = PETSC_TRUE;
@@ -788,7 +778,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal gatol, PetscReal grtol, Petsc
 
   if (grtol != PETSC_DEFAULT) {
     if (grtol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative grtol -- ignored.\n");CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(tao,"Tried to set negative grtol -- ignored.\n"));
     } else {
       tao->grtol = PetscMax(0,grtol);
       tao->grtol_changed = PETSC_TRUE;
@@ -797,7 +787,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal gatol, PetscReal grtol, Petsc
 
   if (gttol != PETSC_DEFAULT) {
     if (gttol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative gttol -- ignored.\n");CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(tao,"Tried to set negative gttol -- ignored.\n"));
     } else {
       tao->gttol = PetscMax(0,gttol);
       tao->gttol_changed = PETSC_TRUE;
@@ -830,8 +820,6 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal gatol, PetscReal grtol, Petsc
 @*/
 PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal crtol)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidLogicalCollectiveReal(tao,catol,2);
@@ -839,7 +827,7 @@ PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal cr
 
   if (catol != PETSC_DEFAULT) {
     if (catol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative catol -- ignored.\n");CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(tao,"Tried to set negative catol -- ignored.\n"));
     } else {
       tao->catol = PetscMax(0,catol);
       tao->catol_changed = PETSC_TRUE;
@@ -848,7 +836,7 @@ PetscErrorCode TaoSetConstraintTolerances(Tao tao, PetscReal catol, PetscReal cr
 
   if (crtol != PETSC_DEFAULT) {
     if (crtol<0) {
-      ierr = PetscInfo(tao,"Tried to set negative crtol -- ignored.\n");CHKERRQ(ierr);
+      CHKERRQ(PetscInfo(tao,"Tried to set negative crtol -- ignored.\n"));
     } else {
       tao->crtol = PetscMax(0,crtol);
       tao->crtol_changed = PETSC_TRUE;
@@ -1263,16 +1251,15 @@ PetscErrorCode TaoGetLineSearch(Tao tao, TaoLineSearch *ls)
 @*/
 PetscErrorCode TaoAddLineSearchCounts(Tao tao)
 {
-  PetscErrorCode ierr;
   PetscBool      flg;
   PetscInt       nfeval,ngeval,nfgeval;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (tao->linesearch) {
-    ierr = TaoLineSearchIsUsingTaoRoutines(tao->linesearch,&flg);CHKERRQ(ierr);
+    CHKERRQ(TaoLineSearchIsUsingTaoRoutines(tao->linesearch,&flg));
     if (!flg) {
-      ierr = TaoLineSearchGetNumberFunctionEvaluations(tao->linesearch,&nfeval,&ngeval,&nfgeval);CHKERRQ(ierr);
+      CHKERRQ(TaoLineSearchGetNumberFunctionEvaluations(tao->linesearch,&nfeval,&ngeval,&nfgeval));
       tao->nfuncs += nfeval;
       tao->ngrads += ngeval;
       tao->nfuncgrads += nfgeval;
@@ -1450,7 +1437,6 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void*)
 @*/
 PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void*), void *ctx,PetscErrorCode (*dest)(void**))
 {
-  PetscErrorCode ierr;
   PetscInt       i;
   PetscBool      identical;
 
@@ -1459,7 +1445,7 @@ PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void*), void *
   PetscCheck(tao->numbermonitors < MAXTAOMONITORS,PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Cannot attach another monitor -- max=%d",MAXTAOMONITORS);
 
   for (i=0; i<tao->numbermonitors;i++) {
-    ierr = PetscMonitorCompare((PetscErrorCode (*)(void))func,ctx,dest,(PetscErrorCode (*)(void))tao->monitor[i],tao->monitorcontext[i],tao->monitordestroy[i],&identical);CHKERRQ(ierr);
+    CHKERRQ(PetscMonitorCompare((PetscErrorCode (*)(void))func,ctx,dest,(PetscErrorCode (*)(void))tao->monitor[i],tao->monitorcontext[i],tao->monitordestroy[i],&identical));
     if (identical) PetscFunctionReturn(0);
   }
   tao->monitor[tao->numbermonitors] = func;
@@ -1492,13 +1478,12 @@ PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void*), void *
 PetscErrorCode TaoCancelMonitors(Tao tao)
 {
   PetscInt       i;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   for (i=0;i<tao->numbermonitors;i++) {
     if (tao->monitordestroy[i]) {
-      ierr = (*tao->monitordestroy[i])(&tao->monitorcontext[i]);CHKERRQ(ierr);
+      CHKERRQ((*tao->monitordestroy[i])(&tao->monitorcontext[i]));
     }
   }
   tao->numbermonitors = 0;
@@ -1526,7 +1511,6 @@ PetscErrorCode TaoCancelMonitors(Tao tao)
 @*/
 PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       its, tabs;
   PetscReal      fct,gnorm;
   PetscViewer    viewer = (PetscViewer)ctx;
@@ -1537,20 +1521,20 @@ PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
   its = tao->niter;
   fct = tao->fc;
   gnorm = tao->residual;
-  ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIGetTab(viewer, &tabs));
+  CHKERRQ(PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel));
   if (its == 0 && ((PetscObject)tao)->prefix && !tao->header_printed) {
-     ierr = PetscViewerASCIIPrintf(viewer,"  Iteration information for %s solve.\n",((PetscObject)tao)->prefix);CHKERRQ(ierr);
+     CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Iteration information for %s solve.\n",((PetscObject)tao)->prefix));
      tao->header_printed = PETSC_TRUE;
    }
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D TAO,",its);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Function value: %g,",(double)fct);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"%3D TAO,",its));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Function value: %g,",(double)fct));
   if (gnorm >= PETSC_INFINITY) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Residual: Inf \n");CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Residual: Inf \n"));
   } else {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Residual: %g \n",(double)gnorm);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Residual: %g \n",(double)gnorm));
   }
-  ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIISetTab(viewer, tabs));
   PetscFunctionReturn(0);
 }
 
@@ -1578,7 +1562,6 @@ PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
 @*/
 PetscErrorCode TaoDefaultGMonitor(Tao tao, void *ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       its, tabs;
   PetscReal      fct,gnorm,stp,tr;
   PetscViewer    viewer = (PetscViewer)ctx;
@@ -1591,21 +1574,21 @@ PetscErrorCode TaoDefaultGMonitor(Tao tao, void *ctx)
   gnorm = tao->residual;
   stp = tao->step;
   tr = tao->trust;
-  ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIGetTab(viewer, &tabs));
+  CHKERRQ(PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel));
   if (its == 0 && ((PetscObject)tao)->prefix && !tao->header_printed) {
-     ierr = PetscViewerASCIIPrintf(viewer,"  Iteration information for %s solve.\n",((PetscObject)tao)->prefix);CHKERRQ(ierr);
+     CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Iteration information for %s solve.\n",((PetscObject)tao)->prefix));
      tao->header_printed = PETSC_TRUE;
    }
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D TAO,",its);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Function value: %g,",(double)fct);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"%3D TAO,",its));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Function value: %g,",(double)fct));
   if (gnorm >= PETSC_INFINITY) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Residual: Inf,");CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Residual: Inf,"));
   } else {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Residual: %g,",(double)gnorm);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Residual: %g,",(double)gnorm));
   }
-  ierr = PetscViewerASCIIPrintf(viewer,"  Step: %g,  Trust: %g\n",(double)stp,(double)tr);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Step: %g,  Trust: %g\n",(double)stp,(double)tr));
+  CHKERRQ(PetscViewerASCIISetTab(viewer, tabs));
   PetscFunctionReturn(0);
 }
 
@@ -1633,7 +1616,6 @@ PetscErrorCode TaoDefaultGMonitor(Tao tao, void *ctx)
 @*/
 PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       its, tabs;
   PetscReal      fct,gnorm;
   PetscViewer    viewer = (PetscViewer)ctx;
@@ -1644,20 +1626,20 @@ PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
   its = tao->niter;
   fct = tao->fc;
   gnorm = tao->residual;
-  ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"iter = %3D,",its);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer," Function value %g,",(double)fct);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIGetTab(viewer, &tabs));
+  CHKERRQ(PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"iter = %3D,",its));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer," Function value %g,",(double)fct));
   if (gnorm >= PETSC_INFINITY) {
-    ierr = PetscViewerASCIIPrintf(viewer," Residual: Inf \n");CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer," Residual: Inf \n"));
   } else if (gnorm > 1.e-6) {
-    ierr = PetscViewerASCIIPrintf(viewer," Residual: %g \n",(double)gnorm);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer," Residual: %g \n",(double)gnorm));
   } else if (gnorm > 1.e-11) {
-    ierr = PetscViewerASCIIPrintf(viewer," Residual: < 1.0e-6 \n");CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer," Residual: < 1.0e-6 \n"));
   } else {
-    ierr = PetscViewerASCIIPrintf(viewer," Residual: < 1.0e-11 \n");CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer," Residual: < 1.0e-11 \n"));
   }
-  ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIISetTab(viewer, tabs));
   PetscFunctionReturn(0);
 }
 
@@ -1681,7 +1663,6 @@ PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
 @*/
 PetscErrorCode TaoDefaultCMonitor(Tao tao, void *ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       its, tabs;
   PetscReal      fct,gnorm;
   PetscViewer    viewer = (PetscViewer)ctx;
@@ -1692,13 +1673,13 @@ PetscErrorCode TaoDefaultCMonitor(Tao tao, void *ctx)
   its = tao->niter;
   fct = tao->fc;
   gnorm = tao->residual;
-  ierr = PetscViewerASCIIGetTab(viewer, &tabs);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"iter = %D,",its);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer," Function value: %g,",(double)fct);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Residual: %g ",(double)gnorm);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Constraint: %g \n",(double)tao->cnorm);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISetTab(viewer, tabs);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIGetTab(viewer, &tabs));
+  CHKERRQ(PetscViewerASCIISetTab(viewer, ((PetscObject)tao)->tablevel));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"iter = %D,",its));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer," Function value: %g,",(double)fct));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Residual: %g ",(double)gnorm));
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Constraint: %g \n",(double)tao->cnorm));
+  CHKERRQ(PetscViewerASCIISetTab(viewer, tabs));
   PetscFunctionReturn(0);
 }
 
@@ -1722,13 +1703,12 @@ PetscErrorCode TaoDefaultCMonitor(Tao tao, void *ctx)
 @*/
 PetscErrorCode TaoSolutionMonitor(Tao tao, void *ctx)
 {
-  PetscErrorCode ierr;
   PetscViewer    viewer  = (PetscViewer)ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  ierr = VecView(tao->solution,viewer);CHKERRQ(ierr);
+  CHKERRQ(VecView(tao->solution,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1752,13 +1732,12 @@ PetscErrorCode TaoSolutionMonitor(Tao tao, void *ctx)
 @*/
 PetscErrorCode TaoGradientMonitor(Tao tao, void *ctx)
 {
-  PetscErrorCode ierr;
   PetscViewer    viewer = (PetscViewer)ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  ierr = VecView(tao->gradient,viewer);CHKERRQ(ierr);
+  CHKERRQ(VecView(tao->gradient,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1780,13 +1759,12 @@ PetscErrorCode TaoGradientMonitor(Tao tao, void *ctx)
 @*/
 PetscErrorCode TaoStepDirectionMonitor(Tao tao, void *ctx)
 {
-  PetscErrorCode ierr;
   PetscViewer    viewer = (PetscViewer)ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  ierr = VecView(tao->stepdirection,viewer);CHKERRQ(ierr);
+  CHKERRQ(VecView(tao->stepdirection,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1810,13 +1788,12 @@ PetscErrorCode TaoStepDirectionMonitor(Tao tao, void *ctx)
 @*/
 PetscErrorCode TaoDrawSolutionMonitor(Tao tao, void *ctx)
 {
-  PetscErrorCode    ierr;
   TaoMonitorDrawCtx ictx = (TaoMonitorDrawCtx)ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (!(((ictx->howoften > 0) && (!(tao->niter % ictx->howoften))) || ((ictx->howoften == -1) && tao->reason))) PetscFunctionReturn(0);
-  ierr = VecView(tao->solution,ictx->viewer);CHKERRQ(ierr);
+  CHKERRQ(VecView(tao->solution,ictx->viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1840,13 +1817,12 @@ PetscErrorCode TaoDrawSolutionMonitor(Tao tao, void *ctx)
 @*/
 PetscErrorCode TaoDrawGradientMonitor(Tao tao, void *ctx)
 {
-  PetscErrorCode    ierr;
   TaoMonitorDrawCtx ictx = (TaoMonitorDrawCtx)ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (!(((ictx->howoften > 0) && (!(tao->niter % ictx->howoften))) || ((ictx->howoften == -1) && tao->reason))) PetscFunctionReturn(0);
-  ierr = VecView(tao->gradient,ictx->viewer);CHKERRQ(ierr);
+  CHKERRQ(VecView(tao->gradient,ictx->viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1868,13 +1844,12 @@ PetscErrorCode TaoDrawGradientMonitor(Tao tao, void *ctx)
 @*/
 PetscErrorCode TaoDrawStepMonitor(Tao tao, void *ctx)
 {
-  PetscErrorCode ierr;
   PetscViewer    viewer = (PetscViewer)ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  ierr = VecView(tao->stepdirection,viewer);CHKERRQ(ierr);
+  CHKERRQ(VecView(tao->stepdirection,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1896,13 +1871,12 @@ PetscErrorCode TaoDrawStepMonitor(Tao tao, void *ctx)
 @*/
 PetscErrorCode TaoResidualMonitor(Tao tao, void *ctx)
 {
-  PetscErrorCode ierr;
   PetscViewer    viewer  = (PetscViewer)ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  ierr = VecView(tao->ls_res,viewer);CHKERRQ(ierr);
+  CHKERRQ(VecView(tao->ls_res,viewer));
   PetscFunctionReturn(0);
 }
 
@@ -1940,38 +1914,37 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao,void *dummy)
   PetscReal          catol=tao->catol,crtol=tao->crtol;
   PetscReal          fmin=tao->fmin, cnorm=tao->cnorm;
   TaoConvergedReason reason=tao->reason;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
 
   if (PetscIsInfOrNanReal(f)) {
-    ierr = PetscInfo(tao,"Failed to converged, function value is Inf or NaN\n");CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(tao,"Failed to converged, function value is Inf or NaN\n"));
     reason = TAO_DIVERGED_NAN;
   } else if (f <= fmin && cnorm <=catol) {
-    ierr = PetscInfo(tao,"Converged due to function value %g < minimum function value %g\n", (double)f,(double)fmin);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(tao,"Converged due to function value %g < minimum function value %g\n", (double)f,(double)fmin));
     reason = TAO_CONVERGED_MINF;
   } else if (gnorm<= gatol && cnorm <=catol) {
-    ierr = PetscInfo(tao,"Converged due to residual norm ||g(X)||=%g < %g\n",(double)gnorm,(double)gatol);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(tao,"Converged due to residual norm ||g(X)||=%g < %g\n",(double)gnorm,(double)gatol));
     reason = TAO_CONVERGED_GATOL;
   } else if (f!=0 && PetscAbsReal(gnorm/f) <= grtol && cnorm <= crtol) {
-    ierr = PetscInfo(tao,"Converged due to residual ||g(X)||/|f(X)| =%g < %g\n",(double)(gnorm/f),(double)grtol);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(tao,"Converged due to residual ||g(X)||/|f(X)| =%g < %g\n",(double)(gnorm/f),(double)grtol));
     reason = TAO_CONVERGED_GRTOL;
   } else if (gnorm0 != 0 && ((gttol == 0 && gnorm == 0) || gnorm/gnorm0 < gttol) && cnorm <= crtol) {
-    ierr = PetscInfo(tao,"Converged due to relative residual norm ||g(X)||/||g(X0)|| = %g < %g\n",(double)(gnorm/gnorm0),(double)gttol);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(tao,"Converged due to relative residual norm ||g(X)||/||g(X0)|| = %g < %g\n",(double)(gnorm/gnorm0),(double)gttol));
     reason = TAO_CONVERGED_GTTOL;
   } else if (max_funcs >=0 && nfuncs > max_funcs) {
-    ierr = PetscInfo(tao,"Exceeded maximum number of function evaluations: %" PetscInt_FMT " > %" PetscInt_FMT "\n", nfuncs,max_funcs);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(tao,"Exceeded maximum number of function evaluations: %" PetscInt_FMT " > %" PetscInt_FMT "\n", nfuncs,max_funcs));
     reason = TAO_DIVERGED_MAXFCN;
   } else if (tao->lsflag != 0) {
-    ierr = PetscInfo(tao,"Tao Line Search failure.\n");CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(tao,"Tao Line Search failure.\n"));
     reason = TAO_DIVERGED_LS_FAILURE;
   } else if (trradius < steptol && niter > 0) {
-    ierr = PetscInfo(tao,"Trust region/step size too small: %g < %g\n", (double)trradius,(double)steptol);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(tao,"Trust region/step size too small: %g < %g\n", (double)trradius,(double)steptol));
     reason = TAO_CONVERGED_STEPTOL;
   } else if (niter >= tao->max_it) {
-    ierr = PetscInfo(tao,"Exceeded maximum number of iterations: %D > %D\n",niter,tao->max_it);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(tao,"Exceeded maximum number of iterations: %D > %D\n",niter,tao->max_it));
     reason = TAO_DIVERGED_MAXITS;
   } else {
     reason = TAO_CONTINUE_ITERATING;
@@ -2014,16 +1987,14 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao,void *dummy)
 
 PetscErrorCode TaoSetOptionsPrefix(Tao tao, const char p[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)tao,p);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)tao,p));
   if (tao->linesearch) {
-    ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,p);CHKERRQ(ierr);
+    CHKERRQ(TaoLineSearchSetOptionsPrefix(tao->linesearch,p));
   }
   if (tao->ksp) {
-    ierr = KSPSetOptionsPrefix(tao->ksp,p);CHKERRQ(ierr);
+    CHKERRQ(KSPSetOptionsPrefix(tao->ksp,p));
   }
   PetscFunctionReturn(0);
 }
@@ -2048,16 +2019,14 @@ PetscErrorCode TaoSetOptionsPrefix(Tao tao, const char p[])
 @*/
 PetscErrorCode TaoAppendOptionsPrefix(Tao tao, const char p[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  ierr = PetscObjectAppendOptionsPrefix((PetscObject)tao,p);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectAppendOptionsPrefix((PetscObject)tao,p));
   if (tao->linesearch) {
-    ierr = PetscObjectAppendOptionsPrefix((PetscObject)tao->linesearch,p);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectAppendOptionsPrefix((PetscObject)tao->linesearch,p));
   }
   if (tao->ksp) {
-    ierr = KSPAppendOptionsPrefix(tao->ksp,p);CHKERRQ(ierr);
+    CHKERRQ(KSPAppendOptionsPrefix(tao->ksp,p));
   }
   PetscFunctionReturn(0);
 }
@@ -2084,11 +2053,9 @@ PetscErrorCode TaoAppendOptionsPrefix(Tao tao, const char p[])
 @*/
 PetscErrorCode TaoGetOptionsPrefix(Tao tao, const char *p[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)tao,p);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject)tao,p));
   PetscFunctionReturn(0);
 }
 
@@ -2124,27 +2091,26 @@ PetscErrorCode TaoGetOptionsPrefix(Tao tao, const char *p[])
 @*/
 PetscErrorCode TaoSetType(Tao tao, TaoType type)
 {
-  PetscErrorCode ierr;
   PetscErrorCode (*create_xxx)(Tao);
   PetscBool      issame;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
 
-  ierr = PetscObjectTypeCompare((PetscObject)tao,type,&issame);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)tao,type,&issame));
   if (issame) PetscFunctionReturn(0);
 
-  ierr = PetscFunctionListFind(TaoList, type, (void(**)(void))&create_xxx);CHKERRQ(ierr);
+  CHKERRQ(PetscFunctionListFind(TaoList, type, (void(**)(void))&create_xxx));
   PetscCheck(create_xxx,PetscObjectComm((PetscObject)tao),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested Tao type %s",type);
 
   /* Destroy the existing solver information */
   if (tao->ops->destroy) {
-    ierr = (*tao->ops->destroy)(tao);CHKERRQ(ierr);
+    CHKERRQ((*tao->ops->destroy)(tao));
   }
-  ierr = KSPDestroy(&tao->ksp);CHKERRQ(ierr);
-  ierr = TaoLineSearchDestroy(&tao->linesearch);CHKERRQ(ierr);
-  ierr = VecDestroy(&tao->gradient);CHKERRQ(ierr);
-  ierr = VecDestroy(&tao->stepdirection);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&tao->ksp));
+  CHKERRQ(TaoLineSearchDestroy(&tao->linesearch));
+  CHKERRQ(VecDestroy(&tao->gradient));
+  CHKERRQ(VecDestroy(&tao->stepdirection));
 
   tao->ops->setup = NULL;
   tao->ops->solve = NULL;
@@ -2154,8 +2120,8 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
 
   tao->setupcalled = PETSC_FALSE;
 
-  ierr = (*create_xxx)(tao);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)tao,type);CHKERRQ(ierr);
+  CHKERRQ((*create_xxx)(tao));
+  CHKERRQ(PetscObjectChangeTypeName((PetscObject)tao,type));
   PetscFunctionReturn(0);
 }
 
@@ -2190,11 +2156,9 @@ $     -tao_type my_solver
 M*/
 PetscErrorCode TaoRegister(const char sname[], PetscErrorCode (*func)(Tao))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = TaoInitializePackage();CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&TaoList,sname,(void (*)(void))func);CHKERRQ(ierr);
+  CHKERRQ(TaoInitializePackage());
+  CHKERRQ(PetscFunctionListAdd(&TaoList,sname,(void (*)(void))func));
   PetscFunctionReturn(0);
 }
 
@@ -2210,10 +2174,8 @@ PetscErrorCode TaoRegister(const char sname[], PetscErrorCode (*func)(Tao))
 @*/
 PetscErrorCode TaoRegisterDestroy(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFunctionListDestroy(&TaoList);CHKERRQ(ierr);
+  CHKERRQ(PetscFunctionListDestroy(&TaoList));
   TaoRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -2289,14 +2251,12 @@ PetscErrorCode TaoGetResidualNorm(Tao tao,PetscReal *value)
 @*/
 PetscErrorCode  TaoSetIterationNumber(Tao tao,PetscInt iter)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidLogicalCollectiveInt(tao,iter,2);
-  ierr = PetscObjectSAWsTakeAccess((PetscObject)tao);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)tao));
   tao->niter = iter;
-  ierr = PetscObjectSAWsGrantAccess((PetscObject)tao);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)tao));
   PetscFunctionReturn(0);
 }
 
@@ -2345,14 +2305,12 @@ PetscErrorCode  TaoGetTotalIterationNumber(Tao tao,PetscInt *iter)
 @*/
 PetscErrorCode  TaoSetTotalIterationNumber(Tao tao,PetscInt iter)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidLogicalCollectiveInt(tao,iter,2);
-  ierr = PetscObjectSAWsTakeAccess((PetscObject)tao);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)tao));
   tao->ntotalits = iter;
-  ierr = PetscObjectSAWsGrantAccess((PetscObject)tao);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSAWsGrantAccess((PetscObject)tao));
   PetscFunctionReturn(0);
 }
 
@@ -2528,7 +2486,6 @@ PetscErrorCode TaoGetType(Tao tao,TaoType *type)
 @*/
 PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, PetscReal cnorm, PetscReal steplength)
 {
-  PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin;
@@ -2543,7 +2500,7 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
   }
   PetscCheck(!PetscIsInfOrNanReal(f) && !PetscIsInfOrNanReal(res),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
   for (i=0;i<tao->numbermonitors;i++) {
-    ierr = (*tao->monitor[i])(tao,tao->monitorcontext[i]);CHKERRQ(ierr);
+    CHKERRQ((*tao->monitor[i])(tao,tao->monitorcontext[i]));
   }
   PetscFunctionReturn(0);
 }
@@ -2584,8 +2541,6 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
 @*/
 PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal obj[], PetscReal resid[], PetscReal cnorm[], PetscInt lits[], PetscInt na,PetscBool reset)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   if (obj) PetscValidRealPointer(obj,2);
@@ -2595,7 +2550,7 @@ PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal obj[], PetscReal resi
 
   if (na == PETSC_DECIDE || na == PETSC_DEFAULT) na = 1000;
   if (!obj && !resid && !cnorm && !lits) {
-    ierr = PetscCalloc4(na,&obj,na,&resid,na,&cnorm,na,&lits);CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc4(na,&obj,na,&resid,na,&cnorm,na,&lits));
     tao->hist_malloc = PETSC_TRUE;
   }
 
@@ -2713,16 +2668,14 @@ PetscErrorCode  TaoGetApplicationContext(Tao tao,void *usrP)
 @*/
 PetscErrorCode  TaoSetGradientNorm(Tao tao, Mat M)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(M,MAT_CLASSID,2);
-  ierr = PetscObjectReference((PetscObject)M);CHKERRQ(ierr);
-  ierr = MatDestroy(&tao->gradient_norm);CHKERRQ(ierr);
-  ierr = VecDestroy(&tao->gradient_norm_tmp);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectReference((PetscObject)M));
+  CHKERRQ(MatDestroy(&tao->gradient_norm));
+  CHKERRQ(VecDestroy(&tao->gradient_norm_tmp));
   tao->gradient_norm = M;
-  ierr = MatCreateVecs(M, NULL, &tao->gradient_norm_tmp);CHKERRQ(ierr);
+  CHKERRQ(MatCreateVecs(M, NULL, &tao->gradient_norm_tmp));
   PetscFunctionReturn(0);
 }
 
@@ -2769,8 +2722,6 @@ PetscErrorCode  TaoGetGradientNorm(Tao tao, Mat *M)
 @*/
 PetscErrorCode  TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal *gnorm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(gradient,VEC_CLASSID,2);
@@ -2780,11 +2731,11 @@ PetscErrorCode  TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal 
     PetscScalar gnorms;
 
     PetscCheck(type == NORM_2,PetscObjectComm((PetscObject)gradient), PETSC_ERR_ARG_WRONG, "Norm type must be NORM_2 if an inner product for the gradient norm is set.");
-    ierr = MatMult(tao->gradient_norm, gradient, tao->gradient_norm_tmp);CHKERRQ(ierr);
-    ierr = VecDot(gradient, tao->gradient_norm_tmp, &gnorms);CHKERRQ(ierr);
+    CHKERRQ(MatMult(tao->gradient_norm, gradient, tao->gradient_norm_tmp));
+    CHKERRQ(VecDot(gradient, tao->gradient_norm_tmp, &gnorms));
     *gnorm = PetscRealPart(PetscSqrtScalar(gnorms));
   } else {
-    ierr = VecNorm(gradient, type, gnorm);CHKERRQ(ierr);
+    CHKERRQ(VecNorm(gradient, type, gnorm));
   }
   PetscFunctionReturn(0);
 }
@@ -2806,12 +2757,10 @@ PetscErrorCode  TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal 
 @*/
 PetscErrorCode  TaoMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscInt howoften,TaoMonitorDrawCtx *ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscNew(ctx);CHKERRQ(ierr);
-  ierr = PetscViewerDrawOpen(comm,host,label,x,y,m,n,&(*ctx)->viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetFromOptions((*ctx)->viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(ctx));
+  CHKERRQ(PetscViewerDrawOpen(comm,host,label,x,y,m,n,&(*ctx)->viewer));
+  CHKERRQ(PetscViewerSetFromOptions((*ctx)->viewer));
   (*ctx)->howoften = howoften;
   PetscFunctionReturn(0);
 }
@@ -2830,10 +2779,8 @@ PetscErrorCode  TaoMonitorDrawCtxCreate(MPI_Comm comm,const char host[],const ch
 @*/
 PetscErrorCode  TaoMonitorDrawCtxDestroy(TaoMonitorDrawCtx *ictx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscViewerDestroy(&(*ictx)->viewer);CHKERRQ(ierr);
-  ierr = PetscFree(*ictx);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDestroy(&(*ictx)->viewer));
+  CHKERRQ(PetscFree(*ictx));
   PetscFunctionReturn(0);
 }

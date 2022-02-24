@@ -15,11 +15,9 @@ static PetscBool PetscSysPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  PetscSysFinalizePackage(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (Petsc_Seq_keyval != MPI_KEYVAL_INVALID) {
-    ierr = MPI_Comm_free_keyval(&Petsc_Seq_keyval);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Comm_free_keyval(&Petsc_Seq_keyval));
   }
   PetscSysPackageInitialized = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -38,33 +36,32 @@ PetscErrorCode  PetscSysInitializePackage(void)
 {
   char           logList[256];
   PetscBool      opt,pkg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (PetscSysPackageInitialized) PetscFunctionReturn(0);
   PetscSysPackageInitialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscClassIdRegister("Object",&PETSC_OBJECT_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("Container",&PETSC_CONTAINER_CLASSID);CHKERRQ(ierr);
+  CHKERRQ(PetscClassIdRegister("Object",&PETSC_OBJECT_CLASSID));
+  CHKERRQ(PetscClassIdRegister("Container",&PETSC_CONTAINER_CLASSID));
 
   /* Register Events */
-  ierr = PetscLogEventRegister("PetscBarrier", PETSC_SMALLEST_CLASSID,&PETSC_Barrier);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("BuildTwoSided",PETSC_SMALLEST_CLASSID,&PETSC_BuildTwoSided);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("BuildTwoSidedF",PETSC_SMALLEST_CLASSID,&PETSC_BuildTwoSidedF);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventRegister("PetscBarrier", PETSC_SMALLEST_CLASSID,&PETSC_Barrier));
+  CHKERRQ(PetscLogEventRegister("BuildTwoSided",PETSC_SMALLEST_CLASSID,&PETSC_BuildTwoSided));
+  CHKERRQ(PetscLogEventRegister("BuildTwoSidedF",PETSC_SMALLEST_CLASSID,&PETSC_BuildTwoSidedF));
   /* Process Info */
   {
     PetscClassId  classids[1];
 
     classids[0] = PETSC_SMALLEST_CLASSID;
-    ierr = PetscInfoProcessClass("sys", 1, classids);CHKERRQ(ierr);
+    CHKERRQ(PetscInfoProcessClass("sys", 1, classids));
   }
   /* Process summary exclusions */
-  ierr = PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-log_exclude",logList,sizeof(logList),&opt));
   if (opt) {
-    ierr = PetscStrInList("null",logList,',',&pkg);CHKERRQ(ierr);
-    if (pkg) {ierr = PetscLogEventExcludeClass(PETSC_SMALLEST_CLASSID);CHKERRQ(ierr);}
+    CHKERRQ(PetscStrInList("null",logList,',',&pkg));
+    if (pkg) CHKERRQ(PetscLogEventExcludeClass(PETSC_SMALLEST_CLASSID));
   }
-  ierr = PetscRegisterFinalize(PetscSysFinalizePackage);CHKERRQ(ierr);
+  CHKERRQ(PetscRegisterFinalize(PetscSysFinalizePackage));
   PetscFunctionReturn(0);
 }
 
@@ -91,24 +88,22 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petsc(void)
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsys(void)
 #endif
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   /*
       If we got here then PETSc was properly loaded
   */
-  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
-  ierr = PetscDrawInitializePackage();CHKERRQ(ierr);
-  ierr = PetscViewerInitializePackage();CHKERRQ(ierr);
-  ierr = PetscRandomInitializePackage();CHKERRQ(ierr);
+  CHKERRQ(PetscSysInitializePackage());
+  CHKERRQ(PetscDrawInitializePackage());
+  CHKERRQ(PetscViewerInitializePackage());
+  CHKERRQ(PetscRandomInitializePackage());
 
 #if defined(PETSC_USE_SINGLE_LIBRARY)
-  ierr = PetscDLLibraryRegister_petscvec();CHKERRQ(ierr);
-  ierr = PetscDLLibraryRegister_petscmat();CHKERRQ(ierr);
-  ierr = PetscDLLibraryRegister_petscdm();CHKERRQ(ierr);
-  ierr = PetscDLLibraryRegister_petscksp();CHKERRQ(ierr);
-  ierr = PetscDLLibraryRegister_petscsnes();CHKERRQ(ierr);
-  ierr = PetscDLLibraryRegister_petscts();CHKERRQ(ierr);
+  CHKERRQ(PetscDLLibraryRegister_petscvec());
+  CHKERRQ(PetscDLLibraryRegister_petscmat());
+  CHKERRQ(PetscDLLibraryRegister_petscdm());
+  CHKERRQ(PetscDLLibraryRegister_petscksp());
+  CHKERRQ(PetscDLLibraryRegister_petscsnes());
+  CHKERRQ(PetscDLLibraryRegister_petscts());
 #endif
   PetscFunctionReturn(0);
 }

@@ -37,9 +37,8 @@ PETSC_EXTERN PetscErrorCode PetscTableRemoveAll(PetscTable);
 
 static inline PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,PetscInt data,InsertMode imode)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,hash = (PetscInt)PetscHash(ta,(unsigned long)key);
-  PetscInt       hashstep = (PetscInt)PetscHashStep(ta,(unsigned long)key);
+  PetscInt i,hash   = (PetscInt)PetscHash(ta,(unsigned long)key);
+  PetscInt hashstep = (PetscInt)PetscHashStep(ta,(unsigned long)key);
 
   PetscFunctionBegin;
   PetscCheck(key > 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key (value %" PetscInt_FMT ") <= 0",key);
@@ -75,7 +74,7 @@ static inline PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,PetscInt d
         ta->keytable[hash] = key;
         ta->table[hash] = data;
       } else {
-        ierr = PetscTableAddExpand(ta,key,data,imode);CHKERRQ(ierr);
+        CHKERRQ(PetscTableAddExpand(ta,key,data,imode));
       }
       PetscFunctionReturn(0);
     }
@@ -87,9 +86,8 @@ static inline PetscErrorCode PetscTableAdd(PetscTable ta,PetscInt key,PetscInt d
 
 static inline PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt key)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,hash = (PetscInt)PetscHash(ta,(unsigned long)key);
-  PetscInt       hashstep = (PetscInt)PetscHashStep(ta,(unsigned long)key);
+  PetscInt i,hash   = (PetscInt)PetscHash(ta,(unsigned long)key);
+  PetscInt hashstep = (PetscInt)PetscHashStep(ta,(unsigned long)key);
 
   PetscFunctionBegin;
   PetscCheck(key > 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key (value %" PetscInt_FMT ") <= 0",key);
@@ -104,7 +102,7 @@ static inline PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt key)
         ta->keytable[hash] = key;
         ta->table[hash] = ta->count;
       } else {
-        ierr = PetscTableAddCountExpand(ta,key);CHKERRQ(ierr);
+        CHKERRQ(PetscTableAddCountExpand(ta,key));
       }
       PetscFunctionReturn(0);
     }
@@ -119,9 +117,9 @@ static inline PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt key)
 */
 static inline PetscErrorCode  PetscTableFind(PetscTable ta,PetscInt key,PetscInt *data)
 {
-  PetscInt       ii = 0;
-  PetscInt       hash = (PetscInt)PetscHash(ta,(unsigned long)key);
-  PetscInt       hashstep = (PetscInt)PetscHashStep(ta,(unsigned long)key);
+  PetscInt ii       = 0;
+  PetscInt hash     = (PetscInt)PetscHash(ta,(unsigned long)key);
+  PetscInt hashstep = (PetscInt)PetscHashStep(ta,(unsigned long)key);
 
   PetscFunctionBegin;
   *data = 0;

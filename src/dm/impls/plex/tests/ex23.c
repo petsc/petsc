@@ -68,23 +68,21 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   options->auxfield    = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-multifield", "Flag for trying different numbers of input/output fields", "ex23.c", options->multifield, &options->multifield, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-subdomain", "Flag for trying volumetric submesh", "ex23.c", options->subdomain, &options->subdomain, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-submesh", "Flag for trying boundary submesh", "ex23.c", options->submesh, &options->submesh, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-auxfield", "Flag for trying auxiliary fields", "ex23.c", options->auxfield, &options->auxfield, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-multifield", "Flag for trying different numbers of input/output fields", "ex23.c", options->multifield, &options->multifield, NULL));
+  CHKERRQ(PetscOptionsBool("-subdomain", "Flag for trying volumetric submesh", "ex23.c", options->subdomain, &options->subdomain, NULL));
+  CHKERRQ(PetscOptionsBool("-submesh", "Flag for trying boundary submesh", "ex23.c", options->submesh, &options->submesh, NULL));
+  CHKERRQ(PetscOptionsBool("-auxfield", "Flag for trying auxiliary fields", "ex23.c", options->auxfield, &options->auxfield, NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-orig_dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreate(comm, dm));
+  CHKERRQ(DMSetType(*dm, DMPLEX));
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-orig_dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -92,19 +90,18 @@ static PetscErrorCode SetupDiscretization(DM dm, PetscInt dim, PetscBool simplex
 {
   PetscFE        fe;
   MPI_Comm       comm;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, dim, simplex, "velocity_", -1, &fe);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe, "velocity");CHKERRQ(ierr);
-  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, 1, simplex, "pressure_", -1, &fe);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe, "pressure");CHKERRQ(ierr);
-  ierr = DMSetField(dm, 1, NULL, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  ierr = DMCreateDS(dm);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject) dm, &comm));
+  CHKERRQ(PetscFECreateDefault(comm, dim, dim, simplex, "velocity_", -1, &fe));
+  CHKERRQ(PetscObjectSetName((PetscObject) fe, "velocity"));
+  CHKERRQ(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  CHKERRQ(PetscFEDestroy(&fe));
+  CHKERRQ(PetscFECreateDefault(comm, dim, 1, simplex, "pressure_", -1, &fe));
+  CHKERRQ(PetscObjectSetName((PetscObject) fe, "pressure"));
+  CHKERRQ(DMSetField(dm, 1, NULL, (PetscObject) fe));
+  CHKERRQ(PetscFEDestroy(&fe));
+  CHKERRQ(DMCreateDS(dm));
   PetscFunctionReturn(0);
 }
 
@@ -112,15 +109,14 @@ static PetscErrorCode SetupOutputDiscretization(DM dm, PetscInt dim, PetscBool s
 {
   PetscFE        fe;
   MPI_Comm       comm;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, dim, simplex, "output_", -1, &fe);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe, "output");CHKERRQ(ierr);
-  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-  ierr = DMCreateDS(dm);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject) dm, &comm));
+  CHKERRQ(PetscFECreateDefault(comm, dim, dim, simplex, "output_", -1, &fe));
+  CHKERRQ(PetscObjectSetName((PetscObject) fe, "output"));
+  CHKERRQ(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  CHKERRQ(PetscFEDestroy(&fe));
+  CHKERRQ(DMCreateDS(dm));
   PetscFunctionReturn(0);
 }
 
@@ -129,20 +125,19 @@ static PetscErrorCode CreateSubdomainMesh(DM dm, DMLabel *domLabel, DM *subdm, A
   DMLabel        label;
   PetscBool      simplex;
   PetscInt       dim, cStart, cEnd, c;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMLabelCreate(PETSC_COMM_SELF, "subdomain", &label);CHKERRQ(ierr);
-  for (c = cStart + (cEnd-cStart)/2; c < cEnd; ++c) {ierr = DMLabelSetValue(label, c, 1);CHKERRQ(ierr);}
-  ierr = DMPlexFilter(dm, label, 1, subdm);CHKERRQ(ierr);
-  ierr = DMGetDimension(*subdm, &dim);CHKERRQ(ierr);
-  ierr = SetupDiscretization(*subdm, dim, simplex, user);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *subdm, "subdomain");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*subdm, NULL, "-sub_dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMPlexIsSimplex(dm, &simplex));
+  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  CHKERRQ(DMLabelCreate(PETSC_COMM_SELF, "subdomain", &label));
+  for (c = cStart + (cEnd-cStart)/2; c < cEnd; ++c) CHKERRQ(DMLabelSetValue(label, c, 1));
+  CHKERRQ(DMPlexFilter(dm, label, 1, subdm));
+  CHKERRQ(DMGetDimension(*subdm, &dim));
+  CHKERRQ(SetupDiscretization(*subdm, dim, simplex, user));
+  CHKERRQ(PetscObjectSetName((PetscObject) *subdm, "subdomain"));
+  CHKERRQ(DMViewFromOptions(*subdm, NULL, "-sub_dm_view"));
   if (domLabel) *domLabel = label;
-  else          {ierr = DMLabelDestroy(&label);CHKERRQ(ierr);}
+  else          CHKERRQ(DMLabelDestroy(&label));
   PetscFunctionReturn(0);
 }
 
@@ -151,20 +146,19 @@ static PetscErrorCode CreateBoundaryMesh(DM dm, DMLabel *bdLabel, DM *subdm, App
   DMLabel        label;
   PetscBool      simplex;
   PetscInt       dim;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
-  ierr = DMLabelCreate(PETSC_COMM_SELF, "sub", &label);CHKERRQ(ierr);
-  ierr = DMPlexMarkBoundaryFaces(dm, 1, label);CHKERRQ(ierr);
-  ierr = DMPlexLabelComplete(dm, label);CHKERRQ(ierr);
-  ierr = DMPlexCreateSubmesh(dm, label, 1, PETSC_TRUE, subdm);CHKERRQ(ierr);
-  ierr = DMGetDimension(*subdm, &dim);CHKERRQ(ierr);
-  ierr = SetupDiscretization(*subdm, dim, simplex, user);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *subdm, "boundary");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*subdm, NULL, "-sub_dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMPlexIsSimplex(dm, &simplex));
+  CHKERRQ(DMLabelCreate(PETSC_COMM_SELF, "sub", &label));
+  CHKERRQ(DMPlexMarkBoundaryFaces(dm, 1, label));
+  CHKERRQ(DMPlexLabelComplete(dm, label));
+  CHKERRQ(DMPlexCreateSubmesh(dm, label, 1, PETSC_TRUE, subdm));
+  CHKERRQ(DMGetDimension(*subdm, &dim));
+  CHKERRQ(SetupDiscretization(*subdm, dim, simplex, user));
+  CHKERRQ(PetscObjectSetName((PetscObject) *subdm, "boundary"));
+  CHKERRQ(DMViewFromOptions(*subdm, NULL, "-sub_dm_view"));
   if (bdLabel) *bdLabel = label;
-  else         {ierr = DMLabelDestroy(&label);CHKERRQ(ierr);}
+  else         CHKERRQ(DMLabelDestroy(&label));
   PetscFunctionReturn(0);
 }
 
@@ -173,20 +167,19 @@ static PetscErrorCode CreateAuxiliaryVec(DM dm, DM *auxdm, Vec *la, AppCtx *user
   PetscErrorCode (**afuncs)(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar *, void *);
   PetscBool         simplex;
   PetscInt          dim, Nf, f;
-  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
-  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
-  ierr = PetscMalloc1(Nf, &afuncs);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(DMPlexIsSimplex(dm, &simplex));
+  CHKERRQ(DMGetNumFields(dm, &Nf));
+  CHKERRQ(PetscMalloc1(Nf, &afuncs));
   for (f = 0; f < Nf; ++f) afuncs[f]  = linear;
-  ierr = DMClone(dm, auxdm);CHKERRQ(ierr);
-  ierr = SetupDiscretization(*auxdm, dim, simplex, user);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(*auxdm, la);CHKERRQ(ierr);
-  ierr = DMProjectFunctionLocal(dm, 0.0, afuncs, NULL, INSERT_VALUES, *la);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(*la, NULL, "-local_aux_view");CHKERRQ(ierr);
-  ierr = PetscFree(afuncs);CHKERRQ(ierr);
+  CHKERRQ(DMClone(dm, auxdm));
+  CHKERRQ(SetupDiscretization(*auxdm, dim, simplex, user));
+  CHKERRQ(DMCreateLocalVector(*auxdm, la));
+  CHKERRQ(DMProjectFunctionLocal(dm, 0.0, afuncs, NULL, INSERT_VALUES, *la));
+  CHKERRQ(VecViewFromOptions(*la, NULL, "-local_aux_view"));
+  CHKERRQ(PetscFree(afuncs));
   PetscFunctionReturn(0);
 }
 
@@ -197,31 +190,30 @@ static PetscErrorCode TestFunctionProjection(DM dm, DM dmAux, DMLabel label, Vec
   PetscInt          Nf, f;
   PetscInt          val[1] = {1};
   char              lname[PETSC_MAX_PATH_LEN];
-  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, 0, la);CHKERRQ(ierr);}
-  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
-  ierr = PetscMalloc1(Nf, &funcs);CHKERRQ(ierr);
+  if (dmAux) CHKERRQ(DMSetAuxiliaryVec(dm, NULL, 0, 0, la));
+  CHKERRQ(DMGetNumFields(dm, &Nf));
+  CHKERRQ(PetscMalloc1(Nf, &funcs));
   for (f = 0; f < Nf; ++f) funcs[f] = linear;
-  ierr = DMGetGlobalVector(dm, &x);CHKERRQ(ierr);
-  ierr = PetscStrcpy(lname, "Function ");CHKERRQ(ierr);
-  ierr = PetscStrcat(lname, name);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) x, lname);CHKERRQ(ierr);
-  if (!label) {ierr = DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_VALUES, x);CHKERRQ(ierr);}
-  else        {ierr = DMProjectFunctionLabel(dm, 0.0, label, 1, val, 0, NULL, funcs, NULL, INSERT_VALUES, x);CHKERRQ(ierr);}
-  ierr = VecViewFromOptions(x, NULL, "-func_view");CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm, &x);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm, &lx);CHKERRQ(ierr);
-  ierr = PetscStrcpy(lname, "Local Function ");CHKERRQ(ierr);
-  ierr = PetscStrcat(lname, name);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) lx, lname);CHKERRQ(ierr);
-  if (!label) {ierr = DMProjectFunctionLocal(dm, 0.0, funcs, NULL, INSERT_VALUES, lx);CHKERRQ(ierr);}
-  else        {ierr = DMProjectFunctionLabelLocal(dm, 0.0, label, 1, val, 0, NULL, funcs, NULL, INSERT_VALUES, lx);CHKERRQ(ierr);}
-  ierr = VecViewFromOptions(lx, NULL, "-local_func_view");CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &lx);CHKERRQ(ierr);
-  ierr = PetscFree(funcs);CHKERRQ(ierr);
-  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, 0, NULL);CHKERRQ(ierr);}
+  CHKERRQ(DMGetGlobalVector(dm, &x));
+  CHKERRQ(PetscStrcpy(lname, "Function "));
+  CHKERRQ(PetscStrcat(lname, name));
+  CHKERRQ(PetscObjectSetName((PetscObject) x, lname));
+  if (!label) CHKERRQ(DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_VALUES, x));
+  else        CHKERRQ(DMProjectFunctionLabel(dm, 0.0, label, 1, val, 0, NULL, funcs, NULL, INSERT_VALUES, x));
+  CHKERRQ(VecViewFromOptions(x, NULL, "-func_view"));
+  CHKERRQ(DMRestoreGlobalVector(dm, &x));
+  CHKERRQ(DMGetLocalVector(dm, &lx));
+  CHKERRQ(PetscStrcpy(lname, "Local Function "));
+  CHKERRQ(PetscStrcat(lname, name));
+  CHKERRQ(PetscObjectSetName((PetscObject) lx, lname));
+  if (!label) CHKERRQ(DMProjectFunctionLocal(dm, 0.0, funcs, NULL, INSERT_VALUES, lx));
+  else        CHKERRQ(DMProjectFunctionLabelLocal(dm, 0.0, label, 1, val, 0, NULL, funcs, NULL, INSERT_VALUES, lx));
+  CHKERRQ(VecViewFromOptions(lx, NULL, "-local_func_view"));
+  CHKERRQ(DMRestoreLocalVector(dm, &lx));
+  CHKERRQ(PetscFree(funcs));
+  if (dmAux) CHKERRQ(DMSetAuxiliaryVec(dm, NULL, 0, 0, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -236,33 +228,32 @@ static PetscErrorCode TestFieldProjection(DM dm, DM dmAux, DMLabel label, Vec la
   PetscInt          Nf, f;
   PetscInt          val[1] = {1};
   char              lname[PETSC_MAX_PATH_LEN];
-  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, 0, la);CHKERRQ(ierr);}
-  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
-  ierr = PetscMalloc2(Nf, &funcs, Nf, &afuncs);CHKERRQ(ierr);
+  if (dmAux) CHKERRQ(DMSetAuxiliaryVec(dm, NULL, 0, 0, la));
+  CHKERRQ(DMGetNumFields(dm, &Nf));
+  CHKERRQ(PetscMalloc2(Nf, &funcs, Nf, &afuncs));
   for (f = 0; f < Nf; ++f) afuncs[f]  = linear;
   funcs[0] = linear_vector;
   funcs[1] = linear_scalar;
-  ierr = DMGetLocalVector(dm, &lu);CHKERRQ(ierr);
-  ierr = PetscStrcpy(lname, "Local Field Input ");CHKERRQ(ierr);
-  ierr = PetscStrcat(lname, name);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) lu, lname);CHKERRQ(ierr);
-  if (!label) {ierr = DMProjectFunctionLocal(dm, 0.0, afuncs, NULL, INSERT_VALUES, lu);CHKERRQ(ierr);}
-  else        {ierr = DMProjectFunctionLabelLocal(dm, 0.0, label, 1, val, 0, NULL, afuncs, NULL, INSERT_VALUES, lu);CHKERRQ(ierr);}
-  ierr = VecViewFromOptions(lu, NULL, "-local_input_view");CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm, &lx);CHKERRQ(ierr);
-  ierr = PetscStrcpy(lname, "Local Field ");CHKERRQ(ierr);
-  ierr = PetscStrcat(lname, name);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) lx, lname);CHKERRQ(ierr);
-  if (!label) {ierr = DMProjectFieldLocal(dm, 0.0, lu, funcs, INSERT_VALUES, lx);CHKERRQ(ierr);}
-  else        {ierr = DMProjectFieldLabelLocal(dm, 0.0, label, 1, val, 0, NULL, lu, funcs, INSERT_VALUES, lx);CHKERRQ(ierr);}
-  ierr = VecViewFromOptions(lx, NULL, "-local_field_view");CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &lx);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &lu);CHKERRQ(ierr);
-  ierr = PetscFree2(funcs, afuncs);CHKERRQ(ierr);
-  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, 0, NULL);CHKERRQ(ierr);}
+  CHKERRQ(DMGetLocalVector(dm, &lu));
+  CHKERRQ(PetscStrcpy(lname, "Local Field Input "));
+  CHKERRQ(PetscStrcat(lname, name));
+  CHKERRQ(PetscObjectSetName((PetscObject) lu, lname));
+  if (!label) CHKERRQ(DMProjectFunctionLocal(dm, 0.0, afuncs, NULL, INSERT_VALUES, lu));
+  else        CHKERRQ(DMProjectFunctionLabelLocal(dm, 0.0, label, 1, val, 0, NULL, afuncs, NULL, INSERT_VALUES, lu));
+  CHKERRQ(VecViewFromOptions(lu, NULL, "-local_input_view"));
+  CHKERRQ(DMGetLocalVector(dm, &lx));
+  CHKERRQ(PetscStrcpy(lname, "Local Field "));
+  CHKERRQ(PetscStrcat(lname, name));
+  CHKERRQ(PetscObjectSetName((PetscObject) lx, lname));
+  if (!label) CHKERRQ(DMProjectFieldLocal(dm, 0.0, lu, funcs, INSERT_VALUES, lx));
+  else        CHKERRQ(DMProjectFieldLabelLocal(dm, 0.0, label, 1, val, 0, NULL, lu, funcs, INSERT_VALUES, lx));
+  CHKERRQ(VecViewFromOptions(lx, NULL, "-local_field_view"));
+  CHKERRQ(DMRestoreLocalVector(dm, &lx));
+  CHKERRQ(DMRestoreLocalVector(dm, &lu));
+  CHKERRQ(PetscFree2(funcs, afuncs));
+  if (dmAux) CHKERRQ(DMSetAuxiliaryVec(dm, NULL, 0, 0, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -277,34 +268,33 @@ static PetscErrorCode TestFieldProjectionMultiple(DM dm, DM dmIn, DM dmAux, DMLa
   PetscInt          Nf, NfIn;
   PetscInt          val[1] = {1};
   char              lname[PETSC_MAX_PATH_LEN];
-  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, 0, la);CHKERRQ(ierr);}
-  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
-  ierr = DMGetNumFields(dmIn, &NfIn);CHKERRQ(ierr);
-  ierr = PetscMalloc2(Nf, &funcs, NfIn, &afuncs);CHKERRQ(ierr);
+  if (dmAux) CHKERRQ(DMSetAuxiliaryVec(dm, NULL, 0, 0, la));
+  CHKERRQ(DMGetNumFields(dm, &Nf));
+  CHKERRQ(DMGetNumFields(dmIn, &NfIn));
+  CHKERRQ(PetscMalloc2(Nf, &funcs, NfIn, &afuncs));
   funcs[0]  = divergence_sq;
   afuncs[0] = linear2;
   afuncs[1] = linear;
-  ierr = DMGetLocalVector(dmIn, &lu);CHKERRQ(ierr);
-  ierr = PetscStrcpy(lname, "Local MultiField Input ");CHKERRQ(ierr);
-  ierr = PetscStrcat(lname, name);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) lu, lname);CHKERRQ(ierr);
-  if (!label) {ierr = DMProjectFunctionLocal(dmIn, 0.0, afuncs, NULL, INSERT_VALUES, lu);CHKERRQ(ierr);}
-  else        {ierr = DMProjectFunctionLabelLocal(dmIn, 0.0, label, 1, val, 0, NULL, afuncs, NULL, INSERT_VALUES, lu);CHKERRQ(ierr);}
-  ierr = VecViewFromOptions(lu, NULL, "-local_input_view");CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm, &lx);CHKERRQ(ierr);
-  ierr = PetscStrcpy(lname, "Local MultiField ");CHKERRQ(ierr);
-  ierr = PetscStrcat(lname, name);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) lx, lname);CHKERRQ(ierr);
-  if (!label) {ierr = DMProjectFieldLocal(dm, 0.0, lu, funcs, INSERT_VALUES, lx);CHKERRQ(ierr);}
-  else        {ierr = DMProjectFieldLabelLocal(dm, 0.0, label, 1, val, 0, NULL, lu, funcs, INSERT_VALUES, lx);CHKERRQ(ierr);}
-  ierr = VecViewFromOptions(lx, NULL, "-local_field_view");CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm, &lx);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dmIn, &lu);CHKERRQ(ierr);
-  ierr = PetscFree2(funcs, afuncs);CHKERRQ(ierr);
-  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, 0, NULL);CHKERRQ(ierr);}
+  CHKERRQ(DMGetLocalVector(dmIn, &lu));
+  CHKERRQ(PetscStrcpy(lname, "Local MultiField Input "));
+  CHKERRQ(PetscStrcat(lname, name));
+  CHKERRQ(PetscObjectSetName((PetscObject) lu, lname));
+  if (!label) CHKERRQ(DMProjectFunctionLocal(dmIn, 0.0, afuncs, NULL, INSERT_VALUES, lu));
+  else        CHKERRQ(DMProjectFunctionLabelLocal(dmIn, 0.0, label, 1, val, 0, NULL, afuncs, NULL, INSERT_VALUES, lu));
+  CHKERRQ(VecViewFromOptions(lu, NULL, "-local_input_view"));
+  CHKERRQ(DMGetLocalVector(dm, &lx));
+  CHKERRQ(PetscStrcpy(lname, "Local MultiField "));
+  CHKERRQ(PetscStrcat(lname, name));
+  CHKERRQ(PetscObjectSetName((PetscObject) lx, lname));
+  if (!label) CHKERRQ(DMProjectFieldLocal(dm, 0.0, lu, funcs, INSERT_VALUES, lx));
+  else        CHKERRQ(DMProjectFieldLabelLocal(dm, 0.0, label, 1, val, 0, NULL, lu, funcs, INSERT_VALUES, lx));
+  CHKERRQ(VecViewFromOptions(lx, NULL, "-local_field_view"));
+  CHKERRQ(DMRestoreLocalVector(dm, &lx));
+  CHKERRQ(DMRestoreLocalVector(dmIn, &lu));
+  CHKERRQ(PetscFree2(funcs, afuncs));
+  if (dmAux) CHKERRQ(DMSetAuxiliaryVec(dm, NULL, 0, 0, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -318,91 +308,91 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = ProcessOptions(&user);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
-  ierr = SetupDiscretization(dm, dim, simplex, &user);CHKERRQ(ierr);
+  CHKERRQ(ProcessOptions(&user));
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(DMPlexIsSimplex(dm, &simplex));
+  CHKERRQ(SetupDiscretization(dm, dim, simplex, &user));
   /* Volumetric Mesh Projection */
   if (!user.multifield) {
-    ierr = TestFunctionProjection(dm, NULL, NULL, NULL, "Volumetric Primary", &user);CHKERRQ(ierr);
-    ierr = TestFieldProjection(dm, NULL, NULL, NULL, "Volumetric Primary", &user);CHKERRQ(ierr);
+    CHKERRQ(TestFunctionProjection(dm, NULL, NULL, NULL, "Volumetric Primary", &user));
+    CHKERRQ(TestFieldProjection(dm, NULL, NULL, NULL, "Volumetric Primary", &user));
   } else {
     DM dmOut;
 
-    ierr = DMClone(dm, &dmOut);CHKERRQ(ierr);
-    ierr = SetupOutputDiscretization(dmOut, dim, simplex, &user);CHKERRQ(ierr);
-    ierr = TestFieldProjectionMultiple(dmOut, dm, NULL, NULL, NULL, "Volumetric Primary", &user);CHKERRQ(ierr);
-    ierr = DMDestroy(&dmOut);CHKERRQ(ierr);
+    CHKERRQ(DMClone(dm, &dmOut));
+    CHKERRQ(SetupOutputDiscretization(dmOut, dim, simplex, &user));
+    CHKERRQ(TestFieldProjectionMultiple(dmOut, dm, NULL, NULL, NULL, "Volumetric Primary", &user));
+    CHKERRQ(DMDestroy(&dmOut));
   }
   if (user.auxfield) {
     /* Volumetric Mesh Projection with Volumetric Data */
-    ierr = CreateAuxiliaryVec(dm, &auxdm, &la, &user);CHKERRQ(ierr);
-    ierr = TestFunctionProjection(dm, auxdm, NULL, la, "Volumetric Primary and Volumetric Auxiliary", &user);CHKERRQ(ierr);
-    ierr = TestFieldProjection(dm, auxdm, NULL, la, "Volumetric Primary and Volumetric Auxiliary", &user);CHKERRQ(ierr);
-    ierr = VecDestroy(&la);CHKERRQ(ierr);
+    CHKERRQ(CreateAuxiliaryVec(dm, &auxdm, &la, &user));
+    CHKERRQ(TestFunctionProjection(dm, auxdm, NULL, la, "Volumetric Primary and Volumetric Auxiliary", &user));
+    CHKERRQ(TestFieldProjection(dm, auxdm, NULL, la, "Volumetric Primary and Volumetric Auxiliary", &user));
+    CHKERRQ(VecDestroy(&la));
     /* Update of Volumetric Auxiliary Data with primary Volumetric Data */
-    ierr = DMGetLocalVector(dm, &la);CHKERRQ(ierr);
-    ierr = VecSet(la, 1.0);CHKERRQ(ierr);
-    ierr = TestFieldProjection(auxdm, dm, NULL, la, "Volumetric Auxiliary Update with Volumetric Primary", &user);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(dm, &la);CHKERRQ(ierr);
-    ierr = DMDestroy(&auxdm);CHKERRQ(ierr);
+    CHKERRQ(DMGetLocalVector(dm, &la));
+    CHKERRQ(VecSet(la, 1.0));
+    CHKERRQ(TestFieldProjection(auxdm, dm, NULL, la, "Volumetric Auxiliary Update with Volumetric Primary", &user));
+    CHKERRQ(DMRestoreLocalVector(dm, &la));
+    CHKERRQ(DMDestroy(&auxdm));
   }
   if (user.subdomain) {
     DMLabel domLabel;
 
     /* Subdomain Mesh Projection */
-    ierr = CreateSubdomainMesh(dm, &domLabel, &subdm, &user);CHKERRQ(ierr);
-    ierr = TestFunctionProjection(subdm, NULL, NULL, NULL, "Subdomain Primary", &user);CHKERRQ(ierr);
-    ierr = TestFieldProjection(subdm, NULL, NULL, NULL, "Subdomain Primary", &user);CHKERRQ(ierr);
+    CHKERRQ(CreateSubdomainMesh(dm, &domLabel, &subdm, &user));
+    CHKERRQ(TestFunctionProjection(subdm, NULL, NULL, NULL, "Subdomain Primary", &user));
+    CHKERRQ(TestFieldProjection(subdm, NULL, NULL, NULL, "Subdomain Primary", &user));
     if (user.auxfield) {
       /* Subdomain Mesh Projection with Subdomain Data */
-      ierr = CreateAuxiliaryVec(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
-      ierr = TestFunctionProjection(subdm, auxdm, NULL, la, "Subdomain Primary and Subdomain Auxiliary", &user);CHKERRQ(ierr);
-      ierr = TestFieldProjection(subdm, auxdm, NULL, la, "Subdomain Primary and Subdomain Auxiliary", &user);CHKERRQ(ierr);
-      ierr = VecDestroy(&la);CHKERRQ(ierr);
-      ierr = DMDestroy(&auxdm);CHKERRQ(ierr);
+      CHKERRQ(CreateAuxiliaryVec(subdm, &auxdm, &la, &user));
+      CHKERRQ(TestFunctionProjection(subdm, auxdm, NULL, la, "Subdomain Primary and Subdomain Auxiliary", &user));
+      CHKERRQ(TestFieldProjection(subdm, auxdm, NULL, la, "Subdomain Primary and Subdomain Auxiliary", &user));
+      CHKERRQ(VecDestroy(&la));
+      CHKERRQ(DMDestroy(&auxdm));
       /* Subdomain Mesh Projection with Volumetric Data */
-      ierr = CreateAuxiliaryVec(dm, &auxdm, &la, &user);CHKERRQ(ierr);
-      ierr = TestFunctionProjection(subdm, auxdm, NULL, la, "Subdomain Primary and Volumetric Auxiliary", &user);CHKERRQ(ierr);
-      ierr = TestFieldProjection(subdm, auxdm, NULL, la, "Subdomain Primary and Volumetric Auxiliary", &user);CHKERRQ(ierr);
-      ierr = VecDestroy(&la);CHKERRQ(ierr);
-      ierr = DMDestroy(&auxdm);CHKERRQ(ierr);
+      CHKERRQ(CreateAuxiliaryVec(dm, &auxdm, &la, &user));
+      CHKERRQ(TestFunctionProjection(subdm, auxdm, NULL, la, "Subdomain Primary and Volumetric Auxiliary", &user));
+      CHKERRQ(TestFieldProjection(subdm, auxdm, NULL, la, "Subdomain Primary and Volumetric Auxiliary", &user));
+      CHKERRQ(VecDestroy(&la));
+      CHKERRQ(DMDestroy(&auxdm));
       /* Volumetric Mesh Projection with Subdomain Data */
-      ierr = CreateAuxiliaryVec(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
-      ierr = TestFunctionProjection(subdm, auxdm, domLabel, la, "Volumetric Primary and Subdomain Auxiliary", &user);CHKERRQ(ierr);
-      ierr = TestFieldProjection(subdm, auxdm, domLabel, la, "Volumetric Primary and Subdomain Auxiliary", &user);CHKERRQ(ierr);
-      ierr = VecDestroy(&la);CHKERRQ(ierr);
-      ierr = DMDestroy(&auxdm);CHKERRQ(ierr);
+      CHKERRQ(CreateAuxiliaryVec(subdm, &auxdm, &la, &user));
+      CHKERRQ(TestFunctionProjection(subdm, auxdm, domLabel, la, "Volumetric Primary and Subdomain Auxiliary", &user));
+      CHKERRQ(TestFieldProjection(subdm, auxdm, domLabel, la, "Volumetric Primary and Subdomain Auxiliary", &user));
+      CHKERRQ(VecDestroy(&la));
+      CHKERRQ(DMDestroy(&auxdm));
     }
-    ierr = DMDestroy(&subdm);CHKERRQ(ierr);
-    ierr = DMLabelDestroy(&domLabel);CHKERRQ(ierr);
+    CHKERRQ(DMDestroy(&subdm));
+    CHKERRQ(DMLabelDestroy(&domLabel));
   }
   if (user.submesh) {
     DMLabel bdLabel;
 
     /* Boundary Mesh Projection */
-    ierr = CreateBoundaryMesh(dm, &bdLabel, &subdm, &user);CHKERRQ(ierr);
-    ierr = TestFunctionProjection(subdm, NULL, NULL, NULL, "Boundary Primary", &user);CHKERRQ(ierr);
-    ierr = TestFieldProjection(subdm, NULL, NULL, NULL, "Boundary Primary", &user);CHKERRQ(ierr);
+    CHKERRQ(CreateBoundaryMesh(dm, &bdLabel, &subdm, &user));
+    CHKERRQ(TestFunctionProjection(subdm, NULL, NULL, NULL, "Boundary Primary", &user));
+    CHKERRQ(TestFieldProjection(subdm, NULL, NULL, NULL, "Boundary Primary", &user));
     if (user.auxfield) {
       /* Boundary Mesh Projection with Boundary Data */
-      ierr = CreateAuxiliaryVec(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
-      ierr = TestFunctionProjection(subdm, auxdm, NULL, la, "Boundary Primary and Boundary Auxiliary", &user);CHKERRQ(ierr);
-      ierr = TestFieldProjection(subdm, auxdm, NULL, la, "Boundary Primary and Boundary Auxiliary", &user);CHKERRQ(ierr);
-      ierr = VecDestroy(&la);CHKERRQ(ierr);
-      ierr = DMDestroy(&auxdm);CHKERRQ(ierr);
+      CHKERRQ(CreateAuxiliaryVec(subdm, &auxdm, &la, &user));
+      CHKERRQ(TestFunctionProjection(subdm, auxdm, NULL, la, "Boundary Primary and Boundary Auxiliary", &user));
+      CHKERRQ(TestFieldProjection(subdm, auxdm, NULL, la, "Boundary Primary and Boundary Auxiliary", &user));
+      CHKERRQ(VecDestroy(&la));
+      CHKERRQ(DMDestroy(&auxdm));
       /* Volumetric Mesh Projection with Boundary Data */
-      ierr = CreateAuxiliaryVec(subdm, &auxdm, &la, &user);CHKERRQ(ierr);
-      ierr = TestFunctionProjection(dm, auxdm, bdLabel, la, "Volumetric Primary and Boundary Auxiliary", &user);CHKERRQ(ierr);
-      ierr = TestFieldProjection(dm, auxdm, bdLabel, la, "Volumetric Primary and Boundary Auxiliary", &user);CHKERRQ(ierr);
-      ierr = VecDestroy(&la);CHKERRQ(ierr);
-      ierr = DMDestroy(&auxdm);CHKERRQ(ierr);
+      CHKERRQ(CreateAuxiliaryVec(subdm, &auxdm, &la, &user));
+      CHKERRQ(TestFunctionProjection(dm, auxdm, bdLabel, la, "Volumetric Primary and Boundary Auxiliary", &user));
+      CHKERRQ(TestFieldProjection(dm, auxdm, bdLabel, la, "Volumetric Primary and Boundary Auxiliary", &user));
+      CHKERRQ(VecDestroy(&la));
+      CHKERRQ(DMDestroy(&auxdm));
     }
-    ierr = DMLabelDestroy(&bdLabel);CHKERRQ(ierr);
-    ierr = DMDestroy(&subdm);CHKERRQ(ierr);
+    CHKERRQ(DMLabelDestroy(&bdLabel));
+    CHKERRQ(DMDestroy(&subdm));
   }
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -38,43 +38,43 @@ int main(int argc,char **args)
   PetscBool      viewkspest = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-ksp_est_view",&viewkspest,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-ksp_est_view",&viewkspest,NULL));
   N    = (m+1)*(m+1); /* dimension of matrix */
   M    = m*m; /* number of elements */
   h    = 1.0/m;    /* mesh width */
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* Create stiffness matrix */
-  ierr  = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
-  ierr  = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);
-  ierr  = MatSetFromOptions(C);CHKERRQ(ierr);
-  ierr  = MatSetUp(C);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
+  CHKERRQ(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N));
+  CHKERRQ(MatSetFromOptions(C));
+  CHKERRQ(MatSetUp(C));
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank);
 
   /* Assemble matrix */
-  ierr = FormElementStiffness(h*h,Ke);CHKERRQ(ierr);   /* element stiffness for Laplacian */
+  CHKERRQ(FormElementStiffness(h*h,Ke));   /* element stiffness for Laplacian */
   for (i=start; i<end; i++) {
     /* node numbers for the four corners of element */
     idx[0] = (m+1)*(i/m) + (i % m);
     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-    ierr   = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES));
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   /* Create right-hand-side and solution vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u,PETSC_DECIDE,N);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)u,"Approx. Solution");CHKERRQ(ierr);
-  ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)b,"Right hand side");CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&ustar);CHKERRQ(ierr);
-  ierr = VecSet(u,0.0);CHKERRQ(ierr);
-  ierr = VecSet(b,0.0);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
+  CHKERRQ(VecSetSizes(u,PETSC_DECIDE,N));
+  CHKERRQ(VecSetFromOptions(u));
+  CHKERRQ(PetscObjectSetName((PetscObject)u,"Approx. Solution"));
+  CHKERRQ(VecDuplicate(u,&b));
+  CHKERRQ(PetscObjectSetName((PetscObject)b,"Right hand side"));
+  CHKERRQ(VecDuplicate(b,&ustar));
+  CHKERRQ(VecSet(u,0.0));
+  CHKERRQ(VecSet(b,0.0));
 
   /* Assemble right-hand-side vector */
   for (i=start; i<end; i++) {
@@ -83,14 +83,14 @@ int main(int argc,char **args)
     /* node numbers for the four corners of element */
     idx[0] = (m+1)*(i/m) + (i % m);
     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-    ierr   = FormElementRhs(x,y,h*h,r);CHKERRQ(ierr);
-    ierr   = VecSetValues(b,4,idx,r,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(FormElementRhs(x,y,h*h,r));
+    CHKERRQ(VecSetValues(b,4,idx,r,ADD_VALUES));
   }
-  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
+  CHKERRQ(VecAssemblyBegin(b));
+  CHKERRQ(VecAssemblyEnd(b));
 
   /* Modify matrix and right-hand-side for Dirichlet boundary conditions */
-  ierr = PetscMalloc1(4*m,&rows);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(4*m,&rows));
   for (i=0; i<m+1; i++) {
     rows[i]          = i; /* bottom */
     rows[3*m - 1 +i] = m*(m+1) + i; /* top */
@@ -102,57 +102,57 @@ int main(int argc,char **args)
   for (i=2*m+1; i<m*(m+1); i+= m+1) rows[count++] = i;
   for (i=0; i<4*m; i++) {
     val  = h*(rows[i]/(m+1));
-    ierr = VecSetValues(u,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = VecSetValues(b,1,&rows[i],&val,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(u,1,&rows[i],&val,INSERT_VALUES));
+    CHKERRQ(VecSetValues(b,1,&rows[i],&val,INSERT_VALUES));
   }
-  ierr = MatZeroRows(C,4*m,rows,1.0,0,0);CHKERRQ(ierr);
+  CHKERRQ(MatZeroRows(C,4*m,rows,1.0,0,0));
 
-  ierr = PetscFree(rows);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(rows));
+  CHKERRQ(VecAssemblyBegin(u));
+  CHKERRQ(VecAssemblyEnd(u));
+  CHKERRQ(VecAssemblyBegin(b));
+  CHKERRQ(VecAssemblyEnd(b));
 
   { Mat A;
-    ierr = MatConvert(C,MATSAME,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
-    ierr = MatDestroy(&C);CHKERRQ(ierr);
-    ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,&C);CHKERRQ(ierr);
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    CHKERRQ(MatConvert(C,MATSAME,MAT_INITIAL_MATRIX,&A));
+    CHKERRQ(MatDestroy(&C));
+    CHKERRQ(MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,&C));
+    CHKERRQ(MatDestroy(&A));
   }
 
   /* Solve linear system */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,C,C);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPSetOperators(ksp,C,C));
+  CHKERRQ(KSPSetFromOptions(ksp));
+  CHKERRQ(KSPSetInitialGuessNonzero(ksp,PETSC_TRUE));
+  CHKERRQ(KSPSolve(ksp,b,u));
 
   if (viewkspest) {
     KSP kspest;
 
-    ierr = KSPChebyshevEstEigGetKSP(ksp,&kspest);CHKERRQ(ierr);
-    if (kspest) {ierr = KSPView(kspest,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+    CHKERRQ(KSPChebyshevEstEigGetKSP(ksp,&kspest));
+    if (kspest) CHKERRQ(KSPView(kspest,PETSC_VIEWER_STDOUT_WORLD));
   }
 
   /* Check error */
-  ierr = VecGetOwnershipRange(ustar,&start,&end);CHKERRQ(ierr);
+  CHKERRQ(VecGetOwnershipRange(ustar,&start,&end));
   for (i=start; i<end; i++) {
     val  = h*(i/(m+1));
-    ierr = VecSetValues(ustar,1,&i,&val,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(ustar,1,&i,&val,INSERT_VALUES));
   }
-  ierr = VecAssemblyBegin(ustar);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(ustar);CHKERRQ(ierr);
-  ierr = VecAXPY(u,-1.0,ustar);CHKERRQ(ierr);
-  ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %D\n",(double)(norm*h),its);CHKERRQ(ierr);
+  CHKERRQ(VecAssemblyBegin(ustar));
+  CHKERRQ(VecAssemblyEnd(ustar));
+  CHKERRQ(VecAXPY(u,-1.0,ustar));
+  CHKERRQ(VecNorm(u,NORM_2,&norm));
+  CHKERRQ(KSPGetIterationNumber(ksp,&its));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %D\n",(double)(norm*h),its));
 
   /* Free work space */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&ustar);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(VecDestroy(&ustar));
+  CHKERRQ(VecDestroy(&u));
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(MatDestroy(&C));
   ierr = PetscFinalize();
   return ierr;
 }
@@ -188,4 +188,3 @@ int main(int argc,char **args)
       filter:  sed -e "s/Iterations 19/Iterations 20/g"
 
 TEST*/
-

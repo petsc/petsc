@@ -2,27 +2,26 @@
 
 static PetscErrorCode PetscInitializePackageAll(void)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscSysInitializePackage();CHKERRQ(ierr);
-  ierr = PetscDrawInitializePackage();CHKERRQ(ierr);
-  ierr = PetscViewerInitializePackage();CHKERRQ(ierr);
-  ierr = PetscRandomInitializePackage();CHKERRQ(ierr);
-  ierr = ISInitializePackage();CHKERRQ(ierr);
-  ierr = AOInitializePackage();CHKERRQ(ierr);
-  ierr = PFInitializePackage();CHKERRQ(ierr);
-  ierr = PetscSFInitializePackage();CHKERRQ(ierr);
-  ierr = VecInitializePackage();CHKERRQ(ierr);
-  ierr = MatInitializePackage();CHKERRQ(ierr);
-  ierr = PCInitializePackage();CHKERRQ(ierr);
-  ierr = KSPInitializePackage();CHKERRQ(ierr);
-  ierr = SNESInitializePackage();CHKERRQ(ierr);
-  ierr = TaoInitializePackage();CHKERRQ(ierr);
-  ierr = TSInitializePackage();CHKERRQ(ierr);
-  ierr = PetscPartitionerInitializePackage();CHKERRQ(ierr);
-  ierr = DMInitializePackage();CHKERRQ(ierr);
-  ierr = PetscDSInitializePackage();CHKERRQ(ierr);
-  ierr = PetscFEInitializePackage();CHKERRQ(ierr);
+  CHKERRQ(PetscSysInitializePackage());
+  CHKERRQ(PetscDrawInitializePackage());
+  CHKERRQ(PetscViewerInitializePackage());
+  CHKERRQ(PetscRandomInitializePackage());
+  CHKERRQ(ISInitializePackage());
+  CHKERRQ(AOInitializePackage());
+  CHKERRQ(PFInitializePackage());
+  CHKERRQ(PetscSFInitializePackage());
+  CHKERRQ(VecInitializePackage());
+  CHKERRQ(MatInitializePackage());
+  CHKERRQ(PCInitializePackage());
+  CHKERRQ(KSPInitializePackage());
+  CHKERRQ(SNESInitializePackage());
+  CHKERRQ(TaoInitializePackage());
+  CHKERRQ(TSInitializePackage());
+  CHKERRQ(PetscPartitionerInitializePackage());
+  CHKERRQ(DMInitializePackage());
+  CHKERRQ(PetscDSInitializePackage());
+  CHKERRQ(PetscFEInitializePackage());
   PetscFunctionReturn(0);
 }
 

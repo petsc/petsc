@@ -17,7 +17,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->fem = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-fem", "Run FEM tests", "ex75.c", options->fem, &options->fem, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-fem", "Run FEM tests", "ex75.c", options->fem, &options->fem, NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -526,13 +526,13 @@ PetscErrorCode MapleTest(MPI_Comm comm, AppCtx *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SolKxData5(x, z, &kn, &km, &B, vxMaple, vzMaple, pMaple, sxxMaple, sxzMaple, szzMaple);CHKERRQ(ierr);
+  CHKERRQ(SolKxData5(x, z, &kn, &km, &B, vxMaple, vzMaple, pMaple, sxxMaple, sxzMaple, szzMaple));
   for (i = 0; i < n; ++i) {
     for (j = 0; j < n; ++j) {
       PetscScalar vx, vz, p, sxx, sxz, szz;
       PetscReal   norm;
 
-      ierr = SolKxSolution(x[i], z[j], kn, km, B, &vx, &vz, &p, &sxx, &sxz, &szz);CHKERRQ(ierr);
+      CHKERRQ(SolKxSolution(x[i], z[j], kn, km, B, &vx, &vz, &p, &sxx, &sxz, &szz));
       norm = sqrt(PetscSqr(PetscAbsScalar(vx - vxMaple[i][j])) + PetscSqr(PetscAbsScalar(vz - vzMaple[i][j])));
       if (norm > 1.0e-10) {
         ierr = PetscPrintf(PETSC_COMM_SELF, "%0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e\n",
@@ -542,7 +542,7 @@ PetscErrorCode MapleTest(MPI_Comm comm, AppCtx *ctx)
       }
     }
   }
-  ierr = PetscPrintf(comm, "Verified Maple test 5\n");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(comm, "Verified Maple test 5\n"));
   PetscFunctionReturn(0);
 }
 
@@ -557,16 +557,16 @@ PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx)
   PetscFunctionBegin;
   if (!ctx->fem) PetscFunctionReturn(0);
   /* Create DM */
-  ierr = DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_FALSE, &dm);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+  CHKERRQ(DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, NULL, NULL, NULL, NULL, PETSC_FALSE, &dm));
+  CHKERRQ(DMSetFromOptions(dm));
   /* Project solution into FE space */
-  ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_VALUES, u);CHKERRQ(ierr);
-  ierr = DMComputeL2Diff(dm, 0.0, funcs, NULL, u, &discError);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(u, NULL, "-vec_view");CHKERRQ(ierr);
+  CHKERRQ(DMGetGlobalVector(dm, &u));
+  CHKERRQ(DMProjectFunction(dm, 0.0, funcs, NULL, INSERT_VALUES, u));
+  CHKERRQ(DMComputeL2Diff(dm, 0.0, funcs, NULL, u, &discError));
+  CHKERRQ(VecViewFromOptions(u, NULL, "-vec_view"));
   /* Cleanup */
-  ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(DMRestoreGlobalVector(dm, &u));
+  CHKERRQ(DMDestroy(&dm));
   PetscFunctionReturn(0);
 }
 
@@ -576,9 +576,9 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = MapleTest(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = FEMTest(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
+  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
+  CHKERRQ(MapleTest(PETSC_COMM_WORLD, &user));
+  CHKERRQ(FEMTest(PETSC_COMM_WORLD, &user));
   ierr = PetscFinalize();
   return ierr;
 }

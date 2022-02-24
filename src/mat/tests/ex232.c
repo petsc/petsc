@@ -14,20 +14,20 @@ int main(int argc, char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,(char*)0);if (ierr) return ierr;
 
-  ierr = MatCreate(PETSC_COMM_SELF, &ssbaij);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_SELF, &msbaij);CHKERRQ(ierr);
-  ierr = MatSetType(ssbaij, MATSEQSBAIJ);CHKERRQ(ierr);
-  ierr = MatSetType(msbaij, MATMPISBAIJ);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(ssbaij, 2);CHKERRQ(ierr);
-  ierr = MatSetSizes(ssbaij, 4, 4, 4, 4);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(msbaij, 2);CHKERRQ(ierr);
-  ierr = MatSetSizes(msbaij, 4, 4, 4, 4);CHKERRQ(ierr);
-  ierr = MatSeqSBAIJSetPreallocationCSR(ssbaij, 2, ia, ja, c);CHKERRQ(ierr);
-  ierr = MatMPISBAIJSetPreallocationCSR(msbaij, 2, ia, ja, c);CHKERRQ(ierr);
-  ierr = MatView(ssbaij, PETSC_VIEWER_STDOUT_(PETSC_COMM_SELF));CHKERRQ(ierr);
-  ierr = MatView(msbaij, PETSC_VIEWER_STDOUT_(PETSC_COMM_SELF));CHKERRQ(ierr);
-  ierr = MatDestroy(&ssbaij);CHKERRQ(ierr);
-  ierr = MatDestroy(&msbaij);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_SELF, &ssbaij));
+  CHKERRQ(MatCreate(PETSC_COMM_SELF, &msbaij));
+  CHKERRQ(MatSetType(ssbaij, MATSEQSBAIJ));
+  CHKERRQ(MatSetType(msbaij, MATMPISBAIJ));
+  CHKERRQ(MatSetBlockSize(ssbaij, 2));
+  CHKERRQ(MatSetSizes(ssbaij, 4, 4, 4, 4));
+  CHKERRQ(MatSetBlockSize(msbaij, 2));
+  CHKERRQ(MatSetSizes(msbaij, 4, 4, 4, 4));
+  CHKERRQ(MatSeqSBAIJSetPreallocationCSR(ssbaij, 2, ia, ja, c));
+  CHKERRQ(MatMPISBAIJSetPreallocationCSR(msbaij, 2, ia, ja, c));
+  CHKERRQ(MatView(ssbaij, PETSC_VIEWER_STDOUT_(PETSC_COMM_SELF)));
+  CHKERRQ(MatView(msbaij, PETSC_VIEWER_STDOUT_(PETSC_COMM_SELF)));
+  CHKERRQ(MatDestroy(&ssbaij));
+  CHKERRQ(MatDestroy(&msbaij));
   ierr = PetscFinalize();
   return ierr;
 }

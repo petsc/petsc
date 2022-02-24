@@ -569,15 +569,10 @@ PETSC_EXTERN PetscErrorCode VecRestoreArrayWriteAndMemType(Vec,PetscScalar**);
 @*/
 static inline PetscErrorCode VecGetArrayPair(Vec x,Vec y,PetscScalar **xv,PetscScalar **yv)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecGetArray(y,yv);CHKERRQ(ierr);
-  if (x != y) {
-    ierr = VecGetArrayRead(x,(const PetscScalar **)xv);CHKERRQ(ierr);
-  } else {
-    *xv = *yv;
-  }
+  CHKERRQ(VecGetArray(y,yv));
+  if (x == y) *xv = *yv;
+  else CHKERRQ(VecGetArrayRead(x,(const PetscScalar**)xv));
   PetscFunctionReturn(0);
 }
 
@@ -603,13 +598,9 @@ static inline PetscErrorCode VecGetArrayPair(Vec x,Vec y,PetscScalar **xv,PetscS
 @*/
 static inline PetscErrorCode VecRestoreArrayPair(Vec x,Vec y,PetscScalar **xv,PetscScalar **yv)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = VecRestoreArray(y,yv);CHKERRQ(ierr);
-  if (x != y) {
-    ierr = VecRestoreArrayRead(x,(const PetscScalar **)xv);CHKERRQ(ierr);
-  }
+  CHKERRQ(VecRestoreArray(y,yv));
+  if (x != y) CHKERRQ(VecRestoreArrayRead(x,(const PetscScalar**)xv));
   PetscFunctionReturn(0);
 }
 
@@ -620,11 +611,10 @@ PETSC_EXTERN PetscErrorCode VecLockReadPop(Vec);
 PETSC_EXTERN PetscErrorCode VecLockGet(Vec,PetscInt*);
 static inline PetscErrorCode VecSetErrorIfLocked(Vec x,PetscInt arg)
 {
-  PetscInt       state;
-  PetscErrorCode ierr;
+  PetscInt state;
 
   PetscFunctionBegin;
-  ierr = VecLockGet(x,&state);CHKERRQ(ierr);
+  CHKERRQ(VecLockGet(x,&state));
   PetscCheck(state == 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," Vec is already locked for read-only or read/write access, argument # %" PetscInt_FMT,arg);
   PetscFunctionReturn(0);
 }

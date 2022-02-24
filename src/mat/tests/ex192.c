@@ -21,88 +21,88 @@ int main(int argc,char **args)
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor test");
   /* Determine which type of solver we want to test for */
   herm = PETSC_FALSE;
   symm = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-symmetric_solve",&symm,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-hermitian_solve",&herm,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-symmetric_solve",&symm,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-hermitian_solve",&herm,NULL));
   if (herm) symm = PETSC_TRUE;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-cuda_solve",&cuda,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-tol",&tol,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-cuda_solve",&cuda,NULL));
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-tol",&tol,NULL));
 
   /* Determine file from which we read the matrix A */
-  ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&data_provided);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&data_provided));
   if (!data_provided) { /* get matrices from PETSc distribution */
-    ierr = PetscStrncpy(file,"${PETSC_DIR}/share/petsc/datafiles/matrices/",sizeof(file));CHKERRQ(ierr);
+    CHKERRQ(PetscStrncpy(file,"${PETSC_DIR}/share/petsc/datafiles/matrices/",sizeof(file)));
     if (symm) {
 #if defined (PETSC_USE_COMPLEX)
-      ierr = PetscStrlcat(file,"hpd-complex-",sizeof(file));CHKERRQ(ierr);
+      CHKERRQ(PetscStrlcat(file,"hpd-complex-",sizeof(file)));
 #else
-      ierr = PetscStrlcat(file,"spd-real-",sizeof(file));CHKERRQ(ierr);
+      CHKERRQ(PetscStrlcat(file,"spd-real-",sizeof(file)));
 #endif
     } else {
 #if defined (PETSC_USE_COMPLEX)
-      ierr = PetscStrlcat(file,"nh-complex-",sizeof(file));CHKERRQ(ierr);
+      CHKERRQ(PetscStrlcat(file,"nh-complex-",sizeof(file)));
 #else
-      ierr = PetscStrlcat(file,"ns-real-",sizeof(file));CHKERRQ(ierr);
+      CHKERRQ(PetscStrlcat(file,"ns-real-",sizeof(file)));
 #endif
     }
 #if defined(PETSC_USE_64BIT_INDICES)
-    ierr = PetscStrlcat(file,"int64-",sizeof(file));CHKERRQ(ierr);
+    CHKERRQ(PetscStrlcat(file,"int64-",sizeof(file)));
 #else
-    ierr = PetscStrlcat(file,"int32-",sizeof(file));CHKERRQ(ierr);
+    CHKERRQ(PetscStrlcat(file,"int32-",sizeof(file)));
 #endif
 #if defined (PETSC_USE_REAL_SINGLE)
-    ierr = PetscStrlcat(file,"float32",sizeof(file));CHKERRQ(ierr);
+    CHKERRQ(PetscStrlcat(file,"float32",sizeof(file)));
 #else
-    ierr = PetscStrlcat(file,"float64",sizeof(file));CHKERRQ(ierr);
+    CHKERRQ(PetscStrlcat(file,"float64",sizeof(file)));
 #endif
   }
   /* Load matrix A */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
-  ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatLoad(A,fd));
+  CHKERRQ(PetscViewerDestroy(&fd));
+  CHKERRQ(MatGetSize(A,&m,&n));
   PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
 
   /* Create dense matrix C and X; C holds true solution with identical columns */
   nrhs = 2;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
-  ierr = MatSetSizes(C,m,PETSC_DECIDE,PETSC_DECIDE,nrhs);CHKERRQ(ierr);
-  ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-  ierr = MatSetUp(C);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
+  CHKERRQ(MatSetSizes(C,m,PETSC_DECIDE,PETSC_DECIDE,nrhs));
+  CHKERRQ(MatSetType(C,MATDENSE));
+  CHKERRQ(MatSetFromOptions(C));
+  CHKERRQ(MatSetUp(C));
 
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
-  ierr = MatSetRandom(C,rand);CHKERRQ(ierr);
-  ierr = MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&X);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rand));
+  CHKERRQ(PetscRandomSetFromOptions(rand));
+  CHKERRQ(MatSetRandom(C,rand));
+  CHKERRQ(MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&X));
 
   /* Create vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&u);CHKERRQ(ierr); /* save the true solution */
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
+  CHKERRQ(VecSetSizes(x,n,PETSC_DECIDE));
+  CHKERRQ(VecSetFromOptions(x));
+  CHKERRQ(VecDuplicate(x,&b));
+  CHKERRQ(VecDuplicate(x,&u)); /* save the true solution */
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-solver",&isolver,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-solver",&isolver,NULL));
   switch (isolver) {
 #if defined(PETSC_HAVE_MUMPS)
     case 0:
-      ierr = PetscStrcpy(solver,MATSOLVERMUMPS);CHKERRQ(ierr);
+      CHKERRQ(PetscStrcpy(solver,MATSOLVERMUMPS));
       break;
 #endif
 #if defined(PETSC_HAVE_MKL_PARDISO)
     case 1:
-      ierr = PetscStrcpy(solver,MATSOLVERMKL_PARDISO);CHKERRQ(ierr);
+      CHKERRQ(PetscStrcpy(solver,MATSOLVERMKL_PARDISO));
       break;
 #endif
     default:
-      ierr = PetscStrcpy(solver,MATSOLVERPETSC);CHKERRQ(ierr);
+      CHKERRQ(PetscStrcpy(solver,MATSOLVERPETSC));
       break;
   }
 
@@ -111,17 +111,17 @@ int main(int argc,char **args)
     PetscScalar im = PetscSqrtScalar((PetscScalar)-1.);
     PetscScalar val = -1.0;
     val = val + im;
-    ierr = MatSetValue(A,1,0,val,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatSetValue(A,1,0,val,INSERT_VALUES));
+    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   }
 #endif
 
-  ierr = PetscOptionsGetReal(NULL,NULL,"-schur_ratio",&sratio,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-schur_ratio",&sratio,NULL));
   PetscCheckFalse(sratio < 0. || sratio > 1.,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Invalid ratio for schur degrees of freedom %g", (double)sratio);
   size_schur = (PetscInt)(sratio*m);
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Solving with %s: nrhs %" PetscInt_FMT ", sym %d, herm %d, size schur %" PetscInt_FMT ", size mat %" PetscInt_FMT "\n",solver,nrhs,symm,herm,size_schur,m);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Solving with %s: nrhs %" PetscInt_FMT ", sym %d, herm %d, size schur %" PetscInt_FMT ", size mat %" PetscInt_FMT "\n",solver,nrhs,symm,herm,size_schur,m));
 
   /* Test LU/Cholesky Factorization */
   use_lu = PETSC_FALSE;
@@ -132,170 +132,170 @@ int main(int argc,char **args)
   if (cuda && symm && !herm) use_lu = PETSC_TRUE;
 
   if (herm && !use_lu) { /* test also conversion routines inside the solver packages */
-    ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = MatConvert(A,MATSEQSBAIJ,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+    CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
+    CHKERRQ(MatConvert(A,MATSEQSBAIJ,MAT_INPLACE_MATRIX,&A));
   }
 
   if (use_lu) {
-    ierr = MatGetFactor(A,solver,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    CHKERRQ(MatGetFactor(A,solver,MAT_FACTOR_LU,&F));
   } else {
     if (herm) {
-      ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = MatSetOption(A,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
+      CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
+      CHKERRQ(MatSetOption(A,MAT_SPD,PETSC_TRUE));
     } else {
-      ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = MatSetOption(A,MAT_SPD,PETSC_FALSE);CHKERRQ(ierr);
+      CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
+      CHKERRQ(MatSetOption(A,MAT_SPD,PETSC_FALSE));
     }
-    ierr = MatGetFactor(A,solver,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+    CHKERRQ(MatGetFactor(A,solver,MAT_FACTOR_CHOLESKY,&F));
   }
-  ierr = ISCreateStride(PETSC_COMM_SELF,size_schur,m-size_schur,1,&is_schur);CHKERRQ(ierr);
-  ierr = MatFactorSetSchurIS(F,is_schur);CHKERRQ(ierr);
+  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,size_schur,m-size_schur,1,&is_schur));
+  CHKERRQ(MatFactorSetSchurIS(F,is_schur));
 
-  ierr = ISDestroy(&is_schur);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&is_schur));
   if (use_lu) {
-    ierr = MatLUFactorSymbolic(F,A,NULL,NULL,NULL);CHKERRQ(ierr);
+    CHKERRQ(MatLUFactorSymbolic(F,A,NULL,NULL,NULL));
   } else {
-    ierr = MatCholeskyFactorSymbolic(F,A,NULL,NULL);CHKERRQ(ierr);
+    CHKERRQ(MatCholeskyFactorSymbolic(F,A,NULL,NULL));
   }
 
   for (nfact = 0; nfact < 3; nfact++) {
     Mat AD;
 
     if (!nfact) {
-      ierr = VecSetRandom(x,rand);CHKERRQ(ierr);
+      CHKERRQ(VecSetRandom(x,rand));
       if (symm && herm) {
-        ierr = VecAbs(x);CHKERRQ(ierr);
+        CHKERRQ(VecAbs(x));
       }
-      ierr = MatDiagonalSet(A,x,ADD_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatDiagonalSet(A,x,ADD_VALUES));
     }
     if (use_lu) {
-      ierr = MatLUFactorNumeric(F,A,NULL);CHKERRQ(ierr);
+      CHKERRQ(MatLUFactorNumeric(F,A,NULL));
     } else {
-      ierr = MatCholeskyFactorNumeric(F,A,NULL);CHKERRQ(ierr);
+      CHKERRQ(MatCholeskyFactorNumeric(F,A,NULL));
     }
     if (cuda) {
-      ierr = MatFactorGetSchurComplement(F,&S,NULL);CHKERRQ(ierr);
-      ierr = MatSetType(S,MATSEQDENSECUDA);CHKERRQ(ierr);
-      ierr = MatCreateVecs(S,&xschur,&bschur);CHKERRQ(ierr);
-      ierr = MatFactorRestoreSchurComplement(F,&S,MAT_FACTOR_SCHUR_UNFACTORED);CHKERRQ(ierr);
+      CHKERRQ(MatFactorGetSchurComplement(F,&S,NULL));
+      CHKERRQ(MatSetType(S,MATSEQDENSECUDA));
+      CHKERRQ(MatCreateVecs(S,&xschur,&bschur));
+      CHKERRQ(MatFactorRestoreSchurComplement(F,&S,MAT_FACTOR_SCHUR_UNFACTORED));
     }
-    ierr = MatFactorCreateSchurComplement(F,&S,NULL);CHKERRQ(ierr);
+    CHKERRQ(MatFactorCreateSchurComplement(F,&S,NULL));
     if (!cuda) {
-      ierr = MatCreateVecs(S,&xschur,&bschur);CHKERRQ(ierr);
+      CHKERRQ(MatCreateVecs(S,&xschur,&bschur));
     }
-    ierr = VecDuplicate(xschur,&uschur);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(xschur,&uschur));
     if (nfact == 1 && (!cuda || (herm && symm))) {
-      ierr = MatFactorInvertSchurComplement(F);CHKERRQ(ierr);
+      CHKERRQ(MatFactorInvertSchurComplement(F));
     }
     for (nsolve = 0; nsolve < 2; nsolve++) {
-      ierr = VecSetRandom(x,rand);CHKERRQ(ierr);
-      ierr = VecCopy(x,u);CHKERRQ(ierr);
+      CHKERRQ(VecSetRandom(x,rand));
+      CHKERRQ(VecCopy(x,u));
 
       if (nsolve) {
-        ierr = MatMult(A,x,b);CHKERRQ(ierr);
-        ierr = MatSolve(F,b,x);CHKERRQ(ierr);
+        CHKERRQ(MatMult(A,x,b));
+        CHKERRQ(MatSolve(F,b,x));
       } else {
-        ierr = MatMultTranspose(A,x,b);CHKERRQ(ierr);
-        ierr = MatSolveTranspose(F,b,x);CHKERRQ(ierr);
+        CHKERRQ(MatMultTranspose(A,x,b));
+        CHKERRQ(MatSolveTranspose(F,b,x));
       }
       /* Check the error */
-      ierr = VecAXPY(u,-1.0,x);CHKERRQ(ierr);  /* u <- (-1.0)x + u */
-      ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
+      CHKERRQ(VecAXPY(u,-1.0,x));  /* u <- (-1.0)x + u */
+      CHKERRQ(VecNorm(u,NORM_2,&norm));
       if (norm > tol) {
         PetscReal resi;
         if (nsolve) {
-          ierr = MatMult(A,x,u);CHKERRQ(ierr); /* u = A*x */
+          CHKERRQ(MatMult(A,x,u)); /* u = A*x */
         } else {
-          ierr = MatMultTranspose(A,x,u);CHKERRQ(ierr); /* u = A*x */
+          CHKERRQ(MatMultTranspose(A,x,u)); /* u = A*x */
         }
-        ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);  /* u <- (-1.0)b + u */
-        ierr = VecNorm(u,NORM_2,&resi);CHKERRQ(ierr);
+        CHKERRQ(VecAXPY(u,-1.0,b));  /* u <- (-1.0)b + u */
+        CHKERRQ(VecNorm(u,NORM_2,&resi));
         if (nsolve) {
-          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatSolve error: Norm of error %g, residual %g\n",nfact,nsolve,(double)norm,(double)resi);CHKERRQ(ierr);
+          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatSolve error: Norm of error %g, residual %g\n",nfact,nsolve,(double)norm,(double)resi));
         } else {
-          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatSolveTranspose error: Norm of error %g, residual %f\n",nfact,nsolve,(double)norm,(double)resi);CHKERRQ(ierr);
+          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatSolveTranspose error: Norm of error %g, residual %f\n",nfact,nsolve,(double)norm,(double)resi));
         }
       }
-      ierr = VecSetRandom(xschur,rand);CHKERRQ(ierr);
-      ierr = VecCopy(xschur,uschur);CHKERRQ(ierr);
+      CHKERRQ(VecSetRandom(xschur,rand));
+      CHKERRQ(VecCopy(xschur,uschur));
       if (nsolve) {
-        ierr = MatMult(S,xschur,bschur);CHKERRQ(ierr);
-        ierr = MatFactorSolveSchurComplement(F,bschur,xschur);CHKERRQ(ierr);
+        CHKERRQ(MatMult(S,xschur,bschur));
+        CHKERRQ(MatFactorSolveSchurComplement(F,bschur,xschur));
       } else {
-        ierr = MatMultTranspose(S,xschur,bschur);CHKERRQ(ierr);
-        ierr = MatFactorSolveSchurComplementTranspose(F,bschur,xschur);CHKERRQ(ierr);
+        CHKERRQ(MatMultTranspose(S,xschur,bschur));
+        CHKERRQ(MatFactorSolveSchurComplementTranspose(F,bschur,xschur));
       }
       /* Check the error */
-      ierr = VecAXPY(uschur,-1.0,xschur);CHKERRQ(ierr);  /* u <- (-1.0)x + u */
-      ierr = VecNorm(uschur,NORM_2,&norm);CHKERRQ(ierr);
+      CHKERRQ(VecAXPY(uschur,-1.0,xschur));  /* u <- (-1.0)x + u */
+      CHKERRQ(VecNorm(uschur,NORM_2,&norm));
       if (norm > tol) {
         PetscReal resi;
         if (nsolve) {
-          ierr = MatMult(S,xschur,uschur);CHKERRQ(ierr); /* u = A*x */
+          CHKERRQ(MatMult(S,xschur,uschur)); /* u = A*x */
         } else {
-          ierr = MatMultTranspose(S,xschur,uschur);CHKERRQ(ierr); /* u = A*x */
+          CHKERRQ(MatMultTranspose(S,xschur,uschur)); /* u = A*x */
         }
-        ierr = VecAXPY(uschur,-1.0,bschur);CHKERRQ(ierr);  /* u <- (-1.0)b + u */
-        ierr = VecNorm(uschur,NORM_2,&resi);CHKERRQ(ierr);
+        CHKERRQ(VecAXPY(uschur,-1.0,bschur));  /* u <- (-1.0)b + u */
+        CHKERRQ(VecNorm(uschur,NORM_2,&resi));
         if (nsolve) {
-          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatFactorSolveSchurComplement error: Norm of error %g, residual %g\n",nfact,nsolve,(double)norm,(double)resi);CHKERRQ(ierr);
+          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatFactorSolveSchurComplement error: Norm of error %g, residual %g\n",nfact,nsolve,(double)norm,(double)resi));
         } else {
-          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatFactorSolveSchurComplementTranspose error: Norm of error %g, residual %f\n",nfact,nsolve,(double)norm,(double)resi);CHKERRQ(ierr);
+          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatFactorSolveSchurComplementTranspose error: Norm of error %g, residual %f\n",nfact,nsolve,(double)norm,(double)resi));
         }
       }
     }
-    ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&AD);CHKERRQ(ierr);
+    CHKERRQ(MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&AD));
     if (!nfact) {
-      ierr = MatMatMult(AD,C,MAT_INITIAL_MATRIX,2.0,&RHS);CHKERRQ(ierr);
+      CHKERRQ(MatMatMult(AD,C,MAT_INITIAL_MATRIX,2.0,&RHS));
     } else {
-      ierr = MatMatMult(AD,C,MAT_REUSE_MATRIX,2.0,&RHS);CHKERRQ(ierr);
+      CHKERRQ(MatMatMult(AD,C,MAT_REUSE_MATRIX,2.0,&RHS));
     }
-    ierr = MatDestroy(&AD);CHKERRQ(ierr);
+    CHKERRQ(MatDestroy(&AD));
     for (nsolve = 0; nsolve < 2; nsolve++) {
-      ierr = MatMatSolve(F,RHS,X);CHKERRQ(ierr);
+      CHKERRQ(MatMatSolve(F,RHS,X));
 
       /* Check the error */
-      ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+      CHKERRQ(MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN));
+      CHKERRQ(MatNorm(X,NORM_FROBENIUS,&norm));
       if (norm > tol) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatMatSolve: Norm of error %g\n",nfact,nsolve,(double)norm);CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") MatMatSolve: Norm of error %g\n",nfact,nsolve,(double)norm));
       }
     }
     if (isolver == 0) {
       Mat spRHS,spRHST,RHST;
 
-      ierr = MatTranspose(RHS,MAT_INITIAL_MATRIX,&RHST);CHKERRQ(ierr);
-      ierr = MatConvert(RHST,MATSEQAIJ,MAT_INITIAL_MATRIX,&spRHST);CHKERRQ(ierr);
-      ierr = MatCreateTranspose(spRHST,&spRHS);CHKERRQ(ierr);
+      CHKERRQ(MatTranspose(RHS,MAT_INITIAL_MATRIX,&RHST));
+      CHKERRQ(MatConvert(RHST,MATSEQAIJ,MAT_INITIAL_MATRIX,&spRHST));
+      CHKERRQ(MatCreateTranspose(spRHST,&spRHS));
       for (nsolve = 0; nsolve < 2; nsolve++) {
-        ierr = MatMatSolve(F,spRHS,X);CHKERRQ(ierr);
+        CHKERRQ(MatMatSolve(F,spRHS,X));
 
         /* Check the error */
-        ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-        ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
+        CHKERRQ(MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN));
+        CHKERRQ(MatNorm(X,NORM_FROBENIUS,&norm));
         if (norm > tol) {
-          ierr = PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") sparse MatMatSolve: Norm of error %g\n",nfact,nsolve,(double)norm);CHKERRQ(ierr);
+          CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"(f %" PetscInt_FMT ", s %" PetscInt_FMT ") sparse MatMatSolve: Norm of error %g\n",nfact,nsolve,(double)norm));
         }
       }
-      ierr = MatDestroy(&spRHST);CHKERRQ(ierr);
-      ierr = MatDestroy(&spRHS);CHKERRQ(ierr);
-      ierr = MatDestroy(&RHST);CHKERRQ(ierr);
+      CHKERRQ(MatDestroy(&spRHST));
+      CHKERRQ(MatDestroy(&spRHS));
+      CHKERRQ(MatDestroy(&RHST));
     }
-    ierr = MatDestroy(&S);CHKERRQ(ierr);
-    ierr = VecDestroy(&xschur);CHKERRQ(ierr);
-    ierr = VecDestroy(&bschur);CHKERRQ(ierr);
-    ierr = VecDestroy(&uschur);CHKERRQ(ierr);
+    CHKERRQ(MatDestroy(&S));
+    CHKERRQ(VecDestroy(&xschur));
+    CHKERRQ(VecDestroy(&bschur));
+    CHKERRQ(VecDestroy(&uschur));
   }
   /* Free data structures */
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&F);CHKERRQ(ierr);
-  ierr = MatDestroy(&X);CHKERRQ(ierr);
-  ierr = MatDestroy(&RHS);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&C));
+  CHKERRQ(MatDestroy(&F));
+  CHKERRQ(MatDestroy(&X));
+  CHKERRQ(MatDestroy(&RHS));
+  CHKERRQ(PetscRandomDestroy(&rand));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(VecDestroy(&u));
   ierr = PetscFinalize();
   return ierr;
 }

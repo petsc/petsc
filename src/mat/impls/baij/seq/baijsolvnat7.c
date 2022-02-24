@@ -5,15 +5,14 @@ PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a   = (Mat_SeqBAIJ*)A->data;
   const PetscInt    *diag=a->diag,n=a->mbs,*vi,*ai=a->i,*aj=a->j;
-  PetscErrorCode    ierr;
   PetscInt          i,nz,idx,idt,jdx;
   const MatScalar   *aa=a->a,*v;
   PetscScalar       *x,s1,s2,s3,s4,s5,s6,s7,x1,x2,x3,x4,x5,x6,x7;
   const PetscScalar *b;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(bb,&b));
+  CHKERRQ(VecGetArray(xx,&x));
   /* forward solve the lower triangular */
   idx  = 0;
   x[0] = b[idx];   x[1] = b[1+idx]; x[2] = b[2+idx];
@@ -90,9 +89,9 @@ PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
                + v[34]*s5 + v[41]*s6 + v[48]*s7;
   }
 
-  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*36*(a->nz) - 6.0*A->cmap->n);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(bb,&b));
+  CHKERRQ(VecRestoreArray(xx,&x));
+  CHKERRQ(PetscLogFlops(2.0*36*(a->nz) - 6.0*A->cmap->n));
   PetscFunctionReturn(0);
 }
 
@@ -100,7 +99,6 @@ PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
   const PetscInt    n  =a->mbs,*vi,*ai=a->i,*aj=a->j,*adiag=a->diag;
-  PetscErrorCode    ierr;
   PetscInt          i,k,nz,idx,jdx,idt;
   const PetscInt    bs = A->rmap->bs,bs2 = a->bs2;
   const MatScalar   *aa=a->a,*v;
@@ -109,8 +107,8 @@ PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscScalar       s1,s2,s3,s4,s5,s6,s7,x1,x2,x3,x4,x5,x6,x7;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(bb,&b));
+  CHKERRQ(VecGetArray(xx,&x));
   /* forward solve the lower triangular */
   idx  = 0;
   x[0] = b[idx]; x[1] = b[1+idx];x[2] = b[2+idx];x[3] = b[3+idx];
@@ -176,9 +174,8 @@ PetscErrorCode MatSolve_SeqBAIJ_7_NaturalOrdering(Mat A,Vec bb,Vec xx)
     x[6+idt] = v[6]*s1 + v[13]*s2 + v[20]*s3 + v[27]*s4  + v[34]*s5 + v[41]*s6 + v[48]*s7;
   }
 
-  ierr = VecRestoreArrayRead(bb,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(bb,&b));
+  CHKERRQ(VecRestoreArray(xx,&x));
+  CHKERRQ(PetscLogFlops(2.0*bs2*(a->nz) - bs*A->cmap->n));
   PetscFunctionReturn(0);
 }
-

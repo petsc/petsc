@@ -12,16 +12,16 @@ int main(int argc,char **argv)
   const PetscScalar  *yv;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&nproc));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCheckFalse(nproc != 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This test can only run on two MPI ranks");
 
   /* Create an MPI vector x of size 12 on two processes, and set x = {0, 1, 2, .., 11} */
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,6,PETSC_DECIDE,&x);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(x,&low,&high);CHKERRQ(ierr);
-  for (i=low; i<high; i++) {ierr = VecSetValue(x,i,(PetscScalar)i,INSERT_VALUES);CHKERRQ(ierr);}
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+  CHKERRQ(VecCreateMPI(PETSC_COMM_WORLD,6,PETSC_DECIDE,&x));
+  CHKERRQ(VecGetOwnershipRange(x,&low,&high));
+  for (i=low; i<high; i++) CHKERRQ(VecSetValue(x,i,(PetscScalar)i,INSERT_VALUES));
+  CHKERRQ(VecAssemblyBegin(x));
+  CHKERRQ(VecAssemblyEnd(x));
 
   /* Create a seq vector y, and a parallel to sequential (PtoS) vecscatter to scatter x to y */
   if (rank == 0) {
@@ -30,37 +30,37 @@ int main(int argc,char **argv)
     PetscInt idy[2]={0,1};
     n    = 6;
     bs   = 3;
-    ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);
-    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2,idx,PETSC_COPY_VALUES,&ix);CHKERRQ(ierr);
-    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2,idy,PETSC_COPY_VALUES,&iy);CHKERRQ(ierr);
+    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&y));
+    CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,2,idx,PETSC_COPY_VALUES,&ix));
+    CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,2,idy,PETSC_COPY_VALUES,&iy));
   } else {
     /* On rank 1, seq y is of size 4. We will scatter x[4,5,10,11] to y[0,1,2,3] using IS with bs=2 */
     PetscInt idx[2]= {2,5};
     PetscInt idy[2]= {0,1};
     n    = 4;
     bs   = 2;
-    ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);
-    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2,idx,PETSC_COPY_VALUES,&ix);CHKERRQ(ierr);
-    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,2,idy,PETSC_COPY_VALUES,&iy);CHKERRQ(ierr);
+    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&y));
+    CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,2,idx,PETSC_COPY_VALUES,&ix));
+    CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,2,idy,PETSC_COPY_VALUES,&iy));
   }
-  ierr = VecScatterCreate(x,ix,y,iy,&vscat);CHKERRQ(ierr);
+  CHKERRQ(VecScatterCreate(x,ix,y,iy,&vscat));
 
   /* Do the vecscatter */
-  ierr = VecScatterBegin(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  CHKERRQ(VecScatterBegin(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD));
 
   /* Print y. Since y is sequential, we put y in a parallel z to print its value on both ranks */
-  ierr = VecGetArrayRead(y,&yv);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,yv,&z);CHKERRQ(ierr);
-  ierr = VecView(z,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(y,&yv);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(y,&yv));
+  CHKERRQ(VecCreateMPIWithArray(PETSC_COMM_WORLD,1,n,PETSC_DECIDE,yv,&z));
+  CHKERRQ(VecView(z,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(VecRestoreArrayRead(y,&yv));
 
-  ierr = ISDestroy(&ix);CHKERRQ(ierr);
-  ierr = ISDestroy(&iy);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = VecDestroy(&z);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&vscat);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&ix));
+  CHKERRQ(ISDestroy(&iy));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
+  CHKERRQ(VecDestroy(&z));
+  CHKERRQ(VecScatterDestroy(&vscat));
 
   ierr = PetscFinalize();
   return ierr;
@@ -73,4 +73,3 @@ int main(int argc,char **argv)
       args:
       requires:
 TEST*/
-

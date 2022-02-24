@@ -28,7 +28,6 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
   PetscScalar    *c;
   PetscInt       nl,i;
   PetscReal      u[3] = {1.0,1.0,1.0}, l[3] = {-1.0,-1.0,-1.0};
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
   if (ho) {
@@ -40,15 +39,15 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
     l[2] = 0.;
   }
   if (plex) {
-    ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
-    ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-    ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
+    CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dm));
+    CHKERRQ(DMSetType(dm, DMPLEX));
+    CHKERRQ(DMSetFromOptions(dm));
   } else {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,cells[0]+1,cells[1]+1,cells[2]+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&dm);CHKERRQ(ierr);
+    CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,cells[0]+1,cells[1]+1,cells[2]+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,NULL,&dm));
   }
-  ierr = DMSetUp(dm);CHKERRQ(ierr);
+  CHKERRQ(DMSetUp(dm));
   if (!plex) {
-    ierr = DMDASetUniformCoordinates(dm,l[0],u[0],l[1],u[1],l[2],u[2]);CHKERRQ(ierr);
+    CHKERRQ(DMDASetUniformCoordinates(dm,l[0],u[0],l[1],u[1],l[2],u[2]));
   }
   if (ho) { /* each element mapped to a sphere */
     DM           cdm;
@@ -61,33 +60,33 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
     PetscReal    *nodes,*weights;
     char         name[256];
 
-    ierr = PetscOptionsGetInt(NULL,NULL,"-order",&dof,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-order",&dof,NULL));
     dof += 1;
 
-    ierr = PetscMalloc1(dof,&nodes);CHKERRQ(ierr);
-    ierr = PetscMalloc1(dof,&weights);CHKERRQ(ierr);
-    ierr = PetscDTGaussLobattoLegendreQuadrature(dof,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,nodes,weights);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(dm,&cv);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDM(dm,&cdm);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(dof,&nodes));
+    CHKERRQ(PetscMalloc1(dof,&weights));
+    CHKERRQ(PetscDTGaussLobattoLegendreQuadrature(dof,PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA,nodes,weights));
+    CHKERRQ(DMGetCoordinatesLocal(dm,&cv));
+    CHKERRQ(DMGetCoordinateDM(dm,&cdm));
     if (plex) {
       PetscInt cEnd,cStart;
 
-      ierr = DMPlexGetHeightStratum(dm,0,&cStart,&cEnd);CHKERRQ(ierr);
-      ierr = DMGetCoordinateSection(dm,&cSec);CHKERRQ(ierr);
+      CHKERRQ(DMPlexGetHeightStratum(dm,0,&cStart,&cEnd));
+      CHKERRQ(DMGetCoordinateSection(dm,&cSec));
       nel  = cEnd - cStart;
       nex  = nel;
       ney  = 1;
       nez  = 1;
     } else {
-      ierr = DMDAVecGetArray(cdm,cv,&_coords);CHKERRQ(ierr);
-      ierr = DMDAGetElementsCorners(dm,&gx,&gy,&gz);CHKERRQ(ierr);
-      ierr = DMDAGetElementsSizes(dm,&nex,&ney,&nez);CHKERRQ(ierr);
+      CHKERRQ(DMDAVecGetArray(cdm,cv,&_coords));
+      CHKERRQ(DMDAGetElementsCorners(dm,&gx,&gy,&gz));
+      CHKERRQ(DMDAGetElementsSizes(dm,&nex,&ney,&nez));
       nel  = nex*ney*nez;
     }
-    ierr = VecCreate(PETSC_COMM_WORLD,&v);CHKERRQ(ierr);
-    ierr = VecSetSizes(v,3*dof*dof*dof*nel,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetType(v,VECSTANDARD);CHKERRQ(ierr);
-    ierr = VecGetArray(v,&c);CHKERRQ(ierr);
+    CHKERRQ(VecCreate(PETSC_COMM_WORLD,&v));
+    CHKERRQ(VecSetSizes(v,3*dof*dof*dof*nel,PETSC_DECIDE));
+    CHKERRQ(VecSetType(v,VECSTANDARD));
+    CHKERRQ(VecGetArray(v,&c));
     cptr = c;
     for (k=gz;k<gz+nez;k++) {
       for (j=gy;j<gy+ney;j++) {
@@ -95,11 +94,11 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
           if (plex) {
             PetscScalar *t = NULL;
 
-            ierr = DMPlexVecGetClosure(dm,cSec,cv,i,NULL,&t);CHKERRQ(ierr);
+            CHKERRQ(DMPlexVecGetClosure(dm,cSec,cv,i,NULL,&t));
             shift[0] = t[0];
             shift[1] = t[1];
             shift[2] = t[2];
-            ierr = DMPlexVecRestoreClosure(dm,cSec,cv,i,NULL,&t);CHKERRQ(ierr);
+            CHKERRQ(DMPlexVecRestoreClosure(dm,cSec,cv,i,NULL,&t));
           } else {
             shift[0] = _coords[k][j][i].x;
             shift[1] = _coords[k][j][i].y;
@@ -113,7 +112,7 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
               xyz[1] = nodes[pj];
               for (pi=0;pi<dof;pi++) {
                 xyz[0] = nodes[pi];
-                ierr = MapPoint(xyz,cptr);CHKERRQ(ierr);
+                CHKERRQ(MapPoint(xyz,cptr));
                 cptr[0] += shift[0];
                 cptr[1] += shift[1];
                 cptr[2] += shift[2];
@@ -125,28 +124,28 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
       }
     }
     if (!plex) {
-      ierr = DMDAVecRestoreArray(cdm,cv,&_coords);CHKERRQ(ierr);
+      CHKERRQ(DMDAVecRestoreArray(cdm,cv,&_coords));
     }
-    ierr = VecRestoreArray(v,&c);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(name,sizeof(name),"FiniteElementCollection: L2_T1_3D_P%D",dof-1);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)v,name);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)dm,"_glvis_mesh_coords",(PetscObject)v);CHKERRQ(ierr);
-    ierr = VecDestroy(&v);CHKERRQ(ierr);
-    ierr = PetscFree(nodes);CHKERRQ(ierr);
-    ierr = PetscFree(weights);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(dm,NULL,"-view");CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(v,&c));
+    CHKERRQ(PetscSNPrintf(name,sizeof(name),"FiniteElementCollection: L2_T1_3D_P%D",dof-1));
+    CHKERRQ(PetscObjectSetName((PetscObject)v,name));
+    CHKERRQ(PetscObjectCompose((PetscObject)dm,"_glvis_mesh_coords",(PetscObject)v));
+    CHKERRQ(VecDestroy(&v));
+    CHKERRQ(PetscFree(nodes));
+    CHKERRQ(PetscFree(weights));
+    CHKERRQ(DMViewFromOptions(dm,NULL,"-view"));
   } else { /* map the whole domain to a sphere */
-    ierr = DMGetCoordinates(dm,&v);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(v,&nl);CHKERRQ(ierr);
-    ierr = VecGetArray(v,&c);CHKERRQ(ierr);
+    CHKERRQ(DMGetCoordinates(dm,&v));
+    CHKERRQ(VecGetLocalSize(v,&nl));
+    CHKERRQ(VecGetArray(v,&c));
     for (i=0;i<nl/3;i++) {
-      ierr = MapPoint(c+3*i,c+3*i);CHKERRQ(ierr);
+      CHKERRQ(MapPoint(c+3*i,c+3*i));
     }
-    ierr = VecRestoreArray(v,&c);CHKERRQ(ierr);
-    ierr = DMSetCoordinates(dm,v);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(dm,NULL,"-view");CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(v,&c));
+    CHKERRQ(DMSetCoordinates(dm,v));
+    CHKERRQ(DMViewFromOptions(dm,NULL,"-view"));
   }
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(DMDestroy(&dm));
   PetscFunctionReturn(0);
 }
 
@@ -158,12 +157,12 @@ int main(int argc, char *argv[])
   PetscInt       cells[3] = {2,2,2};
 
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-ho",&ho,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-plex",&plex,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-nex",&cells[0],NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-ney",&cells[1],NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-nez",&cells[2],NULL);CHKERRQ(ierr);
-  ierr = test_3d(cells,plex,ho);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-ho",&ho,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-plex",&plex,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nex",&cells[0],NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-ney",&cells[1],NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nez",&cells[2],NULL));
+  CHKERRQ(test_3d(cells,plex,ho));
   ierr = PetscFinalize();
   return ierr;
 }

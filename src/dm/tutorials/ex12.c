@@ -23,30 +23,30 @@ int main(int argc,char **argv)
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-star_stencil",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-star_stencil",&flg,NULL));
   if (flg) stype = DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(da,&global1);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(da,&global2);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(da,&global1);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(da,&global2);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(da,&global1);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(da,&global3);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(da,&global2);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(da,&global1);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(da,&global3);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(da,&global2);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(da,&global1);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(da,&global3);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(da,&global2);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(da,&global1);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(da,&global3);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(da,&global2);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
+  CHKERRQ(DMGetGlobalVector(da,&global1));
+  CHKERRQ(DMGetGlobalVector(da,&global2));
+  CHKERRQ(DMRestoreGlobalVector(da,&global1));
+  CHKERRQ(DMRestoreGlobalVector(da,&global2));
+  CHKERRQ(DMGetGlobalVector(da,&global1));
+  CHKERRQ(DMGetGlobalVector(da,&global3));
+  CHKERRQ(DMGetGlobalVector(da,&global2));
+  CHKERRQ(DMRestoreGlobalVector(da,&global1));
+  CHKERRQ(DMRestoreGlobalVector(da,&global3));
+  CHKERRQ(DMRestoreGlobalVector(da,&global2));
+  CHKERRQ(DMGetGlobalVector(da,&global1));
+  CHKERRQ(DMGetGlobalVector(da,&global3));
+  CHKERRQ(DMGetGlobalVector(da,&global2));
+  CHKERRQ(DMRestoreGlobalVector(da,&global1));
+  CHKERRQ(DMRestoreGlobalVector(da,&global3));
+  CHKERRQ(DMRestoreGlobalVector(da,&global2));
+  CHKERRQ(DMDestroy(&da));
   ierr = PetscFinalize();
   return ierr;
 }

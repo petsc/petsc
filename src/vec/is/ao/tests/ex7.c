@@ -13,29 +13,29 @@ int main(int argc,char **argv)
   AO             ao;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   /* create the index sets */
-  ierr = ISCreateStride(PETSC_COMM_WORLD,n,rank,size,&ispetsc);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_WORLD,n,n*rank,1,&isapp);CHKERRQ(ierr);
+  CHKERRQ(ISCreateStride(PETSC_COMM_WORLD,n,rank,size,&ispetsc));
+  CHKERRQ(ISCreateStride(PETSC_COMM_WORLD,n,n*rank,1,&isapp));
 
   /* create the application ordering */
-  ierr = AOCreateBasicIS(isapp,ispetsc,&ao);CHKERRQ(ierr);
+  CHKERRQ(AOCreateBasicIS(isapp,ispetsc,&ao));
 
-  ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(AOView(ao,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = ISView(ispetsc,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISView(isapp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = AOPetscToApplicationIS(ao,ispetsc);CHKERRQ(ierr);
-  ierr = ISView(isapp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISView(ispetsc,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(ISView(ispetsc,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(ISView(isapp,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(AOPetscToApplicationIS(ao,ispetsc));
+  CHKERRQ(ISView(isapp,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(ISView(ispetsc,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = ISDestroy(&ispetsc);CHKERRQ(ierr);
-  ierr = ISDestroy(&isapp);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&ispetsc));
+  CHKERRQ(ISDestroy(&isapp));
 
-  ierr = AODestroy(&ao);CHKERRQ(ierr);
+  CHKERRQ(AODestroy(&ao));
   ierr = PetscFinalize();
   return ierr;
 }

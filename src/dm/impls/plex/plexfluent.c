@@ -19,26 +19,24 @@
 PetscErrorCode DMPlexCreateFluentFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
   PetscViewer     viewer;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   /* Create file viewer and build plex */
-  ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
-  ierr = DMPlexCreateFluent(comm, viewer, interpolate, dm);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerCreate(comm, &viewer));
+  CHKERRQ(PetscViewerSetType(viewer, PETSCVIEWERASCII));
+  CHKERRQ(PetscViewerFileSetMode(viewer, FILE_MODE_READ));
+  CHKERRQ(PetscViewerFileSetName(viewer, filename));
+  CHKERRQ(DMPlexCreateFluent(comm, viewer, interpolate, dm));
+  CHKERRQ(PetscViewerDestroy(&viewer));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode DMPlexCreateFluent_ReadString(PetscViewer viewer, char *buffer, char delim)
 {
   PetscInt ret, i = 0;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  do {ierr = PetscViewerRead(viewer, &(buffer[i++]), 1, &ret, PETSC_CHAR);CHKERRQ(ierr);}
+  do CHKERRQ(PetscViewerRead(viewer, &(buffer[i++]), 1, &ret, PETSC_CHAR));
   while (ret > 0 && buffer[i-1] != '\0' && buffer[i-1] != delim);
   if (!ret) buffer[i-1] = '\0'; else buffer[i] = '\0';
   PetscFunctionReturn(0);
@@ -49,12 +47,11 @@ static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *da
   int            fdes=0;
   FILE          *file;
   PetscInt       i;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (binary) {
     /* Extract raw file descriptor to read binary block */
-    ierr = PetscViewerASCIIGetPointer(viewer, &file);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIGetPointer(viewer, &file));
     fflush(file); fdes = fileno(file);
   }
 
@@ -64,7 +61,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *da
     int          snum;
     /* Parse hexadecimal ascii integers */
     for (i = 0; i < count; i++) {
-      ierr = PetscViewerRead(viewer, cbuf, 1, NULL, PETSC_STRING);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerRead(viewer, cbuf, 1, NULL, PETSC_STRING));
       snum = sscanf(cbuf, "%x", &ibuf);
       PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
       ((PetscInt*)data)[i] = (PetscInt)ibuf;
@@ -72,22 +69,22 @@ static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *da
   } else if (binary && dtype == PETSC_INT) {
     /* Always read 32-bit ints and cast to PetscInt */
     int *ibuf;
-    ierr = PetscMalloc1(count, &ibuf);CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fdes, ibuf, count, NULL, PETSC_ENUM);CHKERRQ(ierr);
-    ierr = PetscByteSwap(ibuf, PETSC_ENUM, count);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(count, &ibuf));
+    CHKERRQ(PetscBinaryRead(fdes, ibuf, count, NULL, PETSC_ENUM));
+    CHKERRQ(PetscByteSwap(ibuf, PETSC_ENUM, count));
     for (i = 0; i < count; i++) ((PetscInt*)data)[i] = (PetscInt)(ibuf[i]);
-    ierr = PetscFree(ibuf);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(ibuf));
 
  } else if (binary && dtype == PETSC_SCALAR) {
     float *fbuf;
     /* Always read 32-bit floats and cast to PetscScalar */
-    ierr = PetscMalloc1(count, &fbuf);CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fdes, fbuf, count, NULL, PETSC_FLOAT);CHKERRQ(ierr);
-    ierr = PetscByteSwap(fbuf, PETSC_FLOAT, count);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(count, &fbuf));
+    CHKERRQ(PetscBinaryRead(fdes, fbuf, count, NULL, PETSC_FLOAT));
+    CHKERRQ(PetscByteSwap(fbuf, PETSC_FLOAT, count));
     for (i = 0; i < count; i++) ((PetscScalar*)data)[i] = (PetscScalar)(fbuf[i]);
-    ierr = PetscFree(fbuf);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(fbuf));
   } else {
-    ierr = PetscViewerASCIIRead(viewer, data, count, NULL, dtype);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIRead(viewer, data, count, NULL, dtype));
   }
   PetscFunctionReturn(0);
 }
@@ -96,39 +93,38 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
 {
   char           buffer[PETSC_MAX_PATH_LEN];
   int            snum;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Fast-forward to next section and derive its index */
-  ierr = DMPlexCreateFluent_ReadString(viewer, buffer, '(');CHKERRQ(ierr);
-  ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ' ');CHKERRQ(ierr);
+  CHKERRQ(DMPlexCreateFluent_ReadString(viewer, buffer, '('));
+  CHKERRQ(DMPlexCreateFluent_ReadString(viewer, buffer, ' '));
   snum = sscanf(buffer, "%d", &(s->index));
   /* If we can't match an index return -1 to signal end-of-file */
   if (snum < 1) {s->index = -1;   PetscFunctionReturn(0);}
 
   if (s->index == 0) {           /* Comment */
-    ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
 
   } else if (s->index == 2) {    /* Dimension */
-    ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
     snum = sscanf(buffer, "%d", &(s->nd));
     PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
 
   } else if (s->index == 10 || s->index == 2010) {   /* Vertices */
-    ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
     snum = sscanf(buffer, "(%x %x %x %d %d)", &(s->zoneID), &(s->first), &(s->last), &(s->type), &(s->nd));
     PetscCheckFalse(snum != 5,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
     if (s->zoneID > 0) {
       PetscInt numCoords = s->last - s->first + 1;
-      ierr = DMPlexCreateFluent_ReadString(viewer, buffer, '(');CHKERRQ(ierr);
-      ierr = PetscMalloc1(s->nd*numCoords, (PetscScalar**)&s->data);CHKERRQ(ierr);
-      ierr = DMPlexCreateFluent_ReadValues(viewer, s->data, s->nd*numCoords, PETSC_SCALAR, s->index==2010 ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
-      ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
+      CHKERRQ(DMPlexCreateFluent_ReadString(viewer, buffer, '('));
+      CHKERRQ(PetscMalloc1(s->nd*numCoords, (PetscScalar**)&s->data));
+      CHKERRQ(DMPlexCreateFluent_ReadValues(viewer, s->data, s->nd*numCoords, PETSC_SCALAR, s->index==2010 ? PETSC_TRUE : PETSC_FALSE));
+      CHKERRQ(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
     }
-    ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
 
   } else if (s->index == 12 || s->index == 2012) {   /* Cells */
-    ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
     snum = sscanf(buffer, "(%x", &(s->zoneID));
     PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
     if (s->zoneID == 0) {  /* Header section */
@@ -140,17 +136,17 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
       if (s->nd == 0) {
         /* Read cell type definitions for mixed cells */
         PetscInt numCells = s->last - s->first + 1;
-        ierr = DMPlexCreateFluent_ReadString(viewer, buffer, '(');CHKERRQ(ierr);
-        ierr = PetscMalloc1(numCells, (PetscInt**)&s->data);CHKERRQ(ierr);
-        ierr = DMPlexCreateFluent_ReadValues(viewer, s->data, numCells, PETSC_INT, s->index==2012 ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
-        ierr = PetscFree(s->data);CHKERRQ(ierr);
-        ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
+        CHKERRQ(DMPlexCreateFluent_ReadString(viewer, buffer, '('));
+        CHKERRQ(PetscMalloc1(numCells, (PetscInt**)&s->data));
+        CHKERRQ(DMPlexCreateFluent_ReadValues(viewer, s->data, numCells, PETSC_INT, s->index==2012 ? PETSC_TRUE : PETSC_FALSE));
+        CHKERRQ(PetscFree(s->data));
+        CHKERRQ(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
       }
     }
-    ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
 
   } else if (s->index == 13 || s->index == 2013) {   /* Faces */
-    ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
     snum = sscanf(buffer, "(%x", &(s->zoneID));
     PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
     if (s->zoneID == 0) {  /* Header section */
@@ -160,7 +156,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
       PetscInt f, numEntries, numFaces;
       snum = sscanf(buffer, "(%x %x %x %d %d)", &(s->zoneID), &(s->first), &(s->last), &(s->type), &(s->nd));
       PetscCheckFalse(snum != 5,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
-      ierr = DMPlexCreateFluent_ReadString(viewer, buffer, '(');CHKERRQ(ierr);
+      CHKERRQ(DMPlexCreateFluent_ReadString(viewer, buffer, '('));
       switch (s->nd) {
       case 0: numEntries = PETSC_DETERMINE; break;
       case 2: numEntries = 2 + 2; break;  /* linear */
@@ -171,37 +167,37 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
       numFaces = s->last-s->first + 1;
       if (numEntries != PETSC_DETERMINE) {
         /* Allocate space only if we already know the size of the block */
-        ierr = PetscMalloc1(numEntries*numFaces, (PetscInt**)&s->data);CHKERRQ(ierr);
+        CHKERRQ(PetscMalloc1(numEntries*numFaces, (PetscInt**)&s->data));
       }
       for (f = 0; f < numFaces; f++) {
         if (s->nd == 0) {
           /* Determine the size of the block for "mixed" facets */
           PetscInt numFaceVert = 0;
-          ierr = DMPlexCreateFluent_ReadValues(viewer, &numFaceVert, 1, PETSC_INT, s->index==2013 ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
+          CHKERRQ(DMPlexCreateFluent_ReadValues(viewer, &numFaceVert, 1, PETSC_INT, s->index==2013 ? PETSC_TRUE : PETSC_FALSE));
           if (numEntries == PETSC_DETERMINE) {
             numEntries = numFaceVert + 2;
-            ierr = PetscMalloc1(numEntries*numFaces, (PetscInt**)&s->data);CHKERRQ(ierr);
+            CHKERRQ(PetscMalloc1(numEntries*numFaces, (PetscInt**)&s->data));
           } else {
             PetscCheckFalse(numEntries != numFaceVert + 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No support for mixed faces in Fluent files");
           }
         }
-        ierr = DMPlexCreateFluent_ReadValues(viewer, &(((PetscInt*)s->data)[f*numEntries]), numEntries, PETSC_INT, s->index==2013 ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
+        CHKERRQ(DMPlexCreateFluent_ReadValues(viewer, &(((PetscInt*)s->data)[f*numEntries]), numEntries, PETSC_INT, s->index==2013 ? PETSC_TRUE : PETSC_FALSE));
       }
       s->nd = numEntries - 2;
-      ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
+      CHKERRQ(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
     }
-    ierr = DMPlexCreateFluent_ReadString(viewer, buffer, ')');CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
 
   } else {                       /* Unknown section type */
     PetscInt depth = 1;
     do {
       /* Match parentheses when parsing unknown sections */
-      do {ierr = PetscViewerRead(viewer, &(buffer[0]), 1, NULL, PETSC_CHAR);CHKERRQ(ierr);}
+      do CHKERRQ(PetscViewerRead(viewer, &(buffer[0]), 1, NULL, PETSC_CHAR));
       while (buffer[0] != '(' && buffer[0] != ')');
       if (buffer[0] == '(') depth++;
       if (buffer[0] == ')') depth--;
     } while (depth > 0);
-    ierr = DMPlexCreateFluent_ReadString(viewer, buffer, '\n');CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateFluent_ReadString(viewer, buffer, '\n'));
   }
   PetscFunctionReturn(0);
 }
@@ -236,15 +232,14 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   PetscScalar   *coords, *coordsIn = NULL;
   PetscSection   coordSection;
   Vec            coordinates;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(comm, &rank));
 
   if (rank == 0) {
     FluentSection s;
     do {
-      ierr = DMPlexCreateFluent_ReadSection(viewer, &s);CHKERRQ(ierr);
+      CHKERRQ(DMPlexCreateFluent_ReadSection(viewer, &s));
       if (s.index == 2) {                 /* Dimension */
         dim = s.nd;
 
@@ -282,35 +277,35 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
           PetscCheckFalse(numFaces < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No header section for facets in Fluent file");
           if (numFaceVertices == PETSC_DETERMINE) numFaceVertices = s.nd;
           numFaceEntries = numFaceVertices + 2;
-          if (!faces) {ierr = PetscMalloc1(numFaces*numFaceEntries, &faces);CHKERRQ(ierr);}
-          if (!faceZoneIDs) {ierr = PetscMalloc1(numFaces, &faceZoneIDs);CHKERRQ(ierr);}
-          ierr = PetscMemcpy(&faces[(s.first-1)*numFaceEntries], s.data, (s.last-s.first+1)*numFaceEntries*sizeof(PetscInt));CHKERRQ(ierr);
+          if (!faces) CHKERRQ(PetscMalloc1(numFaces*numFaceEntries, &faces));
+          if (!faceZoneIDs) CHKERRQ(PetscMalloc1(numFaces, &faceZoneIDs));
+          CHKERRQ(PetscMemcpy(&faces[(s.first-1)*numFaceEntries], s.data, (s.last-s.first+1)*numFaceEntries*sizeof(PetscInt)));
           /* Record the zoneID for each face set */
           for (z = s.first -1; z < s.last; z++) faceZoneIDs[z] = s.zoneID;
-          ierr = PetscFree(s.data);CHKERRQ(ierr);
+          CHKERRQ(PetscFree(s.data));
         }
       }
     } while (s.index >= 0);
   }
-  ierr = MPI_Bcast(&dim, 1, MPIU_INT, 0, comm);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Bcast(&dim, 1, MPIU_INT, 0, comm));
   PetscCheckFalse(dim < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Fluent file does not include dimension");
 
   /* Allocate cell-vertex mesh */
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetDimension(*dm, dim);CHKERRQ(ierr);
-  ierr = DMPlexSetChart(*dm, 0, numCells + numVertices);CHKERRQ(ierr);
+  CHKERRQ(DMCreate(comm, dm));
+  CHKERRQ(DMSetType(*dm, DMPLEX));
+  CHKERRQ(DMSetDimension(*dm, dim));
+  CHKERRQ(DMPlexSetChart(*dm, 0, numCells + numVertices));
   if (rank == 0) {
     PetscCheckFalse(numCells < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown number of cells in Fluent file");
     /* If no cell type was given we assume simplices */
     if (numCellVertices == PETSC_DETERMINE) numCellVertices = numFaceVertices + 1;
-    for (c = 0; c < numCells; ++c) {ierr = DMPlexSetConeSize(*dm, c, numCellVertices);CHKERRQ(ierr);}
+    for (c = 0; c < numCells; ++c) CHKERRQ(DMPlexSetConeSize(*dm, c, numCellVertices));
   }
-  ierr = DMSetUp(*dm);CHKERRQ(ierr);
+  CHKERRQ(DMSetUp(*dm));
 
   if (rank == 0 && faces) {
     /* Derive cell-vertex list from face-vertex and face-cell maps */
-    ierr = PetscMalloc1(numCells*numCellVertices, &cellVertices);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(numCells*numCellVertices, &cellVertices));
     for (c = 0; c < numCells*numCellVertices; c++) cellVertices[c] = -1;
     for (f = 0; f < numFaces; f++) {
       PetscInt *cell;
@@ -342,23 +337,23 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
       }
     }
     for (c = 0; c < numCells; c++) {
-      ierr = DMPlexSetCone(*dm, c, &(cellVertices[c*numCellVertices]));CHKERRQ(ierr);
+      CHKERRQ(DMPlexSetCone(*dm, c, &(cellVertices[c*numCellVertices])));
     }
   }
-  ierr = DMPlexSymmetrize(*dm);CHKERRQ(ierr);
-  ierr = DMPlexStratify(*dm);CHKERRQ(ierr);
+  CHKERRQ(DMPlexSymmetrize(*dm));
+  CHKERRQ(DMPlexStratify(*dm));
   if (interpolate) {
     DM idm;
 
-    ierr = DMPlexInterpolate(*dm, &idm);CHKERRQ(ierr);
-    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    CHKERRQ(DMPlexInterpolate(*dm, &idm));
+    CHKERRQ(DMDestroy(dm));
     *dm  = idm;
   }
 
   if (rank == 0 && faces) {
     PetscInt fi, joinSize, meetSize, *fverts, cells[2];
     const PetscInt *join, *meet;
-    ierr = PetscMalloc1(numFaceVertices, &fverts);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(numFaceVertices, &fverts));
     /* Mark facets by finding the full join of all adjacent vertices */
     for (f = 0; f < numFaces; f++) {
       const PetscInt cl = faces[f*numFaceEntries + numFaceVertices] - 1;
@@ -366,19 +361,19 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
       if (cl > 0 && cr > 0) {
         /* If we know both adjoining cells we can use a single-level meet */
         cells[0] = cl; cells[1] = cr;
-        ierr = DMPlexGetMeet(*dm, 2, cells, &meetSize, &meet);CHKERRQ(ierr);
+        CHKERRQ(DMPlexGetMeet(*dm, 2, cells, &meetSize, &meet));
         PetscCheckFalse(meetSize != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not determine Plex facet for Fluent face %d", f);
-        ierr = DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", meet[0], faceZoneIDs[f]);CHKERRQ(ierr);
-        ierr = DMPlexRestoreMeet(*dm, numFaceVertices, fverts, &meetSize, &meet);CHKERRQ(ierr);
+        CHKERRQ(DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", meet[0], faceZoneIDs[f]));
+        CHKERRQ(DMPlexRestoreMeet(*dm, numFaceVertices, fverts, &meetSize, &meet));
       } else {
         for (fi = 0; fi < numFaceVertices; fi++) fverts[fi] = faces[f*numFaceEntries + fi] + numCells - 1;
-        ierr = DMPlexGetFullJoin(*dm, numFaceVertices, fverts, &joinSize, &join);CHKERRQ(ierr);
+        CHKERRQ(DMPlexGetFullJoin(*dm, numFaceVertices, fverts, &joinSize, &join));
         PetscCheckFalse(joinSize != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not determine Plex facet for Fluent face %d", f);
-        ierr = DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", join[0], faceZoneIDs[f]);CHKERRQ(ierr);
-        ierr = DMPlexRestoreJoin(*dm, numFaceVertices, fverts, &joinSize, &join);CHKERRQ(ierr);
+        CHKERRQ(DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", join[0], faceZoneIDs[f]));
+        CHKERRQ(DMPlexRestoreJoin(*dm, numFaceVertices, fverts, &joinSize, &join));
       }
     }
-    ierr = PetscFree(fverts);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(fverts));
   }
 
   { /* Create Face Sets label at all processes */
@@ -386,26 +381,26 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
     PetscBool flag[n];
 
     flag[0] = faceSets ? PETSC_TRUE : PETSC_FALSE;
-    ierr = MPI_Bcast(flag, n, MPIU_BOOL, 0, comm);CHKERRMPI(ierr);
-    if (flag[0]) {ierr = DMCreateLabel(*dm, "Face Sets");CHKERRQ(ierr);}
+    CHKERRMPI(MPI_Bcast(flag, n, MPIU_BOOL, 0, comm));
+    if (flag[0]) CHKERRQ(DMCreateLabel(*dm, "Face Sets"));
   }
 
   /* Read coordinates */
-  ierr = DMGetCoordinateSection(*dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionSetNumFields(coordSection, 1);CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldComponents(coordSection, 0, dim);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(coordSection, numCells, numCells + numVertices);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoordinateSection(*dm, &coordSection));
+  CHKERRQ(PetscSectionSetNumFields(coordSection, 1));
+  CHKERRQ(PetscSectionSetFieldComponents(coordSection, 0, dim));
+  CHKERRQ(PetscSectionSetChart(coordSection, numCells, numCells + numVertices));
   for (v = numCells; v < numCells+numVertices; ++v) {
-    ierr = PetscSectionSetDof(coordSection, v, dim);CHKERRQ(ierr);
-    ierr = PetscSectionSetFieldDof(coordSection, v, 0, dim);CHKERRQ(ierr);
+    CHKERRQ(PetscSectionSetDof(coordSection, v, dim));
+    CHKERRQ(PetscSectionSetFieldDof(coordSection, v, 0, dim));
   }
-  ierr = PetscSectionSetUp(coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetStorageSize(coordSection, &coordSize);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_SELF, &coordinates);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) coordinates, "coordinates");CHKERRQ(ierr);
-  ierr = VecSetSizes(coordinates, coordSize, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetType(coordinates, VECSTANDARD);CHKERRQ(ierr);
-  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+  CHKERRQ(PetscSectionSetUp(coordSection));
+  CHKERRQ(PetscSectionGetStorageSize(coordSection, &coordSize));
+  CHKERRQ(VecCreate(PETSC_COMM_SELF, &coordinates));
+  CHKERRQ(PetscObjectSetName((PetscObject) coordinates, "coordinates"));
+  CHKERRQ(VecSetSizes(coordinates, coordSize, PETSC_DETERMINE));
+  CHKERRQ(VecSetType(coordinates, VECSTANDARD));
+  CHKERRQ(VecGetArray(coordinates, &coords));
   if (rank == 0 && coordsIn) {
     for (v = 0; v < numVertices; ++v) {
       for (d = 0; d < dim; ++d) {
@@ -413,15 +408,15 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
       }
     }
   }
-  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-  ierr = DMSetCoordinatesLocal(*dm, coordinates);CHKERRQ(ierr);
-  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(coordinates, &coords));
+  CHKERRQ(DMSetCoordinatesLocal(*dm, coordinates));
+  CHKERRQ(VecDestroy(&coordinates));
 
   if (rank == 0) {
-    ierr = PetscFree(cellVertices);CHKERRQ(ierr);
-    ierr = PetscFree(faces);CHKERRQ(ierr);
-    ierr = PetscFree(faceZoneIDs);CHKERRQ(ierr);
-    ierr = PetscFree(coordsIn);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(cellVertices));
+    CHKERRQ(PetscFree(faces));
+    CHKERRQ(PetscFree(faceZoneIDs));
+    CHKERRQ(PetscFree(coordsIn));
   }
   PetscFunctionReturn(0);
 }

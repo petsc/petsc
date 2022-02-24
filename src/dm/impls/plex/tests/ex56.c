@@ -36,14 +36,14 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->verbose                    = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-compare", "Compare the meshes using DMPlexEqual() and DMCompareLabels()", EX, options->compare, &options->compare, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-compare_labels", "Compare labels in the meshes using DMCompareLabels()", "ex55.c", options->compare_labels, &options->compare_labels, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-compare_boundary", "Check label I/O via boundary vertex coordinates", "ex55.c", options->compare_boundary, &options->compare_boundary, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-compare_pre_post", "Compare labels loaded before distribution with those loaded after distribution", "ex55.c", options->compare_pre_post, &options->compare_pre_post, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-outfile", "Output mesh file", EX, options->outfile, options->outfile, sizeof(options->outfile), NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-use_low_level_functions", "Use low level functions for viewing and loading", EX, options->use_low_level_functions, &options->use_low_level_functions, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-distribute_after_topo_load", "Distribute topology right after DMPlexTopologyLoad(), if use_low_level_functions=true", EX, options->distribute_after_topo_load, &options->distribute_after_topo_load, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-verbose", "Verbose printing", EX, options->verbose, &options->verbose, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-compare", "Compare the meshes using DMPlexEqual() and DMCompareLabels()", EX, options->compare, &options->compare, NULL));
+  CHKERRQ(PetscOptionsBool("-compare_labels", "Compare labels in the meshes using DMCompareLabels()", "ex55.c", options->compare_labels, &options->compare_labels, NULL));
+  CHKERRQ(PetscOptionsBool("-compare_boundary", "Check label I/O via boundary vertex coordinates", "ex55.c", options->compare_boundary, &options->compare_boundary, NULL));
+  CHKERRQ(PetscOptionsBool("-compare_pre_post", "Compare labels loaded before distribution with those loaded after distribution", "ex55.c", options->compare_pre_post, &options->compare_pre_post, NULL));
+  CHKERRQ(PetscOptionsString("-outfile", "Output mesh file", EX, options->outfile, options->outfile, sizeof(options->outfile), NULL));
+  CHKERRQ(PetscOptionsBool("-use_low_level_functions", "Use low level functions for viewing and loading", EX, options->use_low_level_functions, &options->use_low_level_functions, NULL));
+  CHKERRQ(PetscOptionsBool("-distribute_after_topo_load", "Distribute topology right after DMPlexTopologyLoad(), if use_low_level_functions=true", EX, options->distribute_after_topo_load, &options->distribute_after_topo_load, NULL));
+  CHKERRQ(PetscOptionsBool("-verbose", "Verbose printing", EX, options->verbose, &options->verbose, NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 };
@@ -51,14 +51,13 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 static PetscErrorCode CreateMesh(AppCtx *options, DM *newdm)
 {
   DM             dm;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMCreate(options->comm, &dm);CHKERRQ(ierr);
-  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = PetscObjectGetName((PetscObject)dm, &options->meshname);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreate(options->comm, &dm));
+  CHKERRQ(DMSetType(dm, DMPLEX));
+  CHKERRQ(DMSetFromOptions(dm));
+  CHKERRQ(PetscObjectGetName((PetscObject)dm, &options->meshname));
+  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
   *newdm = dm;
   PetscFunctionReturn(0);
 }
@@ -66,18 +65,17 @@ static PetscErrorCode CreateMesh(AppCtx *options, DM *newdm)
 static PetscErrorCode SaveMesh(AppCtx *options, DM dm)
 {
   PetscViewer    v;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscViewerHDF5Open(PetscObjectComm((PetscObject) dm), options->outfile, FILE_MODE_WRITE, &v);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5Open(PetscObjectComm((PetscObject) dm), options->outfile, FILE_MODE_WRITE, &v));
   if (options->use_low_level_functions) {
-    ierr = DMPlexTopologyView(dm, v);CHKERRQ(ierr);
-    ierr = DMPlexCoordinatesView(dm, v);CHKERRQ(ierr);
-    ierr = DMPlexLabelsView(dm, v);CHKERRQ(ierr);
+    CHKERRQ(DMPlexTopologyView(dm, v));
+    CHKERRQ(DMPlexCoordinatesView(dm, v));
+    CHKERRQ(DMPlexLabelsView(dm, v));
   } else {
-    ierr = DMView(dm, v);CHKERRQ(ierr);
+    CHKERRQ(DMView(dm, v));
   }
-  ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDestroy(&v));
   PetscFunctionReturn(0);
 }
 
@@ -87,39 +85,38 @@ static PetscErrorCode LoadMeshLowLevel(AppCtx *options, PetscViewer v, PetscBool
 {
   DM              dm;
   PetscSF         sfXC;
-  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMCreate(options->comm, &dm);CHKERRQ(ierr);
-  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) dm, options->meshname);CHKERRQ(ierr);
-  ierr = DMPlexTopologyLoad(dm, v, &sfXC);CHKERRQ(ierr);
+  CHKERRQ(DMCreate(options->comm, &dm));
+  CHKERRQ(DMSetType(dm, DMPLEX));
+  CHKERRQ(PetscObjectSetName((PetscObject) dm, options->meshname));
+  CHKERRQ(DMPlexTopologyLoad(dm, v, &sfXC));
   if (mode == PRE_DIST) {
-    ierr = DMPlexCoordinatesLoad(dm, v, sfXC);CHKERRQ(ierr);
-    ierr = DMPlexLabelsLoad(dm, v, sfXC);CHKERRQ(ierr);
+    CHKERRQ(DMPlexCoordinatesLoad(dm, v, sfXC));
+    CHKERRQ(DMPlexLabelsLoad(dm, v, sfXC));
   }
   if (explicitDistribute) {
     DM      dmdist;
     PetscSF sfXB = sfXC, sfBC;
 
-    ierr = DMPlexDistribute(dm, 0, &sfBC, &dmdist);CHKERRQ(ierr);
+    CHKERRQ(DMPlexDistribute(dm, 0, &sfBC, &dmdist));
     if (dmdist) {
       const char *name;
 
-      ierr = PetscObjectGetName((PetscObject) dm, &name);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject) dmdist, name);CHKERRQ(ierr);
-      ierr = PetscSFCompose(sfXB, sfBC, &sfXC);CHKERRQ(ierr);
-      ierr = PetscSFDestroy(&sfXB);CHKERRQ(ierr);
-      ierr = PetscSFDestroy(&sfBC);CHKERRQ(ierr);
-      ierr = DMDestroy(&dm);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectGetName((PetscObject) dm, &name));
+      CHKERRQ(PetscObjectSetName((PetscObject) dmdist, name));
+      CHKERRQ(PetscSFCompose(sfXB, sfBC, &sfXC));
+      CHKERRQ(PetscSFDestroy(&sfXB));
+      CHKERRQ(PetscSFDestroy(&sfBC));
+      CHKERRQ(DMDestroy(&dm));
       dm   = dmdist;
     }
   }
   if (mode == POST_DIST) {
-    ierr = DMPlexCoordinatesLoad(dm, v, sfXC);CHKERRQ(ierr);
-    ierr = DMPlexLabelsLoad(dm, v, sfXC);CHKERRQ(ierr);
+    CHKERRQ(DMPlexCoordinatesLoad(dm, v, sfXC));
+    CHKERRQ(DMPlexLabelsLoad(dm, v, sfXC));
   }
-  ierr = PetscSFDestroy(&sfXC);CHKERRQ(ierr);
+  CHKERRQ(PetscSFDestroy(&sfXC));
   *newdm = dm;
   PetscFunctionReturn(0);
 }
@@ -128,32 +125,31 @@ static PetscErrorCode LoadMesh(AppCtx *options, DM *dmnew)
 {
   DM             dm;
   PetscViewer    v;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscViewerHDF5Open(options->comm, options->outfile, FILE_MODE_READ, &v);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5Open(options->comm, options->outfile, FILE_MODE_READ, &v));
   if (options->use_low_level_functions) {
     if (options->compare_pre_post) {
       DM dm0;
 
-      ierr = LoadMeshLowLevel(options, v, PETSC_TRUE, PRE_DIST, &dm0);CHKERRQ(ierr);
-      ierr = LoadMeshLowLevel(options, v, PETSC_TRUE, POST_DIST, &dm);CHKERRQ(ierr);
-      ierr = DMCompareLabels(dm0, dm, NULL, NULL);CHKERRQ(ierr);
-      ierr = DMDestroy(&dm0);CHKERRQ(ierr);
+      CHKERRQ(LoadMeshLowLevel(options, v, PETSC_TRUE, PRE_DIST, &dm0));
+      CHKERRQ(LoadMeshLowLevel(options, v, PETSC_TRUE, POST_DIST, &dm));
+      CHKERRQ(DMCompareLabels(dm0, dm, NULL, NULL));
+      CHKERRQ(DMDestroy(&dm0));
     } else {
-      ierr = LoadMeshLowLevel(options, v, options->distribute_after_topo_load, POST_DIST, &dm);CHKERRQ(ierr);
+      CHKERRQ(LoadMeshLowLevel(options, v, options->distribute_after_topo_load, POST_DIST, &dm));
     }
   } else {
-    ierr = DMCreate(options->comm, &dm);CHKERRQ(ierr);
-    ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) dm, options->meshname);CHKERRQ(ierr);
-    ierr = DMLoad(dm, v);CHKERRQ(ierr);
+    CHKERRQ(DMCreate(options->comm, &dm));
+    CHKERRQ(DMSetType(dm, DMPLEX));
+    CHKERRQ(PetscObjectSetName((PetscObject) dm, options->meshname));
+    CHKERRQ(DMLoad(dm, v));
   }
-  ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDestroy(&v));
 
-  ierr = DMSetOptionsPrefix(dm, "load_");CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMSetOptionsPrefix(dm, "load_"));
+  CHKERRQ(DMSetFromOptions(dm));
+  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
   *dmnew = dm;
   PetscFunctionReturn(0);
 }
@@ -161,17 +157,16 @@ static PetscErrorCode LoadMesh(AppCtx *options, DM *dmnew)
 static PetscErrorCode CompareMeshes(AppCtx *options, DM dm0, DM dm1)
 {
   PetscBool       flg;
-  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   if (options->compare) {
-    ierr = DMPlexEqual(dm0, dm1, &flg);CHKERRQ(ierr);
+    CHKERRQ(DMPlexEqual(dm0, dm1, &flg));
     PetscCheckFalse(!flg,options->comm, PETSC_ERR_ARG_INCOMP, "DMs are not equal");
-    ierr = PetscPrintf(options->comm,"DMs equal\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(options->comm,"DMs equal\n"));
   }
   if (options->compare_labels) {
-    ierr = DMCompareLabels(dm0, dm1, NULL, NULL);CHKERRQ(ierr);
-    ierr = PetscPrintf(options->comm,"DMLabels equal\n");CHKERRQ(ierr);
+    CHKERRQ(DMCompareLabels(dm0, dm1, NULL, NULL));
+    CHKERRQ(PetscPrintf(options->comm,"DMLabels equal\n"));
   }
   PetscFunctionReturn(0);
 }
@@ -182,27 +177,26 @@ static PetscErrorCode MarkBoundaryVertices(DM dm, PetscInt value, DMLabel *label
   IS              points;
   const PetscInt *idx;
   PetscInt        i, n;
-  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMLabelCreate(PetscObjectComm((PetscObject)dm), LABEL_NAME, &l);CHKERRQ(ierr);
-  ierr = DMPlexMarkBoundaryFaces(dm, value, l);CHKERRQ(ierr);
-  ierr = DMPlexLabelComplete(dm, l);CHKERRQ(ierr);
-  ierr = DMLabelGetStratumIS(l, value, &points);CHKERRQ(ierr);
+  CHKERRQ(DMLabelCreate(PetscObjectComm((PetscObject)dm), LABEL_NAME, &l));
+  CHKERRQ(DMPlexMarkBoundaryFaces(dm, value, l));
+  CHKERRQ(DMPlexLabelComplete(dm, l));
+  CHKERRQ(DMLabelGetStratumIS(l, value, &points));
 
-  ierr = ISGetLocalSize(points, &n);CHKERRQ(ierr);
-  ierr = ISGetIndices(points, &idx);CHKERRQ(ierr);
+  CHKERRQ(ISGetLocalSize(points, &n));
+  CHKERRQ(ISGetIndices(points, &idx));
   for (i=0; i<n; i++) {
     const PetscInt p = idx[i];
     PetscInt       d;
 
-    ierr = DMPlexGetPointDepth(dm, p, &d);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetPointDepth(dm, p, &d));
     if (d != 0) {
-      ierr = DMLabelClearValue(l, p, value);CHKERRQ(ierr);
+      CHKERRQ(DMLabelClearValue(l, p, value));
     }
   }
-  ierr = ISRestoreIndices(points, &idx);CHKERRQ(ierr);
-  ierr = ISDestroy(&points);CHKERRQ(ierr);
+  CHKERRQ(ISRestoreIndices(points, &idx));
+  CHKERRQ(ISDestroy(&points));
   *label = l;
   PetscFunctionReturn(0);
 }
@@ -212,32 +206,31 @@ static PetscErrorCode VertexCoordinatesToAll(DM dm, IS vertices, Vec *allCoords)
   Vec             coords, allCoords_;
   VecScatter      sc;
   MPI_Comm        comm;
-  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocalSetUp(dm);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)dm, &comm));
+  CHKERRQ(DMGetCoordinatesLocalSetUp(dm));
   if (vertices) {
-    ierr = DMGetCoordinatesLocalTuple(dm, vertices, NULL, &coords);CHKERRQ(ierr);
+    CHKERRQ(DMGetCoordinatesLocalTuple(dm, vertices, NULL, &coords));
   } else {
-    ierr = VecCreateSeq(PETSC_COMM_SELF, 0, &coords);CHKERRQ(ierr);
+    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF, 0, &coords));
   }
   {
     PetscInt  n;
     Vec       mpivec;
 
-    ierr = VecGetLocalSize(coords, &n);CHKERRQ(ierr);
-    ierr = VecCreateMPI(comm, n, PETSC_DECIDE, &mpivec);CHKERRQ(ierr);
-    ierr = VecCopy(coords, mpivec);CHKERRQ(ierr);
-    ierr = VecDestroy(&coords);CHKERRQ(ierr);
+    CHKERRQ(VecGetLocalSize(coords, &n));
+    CHKERRQ(VecCreateMPI(comm, n, PETSC_DECIDE, &mpivec));
+    CHKERRQ(VecCopy(coords, mpivec));
+    CHKERRQ(VecDestroy(&coords));
     coords = mpivec;
   }
 
-  ierr = VecScatterCreateToAll(coords, &sc, &allCoords_);CHKERRQ(ierr);
-  ierr = VecScatterBegin(sc,coords,allCoords_,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(sc,coords,allCoords_,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&sc);CHKERRQ(ierr);
-  ierr = VecDestroy(&coords);CHKERRQ(ierr);
+  CHKERRQ(VecScatterCreateToAll(coords, &sc, &allCoords_));
+  CHKERRQ(VecScatterBegin(sc,coords,allCoords_,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterEnd(sc,coords,allCoords_,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterDestroy(&sc));
+  CHKERRQ(VecDestroy(&coords));
   *allCoords = allCoords_;
   PetscFunctionReturn(0);
 }
@@ -247,15 +240,14 @@ static PetscErrorCode DMAddBoundaryLabel_GetCoordinateRepresentation(DM dm, Vec 
 {
   DMLabel         label;
   IS              vertices;
-  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
-  ierr = MarkBoundaryVertices(dm, LABEL_VALUE, &label);CHKERRQ(ierr);
-  ierr = DMLabelGetStratumIS(label, LABEL_VALUE, &vertices);CHKERRQ(ierr);
-  ierr = VertexCoordinatesToAll(dm, vertices, allCoords);CHKERRQ(ierr);
-  ierr = DMAddLabel(dm, label);CHKERRQ(ierr);
-  ierr = DMLabelDestroy(&label);CHKERRQ(ierr);
-  ierr = ISDestroy(&vertices);CHKERRQ(ierr);
+  CHKERRQ(MarkBoundaryVertices(dm, LABEL_VALUE, &label));
+  CHKERRQ(DMLabelGetStratumIS(label, LABEL_VALUE, &vertices));
+  CHKERRQ(VertexCoordinatesToAll(dm, vertices, allCoords));
+  CHKERRQ(DMAddLabel(dm, label));
+  CHKERRQ(DMLabelDestroy(&label));
+  CHKERRQ(ISDestroy(&vertices));
   PetscFunctionReturn(0);
 }
 
@@ -268,48 +260,47 @@ static PetscErrorCode DMGetBoundaryLabel_CompareWithCoordinateRepresentation(App
   PetscBool       fail = PETSC_FALSE;
   MPI_Comm        comm;
   PetscMPIInt     rank;
-  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  ierr = DMGetLabel(dm, LABEL_NAME, &label);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)dm, &comm));
+  CHKERRMPI(MPI_Comm_rank(comm, &rank));
+  CHKERRQ(DMGetLabel(dm, LABEL_NAME, &label));
   PetscCheckFalse(!label,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Label \"%s\" was not loaded", LABEL_NAME);
   {
     PetscInt pStart, pEnd;
 
-    ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = DMLabelCreateIndex(label, pStart, pEnd);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetChart(dm, &pStart, &pEnd));
+    CHKERRQ(DMLabelCreateIndex(label, pStart, pEnd));
   }
-  ierr = DMPlexFindVertices(dm, allCoords, 0.0, &pointsIS);CHKERRQ(ierr);
-  ierr = ISGetIndices(pointsIS, &points);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(pointsIS, &n);CHKERRQ(ierr);
-  if (user->verbose) {ierr = DMLabelView(label, PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
+  CHKERRQ(DMPlexFindVertices(dm, allCoords, 0.0, &pointsIS));
+  CHKERRQ(ISGetIndices(pointsIS, &points));
+  CHKERRQ(ISGetLocalSize(pointsIS, &n));
+  if (user->verbose) CHKERRQ(DMLabelView(label, PETSC_VIEWER_STDOUT_(comm)));
   for (i=0; i<n; i++) {
     const PetscInt  p = points[i];
     PetscBool       has;
     PetscInt        v;
 
     if (p < 0) continue;
-    ierr = DMLabelHasPoint(label, p, &has);CHKERRQ(ierr);
+    CHKERRQ(DMLabelHasPoint(label, p, &has));
     if (!has) {
-      ierr = PetscSynchronizedFPrintf(comm, PETSC_STDERR, "[%d] Label does not have point %D\n", rank, p);CHKERRQ(ierr);
+      CHKERRQ(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "[%d] Label does not have point %D\n", rank, p));
       fail = PETSC_TRUE;
       continue;
     }
-    ierr = DMLabelGetValue(label, p, &v);CHKERRQ(ierr);
+    CHKERRQ(DMLabelGetValue(label, p, &v));
     if (v != LABEL_VALUE) {
-      ierr = PetscSynchronizedFPrintf(comm, PETSC_STDERR, "Point %D has bad value %D", p, v);CHKERRQ(ierr);
+      CHKERRQ(PetscSynchronizedFPrintf(comm, PETSC_STDERR, "Point %D has bad value %D", p, v));
       fail = PETSC_TRUE;
       continue;
     }
-    if (user->verbose) {ierr = PetscSynchronizedPrintf(comm, "[%d] OK point %D\n", rank, p);CHKERRQ(ierr);}
+    if (user->verbose) CHKERRQ(PetscSynchronizedPrintf(comm, "[%d] OK point %D\n", rank, p));
   }
-  ierr = PetscSynchronizedFlush(comm, PETSC_STDOUT);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(comm, PETSC_STDERR);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(pointsIS, &points);CHKERRQ(ierr);
-  ierr = ISDestroy(&pointsIS);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(MPI_IN_PLACE, &fail, 1, MPIU_BOOL, MPI_LOR, comm);CHKERRMPI(ierr);
+  CHKERRQ(PetscSynchronizedFlush(comm, PETSC_STDOUT));
+  CHKERRQ(PetscSynchronizedFlush(comm, PETSC_STDERR));
+  CHKERRQ(ISRestoreIndices(pointsIS, &points));
+  CHKERRQ(ISDestroy(&pointsIS));
+  CHKERRMPI(MPI_Allreduce(MPI_IN_PLACE, &fail, 1, MPIU_BOOL, MPI_LOR, comm));
   PetscCheckFalse(fail,comm, PETSC_ERR_PLIB, "Label \"%s\" was not loaded correctly - see details above", LABEL_NAME);
   PetscFunctionReturn(0);
 }
@@ -322,20 +313,20 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(&user, &dm);CHKERRQ(ierr);
+  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
+  CHKERRQ(CreateMesh(&user, &dm));
   if (user.compare_boundary) {
-    ierr = DMAddBoundaryLabel_GetCoordinateRepresentation(dm, &allCoords);CHKERRQ(ierr);
+    CHKERRQ(DMAddBoundaryLabel_GetCoordinateRepresentation(dm, &allCoords));
   }
-  ierr = SaveMesh(&user, dm);CHKERRQ(ierr);
-  ierr = LoadMesh(&user, &dmnew);CHKERRQ(ierr);
-  ierr = CompareMeshes(&user, dm, dmnew);CHKERRQ(ierr);
+  CHKERRQ(SaveMesh(&user, dm));
+  CHKERRQ(LoadMesh(&user, &dmnew));
+  CHKERRQ(CompareMeshes(&user, dm, dmnew));
   if (user.compare_boundary) {
-    ierr = DMGetBoundaryLabel_CompareWithCoordinateRepresentation(&user, dmnew, allCoords);CHKERRQ(ierr);
+    CHKERRQ(DMGetBoundaryLabel_CompareWithCoordinateRepresentation(&user, dmnew, allCoords));
   }
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmnew);CHKERRQ(ierr);
-  ierr = VecDestroy(&allCoords);CHKERRQ(ierr);
+  CHKERRQ(DMDestroy(&dm));
+  CHKERRQ(DMDestroy(&dmnew));
+  CHKERRQ(VecDestroy(&allCoords));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -18,15 +18,15 @@ int main(int argc, char **argv)
   PetscBool          flag = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process");
 
-  ierr = PetscSFCreate(PETSC_COMM_WORLD, &sfA);CHKERRQ(ierr);
-  ierr = PetscSFCreate(PETSC_COMM_WORLD, &sfB);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(sfA);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(sfB);CHKERRQ(ierr);
+  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD, &sfA));
+  CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD, &sfB));
+  CHKERRQ(PetscSFSetFromOptions(sfA));
+  CHKERRQ(PetscSFSetFromOptions(sfB));
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-sparse_sfB",&flag,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-sparse_sfB",&flag,NULL));
 
   if (flag) {
     /* sfA permutes indices, sfB has sparse leaf space. */
@@ -38,10 +38,10 @@ int main(int argc, char **argv)
     /* sfA reverses indices, sfB is identity */
     nrootsA = nrootsB = nleavesA = nleavesB = 4;
   }
-  ierr = PetscMalloc1(nleavesA, &ilocalA);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nleavesA, &iremoteA);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nleavesB, &ilocalB);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nleavesB, &iremoteB);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(nleavesA, &ilocalA));
+  CHKERRQ(PetscMalloc1(nleavesA, &iremoteA));
+  CHKERRQ(PetscMalloc1(nleavesB, &ilocalB));
+  CHKERRQ(PetscMalloc1(nleavesB, &iremoteB));
 
   for (i = 0; i < nleavesA; i++) {
     iremoteA[i].rank = 0;
@@ -64,69 +64,69 @@ int main(int argc, char **argv)
     }
   }
 
-  ierr = PetscSFSetGraph(sfA, nrootsA, nleavesA, ilocalA, PETSC_OWN_POINTER, iremoteA, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  ierr = PetscSFSetGraph(sfB, nrootsB, nleavesB, ilocalB, PETSC_OWN_POINTER, iremoteB, PETSC_OWN_POINTER);CHKERRQ(ierr);
-  ierr = PetscSFSetUp(sfA);CHKERRQ(ierr);
-  ierr = PetscSFSetUp(sfB);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)sfA, "sfA");CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)sfB, "sfB");CHKERRQ(ierr);
+  CHKERRQ(PetscSFSetGraph(sfA, nrootsA, nleavesA, ilocalA, PETSC_OWN_POINTER, iremoteA, PETSC_OWN_POINTER));
+  CHKERRQ(PetscSFSetGraph(sfB, nrootsB, nleavesB, ilocalB, PETSC_OWN_POINTER, iremoteB, PETSC_OWN_POINTER));
+  CHKERRQ(PetscSFSetUp(sfA));
+  CHKERRQ(PetscSFSetUp(sfB));
+  CHKERRQ(PetscObjectSetName((PetscObject)sfA, "sfA"));
+  CHKERRQ(PetscObjectSetName((PetscObject)sfB, "sfB"));
 
-  ierr = VecCreateSeq(PETSC_COMM_WORLD, nrootsA, &a);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_WORLD, nleavesA, &b);CHKERRQ(ierr);
-  ierr = PetscSFGetLeafRange(sfB, NULL, &maxleafB);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_WORLD, maxleafB+1, &ba);CHKERRQ(ierr);
-  ierr = VecGetArray(a, &arrayW);CHKERRQ(ierr);
+  CHKERRQ(VecCreateSeq(PETSC_COMM_WORLD, nrootsA, &a));
+  CHKERRQ(VecCreateSeq(PETSC_COMM_WORLD, nleavesA, &b));
+  CHKERRQ(PetscSFGetLeafRange(sfB, NULL, &maxleafB));
+  CHKERRQ(VecCreateSeq(PETSC_COMM_WORLD, maxleafB+1, &ba));
+  CHKERRQ(VecGetArray(a, &arrayW));
   for (i = 0; i < nrootsA; i++) {
     arrayW[i] = (PetscScalar)i;
   }
-  ierr = VecRestoreArray(a, &arrayW);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(a, &arrayW));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Initial Vec A\n");CHKERRQ(ierr);
-  ierr = VecView(a, NULL);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(a, &arrayR);CHKERRQ(ierr);
-  ierr = VecGetArray(b, &arrayW);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Initial Vec A\n"));
+  CHKERRQ(VecView(a, NULL));
+  CHKERRQ(VecGetArrayRead(a, &arrayR));
+  CHKERRQ(VecGetArray(b, &arrayW));
 
-  ierr = PetscSFBcastBegin(sfA, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfA, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = VecRestoreArray(b, &arrayW);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(a, &arrayR);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "\nBroadcast A->B over sfA\n");CHKERRQ(ierr);
-  ierr = VecView(b, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscSFBcastBegin(sfA, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE));
+  CHKERRQ(PetscSFBcastEnd(sfA, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE));
+  CHKERRQ(VecRestoreArray(b, &arrayW));
+  CHKERRQ(VecRestoreArrayRead(a, &arrayR));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "\nBroadcast A->B over sfA\n"));
+  CHKERRQ(VecView(b, NULL));
 
-  ierr = VecGetArrayRead(b, &arrayR);CHKERRQ(ierr);
-  ierr = VecGetArray(ba, &arrayW);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(b, &arrayR));
+  CHKERRQ(VecGetArray(ba, &arrayW));
   arrayW[0] = 10.0;             /* Not touched by bcast */
-  ierr = PetscSFBcastBegin(sfB, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfB, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(b, &arrayR);CHKERRQ(ierr);
-  ierr = VecRestoreArray(ba, &arrayW);CHKERRQ(ierr);
+  CHKERRQ(PetscSFBcastBegin(sfB, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE));
+  CHKERRQ(PetscSFBcastEnd(sfB, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE));
+  CHKERRQ(VecRestoreArrayRead(b, &arrayR));
+  CHKERRQ(VecRestoreArray(ba, &arrayW));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "\nBroadcast B->BA over sfB\n");CHKERRQ(ierr);
-  ierr = VecView(ba, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "\nBroadcast B->BA over sfB\n"));
+  CHKERRQ(VecView(ba, NULL));
 
-  ierr = PetscSFCompose(sfA, sfB, &sfBA);CHKERRQ(ierr);
-  ierr = PetscSFSetFromOptions(sfBA);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)sfBA, "(sfB o sfA)");CHKERRQ(ierr);
-  ierr = VecGetArrayRead(a, &arrayR);CHKERRQ(ierr);
-  ierr = VecGetArray(ba, &arrayW);CHKERRQ(ierr);
+  CHKERRQ(PetscSFCompose(sfA, sfB, &sfBA));
+  CHKERRQ(PetscSFSetFromOptions(sfBA));
+  CHKERRQ(PetscObjectSetName((PetscObject)sfBA, "(sfB o sfA)"));
+  CHKERRQ(VecGetArrayRead(a, &arrayR));
+  CHKERRQ(VecGetArray(ba, &arrayW));
   arrayW[0] = 11.0;             /* Not touched by bcast */
-  ierr = PetscSFBcastBegin(sfBA, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = PetscSFBcastEnd(sfBA, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE);CHKERRQ(ierr);
-  ierr = VecRestoreArray(ba, &arrayW);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(a, &arrayR);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "\nBroadcast A->BA over sfBA (sfB o sfA)\n");CHKERRQ(ierr);
-  ierr = VecView(ba, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscSFBcastBegin(sfBA, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE));
+  CHKERRQ(PetscSFBcastEnd(sfBA, MPIU_SCALAR, arrayR, arrayW,MPI_REPLACE));
+  CHKERRQ(VecRestoreArray(ba, &arrayW));
+  CHKERRQ(VecRestoreArrayRead(a, &arrayR));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "\nBroadcast A->BA over sfBA (sfB o sfA)\n"));
+  CHKERRQ(VecView(ba, NULL));
 
-  ierr = VecDestroy(&ba);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&a);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&ba));
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(VecDestroy(&a));
 
-  ierr = PetscSFView(sfA, NULL);CHKERRQ(ierr);
-  ierr = PetscSFView(sfB, NULL);CHKERRQ(ierr);
-  ierr = PetscSFView(sfBA, NULL);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfA);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfB);CHKERRQ(ierr);
-  ierr = PetscSFDestroy(&sfBA);CHKERRQ(ierr);
+  CHKERRQ(PetscSFView(sfA, NULL));
+  CHKERRQ(PetscSFView(sfB, NULL));
+  CHKERRQ(PetscSFView(sfBA, NULL));
+  CHKERRQ(PetscSFDestroy(&sfA));
+  CHKERRQ(PetscSFDestroy(&sfB));
+  CHKERRQ(PetscSFDestroy(&sfBA));
 
   ierr = PetscFinalize();
   return ierr;

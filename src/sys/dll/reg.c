@@ -16,20 +16,19 @@ PetscDLLibrary PetscDLLibrariesLoaded = NULL;
 static PetscErrorCode  PetscLoadDynamicLibrary(const char *name,PetscBool  *found)
 {
   char           libs[PETSC_MAX_PATH_LEN],dlib[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrncpy(libs,"${PETSC_LIB_DIR}/libpetsc",sizeof(libs));CHKERRQ(ierr);
-  ierr = PetscStrlcat(libs,name,sizeof(libs));CHKERRQ(ierr);
-  ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,found);CHKERRQ(ierr);
+  CHKERRQ(PetscStrncpy(libs,"${PETSC_LIB_DIR}/libpetsc",sizeof(libs)));
+  CHKERRQ(PetscStrlcat(libs,name,sizeof(libs)));
+  CHKERRQ(PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,found));
   if (*found) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,dlib);CHKERRQ(ierr);
+    CHKERRQ(PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,dlib));
   } else {
-    ierr = PetscStrncpy(libs,"${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc",sizeof(libs));CHKERRQ(ierr);
-    ierr = PetscStrlcat(libs,name,sizeof(libs));CHKERRQ(ierr);
-    ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,found);CHKERRQ(ierr);
+    CHKERRQ(PetscStrncpy(libs,"${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc",sizeof(libs)));
+    CHKERRQ(PetscStrlcat(libs,name,sizeof(libs)));
+    CHKERRQ(PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,found));
     if (*found) {
-      ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,dlib);CHKERRQ(ierr);
+      CHKERRQ(PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,dlib));
     }
   }
   PetscFunctionReturn(0);
@@ -63,7 +62,6 @@ static MPI_Comm PETSC_COMM_WORLD_INNER = 0,PETSC_COMM_SELF_INNER = 0;
 PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
 {
   char           *libname[32];
-  PetscErrorCode ierr;
   PetscInt       nmax,i;
   PetscBool      preload = PETSC_FALSE;
 #if defined(PETSC_HAVE_ELEMENTAL)
@@ -77,55 +75,55 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
 #endif
 
   nmax = 32;
-  ierr = PetscOptionsGetStringArray(NULL,NULL,"-dll_prepend",libname,&nmax,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetStringArray(NULL,NULL,"-dll_prepend",libname,&nmax,NULL));
   for (i=0; i<nmax; i++) {
-    ierr = PetscDLLibraryPrepend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
-    ierr = PetscFree(libname[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscDLLibraryPrepend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,libname[i]));
+    CHKERRQ(PetscFree(libname[i]));
   }
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-library_preload",&preload,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-library_preload",&preload,NULL));
   if (!preload) {
-    ierr = PetscSysInitializePackage();CHKERRQ(ierr);
+    CHKERRQ(PetscSysInitializePackage());
   } else {
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
     PetscBool found;
 #if defined(PETSC_USE_SINGLE_LIBRARY)
-    ierr = PetscLoadDynamicLibrary("",&found);CHKERRQ(ierr);
+    CHKERRQ(PetscLoadDynamicLibrary("",&found));
     PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
 #else
-    ierr = PetscLoadDynamicLibrary("sys",&found);CHKERRQ(ierr);
+    CHKERRQ(PetscLoadDynamicLibrary("sys",&found));
     PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
-    ierr = PetscLoadDynamicLibrary("vec",&found);CHKERRQ(ierr);
+    CHKERRQ(PetscLoadDynamicLibrary("vec",&found));
     PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc Vec dynamic library \n You cannot move the dynamic libraries!");
-    ierr = PetscLoadDynamicLibrary("mat",&found);CHKERRQ(ierr);
+    CHKERRQ(PetscLoadDynamicLibrary("mat",&found));
     PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc Mat dynamic library \n You cannot move the dynamic libraries!");
-    ierr = PetscLoadDynamicLibrary("dm",&found);CHKERRQ(ierr);
+    CHKERRQ(PetscLoadDynamicLibrary("dm",&found));
     PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc DM dynamic library \n You cannot move the dynamic libraries!");
-    ierr = PetscLoadDynamicLibrary("ksp",&found);CHKERRQ(ierr);
+    CHKERRQ(PetscLoadDynamicLibrary("ksp",&found));
     PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc KSP dynamic library \n You cannot move the dynamic libraries!");
-    ierr = PetscLoadDynamicLibrary("snes",&found);CHKERRQ(ierr);
+    CHKERRQ(PetscLoadDynamicLibrary("snes",&found));
     PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc SNES dynamic library \n You cannot move the dynamic libraries!");
-    ierr = PetscLoadDynamicLibrary("ts",&found);CHKERRQ(ierr);
+    CHKERRQ(PetscLoadDynamicLibrary("ts",&found));
     PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc TS dynamic library \n You cannot move the dynamic libraries!");
-    ierr = PetscLoadDynamicLibrary("tao",&found);CHKERRQ(ierr);
+    CHKERRQ(PetscLoadDynamicLibrary("tao",&found));
     PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate Tao dynamic library \n You cannot move the dynamic libraries!");
 #endif
 #else /* defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES) */
 #if defined(PETSC_USE_SINGLE_LIBRARY)
-  ierr = AOInitializePackage();CHKERRQ(ierr);
-  ierr = PetscSFInitializePackage();CHKERRQ(ierr);
+  CHKERRQ(AOInitializePackage());
+  CHKERRQ(PetscSFInitializePackage());
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = CharacteristicInitializePackage();CHKERRQ(ierr);
+  CHKERRQ(CharacteristicInitializePackage());
 #endif
-  ierr = ISInitializePackage();CHKERRQ(ierr);
-  ierr = VecInitializePackage();CHKERRQ(ierr);
-  ierr = MatInitializePackage();CHKERRQ(ierr);
-  ierr = DMInitializePackage();CHKERRQ(ierr);
-  ierr = PCInitializePackage();CHKERRQ(ierr);
-  ierr = KSPInitializePackage();CHKERRQ(ierr);
-  ierr = SNESInitializePackage();CHKERRQ(ierr);
-  ierr = TSInitializePackage();CHKERRQ(ierr);
-  ierr = TaoInitializePackage();CHKERRQ(ierr);
+  CHKERRQ(ISInitializePackage());
+  CHKERRQ(VecInitializePackage());
+  CHKERRQ(MatInitializePackage());
+  CHKERRQ(DMInitializePackage());
+  CHKERRQ(PCInitializePackage());
+  CHKERRQ(KSPInitializePackage());
+  CHKERRQ(SNESInitializePackage());
+  CHKERRQ(TSInitializePackage());
+  CHKERRQ(TaoInitializePackage());
 #else
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Cannot use -library_preload with multiple static PETSc libraries");
 #endif
@@ -135,27 +133,27 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES) && defined(PETSC_HAVE_BAMG)
   {
     PetscBool found;
-    ierr = PetscLoadDynamicLibrary("bamg",&found);CHKERRQ(ierr);
+    CHKERRQ(PetscLoadDynamicLibrary("bamg",&found));
     PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc BAMG dynamic library \n You cannot move the dynamic libraries!");
   }
 #endif
 
   nmax = 32;
-  ierr = PetscOptionsGetStringArray(NULL,NULL,"-dll_append",libname,&nmax,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetStringArray(NULL,NULL,"-dll_append",libname,&nmax,NULL));
   for (i=0; i<nmax; i++) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
-    ierr = PetscFree(libname[i]);CHKERRQ(ierr);
+    CHKERRQ(PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,libname[i]));
+    CHKERRQ(PetscFree(libname[i]));
   }
 
 #if defined(PETSC_HAVE_THREADSAFETY)
-  ierr = PetscCommDuplicate(PETSC_COMM_SELF,&PETSC_COMM_SELF_INNER,NULL);CHKERRQ(ierr);
-  ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&PETSC_COMM_WORLD_INNER,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscCommDuplicate(PETSC_COMM_SELF,&PETSC_COMM_SELF_INNER,NULL));
+  CHKERRQ(PetscCommDuplicate(PETSC_COMM_WORLD,&PETSC_COMM_WORLD_INNER,NULL));
 #endif
 #if defined(PETSC_HAVE_ELEMENTAL)
   /* in Fortran, PetscInitializeCalled is set to PETSC_TRUE before PetscInitialize_DynamicLibraries() */
   /* in C, it is not the case, but the value is forced to PETSC_TRUE so that PetscRegisterFinalize() is called */
   PetscInitializeCalled = PETSC_TRUE;
-  ierr = PetscElementalInitializePackage();CHKERRQ(ierr);
+  CHKERRQ(PetscElementalInitializePackage());
   PetscInitializeCalled = PetscInitialized;
 #endif
   PetscFunctionReturn(0);
@@ -166,17 +164,16 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
 */
 PETSC_INTERN PetscErrorCode PetscFinalize_DynamicLibraries(void)
 {
-  PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(NULL,NULL,"-dll_view",&flg,NULL);CHKERRQ(ierr);
-  if (flg) { ierr = PetscDLLibraryPrintPath(PetscDLLibrariesLoaded);CHKERRQ(ierr); }
-  ierr = PetscDLLibraryClose(PetscDLLibrariesLoaded);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-dll_view",&flg,NULL));
+  if (flg) CHKERRQ(PetscDLLibraryPrintPath(PetscDLLibrariesLoaded));
+  CHKERRQ(PetscDLLibraryClose(PetscDLLibrariesLoaded));
 
 #if defined(PETSC_HAVE_THREADSAFETY)
-  ierr = PetscCommDestroy(&PETSC_COMM_SELF_INNER);CHKERRQ(ierr);
-  ierr = PetscCommDestroy(&PETSC_COMM_WORLD_INNER);CHKERRQ(ierr);
+  CHKERRQ(PetscCommDestroy(&PETSC_COMM_SELF_INNER));
+  CHKERRQ(PetscCommDestroy(&PETSC_COMM_WORLD_INNER));
 #endif
 
   PetscDLLibrariesLoaded = NULL;
@@ -227,12 +224,11 @@ M*/
 PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,const char name[],void (*fnc)(void))
 {
   PetscFunctionList entry,ne;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (!*fl) {
-    ierr           = PetscNew(&entry);CHKERRQ(ierr);
-    ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
+    CHKERRQ(PetscNew(&entry));
+    CHKERRQ(PetscStrallocpy(name,&entry->name));
     entry->routine = fnc;
     entry->next    = NULL;
     *fl            = entry;
@@ -255,7 +251,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,c
     while (ne) {
       PetscBool founddup;
 
-      ierr = PetscStrcmp(ne->name,name,&founddup);CHKERRQ(ierr);
+      CHKERRQ(PetscStrcmp(ne->name,name,&founddup));
       if (founddup) { /* found duplicate */
         ne->routine = fnc;
         PetscFunctionReturn(0);
@@ -264,8 +260,8 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,c
       else break;
     }
     /* create new entry and add to end of list */
-    ierr           = PetscNew(&entry);CHKERRQ(ierr);
-    ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
+    CHKERRQ(PetscNew(&entry));
+    CHKERRQ(PetscStrallocpy(name,&entry->name));
     entry->routine = fnc;
     entry->next    = NULL;
     ne->next       = entry;
@@ -286,7 +282,6 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl,c
 PetscErrorCode  PetscFunctionListDestroy(PetscFunctionList *fl)
 {
   PetscFunctionList next,entry,tmp = dlallhead;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (!*fl) PetscFunctionReturn(0);
@@ -309,8 +304,8 @@ PetscErrorCode  PetscFunctionListDestroy(PetscFunctionList *fl)
   entry = *fl;
   while (entry) {
     next  = entry->next;
-    ierr  = PetscFree(entry->name);CHKERRQ(ierr);
-    ierr  = PetscFree(entry);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(entry->name));
+    CHKERRQ(PetscFree(entry));
     entry = next;
   }
   *fl = NULL;
@@ -323,14 +318,13 @@ PetscErrorCode  PetscFunctionListDestroy(PetscFunctionList *fl)
 PetscErrorCode  PetscFunctionListPrintAll(void)
 {
   PetscFunctionList tmp = dlallhead;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (tmp) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"The following PetscFunctionLists were not destroyed\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"The following PetscFunctionLists were not destroyed\n"));
   }
   while (tmp) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%s \n",tmp->name);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%s \n",tmp->name));
     tmp = tmp->next_list;
   }
   PetscFunctionReturn(0);
@@ -357,7 +351,6 @@ M*/
 PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl,const char name[],void (**r)(void))
 {
   PetscFunctionList entry = fl;
-  PetscErrorCode    ierr;
   PetscBool         flg;
 
   PetscFunctionBegin;
@@ -365,7 +358,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl,c
 
   *r = NULL;
   while (entry) {
-    ierr = PetscStrcmp(name,entry->name,&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscStrcmp(name,entry->name,&flg));
     if (flg) {
       *r   = entry->routine;
       PetscFunctionReturn(0);
@@ -390,7 +383,6 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl,c
 @*/
 PetscErrorCode  PetscFunctionListView(PetscFunctionList list,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
   PetscBool      iascii;
 
   PetscFunctionBegin;
@@ -398,14 +390,14 @@ PetscErrorCode  PetscFunctionListView(PetscFunctionList list,PetscViewer viewer)
   PetscValidPointer(list,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
 
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   PetscCheckFalse(!iascii,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ASCII viewer supported");
 
   while (list) {
-    ierr = PetscViewerASCIIPrintf(viewer," %s\n",list->name);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer," %s\n",list->name));
     list = list->next;
   }
-  ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+  CHKERRQ(PetscViewerASCIIPrintf(viewer,"\n"));
   PetscFunctionReturn(0);
 }
 
@@ -432,7 +424,6 @@ PetscErrorCode  PetscFunctionListView(PetscFunctionList list,PetscViewer viewer)
 @*/
 PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,int *n)
 {
-  PetscErrorCode    ierr;
   PetscInt          count = 0;
   PetscFunctionList klist = list;
 
@@ -441,7 +432,7 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,
     list = list->next;
     count++;
   }
-  ierr  = PetscMalloc1(count+1,(char***)array);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(count+1,(char***)array));
   count = 0;
   while (klist) {
     (*array)[count] = klist->name;
@@ -475,21 +466,20 @@ PetscErrorCode  PetscFunctionListGet(PetscFunctionList list,const char ***array,
 @*/
 PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFunctionList list,const char def[],const char newv[])
 {
-  PetscErrorCode ierr;
   char           p[64];
 
   PetscFunctionBegin;
   if (!fd) fd = PETSC_STDOUT;
 
-  ierr = PetscStrncpy(p,"-",sizeof(p));CHKERRQ(ierr);
-  if (prefix) {ierr = PetscStrlcat(p,prefix,sizeof(p));CHKERRQ(ierr);}
-  ierr = PetscFPrintf(comm,fd,"  %s%s <now %s : formerly %s>: %s (one of)",p,name+1,newv,def,text);CHKERRQ(ierr);
+  CHKERRQ(PetscStrncpy(p,"-",sizeof(p)));
+  if (prefix) CHKERRQ(PetscStrlcat(p,prefix,sizeof(p)));
+  CHKERRQ(PetscFPrintf(comm,fd,"  %s%s <now %s : formerly %s>: %s (one of)",p,name+1,newv,def,text));
 
   while (list) {
-    ierr = PetscFPrintf(comm,fd," %s",list->name);CHKERRQ(ierr);
+    CHKERRQ(PetscFPrintf(comm,fd," %s",list->name));
     list = list->next;
   }
-  ierr = PetscFPrintf(comm,fd," (%s)\n",man);CHKERRQ(ierr);
+  CHKERRQ(PetscFPrintf(comm,fd," (%s)\n",man));
   PetscFunctionReturn(0);
 }
 
@@ -509,11 +499,9 @@ PetscErrorCode  PetscFunctionListPrintTypes(MPI_Comm comm,FILE *fd,const char pr
 @*/
 PetscErrorCode  PetscFunctionListDuplicate(PetscFunctionList fl,PetscFunctionList *nl)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   while (fl) {
-    ierr = PetscFunctionListAdd(nl,fl->name,fl->routine);CHKERRQ(ierr);
+    CHKERRQ(PetscFunctionListAdd(nl,fl->name,fl->routine));
     fl   = fl->next;
   }
   PetscFunctionReturn(0);

@@ -15,77 +15,77 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   /* Create matrix and three vectors: these are all normal */
-  ierr = PetscMalloc1(lda*size,&b);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(lda*size,&b));
   for (i=0; i<size; i++) {
     for (j=0; j<size; j++) {
       b[i+j*lda] = rand();
     }
   }
-  ierr = MatCreate(MPI_COMM_SELF,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,size,size,size,size);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(A,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(MPI_COMM_SELF,&A));
+  CHKERRQ(MatSetSizes(A,size,size,size,size));
+  CHKERRQ(MatSetType(A,MATSEQDENSE));
+  CHKERRQ(MatSeqDenseSetPreallocation(A,NULL));
 
-  ierr = MatDenseGetArray(A,&a);CHKERRQ(ierr);
+  CHKERRQ(MatDenseGetArray(A,&a));
   for (i=0; i<size; i++) {
     for (j=0; j<size; j++) {
       a[i+j*size] = b[i+j*lda];
     }
   }
-  ierr = MatDenseRestoreArray(A,&a);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatDenseRestoreArray(A,&a));
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
-  ierr = MatCreate(MPI_COMM_SELF,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,size,size,size,size);CHKERRQ(ierr);
-  ierr = MatSetType(B,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(B,b);CHKERRQ(ierr);
-  ierr = MatDenseSetLDA(B,lda);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(MPI_COMM_SELF,&B));
+  CHKERRQ(MatSetSizes(B,size,size,size,size));
+  CHKERRQ(MatSetType(B,MATSEQDENSE));
+  CHKERRQ(MatSeqDenseSetPreallocation(B,b));
+  CHKERRQ(MatDenseSetLDA(B,lda));
+  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
 
-  ierr = PetscMalloc1(size,&x);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(size,&x));
   for (i=0; i<size; i++) x[i] = 1.0;
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size,x,&X);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(X);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(X);CHKERRQ(ierr);
+  CHKERRQ(VecCreateSeqWithArray(MPI_COMM_SELF,1,size,x,&X));
+  CHKERRQ(VecAssemblyBegin(X));
+  CHKERRQ(VecAssemblyEnd(X));
 
-  ierr = PetscMalloc1(size,&y);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size,y,&Y);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(Y);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(Y);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(size,&y));
+  CHKERRQ(VecCreateSeqWithArray(MPI_COMM_SELF,1,size,y,&Y));
+  CHKERRQ(VecAssemblyBegin(Y));
+  CHKERRQ(VecAssemblyEnd(Y));
 
-  ierr = PetscMalloc1(size,&z);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,1,size,z,&Z);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(Z);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(Z);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(size,&z));
+  CHKERRQ(VecCreateSeqWithArray(MPI_COMM_SELF,1,size,z,&Z));
+  CHKERRQ(VecAssemblyBegin(Z));
+  CHKERRQ(VecAssemblyEnd(Z));
 
   /*
    * Solve with A and B
    */
-  ierr = KSPCreate(MPI_COMM_SELF,&solver);CHKERRQ(ierr);
-  ierr = KSPSetType(solver,KSPPREONLY);CHKERRQ(ierr);
-  ierr = KSPGetPC(solver,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
-  ierr = KSPSetOperators(solver,A,A);CHKERRQ(ierr);
-  ierr = KSPSolve(solver,X,Y);CHKERRQ(ierr);
-  ierr = KSPSetOperators(solver,B,B);CHKERRQ(ierr);
-  ierr = KSPSolve(solver,X,Z);CHKERRQ(ierr);
-  ierr = VecAXPY(Z,-1.0,Y);CHKERRQ(ierr);
-  ierr = VecNorm(Z,NORM_2,&nrm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Test1; error norm=%e\n",nrm);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(MPI_COMM_SELF,&solver));
+  CHKERRQ(KSPSetType(solver,KSPPREONLY));
+  CHKERRQ(KSPGetPC(solver,&pc));
+  CHKERRQ(PCSetType(pc,PCLU));
+  CHKERRQ(KSPSetOperators(solver,A,A));
+  CHKERRQ(KSPSolve(solver,X,Y));
+  CHKERRQ(KSPSetOperators(solver,B,B));
+  CHKERRQ(KSPSolve(solver,X,Z));
+  CHKERRQ(VecAXPY(Z,-1.0,Y));
+  CHKERRQ(VecNorm(Z,NORM_2,&nrm));
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Test1; error norm=%e\n",nrm));
 
   /* Free spaces */
-  ierr = PetscFree(b);CHKERRQ(ierr);
-  ierr = PetscFree(x);CHKERRQ(ierr);
-  ierr = PetscFree(y);CHKERRQ(ierr);
-  ierr = PetscFree(z);CHKERRQ(ierr);
-  ierr = VecDestroy(&X);CHKERRQ(ierr);
-  ierr = VecDestroy(&Y);CHKERRQ(ierr);
-  ierr = VecDestroy(&Z);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = KSPDestroy(&solver);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(b));
+  CHKERRQ(PetscFree(x));
+  CHKERRQ(PetscFree(y));
+  CHKERRQ(PetscFree(z));
+  CHKERRQ(VecDestroy(&X));
+  CHKERRQ(VecDestroy(&Y));
+  CHKERRQ(VecDestroy(&Z));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(MatDestroy(&B));
+  CHKERRQ(KSPDestroy(&solver));
 
   ierr = PetscFinalize();
   return ierr;

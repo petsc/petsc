@@ -38,7 +38,7 @@ PetscErrorCode assemble_on_cpu(Mat A, PetscInt start, PetscInt end, PetscInt N, 
   for (i=start; i<end+1; i++) {
     PetscInt    js[] = {i-1, i}, nn = (i==N) ? 1 : 2;
     PetscScalar values[] = {1,1,1,1};
-    ierr = MatSetValues(A,nn,js,nn,js,values,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,nn,js,nn,js,values,ADD_VALUES));
   }
   PetscFunctionReturn(0);
 }
@@ -50,57 +50,56 @@ int main(int argc,char **args)
   PetscInt                   N=11, nz=3, Istart, Iend, num_threads = 128;
   PetscSplitCSRDataStructure d_mat;
   PetscLogEvent              event;
-  cudaError_t                cerr;
   PetscMPIInt                rank,size;
   PetscBool                  testmpiseq = PETSC_FALSE;
   Vec                        x,y;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL, "-n", &N, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL, "-num_threads", &num_threads, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL, "-nz_row", &nz, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL, "-testmpiseq", &testmpiseq, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-n", &N, NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-num_threads", &num_threads, NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-nz_row", &nz, NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL, "-testmpiseq", &testmpiseq, NULL));
   if (nz<3)   nz=3;
   if (nz>N+1) nz=N+1;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  ierr = PetscLogEventRegister("GPU operator", MAT_CLASSID, &event);CHKERRQ(ierr);
-  ierr = MatCreateAIJCUSPARSE(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,nz,NULL,nz-1,NULL,&A);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventRegister("GPU operator", MAT_CLASSID, &event));
+  CHKERRQ(MatCreateAIJCUSPARSE(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,nz,NULL,nz-1,NULL,&A));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE));
+  CHKERRQ(MatCreateVecs(A,&x,&y));
+  CHKERRQ(MatGetOwnershipRange(A,&Istart,&Iend));
   /* current GPU assembly code does not support offprocessor values insertion */
-  ierr = assemble_on_cpu(A, Istart, Iend, N, rank);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(assemble_on_cpu(A, Istart, Iend, N, rank));
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   // test
-  ierr = VecSet(x,1.0);CHKERRQ(ierr);
-  ierr = MatMult(A,x,y);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(y,NULL,"-ex5_vec_view");CHKERRQ(ierr);
+  CHKERRQ(VecSet(x,1.0));
+  CHKERRQ(MatMult(A,x,y));
+  CHKERRQ(VecViewFromOptions(y,NULL,"-ex5_vec_view"));
 
   if (testmpiseq && size == 1) {
-    ierr = MatConvert(A,MATSEQAIJ,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
-    ierr = MatConvert(A,MATMPIAIJCUSPARSE,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
+    CHKERRQ(MatConvert(A,MATSEQAIJ,MAT_INPLACE_MATRIX,&A));
+    CHKERRQ(MatConvert(A,MATMPIAIJCUSPARSE,MAT_INPLACE_MATRIX,&A));
   }
-  ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
-  ierr = MatCUSPARSEGetDeviceMatWrite(A,&d_mat);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(event,0,0,0,0));
+  CHKERRQ(MatCUSPARSEGetDeviceMatWrite(A,&d_mat));
   assemble_on_gpu<<<1,num_threads>>>(d_mat, Istart, Iend, N, rank);
-  cerr = cudaDeviceSynchronize();CHKERRCUDA(cerr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRQ(ierr);
+  CHKERRCUDA(cudaDeviceSynchronize());
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(PetscLogEventEnd(event,0,0,0,0));
 
   // test
-  ierr = VecSet(x,1.0);CHKERRQ(ierr);
-  ierr = MatMult(A,x,y);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(y,NULL,"-ex5_vec_view");CHKERRQ(ierr);
+  CHKERRQ(VecSet(x,1.0));
+  CHKERRQ(MatMult(A,x,y));
+  CHKERRQ(VecViewFromOptions(y,NULL,"-ex5_vec_view"));
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -70,37 +70,37 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return ierr;
   MPI_Comm_size(MPI_COMM_WORLD,&user.size);
   MPI_Comm_rank(MPI_COMM_WORLD,&user.rank);
-  ierr = InitializeData(&user);CHKERRQ(ierr);
+  CHKERRQ(InitializeData(&user));
 
   /* Run optimization on rank 0 */
   if (user.rank == 0) {
     /* Allocate vectors */
-    ierr = VecCreateSeq(PETSC_COMM_SELF,NPARAMETERS,&x);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,NOBSERVATIONS,&f);CHKERRQ(ierr);
+    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,NPARAMETERS,&x));
+    CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,NOBSERVATIONS,&f));
 
     /* TAO code begins here */
 
     /* Create TAO solver and set desired solution method */
-    ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
-    ierr = TaoSetType(tao,TAOPOUNDERS);CHKERRQ(ierr);
+    CHKERRQ(TaoCreate(PETSC_COMM_SELF,&tao));
+    CHKERRQ(TaoSetType(tao,TAOPOUNDERS));
 
     /* Set the function and Jacobian routines. */
-    ierr = FormStartingPoint(x);CHKERRQ(ierr);
-    ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
-    ierr = TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
+    CHKERRQ(FormStartingPoint(x));
+    CHKERRQ(TaoSetSolution(tao,x));
+    CHKERRQ(TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user));
 
     /* Check for any TAO command line arguments */
-    ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
+    CHKERRQ(TaoSetFromOptions(tao));
 
     /* Perform the Solve */
-    ierr = TaoSolve(tao);CHKERRQ(ierr);
+    CHKERRQ(TaoSolve(tao));
 
     /* Free TAO data structures */
-    ierr = TaoDestroy(&tao);CHKERRQ(ierr);
+    CHKERRQ(TaoDestroy(&tao));
 
     /* Free PETSc data structures */
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
-    ierr = VecDestroy(&f);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&x));
+    CHKERRQ(VecDestroy(&f));
     StopWorkers(&user);
   } else {
     TaskWorker(&user);
@@ -115,15 +115,14 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   AppCtx         *user = (AppCtx *)ptr;
   PetscInt       i;
   PetscReal      *x,*f;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(X,&x));
+  CHKERRQ(VecGetArray(F,&f));
   if (user->size == 1) {
     /* Single processor */
     for (i=0;i<NOBSERVATIONS;i++) {
-      ierr = RunSimulation(x,i,&f[i],user);CHKERRQ(ierr);
+      CHKERRQ(RunSimulation(x,i,&f[i],user));
     }
   } else {
     /* Multiprocessor main */
@@ -137,7 +136,7 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
     checkedin=0;
 
     while (finishedtasks < NOBSERVATIONS || checkedin < user->size-1) {
-      ierr = MPI_Recv(&f_i,1,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&status);CHKERRMPI(ierr);
+      CHKERRMPI(MPI_Recv(&f_i,1,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&status));
       if (status.MPI_TAG == IDLE_TAG) {
         checkedin++;
       } else {
@@ -148,17 +147,17 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
       }
 
       if (next_task<NOBSERVATIONS) {
-        ierr = MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,next_task,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+        CHKERRMPI(MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,next_task,PETSC_COMM_WORLD));
         next_task++;
 
       } else {
         /* Send idle message */
-        ierr = MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,IDLE_TAG,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+        CHKERRMPI(MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,IDLE_TAG,PETSC_COMM_WORLD));
       }
     }
   }
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(X,&x));
+  CHKERRQ(VecRestoreArray(F,&f));
   PetscLogFlops(6*NOBSERVATIONS);
   PetscFunctionReturn(0);
 }
@@ -167,14 +166,13 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
 PetscErrorCode FormStartingPoint(Vec X)
 {
   PetscReal      *x;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(X,&x));
   x[0] = 0.15;
   x[1] = 0.008;
   x[2] = 0.010;
-  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(X,&x));
   PetscFunctionReturn(0);
 }
 
@@ -408,21 +406,20 @@ PetscErrorCode TaskWorker(AppCtx *user)
   PetscMPIInt    tag=IDLE_TAG;
   PetscInt       index;
   MPI_Status     status;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Send check-in message to rank-0 */
 
-  ierr = MPI_Send(&f,1,MPIU_REAL,0,IDLE_TAG,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Send(&f,1,MPIU_REAL,0,IDLE_TAG,PETSC_COMM_WORLD));
   while (tag != DIE_TAG) {
-    ierr = MPI_Recv(x,NPARAMETERS,MPIU_REAL,0,MPI_ANY_TAG,PETSC_COMM_WORLD,&status);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Recv(x,NPARAMETERS,MPIU_REAL,0,MPI_ANY_TAG,PETSC_COMM_WORLD,&status));
     tag = status.MPI_TAG;
     if (tag == IDLE_TAG) {
-      ierr = MPI_Send(&f,1,MPIU_REAL,0,IDLE_TAG,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+      CHKERRMPI(MPI_Send(&f,1,MPIU_REAL,0,IDLE_TAG,PETSC_COMM_WORLD));
     } else if (tag != DIE_TAG) {
       index = (PetscInt)tag;
-      ierr = RunSimulation(x,index,&f,user);CHKERRQ(ierr);
-      ierr = MPI_Send(&f,1,MPIU_REAL,0,tag,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+      CHKERRQ(RunSimulation(x,index,&f,user));
+      CHKERRMPI(MPI_Send(&f,1,MPIU_REAL,0,tag,PETSC_COMM_WORLD));
     }
   }
   PetscFunctionReturn(0);
@@ -445,15 +442,14 @@ PetscErrorCode StopWorkers(AppCtx *user)
   PetscInt       checkedin;
   MPI_Status     status;
   PetscReal      f,x[NPARAMETERS];
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   checkedin=0;
   while (checkedin < user->size-1) {
-    ierr = MPI_Recv(&f,1,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&status);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Recv(&f,1,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&status));
     checkedin++;
-    ierr = PetscArrayzero(x,NPARAMETERS);CHKERRQ(ierr);
-    ierr = MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,DIE_TAG,PETSC_COMM_WORLD);CHKERRMPI(ierr);
+    CHKERRQ(PetscArrayzero(x,NPARAMETERS));
+    CHKERRMPI(MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,DIE_TAG,PETSC_COMM_WORLD));
   }
   PetscFunctionReturn(0);
 }

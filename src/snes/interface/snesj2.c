@@ -58,7 +58,6 @@ static PetscErrorCode SNESComputeMFFunctionCtx(SNES snes,Vec x,Vec f,void *ctx)
 PetscErrorCode  SNESComputeJacobianDefaultColor(SNES snes,Vec x1,Mat J,Mat B,void *ctx)
 {
   MatFDColoring  color = (MatFDColoring)ctx;
-  PetscErrorCode ierr;
   DM             dm;
   MatColoring    mc;
   ISColoring     iscoloring;
@@ -68,48 +67,48 @@ PetscErrorCode  SNESComputeJacobianDefaultColor(SNES snes,Vec x1,Mat J,Mat B,voi
 
   PetscFunctionBegin;
   if (color) PetscValidHeaderSpecific(color,MAT_FDCOLORING_CLASSID,5);
-  if (!color) {ierr  = PetscObjectQuery((PetscObject)B,"SNESMatFDColoring",(PetscObject*)&color);CHKERRQ(ierr);}
+  if (!color) CHKERRQ(PetscObjectQuery((PetscObject)B,"SNESMatFDColoring",(PetscObject*)&color));
 
   if (!color) {
-    ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-    ierr = DMHasColoring(dm,&hascolor);CHKERRQ(ierr);
+    CHKERRQ(SNESGetDM(snes,&dm));
+    CHKERRQ(DMHasColoring(dm,&hascolor));
     matcolor = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_fd_color_use_mat",&matcolor,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsGetBool(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_fd_color_use_mat",&matcolor,NULL));
     if (hascolor && !matcolor) {
-      ierr = DMCreateColoring(dm,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
+      CHKERRQ(DMCreateColoring(dm,IS_COLORING_GLOBAL,&iscoloring));
     } else {
-      ierr = MatColoringCreate(B,&mc);CHKERRQ(ierr);
-      ierr = MatColoringSetDistance(mc,2);CHKERRQ(ierr);
-      ierr = MatColoringSetType(mc,MATCOLORINGSL);CHKERRQ(ierr);
-      ierr = MatColoringSetFromOptions(mc);CHKERRQ(ierr);
-      ierr = MatColoringApply(mc,&iscoloring);CHKERRQ(ierr);
-      ierr = MatColoringDestroy(&mc);CHKERRQ(ierr);
+      CHKERRQ(MatColoringCreate(B,&mc));
+      CHKERRQ(MatColoringSetDistance(mc,2));
+      CHKERRQ(MatColoringSetType(mc,MATCOLORINGSL));
+      CHKERRQ(MatColoringSetFromOptions(mc));
+      CHKERRQ(MatColoringApply(mc,&iscoloring));
+      CHKERRQ(MatColoringDestroy(&mc));
     }
-    ierr = MatFDColoringCreate(B,iscoloring,&color);CHKERRQ(ierr);
-    ierr = DMGetDMSNES(dm,&dms);CHKERRQ(ierr);
+    CHKERRQ(MatFDColoringCreate(B,iscoloring,&color));
+    CHKERRQ(DMGetDMSNES(dm,&dms));
     if (dms->ops->computemffunction) {
-      ierr = MatFDColoringSetFunction(color,(PetscErrorCode (*)(void))SNESComputeMFFunctionCtx,NULL);CHKERRQ(ierr);
+      CHKERRQ(MatFDColoringSetFunction(color,(PetscErrorCode (*)(void))SNESComputeMFFunctionCtx,NULL));
     } else {
-      ierr = MatFDColoringSetFunction(color,(PetscErrorCode (*)(void))SNESComputeFunctionCtx,NULL);CHKERRQ(ierr);
+      CHKERRQ(MatFDColoringSetFunction(color,(PetscErrorCode (*)(void))SNESComputeFunctionCtx,NULL));
     }
-    ierr = MatFDColoringSetFromOptions(color);CHKERRQ(ierr);
-    ierr = MatFDColoringSetUp(B,iscoloring,color);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)B,"SNESMatFDColoring",(PetscObject)color);CHKERRQ(ierr);
-    ierr = PetscObjectDereference((PetscObject)color);CHKERRQ(ierr);
+    CHKERRQ(MatFDColoringSetFromOptions(color));
+    CHKERRQ(MatFDColoringSetUp(B,iscoloring,color));
+    CHKERRQ(ISColoringDestroy(&iscoloring));
+    CHKERRQ(PetscObjectCompose((PetscObject)B,"SNESMatFDColoring",(PetscObject)color));
+    CHKERRQ(PetscObjectDereference((PetscObject)color));
   }
 
   /* F is only usable if there is no RHS on the SNES and the full solution corresponds to x1 */
-  ierr = VecEqual(x1,snes->vec_sol,&solvec);CHKERRQ(ierr);
+  CHKERRQ(VecEqual(x1,snes->vec_sol,&solvec));
   if (!snes->vec_rhs && solvec) {
     Vec F;
-    ierr = SNESGetFunction(snes,&F,NULL,NULL);CHKERRQ(ierr);
-    ierr = MatFDColoringSetF(color,F);CHKERRQ(ierr);
+    CHKERRQ(SNESGetFunction(snes,&F,NULL,NULL));
+    CHKERRQ(MatFDColoringSetF(color,F));
   }
-  ierr = MatFDColoringApply(B,color,x1,snes);CHKERRQ(ierr);
+  CHKERRQ(MatFDColoringApply(B,color,x1,snes));
   if (J != B) {
-    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   }
   PetscFunctionReturn(0);
 }

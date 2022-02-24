@@ -6,21 +6,20 @@ static PetscErrorCode SetupSection(DM dm)
 {
   PetscSection   s;
   PetscInt       vStart, vEnd, v;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &s);CHKERRQ(ierr);
-  ierr = PetscSectionSetNumFields(s, 1);CHKERRQ(ierr);
-  ierr = PetscSectionSetFieldComponents(s, 0, 1);CHKERRQ(ierr);
-  ierr = PetscSectionSetChart(s, vStart, vEnd);CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+  CHKERRQ(PetscSectionCreate(PetscObjectComm((PetscObject) dm), &s));
+  CHKERRQ(PetscSectionSetNumFields(s, 1));
+  CHKERRQ(PetscSectionSetFieldComponents(s, 0, 1));
+  CHKERRQ(PetscSectionSetChart(s, vStart, vEnd));
   for (v = vStart; v < vEnd; ++v) {
-    ierr = PetscSectionSetDof(s, v, 1);CHKERRQ(ierr);
-    ierr = PetscSectionSetFieldDof(s, v, 0, 1);CHKERRQ(ierr);
+    CHKERRQ(PetscSectionSetDof(s, v, 1));
+    CHKERRQ(PetscSectionSetFieldDof(s, v, 0, 1));
   }
-  ierr = PetscSectionSetUp(s);CHKERRQ(ierr);
-  ierr = DMSetLocalSection(dm, s);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&s);CHKERRQ(ierr);
+  CHKERRQ(PetscSectionSetUp(s));
+  CHKERRQ(DMSetLocalSection(dm, s));
+  CHKERRQ(PetscSectionDestroy(&s));
   PetscFunctionReturn(0);
 }
 
@@ -31,18 +30,18 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = DMCreate(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
-  ierr = DMSetType(dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) dm, "Sphere");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dm));
+  CHKERRQ(DMSetType(dm, DMPLEX));
+  CHKERRQ(DMSetFromOptions(dm));
+  CHKERRQ(PetscObjectSetName((PetscObject) dm, "Sphere"));
+  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
 
-  ierr = SetupSection(dm);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = VecSet(u, 2);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(u, NULL, "-vec_view");CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(SetupSection(dm));
+  CHKERRQ(DMGetGlobalVector(dm, &u));
+  CHKERRQ(VecSet(u, 2));
+  CHKERRQ(VecViewFromOptions(u, NULL, "-vec_view"));
+  CHKERRQ(DMRestoreGlobalVector(dm, &u));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

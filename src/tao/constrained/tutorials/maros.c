@@ -77,53 +77,53 @@ PetscErrorCode main(int argc,char **argv)
 
   /* Initialize TAO,PETSc */
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   /* Specify default parameters for the problem, check for command-line overrides */
-  ierr = PetscStrncpy(user.name,"HS21",sizeof(user.name));CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-cutername",user.name,sizeof(user.name),&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscStrncpy(user.name,"HS21",sizeof(user.name)));
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-cutername",user.name,sizeof(user.name),&flg));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n---- MAROS Problem %s -----\n",user.name);CHKERRQ(ierr);
-  ierr = InitializeProblem(&user);CHKERRQ(ierr);
-  ierr = VecDuplicate(user.d,&x);CHKERRQ(ierr);
-  ierr = VecDuplicate(user.beq,&ceq);CHKERRQ(ierr);
-  ierr = VecDuplicate(user.bin,&cin);CHKERRQ(ierr);
-  ierr = VecSet(x,1.0);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n---- MAROS Problem %s -----\n",user.name));
+  CHKERRQ(InitializeProblem(&user));
+  CHKERRQ(VecDuplicate(user.d,&x));
+  CHKERRQ(VecDuplicate(user.beq,&ceq));
+  CHKERRQ(VecDuplicate(user.bin,&cin));
+  CHKERRQ(VecSet(x,1.0));
 
-  ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
-  ierr = TaoSetType(tao,TAOIPM);CHKERRQ(ierr);
-  ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
-  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void*)&user);CHKERRQ(ierr);
-  ierr = TaoSetEqualityConstraintsRoutine(tao,ceq,FormEqualityConstraints,(void*)&user);CHKERRQ(ierr);
-  ierr = TaoSetInequalityConstraintsRoutine(tao,cin,FormInequalityConstraints,(void*)&user);CHKERRQ(ierr);
-  ierr = TaoSetInequalityBounds(tao,user.bin,NULL);CHKERRQ(ierr);
-  ierr = TaoSetJacobianEqualityRoutine(tao,user.Aeq,user.Aeq,FormEqualityJacobian,(void*)&user);CHKERRQ(ierr);
-  ierr = TaoSetJacobianInequalityRoutine(tao,user.Ain,user.Ain,FormInequalityJacobian,(void*)&user);CHKERRQ(ierr);
-  ierr = TaoSetHessian(tao,user.H,user.H,FormHessian,(void*)&user);CHKERRQ(ierr);
-  ierr = TaoGetKSP(tao,&ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+  CHKERRQ(TaoCreate(PETSC_COMM_WORLD,&tao));
+  CHKERRQ(TaoSetType(tao,TAOIPM));
+  CHKERRQ(TaoSetSolution(tao,x));
+  CHKERRQ(TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void*)&user));
+  CHKERRQ(TaoSetEqualityConstraintsRoutine(tao,ceq,FormEqualityConstraints,(void*)&user));
+  CHKERRQ(TaoSetInequalityConstraintsRoutine(tao,cin,FormInequalityConstraints,(void*)&user));
+  CHKERRQ(TaoSetInequalityBounds(tao,user.bin,NULL));
+  CHKERRQ(TaoSetJacobianEqualityRoutine(tao,user.Aeq,user.Aeq,FormEqualityJacobian,(void*)&user));
+  CHKERRQ(TaoSetJacobianInequalityRoutine(tao,user.Ain,user.Ain,FormInequalityJacobian,(void*)&user));
+  CHKERRQ(TaoSetHessian(tao,user.H,user.H,FormHessian,(void*)&user));
+  CHKERRQ(TaoGetKSP(tao,&ksp));
+  CHKERRQ(KSPGetPC(ksp,&pc));
+  CHKERRQ(PCSetType(pc,PCLU));
   /*
       This algorithm produces matrices with zeros along the diagonal therefore we need to use
     SuperLU which does partial pivoting
   */
-  ierr = PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU);CHKERRQ(ierr);
-  ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-  ierr = TaoSetTolerances(tao,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PCFactorSetMatSolverType(pc,MATSOLVERSUPERLU));
+  CHKERRQ(KSPSetType(ksp,KSPPREONLY));
+  CHKERRQ(TaoSetTolerances(tao,0,0,0));
 
-  ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
-  ierr = TaoSolve(tao);CHKERRQ(ierr);
-  ierr = TaoGetConvergedReason(tao,&reason);CHKERRQ(ierr);
+  CHKERRQ(TaoSetFromOptions(tao));
+  CHKERRQ(TaoSolve(tao));
+  CHKERRQ(TaoGetConvergedReason(tao,&reason));
   if (reason < 0) {
-    ierr = PetscPrintf(MPI_COMM_WORLD, "TAO failed to converge due to %s.\n",TaoConvergedReasons[reason]);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(MPI_COMM_WORLD, "TAO failed to converge due to %s.\n",TaoConvergedReasons[reason]));
   } else {
-    ierr = PetscPrintf(MPI_COMM_WORLD, "Optimization completed with status %s.\n",TaoConvergedReasons[reason]);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(MPI_COMM_WORLD, "Optimization completed with status %s.\n",TaoConvergedReasons[reason]));
   }
 
-  ierr = DestroyProblem(&user);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&ceq);CHKERRQ(ierr);
-  ierr = VecDestroy(&cin);CHKERRQ(ierr);
-  ierr = TaoDestroy(&tao);CHKERRQ(ierr);
+  CHKERRQ(DestroyProblem(&user));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&ceq));
+  CHKERRQ(VecDestroy(&cin));
+  CHKERRQ(TaoDestroy(&tao));
 
   ierr = PetscFinalize();
   return ierr;
@@ -131,123 +131,109 @@ PetscErrorCode main(int argc,char **argv)
 
 PetscErrorCode InitializeProblem(AppCtx *user)
 {
-  PetscErrorCode ierr;
-  PetscViewer    loader;
-  MPI_Comm       comm;
-  PetscInt       nrows,ncols,i;
-  PetscScalar    one=1.0;
-  char           filebase[128];
-  char           filename[128];
+  PetscViewer loader;
+  MPI_Comm    comm;
+  PetscInt    nrows,ncols,i;
+  PetscScalar one = 1.0;
+  char        filebase[128];
+  char        filename[128];
 
   PetscFunctionBegin;
   comm = PETSC_COMM_WORLD;
-  ierr = PetscStrncpy(filebase,user->name,sizeof(filebase));CHKERRQ(ierr);
-  ierr = PetscStrlcat(filebase,"/",sizeof(filebase));CHKERRQ(ierr);
-  ierr = PetscStrncpy(filename,filebase,sizeof(filename));CHKERRQ(ierr);
-  ierr = PetscStrlcat(filename,"f",sizeof(filename));CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader);CHKERRQ(ierr);
+  CHKERRQ(PetscStrncpy(filebase,user->name,sizeof(filebase)));
+  CHKERRQ(PetscStrlcat(filebase,"/",sizeof(filebase)));
+  CHKERRQ(PetscStrncpy(filename,filebase,sizeof(filename)));
+  CHKERRQ(PetscStrlcat(filename,"f",sizeof(filename)));
+  CHKERRQ(PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader));
 
-  ierr = VecCreate(comm,&user->d);CHKERRQ(ierr);
-  ierr = VecLoad(user->d,loader);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&loader);CHKERRQ(ierr);
-  ierr = VecGetSize(user->d,&nrows);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(user->d);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(comm,&user->d));
+  CHKERRQ(VecLoad(user->d,loader));
+  CHKERRQ(PetscViewerDestroy(&loader));
+  CHKERRQ(VecGetSize(user->d,&nrows));
+  CHKERRQ(VecSetFromOptions(user->d));
   user->n = nrows;
 
-  ierr = PetscStrncpy(filename,filebase,sizeof(filename));CHKERRQ(ierr);
-  ierr = PetscStrlcat(filename,"H",sizeof(filename));CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader);CHKERRQ(ierr);
+  CHKERRQ(PetscStrncpy(filename,filebase,sizeof(filename)));
+  CHKERRQ(PetscStrlcat(filename,"H",sizeof(filename)));
+  CHKERRQ(PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader));
 
-  ierr = MatCreate(comm,&user->H);CHKERRQ(ierr);
-  ierr = MatSetSizes(user->H,PETSC_DECIDE,PETSC_DECIDE,nrows,nrows);CHKERRQ(ierr);
-  ierr = MatLoad(user->H,loader);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&loader);CHKERRQ(ierr);
-  ierr = MatGetSize(user->H,&nrows,&ncols);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(comm,&user->H));
+  CHKERRQ(MatSetSizes(user->H,PETSC_DECIDE,PETSC_DECIDE,nrows,nrows));
+  CHKERRQ(MatLoad(user->H,loader));
+  CHKERRQ(PetscViewerDestroy(&loader));
+  CHKERRQ(MatGetSize(user->H,&nrows,&ncols));
   PetscCheck(nrows == user->n,comm,PETSC_ERR_ARG_SIZ,"H: nrows != n");
   PetscCheck(ncols == user->n,comm,PETSC_ERR_ARG_SIZ,"H: ncols != n");
-  ierr = MatSetFromOptions(user->H);CHKERRQ(ierr);
+  CHKERRQ(MatSetFromOptions(user->H));
 
-  ierr = PetscStrncpy(filename,filebase,sizeof(filename));CHKERRQ(ierr);
-  ierr = PetscStrlcat(filename,"Aeq",sizeof(filename));CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader);CHKERRQ(ierr);
-  if (ierr) {
-    user->Aeq = NULL;
-    user->me  = 0;
-  } else {
-    ierr = MatCreate(comm,&user->Aeq);CHKERRQ(ierr);
-    ierr = MatLoad(user->Aeq,loader);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&loader);CHKERRQ(ierr);
-    ierr = MatGetSize(user->Aeq,&nrows,&ncols);CHKERRQ(ierr);
-    PetscCheck(ncols == user->n,comm,PETSC_ERR_ARG_SIZ,"Aeq ncols != H nrows");
-    ierr = MatSetFromOptions(user->Aeq);CHKERRQ(ierr);
-    user->me = nrows;
-  }
+  CHKERRQ(PetscStrncpy(filename,filebase,sizeof(filename)));
+  CHKERRQ(PetscStrlcat(filename,"Aeq",sizeof(filename)));
+  CHKERRQ(PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader));
+  CHKERRQ(MatCreate(comm,&user->Aeq));
+  CHKERRQ(MatLoad(user->Aeq,loader));
+  CHKERRQ(PetscViewerDestroy(&loader));
+  CHKERRQ(MatGetSize(user->Aeq,&nrows,&ncols));
+  PetscCheck(ncols == user->n,comm,PETSC_ERR_ARG_SIZ,"Aeq ncols != H nrows");
+  CHKERRQ(MatSetFromOptions(user->Aeq));
+  user->me = nrows;
 
-  ierr = PetscStrncpy(filename,filebase,sizeof(filename));CHKERRQ(ierr);
-  ierr = PetscStrlcat(filename,"Beq",sizeof(filename));CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader);CHKERRQ(ierr);
-  if (ierr) {
-    user->beq = 0;
-  } else {
-    ierr = VecCreate(comm,&user->beq);CHKERRQ(ierr);
-    ierr = VecLoad(user->beq,loader);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&loader);CHKERRQ(ierr);
-    ierr = VecGetSize(user->beq,&nrows);CHKERRQ(ierr);
-    PetscCheck(nrows == user->me,comm,PETSC_ERR_ARG_SIZ,"Aeq nrows != Beq n");
-    ierr = VecSetFromOptions(user->beq);CHKERRQ(ierr);
-  }
+  CHKERRQ(PetscStrncpy(filename,filebase,sizeof(filename)));
+  CHKERRQ(PetscStrlcat(filename,"Beq",sizeof(filename)));
+  CHKERRQ(PetscViewerBinaryOpen(comm,filename,FILE_MODE_READ,&loader));
+  CHKERRQ(VecCreate(comm,&user->beq));
+  CHKERRQ(VecLoad(user->beq,loader));
+  CHKERRQ(PetscViewerDestroy(&loader));
+  CHKERRQ(VecGetSize(user->beq,&nrows));
+  PetscCheck(nrows == user->me,comm,PETSC_ERR_ARG_SIZ,"Aeq nrows != Beq n");
+  CHKERRQ(VecSetFromOptions(user->beq));
 
   user->mi = user->n;
   /* Ain = eye(n,n) */
-  ierr = MatCreate(comm,&user->Ain);CHKERRQ(ierr);
-  ierr = MatSetType(user->Ain,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetSizes(user->Ain,PETSC_DECIDE,PETSC_DECIDE,user->mi,user->mi);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(comm,&user->Ain));
+  CHKERRQ(MatSetType(user->Ain,MATAIJ));
+  CHKERRQ(MatSetSizes(user->Ain,PETSC_DECIDE,PETSC_DECIDE,user->mi,user->mi));
 
-  ierr = MatMPIAIJSetPreallocation(user->Ain,1,NULL,0,NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(user->Ain,1,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatMPIAIJSetPreallocation(user->Ain,1,NULL,0,NULL));
+  CHKERRQ(MatSeqAIJSetPreallocation(user->Ain,1,NULL));
 
-  for (i=0;i<user->mi;i++) {
-    ierr = MatSetValues(user->Ain,1,&i,1,&i,&one,INSERT_VALUES);CHKERRQ(ierr);
-  }
-  ierr = MatAssemblyBegin(user->Ain,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(user->Ain,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(user->Ain);CHKERRQ(ierr);
+  for (i=0;i<user->mi;i++) CHKERRQ(MatSetValues(user->Ain,1,&i,1,&i,&one,INSERT_VALUES));
+  CHKERRQ(MatAssemblyBegin(user->Ain,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(user->Ain,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatSetFromOptions(user->Ain));
 
   /* bin = [0,0 ... 0]' */
-  ierr = VecCreate(comm,&user->bin);CHKERRQ(ierr);
-  ierr = VecSetType(user->bin,VECMPI);CHKERRQ(ierr);
-  ierr = VecSetSizes(user->bin,PETSC_DECIDE,user->mi);CHKERRQ(ierr);
-  ierr = VecSet(user->bin,0.0);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(user->bin);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(comm,&user->bin));
+  CHKERRQ(VecSetType(user->bin,VECMPI));
+  CHKERRQ(VecSetSizes(user->bin,PETSC_DECIDE,user->mi));
+  CHKERRQ(VecSet(user->bin,0.0));
+  CHKERRQ(VecSetFromOptions(user->bin));
   user->m = user->me + user->mi;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DestroyProblem(AppCtx *user)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatDestroy(&user->H);CHKERRQ(ierr);
-  ierr = MatDestroy(&user->Aeq);CHKERRQ(ierr);
-  ierr = MatDestroy(&user->Ain);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->beq);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->bin);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->d);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&user->H));
+  CHKERRQ(MatDestroy(&user->Aeq));
+  CHKERRQ(MatDestroy(&user->Ain));
+  CHKERRQ(VecDestroy(&user->beq));
+  CHKERRQ(VecDestroy(&user->bin));
+  CHKERRQ(VecDestroy(&user->d));
   PetscFunctionReturn(0);
 }
+
 PetscErrorCode FormFunctionGradient(Tao tao, Vec x, PetscReal *f, Vec g, void *ctx)
 {
   AppCtx         *user = (AppCtx*)ctx;
   PetscScalar    xtHx;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMult(user->H,x,g);CHKERRQ(ierr);
-  ierr = VecDot(x,g,&xtHx);CHKERRQ(ierr);
-  ierr = VecDot(x,user->d,f);CHKERRQ(ierr);
+  CHKERRQ(MatMult(user->H,x,g));
+  CHKERRQ(VecDot(x,g,&xtHx));
+  CHKERRQ(VecDot(x,user->d,f));
   *f += 0.5*xtHx;
-  ierr = VecAXPY(g,1.0,user->d);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(g,1.0,user->d));
   PetscFunctionReturn(0);
 }
 
@@ -260,21 +246,19 @@ PetscErrorCode FormHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx)
 PetscErrorCode FormInequalityConstraints(Tao tao, Vec x, Vec ci, void *ctx)
 {
   AppCtx         *user = (AppCtx*)ctx;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMult(user->Ain,x,ci);CHKERRQ(ierr);
+  CHKERRQ(MatMult(user->Ain,x,ci));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode FormEqualityConstraints(Tao tao, Vec x, Vec ce,void *ctx)
 {
   AppCtx         *user = (AppCtx*)ctx;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMult(user->Aeq,x,ce);CHKERRQ(ierr);
-  ierr = VecAXPY(ce,-1.0,user->beq);CHKERRQ(ierr);
+  CHKERRQ(MatMult(user->Aeq,x,ce));
+  CHKERRQ(VecAXPY(ce,-1.0,user->beq));
   PetscFunctionReturn(0);
 }
 

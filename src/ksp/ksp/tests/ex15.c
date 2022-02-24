@@ -15,66 +15,66 @@ int main(int argc,char **args)
   PC             pc;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* Create vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
+  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,n));
+  CHKERRQ(VecSetFromOptions(x));
+  CHKERRQ(VecDuplicate(x,&b));
+  CHKERRQ(VecDuplicate(x,&u));
 
   /* create a solution that is orthogonal to the constants */
-  ierr = VecGetOwnershipRange(u,&i1,&i2);CHKERRQ(ierr);
+  CHKERRQ(VecGetOwnershipRange(u,&i1,&i2));
   for (i=i1; i<i2; i++) {
     avalue = i;
     VecSetValues(u,1,&i,&avalue,INSERT_VALUES);
   }
-  ierr   = VecAssemblyBegin(u);CHKERRQ(ierr);
-  ierr   = VecAssemblyEnd(u);CHKERRQ(ierr);
-  ierr   = VecSum(u,&avalue);CHKERRQ(ierr);
+  CHKERRQ(VecAssemblyBegin(u));
+  CHKERRQ(VecAssemblyEnd(u));
+  CHKERRQ(VecSum(u,&avalue));
   avalue = -avalue/(PetscReal)n;
-  ierr   = VecShift(u,avalue);CHKERRQ(ierr);
+  CHKERRQ(VecShift(u,avalue));
 
   /* Create and assemble matrix */
-  ierr     = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr     = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
-  ierr     = MatSetFromOptions(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n));
+  CHKERRQ(MatSetFromOptions(A));
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
-    ierr   = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&i,3,col,value,INSERT_VALUES));
   }
   i    = n - 1; col[0] = n - 2; col[1] = n - 1; value[1] = 1.0;
-  ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(A,1,&i,2,col,value,INSERT_VALUES));
   i    = 0; col[0] = 0; col[1] = 1; value[0] = 1.0; value[1] = -1.0;
-  ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatMult(A,u,b);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(A,1,&i,2,col,value,INSERT_VALUES));
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatMult(A,u,b));
 
   /* Create KSP context; set operators and options; solve linear system */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPSetOperators(ksp,A,A));
 
   /* Insure that preconditioner has same null space as matrix */
   /* currently does not do anything */
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  CHKERRQ(KSPGetPC(ksp,&pc));
 
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  /* ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  CHKERRQ(KSPSetFromOptions(ksp));
+  CHKERRQ(KSPSolve(ksp,b,x));
+  /* CHKERRQ(KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD)); */
 
   /* Check error */
-  ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(x,none,u));
+  CHKERRQ(VecNorm(x,NORM_2,&norm));
+  CHKERRQ(KSPGetIterationNumber(ksp,&its));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its));
 
   /* Free work space */
-  ierr = VecDestroy(&x);CHKERRQ(ierr);ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));CHKERRQ(VecDestroy(&u));
+  CHKERRQ(VecDestroy(&b));CHKERRQ(MatDestroy(&A));
+  CHKERRQ(KSPDestroy(&ksp));
   ierr = PetscFinalize();
   return ierr;
 }

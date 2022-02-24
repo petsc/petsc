@@ -11,42 +11,42 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   prid = size;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-prid",&prid,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-prid",&prid,NULL));
 
   m    = n = 10*size;
-  ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DETERMINE,PETSC_DETERMINE,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_SELF,&A));
+  CHKERRQ(MatSetSizes(A,PETSC_DETERMINE,PETSC_DETERMINE,m,n));
+  CHKERRQ(MatSetType(A,MATSEQAIJ));
+  CHKERRQ(MatSetUp(A));
 
   a[0] = rank+1;
   for (i=0; i<m-rank; i++) {
     col  = i+rank;
-    ierr = MatSetValues(A,1,&i,1,&col,a,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&i,1,&col,a,INSERT_VALUES));
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   if (rank == prid) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] A: \n",rank);CHKERRQ(ierr);
-    ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"[%d] A: \n",rank));
+    CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_SELF));
   }
 
   /* Test MatCreateMPIAIJSumSeqAIJ */
-  ierr = MatCreateMPIAIJSumSeqAIJ(PETSC_COMM_WORLD,A,PETSC_DECIDE,PETSC_DECIDE,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+  CHKERRQ(MatCreateMPIAIJSumSeqAIJ(PETSC_COMM_WORLD,A,PETSC_DECIDE,PETSC_DECIDE,MAT_INITIAL_MATRIX,&B));
 
   /* Test MAT_REUSE_MATRIX */
   alpha = 0.1;
   for (i=0; i<3; i++) {
-    ierr = MatScale(A,alpha);CHKERRQ(ierr);
-    ierr = MatCreateMPIAIJSumSeqAIJ(PETSC_COMM_WORLD,A,PETSC_DECIDE,PETSC_DECIDE,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
+    CHKERRQ(MatScale(A,alpha));
+    CHKERRQ(MatCreateMPIAIJSumSeqAIJ(PETSC_COMM_WORLD,A,PETSC_DECIDE,PETSC_DECIDE,MAT_REUSE_MATRIX,&B));
   }
-  ierr = MatView(B, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(MatView(B, PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(MatDestroy(&B));
+  CHKERRQ(MatDestroy(&A));
   ierr = PetscFinalize();
   return ierr;
 }

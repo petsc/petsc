@@ -69,7 +69,6 @@ PetscErrorCode RunHasOperationTest()
 {
   Mat A;
   PetscInt matop, nop = sizeof(optenum)/sizeof(PetscInt);
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (matop = 0; matop < nop; matop++) {
@@ -77,36 +76,36 @@ PetscErrorCode RunHasOperationTest()
     PetscBool hasop;
     PetscInt i;
 
-    ierr = PetscSNPrintf(opts,256,"-enable %s",optstr[matop]);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Testing with %s\n",opts);CHKERRQ(ierr);
-    ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-    ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,0,0);CHKERRQ(ierr);
-    ierr = MatSetType(A,MATPYTHON);CHKERRQ(ierr);
-    ierr = MatPythonSetType(A,"ex140.py:Matrix");CHKERRQ(ierr);
+    CHKERRQ(PetscSNPrintf(opts,256,"-enable %s",optstr[matop]));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Testing with %s\n",opts));
+    CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+    CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,0,0));
+    CHKERRQ(MatSetType(A,MATPYTHON));
+    CHKERRQ(MatPythonSetType(A,"ex140.py:Matrix"));
     /* default case, no user implementation */
     for (i = 0; i < nop; i++) {
-      ierr = MatHasOperation(A,optenum[i],&hasop);CHKERRQ(ierr);
+      CHKERRQ(MatHasOperation(A,optenum[i],&hasop));
       if (hasop) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error: %s present\n",optstr[i]);CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"  Error: %s present\n",optstr[i]));
       } else {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Pass: %s\n",optstr[i]);CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"  Pass: %s\n",optstr[i]));
       }
     }
     /* customize Matrix class at a later stage and add support for optenum[matop] */
-    ierr = PetscOptionsInsertString(NULL,opts);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsInsertString(NULL,opts));
+    CHKERRQ(MatSetFromOptions(A));
     for (i = 0; i < nop; i++) {
-      ierr = MatHasOperation(A,optenum[i],&hasop);CHKERRQ(ierr);
+      CHKERRQ(MatHasOperation(A,optenum[i],&hasop));
       if (hasop && i != matop) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error: %s present\n",optstr[i]);CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"  Error: %s present\n",optstr[i]));
       } else if (!hasop && i == matop) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error: %s not present\n",optstr[i]);CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"  Error: %s not present\n",optstr[i]));
       } else {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Pass: %s\n",optstr[i]);CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"  Pass: %s\n",optstr[i]));
       }
     }
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
-    ierr = PetscOptionsClearValue(NULL,opts);CHKERRQ(ierr);
+    CHKERRQ(MatDestroy(&A));
+    CHKERRQ(PetscOptionsClearValue(NULL,opts));
   }
   PetscFunctionReturn(0);
 }
@@ -116,8 +115,8 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char*) 0,help);if (ierr) return ierr;
-  ierr = PetscPythonInitialize(NULL,NULL);CHKERRQ(ierr);
-  ierr = RunHasOperationTest();PetscPythonPrintError();CHKERRQ(ierr);
+  CHKERRQ(PetscPythonInitialize(NULL,NULL));
+  CHKERRQ(RunHasOperationTest();PetscPythonPrintError());
   ierr = PetscFinalize();
   return ierr;
 }

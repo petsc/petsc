@@ -15,44 +15,44 @@ int main(int argc,char **args)
   char           mtype[256];
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-mtype",mtype,sizeof(mtype),&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-no_inodes",&no_inodes,NULL);CHKERRQ(ierr);
-  ierr = MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,M,N,NULL,&Ad);CHKERRQ(ierr);
-  ierr = MatSetRandom(Ad,NULL);CHKERRQ(ierr);
-  ierr = MatConvert(Ad,flg ? mtype : MATAIJ,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
-  ierr = MatProductCreate(A,A,NULL,&B);CHKERRQ(ierr);
-  ierr = MatProductSetType(B,MATPRODUCT_AtB);CHKERRQ(ierr);
-  ierr = MatProductSetAlgorithm(B,"default");CHKERRQ(ierr);
-  ierr = MatProductSetFill(B,PETSC_DEFAULT);CHKERRQ(ierr);
-  ierr = MatProductSetFromOptions(B);CHKERRQ(ierr);
-  ierr = MatProductSymbolic(B);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-mtype",mtype,sizeof(mtype),&flg));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-no_inodes",&no_inodes,NULL));
+  CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,M,N,NULL,&Ad));
+  CHKERRQ(MatSetRandom(Ad,NULL));
+  CHKERRQ(MatConvert(Ad,flg ? mtype : MATAIJ,MAT_INITIAL_MATRIX,&A));
+  CHKERRQ(MatProductCreate(A,A,NULL,&B));
+  CHKERRQ(MatProductSetType(B,MATPRODUCT_AtB));
+  CHKERRQ(MatProductSetAlgorithm(B,"default"));
+  CHKERRQ(MatProductSetFill(B,PETSC_DEFAULT));
+  CHKERRQ(MatProductSetFromOptions(B));
+  CHKERRQ(MatProductSymbolic(B));
   if (no_inodes) {
-    ierr = MatSetOption(B,MAT_USE_INODES,PETSC_FALSE);CHKERRQ(ierr);
+    CHKERRQ(MatSetOption(B,MAT_USE_INODES,PETSC_FALSE));
   }
-  ierr = MatProductNumeric(B);CHKERRQ(ierr);
-  ierr = MatTransposeMatMultEqual(A,A,B,10,&flg);CHKERRQ(ierr);
+  CHKERRQ(MatProductNumeric(B));
+  CHKERRQ(MatTransposeMatMultEqual(A,A,B,10,&flg));
   if (!flg) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Wrong MatTransposeMat");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Wrong MatTransposeMat"));
   }
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,B,B);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCSOR);CHKERRQ(ierr);
-  ierr = PCSORSetOmega(pc,1.1);CHKERRQ(ierr);
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = KSPView(ksp,NULL);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = MatCreateVecs(B,&y,&x);CHKERRQ(ierr);
-  ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
-  ierr = PCApply(pc,x,y);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
-  ierr = MatDestroy(&Ad);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPSetOperators(ksp,B,B));
+  CHKERRQ(KSPGetPC(ksp,&pc));
+  CHKERRQ(PCSetType(pc,PCSOR));
+  CHKERRQ(PCSORSetOmega(pc,1.1));
+  CHKERRQ(KSPSetUp(ksp));
+  CHKERRQ(KSPView(ksp,NULL));
+  CHKERRQ(KSPGetPC(ksp,&pc));
+  CHKERRQ(MatCreateVecs(B,&y,&x));
+  CHKERRQ(VecSetRandom(x,NULL));
+  CHKERRQ(PCApply(pc,x,y));
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
+  CHKERRQ(MatDestroy(&B));
+  CHKERRQ(MatDestroy(&Ad));
+  CHKERRQ(MatDestroy(&A));
   ierr = PetscFinalize();
   return ierr;
 }

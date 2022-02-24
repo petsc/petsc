@@ -13,35 +13,35 @@ int main(int argc,char **argv)
   Vec            x,y;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   if (n < 5) n = 5;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   PetscCheckFalse(size < 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must be run with at least two processors");
 
   /* create two vector */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
-  ierr = VecSetSizes(y,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(y);CHKERRQ(ierr);
-  ierr = VecSet(x,one);CHKERRQ(ierr);
-  ierr = VecSet(y,two);CHKERRQ(ierr);
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&x));
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&y));
+  CHKERRQ(VecSetSizes(y,n,PETSC_DECIDE));
+  CHKERRQ(VecSetFromOptions(y));
+  CHKERRQ(VecSet(x,one));
+  CHKERRQ(VecSet(y,two));
 
   if (rank == 1) {
-    idx = 2; ierr = VecSetValues(y,1,&idx,&three,INSERT_VALUES);CHKERRQ(ierr);
-    idx = 0; ierr = VecSetValues(y,1,&idx,&two,INSERT_VALUES);CHKERRQ(ierr);
-    idx = 0; ierr = VecSetValues(y,1,&idx,&one,INSERT_VALUES);CHKERRQ(ierr);
+    idx = 2; CHKERRQ(VecSetValues(y,1,&idx,&three,INSERT_VALUES));
+    idx = 0; CHKERRQ(VecSetValues(y,1,&idx,&two,INSERT_VALUES));
+    idx = 0; CHKERRQ(VecSetValues(y,1,&idx,&one,INSERT_VALUES));
   } else {
-    idx = 7; ierr = VecSetValues(y,1,&idx,&three,INSERT_VALUES);CHKERRQ(ierr);
+    idx = 7; CHKERRQ(VecSetValues(y,1,&idx,&three,INSERT_VALUES));
   }
-  ierr = VecAssemblyBegin(y);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(y);CHKERRQ(ierr);
+  CHKERRQ(VecAssemblyBegin(y));
+  CHKERRQ(VecAssemblyEnd(y));
 
-  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecView(y,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
 
   ierr = PetscFinalize();
   return ierr;

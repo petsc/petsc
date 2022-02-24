@@ -2,7 +2,6 @@
 
 PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse scall,Mat *subMat)
 {
-  PetscErrorCode ierr;
   Mat_MPIAIJ     *aij  = (Mat_MPIAIJ*)mat->data;
   Mat_SeqAIJ     *aijB = (Mat_SeqAIJ*)aij->B->data;
   PetscMPIInt    subCommSize,subCommRank;
@@ -10,30 +9,30 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
   PetscInt       *garrayCMap,col,i,j,*nnz,newRow,newCol;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(subComm,&subCommSize);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(subComm,&subCommRank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&commRank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(subComm,&subCommSize));
+  CHKERRMPI(MPI_Comm_rank(subComm,&subCommRank));
+  CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&commRank));
 
   /* create subMat object with the relevant layout */
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = MatCreate(subComm,subMat);CHKERRQ(ierr);
-    ierr = MatSetType(*subMat,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatSetSizes(*subMat,mat->rmap->n,mat->cmap->n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = MatSetBlockSizesFromMats(*subMat,mat,mat);CHKERRQ(ierr);
+    CHKERRQ(MatCreate(subComm,subMat));
+    CHKERRQ(MatSetType(*subMat,MATMPIAIJ));
+    CHKERRQ(MatSetSizes(*subMat,mat->rmap->n,mat->cmap->n,PETSC_DECIDE,PETSC_DECIDE));
+    CHKERRQ(MatSetBlockSizesFromMats(*subMat,mat,mat));
 
     /* need to setup rmap and cmap before Preallocation */
-    ierr = PetscLayoutSetUp((*subMat)->rmap);CHKERRQ(ierr);
-    ierr = PetscLayoutSetUp((*subMat)->cmap);CHKERRQ(ierr);
+    CHKERRQ(PetscLayoutSetUp((*subMat)->rmap));
+    CHKERRQ(PetscLayoutSetUp((*subMat)->cmap));
   }
 
   /* create a map of comm_rank from subComm to comm - should commRankMap and garrayCMap be kept for reused? */
-  ierr = PetscMalloc1(subCommSize,&commRankMap);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&commRank,1,MPI_INT,commRankMap,1,MPI_INT,subComm);CHKERRMPI(ierr);
+  CHKERRQ(PetscMalloc1(subCommSize,&commRankMap));
+  CHKERRMPI(MPI_Allgather(&commRank,1,MPI_INT,commRankMap,1,MPI_INT,subComm));
 
   /* Traverse garray and identify column indices [of offdiag mat] that
    should be discarded. For the ones not discarded, store the newCol+1
    value in garrayCMap */
-  ierr = PetscCalloc1(aij->B->cmap->n,&garrayCMap);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc1(aij->B->cmap->n,&garrayCMap));
   for (i=0; i<aij->B->cmap->n; i++) {
     col = aij->garray[i];
     for (subRank=0; subRank<subCommSize; subRank++) {
@@ -47,23 +46,23 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
 
   if (scall == MAT_INITIAL_MATRIX) {
     /* Compute preallocation for the offdiag mat */
-    ierr = PetscCalloc1(aij->B->rmap->n,&nnz);CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc1(aij->B->rmap->n,&nnz));
     for (i=0; i<aij->B->rmap->n; i++) {
       for (j=aijB->i[i]; j<aijB->i[i+1]; j++) {
         if (garrayCMap[aijB->j[j]]) nnz[i]++;
       }
     }
-    ierr = MatMPIAIJSetPreallocation(*(subMat),0,NULL,0,nnz);CHKERRQ(ierr);
+    CHKERRQ(MatMPIAIJSetPreallocation(*(subMat),0,NULL,0,nnz));
 
     /* reuse diag block with the new submat */
-    ierr = MatDestroy(&((Mat_MPIAIJ*)((*subMat)->data))->A);CHKERRQ(ierr);
+    CHKERRQ(MatDestroy(&((Mat_MPIAIJ*)((*subMat)->data))->A));
     ((Mat_MPIAIJ*)((*subMat)->data))->A = aij->A;
-    ierr = PetscObjectReference((PetscObject)aij->A);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectReference((PetscObject)aij->A));
   } else if (((Mat_MPIAIJ*)(*subMat)->data)->A != aij->A) {
     PetscObject obj = (PetscObject)((Mat_MPIAIJ*)((*subMat)->data))->A;
-    ierr = PetscObjectReference((PetscObject)obj);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectReference((PetscObject)obj));
     ((Mat_MPIAIJ*)((*subMat)->data))->A = aij->A;
-    ierr = PetscObjectReference((PetscObject)aij->A);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectReference((PetscObject)aij->A));
   }
 
   /* Traverse aij->B and insert values into subMat */
@@ -77,18 +76,18 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse 
       newCol = garrayCMap[aijB->j[j]];
       if (newCol) {
         newCol--; /* remove the increment */
-        ierr = MatSetValues_MPIAIJ(*subMat,1,&newRow,1,&newCol,(aijB->a+j),INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValues_MPIAIJ(*subMat,1,&newRow,1,&newCol,(aijB->a+j),INSERT_VALUES));
       }
     }
   }
-  ierr = MatAssemblyBegin(*subMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*subMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(*subMat,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(*subMat,MAT_FINAL_ASSEMBLY));
 
   /* deallocate temporary data */
-  ierr = PetscFree(commRankMap);CHKERRQ(ierr);
-  ierr = PetscFree(garrayCMap);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(commRankMap));
+  CHKERRQ(PetscFree(garrayCMap));
   if (scall == MAT_INITIAL_MATRIX) {
-    ierr = PetscFree(nnz);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(nnz));
   }
   PetscFunctionReturn(0);
 }

@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   char           access_token[512],new_refresh_token[512];
 
   ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
-  ierr = PetscBoxRefresh(PETSC_COMM_WORLD,NULL,access_token,new_refresh_token,sizeof(access_token));CHKERRQ(ierr);
+  CHKERRQ(PetscBoxRefresh(PETSC_COMM_WORLD,NULL,access_token,new_refresh_token,sizeof(access_token)));
   ierr = PetscFinalize();
   return ierr;
 }
@@ -28,4 +28,3 @@ int main(int argc,char **argv)
      TODO: determine how to run this test without making a box refresh token public
 
 TEST*/
-

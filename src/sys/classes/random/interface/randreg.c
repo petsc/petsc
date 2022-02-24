@@ -29,25 +29,24 @@ PetscErrorCode  PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
 {
   PetscErrorCode (*r)(PetscRandom);
   PetscBool      match;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(rnd, PETSC_RANDOM_CLASSID,1);
-  ierr = PetscObjectTypeCompare((PetscObject)rnd, type, &match);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)rnd, type, &match));
   if (match) PetscFunctionReturn(0);
 
-  ierr = PetscFunctionListFind(PetscRandomList,type,&r);CHKERRQ(ierr);
+  CHKERRQ(PetscFunctionListFind(PetscRandomList,type,&r));
   PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown random type: %s", type);
 
   if (rnd->ops->destroy) {
-    ierr = (*rnd->ops->destroy)(rnd);CHKERRQ(ierr);
+    CHKERRQ((*rnd->ops->destroy)(rnd));
 
     rnd->ops->destroy = NULL;
   }
-  ierr = (*r)(rnd);CHKERRQ(ierr);
-  ierr = PetscRandomSeed(rnd);CHKERRQ(ierr);
+  CHKERRQ((*r)(rnd));
+  CHKERRQ(PetscRandomSeed(rnd));
 
-  ierr = PetscObjectChangeTypeName((PetscObject)rnd, type);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectChangeTypeName((PetscObject)rnd, type));
   PetscFunctionReturn(0);
 }
 
@@ -112,11 +111,9 @@ PetscErrorCode  PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
 @*/
 PetscErrorCode  PetscRandomRegister(const char sname[], PetscErrorCode (*function)(PetscRandom))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscRandomInitializePackage();CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&PetscRandomList,sname,function);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomInitializePackage());
+  CHKERRQ(PetscFunctionListAdd(&PetscRandomList,sname,function));
   PetscFunctionReturn(0);
 }
 
@@ -148,27 +145,24 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom);
 @*/
 PetscErrorCode  PetscRandomRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (PetscRandomRegisterAllCalled) PetscFunctionReturn(0);
   PetscRandomRegisterAllCalled = PETSC_TRUE;
 #if defined(PETSC_HAVE_RAND)
-  ierr = PetscRandomRegister(PETSCRAND,PetscRandomCreate_Rand);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomRegister(PETSCRAND,PetscRandomCreate_Rand));
 #endif
 #if defined(PETSC_HAVE_DRAND48)
-  ierr = PetscRandomRegister(PETSCRAND48,PetscRandomCreate_Rand48);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomRegister(PETSCRAND48,PetscRandomCreate_Rand48));
 #endif
 #if defined(PETSC_HAVE_SPRNG)
-  ierr = PetscRandomRegister(PETSCSPRNG,PetscRandomCreate_Sprng);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomRegister(PETSCSPRNG,PetscRandomCreate_Sprng));
 #endif
-  ierr = PetscRandomRegister(PETSCRANDER48,PetscRandomCreate_Rander48);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomRegister(PETSCRANDER48,PetscRandomCreate_Rander48));
 #if defined(PETSC_HAVE_RANDOM123)
-  ierr = PetscRandomRegister(PETSCRANDOM123,PetscRandomCreate_Random123);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomRegister(PETSCRANDOM123,PetscRandomCreate_Random123));
 #endif
 #if defined(PETSC_HAVE_CUDA)
-  ierr = PetscRandomRegister(PETSCCURAND,PetscRandomCreate_CURAND);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomRegister(PETSCCURAND,PetscRandomCreate_CURAND));
 #endif
   PetscFunctionReturn(0);
 }
-

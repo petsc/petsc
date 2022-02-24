@@ -25,93 +25,93 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
   ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex112");CHKERRQ(ierr);
-  ierr     = PetscOptionsEList("-function", "Function type", "ex112", funcNames, NUM_FUNCS, funcNames[function], &func, NULL);CHKERRQ(ierr);
-  ierr     = PetscOptionsBool("-vec_view_draw", "View the functions", "ex112", view, &view, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsEList("-function", "Function type", "ex112", funcNames, NUM_FUNCS, funcNames[function], &func, NULL));
+  CHKERRQ(PetscOptionsBool("-vec_view_draw", "View the functions", "ex112", view, &view, NULL));
   function = (FuncType) func;
   ierr     = PetscOptionsEnd();CHKERRQ(ierr);
 
   for (DIM = 0; DIM < ndim; DIM++) {
     dim[DIM] = n;  /* size of transformation in DIM-dimension */
   }
-  ierr = PetscRandomCreate(PETSC_COMM_SELF, &rdm);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF, &rdm));
+  CHKERRQ(PetscRandomSetFromOptions(rdm));
 
   for (DIM = 1; DIM < 5; DIM++) {
     for (i = 0, N = 1; i < DIM; i++) N *= dim[i];
-    ierr = PetscPrintf(PETSC_COMM_SELF, "\n %d-D: FFTW on vector of size %d \n",DIM,N);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "\n %d-D: FFTW on vector of size %d \n",DIM,N));
 
     /* create FFTW object */
-    ierr = MatCreateFFT(PETSC_COMM_SELF,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
+    CHKERRQ(MatCreateFFT(PETSC_COMM_SELF,DIM,dim,MATFFTW,&A));
 
     /* create vectors of length N=n^DIM */
-    ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
-    ierr = MatCreateVecs(A,&z,NULL);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);
+    CHKERRQ(MatCreateVecs(A,&x,&y));
+    CHKERRQ(MatCreateVecs(A,&z,NULL));
+    CHKERRQ(PetscObjectSetName((PetscObject) x, "Real space vector"));
+    CHKERRQ(PetscObjectSetName((PetscObject) y, "Frequency space vector"));
+    CHKERRQ(PetscObjectSetName((PetscObject) z, "Reconstructed vector"));
 
     /* set values of space vector x */
     if (function == RANDOM) {
-      ierr = VecSetRandom(x, rdm);CHKERRQ(ierr);
+      CHKERRQ(VecSetRandom(x, rdm));
     } else if (function == CONSTANT) {
-      ierr = VecSet(x, 1.0);CHKERRQ(ierr);
+      CHKERRQ(VecSet(x, 1.0));
     } else if (function == TANH) {
       PetscScalar *a;
-      ierr = VecGetArray(x, &a);CHKERRQ(ierr);
+      CHKERRQ(VecGetArray(x, &a));
       for (i = 0; i < N; ++i) {
         a[i] = tanh((i - N/2.0)*(10.0/N));
       }
-      ierr = VecRestoreArray(x, &a);CHKERRQ(ierr);
+      CHKERRQ(VecRestoreArray(x, &a));
     }
-    if (view) {ierr = VecView(x, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
+    if (view) CHKERRQ(VecView(x, PETSC_VIEWER_DRAW_WORLD));
 
     /* apply FFTW_FORWARD and FFTW_BACKWARD several times on same x, y, and z */
     for (i=0; i<3; i++) {
-      ierr = MatMult(A,x,y);CHKERRQ(ierr);
-      if (view && i == 0) {ierr = VecView(y, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-      ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
+      CHKERRQ(MatMult(A,x,y));
+      if (view && i == 0) CHKERRQ(VecView(y, PETSC_VIEWER_DRAW_WORLD));
+      CHKERRQ(MatMultTranspose(A,y,z));
 
       /* compare x and z. FFTW computes an unnormalized DFT, thus z = N*x */
       s    = 1.0/(PetscReal)N;
-      ierr = VecScale(z,s);CHKERRQ(ierr);
-      if (view && i == 0) {ierr = VecView(z, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-      ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
-      ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
+      CHKERRQ(VecScale(z,s));
+      if (view && i == 0) CHKERRQ(VecView(z, PETSC_VIEWER_DRAW_WORLD));
+      CHKERRQ(VecAXPY(z,-1.0,x));
+      CHKERRQ(VecNorm(z,NORM_1,&enorm));
       if (enorm > tol) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %g\n",(double)enorm);CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %g\n",(double)enorm));
       }
     }
 
     /* apply FFTW_FORWARD and FFTW_BACKWARD several times on different x */
     for (i=0; i<3; i++) {
-      ierr = VecDestroy(&x);CHKERRQ(ierr);
-      ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
-      ierr = VecSetRandom(x, rdm);CHKERRQ(ierr);
+      CHKERRQ(VecDestroy(&x));
+      CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,N,&x));
+      CHKERRQ(VecSetRandom(x, rdm));
 
-      ierr = MatMult(A,x,y);CHKERRQ(ierr);
-      ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
+      CHKERRQ(MatMult(A,x,y));
+      CHKERRQ(MatMultTranspose(A,y,z));
 
       /* compare x and z. FFTW computes an unnormalized DFT, thus z = N*x */
       s    = 1.0/(PetscReal)N;
-      ierr = VecScale(z,s);CHKERRQ(ierr);
-      if (view && i == 0) {ierr = VecView(z, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-      ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
-      ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
+      CHKERRQ(VecScale(z,s));
+      if (view && i == 0) CHKERRQ(VecView(z, PETSC_VIEWER_DRAW_WORLD));
+      CHKERRQ(VecAXPY(z,-1.0,x));
+      CHKERRQ(VecNorm(z,NORM_1,&enorm));
       if (enorm > tol) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of new |x - z| %g\n",(double)enorm);CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  Error norm of new |x - z| %g\n",(double)enorm));
       }
     }
 
     /* free spaces */
-    ierr = VecDestroy(&x);CHKERRQ(ierr);
-    ierr = VecDestroy(&y);CHKERRQ(ierr);
-    ierr = VecDestroy(&z);CHKERRQ(ierr);
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&x));
+    CHKERRQ(VecDestroy(&y));
+    CHKERRQ(VecDestroy(&z));
+    CHKERRQ(MatDestroy(&A));
   }
-  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomDestroy(&rdm));
   ierr = PetscFinalize();
   return ierr;
 }

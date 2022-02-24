@@ -12,18 +12,18 @@ int main(int argc, char **argv)
   PetscScalar value = 0;
   ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
 
-  ierr = PetscOptionsGetBool(NULL, NULL, "-with_prefix",&prefix,NULL);CHKERRQ(ierr);
-  ierr = MatCreateDense(PETSC_COMM_WORLD, 1, 1, 1, 1, NULL, &mat);CHKERRQ(ierr);
-  ierr = MatSetOptionsPrefix(mat, prefix ? "prefix_" : NULL);CHKERRQ(ierr);
-  ierr = MatSetUp(mat);CHKERRQ(ierr);
-  ierr = MatSetValues(mat, 1, &zero, 1, &zero, &value, INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nsp);CHKERRQ(ierr);
-  ierr = MatNullSpaceTest(nsp, mat, &flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL, NULL, "-with_prefix",&prefix,NULL));
+  CHKERRQ(MatCreateDense(PETSC_COMM_WORLD, 1, 1, 1, 1, NULL, &mat));
+  CHKERRQ(MatSetOptionsPrefix(mat, prefix ? "prefix_" : NULL));
+  CHKERRQ(MatSetUp(mat));
+  CHKERRQ(MatSetValues(mat, 1, &zero, 1, &zero, &value, INSERT_VALUES));
+  CHKERRQ(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nsp));
+  CHKERRQ(MatNullSpaceTest(nsp, mat, &flg));
   PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Null space test failed!");
-  ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
-  ierr = MatDestroy(&mat);CHKERRQ(ierr);
+  CHKERRQ(MatNullSpaceDestroy(&nsp));
+  CHKERRQ(MatDestroy(&mat));
   ierr = PetscFinalize();
   return ierr;
 }

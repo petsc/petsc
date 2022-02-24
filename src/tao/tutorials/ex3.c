@@ -65,13 +65,13 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   user->use_riesz = PETSC_TRUE;
 
   ierr = PetscOptionsBegin(comm, "", "Poisson mother problem options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-use_riesz", "Use the Riesz map to achieve mesh independence", "ex3.c", user->use_riesz, &user->use_riesz, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsString("-f", "filename to read", "ex3.c", filename, filename, sizeof(filename), &flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-use_riesz", "Use the Riesz map to achieve mesh independence", "ex3.c", user->use_riesz, &user->use_riesz, NULL));
+  CHKERRQ(PetscOptionsString("-f", "filename to read", "ex3.c", filename, filename, sizeof(filename), &flg));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (!flg) {
-    ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-    ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+    CHKERRQ(DMCreate(comm, dm));
+    CHKERRQ(DMSetType(*dm, DMPLEX));
   } else {
     /* TODO Eliminate this in favor of DMLoad() in new code */
 #if defined(PETSC_HAVE_HDF5)
@@ -88,68 +88,68 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     DMLabel        label;
 
     /* Read in FEniCS HDF5 output */
-    ierr = PetscViewerHDF5Open(comm, filename, FILE_MODE_READ, &viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerHDF5Open(comm, filename, FILE_MODE_READ, &viewer));
 
     /* create Vecs to read in the data from H5 */
-    ierr = VecCreate(comm, &coordinates);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)coordinates, "coordinates");CHKERRQ(ierr);
-    ierr = VecSetBlockSize(coordinates, dim);CHKERRQ(ierr);
-    ierr = VecCreate(comm, &topology);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)topology, "topology");CHKERRQ(ierr);
-    ierr = VecSetBlockSize(topology, vertices_per_cell);CHKERRQ(ierr);
+    CHKERRQ(VecCreate(comm, &coordinates));
+    CHKERRQ(PetscObjectSetName((PetscObject)coordinates, "coordinates"));
+    CHKERRQ(VecSetBlockSize(coordinates, dim));
+    CHKERRQ(VecCreate(comm, &topology));
+    CHKERRQ(PetscObjectSetName((PetscObject)topology, "topology"));
+    CHKERRQ(VecSetBlockSize(topology, vertices_per_cell));
 
     /* navigate to the right group */
-    ierr = PetscViewerHDF5PushGroup(viewer, "/Mesh/mesh");CHKERRQ(ierr);
+    CHKERRQ(PetscViewerHDF5PushGroup(viewer, "/Mesh/mesh"));
 
     /* Read the Vecs */
-    ierr = VecLoad(coordinates, viewer);CHKERRQ(ierr);
-    ierr = VecLoad(topology, viewer);CHKERRQ(ierr);
+    CHKERRQ(VecLoad(coordinates, viewer));
+    CHKERRQ(VecLoad(topology, viewer));
 
     /* do some ugly calculations */
-    ierr = VecGetSize(topology, &numCells);CHKERRQ(ierr);
+    CHKERRQ(VecGetSize(topology, &numCells));
     numCells = numCells / vertices_per_cell;
-    ierr = VecGetSize(coordinates, &numVertices);CHKERRQ(ierr);
+    CHKERRQ(VecGetSize(coordinates, &numVertices));
     numVertices = numVertices / dim;
 
-    ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-    ierr = VecGetArray(topology, &topo_f);CHKERRQ(ierr);
+    CHKERRQ(VecGetArray(coordinates, &coords));
+    CHKERRQ(VecGetArray(topology, &topo_f));
     /* and now we have to convert the double representation to integers to pass over, argh */
-    ierr = PetscMalloc1(numCells*vertices_per_cell, &cells);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(numCells*vertices_per_cell, &cells));
     for (j = 0; j < numCells*vertices_per_cell; j++) {
       cells[j] = (PetscInt) topo_f[j];
     }
 
     /* Now create the DM */
-    ierr = DMPlexCreateFromCellListPetsc(comm, dim, numCells, numVertices, vertices_per_cell, PETSC_TRUE, cells, dim, coords, dm);CHKERRQ(ierr);
+    CHKERRQ(DMPlexCreateFromCellListPetsc(comm, dim, numCells, numVertices, vertices_per_cell, PETSC_TRUE, cells, dim, coords, dm));
     /* Check for flipped first cell */
     {
       PetscReal v0[3], J[9], invJ[9], detJ;
 
-      ierr = DMPlexComputeCellGeometryFEM(*dm, 0, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
+      CHKERRQ(DMPlexComputeCellGeometryFEM(*dm, 0, NULL, v0, J, invJ, &detJ));
       if (detJ < 0) {
-        ierr = DMPlexOrientPoint(*dm, 0, -1);CHKERRQ(ierr);
-        ierr = DMPlexComputeCellGeometryFEM(*dm, 0, NULL, v0, J, invJ, &detJ);CHKERRQ(ierr);
+        CHKERRQ(DMPlexOrientPoint(*dm, 0, -1));
+        CHKERRQ(DMPlexComputeCellGeometryFEM(*dm, 0, NULL, v0, J, invJ, &detJ));
         PetscCheck(detJ >= 0,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Something is wrong");
       }
     }
-    ierr = DMPlexOrient(*dm);CHKERRQ(ierr);
-    ierr = DMCreateLabel(*dm, "marker");CHKERRQ(ierr);
-    ierr = DMGetLabel(*dm, "marker", &label);CHKERRQ(ierr);
-    ierr = DMPlexMarkBoundaryFaces(*dm, 1, label);CHKERRQ(ierr);
-    ierr = DMPlexLabelComplete(*dm, label);CHKERRQ(ierr);
+    CHKERRQ(DMPlexOrient(*dm));
+    CHKERRQ(DMCreateLabel(*dm, "marker"));
+    CHKERRQ(DMGetLabel(*dm, "marker", &label));
+    CHKERRQ(DMPlexMarkBoundaryFaces(*dm, 1, label));
+    CHKERRQ(DMPlexLabelComplete(*dm, label));
 
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-    ierr = VecRestoreArray(topology, &topo_f);CHKERRQ(ierr);
-    ierr = PetscFree(cells);CHKERRQ(ierr);
-    ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
-    ierr = VecDestroy(&topology);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerDestroy(&viewer));
+    CHKERRQ(VecRestoreArray(coordinates, &coords));
+    CHKERRQ(VecRestoreArray(topology, &topo_f));
+    CHKERRQ(PetscFree(cells));
+    CHKERRQ(VecDestroy(&coordinates));
+    CHKERRQ(VecDestroy(&topology));
 #else
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Reconfigure PETSc with --download-hdf5");
 #endif
   }
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -185,7 +185,6 @@ PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt 
 
 PetscErrorCode CreateCtx(DM dm, AppCtx* user)
 {
-  PetscErrorCode ierr;
 
   DM             dm_mass;
   DM             dm_laplace;
@@ -205,146 +204,143 @@ PetscErrorCode CreateCtx(DM dm, AppCtx* user)
   PetscFunctionBeginUser;
 
   /* make the data we seek to match */
-  ierr = PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, PETSC_TRUE, NULL, 4, &fe);CHKERRQ(ierr);
+  CHKERRQ(PetscFECreateDefault(PetscObjectComm((PetscObject) dm), dim, 1, PETSC_TRUE, NULL, 4, &fe));
 
-  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = DMCreateDS(dm);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dm, &user->data);CHKERRQ(ierr);
+  CHKERRQ(DMSetField(dm, 0, NULL, (PetscObject) fe));
+  CHKERRQ(DMCreateDS(dm));
+  CHKERRQ(DMCreateGlobalVector(dm, &user->data));
 
   /* ugh, this is hideous */
   /* y_d = interpolate(Expression("sin(x[0]) + .."), V) */
-  ierr = PetscMalloc(1 * sizeof(void (*)(const PetscReal[], PetscScalar *, void *)), &wtf);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc(1 * sizeof(void (*)(const PetscReal[], PetscScalar *, void *)), &wtf));
   wtf[0] = data_kernel;
-  ierr = DMProjectFunction(dm, 0.0, wtf, NULL, INSERT_VALUES, user->data);CHKERRQ(ierr);
-  ierr = PetscFree(wtf);CHKERRQ(ierr);
+  CHKERRQ(DMProjectFunction(dm, 0.0, wtf, NULL, INSERT_VALUES, user->data));
+  CHKERRQ(PetscFree(wtf));
 
   /* assemble(inner(u, v)*dx), almost */
-  ierr = DMClone(dm, &dm_mass);CHKERRQ(ierr);
-  ierr = DMCopyDisc(dm, dm_mass);CHKERRQ(ierr);
-  ierr = DMSetNumFields(dm_mass, 1);CHKERRQ(ierr);
-  ierr = DMPlexCopyCoordinates(dm, dm_mass);CHKERRQ(ierr); /* why do I have to do this separately? */
-  ierr = DMGetDS(dm_mass, &prob_mass);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob_mass, 0, 0, mass_kernel, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob_mass, 0, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(dm_mass, &user->mass);CHKERRQ(ierr);
-  ierr = DMPlexSNESComputeJacobianFEM(dm_mass, user->data, user->mass, user->mass, NULL);CHKERRQ(ierr);
-  ierr = MatSetOption(user->mass, MAT_SYMMETRIC, PETSC_TRUE);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm_mass);CHKERRQ(ierr);
+  CHKERRQ(DMClone(dm, &dm_mass));
+  CHKERRQ(DMCopyDisc(dm, dm_mass));
+  CHKERRQ(DMSetNumFields(dm_mass, 1));
+  CHKERRQ(DMPlexCopyCoordinates(dm, dm_mass)); /* why do I have to do this separately? */
+  CHKERRQ(DMGetDS(dm_mass, &prob_mass));
+  CHKERRQ(PetscDSSetJacobian(prob_mass, 0, 0, mass_kernel, NULL, NULL, NULL));
+  CHKERRQ(PetscDSSetDiscretization(prob_mass, 0, (PetscObject) fe));
+  CHKERRQ(DMCreateMatrix(dm_mass, &user->mass));
+  CHKERRQ(DMPlexSNESComputeJacobianFEM(dm_mass, user->data, user->mass, user->mass, NULL));
+  CHKERRQ(MatSetOption(user->mass, MAT_SYMMETRIC, PETSC_TRUE));
+  CHKERRQ(DMDestroy(&dm_mass));
 
   /* inner(grad(u), grad(v))*dx with homogeneous Dirichlet boundary conditions */
-  ierr = DMClone(dm, &dm_laplace);CHKERRQ(ierr);
-  ierr = DMCopyDisc(dm, dm_laplace);CHKERRQ(ierr);
-  ierr = DMSetNumFields(dm_laplace, 1);CHKERRQ(ierr);
-  ierr = DMPlexCopyCoordinates(dm, dm_laplace);CHKERRQ(ierr);
-  ierr = DMGetDS(dm_laplace, &prob_laplace);CHKERRQ(ierr);
-  ierr = PetscDSSetJacobian(prob_laplace, 0, 0, NULL, NULL, NULL, laplace_kernel);CHKERRQ(ierr);
-  ierr = PetscDSSetDiscretization(prob_laplace, 0, (PetscObject) fe);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(dm_laplace, &user->laplace);CHKERRQ(ierr);
-  ierr = DMPlexSNESComputeJacobianFEM(dm_laplace, user->data, user->laplace, user->laplace, NULL);CHKERRQ(ierr);
+  CHKERRQ(DMClone(dm, &dm_laplace));
+  CHKERRQ(DMCopyDisc(dm, dm_laplace));
+  CHKERRQ(DMSetNumFields(dm_laplace, 1));
+  CHKERRQ(DMPlexCopyCoordinates(dm, dm_laplace));
+  CHKERRQ(DMGetDS(dm_laplace, &prob_laplace));
+  CHKERRQ(PetscDSSetJacobian(prob_laplace, 0, 0, NULL, NULL, NULL, laplace_kernel));
+  CHKERRQ(PetscDSSetDiscretization(prob_laplace, 0, (PetscObject) fe));
+  CHKERRQ(DMCreateMatrix(dm_laplace, &user->laplace));
+  CHKERRQ(DMPlexSNESComputeJacobianFEM(dm_laplace, user->data, user->laplace, user->laplace, NULL));
 
   /* Code from Matt to get the indices associated with the boundary dofs */
-  ierr = DMGetLabel(dm_laplace, "marker", &label);CHKERRQ(ierr);
-  ierr = DMAddBoundary(dm_laplace, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) zero, NULL, NULL, NULL);CHKERRQ(ierr);
-  ierr = DMGetLocalSection(dm_laplace, &section);CHKERRQ(ierr);
-  ierr = DMLabelGetStratumSize(label, 1, &n);CHKERRQ(ierr);
-  ierr = DMLabelGetStratumIS(label, 1, &is);CHKERRQ(ierr);
-  ierr = ISGetIndices(is, &points);CHKERRQ(ierr);
+  CHKERRQ(DMGetLabel(dm_laplace, "marker", &label));
+  CHKERRQ(DMAddBoundary(dm_laplace, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) zero, NULL, NULL, NULL));
+  CHKERRQ(DMGetLocalSection(dm_laplace, &section));
+  CHKERRQ(DMLabelGetStratumSize(label, 1, &n));
+  CHKERRQ(DMLabelGetStratumIS(label, 1, &is));
+  CHKERRQ(ISGetIndices(is, &points));
   user->num_bc_dofs = 0;
   for (p = 0; p < n; ++p) {
-    ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
+    CHKERRQ(PetscSectionGetDof(section, points[p], &dof));
     user->num_bc_dofs += dof;
   }
-  ierr = PetscMalloc1(user->num_bc_dofs, &user->bc_indices);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(user->num_bc_dofs, &user->bc_indices));
   for (p = 0, k = 0; p < n; ++p) {
-    ierr = PetscSectionGetDof(section, points[p], &dof);CHKERRQ(ierr);
-    ierr = PetscSectionGetOffset(section, points[p], &off);CHKERRQ(ierr);
+    CHKERRQ(PetscSectionGetDof(section, points[p], &dof));
+    CHKERRQ(PetscSectionGetOffset(section, points[p], &off));
     for (d = 0; d < dof; ++d) user->bc_indices[k++] = off+d;
   }
-  ierr = ISRestoreIndices(is, &points);CHKERRQ(ierr);
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm_laplace);CHKERRQ(ierr);
+  CHKERRQ(ISRestoreIndices(is, &points));
+  CHKERRQ(ISDestroy(&is));
+  CHKERRQ(DMDestroy(&dm_laplace));
 
   /* This is how I handle boundary conditions. I can't figure out how to get
      plex to play with the way I want to impose the BCs. This loses symmetry,
      but not in a disastrous way. If someone can improve it, please do! */
-  ierr = MatZeroRows(user->laplace, user->num_bc_dofs, user->bc_indices, 1.0, NULL, NULL);CHKERRQ(ierr);
-  ierr = PetscCalloc1(user->num_bc_dofs, &user->bc_values);CHKERRQ(ierr);
+  CHKERRQ(MatZeroRows(user->laplace, user->num_bc_dofs, user->bc_indices, 1.0, NULL, NULL));
+  CHKERRQ(PetscCalloc1(user->num_bc_dofs, &user->bc_values));
 
   /* also create the KSP for solving the Laplace system */
-  ierr = KSPCreate(PETSC_COMM_WORLD, &user->ksp_laplace);CHKERRQ(ierr);
-  ierr = KSPSetOperators(user->ksp_laplace, user->laplace, user->laplace);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(user->ksp_laplace, "laplace_");CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(user->ksp_laplace);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD, &user->ksp_laplace));
+  CHKERRQ(KSPSetOperators(user->ksp_laplace, user->laplace, user->laplace));
+  CHKERRQ(KSPSetOptionsPrefix(user->ksp_laplace, "laplace_"));
+  CHKERRQ(KSPSetFromOptions(user->ksp_laplace));
 
   /* A bit of setting up the user context */
   user->dm = dm;
-  ierr = VecDuplicate(user->data, &user->state);CHKERRQ(ierr);
-  ierr = VecDuplicate(user->data, &user->adjoint);CHKERRQ(ierr);
-  ierr = VecDuplicate(user->data, &user->tmp1);CHKERRQ(ierr);
-  ierr = VecDuplicate(user->data, &user->tmp2);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(user->data, &user->state));
+  CHKERRQ(VecDuplicate(user->data, &user->adjoint));
+  CHKERRQ(VecDuplicate(user->data, &user->tmp1));
+  CHKERRQ(VecDuplicate(user->data, &user->tmp2));
 
-  ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
+  CHKERRQ(PetscFEDestroy(&fe));
 
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode DestroyCtx(AppCtx* user)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
 
-  ierr = MatDestroy(&user->mass);CHKERRQ(ierr);
-  ierr = MatDestroy(&user->laplace);CHKERRQ(ierr);
-  ierr = KSPDestroy(&user->ksp_laplace);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->data);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->state);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->adjoint);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->tmp1);CHKERRQ(ierr);
-  ierr = VecDestroy(&user->tmp2);CHKERRQ(ierr);
-  ierr = PetscFree(user->bc_indices);CHKERRQ(ierr);
-  ierr = PetscFree(user->bc_values);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&user->mass));
+  CHKERRQ(MatDestroy(&user->laplace));
+  CHKERRQ(KSPDestroy(&user->ksp_laplace));
+  CHKERRQ(VecDestroy(&user->data));
+  CHKERRQ(VecDestroy(&user->state));
+  CHKERRQ(VecDestroy(&user->adjoint));
+  CHKERRQ(VecDestroy(&user->tmp1));
+  CHKERRQ(VecDestroy(&user->tmp2));
+  CHKERRQ(PetscFree(user->bc_indices));
+  CHKERRQ(PetscFree(user->bc_values));
 
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ReducedFunctionGradient(Tao tao, Vec u, PetscReal* func, Vec g, void* userv)
 {
-  PetscErrorCode ierr;
   AppCtx* user = (AppCtx*) userv;
   const PetscReal alpha = 1.0e-6; /* regularisation parameter */
   PetscReal inner;
 
   PetscFunctionBeginUser;
 
-  ierr = MatMult(user->mass, u, user->tmp1);CHKERRQ(ierr);
-  ierr = VecDot(u, user->tmp1, &inner);CHKERRQ(ierr);               /* regularisation contribution to */
+  CHKERRQ(MatMult(user->mass, u, user->tmp1));
+  CHKERRQ(VecDot(u, user->tmp1, &inner));               /* regularisation contribution to */
   *func = alpha * 0.5 * inner;                                      /* the functional                 */
 
-  ierr = VecSet(g, 0.0);CHKERRQ(ierr);
-  ierr = VecAXPY(g, alpha, user->tmp1);CHKERRQ(ierr);               /* regularisation contribution to the gradient */
+  CHKERRQ(VecSet(g, 0.0));
+  CHKERRQ(VecAXPY(g, alpha, user->tmp1));               /* regularisation contribution to the gradient */
 
   /* Now compute the forward state. */
-  ierr = VecSetValues(user->tmp1, user->num_bc_dofs, user->bc_indices, user->bc_values, INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(user->tmp1);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(user->tmp1);CHKERRQ(ierr);
-  ierr = KSPSolve(user->ksp_laplace, user->tmp1, user->state);CHKERRQ(ierr); /* forward solve */
+  CHKERRQ(VecSetValues(user->tmp1, user->num_bc_dofs, user->bc_indices, user->bc_values, INSERT_VALUES));
+  CHKERRQ(VecAssemblyBegin(user->tmp1));
+  CHKERRQ(VecAssemblyEnd(user->tmp1));
+  CHKERRQ(KSPSolve(user->ksp_laplace, user->tmp1, user->state)); /* forward solve */
 
   /* Now compute the adjoint state also. */
-  ierr = VecCopy(user->state, user->tmp1);CHKERRQ(ierr);
-  ierr = VecAXPY(user->tmp1, -1.0, user->data);CHKERRQ(ierr);
-  ierr = MatMult(user->mass, user->tmp1, user->tmp2);CHKERRQ(ierr);
-  ierr = VecDot(user->tmp1, user->tmp2, &inner);CHKERRQ(ierr);      /* misfit contribution to */
+  CHKERRQ(VecCopy(user->state, user->tmp1));
+  CHKERRQ(VecAXPY(user->tmp1, -1.0, user->data));
+  CHKERRQ(MatMult(user->mass, user->tmp1, user->tmp2));
+  CHKERRQ(VecDot(user->tmp1, user->tmp2, &inner));      /* misfit contribution to */
   *func += 0.5 * inner;                                             /* the functional         */
 
-  ierr = VecSetValues(user->tmp2, user->num_bc_dofs, user->bc_indices, user->bc_values, INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(user->tmp2);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(user->tmp2);CHKERRQ(ierr);
-  ierr = KSPSolve(user->ksp_laplace, user->tmp2, user->adjoint);CHKERRQ(ierr); /* adjoint solve */
+  CHKERRQ(VecSetValues(user->tmp2, user->num_bc_dofs, user->bc_indices, user->bc_values, INSERT_VALUES));
+  CHKERRQ(VecAssemblyBegin(user->tmp2));
+  CHKERRQ(VecAssemblyEnd(user->tmp2));
+  CHKERRQ(KSPSolve(user->ksp_laplace, user->tmp2, user->adjoint)); /* adjoint solve */
 
   /* And bring it home with the gradient. */
-  ierr = MatMult(user->mass, user->adjoint, user->tmp1);CHKERRQ(ierr);
-  ierr = VecAXPY(g, 1.0, user->tmp1);CHKERRQ(ierr);                 /* adjoint contribution to the gradient */
+  CHKERRQ(MatMult(user->mass, user->adjoint, user->tmp1));
+  CHKERRQ(VecAXPY(g, 1.0, user->tmp1));                 /* adjoint contribution to the gradient */
 
   PetscFunctionReturn(0);
 }
@@ -358,39 +354,39 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = CreateCtx(dm, &user);CHKERRQ(ierr);
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  CHKERRQ(CreateCtx(dm, &user));
 
-  ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = VecSet(u, 0.0);CHKERRQ(ierr);
-  ierr = VecDuplicate(u, &lb);CHKERRQ(ierr);
-  ierr = VecDuplicate(u, &ub);CHKERRQ(ierr);
-  ierr = VecSet(lb, 0.0);CHKERRQ(ierr); /* satisfied at the minimum anyway */
-  ierr = VecSet(ub, 0.8);CHKERRQ(ierr); /* a nontrivial upper bound */
+  CHKERRQ(DMCreateGlobalVector(dm, &u));
+  CHKERRQ(VecSet(u, 0.0));
+  CHKERRQ(VecDuplicate(u, &lb));
+  CHKERRQ(VecDuplicate(u, &ub));
+  CHKERRQ(VecSet(lb, 0.0)); /* satisfied at the minimum anyway */
+  CHKERRQ(VecSet(ub, 0.8)); /* a nontrivial upper bound */
 
-  ierr = TaoCreate(PETSC_COMM_WORLD, &tao);CHKERRQ(ierr);
-  ierr = TaoSetSolution(tao, u);CHKERRQ(ierr);
-  ierr = TaoSetObjectiveAndGradient(tao,NULL, ReducedFunctionGradient, &user);CHKERRQ(ierr);
-  ierr = TaoSetVariableBounds(tao, lb, ub);CHKERRQ(ierr);
-  ierr = TaoSetType(tao, TAOBLMVM);CHKERRQ(ierr);
-  ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
+  CHKERRQ(TaoCreate(PETSC_COMM_WORLD, &tao));
+  CHKERRQ(TaoSetSolution(tao, u));
+  CHKERRQ(TaoSetObjectiveAndGradient(tao,NULL, ReducedFunctionGradient, &user));
+  CHKERRQ(TaoSetVariableBounds(tao, lb, ub));
+  CHKERRQ(TaoSetType(tao, TAOBLMVM));
+  CHKERRQ(TaoSetFromOptions(tao));
 
   if (user.use_riesz) {
-    ierr = TaoLMVMSetH0(tao, user.mass);CHKERRQ(ierr);       /* crucial for mesh independence */
-    ierr = TaoSetGradientNorm(tao, user.mass);CHKERRQ(ierr);
+    CHKERRQ(TaoLMVMSetH0(tao, user.mass));       /* crucial for mesh independence */
+    CHKERRQ(TaoSetGradientNorm(tao, user.mass));
   }
 
-  ierr = TaoSolve(tao);CHKERRQ(ierr);
+  CHKERRQ(TaoSolve(tao));
 
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(u, NULL, "-sol_view");CHKERRQ(ierr);
+  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
+  CHKERRQ(VecViewFromOptions(u, NULL, "-sol_view"));
 
-  ierr = TaoDestroy(&tao);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&lb);CHKERRQ(ierr);
-  ierr = VecDestroy(&ub);CHKERRQ(ierr);
-  ierr = DestroyCtx(&user);CHKERRQ(ierr);
+  CHKERRQ(TaoDestroy(&tao));
+  CHKERRQ(DMDestroy(&dm));
+  CHKERRQ(VecDestroy(&u));
+  CHKERRQ(VecDestroy(&lb));
+  CHKERRQ(VecDestroy(&ub));
+  CHKERRQ(DestroyCtx(&user));
   ierr = PetscFinalize();
   return ierr;
 }

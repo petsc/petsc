@@ -11,15 +11,15 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscPrintf(PETSC_COMM_SELF,"1st test\n");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"1st test\n"));
   for (i=0; i<5; i++) index[i] = i;
-  ierr = PetscSortIntWithPermutation(5, x, index);CHKERRQ(ierr);
-  for (i=0; i<5; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %" PetscInt_FMT "     %" PetscInt_FMT "     %" PetscInt_FMT "\n",x[i], index[i],x[index[i]]);CHKERRQ(ierr);}
+  CHKERRQ(PetscSortIntWithPermutation(5, x, index));
+  for (i=0; i<5; i++) CHKERRQ(PetscPrintf(PETSC_COMM_SELF," %" PetscInt_FMT "     %" PetscInt_FMT "     %" PetscInt_FMT "\n",x[i], index[i],x[index[i]]));
 
-  ierr = PetscPrintf(PETSC_COMM_SELF,"\n2nd test\n");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"\n2nd test\n"));
   for (i=0; i<8; i++) index2[i] = i;
-  ierr = PetscSortIntWithPermutation(8, x2, index2);CHKERRQ(ierr);
-  for (i=0; i<8; i++) {ierr = PetscPrintf(PETSC_COMM_SELF," %" PetscInt_FMT "     %" PetscInt_FMT "     %" PetscInt_FMT "\n",x2[i], index2[i],x2[index2[i]]);CHKERRQ(ierr);}
+  CHKERRQ(PetscSortIntWithPermutation(8, x2, index2));
+  for (i=0; i<8; i++) CHKERRQ(PetscPrintf(PETSC_COMM_SELF," %" PetscInt_FMT "     %" PetscInt_FMT "     %" PetscInt_FMT "\n",x2[i], index2[i],x2[index2[i]]));
   ierr = PetscFinalize();
   return ierr;
 }

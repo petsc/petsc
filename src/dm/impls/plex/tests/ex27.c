@@ -5,13 +5,11 @@ static char help[] = "Test section ordering for FEM discretizations\n\n";
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreate(comm, dm));
+  CHKERRQ(DMSetType(*dm, DMPLEX));
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -21,24 +19,23 @@ static PetscErrorCode TestLocalDofOrder(DM dm)
   PetscSection   s;
   PetscBool      simplex;
   PetscInt       dim, Nf, f;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, dim, simplex, "field0_", -1, &fe[0]);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, 1,   simplex, "field1_", -1, &fe[1]);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(PETSC_COMM_SELF, dim, 1,   simplex, "field2_", -1, &fe[2]);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(DMPlexIsSimplex(dm, &simplex));
+  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, dim, simplex, "field0_", -1, &fe[0]));
+  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1,   simplex, "field1_", -1, &fe[1]));
+  CHKERRQ(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1,   simplex, "field2_", -1, &fe[2]));
 
-  ierr = DMSetField(dm, 0, NULL, (PetscObject) fe[0]);CHKERRQ(ierr);
-  ierr = DMSetField(dm, 1, NULL, (PetscObject) fe[1]);CHKERRQ(ierr);
-  ierr = DMSetField(dm, 2, NULL, (PetscObject) fe[2]);CHKERRQ(ierr);
-  ierr = DMCreateDS(dm);CHKERRQ(ierr);
-  ierr = DMGetLocalSection(dm, &s);CHKERRQ(ierr);
-  ierr = PetscObjectViewFromOptions((PetscObject) s, NULL, "-dof_view");CHKERRQ(ierr);
+  CHKERRQ(DMSetField(dm, 0, NULL, (PetscObject) fe[0]));
+  CHKERRQ(DMSetField(dm, 1, NULL, (PetscObject) fe[1]));
+  CHKERRQ(DMSetField(dm, 2, NULL, (PetscObject) fe[2]));
+  CHKERRQ(DMCreateDS(dm));
+  CHKERRQ(DMGetLocalSection(dm, &s));
+  CHKERRQ(PetscObjectViewFromOptions((PetscObject) s, NULL, "-dof_view"));
 
-  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
-  for (f = 0; f < Nf; ++f) {ierr = PetscFEDestroy(&fe[f]);CHKERRQ(ierr);}
+  CHKERRQ(DMGetNumFields(dm, &Nf));
+  for (f = 0; f < Nf; ++f) CHKERRQ(PetscFEDestroy(&fe[f]));
   PetscFunctionReturn(0);
 }
 
@@ -48,9 +45,9 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = CreateMesh(PETSC_COMM_WORLD, &dm);CHKERRQ(ierr);
-  ierr = TestLocalDofOrder(dm);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &dm));
+  CHKERRQ(TestLocalDofOrder(dm));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

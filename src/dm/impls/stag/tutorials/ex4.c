@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /* Populate application context */
-  ierr = PetscMalloc1(1,&ctx);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(1,&ctx));
   ctx->comm = PETSC_COMM_WORLD;
   ctx->xmin = 0.0;
   ctx->xmax = 1e6;
@@ -73,12 +73,12 @@ int main(int argc,char **argv)
       1,                                       /* elementwise stencil width */
       NULL,NULL,
       &ctx->dmStokes);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(ctx->dmStokes);CHKERRQ(ierr);
-  ierr = DMSetUp(ctx->dmStokes);CHKERRQ(ierr);
-  ierr = DMStagSetUniformCoordinatesExplicit(ctx->dmStokes,0.0,ctx->xmax,0.0,ctx->ymax,0.0,0.0);CHKERRQ(ierr);
-  ierr = DMStagCreateCompatibleDMStag(ctx->dmStokes,2,0,1,0,&ctx->dmCoeff);CHKERRQ(ierr);
-  ierr = DMSetUp(ctx->dmCoeff);CHKERRQ(ierr);
-  ierr = DMStagSetUniformCoordinatesExplicit(ctx->dmCoeff,0.0,ctx->xmax,0.0,ctx->ymax,0.0,0.0);CHKERRQ(ierr);
+  CHKERRQ(DMSetFromOptions(ctx->dmStokes));
+  CHKERRQ(DMSetUp(ctx->dmStokes));
+  CHKERRQ(DMStagSetUniformCoordinatesExplicit(ctx->dmStokes,0.0,ctx->xmax,0.0,ctx->ymax,0.0,0.0));
+  CHKERRQ(DMStagCreateCompatibleDMStag(ctx->dmStokes,2,0,1,0,&ctx->dmCoeff));
+  CHKERRQ(DMSetUp(ctx->dmCoeff));
+  CHKERRQ(DMStagSetUniformCoordinatesExplicit(ctx->dmCoeff,0.0,ctx->xmax,0.0,ctx->ymax,0.0,0.0));
 
   /* Note: see ex2.c for a more-efficient way to work with coordinates on an
      orthogonal grid, using DMStagSetUniformCoordinatesProduct() */
@@ -87,7 +87,7 @@ int main(int argc,char **argv)
   {
     PetscInt N[2];
     PetscReal hxAvgInv;
-    ierr = DMStagGetGlobalSizes(ctx->dmStokes,&N[0],&N[1],NULL);CHKERRQ(ierr);
+    CHKERRQ(DMStagGetGlobalSizes(ctx->dmStokes,&N[0],&N[1],NULL));
     ctx->hxCharacteristic = (ctx->xmax-ctx->xmin)/N[0];
     ctx->hyCharacteristic = (ctx->ymax-ctx->ymin)/N[1];
     ctx->etaCharacteristic = PetscMin(PetscRealPart(ctx->eta1),PetscRealPart(ctx->eta2));
@@ -97,46 +97,45 @@ int main(int argc,char **argv)
   }
 
   /* Populate coefficient data */
-  ierr = PopulateCoefficientData(ctx);CHKERRQ(ierr);
+  CHKERRQ(PopulateCoefficientData(ctx));
 
   /* Construct System */
-  ierr = CreateSystem(ctx,&A,&b);CHKERRQ(ierr);
+  CHKERRQ(CreateSystem(ctx,&A,&b));
 
   /* Solve */
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
-  ierr = KSPCreate(ctx->comm,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetType(ksp,KSPFGMRES);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue(NULL,"-ksp_converged_reason","");CHKERRQ(ierr); /* To get info on direct solve success */
-  ierr = KSPSetDM(ksp,ctx->dmStokes);CHKERRQ(ierr);
-  ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  CHKERRQ(VecDuplicate(b,&x));
+  CHKERRQ(KSPCreate(ctx->comm,&ksp));
+  CHKERRQ(KSPSetType(ksp,KSPFGMRES));
+  CHKERRQ(KSPSetOperators(ksp,A,A));
+  CHKERRQ(PetscOptionsSetValue(NULL,"-ksp_converged_reason","")); /* To get info on direct solve success */
+  CHKERRQ(KSPSetDM(ksp,ctx->dmStokes));
+  CHKERRQ(KSPSetDMActive(ksp,PETSC_FALSE));
+  CHKERRQ(KSPSetFromOptions(ksp));
+  CHKERRQ(KSPSolve(ksp,b,x));
   {
     KSPConvergedReason reason;
-    ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
+    CHKERRQ(KSPGetConvergedReason(ksp,&reason));
     PetscCheckFalse(reason < 0,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Linear solve failed");
   }
 
   /* Dump solution by converting to DMDAs and dumping */
-  ierr = DumpSolution(ctx,x);CHKERRQ(ierr);
+  CHKERRQ(DumpSolution(ctx,x));
 
   /* Destroy PETSc objects and finalize */
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = VecDestroy(&ctx->coeff);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = DMDestroy(&ctx->dmStokes);CHKERRQ(ierr);
-  ierr = DMDestroy(&ctx->dmCoeff);CHKERRQ(ierr);
-  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(VecDestroy(&ctx->coeff));
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(DMDestroy(&ctx->dmStokes));
+  CHKERRQ(DMDestroy(&ctx->dmCoeff));
+  CHKERRQ(PetscFree(ctx));
   ierr = PetscFinalize();
   return ierr;
 }
 
 static PetscErrorCode CreateSystem(const Ctx ctx,Mat *pA,Vec *pRhs)
 {
-  PetscErrorCode ierr;
   PetscInt       N[2];
   PetscInt       ex,ey,startx,starty,nx,ny;
   Mat            A;
@@ -146,16 +145,16 @@ static PetscErrorCode CreateSystem(const Ctx ctx,Mat *pA,Vec *pRhs)
   Vec            coeffLocal;
 
   PetscFunctionBeginUser;
-  ierr = DMCreateMatrix(ctx->dmStokes,pA);CHKERRQ(ierr);
+  CHKERRQ(DMCreateMatrix(ctx->dmStokes,pA));
   A = *pA;
-  ierr = DMCreateGlobalVector(ctx->dmStokes,pRhs);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(ctx->dmStokes,pRhs));
   rhs = *pRhs;
-  ierr = DMStagGetCorners(ctx->dmStokes,&startx,&starty,NULL,&nx,&ny,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMStagGetGlobalSizes(ctx->dmStokes,&N[0],&N[1],NULL);CHKERRQ(ierr);
+  CHKERRQ(DMStagGetCorners(ctx->dmStokes,&startx,&starty,NULL,&nx,&ny,NULL,NULL,NULL,NULL));
+  CHKERRQ(DMStagGetGlobalSizes(ctx->dmStokes,&N[0],&N[1],NULL));
   hx = ctx->hxCharacteristic;
   hy = ctx->hyCharacteristic;
-  ierr = DMGetLocalVector(ctx->dmCoeff,&coeffLocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocal(ctx->dmCoeff,ctx->coeff,INSERT_VALUES,coeffLocal);CHKERRQ(ierr);
+  CHKERRQ(DMGetLocalVector(ctx->dmCoeff,&coeffLocal));
+  CHKERRQ(DMGlobalToLocal(ctx->dmCoeff,ctx->coeff,INSERT_VALUES,coeffLocal));
 
   /* Loop over all local elements. Note that it may be more efficient in real
      applications to loop over each boundary separately */
@@ -168,9 +167,9 @@ static PetscErrorCode CreateSystem(const Ctx ctx,Mat *pA,Vec *pRhs)
         PetscScalar   valRhs;
         const PetscScalar valA = ctx->Kbound;
         row.i = ex; row.j = ey; row.loc = UP; row.c = 0;
-        ierr = DMStagMatSetValuesStencil(ctx->dmStokes,A,1,&row,1,&row,&valA,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagMatSetValuesStencil(ctx->dmStokes,A,1,&row,1,&row,&valA,INSERT_VALUES));
         valRhs = 0.0;
-        ierr = DMStagVecSetValuesStencil(ctx->dmStokes,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecSetValuesStencil(ctx->dmStokes,rhs,1,&row,&valRhs,INSERT_VALUES));
       }
 
       if (ey == 0) {
@@ -179,9 +178,9 @@ static PetscErrorCode CreateSystem(const Ctx ctx,Mat *pA,Vec *pRhs)
         PetscScalar   valRhs;
         const PetscScalar valA = ctx->Kbound;
         row.i = ex; row.j = ey; row.loc = DOWN; row.c = 0;
-        ierr = DMStagMatSetValuesStencil(ctx->dmStokes,A,1,&row,1,&row,&valA,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagMatSetValuesStencil(ctx->dmStokes,A,1,&row,1,&row,&valA,INSERT_VALUES));
         valRhs = 0.0;
-        ierr = DMStagVecSetValuesStencil(ctx->dmStokes,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecSetValuesStencil(ctx->dmStokes,rhs,1,&row,&valRhs,INSERT_VALUES));
       } else {
         /* Y-momentum equation : (u_xx + u_yy) - p_y = f^y : includes non-zero forcing */
         PetscInt      nEntries;
@@ -195,7 +194,7 @@ static PetscErrorCode CreateSystem(const Ctx ctx,Mat *pA,Vec *pRhs)
         /* get rho values  and compute rhs value*/
         rhoPoint[0].i = ex; rhoPoint[0].j = ey; rhoPoint[0].loc = DOWN_LEFT;  rhoPoint[0].c = 1;
         rhoPoint[1].i = ex; rhoPoint[1].j = ey; rhoPoint[1].loc = DOWN_RIGHT; rhoPoint[1].c = 1;
-        ierr = DMStagVecGetValuesStencil(ctx->dmCoeff,coeffLocal,2,rhoPoint,rho);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecGetValuesStencil(ctx->dmCoeff,coeffLocal,2,rhoPoint,rho));
         valRhs = -ctx->gy * 0.5 * (rho[0] + rho[1]);
 
         /* Get eta values */
@@ -203,7 +202,7 @@ static PetscErrorCode CreateSystem(const Ctx ctx,Mat *pA,Vec *pRhs)
         etaPoint[1].i = ex; etaPoint[1].j = ey;   etaPoint[1].loc = DOWN_RIGHT; etaPoint[1].c = 0; /* Right */
         etaPoint[2].i = ex; etaPoint[2].j = ey;   etaPoint[2].loc = ELEMENT;    etaPoint[2].c = 0; /* Up    */
         etaPoint[3].i = ex; etaPoint[3].j = ey-1; etaPoint[3].loc = ELEMENT;    etaPoint[3].c = 0; /* Down  */
-        ierr = DMStagVecGetValuesStencil(ctx->dmCoeff,coeffLocal,4,etaPoint,eta);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecGetValuesStencil(ctx->dmCoeff,coeffLocal,4,etaPoint,eta));
         etaLeft = eta[0]; etaRight = eta[1]; etaUp = eta[2]; etaDown = eta[3];
 
         if (ex == 0) {
@@ -254,8 +253,8 @@ static PetscErrorCode CreateSystem(const Ctx ctx,Mat *pA,Vec *pRhs)
         }
 
         /* Insert Y-momentum entries */
-        ierr = DMStagMatSetValuesStencil(ctx->dmStokes,A,1,&row,nEntries,col,valA,INSERT_VALUES);CHKERRQ(ierr);
-        ierr = DMStagVecSetValuesStencil(ctx->dmStokes,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagMatSetValuesStencil(ctx->dmStokes,A,1,&row,nEntries,col,valA,INSERT_VALUES));
+        CHKERRQ(DMStagVecSetValuesStencil(ctx->dmStokes,rhs,1,&row,&valRhs,INSERT_VALUES));
       }
 
       if (ex == N[0]-1) {
@@ -266,9 +265,9 @@ static PetscErrorCode CreateSystem(const Ctx ctx,Mat *pA,Vec *pRhs)
 
         const PetscScalar valA = ctx->Kbound;
         row.i = ex; row.j = ey; row.loc = RIGHT; row.c = 0;
-        ierr = DMStagMatSetValuesStencil(ctx->dmStokes,A,1,&row,1,&row,&valA,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagMatSetValuesStencil(ctx->dmStokes,A,1,&row,1,&row,&valA,INSERT_VALUES));
         valRhs = 0.0;
-        ierr = DMStagVecSetValuesStencil(ctx->dmStokes,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecSetValuesStencil(ctx->dmStokes,rhs,1,&row,&valRhs,INSERT_VALUES));
       }
       if (ex == 0) {
         /* Left velocity Dirichlet */
@@ -276,9 +275,9 @@ static PetscErrorCode CreateSystem(const Ctx ctx,Mat *pA,Vec *pRhs)
         PetscScalar   valRhs;
         const PetscScalar valA = ctx->Kbound;
         row.i = ex; row.j = ey; row.loc = LEFT; row.c = 0;
-        ierr = DMStagMatSetValuesStencil(ctx->dmStokes,A,1,&row,1,&row,&valA,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagMatSetValuesStencil(ctx->dmStokes,A,1,&row,1,&row,&valA,INSERT_VALUES));
         valRhs = 0.0;
-        ierr = DMStagVecSetValuesStencil(ctx->dmStokes,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecSetValuesStencil(ctx->dmStokes,rhs,1,&row,&valRhs,INSERT_VALUES));
       } else {
         /* X-momentum equation : (u_xx + u_yy) - p_x = f^x */
         PetscInt nEntries;
@@ -292,7 +291,7 @@ static PetscErrorCode CreateSystem(const Ctx ctx,Mat *pA,Vec *pRhs)
         etaPoint[1].i = ex;   etaPoint[1].j = ey; etaPoint[1].loc = ELEMENT;   etaPoint[1].c = 0; /* Right */
         etaPoint[2].i = ex;   etaPoint[2].j = ey; etaPoint[2].loc = UP_LEFT;   etaPoint[2].c = 0; /* Up    */
         etaPoint[3].i = ex;   etaPoint[3].j = ey; etaPoint[3].loc = DOWN_LEFT; etaPoint[3].c = 0; /* Down  */
-        ierr = DMStagVecGetValuesStencil(ctx->dmCoeff,coeffLocal,4,etaPoint,eta);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecGetValuesStencil(ctx->dmCoeff,coeffLocal,4,etaPoint,eta));
         etaLeft = eta[0]; etaRight = eta[1]; etaUp = eta[2]; etaDown = eta[3];
 
         if (ey == 0) {
@@ -344,8 +343,8 @@ static PetscErrorCode CreateSystem(const Ctx ctx,Mat *pA,Vec *pRhs)
           col[10].i = ex  ; col[10].j = ey  ; col[10].loc = ELEMENT; col[10].c  = 0; valA[10] = -ctx->Kcont / hx;
           valRhs = 0.0;
         }
-        ierr = DMStagMatSetValuesStencil(ctx->dmStokes,A,1,&row,nEntries,col,valA,INSERT_VALUES);CHKERRQ(ierr);
-        ierr = DMStagVecSetValuesStencil(ctx->dmStokes,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagMatSetValuesStencil(ctx->dmStokes,A,1,&row,nEntries,col,valA,INSERT_VALUES));
+        CHKERRQ(DMStagVecSetValuesStencil(ctx->dmStokes,rhs,1,&row,&valRhs,INSERT_VALUES));
       }
 
       /* P equation : u_x + v_y = 0
@@ -356,9 +355,9 @@ static PetscErrorCode CreateSystem(const Ctx ctx,Mat *pA,Vec *pRhs)
         PetscScalar valA,valRhs;
         row.i = ex; row.j = ey; row.loc = ELEMENT; row.c = 0;
         valA = ctx->Kbound;
-        ierr = DMStagMatSetValuesStencil(ctx->dmStokes,A,1,&row,1,&row,&valA,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagMatSetValuesStencil(ctx->dmStokes,A,1,&row,1,&row,&valA,INSERT_VALUES));
         valRhs = 0.0;
-        ierr = DMStagVecSetValuesStencil(ctx->dmStokes,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecSetValuesStencil(ctx->dmStokes,rhs,1,&row,&valRhs,INSERT_VALUES));
       } else {
         DMStagStencil row,col[5];
         PetscScalar   valA[5],valRhs;
@@ -369,17 +368,17 @@ static PetscErrorCode CreateSystem(const Ctx ctx,Mat *pA,Vec *pRhs)
         col[2].i = ex; col[2].j = ey; col[2].loc = DOWN;    col[2].c = 0; valA[2] = -ctx->Kcont / hy;
         col[3].i = ex; col[3].j = ey; col[3].loc = UP;      col[3].c = 0; valA[3] =  ctx->Kcont / hy;
         col[4] = row;                                                     valA[4] = 0.0;
-        ierr = DMStagMatSetValuesStencil(ctx->dmStokes,A,1,&row,5,col,valA,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagMatSetValuesStencil(ctx->dmStokes,A,1,&row,5,col,valA,INSERT_VALUES));
         valRhs = 0.0;
-        ierr = DMStagVecSetValuesStencil(ctx->dmStokes,rhs,1,&row,&valRhs,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecSetValuesStencil(ctx->dmStokes,rhs,1,&row,&valRhs,INSERT_VALUES));
       }
     }
   }
-  ierr = DMRestoreLocalVector(ctx->dmCoeff,&coeffLocal);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(rhs);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(rhs);CHKERRQ(ierr);
+  CHKERRQ(DMRestoreLocalVector(ctx->dmCoeff,&coeffLocal));
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(VecAssemblyBegin(rhs));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(VecAssemblyEnd(rhs));
   PetscFunctionReturn(0);
 }
 
@@ -387,19 +386,18 @@ static PetscErrorCode CreateSystem(const Ctx ctx,Mat *pA,Vec *pRhs)
 This would usually be done with direct array access, though. */
 static PetscErrorCode PopulateCoefficientData(Ctx ctx)
 {
-  PetscErrorCode ierr;
   PetscInt       N[2],nExtra[2];
   PetscInt       ex,ey,startx,starty,nx,ny;
   Vec            coeffLocal,coordLocal;
   DM             dmCoord;
 
   PetscFunctionBeginUser;
-  ierr = DMCreateGlobalVector(ctx->dmCoeff,&ctx->coeff);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(ctx->dmCoeff,&coeffLocal);CHKERRQ(ierr);
-  ierr = DMStagGetCorners(ctx->dmCoeff,&startx,&starty,NULL,&nx,&ny,NULL,&nExtra[0],&nExtra[1],NULL);CHKERRQ(ierr);
-  ierr = DMStagGetGlobalSizes(ctx->dmCoeff,&N[0],&N[1],NULL);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(ctx->dmCoeff,&coordLocal);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDM(ctx->dmCoeff,&dmCoord);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(ctx->dmCoeff,&ctx->coeff));
+  CHKERRQ(DMGetLocalVector(ctx->dmCoeff,&coeffLocal));
+  CHKERRQ(DMStagGetCorners(ctx->dmCoeff,&startx,&starty,NULL,&nx,&ny,NULL,&nExtra[0],&nExtra[1],NULL));
+  CHKERRQ(DMStagGetGlobalSizes(ctx->dmCoeff,&N[0],&N[1],NULL));
+  CHKERRQ(DMGetCoordinatesLocal(ctx->dmCoeff,&coordLocal));
+  CHKERRQ(DMGetCoordinateDM(ctx->dmCoeff,&dmCoord));
   for (ey = starty; ey<starty+ny+nExtra[1]; ++ey) {
     for (ex = startx; ex<startx+nx+nExtra[0]; ++ex) {
 
@@ -409,9 +407,9 @@ static PetscErrorCode PopulateCoefficientData(Ctx ctx)
         PetscScalar   val,x;
         point.i = ex; point.j = ey; point.loc = ELEMENT; point.c = 0;
         pointCoordx = point;
-        ierr = DMStagVecGetValuesStencil(dmCoord,coordLocal,1,&pointCoordx,&x);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecGetValuesStencil(dmCoord,coordLocal,1,&pointCoordx,&x));
         val = getEta(ctx,x);
-        ierr = DMStagVecSetValuesStencil(ctx->dmCoeff,ctx->coeff,1,&point,&val,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecSetValuesStencil(ctx->dmCoeff,ctx->coeff,1,&point,&val,INSERT_VALUES));
       }
 
       /* Rho */
@@ -420,9 +418,9 @@ static PetscErrorCode PopulateCoefficientData(Ctx ctx)
         PetscScalar   val,x;
         point.i = ex; point.j = ey; point.loc = DOWN_LEFT; point.c = 1; /* Note .c = 1 */
         pointCoordx = point; pointCoordx.c = 0;
-        ierr = DMStagVecGetValuesStencil(dmCoord,coordLocal,1,&pointCoordx,&x);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecGetValuesStencil(dmCoord,coordLocal,1,&pointCoordx,&x));
         val = getRho(ctx,x);
-        ierr = DMStagVecSetValuesStencil(ctx->dmCoeff,ctx->coeff,1,&point,&val,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecSetValuesStencil(ctx->dmCoeff,ctx->coeff,1,&point,&val,INSERT_VALUES));
       }
 
       /* Eta (corner) - populate extra corners on right/top of domain */
@@ -431,48 +429,47 @@ static PetscErrorCode PopulateCoefficientData(Ctx ctx)
         PetscScalar   val,x;
         point.i = ex; point.j = ey; point.loc = DOWN_LEFT; point.c = 0;
         pointCoordx = point;
-        ierr = DMStagVecGetValuesStencil(dmCoord,coordLocal,1,&pointCoordx,&x);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecGetValuesStencil(dmCoord,coordLocal,1,&pointCoordx,&x));
         val = getEta(ctx,x);
-        ierr = DMStagVecSetValuesStencil(ctx->dmCoeff,ctx->coeff,1,&point,&val,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecSetValuesStencil(ctx->dmCoeff,ctx->coeff,1,&point,&val,INSERT_VALUES));
       }
       if (ex == N[0]-1) {
         DMStagStencil point,pointCoordx;
         PetscScalar   val,x;
         point.i = ex; point.j = ey; point.loc = DOWN_RIGHT; point.c = 0;
         pointCoordx = point;
-        ierr = DMStagVecGetValuesStencil(dmCoord,coordLocal,1,&pointCoordx,&x);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecGetValuesStencil(dmCoord,coordLocal,1,&pointCoordx,&x));
         val = getEta(ctx,x);
-        ierr = DMStagVecSetValuesStencil(ctx->dmCoeff,ctx->coeff,1,&point,&val,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecSetValuesStencil(ctx->dmCoeff,ctx->coeff,1,&point,&val,INSERT_VALUES));
       }
       if (ey == N[1]-1) {
         DMStagStencil point,pointCoordx;
         PetscScalar   val,x;
         point.i = ex; point.j = ey; point.loc = UP_LEFT; point.c = 0;
         pointCoordx = point;
-        ierr = DMStagVecGetValuesStencil(dmCoord,coordLocal,1,&pointCoordx,&x);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecGetValuesStencil(dmCoord,coordLocal,1,&pointCoordx,&x));
         val = getEta(ctx,x);
-        ierr = DMStagVecSetValuesStencil(ctx->dmCoeff,ctx->coeff,1,&point,&val,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecSetValuesStencil(ctx->dmCoeff,ctx->coeff,1,&point,&val,INSERT_VALUES));
       }
       if (ex == N[0]-1 && ey == N[1]-1) {
         DMStagStencil point,pointCoordx;
         PetscScalar   val,x;
         point.i = ex; point.j = ey; point.loc = UP_RIGHT; point.c = 0;
         pointCoordx = point;
-        ierr = DMStagVecGetValuesStencil(dmCoord,coordLocal,1,&pointCoordx,&x);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecGetValuesStencil(dmCoord,coordLocal,1,&pointCoordx,&x));
         val = getEta(ctx,x);
-        ierr = DMStagVecSetValuesStencil(ctx->dmCoeff,ctx->coeff,1,&point,&val,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecSetValuesStencil(ctx->dmCoeff,ctx->coeff,1,&point,&val,INSERT_VALUES));
       }
     }
   }
-  ierr = VecAssemblyBegin(ctx->coeff);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(ctx->coeff);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(ctx->dmCoeff,&coeffLocal);CHKERRQ(ierr);
+  CHKERRQ(VecAssemblyBegin(ctx->coeff));
+  CHKERRQ(VecAssemblyEnd(ctx->coeff));
+  CHKERRQ(DMRestoreLocalVector(ctx->dmCoeff,&coeffLocal));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode DumpSolution(Ctx ctx,Vec x)
 {
-  PetscErrorCode ierr;
   DM             dmVelAvg;
   Vec            velAvg;
   DM             daVelAvg,daP,daEtaElement,daEtaCorner,daRho;
@@ -483,16 +480,16 @@ static PetscErrorCode DumpSolution(Ctx ctx,Vec x)
   /* For convenience, create a new DM and Vec which will hold averaged velocities
      Note that this could also be accomplished with direct array access, using
      DMStagVecGetArray() and related functions */
-  ierr = DMStagCreateCompatibleDMStag(ctx->dmStokes,0,0,2,0,&dmVelAvg);CHKERRQ(ierr); /* 2 dof per element */
-  ierr = DMSetUp(dmVelAvg);CHKERRQ(ierr);
-  ierr = DMStagSetUniformCoordinatesExplicit(dmVelAvg,0.0,ctx->xmax,0.0,ctx->ymax,0.0,0.0);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dmVelAvg,&velAvg);CHKERRQ(ierr);
+  CHKERRQ(DMStagCreateCompatibleDMStag(ctx->dmStokes,0,0,2,0,&dmVelAvg)); /* 2 dof per element */
+  CHKERRQ(DMSetUp(dmVelAvg));
+  CHKERRQ(DMStagSetUniformCoordinatesExplicit(dmVelAvg,0.0,ctx->xmax,0.0,ctx->ymax,0.0,0.0));
+  CHKERRQ(DMCreateGlobalVector(dmVelAvg,&velAvg));
   {
     PetscInt ex,ey,startx,starty,nx,ny;
     Vec      stokesLocal;
-    ierr = DMGetLocalVector(ctx->dmStokes,&stokesLocal);CHKERRQ(ierr);
-    ierr = DMGlobalToLocal(ctx->dmStokes,x,INSERT_VALUES,stokesLocal);CHKERRQ(ierr);
-    ierr = DMStagGetCorners(dmVelAvg,&startx,&starty,NULL,&nx,&ny,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+    CHKERRQ(DMGetLocalVector(ctx->dmStokes,&stokesLocal));
+    CHKERRQ(DMGlobalToLocal(ctx->dmStokes,x,INSERT_VALUES,stokesLocal));
+    CHKERRQ(DMStagGetCorners(dmVelAvg,&startx,&starty,NULL,&nx,&ny,NULL,NULL,NULL,NULL));
     for (ey = starty; ey<starty+ny; ++ey) {
       for (ex = startx; ex<startx+nx; ++ex) {
         DMStagStencil from[4],to[2];
@@ -501,66 +498,66 @@ static PetscErrorCode DumpSolution(Ctx ctx,Vec x)
         from[1].i = ex; from[1].j = ey; from[1].loc = DOWN;  from[1].c = 0;
         from[2].i = ex; from[2].j = ey; from[2].loc = LEFT;  from[2].c = 0;
         from[3].i = ex; from[3].j = ey; from[3].loc = RIGHT; from[3].c = 0;
-        ierr = DMStagVecGetValuesStencil(ctx->dmStokes,stokesLocal,4,from,valFrom);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecGetValuesStencil(ctx->dmStokes,stokesLocal,4,from,valFrom));
         to[0].i = ex; to[0].j = ey; to[0].loc = ELEMENT;    to[0].c = 0; valTo[0] = 0.5 * (valFrom[2] + valFrom[3]);
         to[1].i = ex; to[1].j = ey; to[1].loc = ELEMENT;    to[1].c = 1; valTo[1] = 0.5 * (valFrom[0] + valFrom[1]);
-        ierr = DMStagVecSetValuesStencil(dmVelAvg,velAvg,2,to,valTo,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(DMStagVecSetValuesStencil(dmVelAvg,velAvg,2,to,valTo,INSERT_VALUES));
       }
     }
-    ierr = VecAssemblyBegin(velAvg);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(velAvg);CHKERRQ(ierr);
-    ierr = DMRestoreLocalVector(ctx->dmStokes,&stokesLocal);CHKERRQ(ierr);
+    CHKERRQ(VecAssemblyBegin(velAvg));
+    CHKERRQ(VecAssemblyEnd(velAvg));
+    CHKERRQ(DMRestoreLocalVector(ctx->dmStokes,&stokesLocal));
   }
 
   /* Create individual DMDAs for sub-grids of our DMStag objects. This is
      somewhat inefficient, but allows use of the DMDA API without re-implementing
      all utilities for DMStag */
 
-  ierr = DMStagVecSplitToDMDA(ctx->dmStokes,x,DMSTAG_ELEMENT,0,&daP,&vecP);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)vecP,"p (scaled)");CHKERRQ(ierr);
-  ierr = DMStagVecSplitToDMDA(ctx->dmCoeff,ctx->coeff,DMSTAG_DOWN_LEFT,0, &daEtaCorner, &vecEtaCorner);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)vecEtaCorner,"eta");CHKERRQ(ierr);
-  ierr = DMStagVecSplitToDMDA(ctx->dmCoeff,ctx->coeff,DMSTAG_ELEMENT,  0, &daEtaElement,&vecEtaElement);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)vecEtaElement,"eta");CHKERRQ(ierr);
-  ierr = DMStagVecSplitToDMDA(ctx->dmCoeff,ctx->coeff,DMSTAG_DOWN_LEFT,  1, &daRho,       &vecRho);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)vecRho,"density");CHKERRQ(ierr);
-  ierr = DMStagVecSplitToDMDA(dmVelAvg,    velAvg,    DMSTAG_ELEMENT,  -3,&daVelAvg,    &vecVelAvg);CHKERRQ(ierr); /* note -3 : pad with zero */
-  ierr = PetscObjectSetName((PetscObject)vecVelAvg,"Velocity (Averaged)");CHKERRQ(ierr);
+  CHKERRQ(DMStagVecSplitToDMDA(ctx->dmStokes,x,DMSTAG_ELEMENT,0,&daP,&vecP));
+  CHKERRQ(PetscObjectSetName((PetscObject)vecP,"p (scaled)"));
+  CHKERRQ(DMStagVecSplitToDMDA(ctx->dmCoeff,ctx->coeff,DMSTAG_DOWN_LEFT,0, &daEtaCorner, &vecEtaCorner));
+  CHKERRQ(PetscObjectSetName((PetscObject)vecEtaCorner,"eta"));
+  CHKERRQ(DMStagVecSplitToDMDA(ctx->dmCoeff,ctx->coeff,DMSTAG_ELEMENT,  0, &daEtaElement,&vecEtaElement));
+  CHKERRQ(PetscObjectSetName((PetscObject)vecEtaElement,"eta"));
+  CHKERRQ(DMStagVecSplitToDMDA(ctx->dmCoeff,ctx->coeff,DMSTAG_DOWN_LEFT,  1, &daRho,       &vecRho));
+  CHKERRQ(PetscObjectSetName((PetscObject)vecRho,"density"));
+  CHKERRQ(DMStagVecSplitToDMDA(dmVelAvg,    velAvg,    DMSTAG_ELEMENT,  -3,&daVelAvg,    &vecVelAvg)); /* note -3 : pad with zero */
+  CHKERRQ(PetscObjectSetName((PetscObject)vecVelAvg,"Velocity (Averaged)"));
 
   /* Dump element-based fields to a .vtr file */
   {
     PetscViewer viewer;
-    ierr = PetscViewerVTKOpen(PetscObjectComm((PetscObject)daVelAvg),"ex4_element.vtr",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-    ierr = VecView(vecVelAvg,viewer);CHKERRQ(ierr);
-    ierr = VecView(vecP,viewer);CHKERRQ(ierr);
-    ierr = VecView(vecEtaElement,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerVTKOpen(PetscObjectComm((PetscObject)daVelAvg),"ex4_element.vtr",FILE_MODE_WRITE,&viewer));
+    CHKERRQ(VecView(vecVelAvg,viewer));
+    CHKERRQ(VecView(vecP,viewer));
+    CHKERRQ(VecView(vecEtaElement,viewer));
+    CHKERRQ(PetscViewerDestroy(&viewer));
   }
 
   /* Dump vertex-based fields to a second .vtr file */
   {
     PetscViewer viewer;
-    ierr = PetscViewerVTKOpen(PetscObjectComm((PetscObject)daEtaCorner),"ex4_vertex.vtr",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-    ierr = VecView(vecEtaCorner,viewer);CHKERRQ(ierr);
-    ierr = VecView(vecRho,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerVTKOpen(PetscObjectComm((PetscObject)daEtaCorner),"ex4_vertex.vtr",FILE_MODE_WRITE,&viewer));
+    CHKERRQ(VecView(vecEtaCorner,viewer));
+    CHKERRQ(VecView(vecRho,viewer));
+    CHKERRQ(PetscViewerDestroy(&viewer));
   }
 
   /* Edge-based fields could similarly be dumped */
 
   /* Destroy DMDAs and Vecs */
-  ierr = VecDestroy(&vecVelAvg);CHKERRQ(ierr);
-  ierr = VecDestroy(&vecP);CHKERRQ(ierr);
-  ierr = VecDestroy(&vecEtaCorner);CHKERRQ(ierr);
-  ierr = VecDestroy(&vecEtaElement);CHKERRQ(ierr);
-  ierr = VecDestroy(&vecRho);CHKERRQ(ierr);
-  ierr = DMDestroy(&daVelAvg);CHKERRQ(ierr);
-  ierr = DMDestroy(&daP);CHKERRQ(ierr);
-  ierr = DMDestroy(&daEtaCorner);CHKERRQ(ierr);
-  ierr = DMDestroy(&daEtaElement);CHKERRQ(ierr);
-  ierr = DMDestroy(&daRho);CHKERRQ(ierr);
-  ierr = VecDestroy(&velAvg);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmVelAvg);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&vecVelAvg));
+  CHKERRQ(VecDestroy(&vecP));
+  CHKERRQ(VecDestroy(&vecEtaCorner));
+  CHKERRQ(VecDestroy(&vecEtaElement));
+  CHKERRQ(VecDestroy(&vecRho));
+  CHKERRQ(DMDestroy(&daVelAvg));
+  CHKERRQ(DMDestroy(&daP));
+  CHKERRQ(DMDestroy(&daEtaCorner));
+  CHKERRQ(DMDestroy(&daEtaElement));
+  CHKERRQ(DMDestroy(&daRho));
+  CHKERRQ(VecDestroy(&velAvg));
+  CHKERRQ(DMDestroy(&dmVelAvg));
   PetscFunctionReturn(0);
 }
 

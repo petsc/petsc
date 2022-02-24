@@ -72,7 +72,6 @@ PetscReal         tmax = 20.0;
 /* Saves the solution at each time to a matrix */
 PetscErrorCode SaveSolution(TS ts)
 {
-  PetscErrorCode    ierr;
   AppCtx            *user;
   Vec               X;
   PetscScalar       *mat;
@@ -81,16 +80,16 @@ PetscErrorCode SaveSolution(TS ts)
   PetscReal         t;
 
   PetscFunctionBegin;
-  ierr     = TSGetApplicationContext(ts,&user);CHKERRQ(ierr);
-  ierr     = TSGetTime(ts,&t);CHKERRQ(ierr);
-  ierr     = TSGetSolution(ts,&X);CHKERRQ(ierr);
+  CHKERRQ(TSGetApplicationContext(ts,&user));
+  CHKERRQ(TSGetTime(ts,&t));
+  CHKERRQ(TSGetSolution(ts,&X));
   idx      =  3*user->stepnum;
-  ierr     = MatDenseGetArray(user->Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  CHKERRQ(MatDenseGetArray(user->Sol,&mat));
+  CHKERRQ(VecGetArrayRead(X,&x));
   mat[idx] = t;
-  ierr     = PetscArraycpy(mat+idx+1,x,2);CHKERRQ(ierr);
-  ierr     = MatDenseRestoreArray(user->Sol,&mat);CHKERRQ(ierr);
-  ierr     = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  CHKERRQ(PetscArraycpy(mat+idx+1,x,2));
+  CHKERRQ(MatDenseRestoreArray(user->Sol,&mat));
+  CHKERRQ(VecRestoreArrayRead(X,&x));
   user->stepnum++;
   PetscFunctionReturn(0);
 }
@@ -109,33 +108,33 @@ PetscErrorCode WindSpeeds(AppCtx *user)
   user->Tw       = 0.2;
   ierr           = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Wind Speed Options","");CHKERRQ(ierr);
   {
-    ierr = PetscOptionsReal("-cw","","",user->cw,&user->cw,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-kw","","",user->kw,&user->kw,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-nsamples","","",user->nsamples,&user->nsamples,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-Tw","","",user->Tw,&user->Tw,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsReal("-cw","","",user->cw,&user->cw,NULL));
+    CHKERRQ(PetscOptionsReal("-kw","","",user->kw,&user->kw,NULL));
+    CHKERRQ(PetscOptionsInt("-nsamples","","",user->nsamples,&user->nsamples,NULL));
+    CHKERRQ(PetscOptionsReal("-Tw","","",user->Tw,&user->Tw,NULL));
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&user->wind_data);CHKERRQ(ierr);
-  ierr = VecSetSizes(user->wind_data,PETSC_DECIDE,user->nsamples);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(user->wind_data);CHKERRQ(ierr);
-  ierr = VecDuplicate(user->wind_data,&user->t_wind);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&user->wind_data));
+  CHKERRQ(VecSetSizes(user->wind_data,PETSC_DECIDE,user->nsamples));
+  CHKERRQ(VecSetFromOptions(user->wind_data));
+  CHKERRQ(VecDuplicate(user->wind_data,&user->t_wind));
 
-  ierr = VecGetArray(user->t_wind,&t);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(user->t_wind,&t));
   for (i=0; i < user->nsamples; i++) t[i] = (i+1)*tmax/user->nsamples;
-  ierr = VecRestoreArray(user->t_wind,&t);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(user->t_wind,&t));
 
   /* Wind speed deviation = (-log(rand)/cw)^(1/kw) */
-  ierr = VecSetRandom(user->wind_data,NULL);CHKERRQ(ierr);
-  ierr = VecLog(user->wind_data);CHKERRQ(ierr);
-  ierr = VecScale(user->wind_data,-1/user->cw);CHKERRQ(ierr);
-  ierr = VecGetArray(user->wind_data,&x);CHKERRQ(ierr);
+  CHKERRQ(VecSetRandom(user->wind_data,NULL));
+  CHKERRQ(VecLog(user->wind_data));
+  CHKERRQ(VecScale(user->wind_data,-1/user->cw));
+  CHKERRQ(VecGetArray(user->wind_data,&x));
   for (i=0;i < user->nsamples;i++) x[i] = PetscPowScalar(x[i],(1/user->kw));
-  ierr = VecRestoreArray(user->wind_data,&x);CHKERRQ(ierr);
-  ierr = VecSum(user->wind_data,&sum);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(user->wind_data,&x));
+  CHKERRQ(VecSum(user->wind_data,&sum));
   avg_dev = sum/user->nsamples;
   /* Wind speed (t) = (1 + wind speed deviation(t) - avg_dev)*average wind speed */
-  ierr = VecShift(user->wind_data,(1-avg_dev));CHKERRQ(ierr);
-  ierr = VecScale(user->wind_data,vwa);CHKERRQ(ierr);
+  CHKERRQ(VecShift(user->wind_data,(1-avg_dev)));
+  CHKERRQ(VecScale(user->wind_data,vwa));
   PetscFunctionReturn(0);
 }
 
@@ -186,28 +185,27 @@ PetscErrorCode GetWindPower(PetscScalar wm,PetscScalar vw,PetscScalar *Pw,AppCtx
 */
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,AppCtx *user)
 {
-  PetscErrorCode    ierr;
   PetscScalar       *f,wm,Pw,*wd;
   const PetscScalar *u,*udot;
   PetscInt          stepnum;
 
   PetscFunctionBegin;
-  ierr = TSGetStepNumber(ts,&stepnum);CHKERRQ(ierr);
+  CHKERRQ(TSGetStepNumber(ts,&stepnum));
   /*  The next three lines allow us to access the entries of the vectors directly */
-  ierr = VecGetArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(Udot,&udot);CHKERRQ(ierr);
-  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  ierr = VecGetArray(user->wind_data,&wd);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(U,&u));
+  CHKERRQ(VecGetArrayRead(Udot,&udot));
+  CHKERRQ(VecGetArray(F,&f));
+  CHKERRQ(VecGetArray(user->wind_data,&wd));
 
   f[0] = user->Tw*udot[0] - wd[stepnum] + u[0];
   wm   = 1-u[1];
-  ierr = GetWindPower(wm,u[0],&Pw,user);CHKERRQ(ierr);
+  CHKERRQ(GetWindPower(wm,u[0],&Pw,user));
   f[1] = 2.0*(user->Ht+user->Hm)*udot[1] - Pw/wm + user->Te;
 
-  ierr = VecRestoreArray(user->wind_data,&wd);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(U,&u);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(Udot,&udot);CHKERRQ(ierr);
-  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(user->wind_data,&wd));
+  CHKERRQ(VecRestoreArrayRead(U,&u));
+  CHKERRQ(VecRestoreArrayRead(Udot,&udot));
+  CHKERRQ(VecRestoreArray(F,&f));
   PetscFunctionReturn(0);
 }
 
@@ -232,99 +230,99 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetSizes(A,n,n,PETSC_DETERMINE,PETSC_DETERMINE));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatSetUp(A));
 
-  ierr = MatCreateVecs(A,&U,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatCreateVecs(A,&U,NULL));
 
   /* Create wind speed data using Weibull distribution */
-  ierr = WindSpeeds(&user);CHKERRQ(ierr);
+  CHKERRQ(WindSpeeds(&user));
   /* Set parameters for wind turbine and induction generator */
-  ierr = SetWindTurbineParams(&user);CHKERRQ(ierr);
-  ierr = SetInductionGeneratorParams(&user);CHKERRQ(ierr);
+  CHKERRQ(SetWindTurbineParams(&user));
+  CHKERRQ(SetInductionGeneratorParams(&user));
 
-  ierr = VecGetArray(U,&u);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(U,&u));
   u[0] = vwa;
   u[1] = s;
-  ierr = VecRestoreArray(U,&u);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(U,&u));
 
   /* Create matrix to save solutions at each time step */
   user.stepnum = 0;
 
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,3,2010,NULL,&user.Sol);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF,3,2010,NULL,&user.Sol));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,NULL,(TSIFunction) IFunction,&user);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
+  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
+  CHKERRQ(TSSetType(ts,TSBEULER));
+  CHKERRQ(TSSetIFunction(ts,NULL,(TSIFunction) IFunction,&user));
 
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,A,A,SNESComputeJacobianDefault,NULL);CHKERRQ(ierr);
-  /*  ierr = TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&user);CHKERRQ(ierr); */
-  ierr = TSSetApplicationContext(ts,&user);CHKERRQ(ierr);
+  CHKERRQ(TSGetSNES(ts,&snes));
+  CHKERRQ(SNESSetJacobian(snes,A,A,SNESComputeJacobianDefault,NULL));
+  /*  CHKERRQ(TSSetIJacobian(ts,A,A,(TSIJacobian)IJacobian,&user)); */
+  CHKERRQ(TSSetApplicationContext(ts,&user));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
+  CHKERRQ(TSSetSolution(ts,U));
 
   /* Save initial solution */
   idx=3*user.stepnum;
 
-  ierr = MatDenseGetArray(user.Sol,&mat);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(U,&x);CHKERRQ(ierr);
+  CHKERRQ(MatDenseGetArray(user.Sol,&mat));
+  CHKERRQ(VecGetArrayRead(U,&x));
 
   mat[idx] = 0.0;
 
-  ierr = PetscArraycpy(mat+idx+1,x,2);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(user.Sol,&mat);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(U,&x);CHKERRQ(ierr);
+  CHKERRQ(PetscArraycpy(mat+idx+1,x,2));
+  CHKERRQ(MatDenseRestoreArray(user.Sol,&mat));
+  CHKERRQ(VecRestoreArrayRead(U,&x));
   user.stepnum++;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set solver options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetMaxTime(ts,20.0);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP);CHKERRQ(ierr);
-  ierr = TSSetTimeStep(ts,.01);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSSetPostStep(ts,SaveSolution);CHKERRQ(ierr);
+  CHKERRQ(TSSetMaxTime(ts,20.0));
+  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_MATCHSTEP));
+  CHKERRQ(TSSetTimeStep(ts,.01));
+  CHKERRQ(TSSetFromOptions(ts));
+  CHKERRQ(TSSetPostStep(ts,SaveSolution));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,U);CHKERRQ(ierr);
+  CHKERRQ(TSSolve(ts,U));
 
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,3,user.stepnum,NULL,&B);CHKERRQ(ierr);
-  ierr = MatDenseGetArrayRead(user.Sol,&rmat);CHKERRQ(ierr);
-  ierr = MatDenseGetArray(B,&amat);CHKERRQ(ierr);
-  ierr = PetscArraycpy(amat,rmat,user.stepnum*3);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(B,&amat);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArrayRead(user.Sol,&rmat);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF,3,user.stepnum,NULL,&B));
+  CHKERRQ(MatDenseGetArrayRead(user.Sol,&rmat));
+  CHKERRQ(MatDenseGetArray(B,&amat));
+  CHKERRQ(PetscArraycpy(amat,rmat,user.stepnum*3));
+  CHKERRQ(MatDenseRestoreArray(B,&amat));
+  CHKERRQ(MatDenseRestoreArrayRead(user.Sol,&rmat));
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"out.bin",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-  ierr = MatView(B,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(&user.Sol);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,"out.bin",FILE_MODE_WRITE,&viewer));
+  CHKERRQ(MatView(B,viewer));
+  CHKERRQ(PetscViewerDestroy(&viewer));
+  CHKERRQ(MatDestroy(&user.Sol));
+  CHKERRQ(MatDestroy(&B));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecDestroy(&user.wind_data);CHKERRQ(ierr);
-  ierr = VecDestroy(&user.t_wind);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = VecDestroy(&U);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&user.wind_data));
+  CHKERRQ(VecDestroy(&user.t_wind));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(VecDestroy(&U));
+  CHKERRQ(TSDestroy(&ts));
 
   ierr = PetscFinalize();
   return ierr;

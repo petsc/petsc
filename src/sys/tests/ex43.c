@@ -16,47 +16,47 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscHSetIJCreate(&table);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  CHKERRQ(PetscHSetIJCreate(&table));
 
   /* The following line silences warnings from Clang Static Analyzer */
-  ierr = PetscHSetIJResize(table,0);CHKERRQ(ierr);
+  CHKERRQ(PetscHSetIJResize(table,0));
 
-  ierr = PetscTimeSubtract(&t_add);CHKERRQ(ierr);
+  CHKERRQ(PetscTimeSubtract(&t_add));
   for (i = 0; i < N; ++i) {
     for (j = 0; j < N; ++j) {
       key.i = PetscMin(i, j);
       key.j = PetscMax(i, j);
-      ierr  = PetscHSetIJQueryAdd(table, key, &flag);CHKERRQ(ierr);
+      CHKERRQ(PetscHSetIJQueryAdd(table, key, &flag));
     }
   }
-  ierr = PetscTimeAdd(&t_add);CHKERRQ(ierr);
+  CHKERRQ(PetscTimeAdd(&t_add));
 
-  ierr = PetscHSetIJGetSize(table,&n);CHKERRQ(ierr);
+  CHKERRQ(PetscHSetIJGetSize(table,&n));
 
-  ierr = PetscTimeSubtract(&t_has);CHKERRQ(ierr);
+  CHKERRQ(PetscTimeSubtract(&t_has));
   for (i = 0; i < N; ++i) {
     for (j = 0; j < N; ++j) {
       key.i = i;
       key.j = j;
-      ierr  = PetscHSetIJHas(table, key, &flag);CHKERRQ(ierr);
+      CHKERRQ(PetscHSetIJHas(table, key, &flag));
     }
   }
-  ierr = PetscTimeAdd(&t_has);CHKERRQ(ierr);
+  CHKERRQ(PetscTimeAdd(&t_has));
 
-  ierr = PetscTimeSubtract(&t_del);CHKERRQ(ierr);
+  CHKERRQ(PetscTimeSubtract(&t_del));
   for (i = 0; i < N; ++i) {
     for (j = 0; j < N; ++j) {
       key.i = i;
       key.j = j;
-      ierr  = PetscHSetIJQueryDel(table, key, &flag);CHKERRQ(ierr);
+      CHKERRQ(PetscHSetIJQueryDel(table, key, &flag));
     }
   }
-  ierr = PetscTimeAdd(&t_del);CHKERRQ(ierr);
+  CHKERRQ(PetscTimeAdd(&t_del));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"N = %" PetscInt_FMT " - table size: %" PetscInt_FMT ", add: %g, has: %g, del: %g\n",N,n,t_add,t_has,t_del);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"N = %" PetscInt_FMT " - table size: %" PetscInt_FMT ", add: %g, has: %g, del: %g\n",N,n,t_add,t_has,t_del));
 
-  ierr = PetscHSetIJDestroy(&table);CHKERRQ(ierr);
+  CHKERRQ(PetscHSetIJDestroy(&table));
   ierr = PetscFinalize();
   return ierr;
 }

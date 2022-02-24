@@ -11,30 +11,30 @@ int main(int argc,char **argv)
   int            x = 0,y = 0,width = 300,height = 300;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw));
 #if defined(PETSC_HAVE_X)
-  ierr = PetscDrawSetType(draw,"x");CHKERRQ(ierr);
-  ierr = PetscDrawSetType(draw,"null");CHKERRQ(ierr);
-  ierr = PetscDrawSetType(draw,"x");CHKERRQ(ierr);
+  CHKERRQ(PetscDrawSetType(draw,"x"));
+  CHKERRQ(PetscDrawSetType(draw,"null"));
+  CHKERRQ(PetscDrawSetType(draw,"x"));
 #else
-  ierr = PetscDrawSetType(draw,"null");CHKERRQ(ierr);
+  CHKERRQ(PetscDrawSetType(draw,"null"));
 #endif
-  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetViewPort(draw,.25,.25,.75,.75);CHKERRQ(ierr);
-  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,0.0,0.0,1.0,1.0,PETSC_DRAW_BLACK);CHKERRQ(ierr);
-  ierr = PetscDrawString(draw,.2,.2,PETSC_DRAW_RED,"Some Text");CHKERRQ(ierr);
-  ierr = PetscDrawStringSetSize(draw,.5,.5);CHKERRQ(ierr);
-  ierr = PetscDrawString(draw,.2,.2,PETSC_DRAW_BLUE,"Some Text");CHKERRQ(ierr);
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
-  ierr = PetscSleep(2);CHKERRQ(ierr);
-  ierr = PetscDrawResizeWindow(draw,600,600);CHKERRQ(ierr);
-  ierr = PetscDrawClear(draw);CHKERRQ(ierr);
-  ierr = PetscSleep(2);CHKERRQ(ierr);
-  ierr = PetscDrawLine(draw,0.0,1.0,1.0,0.0,PETSC_DRAW_BLUE);CHKERRQ(ierr);
-  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
-  ierr = PetscSleep(2);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawSetFromOptions(draw));
+  CHKERRQ(PetscDrawSetViewPort(draw,.25,.25,.75,.75));
+  CHKERRQ(PetscDrawClear(draw));
+  CHKERRQ(PetscDrawLine(draw,0.0,0.0,1.0,1.0,PETSC_DRAW_BLACK));
+  CHKERRQ(PetscDrawString(draw,.2,.2,PETSC_DRAW_RED,"Some Text"));
+  CHKERRQ(PetscDrawStringSetSize(draw,.5,.5));
+  CHKERRQ(PetscDrawString(draw,.2,.2,PETSC_DRAW_BLUE,"Some Text"));
+  CHKERRQ(PetscDrawFlush(draw));
+  CHKERRQ(PetscSleep(2));
+  CHKERRQ(PetscDrawResizeWindow(draw,600,600));
+  CHKERRQ(PetscDrawClear(draw));
+  CHKERRQ(PetscSleep(2));
+  CHKERRQ(PetscDrawLine(draw,0.0,1.0,1.0,0.0,PETSC_DRAW_BLUE));
+  CHKERRQ(PetscDrawFlush(draw));
+  CHKERRQ(PetscSleep(2));
+  CHKERRQ(PetscDrawDestroy(&draw));
   ierr = PetscFinalize();
   return ierr;
 }

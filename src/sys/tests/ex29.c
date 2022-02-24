@@ -10,12 +10,11 @@ int main(int argc,char **argv)
   PetscInt64     r64;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr    = PetscIntMultError(a,b,&result);CHKERRQ(ierr);
+  CHKERRQ(PetscIntMultError(a,b,&result));
   a       = PETSC_MPI_INT_MAX-22,b = PETSC_MPI_INT_MAX/22;
   r64     = PetscInt64Mult(a,b);
   tresult = PetscIntMultTruncate(a,b);
-  ierr    = PetscIntMultError(a,b,&result);CHKERRQ(ierr);
+  CHKERRQ(PetscIntMultError(a,b,&result));
   ierr    = ierr = PetscFinalize();
   return ierr;
 }
-

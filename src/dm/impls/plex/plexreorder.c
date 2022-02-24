@@ -5,17 +5,16 @@ static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoin
 {
   PetscInt      *perm, *iperm;
   PetscInt       depth, d, pStart, pEnd, fStart, fMax, fEnd, p;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
-  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = PetscMalloc1(pEnd-pStart,&perm);CHKERRQ(ierr);
-  ierr = PetscMalloc1(pEnd-pStart,&iperm);CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetDepth(dm, &depth));
+  CHKERRQ(DMPlexGetChart(dm, &pStart, &pEnd));
+  CHKERRQ(PetscMalloc1(pEnd-pStart,&perm));
+  CHKERRQ(PetscMalloc1(pEnd-pStart,&iperm));
   for (p = pStart; p < pEnd; ++p) iperm[p] = -1;
   for (d = depth; d > 0; --d) {
-    ierr = DMPlexGetDepthStratum(dm, d,   &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = DMPlexGetDepthStratum(dm, d-1, &fStart, &fEnd);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetDepthStratum(dm, d,   &pStart, &pEnd));
+    CHKERRQ(DMPlexGetDepthStratum(dm, d-1, &fStart, &fEnd));
     fMax = fStart;
     for (p = pStart; p < pEnd; ++p) {
       const PetscInt *cone;
@@ -26,8 +25,8 @@ static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoin
         iperm[pperm[p]] = p;
       }
       point = perm[p];
-      ierr = DMPlexGetConeSize(dm, point, &coneSize);CHKERRQ(ierr);
-      ierr = DMPlexGetCone(dm, point, &cone);CHKERRQ(ierr);
+      CHKERRQ(DMPlexGetConeSize(dm, point, &coneSize));
+      CHKERRQ(DMPlexGetCone(dm, point, &cone));
       for (c = 0; c < coneSize; ++c) {
         const PetscInt oldc = cone[c];
         const PetscInt newc = iperm[oldc];
@@ -74,21 +73,20 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
 {
   PetscInt       numCells = 0;
   PetscInt      *start = NULL, *adjacency = NULL, *cperm, *clperm = NULL, *invclperm = NULL, *mask, *xls, pStart, pEnd, c, i;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(perm, 4);
-  ierr = DMPlexCreateNeighborCSR(dm, 0, &numCells, &start, &adjacency);CHKERRQ(ierr);
-  ierr = PetscMalloc3(numCells,&cperm,numCells,&mask,numCells*2,&xls);CHKERRQ(ierr);
+  CHKERRQ(DMPlexCreateNeighborCSR(dm, 0, &numCells, &start, &adjacency));
+  CHKERRQ(PetscMalloc3(numCells,&cperm,numCells,&mask,numCells*2,&xls));
   if (numCells) {
     /* Shift for Fortran numbering */
     for (i = 0; i < start[numCells]; ++i) ++adjacency[i];
     for (i = 0; i <= numCells; ++i)       ++start[i];
-    ierr = SPARSEPACKgenrcm(&numCells, start, adjacency, cperm, mask, xls);CHKERRQ(ierr);
+    CHKERRQ(SPARSEPACKgenrcm(&numCells, start, adjacency, cperm, mask, xls));
   }
-  ierr = PetscFree(start);CHKERRQ(ierr);
-  ierr = PetscFree(adjacency);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(start));
+  CHKERRQ(PetscFree(adjacency));
   /* Shift for Fortran numbering */
   for (c = 0; c < numCells; ++c) --cperm[c];
   /* Segregate */
@@ -98,13 +96,13 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
     PetscInt        numValues, numPoints = 0;
     PetscInt       *sperm, *vsize, *voff, v;
 
-    ierr = DMLabelGetValueIS(label, &valueIS);CHKERRQ(ierr);
-    ierr = ISSort(valueIS);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(valueIS, &numValues);CHKERRQ(ierr);
-    ierr = ISGetIndices(valueIS, &values);CHKERRQ(ierr);
-    ierr = PetscCalloc3(numCells,&sperm,numValues,&vsize,numValues+1,&voff);CHKERRQ(ierr);
+    CHKERRQ(DMLabelGetValueIS(label, &valueIS));
+    CHKERRQ(ISSort(valueIS));
+    CHKERRQ(ISGetLocalSize(valueIS, &numValues));
+    CHKERRQ(ISGetIndices(valueIS, &values));
+    CHKERRQ(PetscCalloc3(numCells,&sperm,numValues,&vsize,numValues+1,&voff));
     for (v = 0; v < numValues; ++v) {
-      ierr = DMLabelGetStratumSize(label, values[v], &vsize[v]);CHKERRQ(ierr);
+      CHKERRQ(DMLabelGetStratumSize(label, values[v], &vsize[v]));
       if (v < numValues-1) voff[v+2] += vsize[v] + voff[v+1];
       numPoints += vsize[v];
     }
@@ -113,27 +111,27 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
       const PetscInt oldc = cperm[c];
       PetscInt       val, vloc;
 
-      ierr = DMLabelGetValue(label, oldc, &val);CHKERRQ(ierr);
+      CHKERRQ(DMLabelGetValue(label, oldc, &val));
       PetscCheckFalse(val == -1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cell %D not present in label", oldc);
-      ierr = PetscFindInt(val, numValues, values, &vloc);CHKERRQ(ierr);
+      CHKERRQ(PetscFindInt(val, numValues, values, &vloc));
       PetscCheckFalse(vloc < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Value %D not present label", val);
       sperm[voff[vloc+1]++] = oldc;
     }
     for (v = 0; v < numValues; ++v) {
       PetscCheckFalse(voff[v+1] - voff[v] != vsize[v],PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of %D values found is %D != %D", values[v], voff[v+1] - voff[v], vsize[v]);
     }
-    ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
-    ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
-    ierr = PetscArraycpy(cperm, sperm, numCells);CHKERRQ(ierr);
-    ierr = PetscFree3(sperm, vsize, voff);CHKERRQ(ierr);
+    CHKERRQ(ISRestoreIndices(valueIS, &values));
+    CHKERRQ(ISDestroy(&valueIS));
+    CHKERRQ(PetscArraycpy(cperm, sperm, numCells));
+    CHKERRQ(PetscFree3(sperm, vsize, voff));
   }
   /* Construct closure */
-  ierr = DMPlexCreateOrderingClosure_Static(dm, numCells, cperm, &clperm, &invclperm);CHKERRQ(ierr);
-  ierr = PetscFree3(cperm,mask,xls);CHKERRQ(ierr);
-  ierr = PetscFree(clperm);CHKERRQ(ierr);
+  CHKERRQ(DMPlexCreateOrderingClosure_Static(dm, numCells, cperm, &clperm, &invclperm));
+  CHKERRQ(PetscFree3(cperm,mask,xls));
+  CHKERRQ(PetscFree(clperm));
   /* Invert permutation */
-  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), pEnd-pStart, invclperm, PETSC_OWN_POINTER, perm);CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetChart(dm, &pStart, &pEnd));
+  CHKERRQ(ISCreateGeneral(PetscObjectComm((PetscObject) dm), pEnd-pStart, invclperm, PETSC_OWN_POINTER, perm));
   PetscFunctionReturn(0);
 }
 
@@ -157,20 +155,19 @@ PetscErrorCode DMPlexGetOrdering1D(DM dm, IS *perm)
   PetscInt       *points;
   const PetscInt *support, *cone;
   PetscInt        dim, pStart, pEnd, cStart, cEnd, c, vStart, vEnd, v, suppSize, lastCell = 0;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm, &dim));
   PetscCheck(dim == 1, PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Input mesh must be one dimensional, not %" PetscInt_FMT, dim);
-  ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
-  ierr = PetscMalloc1(pEnd-pStart, &points);CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetChart(dm, &pStart, &pEnd));
+  CHKERRQ(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  CHKERRQ(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+  CHKERRQ(PetscMalloc1(pEnd-pStart, &points));
   for (c = cStart; c < cEnd; ++c) points[c] = c;
   for (v = vStart; v < vEnd; ++v) points[v] = v;
   for (v = vStart; v < vEnd; ++v) {
-    ierr = DMPlexGetSupportSize(dm, v, &suppSize);CHKERRQ(ierr);
-    ierr = DMPlexGetSupport(dm, v, &support);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetSupportSize(dm, v, &suppSize));
+    CHKERRQ(DMPlexGetSupport(dm, v, &support));
     if (suppSize == 1) {lastCell = support[0]; break;}
   }
   if (v < vEnd) {
@@ -178,11 +175,11 @@ PetscErrorCode DMPlexGetOrdering1D(DM dm, IS *perm)
 
     points[v] = pos++;
     while (lastCell >= cStart) {
-      ierr = DMPlexGetCone(dm, lastCell, &cone);CHKERRQ(ierr);
+      CHKERRQ(DMPlexGetCone(dm, lastCell, &cone));
       if (cone[0] == v) v = cone[1];
       else              v = cone[0];
-      ierr = DMPlexGetSupport(dm, v, &support);CHKERRQ(ierr);
-      ierr = DMPlexGetSupportSize(dm, v, &suppSize);CHKERRQ(ierr);
+      CHKERRQ(DMPlexGetSupport(dm, v, &support));
+      CHKERRQ(DMPlexGetSupportSize(dm, v, &suppSize));
       if (suppSize == 1) {lastCell = -1;}
       else {
         if (support[0] == lastCell) lastCell = support[1];
@@ -192,7 +189,7 @@ PetscErrorCode DMPlexGetOrdering1D(DM dm, IS *perm)
     }
     PetscCheck(pos == pEnd, PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Last vertex was %" PetscInt_FMT ", not %" PetscInt_FMT, pos, pEnd);
   }
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), pEnd-pStart, points, PETSC_OWN_POINTER, perm);CHKERRQ(ierr);
+  CHKERRQ(ISCreateGeneral(PetscObjectComm((PetscObject) dm), pEnd-pStart, points, PETSC_OWN_POINTER, perm));
   PetscFunctionReturn(0);
 }
 
@@ -217,28 +214,27 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   DM_Plex       *plex = (DM_Plex *) dm->data, *plexNew;
   PetscInt       dim, cdim;
   const char    *name;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(perm, IS_CLASSID, 2);
   PetscValidPointer(pdm, 3);
-  ierr = DMCreate(PetscObjectComm((PetscObject) dm), pdm);CHKERRQ(ierr);
-  ierr = DMSetType(*pdm, DMPLEX);CHKERRQ(ierr);
-  ierr = PetscObjectGetName((PetscObject) dm, &name);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *pdm, name);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMSetDimension(*pdm, dim);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
-  ierr = DMSetCoordinateDim(*pdm, cdim);CHKERRQ(ierr);
-  ierr = DMCopyDisc(dm, *pdm);CHKERRQ(ierr);
+  CHKERRQ(DMCreate(PetscObjectComm((PetscObject) dm), pdm));
+  CHKERRQ(DMSetType(*pdm, DMPLEX));
+  CHKERRQ(PetscObjectGetName((PetscObject) dm, &name));
+  CHKERRQ(PetscObjectSetName((PetscObject) *pdm, name));
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(DMSetDimension(*pdm, dim));
+  CHKERRQ(DMGetCoordinateDim(dm, &cdim));
+  CHKERRQ(DMSetCoordinateDim(*pdm, cdim));
+  CHKERRQ(DMCopyDisc(dm, *pdm));
   if (dm->localSection) {
     PetscSection section, sectionNew;
 
-    ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
-    ierr = PetscSectionPermute(section, perm, &sectionNew);CHKERRQ(ierr);
-    ierr = DMSetLocalSection(*pdm, sectionNew);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&sectionNew);CHKERRQ(ierr);
+    CHKERRQ(DMGetLocalSection(dm, &section));
+    CHKERRQ(PetscSectionPermute(section, perm, &sectionNew));
+    CHKERRQ(DMSetLocalSection(*pdm, sectionNew));
+    CHKERRQ(PetscSectionDestroy(&sectionNew));
   }
   plexNew = (DM_Plex *) (*pdm)->data;
   /* Ignore ltogmap, ltogmapb */
@@ -249,58 +245,58 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
     PetscInt numLabels, l;
     DMLabel  label, labelNew;
 
-    ierr = DMGetNumLabels(dm, &numLabels);CHKERRQ(ierr);
+    CHKERRQ(DMGetNumLabels(dm, &numLabels));
     for (l = 0; l < numLabels; ++l) {
-      ierr = DMGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
-      ierr = DMLabelPermute(label, perm, &labelNew);CHKERRQ(ierr);
-      ierr = DMAddLabel(*pdm, labelNew);CHKERRQ(ierr);
-      ierr = DMLabelDestroy(&labelNew);CHKERRQ(ierr);
+      CHKERRQ(DMGetLabelByNum(dm, l, &label));
+      CHKERRQ(DMLabelPermute(label, perm, &labelNew));
+      CHKERRQ(DMAddLabel(*pdm, labelNew));
+      CHKERRQ(DMLabelDestroy(&labelNew));
     }
-    ierr = DMGetLabel(*pdm, "depth", &(*pdm)->depthLabel);CHKERRQ(ierr);
-    if (plex->subpointMap) {ierr = DMLabelPermute(plex->subpointMap, perm, &plexNew->subpointMap);CHKERRQ(ierr);}
+    CHKERRQ(DMGetLabel(*pdm, "depth", &(*pdm)->depthLabel));
+    if (plex->subpointMap) CHKERRQ(DMLabelPermute(plex->subpointMap, perm, &plexNew->subpointMap));
   }
   /* Reorder topology */
   {
     const PetscInt *pperm;
     PetscInt        maxConeSize, maxSupportSize, n, pStart, pEnd, p;
 
-    ierr = DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetMaxSizes(dm, &maxConeSize, &maxSupportSize));
     plexNew->maxConeSize    = maxConeSize;
     plexNew->maxSupportSize = maxSupportSize;
-    ierr = PetscSectionDestroy(&plexNew->coneSection);CHKERRQ(ierr);
-    ierr = PetscSectionPermute(plex->coneSection, perm, &plexNew->coneSection);CHKERRQ(ierr);
-    ierr = PetscSectionGetStorageSize(plexNew->coneSection, &n);CHKERRQ(ierr);
-    ierr = PetscMalloc1(n, &plexNew->cones);CHKERRQ(ierr);
-    ierr = PetscMalloc1(n, &plexNew->coneOrientations);CHKERRQ(ierr);
-    ierr = ISGetIndices(perm, &pperm);CHKERRQ(ierr);
-    ierr = PetscSectionGetChart(plex->coneSection, &pStart, &pEnd);CHKERRQ(ierr);
+    CHKERRQ(PetscSectionDestroy(&plexNew->coneSection));
+    CHKERRQ(PetscSectionPermute(plex->coneSection, perm, &plexNew->coneSection));
+    CHKERRQ(PetscSectionGetStorageSize(plexNew->coneSection, &n));
+    CHKERRQ(PetscMalloc1(n, &plexNew->cones));
+    CHKERRQ(PetscMalloc1(n, &plexNew->coneOrientations));
+    CHKERRQ(ISGetIndices(perm, &pperm));
+    CHKERRQ(PetscSectionGetChart(plex->coneSection, &pStart, &pEnd));
     for (p = pStart; p < pEnd; ++p) {
       PetscInt dof, off, offNew, d;
 
-      ierr = PetscSectionGetDof(plexNew->coneSection, pperm[p], &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(plex->coneSection, p, &off);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(plexNew->coneSection, pperm[p], &offNew);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionGetDof(plexNew->coneSection, pperm[p], &dof));
+      CHKERRQ(PetscSectionGetOffset(plex->coneSection, p, &off));
+      CHKERRQ(PetscSectionGetOffset(plexNew->coneSection, pperm[p], &offNew));
       for (d = 0; d < dof; ++d) {
         plexNew->cones[offNew+d]            = pperm[plex->cones[off+d]];
         plexNew->coneOrientations[offNew+d] = plex->coneOrientations[off+d];
       }
     }
-    ierr = PetscSectionDestroy(&plexNew->supportSection);CHKERRQ(ierr);
-    ierr = PetscSectionPermute(plex->supportSection, perm, &plexNew->supportSection);CHKERRQ(ierr);
-    ierr = PetscSectionGetStorageSize(plexNew->supportSection, &n);CHKERRQ(ierr);
-    ierr = PetscMalloc1(n, &plexNew->supports);CHKERRQ(ierr);
-    ierr = PetscSectionGetChart(plex->supportSection, &pStart, &pEnd);CHKERRQ(ierr);
+    CHKERRQ(PetscSectionDestroy(&plexNew->supportSection));
+    CHKERRQ(PetscSectionPermute(plex->supportSection, perm, &plexNew->supportSection));
+    CHKERRQ(PetscSectionGetStorageSize(plexNew->supportSection, &n));
+    CHKERRQ(PetscMalloc1(n, &plexNew->supports));
+    CHKERRQ(PetscSectionGetChart(plex->supportSection, &pStart, &pEnd));
     for (p = pStart; p < pEnd; ++p) {
       PetscInt dof, off, offNew, d;
 
-      ierr = PetscSectionGetDof(plexNew->supportSection, pperm[p], &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(plex->supportSection, p, &off);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(plexNew->supportSection, pperm[p], &offNew);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionGetDof(plexNew->supportSection, pperm[p], &dof));
+      CHKERRQ(PetscSectionGetOffset(plex->supportSection, p, &off));
+      CHKERRQ(PetscSectionGetOffset(plexNew->supportSection, pperm[p], &offNew));
       for (d = 0; d < dof; ++d) {
         plexNew->supports[offNew+d] = pperm[plex->supports[off+d]];
       }
     }
-    ierr = ISRestoreIndices(perm, &pperm);CHKERRQ(ierr);
+    CHKERRQ(ISRestoreIndices(perm, &pperm));
   }
   /* Remap coordinates */
   {
@@ -312,35 +308,35 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
     PetscInt        pStart, pEnd, p;
     const char     *name;
 
-    ierr = DMGetCoordinateDM(dm, &cdm);CHKERRQ(ierr);
-    ierr = DMGetLocalSection(cdm, &csection);CHKERRQ(ierr);
-    ierr = PetscSectionPermute(csection, perm, &csectionNew);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-    ierr = VecDuplicate(coordinates, &coordinatesNew);CHKERRQ(ierr);
-    ierr = PetscObjectGetName((PetscObject)coordinates,&name);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)coordinatesNew,name);CHKERRQ(ierr);
-    ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
-    ierr = VecGetArray(coordinatesNew, &coordsNew);CHKERRQ(ierr);
-    ierr = PetscSectionGetChart(csectionNew, &pStart, &pEnd);CHKERRQ(ierr);
-    ierr = ISGetIndices(perm, &pperm);CHKERRQ(ierr);
+    CHKERRQ(DMGetCoordinateDM(dm, &cdm));
+    CHKERRQ(DMGetLocalSection(cdm, &csection));
+    CHKERRQ(PetscSectionPermute(csection, perm, &csectionNew));
+    CHKERRQ(DMGetCoordinatesLocal(dm, &coordinates));
+    CHKERRQ(VecDuplicate(coordinates, &coordinatesNew));
+    CHKERRQ(PetscObjectGetName((PetscObject)coordinates,&name));
+    CHKERRQ(PetscObjectSetName((PetscObject)coordinatesNew,name));
+    CHKERRQ(VecGetArray(coordinates, &coords));
+    CHKERRQ(VecGetArray(coordinatesNew, &coordsNew));
+    CHKERRQ(PetscSectionGetChart(csectionNew, &pStart, &pEnd));
+    CHKERRQ(ISGetIndices(perm, &pperm));
     for (p = pStart; p < pEnd; ++p) {
       PetscInt dof, off, offNew, d;
 
-      ierr = PetscSectionGetDof(csectionNew, p, &dof);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(csection, p, &off);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(csectionNew, pperm[p], &offNew);CHKERRQ(ierr);
+      CHKERRQ(PetscSectionGetDof(csectionNew, p, &dof));
+      CHKERRQ(PetscSectionGetOffset(csection, p, &off));
+      CHKERRQ(PetscSectionGetOffset(csectionNew, pperm[p], &offNew));
       for (d = 0; d < dof; ++d) coordsNew[offNew+d] = coords[off+d];
     }
-    ierr = ISRestoreIndices(perm, &pperm);CHKERRQ(ierr);
-    ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-    ierr = VecRestoreArray(coordinatesNew, &coordsNew);CHKERRQ(ierr);
-    ierr = DMGetCoordinateDM(*pdm, &cdmNew);CHKERRQ(ierr);
-    ierr = DMSetLocalSection(cdmNew, csectionNew);CHKERRQ(ierr);
-    ierr = DMSetCoordinatesLocal(*pdm, coordinatesNew);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&csectionNew);CHKERRQ(ierr);
-    ierr = VecDestroy(&coordinatesNew);CHKERRQ(ierr);
+    CHKERRQ(ISRestoreIndices(perm, &pperm));
+    CHKERRQ(VecRestoreArray(coordinates, &coords));
+    CHKERRQ(VecRestoreArray(coordinatesNew, &coordsNew));
+    CHKERRQ(DMGetCoordinateDM(*pdm, &cdmNew));
+    CHKERRQ(DMSetLocalSection(cdmNew, csectionNew));
+    CHKERRQ(DMSetCoordinatesLocal(*pdm, coordinatesNew));
+    CHKERRQ(PetscSectionDestroy(&csectionNew));
+    CHKERRQ(VecDestroy(&coordinatesNew));
   }
-  ierr = DMPlexCopy_Internal(dm, PETSC_TRUE, *pdm);CHKERRQ(ierr);
+  CHKERRQ(DMPlexCopy_Internal(dm, PETSC_TRUE, *pdm));
   (*pdm)->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

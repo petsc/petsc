@@ -13,38 +13,37 @@ static PetscErrorCode test(PetscInt dim, PetscInt formDegree, PetscInt degree, P
   PetscQuadrature  quad;
   PetscInt         npoints;
   const PetscReal *points;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscSpaceCreate(comm, &sp);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)sp, "ptrimmed");CHKERRQ(ierr);
-  ierr = PetscSpaceSetType(sp, PETSCSPACEPTRIMMED);CHKERRQ(ierr);
-  ierr = PetscSpaceSetNumVariables(sp, dim);CHKERRQ(ierr);
-  ierr = PetscDTBinomialInt(dim, PetscAbsInt(formDegree), &Nf);CHKERRQ(ierr);
-  ierr = PetscSpaceSetNumComponents(sp, Nf * nCopies);CHKERRQ(ierr);
-  ierr = PetscSpaceSetDegree(sp, degree, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = PetscSpacePTrimmedSetFormDegree(sp, formDegree);CHKERRQ(ierr);
-  ierr = PetscSpaceSetUp(sp);CHKERRQ(ierr);
-  ierr = PetscSpaceView(sp, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscSpaceCreate(comm, &sp));
+  CHKERRQ(PetscObjectSetName((PetscObject)sp, "ptrimmed"));
+  CHKERRQ(PetscSpaceSetType(sp, PETSCSPACEPTRIMMED));
+  CHKERRQ(PetscSpaceSetNumVariables(sp, dim));
+  CHKERRQ(PetscDTBinomialInt(dim, PetscAbsInt(formDegree), &Nf));
+  CHKERRQ(PetscSpaceSetNumComponents(sp, Nf * nCopies));
+  CHKERRQ(PetscSpaceSetDegree(sp, degree, PETSC_DETERMINE));
+  CHKERRQ(PetscSpacePTrimmedSetFormDegree(sp, formDegree));
+  CHKERRQ(PetscSpaceSetUp(sp));
+  CHKERRQ(PetscSpaceView(sp, NULL));
 
-  ierr = PetscDTPTrimmedSize(dim, formDegree == 0 ? degree : degree + 1, PetscAbsInt(formDegree), &Nbexp);CHKERRQ(ierr);
+  CHKERRQ(PetscDTPTrimmedSize(dim, formDegree == 0 ? degree : degree + 1, PetscAbsInt(formDegree), &Nbexp));
   Nbexp *= nCopies;
-  ierr = PetscSpaceGetDimension(sp, &Nb);CHKERRQ(ierr);
+  CHKERRQ(PetscSpaceGetDimension(sp, &Nb));
   PetscCheckFalse(Nb != Nbexp,comm, PETSC_ERR_PLIB, "Space dimension mismatch, %D != %D", Nbexp, Nb);
 
   maxDexp = (PetscAbsInt(formDegree) == dim || formDegree == 0) ? degree : degree + 1;
-  ierr = PetscSpaceGetDegree(sp, &d, &maxD);CHKERRQ(ierr);
+  CHKERRQ(PetscSpaceGetDegree(sp, &d, &maxD));
   PetscCheckFalse(degree != d,comm, PETSC_ERR_PLIB, "Space degree mismatch, %D != %D", degree, d);
   PetscCheckFalse(maxDexp != maxD,comm, PETSC_ERR_PLIB, "Space max degree mismatch, %D != %D", maxDexp, maxD);
 
-  ierr = PetscDTStroudConicalQuadrature(dim, 1, maxD + 1, -1., 1., &quad);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(quad, NULL, NULL, &npoints, &points, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscDTStroudConicalQuadrature(dim, 1, maxD + 1, -1., 1., &quad));
+  CHKERRQ(PetscQuadratureGetData(quad, NULL, NULL, &npoints, &points, NULL));
 
   Bsize = npoints * Nb * Nf * nCopies;
   Dsize = dim * Bsize;
   Hsize = dim * Dsize;
-  ierr = PetscMalloc3(Bsize, &B, Dsize, &D, Hsize, &H);CHKERRQ(ierr);
-  ierr = PetscSpaceEvaluate(sp, npoints, points, B, D, H);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc3(Bsize, &B, Dsize, &D, Hsize, &H));
+  CHKERRQ(PetscSpaceEvaluate(sp, npoints, points, B, D, H));
   for (PetscInt i = 0; i < Bsize; i++) {
     PetscCheckFalse(PetscIsInfOrNanReal(B[i]),comm, PETSC_ERR_PLIB, "Bad value B[%D]", i);
   }
@@ -54,9 +53,9 @@ static PetscErrorCode test(PetscInt dim, PetscInt formDegree, PetscInt degree, P
   for (PetscInt i = 0; i < Hsize; i++) {
     PetscCheckFalse(PetscIsInfOrNanReal(H[i]),comm, PETSC_ERR_PLIB, "Bad value H[%H]", i);
   }
-  ierr = PetscFree3(B, D, H);CHKERRQ(ierr);
-  ierr = PetscQuadratureDestroy(&quad);CHKERRQ(ierr);
-  ierr = PetscSpaceDestroy(&sp);CHKERRQ(ierr);
+  CHKERRQ(PetscFree3(B, D, H));
+  CHKERRQ(PetscQuadratureDestroy(&quad));
+  CHKERRQ(PetscSpaceDestroy(&sp));
   PetscFunctionReturn(0);
 }
 
@@ -70,7 +69,7 @@ int main(int argc, char *argv[])
       for (PetscInt degree = 0; degree <= 4; degree++) {
         if (formDegree == 0 && degree == 0) continue;
         for (PetscInt nCopies = 1; nCopies <= PetscMax(2,dim); nCopies++) {
-          ierr = test(dim, formDegree, degree, nCopies);CHKERRQ(ierr);
+          CHKERRQ(test(dim, formDegree, degree, nCopies));
         }
       }
     }

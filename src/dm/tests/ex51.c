@@ -21,63 +21,63 @@ int main(int argc,char **argv)
   PetscInt         start,end;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer));
 
   /* Read options */
-  ierr = PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-star_stencil",&flg,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-star_stencil",&flg,NULL));
   if (flg) stype = DMDA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,m,n,1,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,m,n,1,1,NULL,NULL,&da));
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
 
-  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,M*N,&localall);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(da,&global));
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,M*N,&localall));
 
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  CHKERRQ(VecGetOwnershipRange(global,&start,&end));
   for (i=start; i<end; i++) {
     value = 5.0*rank;
-    ierr  = VecSetValues(global,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(global,1,&i,&value,INSERT_VALUES));
   }
-  ierr = VecView(global,viewer);CHKERRQ(ierr);
+  CHKERRQ(VecView(global,viewer));
 
   /*
      Create Scatter from global DMDA parallel vector to local vector that
    contains all entries
   */
-  ierr = DMDAGlobalToNaturalAllCreate(da,&tolocalall);CHKERRQ(ierr);
-  ierr = DMDANaturalAllToGlobalCreate(da,&fromlocalall);CHKERRQ(ierr);
+  CHKERRQ(DMDAGlobalToNaturalAllCreate(da,&tolocalall));
+  CHKERRQ(DMDANaturalAllToGlobalCreate(da,&fromlocalall));
 
-  ierr = VecScatterBegin(tolocalall,global,localall,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(tolocalall,global,localall,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  CHKERRQ(VecScatterBegin(tolocalall,global,localall,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterEnd(tolocalall,global,localall,INSERT_VALUES,SCATTER_FORWARD));
 
-  ierr = VecGetArray(localall,&vlocal);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(localall,&vlocal));
   for (j=0; j<N; j++) {
     for (i=0; i<M; i++) {
       *vlocal++ += i + j*M;
     }
   }
-  ierr = VecRestoreArray(localall,&vlocal);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(localall,&vlocal));
 
   /* scatter back to global vector */
-  ierr = VecScatterBegin(fromlocalall,localall,global,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(fromlocalall,localall,global,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  CHKERRQ(VecScatterBegin(fromlocalall,localall,global,INSERT_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterEnd(fromlocalall,localall,global,INSERT_VALUES,SCATTER_FORWARD));
 
-  ierr = VecView(global,viewer);CHKERRQ(ierr);
+  CHKERRQ(VecView(global,viewer));
 
   /* Free memory */
-  ierr = VecScatterDestroy(&tolocalall);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&fromlocalall);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(&localall);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  CHKERRQ(VecScatterDestroy(&tolocalall));
+  CHKERRQ(VecScatterDestroy(&fromlocalall));
+  CHKERRQ(PetscViewerDestroy(&viewer));
+  CHKERRQ(VecDestroy(&localall));
+  CHKERRQ(VecDestroy(&global));
+  CHKERRQ(DMDestroy(&da));
   ierr = PetscFinalize();
   return ierr;
 }

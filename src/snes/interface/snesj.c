@@ -59,103 +59,102 @@ PetscErrorCode  SNESComputeJacobianDefault(SNES snes,Vec x1,Mat J,Mat B,void *ct
   PetscFunctionBegin;
   snes->max_funcs = PETSC_MAX_INT;
   /* Since this Jacobian will possibly have "extra" nonzero locations just turn off errors for these locations */
-  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_test_err",&epsilon,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
+  CHKERRQ(PetscOptionsGetReal(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_test_err",&epsilon,NULL));
 
-  ierr = PetscObjectGetComm((PetscObject)x1,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  ierr = MatAssembled(B,&assembled);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)x1,&comm));
+  CHKERRMPI(MPI_Comm_size(comm,&size));
+  CHKERRQ(MatAssembled(B,&assembled));
   if (assembled) {
-    ierr = MatZeroEntries(B);CHKERRQ(ierr);
+    CHKERRQ(MatZeroEntries(B));
   }
   if (!snes->nvwork) {
     if (snes->dm) {
-      ierr = DMGetGlobalVector(snes->dm,&j1a);CHKERRQ(ierr);
-      ierr = DMGetGlobalVector(snes->dm,&j2a);CHKERRQ(ierr);
-      ierr = DMGetGlobalVector(snes->dm,&x2);CHKERRQ(ierr);
+      CHKERRQ(DMGetGlobalVector(snes->dm,&j1a));
+      CHKERRQ(DMGetGlobalVector(snes->dm,&j2a));
+      CHKERRQ(DMGetGlobalVector(snes->dm,&x2));
     } else {
       snes->nvwork = 3;
-      ierr = VecDuplicateVecs(x1,snes->nvwork,&snes->vwork);CHKERRQ(ierr);
-      ierr = PetscLogObjectParents(snes,snes->nvwork,snes->vwork);CHKERRQ(ierr);
+      CHKERRQ(VecDuplicateVecs(x1,snes->nvwork,&snes->vwork));
+      CHKERRQ(PetscLogObjectParents(snes,snes->nvwork,snes->vwork));
       j1a = snes->vwork[0]; j2a = snes->vwork[1]; x2 = snes->vwork[2];
     }
   }
 
-  ierr = VecGetSize(x1,&N);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(x1,&start,&end);CHKERRQ(ierr);
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = DMGetDMSNES(dm,&dms);CHKERRQ(ierr);
+  CHKERRQ(VecGetSize(x1,&N));
+  CHKERRQ(VecGetOwnershipRange(x1,&start,&end));
+  CHKERRQ(SNESGetDM(snes,&dm));
+  CHKERRQ(DMGetDMSNES(dm,&dms));
   if (dms->ops->computemffunction) {
-    ierr = SNESComputeMFFunction(snes,x1,j1a);CHKERRQ(ierr);
+    CHKERRQ(SNESComputeMFFunction(snes,x1,j1a));
   } else {
-    ierr = SNESComputeFunction(snes,x1,j1a);CHKERRQ(ierr);
+    CHKERRQ(SNESComputeFunction(snes,x1,j1a));
   }
 
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)snes),((PetscObject)snes)->prefix,"Differencing options","SNES");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-mat_fd_type","Algorithm to compute difference parameter","SNESComputeJacobianDefault",list,2,"wp",&value,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsEList("-mat_fd_type","Algorithm to compute difference parameter","SNESComputeJacobianDefault",list,2,"wp",&value,&flg));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (flg && !value) use_wp = PETSC_FALSE;
 
   if (use_wp) {
-    ierr = VecNorm(x1,NORM_2,&unorm);CHKERRQ(ierr);
+    CHKERRQ(VecNorm(x1,NORM_2,&unorm));
   }
   /* Compute Jacobian approximation, 1 column at a time.
       x1 = current iterate, j1a = F(x1)
       x2 = perturbed iterate, j2a = F(x2)
    */
   for (i=0; i<N; i++) {
-    ierr = VecCopy(x1,x2);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(x1,x2));
     if (i>= start && i<end) {
-      ierr = VecGetArrayRead(x1,&xx);CHKERRQ(ierr);
+      CHKERRQ(VecGetArrayRead(x1,&xx));
       if (use_wp) dx = PetscSqrtReal(1.0 + unorm);
       else        dx = xx[i-start];
-      ierr = VecRestoreArrayRead(x1,&xx);CHKERRQ(ierr);
+      CHKERRQ(VecRestoreArrayRead(x1,&xx));
       if (PetscAbsScalar(dx) < dx_min) dx = (PetscRealPart(dx) < 0. ? -1. : 1.) * dx_par;
       dx    *= epsilon;
       wscale = 1.0/dx;
-      ierr   = VecSetValues(x2,1,&i,&dx,ADD_VALUES);CHKERRQ(ierr);
+      CHKERRQ(VecSetValues(x2,1,&i,&dx,ADD_VALUES));
     } else {
       wscale = 0.0;
     }
-    ierr = VecAssemblyBegin(x2);CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(x2);CHKERRQ(ierr);
+    CHKERRQ(VecAssemblyBegin(x2));
+    CHKERRQ(VecAssemblyEnd(x2));
     if (dms->ops->computemffunction) {
-      ierr = SNESComputeMFFunction(snes,x2,j2a);CHKERRQ(ierr);
+      CHKERRQ(SNESComputeMFFunction(snes,x2,j2a));
     } else {
-      ierr = SNESComputeFunction(snes,x2,j2a);CHKERRQ(ierr);
+      CHKERRQ(SNESComputeFunction(snes,x2,j2a));
     }
-    ierr = VecAXPY(j2a,-1.0,j1a);CHKERRQ(ierr);
+    CHKERRQ(VecAXPY(j2a,-1.0,j1a));
     /* Communicate scale=1/dx_i to all processors */
-    ierr = VecGetOwnershipRanges(x1,&ranges);CHKERRQ(ierr);
+    CHKERRQ(VecGetOwnershipRanges(x1,&ranges));
     root = size;
     for (j=size-1; j>-1; j--) {
       root--;
       if (i>=ranges[j]) break;
     }
-    ierr = MPI_Bcast(&wscale,1,MPIU_SCALAR,root,comm);CHKERRMPI(ierr);
-    ierr = VecScale(j2a,wscale);CHKERRQ(ierr);
-    ierr = VecNorm(j2a,NORM_INFINITY,&amax);CHKERRQ(ierr); amax *= 1.e-14;
-    ierr = VecGetArray(j2a,&y);CHKERRQ(ierr);
+    CHKERRMPI(MPI_Bcast(&wscale,1,MPIU_SCALAR,root,comm));
+    CHKERRQ(VecScale(j2a,wscale));
+    CHKERRQ(VecNorm(j2a,NORM_INFINITY,&amax)); amax *= 1.e-14;
+    CHKERRQ(VecGetArray(j2a,&y));
     for (j=start; j<end; j++) {
       if (PetscAbsScalar(y[j-start]) > amax || j == i) {
-        ierr = MatSetValues(B,1,&j,1,&i,y+j-start,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValues(B,1,&j,1,&i,y+j-start,INSERT_VALUES));
       }
     }
-    ierr = VecRestoreArray(j2a,&y);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(j2a,&y));
   }
   if (snes->dm) {
-    ierr = DMRestoreGlobalVector(snes->dm,&j1a);CHKERRQ(ierr);
-    ierr = DMRestoreGlobalVector(snes->dm,&j2a);CHKERRQ(ierr);
-    ierr = DMRestoreGlobalVector(snes->dm,&x2);CHKERRQ(ierr);
+    CHKERRQ(DMRestoreGlobalVector(snes->dm,&j1a));
+    CHKERRQ(DMRestoreGlobalVector(snes->dm,&j2a));
+    CHKERRQ(DMRestoreGlobalVector(snes->dm,&x2));
   }
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY));
   if (B != J) {
-    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY));
   }
   snes->max_funcs = max_funcs;
   snes->nfuncs    -= N;
   PetscFunctionReturn(0);
 }
-

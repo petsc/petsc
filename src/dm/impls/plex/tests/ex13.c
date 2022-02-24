@@ -17,8 +17,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->testNum       = 0;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex13.c", options->testPartition, &options->testPartition, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBoundedInt("-test_num", "The test partition number", "ex13.c", options->testNum, &options->testNum, NULL,0);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-test_partition", "Use a fixed partition for testing", "ex13.c", options->testPartition, &options->testPartition, NULL));
+  CHKERRQ(PetscOptionsBoundedInt("-test_num", "The test partition number", "ex13.c", options->testNum, &options->testNum, NULL,0));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -28,23 +28,22 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   DM             dmDist = NULL;
   PetscBool      simplex;
   PetscInt       dim;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexDistributeSetDefault(*dm, PETSC_FALSE);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexIsSimplex(*dm, &simplex);CHKERRQ(ierr);
+  CHKERRQ(DMCreate(comm, dm));
+  CHKERRQ(DMSetType(*dm, DMPLEX));
+  CHKERRQ(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(DMGetDimension(*dm, &dim));
+  CHKERRQ(DMPlexIsSimplex(*dm, &simplex));
   if (user->testPartition) {
     PetscPartitioner part;
     PetscInt        *sizes  = NULL;
     PetscInt        *points = NULL;
     PetscMPIInt      rank, size;
 
-    ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-    ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Comm_rank(comm, &rank));
+    CHKERRMPI(MPI_Comm_size(comm, &size));
     if (rank == 0) {
       if (dim == 2 && simplex && size == 2) {
         switch (user->testNum) {
@@ -52,17 +51,17 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
           PetscInt triSizes_p2[2]  = {4, 4};
           PetscInt triPoints_p2[8] = {3, 5, 6, 7, 0, 1, 2, 4};
 
-          ierr = PetscMalloc2(2, &sizes, 8, &points);CHKERRQ(ierr);
-          ierr = PetscArraycpy(sizes,  triSizes_p2, 2);CHKERRQ(ierr);
-          ierr = PetscArraycpy(points, triPoints_p2, 8);CHKERRQ(ierr);
+          CHKERRQ(PetscMalloc2(2, &sizes, 8, &points));
+          CHKERRQ(PetscArraycpy(sizes,  triSizes_p2, 2));
+          CHKERRQ(PetscArraycpy(points, triPoints_p2, 8));
           break;}
         case 1: {
           PetscInt triSizes_p2[2]  = {6, 2};
           PetscInt triPoints_p2[8] = {1, 2, 3, 4, 6, 7, 0, 5};
 
-          ierr = PetscMalloc2(2, &sizes, 8, &points);CHKERRQ(ierr);
-          ierr = PetscArraycpy(sizes,  triSizes_p2, 2);CHKERRQ(ierr);
-          ierr = PetscArraycpy(points, triPoints_p2, 8);CHKERRQ(ierr);
+          CHKERRQ(PetscMalloc2(2, &sizes, 8, &points));
+          CHKERRQ(PetscArraycpy(sizes,  triSizes_p2, 2));
+          CHKERRQ(PetscArraycpy(points, triPoints_p2, 8));
           break;}
         default:
           SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %d for triangular mesh on 2 procs", user->testNum);
@@ -71,56 +70,53 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
         PetscInt triSizes_p3[3]  = {3, 3, 2};
         PetscInt triPoints_p3[8] = {1, 2, 4, 3, 6, 7, 0, 5};
 
-        ierr = PetscMalloc2(3, &sizes, 8, &points);CHKERRQ(ierr);
-        ierr = PetscArraycpy(sizes,  triSizes_p3, 3);CHKERRQ(ierr);
-        ierr = PetscArraycpy(points, triPoints_p3, 8);CHKERRQ(ierr);
+        CHKERRQ(PetscMalloc2(3, &sizes, 8, &points));
+        CHKERRQ(PetscArraycpy(sizes,  triSizes_p3, 3));
+        CHKERRQ(PetscArraycpy(points, triPoints_p3, 8));
       } else if (dim == 2 && !simplex && size == 2) {
         PetscInt quadSizes_p2[2]  = {2, 2};
         PetscInt quadPoints_p2[4] = {2, 3, 0, 1};
 
-        ierr = PetscMalloc2(2, &sizes, 4, &points);CHKERRQ(ierr);
-        ierr = PetscArraycpy(sizes,  quadSizes_p2, 2);CHKERRQ(ierr);
-        ierr = PetscArraycpy(points, quadPoints_p2, 4);CHKERRQ(ierr);
+        CHKERRQ(PetscMalloc2(2, &sizes, 4, &points));
+        CHKERRQ(PetscArraycpy(sizes,  quadSizes_p2, 2));
+        CHKERRQ(PetscArraycpy(points, quadPoints_p2, 4));
       } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test partition");
     }
-    ierr = DMPlexGetPartitioner(*dm, &part);CHKERRQ(ierr);
-    ierr = PetscPartitionerSetType(part, PETSCPARTITIONERSHELL);CHKERRQ(ierr);
-    ierr = PetscPartitionerShellSetPartition(part, size, sizes, points);CHKERRQ(ierr);
-    ierr = PetscFree2(sizes, points);CHKERRQ(ierr);
+    CHKERRQ(DMPlexGetPartitioner(*dm, &part));
+    CHKERRQ(PetscPartitionerSetType(part, PETSCPARTITIONERSHELL));
+    CHKERRQ(PetscPartitionerShellSetPartition(part, size, sizes, points));
+    CHKERRQ(PetscFree2(sizes, points));
   }
-  ierr = DMPlexDistribute(*dm, 0, NULL, &dmDist);CHKERRQ(ierr);
+  CHKERRQ(DMPlexDistribute(*dm, 0, NULL, &dmDist));
   if (dmDist) {
-    ierr = DMDestroy(dm);CHKERRQ(ierr);
+    CHKERRQ(DMDestroy(dm));
     *dm  = dmDist;
   }
-  ierr = PetscObjectSetName((PetscObject) *dm, simplex ? "Simplicial Mesh" : "Tensor Product Mesh");CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(PetscObjectSetName((PetscObject) *dm, simplex ? "Simplicial Mesh" : "Tensor Product Mesh"));
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode ScrambleOrientation(DM dm, AppCtx *user)
 {
   PetscInt       h, cStart, cEnd, c;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMPlexGetVTKCellHeight(dm, &h);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, h, &cStart, &cEnd);CHKERRQ(ierr);
+  CHKERRQ(DMPlexGetVTKCellHeight(dm, &h));
+  CHKERRQ(DMPlexGetHeightStratum(dm, h, &cStart, &cEnd));
   for (c = cStart; c < cEnd; ++c) {
     /* Could use PetscRand instead */
-    if (c%2) {ierr = DMPlexOrientPoint(dm, c, -1);CHKERRQ(ierr);}
+    if (c%2) CHKERRQ(DMPlexOrientPoint(dm, c, -1));
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TestOrientation(DM dm, AppCtx *user)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = ScrambleOrientation(dm, user);CHKERRQ(ierr);
-  ierr = DMPlexOrient(dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-oriented_dm_view");CHKERRQ(ierr);
+  CHKERRQ(ScrambleOrientation(dm, user));
+  CHKERRQ(DMPlexOrient(dm));
+  CHKERRQ(DMViewFromOptions(dm, NULL, "-oriented_dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -131,10 +127,10 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
-  ierr = TestOrientation(dm, &user);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
+  CHKERRQ(TestOrientation(dm, &user));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

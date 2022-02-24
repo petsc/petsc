@@ -12,7 +12,7 @@ typedef struct {
 /* These need to be macros because they use sizeof */
 #define IndexSpaceGet(buf,nrow,ncol,irowm,icolm) do {                   \
     if (nrow + ncol > (PetscInt)(sizeof(buf)/sizeof(buf[0]))) {         \
-      ierr = PetscMalloc2(nrow,&irowm,ncol,&icolm);CHKERRQ(ierr); \
+      CHKERRQ(PetscMalloc2(nrow,&irowm,ncol,&icolm)); \
     } else {                                                            \
       irowm = &buf[0];                                                  \
       icolm = &buf[nrow];                                               \
@@ -21,7 +21,7 @@ typedef struct {
 
 #define IndexSpaceRestore(buf,nrow,ncol,irowm,icolm) do {       \
     if (nrow + ncol > (PetscInt)(sizeof(buf)/sizeof(buf[0]))) { \
-      ierr = PetscFree2(irowm,icolm);CHKERRQ(ierr);             \
+      CHKERRQ(PetscFree2(irowm,icolm));             \
     }                                                           \
 } while (0)
 
@@ -38,15 +38,14 @@ static void BlockIndicesExpand(PetscInt n,const PetscInt idx[],PetscInt bs,Petsc
 static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Block(Mat A,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv)
 {
   Mat_LocalRef   *lr = (Mat_LocalRef*)A->data;
-  PetscErrorCode ierr;
   PetscInt       buf[4096],*irowm=NULL,*icolm; /* suppress maybe-uninitialized warning */
 
   PetscFunctionBegin;
   if (!nrow || !ncol) PetscFunctionReturn(0);
   IndexSpaceGet(buf,nrow,ncol,irowm,icolm);
-  ierr = ISLocalToGlobalMappingApplyBlock(A->rmap->mapping,nrow,irow,irowm);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApplyBlock(A->cmap->mapping,ncol,icol,icolm);CHKERRQ(ierr);
-  ierr = (*lr->SetValuesBlocked)(lr->Top,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
+  CHKERRQ(ISLocalToGlobalMappingApplyBlock(A->rmap->mapping,nrow,irow,irowm));
+  CHKERRQ(ISLocalToGlobalMappingApplyBlock(A->cmap->mapping,ncol,icol,icolm));
+  CHKERRQ((*lr->SetValuesBlocked)(lr->Top,nrow,irowm,ncol,icolm,y,addv));
   IndexSpaceRestore(buf,nrow,ncol,irowm,icolm);
   PetscFunctionReturn(0);
 }
@@ -54,17 +53,16 @@ static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Block(Mat A,PetscInt nro
 static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Scalar(Mat A,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv)
 {
   Mat_LocalRef   *lr = (Mat_LocalRef*)A->data;
-  PetscErrorCode ierr;
   PetscInt       rbs,cbs,buf[4096],*irowm,*icolm;
 
   PetscFunctionBegin;
-  ierr = MatGetBlockSizes(A,&rbs,&cbs);CHKERRQ(ierr);
+  CHKERRQ(MatGetBlockSizes(A,&rbs,&cbs));
   IndexSpaceGet(buf,nrow*rbs,ncol*cbs,irowm,icolm);
   BlockIndicesExpand(nrow,irow,rbs,irowm);
   BlockIndicesExpand(ncol,icol,cbs,icolm);
-  ierr = ISLocalToGlobalMappingApplyBlock(A->rmap->mapping,nrow*rbs,irowm,irowm);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApplyBlock(A->cmap->mapping,ncol*cbs,icolm,icolm);CHKERRQ(ierr);
-  ierr = (*lr->SetValues)(lr->Top,nrow*rbs,irowm,ncol*cbs,icolm,y,addv);CHKERRQ(ierr);
+  CHKERRQ(ISLocalToGlobalMappingApplyBlock(A->rmap->mapping,nrow*rbs,irowm,irowm));
+  CHKERRQ(ISLocalToGlobalMappingApplyBlock(A->cmap->mapping,ncol*cbs,icolm,icolm));
+  CHKERRQ((*lr->SetValues)(lr->Top,nrow*rbs,irowm,ncol*cbs,icolm,y,addv));
   IndexSpaceRestore(buf,nrow*rbs,ncol*cbs,irowm,icolm);
   PetscFunctionReturn(0);
 }
@@ -72,7 +70,6 @@ static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Scalar(Mat A,PetscInt nr
 static PetscErrorCode MatSetValuesLocal_LocalRef_Scalar(Mat A,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv)
 {
   Mat_LocalRef   *lr = (Mat_LocalRef*)A->data;
-  PetscErrorCode ierr;
   PetscInt       buf[4096],*irowm,*icolm;
 
   PetscFunctionBegin;
@@ -80,17 +77,17 @@ static PetscErrorCode MatSetValuesLocal_LocalRef_Scalar(Mat A,PetscInt nrow,cons
   /* If the row IS defining this submatrix was an ISBLOCK, then the unblocked LGMapApply is the right one to use.  If
    * instead it was (say) an ISSTRIDE with a block size > 1, then we need to use LGMapApplyBlock */
   if (lr->rowisblock) {
-    ierr = ISLocalToGlobalMappingApply(A->rmap->mapping,nrow,irow,irowm);CHKERRQ(ierr);
+    CHKERRQ(ISLocalToGlobalMappingApply(A->rmap->mapping,nrow,irow,irowm));
   } else {
-    ierr = ISLocalToGlobalMappingApplyBlock(A->rmap->mapping,nrow,irow,irowm);CHKERRQ(ierr);
+    CHKERRQ(ISLocalToGlobalMappingApplyBlock(A->rmap->mapping,nrow,irow,irowm));
   }
   /* As above, but for the column IS. */
   if (lr->colisblock) {
-    ierr = ISLocalToGlobalMappingApply(A->cmap->mapping,ncol,icol,icolm);CHKERRQ(ierr);
+    CHKERRQ(ISLocalToGlobalMappingApply(A->cmap->mapping,ncol,icol,icolm));
   } else {
-    ierr = ISLocalToGlobalMappingApplyBlock(A->cmap->mapping,ncol,icol,icolm);CHKERRQ(ierr);
+    CHKERRQ(ISLocalToGlobalMappingApplyBlock(A->cmap->mapping,ncol,icol,icolm));
   }
-  ierr = (*lr->SetValues)(lr->Top,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
+  CHKERRQ((*lr->SetValues)(lr->Top,nrow,irowm,ncol,icolm,y,addv));
   IndexSpaceRestore(buf,nrow,ncol,irowm,icolm);
   PetscFunctionReturn(0);
 }
@@ -98,7 +95,6 @@ static PetscErrorCode MatSetValuesLocal_LocalRef_Scalar(Mat A,PetscInt nrow,cons
 /* Compose an IS with an ISLocalToGlobalMapping to map from IS source indices to global indices */
 static PetscErrorCode ISL2GCompose(IS is,ISLocalToGlobalMapping ltog,ISLocalToGlobalMapping *cltog)
 {
-  PetscErrorCode ierr;
   const PetscInt *idx;
   PetscInt       m,*idxm;
   PetscInt       bs;
@@ -108,40 +104,39 @@ static PetscErrorCode ISL2GCompose(IS is,ISLocalToGlobalMapping ltog,ISLocalToGl
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,2);
   PetscValidPointer(cltog,3);
-  ierr = PetscObjectTypeCompare((PetscObject)is,ISBLOCK,&isblock);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)is,ISBLOCK,&isblock));
   if (isblock) {
     PetscInt lbs;
 
-    ierr = ISGetBlockSize(is,&bs);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetBlockSize(ltog,&lbs);CHKERRQ(ierr);
+    CHKERRQ(ISGetBlockSize(is,&bs));
+    CHKERRQ(ISLocalToGlobalMappingGetBlockSize(ltog,&lbs));
     if (bs == lbs) {
-      ierr = ISGetLocalSize(is,&m);CHKERRQ(ierr);
+      CHKERRQ(ISGetLocalSize(is,&m));
       m    = m/bs;
-      ierr = ISBlockGetIndices(is,&idx);CHKERRQ(ierr);
-      ierr = PetscMalloc1(m,&idxm);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingApplyBlock(ltog,m,idx,idxm);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)is),bs,m,idxm,PETSC_OWN_POINTER,cltog);CHKERRQ(ierr);
-      ierr = ISBlockRestoreIndices(is,&idx);CHKERRQ(ierr);
+      CHKERRQ(ISBlockGetIndices(is,&idx));
+      CHKERRQ(PetscMalloc1(m,&idxm));
+      CHKERRQ(ISLocalToGlobalMappingApplyBlock(ltog,m,idx,idxm));
+      CHKERRQ(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)is),bs,m,idxm,PETSC_OWN_POINTER,cltog));
+      CHKERRQ(ISBlockRestoreIndices(is,&idx));
       PetscFunctionReturn(0);
     }
   }
-  ierr = ISGetLocalSize(is,&m);CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&idx);CHKERRQ(ierr);
-  ierr = ISGetBlockSize(is,&bs);CHKERRQ(ierr);
-  ierr = PetscMalloc1(m,&idxm);CHKERRQ(ierr);
+  CHKERRQ(ISGetLocalSize(is,&m));
+  CHKERRQ(ISGetIndices(is,&idx));
+  CHKERRQ(ISGetBlockSize(is,&bs));
+  CHKERRQ(PetscMalloc1(m,&idxm));
   if (ltog) {
-    ierr = ISLocalToGlobalMappingApply(ltog,m,idx,idxm);CHKERRQ(ierr);
+    CHKERRQ(ISLocalToGlobalMappingApply(ltog,m,idx,idxm));
   } else {
-    ierr = PetscArraycpy(idxm,idx,m);CHKERRQ(ierr);
+    CHKERRQ(PetscArraycpy(idxm,idx,m));
   }
-  ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)is),bs,m,idxm,PETSC_OWN_POINTER,cltog);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is,&idx);CHKERRQ(ierr);
+  CHKERRQ(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)is),bs,m,idxm,PETSC_OWN_POINTER,cltog));
+  CHKERRQ(ISRestoreIndices(is,&idx));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode ISL2GComposeBlock(IS is,ISLocalToGlobalMapping ltog,ISLocalToGlobalMapping *cltog)
 {
-  PetscErrorCode ierr;
   const PetscInt *idx;
   PetscInt       m,*idxm,bs;
 
@@ -149,26 +144,24 @@ static PetscErrorCode ISL2GComposeBlock(IS is,ISLocalToGlobalMapping ltog,ISLoca
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,2);
   PetscValidPointer(cltog,3);
-  ierr = ISBlockGetLocalSize(is,&m);CHKERRQ(ierr);
-  ierr = ISBlockGetIndices(is,&idx);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockSize(ltog,&bs);CHKERRQ(ierr);
-  ierr = PetscMalloc1(m,&idxm);CHKERRQ(ierr);
+  CHKERRQ(ISBlockGetLocalSize(is,&m));
+  CHKERRQ(ISBlockGetIndices(is,&idx));
+  CHKERRQ(ISLocalToGlobalMappingGetBlockSize(ltog,&bs));
+  CHKERRQ(PetscMalloc1(m,&idxm));
   if (ltog) {
-    ierr = ISLocalToGlobalMappingApplyBlock(ltog,m,idx,idxm);CHKERRQ(ierr);
+    CHKERRQ(ISLocalToGlobalMappingApplyBlock(ltog,m,idx,idxm));
   } else {
-    ierr = PetscArraycpy(idxm,idx,m);CHKERRQ(ierr);
+    CHKERRQ(PetscArraycpy(idxm,idx,m));
   }
-  ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)is),bs,m,idxm,PETSC_OWN_POINTER,cltog);CHKERRQ(ierr);
-  ierr = ISBlockRestoreIndices(is,&idx);CHKERRQ(ierr);
+  CHKERRQ(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)is),bs,m,idxm,PETSC_OWN_POINTER,cltog));
+  CHKERRQ(ISBlockRestoreIndices(is,&idx));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatDestroy_LocalRef(Mat B)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscFree(B->data);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(B->data));
   PetscFunctionReturn(0);
 }
 
@@ -198,7 +191,6 @@ static PetscErrorCode MatDestroy_LocalRef(Mat B)
 @*/
 PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
 {
-  PetscErrorCode ierr;
   Mat_LocalRef   *lr;
   Mat            B;
   PetscInt       m,n;
@@ -212,19 +204,19 @@ PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
   PetscCheckFalse(!A->rmap->mapping,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Matrix must have local to global mapping provided before this call");
   *newmat = NULL;
 
-  ierr = MatCreate(PETSC_COMM_SELF,&B);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(isrow,&m);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(iscol,&n);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATLOCALREF);CHKERRQ(ierr);
-  ierr = MatSetUp(B);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_SELF,&B));
+  CHKERRQ(ISGetLocalSize(isrow,&m));
+  CHKERRQ(ISGetLocalSize(iscol,&n));
+  CHKERRQ(MatSetSizes(B,m,n,m,n));
+  CHKERRQ(PetscObjectChangeTypeName((PetscObject)B,MATLOCALREF));
+  CHKERRQ(MatSetUp(B));
 
   B->ops->destroy = MatDestroy_LocalRef;
 
-  ierr    = PetscNewLog(B,&lr);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(B,&lr));
   B->data = (void*)lr;
 
-  ierr = PetscObjectTypeCompare((PetscObject)A,MATLOCALREF,&islr);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATLOCALREF,&islr));
   if (islr) {
     Mat_LocalRef *alr = (Mat_LocalRef*)A->data;
     lr->Top = alr->Top;
@@ -242,27 +234,27 @@ PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
 
     B->ops->setvalueslocal = MatSetValuesLocal_LocalRef_Scalar;
 
-    ierr = ISL2GCompose(isrow,A->rmap->mapping,&rltog);CHKERRQ(ierr);
+    CHKERRQ(ISL2GCompose(isrow,A->rmap->mapping,&rltog));
     if (isrow == iscol && A->rmap->mapping == A->cmap->mapping) {
-      ierr  = PetscObjectReference((PetscObject)rltog);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectReference((PetscObject)rltog));
       cltog = rltog;
     } else {
-      ierr = ISL2GCompose(iscol,A->cmap->mapping,&cltog);CHKERRQ(ierr);
+      CHKERRQ(ISL2GCompose(iscol,A->cmap->mapping,&cltog));
     }
     /* Remember if the ISes we used to pull out the submatrix are of type ISBLOCK.  Will be used later in
      * MatSetValuesLocal_LocalRef_Scalar. */
-    ierr = PetscObjectTypeCompare((PetscObject)isrow,ISBLOCK,&lr->rowisblock);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)iscol,ISBLOCK,&lr->colisblock);CHKERRQ(ierr);
-    ierr = MatSetLocalToGlobalMapping(B,rltog,cltog);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(&rltog);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(&cltog);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectTypeCompare((PetscObject)isrow,ISBLOCK,&lr->rowisblock));
+    CHKERRQ(PetscObjectTypeCompare((PetscObject)iscol,ISBLOCK,&lr->colisblock));
+    CHKERRQ(MatSetLocalToGlobalMapping(B,rltog,cltog));
+    CHKERRQ(ISLocalToGlobalMappingDestroy(&rltog));
+    CHKERRQ(ISLocalToGlobalMappingDestroy(&cltog));
 
-    ierr = MatGetBlockSizes(A,&arbs,&acbs);CHKERRQ(ierr);
-    ierr = ISGetBlockSize(isrow,&rbs);CHKERRQ(ierr);
-    ierr = ISGetBlockSize(iscol,&cbs);CHKERRQ(ierr);
+    CHKERRQ(MatGetBlockSizes(A,&arbs,&acbs));
+    CHKERRQ(ISGetBlockSize(isrow,&rbs));
+    CHKERRQ(ISGetBlockSize(iscol,&cbs));
     /* Always support block interface insertion on submatrix */
-    ierr = PetscLayoutSetBlockSize(B->rmap,rbs);CHKERRQ(ierr);
-    ierr = PetscLayoutSetBlockSize(B->cmap,cbs);CHKERRQ(ierr);
+    CHKERRQ(PetscLayoutSetBlockSize(B->rmap,rbs));
+    CHKERRQ(PetscLayoutSetBlockSize(B->cmap,cbs));
     if (arbs != rbs || acbs != cbs || (arbs == 1 && acbs == 1)) {
       /* Top-level matrix has different block size, so we have to call its scalar insertion interface */
       B->ops->setvaluesblockedlocal = MatSetValuesBlockedLocal_LocalRef_Scalar;
@@ -270,16 +262,16 @@ PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
       /* Block sizes match so we can forward values to the top level using the block interface */
       B->ops->setvaluesblockedlocal = MatSetValuesBlockedLocal_LocalRef_Block;
 
-      ierr = ISL2GComposeBlock(isrow,A->rmap->mapping,&rltog);CHKERRQ(ierr);
+      CHKERRQ(ISL2GComposeBlock(isrow,A->rmap->mapping,&rltog));
       if (isrow == iscol && A->rmap->mapping == A->cmap->mapping) {
-        ierr  =  PetscObjectReference((PetscObject)rltog);CHKERRQ(ierr);
+        CHKERRQ(PetscObjectReference((PetscObject)rltog));
         cltog = rltog;
       } else {
-        ierr = ISL2GComposeBlock(iscol,A->cmap->mapping,&cltog);CHKERRQ(ierr);
+        CHKERRQ(ISL2GComposeBlock(iscol,A->cmap->mapping,&cltog));
       }
-      ierr = MatSetLocalToGlobalMapping(B,rltog,cltog);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingDestroy(&rltog);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingDestroy(&cltog);CHKERRQ(ierr);
+      CHKERRQ(MatSetLocalToGlobalMapping(B,rltog,cltog));
+      CHKERRQ(ISLocalToGlobalMappingDestroy(&rltog));
+      CHKERRQ(ISLocalToGlobalMappingDestroy(&cltog));
     }
   }
   *newmat = B;

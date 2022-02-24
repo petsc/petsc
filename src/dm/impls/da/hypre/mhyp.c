@@ -69,7 +69,6 @@ PetscErrorCode  MatSetValuesLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const Pet
 
 PetscErrorCode  MatZeroRowsLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscScalar d,Vec x,Vec b)
 {
-  PetscErrorCode  ierr;
   HYPRE_Int       index[3],entries[7] = {0,1,2,3,4,5,6};
   PetscInt        row,i;
   HYPRE_Complex   values[7];
@@ -77,8 +76,8 @@ PetscErrorCode  MatZeroRowsLocal_HYPREStruct_3d(Mat mat,PetscInt nrow,const Pets
 
   PetscFunctionBegin;
   PetscCheckFalse(x && b,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"No support");
-  ierr = PetscArrayzero(values,7);CHKERRQ(ierr);
-  ierr = PetscHYPREScalarCast(d,&values[3]);CHKERRQ(ierr);
+  CHKERRQ(PetscArrayzero(values,7));
+  CHKERRQ(PetscHYPREScalarCast(d,&values[3]));
   for (i=0; i<nrow; i++) {
     row      = ex->gindices[irow[i]] - ex->rstart;
     index[0] = (HYPRE_Int)(ex->xs + (row % ex->nx));
@@ -104,7 +103,6 @@ PetscErrorCode MatZeroEntries_HYPREStruct_3d(Mat mat)
 
 static PetscErrorCode  MatSetUp_HYPREStruct(Mat mat)
 {
-  PetscErrorCode         ierr;
   Mat_HYPREStruct        *ex = (Mat_HYPREStruct*) mat->data;
   HYPRE_Int              sw[6];
   HYPRE_Int              hlower[3],hupper[3];
@@ -115,12 +113,12 @@ static PetscErrorCode  MatSetUp_HYPREStruct(Mat mat)
   DM                     da;
 
   PetscFunctionBegin;
-  ierr   = MatGetDM(mat,(DM*)&da);CHKERRQ(ierr);
+  CHKERRQ(MatGetDM(mat,(DM*)&da));
   ex->da = da;
-  ierr   = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectReference((PetscObject)da));
 
-  ierr = DMDAGetInfo(ex->da,&dim,0,0,0,0,0,0,&dof,&psw,&px,&py,&pz,&st);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(ex->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetInfo(ex->da,&dim,0,0,0,0,0,0,&dof,&psw,&px,&py,&pz,&st));
+  CHKERRQ(DMDAGetCorners(ex->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]));
 
   /* when HYPRE_MIXEDINT is defined, sizeof(HYPRE_Int) == 32 */
   iupper[0] += ilower[0] - 1;
@@ -195,12 +193,12 @@ static PetscErrorCode  MatSetUp_HYPREStruct(Mat mat)
   }
 
   /* set the global and local sizes of the matrix */
-  ierr = DMDAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
-  ierr = MatSetSizes(mat,dof*nx*ny*nz,dof*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(mat->rmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(mat->cmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(mat->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(mat->cmap);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(da,0,0,0,&nx,&ny,&nz));
+  CHKERRQ(MatSetSizes(mat,dof*nx*ny*nz,dof*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE));
+  CHKERRQ(PetscLayoutSetBlockSize(mat->rmap,1));
+  CHKERRQ(PetscLayoutSetBlockSize(mat->cmap,1));
+  CHKERRQ(PetscLayoutSetUp(mat->rmap));
+  CHKERRQ(PetscLayoutSetUp(mat->cmap));
   mat->preallocated = PETSC_TRUE;
 
   if (dim == 3) {
@@ -208,23 +206,22 @@ static PetscErrorCode  MatSetUp_HYPREStruct(Mat mat)
     mat->ops->zerorowslocal  = MatZeroRowsLocal_HYPREStruct_3d;
     mat->ops->zeroentries    = MatZeroEntries_HYPREStruct_3d;
 
-    /*        ierr = MatZeroEntries_HYPREStruct_3d(mat);CHKERRQ(ierr); */
+    /*        CHKERRQ(MatZeroEntries_HYPREStruct_3d(mat)); */
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Only support for 3d DMDA currently");
 
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
-  ierr        = MatGetOwnershipRange(mat,&ex->rstart,NULL);CHKERRQ(ierr);
-  ierr        = DMGetLocalToGlobalMapping(ex->da,&ltog);CHKERRQ(ierr);
-  ierr        = ISLocalToGlobalMappingGetIndices(ltog, (const PetscInt **) &ex->gindices);CHKERRQ(ierr);
-  ierr        = DMDAGetGhostCorners(ex->da,0,0,0,&ex->gnx,&ex->gnxgny,0);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(mat,&ex->rstart,NULL));
+  CHKERRQ(DMGetLocalToGlobalMapping(ex->da,&ltog));
+  CHKERRQ(ISLocalToGlobalMappingGetIndices(ltog, (const PetscInt **) &ex->gindices));
+  CHKERRQ(DMDAGetGhostCorners(ex->da,0,0,0,&ex->gnx,&ex->gnxgny,0));
   ex->gnxgny *= ex->gnx;
-  ierr        = DMDAGetCorners(ex->da,&ex->xs,&ex->ys,&ex->zs,&ex->nx,&ex->ny,0);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(ex->da,&ex->xs,&ex->ys,&ex->zs,&ex->nx,&ex->ny,0));
   ex->nxny    = ex->nx*ex->ny;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatMult_HYPREStruct(Mat A,Vec x,Vec y)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *xx;
   PetscScalar       *yy;
   PetscInt          ilower[3],iupper[3];
@@ -232,7 +229,7 @@ PetscErrorCode MatMult_HYPREStruct(Mat A,Vec x,Vec y)
   Mat_HYPREStruct   *mx = (Mat_HYPREStruct*)(A->data);
 
   PetscFunctionBegin;
-  ierr = DMDAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]));
   /* when HYPRE_MIXEDINT is defined, sizeof(HYPRE_Int) == 32 */
   iupper[0] += ilower[0] - 1;
   iupper[1] += ilower[1] - 1;
@@ -246,16 +243,16 @@ PetscErrorCode MatMult_HYPREStruct(Mat A,Vec x,Vec y)
 
   /* copy x values over to hypre */
   PetscStackCallStandard(HYPRE_StructVectorSetConstantValues,mx->hb,0.0);
-  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(x,&xx));
   PetscStackCallStandard(HYPRE_StructVectorSetBoxValues,mx->hb,hlower,hupper,(HYPRE_Complex*)xx);
-  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(x,&xx));
   PetscStackCallStandard(HYPRE_StructVectorAssemble,mx->hb);
   PetscStackCallStandard(HYPRE_StructMatrixMatvec,1.0,mx->hmat,mx->hb,0.0,mx->hx);
 
   /* copy solution values back to PETSc */
-  ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(y,&yy));
   PetscStackCallStandard(HYPRE_StructVectorGetBoxValues,mx->hx,hlower,hupper,(HYPRE_Complex*)yy);
-  ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(y,&yy));
   PetscFunctionReturn(0);
 }
 
@@ -279,25 +276,23 @@ PetscErrorCode MatZeroEntries_HYPREStruct(Mat mat)
 PetscErrorCode MatDestroy_HYPREStruct(Mat mat)
 {
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscStackCallStandard(HYPRE_StructMatrixDestroy,ex->hmat);
   PetscStackCallStandard(HYPRE_StructVectorDestroy,ex->hx);
   PetscStackCallStandard(HYPRE_StructVectorDestroy,ex->hb);
-  ierr = PetscObjectDereference((PetscObject)ex->da);CHKERRQ(ierr);
-  ierr = MPI_Comm_free(&(ex->hcomm));CHKERRMPI(ierr);
-  ierr = PetscFree(ex);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectDereference((PetscObject)ex->da));
+  CHKERRMPI(MPI_Comm_free(&(ex->hcomm)));
+  CHKERRQ(PetscFree(ex));
   PetscFunctionReturn(0);
 }
 
 PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat B)
 {
   Mat_HYPREStruct *ex;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(B,&ex);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(B,&ex));
   B->data      = (void*)ex;
   B->rmap->bs  = 1;
   B->assembled = PETSC_FALSE;
@@ -312,8 +307,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat B)
 
   ex->needsinitialization = PETSC_TRUE;
 
-  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)B),&(ex->hcomm));CHKERRMPI(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRESTRUCT);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)B),&(ex->hcomm)));
+  CHKERRQ(PetscObjectChangeTypeName((PetscObject)B,MATHYPRESTRUCT));
   PetscFunctionReturn(0);
 }
 
@@ -336,7 +331,6 @@ M*/
 
 PetscErrorCode  MatSetValuesLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv)
 {
-  PetscErrorCode    ierr;
   HYPRE_Int         index[3],*entries;
   PetscInt          i,j,stencil;
   HYPRE_Complex     *values = (HYPRE_Complex*)y;
@@ -351,7 +345,7 @@ PetscErrorCode  MatSetValuesLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const Pe
   PetscInt          row;
 
   PetscFunctionBegin;
-  ierr     = PetscMalloc1(7*nvars,&entries);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(7*nvars,&entries));
   ordering = ex->dofs_order;  /* ordering= 0   nodal ordering
                                            1   variable ordering */
   /* stencil entries are ordered by variables: var0_stencil0, var0_stencil1, ..., var0_stencil6, var1_stencil0, var1_stencil1, ...  */
@@ -440,13 +434,12 @@ PetscErrorCode  MatSetValuesLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const Pe
       values += ncol;
     }
   }
-  ierr = PetscFree(entries);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(entries));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode  MatZeroRowsLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const PetscInt irow[],PetscScalar d,Vec x,Vec b)
 {
-  PetscErrorCode   ierr;
   HYPRE_Int        index[3],*entries;
   PetscInt         i;
   HYPRE_Complex    **values;
@@ -461,17 +454,17 @@ PetscErrorCode  MatZeroRowsLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const Pet
 
   PetscFunctionBegin;
   PetscCheckFalse(x && b,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"No support");
-  ierr = PetscMalloc1(7*nvars,&entries);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(7*nvars,&entries));
 
-  ierr = PetscMalloc1(nvars,&values);CHKERRQ(ierr);
-  ierr = PetscMalloc1(7*nvars*nvars,&values[0]);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(nvars,&values));
+  CHKERRQ(PetscMalloc1(7*nvars*nvars,&values[0]));
   for (i=1; i<nvars; i++) {
     values[i] = values[i-1] + nvars*7;
   }
 
   for (i=0; i< nvars; i++) {
-    ierr = PetscArrayzero(values[i],nvars*7*sizeof(HYPRE_Complex));CHKERRQ(ierr);
-    ierr = PetscHYPREScalarCast(d,values[i]+3);CHKERRQ(ierr);
+    CHKERRQ(PetscArrayzero(values[i],nvars*7*sizeof(HYPRE_Complex)));
+    CHKERRQ(PetscHYPREScalarCast(d,values[i]+3));
   }
 
   for (i=0; i< nvars*7; i++) entries[i] = i;
@@ -500,15 +493,14 @@ PetscErrorCode  MatZeroRowsLocal_HYPRESStruct_3d(Mat mat,PetscInt nrow,const Pet
     }
   }
   PetscStackCallStandard(HYPRE_SStructMatrixAssemble,ex->ss_mat);
-  ierr = PetscFree(values[0]);CHKERRQ(ierr);
-  ierr = PetscFree(values);CHKERRQ(ierr);
-  ierr = PetscFree(entries);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(values[0]));
+  CHKERRQ(PetscFree(values));
+  CHKERRQ(PetscFree(entries));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
 {
-  PetscErrorCode   ierr;
   Mat_HYPRESStruct *ex  = (Mat_HYPRESStruct*) mat->data;
   PetscInt         nvars= ex->nvars;
   PetscInt         size;
@@ -525,14 +517,14 @@ PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
       iupper[i] = ex->hbox.imax[i];
     }
 
-    ierr = PetscMalloc2(nvars*7,&entries,nvars*7*size,&values);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc2(nvars*7,&entries,nvars*7*size,&values));
     for (i= 0; i< nvars*7; i++) entries[i] = i;
-    ierr = PetscArrayzero(values,nvars*7*size);CHKERRQ(ierr);
+    CHKERRQ(PetscArrayzero(values,nvars*7*size));
 
     for (i= 0; i< nvars; i++) {
       PetscStackCallStandard(HYPRE_SStructMatrixSetBoxValues,ex->ss_mat,part,ilower,iupper,i,nvars*7,entries,values);
     }
-    ierr = PetscFree2(entries,values);CHKERRQ(ierr);
+    CHKERRQ(PetscFree2(entries,values));
   }
   PetscStackCallStandard(HYPRE_SStructMatrixAssemble,ex->ss_mat);
   PetscFunctionReturn(0);
@@ -540,7 +532,6 @@ PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
 
 static PetscErrorCode  MatSetUp_HYPRESStruct(Mat mat)
 {
-  PetscErrorCode         ierr;
   Mat_HYPRESStruct       *ex = (Mat_HYPRESStruct*) mat->data;
   PetscInt               dim,dof,sw[3],nx,ny,nz;
   PetscInt               ilower[3],iupper[3],ssize,i;
@@ -552,12 +543,12 @@ static PetscErrorCode  MatSetUp_HYPRESStruct(Mat mat)
   DM                     da;
 
   PetscFunctionBegin;
-  ierr   = MatGetDM(mat,(DM*)&da);CHKERRQ(ierr);
+  CHKERRQ(MatGetDM(mat,(DM*)&da));
   ex->da = da;
-  ierr   = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectReference((PetscObject)da));
 
-  ierr       = DMDAGetInfo(ex->da,&dim,0,0,0,0,0,0,&dof,&sw[0],&px,&py,&pz,&st);CHKERRQ(ierr);
-  ierr       = DMDAGetCorners(ex->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetInfo(ex->da,&dim,0,0,0,0,0,0,&dof,&sw[0],&px,&py,&pz,&st));
+  CHKERRQ(DMDAGetCorners(ex->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]));
   iupper[0] += ilower[0] - 1;
   iupper[1] += ilower[1] - 1;
   iupper[2] += ilower[2] - 1;
@@ -580,10 +571,10 @@ static PetscErrorCode  MatSetUp_HYPRESStruct(Mat mat)
   PetscStackCallStandard(HYPRE_SStructGridSetExtents,ex->ss_grid,part,ex->hbox.imin,ex->hbox.imax);
   {
     HYPRE_SStructVariable *vartypes;
-    ierr = PetscMalloc1(ex->nvars,&vartypes);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(ex->nvars,&vartypes));
     for (i= 0; i< ex->nvars; i++) vartypes[i]= HYPRE_SSTRUCT_VARIABLE_CELL;
     PetscStackCallStandard(HYPRE_SStructGridSetVariables,ex->ss_grid, part, ex->nvars,vartypes);
-    ierr = PetscFree(vartypes);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(vartypes));
   }
   PetscStackCallStandard(HYPRE_SStructGridAssemble,ex->ss_grid);
 
@@ -664,12 +655,12 @@ static PetscErrorCode  MatSetUp_HYPRESStruct(Mat mat)
   }
 
   /* set the global and local sizes of the matrix */
-  ierr = DMDAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
-  ierr = MatSetSizes(mat,dof*nx*ny*nz,dof*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(mat->rmap,dof);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(mat->cmap,dof);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(mat->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(mat->cmap);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(da,0,0,0,&nx,&ny,&nz));
+  CHKERRQ(MatSetSizes(mat,dof*nx*ny*nz,dof*nx*ny*nz,PETSC_DECIDE,PETSC_DECIDE));
+  CHKERRQ(PetscLayoutSetBlockSize(mat->rmap,dof));
+  CHKERRQ(PetscLayoutSetBlockSize(mat->cmap,dof));
+  CHKERRQ(PetscLayoutSetUp(mat->rmap));
+  CHKERRQ(PetscLayoutSetUp(mat->cmap));
   mat->preallocated = PETSC_TRUE;
 
   if (dim == 3) {
@@ -677,19 +668,19 @@ static PetscErrorCode  MatSetUp_HYPRESStruct(Mat mat)
     mat->ops->zerorowslocal  = MatZeroRowsLocal_HYPRESStruct_3d;
     mat->ops->zeroentries    = MatZeroEntries_HYPRESStruct_3d;
 
-    /* ierr = MatZeroEntries_HYPRESStruct_3d(mat);CHKERRQ(ierr); */
+    /* CHKERRQ(MatZeroEntries_HYPRESStruct_3d(mat)); */
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Only support for 3d DMDA currently");
 
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
-  ierr = MatGetOwnershipRange(mat,&ex->rstart,NULL);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(ex->da,&ltog);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetIndices(ltog, (const PetscInt **) &ex->gindices);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(ex->da,0,0,0,&ex->gnx,&ex->gnxgny,&ex->gnxgnygnz);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(mat,&ex->rstart,NULL));
+  CHKERRQ(DMGetLocalToGlobalMapping(ex->da,&ltog));
+  CHKERRQ(ISLocalToGlobalMappingGetIndices(ltog, (const PetscInt **) &ex->gindices));
+  CHKERRQ(DMDAGetGhostCorners(ex->da,0,0,0,&ex->gnx,&ex->gnxgny,&ex->gnxgnygnz));
 
   ex->gnxgny    *= ex->gnx;
   ex->gnxgnygnz *= ex->gnxgny;
 
-  ierr = DMDAGetCorners(ex->da,&ex->xs,&ex->ys,&ex->zs,&ex->nx,&ex->ny,&ex->nz);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(ex->da,&ex->xs,&ex->ys,&ex->zs,&ex->nx,&ex->ny,&ex->nz));
 
   ex->nxny   = ex->nx*ex->ny;
   ex->nxnynz = ex->nz*ex->nxny;
@@ -698,7 +689,6 @@ static PetscErrorCode  MatSetUp_HYPRESStruct(Mat mat)
 
 PetscErrorCode MatMult_HYPRESStruct(Mat A,Vec x,Vec y)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *xx;
   PetscScalar       *yy;
   HYPRE_Int         hlower[3],hupper[3];
@@ -711,7 +701,7 @@ PetscErrorCode MatMult_HYPRESStruct(Mat A,Vec x,Vec y)
   PetscInt          i;
 
   PetscFunctionBegin;
-  ierr = DMDAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(mx->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]));
 
   /* when HYPRE_MIXEDINT is defined, sizeof(HYPRE_Int) == 32 */
   iupper[0] += ilower[0] - 1;
@@ -730,27 +720,27 @@ PetscErrorCode MatMult_HYPRESStruct(Mat A,Vec x,Vec y)
   /* copy x values over to hypre for variable ordering */
   if (ordering) {
     PetscStackCallStandard(HYPRE_SStructVectorSetConstantValues,mx->ss_b,0.0);
-    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    CHKERRQ(VecGetArrayRead(x,&xx));
     for (i= 0; i< nvars; i++) {
       PetscStackCallStandard(HYPRE_SStructVectorSetBoxValues,mx->ss_b,part,hlower,hupper,i,(HYPRE_Complex*)(xx+(size*i)));
     }
-    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArrayRead(x,&xx));
     PetscStackCallStandard(HYPRE_SStructVectorAssemble,mx->ss_b);
     PetscStackCallStandard(HYPRE_SStructMatrixMatvec,1.0,mx->ss_mat,mx->ss_b,0.0,mx->ss_x);
 
     /* copy solution values back to PETSc */
-    ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+    CHKERRQ(VecGetArray(y,&yy));
     for (i= 0; i< nvars; i++) {
       PetscStackCallStandard(HYPRE_SStructVectorGetBoxValues,mx->ss_x,part,hlower,hupper,i,(HYPRE_Complex*)(yy+(size*i)));
     }
-    ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(y,&yy));
   } else {      /* nodal ordering must be mapped to variable ordering for sys_pfmg */
     PetscScalar *z;
     PetscInt    j, k;
 
-    ierr = PetscMalloc1(nvars*size,&z);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(nvars*size,&z));
     PetscStackCallStandard(HYPRE_SStructVectorSetConstantValues,mx->ss_b,0.0);
-    ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+    CHKERRQ(VecGetArrayRead(x,&xx));
 
     /* transform nodal to hypre's variable ordering for sys_pfmg */
     for (i= 0; i< size; i++) {
@@ -760,12 +750,12 @@ PetscErrorCode MatMult_HYPRESStruct(Mat A,Vec x,Vec y)
     for (i= 0; i< nvars; i++) {
       PetscStackCallStandard(HYPRE_SStructVectorSetBoxValues,mx->ss_b,part,hlower,hupper,i,(HYPRE_Complex*)(z+(size*i)));
     }
-    ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArrayRead(x,&xx));
     PetscStackCallStandard(HYPRE_SStructVectorAssemble,mx->ss_b);
     PetscStackCallStandard(HYPRE_SStructMatrixMatvec,1.0,mx->ss_mat,mx->ss_b,0.0,mx->ss_x);
 
     /* copy solution values back to PETSc */
-    ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+    CHKERRQ(VecGetArray(y,&yy));
     for (i= 0; i< nvars; i++) {
       PetscStackCallStandard(HYPRE_SStructVectorGetBoxValues,mx->ss_x,part,hlower,hupper,i,(HYPRE_Complex*)(z+(size*i)));
     }
@@ -774,8 +764,8 @@ PetscErrorCode MatMult_HYPRESStruct(Mat A,Vec x,Vec y)
       k= i*nvars;
       for (j= 0; j< nvars; j++) yy[k+j]= z[j*size+i];
     }
-    ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
-    ierr = PetscFree(z);CHKERRQ(ierr);
+    CHKERRQ(VecRestoreArray(y,&yy));
+    CHKERRQ(PetscFree(z));
   }
   PetscFunctionReturn(0);
 }
@@ -799,29 +789,27 @@ PetscErrorCode MatZeroEntries_HYPRESStruct(Mat mat)
 PetscErrorCode MatDestroy_HYPRESStruct(Mat mat)
 {
   Mat_HYPRESStruct       *ex = (Mat_HYPRESStruct*) mat->data;
-  PetscErrorCode         ierr;
   ISLocalToGlobalMapping ltog;
 
   PetscFunctionBegin;
-  ierr = DMGetLocalToGlobalMapping(ex->da,&ltog);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRestoreIndices(ltog, (const PetscInt **) &ex->gindices);CHKERRQ(ierr);
+  CHKERRQ(DMGetLocalToGlobalMapping(ex->da,&ltog));
+  CHKERRQ(ISLocalToGlobalMappingRestoreIndices(ltog, (const PetscInt **) &ex->gindices));
   PetscStackCallStandard(HYPRE_SStructGraphDestroy,ex->ss_graph);
   PetscStackCallStandard(HYPRE_SStructMatrixDestroy,ex->ss_mat);
   PetscStackCallStandard(HYPRE_SStructVectorDestroy,ex->ss_x);
   PetscStackCallStandard(HYPRE_SStructVectorDestroy,ex->ss_b);
-  ierr = PetscObjectDereference((PetscObject)ex->da);CHKERRQ(ierr);
-  ierr = MPI_Comm_free(&(ex->hcomm));CHKERRMPI(ierr);
-  ierr = PetscFree(ex);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectDereference((PetscObject)ex->da));
+  CHKERRMPI(MPI_Comm_free(&(ex->hcomm)));
+  CHKERRQ(PetscFree(ex));
   PetscFunctionReturn(0);
 }
 
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat B)
 {
   Mat_HYPRESStruct *ex;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNewLog(B,&ex);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(B,&ex));
   B->data      = (void*)ex;
   B->rmap->bs  = 1;
   B->assembled = PETSC_FALSE;
@@ -836,8 +824,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat B)
 
   ex->needsinitialization = PETSC_TRUE;
 
-  ierr = MPI_Comm_dup(PetscObjectComm((PetscObject)B),&(ex->hcomm));CHKERRMPI(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRESSTRUCT);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)B),&(ex->hcomm)));
+  CHKERRQ(PetscObjectChangeTypeName((PetscObject)B,MATHYPRESSTRUCT));
   PetscFunctionReturn(0);
 }
-

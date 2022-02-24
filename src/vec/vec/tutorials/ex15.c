@@ -17,62 +17,62 @@ int main(int argc, char *argv[])
   int         ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL, "-m", &m, NULL);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-m", &m, NULL));
 
   /* PART 1:  Generate vector, then write it to Mathematica */
 
-  ierr = PetscLogEventRegister("Generate Vector", VEC_CLASSID,&VECTOR_GENERATE);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(VECTOR_GENERATE, 0, 0, 0, 0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventRegister("Generate Vector", VEC_CLASSID,&VECTOR_GENERATE));
+  CHKERRQ(PetscLogEventBegin(VECTOR_GENERATE, 0, 0, 0, 0));
   /* Generate vector */
-  ierr = VecCreate(PETSC_COMM_WORLD, &u);CHKERRQ(ierr);
-  ierr = VecSetSizes(u, PETSC_DECIDE, m);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(u);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(u, &low, &high);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(u, &ldim);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD, &u));
+  CHKERRQ(VecSetSizes(u, PETSC_DECIDE, m));
+  CHKERRQ(VecSetFromOptions(u));
+  CHKERRQ(VecGetOwnershipRange(u, &low, &high));
+  CHKERRQ(VecGetLocalSize(u, &ldim));
   for (i = 0; i < ldim; i++) {
     iglobal = i + low;
     v       = (PetscScalar) (i + 100*rank);
-    ierr    = VecSetValues(u, 1, &iglobal, &v, INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(VecSetValues(u, 1, &iglobal, &v, INSERT_VALUES));
   }
-  ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
-  ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecAssemblyBegin(u));
+  CHKERRQ(VecAssemblyEnd(u));
+  CHKERRQ(VecView(u, PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "writing vector to Mathematica...\n");CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "writing vector to Mathematica...\n"));
 
 #if 0
-  ierr = PetscViewerMathematicaOpen(PETSC_COMM_WORLD, 8000, "192.168.119.1", "Connect", &viewer);CHKERRQ(ierr);
-  ierr = VecView(u, viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerMathematicaOpen(PETSC_COMM_WORLD, 8000, "192.168.119.1", "Connect", &viewer));
+  CHKERRQ(VecView(u, viewer));
 #else
-  ierr = VecView(u, PETSC_VIEWER_MATHEMATICA_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecView(u, PETSC_VIEWER_MATHEMATICA_WORLD));
 #endif
   v    = 0.0;
-  ierr = VecSet(u,v);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VECTOR_GENERATE, 0, 0, 0, 0);CHKERRQ(ierr);
+  CHKERRQ(VecSet(u,v));
+  CHKERRQ(PetscLogEventEnd(VECTOR_GENERATE, 0, 0, 0, 0));
 
   /* All processors wait until test vector has been dumped */
-  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
-  ierr = PetscSleep(10);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Barrier(PETSC_COMM_WORLD));
+  CHKERRQ(PetscSleep(10));
 
   /* PART 2:  Read in vector in from Mathematica */
 
-  ierr = PetscLogEventRegister("Read Vector", VEC_CLASSID,&VECTOR_READ);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(VECTOR_READ, 0, 0, 0, 0);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "reading vector from Mathematica...\n");CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventRegister("Read Vector", VEC_CLASSID,&VECTOR_READ));
+  CHKERRQ(PetscLogEventBegin(VECTOR_READ, 0, 0, 0, 0));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "reading vector from Mathematica...\n"));
   /* Read new vector in binary format */
 #if 0
-  ierr = PetscViewerMathematicaGetVector(viewer, u);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerMathematicaGetVector(viewer, u));
+  CHKERRQ(PetscViewerDestroy(&viewer));
 #else
-  ierr = PetscViewerMathematicaGetVector(PETSC_VIEWER_MATHEMATICA_WORLD, u);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerMathematicaGetVector(PETSC_VIEWER_MATHEMATICA_WORLD, u));
 #endif
-  ierr = PetscLogEventEnd(VECTOR_READ, 0, 0, 0, 0);CHKERRQ(ierr);
-  ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventEnd(VECTOR_READ, 0, 0, 0, 0));
+  CHKERRQ(VecView(u, PETSC_VIEWER_STDOUT_WORLD));
 
   /* Free data structures */
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&u));
   ierr = PetscFinalize();
   return ierr;
 }

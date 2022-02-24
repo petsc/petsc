@@ -40,13 +40,11 @@
 @*/
 PetscErrorCode  KSPSetOptionsPrefix(KSP ksp,const char prefix[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCSetOptionsPrefix(ksp->pc,prefix);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)ksp,prefix);CHKERRQ(ierr);
+  if (!ksp->pc) CHKERRQ(KSPGetPC(ksp,&ksp->pc));
+  CHKERRQ(PCSetOptionsPrefix(ksp->pc,prefix));
+  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)ksp,prefix));
   PetscFunctionReturn(0);
 }
 
@@ -70,13 +68,11 @@ PetscErrorCode  KSPSetOptionsPrefix(KSP ksp,const char prefix[])
 @*/
 PetscErrorCode  KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-  ierr = PCAppendOptionsPrefix(ksp->pc,prefix);CHKERRQ(ierr);
-  ierr = PetscObjectAppendOptionsPrefix((PetscObject)ksp,prefix);CHKERRQ(ierr);
+  if (!ksp->pc) CHKERRQ(KSPGetPC(ksp,&ksp->pc));
+  CHKERRQ(PCAppendOptionsPrefix(ksp->pc,prefix));
+  CHKERRQ(PetscObjectAppendOptionsPrefix((PetscObject)ksp,prefix));
   PetscFunctionReturn(0);
 }
 
@@ -100,15 +96,14 @@ PetscErrorCode  KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
 PetscErrorCode  KSPSetUseFischerGuess(KSP ksp,PetscInt model,PetscInt size)
 {
   KSPGuess       guess;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveInt(ksp,model,2);
   PetscValidLogicalCollectiveInt(ksp,size,3);
-  ierr = KSPGetGuess(ksp,&guess);CHKERRQ(ierr);
-  ierr = KSPGuessSetType(guess,KSPGUESSFISCHER);CHKERRQ(ierr);
-  ierr = KSPGuessFischerSetModel(guess,model,size);CHKERRQ(ierr);
+  CHKERRQ(KSPGetGuess(ksp,&guess));
+  CHKERRQ(KSPGuessSetType(guess,KSPGUESSFISCHER));
+  CHKERRQ(KSPGuessFischerSetModel(guess,model,size));
   PetscFunctionReturn(0);
 }
 
@@ -134,13 +129,11 @@ PetscErrorCode  KSPSetUseFischerGuess(KSP ksp,PetscInt model,PetscInt size)
 @*/
 PetscErrorCode  KSPSetGuess(KSP ksp,KSPGuess guess)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidHeaderSpecific(guess,KSPGUESS_CLASSID,2);
-  ierr = PetscObjectReference((PetscObject)guess);CHKERRQ(ierr);
-  ierr = KSPGuessDestroy(&ksp->guess);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectReference((PetscObject)guess));
+  CHKERRQ(KSPGuessDestroy(&ksp->guess));
   ksp->guess = guess;
   ksp->guess->ksp = ksp;
   PetscFunctionReturn(0);
@@ -163,18 +156,16 @@ PetscErrorCode  KSPSetGuess(KSP ksp,KSPGuess guess)
 @*/
 PetscErrorCode  KSPGetGuess(KSP ksp,KSPGuess *guess)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(guess,2);
   if (!ksp->guess) {
     const char* prefix;
 
-    ierr = KSPGuessCreate(PetscObjectComm((PetscObject)ksp),&ksp->guess);CHKERRQ(ierr);
-    ierr = PetscObjectGetOptionsPrefix((PetscObject)ksp,&prefix);CHKERRQ(ierr);
+    CHKERRQ(KSPGuessCreate(PetscObjectComm((PetscObject)ksp),&ksp->guess));
+    CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject)ksp,&prefix));
     if (prefix) {
-      ierr = PetscObjectSetOptionsPrefix((PetscObject)ksp->guess,prefix);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)ksp->guess,prefix));
     }
     ksp->guess->ksp = ksp;
   }
@@ -204,20 +195,16 @@ PetscErrorCode  KSPGetGuess(KSP ksp,KSPGuess *guess)
 @*/
 PetscErrorCode  KSPGetOptionsPrefix(KSP ksp,const char *prefix[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)ksp,prefix);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject)ksp,prefix));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = PetscViewerAndFormatCreate(viewer, format, vf);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerAndFormatCreate(viewer, format, vf));
   (*vf)->data = ctx;
   PetscFunctionReturn(0);
 }
@@ -255,25 +242,24 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
   char                  key[PETSC_MAX_PATH_LEN];
   PetscBool             all, flg;
   const char           *prefix = NULL;
-  PetscErrorCode        ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrcmp(opt, "-all_ksp_monitor", &all);CHKERRQ(ierr);
-  if (!all) {ierr = PetscObjectGetOptionsPrefix((PetscObject) ksp, &prefix);CHKERRQ(ierr);}
-  ierr = PetscOptionsGetViewer(PetscObjectComm((PetscObject) ksp), ((PetscObject) ksp)->options, prefix, opt, &viewer, &format, &flg);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcmp(opt, "-all_ksp_monitor", &all));
+  if (!all) CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject) ksp, &prefix));
+  CHKERRQ(PetscOptionsGetViewer(PetscObjectComm((PetscObject) ksp), ((PetscObject) ksp)->options, prefix, opt, &viewer, &format, &flg));
   if (!flg) PetscFunctionReturn(0);
 
-  ierr = PetscViewerGetType(viewer, &vtype);CHKERRQ(ierr);
-  ierr = KSPMonitorMakeKey_Internal(name, vtype, format, key);CHKERRQ(ierr);
-  ierr = PetscFunctionListFind(KSPMonitorList, key, &mfunc);CHKERRQ(ierr);
-  ierr = PetscFunctionListFind(KSPMonitorCreateList, key, &cfunc);CHKERRQ(ierr);
-  ierr = PetscFunctionListFind(KSPMonitorDestroyList, key, &dfunc);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerGetType(viewer, &vtype));
+  CHKERRQ(KSPMonitorMakeKey_Internal(name, vtype, format, key));
+  CHKERRQ(PetscFunctionListFind(KSPMonitorList, key, &mfunc));
+  CHKERRQ(PetscFunctionListFind(KSPMonitorCreateList, key, &cfunc));
+  CHKERRQ(PetscFunctionListFind(KSPMonitorDestroyList, key, &dfunc));
   if (!cfunc) cfunc = PetscViewerAndFormatCreate_Internal;
   if (!dfunc) dfunc = PetscViewerAndFormatDestroy;
 
-  ierr = (*cfunc)(viewer, format, ctx, &vf);CHKERRQ(ierr);
-  ierr = PetscObjectDereference((PetscObject) viewer);CHKERRQ(ierr);
-  ierr = KSPMonitorSet(ksp, mfunc, vf, (PetscErrorCode (*)(void **)) dfunc);CHKERRQ(ierr);
+  CHKERRQ((*cfunc)(viewer, format, ctx, &vf));
+  CHKERRQ(PetscObjectDereference((PetscObject) viewer));
+  CHKERRQ(KSPMonitorSet(ksp, mfunc, vf, (PetscErrorCode (*)(void **)) dfunc));
   PetscFunctionReturn(0);
 }
 
@@ -349,332 +335,332 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscObjectGetComm((PetscObject) ksp, &comm);CHKERRQ(ierr);
-  ierr = PetscObjectGetOptionsPrefix((PetscObject) ksp, &prefix);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject) ksp, &comm));
+  CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject) ksp, &prefix));
   if (!ksp->skippcsetfromoptions) {
-    if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
-    ierr = PCSetFromOptions(ksp->pc);CHKERRQ(ierr);
+    if (!ksp->pc) CHKERRQ(KSPGetPC(ksp,&ksp->pc));
+    CHKERRQ(PCSetFromOptions(ksp->pc));
   }
 
-  ierr = KSPRegisterAll();CHKERRQ(ierr);
+  CHKERRQ(KSPRegisterAll());
   ierr = PetscObjectOptionsBegin((PetscObject)ksp);CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-ksp_type","Krylov method","KSPSetType",KSPList,(char*)(((PetscObject)ksp)->type_name ? ((PetscObject)ksp)->type_name : KSPGMRES),type,256,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsFList("-ksp_type","Krylov method","KSPSetType",KSPList,(char*)(((PetscObject)ksp)->type_name ? ((PetscObject)ksp)->type_name : KSPGMRES),type,256,&flg));
   if (flg) {
-    ierr = KSPSetType(ksp,type);CHKERRQ(ierr);
+    CHKERRQ(KSPSetType(ksp,type));
   }
   /*
     Set the type if it was never set.
   */
   if (!((PetscObject)ksp)->type_name) {
-    ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
+    CHKERRQ(KSPSetType(ksp,KSPGMRES));
   }
 
-  ierr = KSPResetViewers(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPResetViewers(ksp));
 
   /* Cancels all monitors hardwired into code before call to KSPSetFromOptions() */
-  ierr = PetscOptionsBool("-ksp_monitor_cancel","Remove any hardwired monitor routines","KSPMonitorCancel",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
-  if (set && flg) {ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);}
-  ierr = KSPMonitorSetFromOptions(ksp, "-ksp_monitor", "preconditioned_residual", NULL);CHKERRQ(ierr);
-  ierr = KSPMonitorSetFromOptions(ksp, "-ksp_monitor_short", "preconditioned_residual_short", NULL);CHKERRQ(ierr);
-  ierr = KSPMonitorSetFromOptions(ksp, "-all_ksp_monitor", "preconditioned_residual", NULL);CHKERRQ(ierr);
-  ierr = KSPMonitorSetFromOptions(ksp, "-ksp_monitor_range", "preconditioned_residual_range", NULL);CHKERRQ(ierr);
-  ierr = KSPMonitorSetFromOptions(ksp, "-ksp_monitor_true_residual", "true_residual", NULL);CHKERRQ(ierr);
-  ierr = KSPMonitorSetFromOptions(ksp, "-ksp_monitor_max", "true_residual_max", NULL);CHKERRQ(ierr);
-  ierr = KSPMonitorSetFromOptions(ksp, "-ksp_monitor_solution", "solution", NULL);CHKERRQ(ierr);
-  ierr = KSPMonitorSetFromOptions(ksp, "-ksp_monitor_singular_value", "singular_value", ksp);CHKERRQ(ierr);
-  ierr = KSPMonitorSetFromOptions(ksp, "-ksp_monitor_error", "error", ksp);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ksp_monitor_pause_final", "Pauses all draw monitors at the final iterate", "KSPMonitorPauseFinal_Internal", PETSC_FALSE, &ksp->pauseFinal, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ksp_initial_guess_nonzero","Use the contents of the solution vector for initial guess","KSPSetInitialNonzero",ksp->guess_zero ? PETSC_FALSE : PETSC_TRUE,&flag,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-ksp_monitor_cancel","Remove any hardwired monitor routines","KSPMonitorCancel",PETSC_FALSE,&flg,&set));
+  if (set && flg) CHKERRQ(KSPMonitorCancel(ksp));
+  CHKERRQ(KSPMonitorSetFromOptions(ksp, "-ksp_monitor", "preconditioned_residual", NULL));
+  CHKERRQ(KSPMonitorSetFromOptions(ksp, "-ksp_monitor_short", "preconditioned_residual_short", NULL));
+  CHKERRQ(KSPMonitorSetFromOptions(ksp, "-all_ksp_monitor", "preconditioned_residual", NULL));
+  CHKERRQ(KSPMonitorSetFromOptions(ksp, "-ksp_monitor_range", "preconditioned_residual_range", NULL));
+  CHKERRQ(KSPMonitorSetFromOptions(ksp, "-ksp_monitor_true_residual", "true_residual", NULL));
+  CHKERRQ(KSPMonitorSetFromOptions(ksp, "-ksp_monitor_max", "true_residual_max", NULL));
+  CHKERRQ(KSPMonitorSetFromOptions(ksp, "-ksp_monitor_solution", "solution", NULL));
+  CHKERRQ(KSPMonitorSetFromOptions(ksp, "-ksp_monitor_singular_value", "singular_value", ksp));
+  CHKERRQ(KSPMonitorSetFromOptions(ksp, "-ksp_monitor_error", "error", ksp));
+  CHKERRQ(PetscOptionsBool("-ksp_monitor_pause_final", "Pauses all draw monitors at the final iterate", "KSPMonitorPauseFinal_Internal", PETSC_FALSE, &ksp->pauseFinal, NULL));
+  CHKERRQ(PetscOptionsBool("-ksp_initial_guess_nonzero","Use the contents of the solution vector for initial guess","KSPSetInitialNonzero",ksp->guess_zero ? PETSC_FALSE : PETSC_TRUE,&flag,&flg));
   if (flg) {
-    ierr = KSPSetInitialGuessNonzero(ksp,flag);CHKERRQ(ierr);
+    CHKERRQ(KSPSetInitialGuessNonzero(ksp,flag));
   }
 
-  ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg));
   if (flg) {
-    ierr = KSPGetReusePreconditioner(ksp,&reuse);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ksp_reuse_preconditioner","Use initial preconditioner and don't ever compute a new one","KSPReusePreconditioner",reuse,&reuse,NULL);CHKERRQ(ierr);
-    ierr = KSPSetReusePreconditioner(ksp,reuse);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ksp_error_if_not_converged","Generate error if solver does not converge","KSPSetErrorIfNotConverged",ksp->errorifnotconverged,&ksp->errorifnotconverged,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view",&ksp->viewer, &ksp->format,&ksp->view);CHKERRQ(ierr);
+    CHKERRQ(KSPGetReusePreconditioner(ksp,&reuse));
+    CHKERRQ(PetscOptionsBool("-ksp_reuse_preconditioner","Use initial preconditioner and don't ever compute a new one","KSPReusePreconditioner",reuse,&reuse,NULL));
+    CHKERRQ(KSPSetReusePreconditioner(ksp,reuse));
+    CHKERRQ(PetscOptionsBool("-ksp_error_if_not_converged","Generate error if solver does not converge","KSPSetErrorIfNotConverged",ksp->errorifnotconverged,&ksp->errorifnotconverged,NULL));
+    CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view",&ksp->viewer, &ksp->format,&ksp->view));
     flg = PETSC_FALSE;
-    ierr = PetscOptionsBool("-ksp_converged_reason_view_cancel","Cancel all the converged reason view functions set using KSPConvergedReasonViewSet","KSPConvergedReasonViewCancel",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsBool("-ksp_converged_reason_view_cancel","Cancel all the converged reason view functions set using KSPConvergedReasonViewSet","KSPConvergedReasonViewCancel",PETSC_FALSE,&flg,&set));
     if (set && flg) {
-      ierr = KSPConvergedReasonViewCancel(ksp);CHKERRQ(ierr);
+      CHKERRQ(KSPConvergedReasonViewCancel(ksp));
     }
-    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_mat",&ksp->viewerMat,&ksp->formatMat,&ksp->viewMat);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_pmat",&ksp->viewerPMat,&ksp->formatPMat,&ksp->viewPMat);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_rhs",&ksp->viewerRhs,&ksp->formatRhs,&ksp->viewRhs);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_solution",&ksp->viewerSol,&ksp->formatSol,&ksp->viewSol);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_mat_explicit",&ksp->viewerMatExp,&ksp->formatMatExp,&ksp->viewMatExp);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_final_residual",&ksp->viewerFinalRes,&ksp->formatFinalRes,&ksp->viewFinalRes);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_preconditioned_operator_explicit",&ksp->viewerPOpExp,&ksp->formatPOpExp,&ksp->viewPOpExp);CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_diagonal_scale",&ksp->viewerDScale,&ksp->formatDScale,&ksp->viewDScale);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_mat",&ksp->viewerMat,&ksp->formatMat,&ksp->viewMat));
+    CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_pmat",&ksp->viewerPMat,&ksp->formatPMat,&ksp->viewPMat));
+    CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_rhs",&ksp->viewerRhs,&ksp->formatRhs,&ksp->viewRhs));
+    CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_solution",&ksp->viewerSol,&ksp->formatSol,&ksp->viewSol));
+    CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_mat_explicit",&ksp->viewerMatExp,&ksp->formatMatExp,&ksp->viewMatExp));
+    CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_final_residual",&ksp->viewerFinalRes,&ksp->formatFinalRes,&ksp->viewFinalRes));
+    CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_preconditioned_operator_explicit",&ksp->viewerPOpExp,&ksp->formatPOpExp,&ksp->viewPOpExp));
+    CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_diagonal_scale",&ksp->viewerDScale,&ksp->formatDScale,&ksp->viewDScale));
 
-    ierr = KSPGetDiagonalScale(ksp,&flag);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ksp_diagonal_scale","Diagonal scale matrix before building preconditioner","KSPSetDiagonalScale",flag,&flag,&flg);CHKERRQ(ierr);
+    CHKERRQ(KSPGetDiagonalScale(ksp,&flag));
+    CHKERRQ(PetscOptionsBool("-ksp_diagonal_scale","Diagonal scale matrix before building preconditioner","KSPSetDiagonalScale",flag,&flag,&flg));
     if (flg) {
-      ierr = KSPSetDiagonalScale(ksp,flag);CHKERRQ(ierr);
+      CHKERRQ(KSPSetDiagonalScale(ksp,flag));
     }
-    ierr = KSPGetDiagonalScaleFix(ksp,&flag);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ksp_diagonal_scale_fix","Fix diagonally scaled matrix after solve","KSPSetDiagonalScaleFix",flag,&flag,&flg);CHKERRQ(ierr);
+    CHKERRQ(KSPGetDiagonalScaleFix(ksp,&flag));
+    CHKERRQ(PetscOptionsBool("-ksp_diagonal_scale_fix","Fix diagonally scaled matrix after solve","KSPSetDiagonalScaleFix",flag,&flag,&flg));
     if (flg) {
-      ierr = KSPSetDiagonalScaleFix(ksp,flag);CHKERRQ(ierr);
+      CHKERRQ(KSPSetDiagonalScaleFix(ksp,flag));
     }
     nmax = ksp->nmax;
-    ierr = PetscOptionsDeprecated("-ksp_matsolve_block_size","-ksp_matsolve_batch_size","3.15",NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-ksp_matsolve_batch_size", "Maximum number of columns treated simultaneously", "KSPSetMatSolveBatchSize", nmax, &nmax, &flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsDeprecated("-ksp_matsolve_block_size","-ksp_matsolve_batch_size","3.15",NULL));
+    CHKERRQ(PetscOptionsInt("-ksp_matsolve_batch_size", "Maximum number of columns treated simultaneously", "KSPSetMatSolveBatchSize", nmax, &nmax, &flg));
     if (flg) {
-      ierr = KSPSetMatSolveBatchSize(ksp, nmax);CHKERRQ(ierr);
+      CHKERRQ(KSPSetMatSolveBatchSize(ksp, nmax));
     }
     goto skipoptions;
   }
 
-  ierr = PetscOptionsInt("-ksp_max_it","Maximum number of iterations","KSPSetTolerances",ksp->max_it,&ksp->max_it,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ksp_rtol","Relative decrease in residual norm","KSPSetTolerances",ksp->rtol,&ksp->rtol,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ksp_atol","Absolute value of residual norm","KSPSetTolerances",ksp->abstol,&ksp->abstol,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-ksp_divtol","Residual norm increase cause divergence","KSPSetTolerances",ksp->divtol,&ksp->divtol,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsInt("-ksp_max_it","Maximum number of iterations","KSPSetTolerances",ksp->max_it,&ksp->max_it,NULL));
+  CHKERRQ(PetscOptionsReal("-ksp_rtol","Relative decrease in residual norm","KSPSetTolerances",ksp->rtol,&ksp->rtol,NULL));
+  CHKERRQ(PetscOptionsReal("-ksp_atol","Absolute value of residual norm","KSPSetTolerances",ksp->abstol,&ksp->abstol,NULL));
+  CHKERRQ(PetscOptionsReal("-ksp_divtol","Residual norm increase cause divergence","KSPSetTolerances",ksp->divtol,&ksp->divtol,NULL));
 
-  ierr = PetscOptionsBool("-ksp_converged_use_initial_residual_norm","Use initial residual norm for computing relative convergence","KSPConvergedDefaultSetUIRNorm",PETSC_FALSE,&flag,&set);CHKERRQ(ierr);
-  if (set && flag) {ierr = KSPConvergedDefaultSetUIRNorm(ksp);CHKERRQ(ierr);}
-  ierr = PetscOptionsBool("-ksp_converged_use_min_initial_residual_norm","Use minimum of initial residual norm and b for computing relative convergence","KSPConvergedDefaultSetUMIRNorm",PETSC_FALSE,&flag,&set);CHKERRQ(ierr);
-  if (set && flag) {ierr = KSPConvergedDefaultSetUMIRNorm(ksp);CHKERRQ(ierr);}
-  ierr = PetscOptionsBool("-ksp_converged_maxits","Declare convergence if the maximum number of iterations is reached","KSPConvergedDefaultSetConvergedMaxits",PETSC_FALSE,&flag,&set);CHKERRQ(ierr);
-  if (set) {ierr = KSPConvergedDefaultSetConvergedMaxits(ksp,flag);CHKERRQ(ierr);}
-  ierr = KSPGetReusePreconditioner(ksp,&reuse);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ksp_reuse_preconditioner","Use initial preconditioner and don't ever compute a new one","KSPReusePreconditioner",reuse,&reuse,NULL);CHKERRQ(ierr);
-  ierr = KSPSetReusePreconditioner(ksp,reuse);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-ksp_converged_use_initial_residual_norm","Use initial residual norm for computing relative convergence","KSPConvergedDefaultSetUIRNorm",PETSC_FALSE,&flag,&set));
+  if (set && flag) CHKERRQ(KSPConvergedDefaultSetUIRNorm(ksp));
+  CHKERRQ(PetscOptionsBool("-ksp_converged_use_min_initial_residual_norm","Use minimum of initial residual norm and b for computing relative convergence","KSPConvergedDefaultSetUMIRNorm",PETSC_FALSE,&flag,&set));
+  if (set && flag) CHKERRQ(KSPConvergedDefaultSetUMIRNorm(ksp));
+  CHKERRQ(PetscOptionsBool("-ksp_converged_maxits","Declare convergence if the maximum number of iterations is reached","KSPConvergedDefaultSetConvergedMaxits",PETSC_FALSE,&flag,&set));
+  if (set) CHKERRQ(KSPConvergedDefaultSetConvergedMaxits(ksp,flag));
+  CHKERRQ(KSPGetReusePreconditioner(ksp,&reuse));
+  CHKERRQ(PetscOptionsBool("-ksp_reuse_preconditioner","Use initial preconditioner and don't ever compute a new one","KSPReusePreconditioner",reuse,&reuse,NULL));
+  CHKERRQ(KSPSetReusePreconditioner(ksp,reuse));
 
-  ierr = PetscOptionsBool("-ksp_knoll","Use preconditioner applied to b for initial guess","KSPSetInitialGuessKnoll",ksp->guess_knoll,&ksp->guess_knoll,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ksp_error_if_not_converged","Generate error if solver does not converge","KSPSetErrorIfNotConverged",ksp->errorifnotconverged,&ksp->errorifnotconverged,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsFList("-ksp_guess_type","Initial guess in Krylov method",NULL,KSPGuessList,NULL,guesstype,256,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-ksp_knoll","Use preconditioner applied to b for initial guess","KSPSetInitialGuessKnoll",ksp->guess_knoll,&ksp->guess_knoll,NULL));
+  CHKERRQ(PetscOptionsBool("-ksp_error_if_not_converged","Generate error if solver does not converge","KSPSetErrorIfNotConverged",ksp->errorifnotconverged,&ksp->errorifnotconverged,NULL));
+  CHKERRQ(PetscOptionsFList("-ksp_guess_type","Initial guess in Krylov method",NULL,KSPGuessList,NULL,guesstype,256,&flg));
   if (flg) {
-    ierr = KSPGetGuess(ksp,&ksp->guess);CHKERRQ(ierr);
-    ierr = KSPGuessSetType(ksp->guess,guesstype);CHKERRQ(ierr);
-    ierr = KSPGuessSetFromOptions(ksp->guess);CHKERRQ(ierr);
+    CHKERRQ(KSPGetGuess(ksp,&ksp->guess));
+    CHKERRQ(KSPGuessSetType(ksp->guess,guesstype));
+    CHKERRQ(KSPGuessSetFromOptions(ksp->guess));
   } else { /* old option for KSP */
     nmax = 2;
-    ierr = PetscOptionsIntArray("-ksp_fischer_guess","Use Paul Fischer's algorithm or its variants for initial guess","KSPSetUseFischerGuess",model,&nmax,&flag);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsIntArray("-ksp_fischer_guess","Use Paul Fischer's algorithm or its variants for initial guess","KSPSetUseFischerGuess",model,&nmax,&flag));
     if (flag) {
       PetscCheckFalse(nmax != 2,comm,PETSC_ERR_ARG_OUTOFRANGE,"Must pass in model,size as arguments");
-      ierr = KSPSetUseFischerGuess(ksp,model[0],model[1]);CHKERRQ(ierr);
+      CHKERRQ(KSPSetUseFischerGuess(ksp,model[0],model[1]));
     }
   }
 
-  ierr = PetscOptionsEList("-ksp_convergence_test","Convergence test","KSPSetConvergenceTest",convtests,3,"default",&indx,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsEList("-ksp_convergence_test","Convergence test","KSPSetConvergenceTest",convtests,3,"default",&indx,&flg));
   if (flg) {
     switch (indx) {
     case 0:
-      ierr = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
-      ierr = KSPSetConvergenceTest(ksp,KSPConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
+      CHKERRQ(KSPConvergedDefaultCreate(&ctx));
+      CHKERRQ(KSPSetConvergenceTest(ksp,KSPConvergedDefault,ctx,KSPConvergedDefaultDestroy));
       break;
     case 1:
-      ierr = KSPSetConvergenceTest(ksp,KSPConvergedSkip,NULL,NULL);CHKERRQ(ierr);
+      CHKERRQ(KSPSetConvergenceTest(ksp,KSPConvergedSkip,NULL,NULL));
       break;
     case 2:
-      ierr = KSPConvergedDefaultCreate(&ctx);CHKERRQ(ierr);
-      ierr = KSPSetConvergenceTest(ksp,KSPLSQRConvergedDefault,ctx,KSPConvergedDefaultDestroy);CHKERRQ(ierr);
+      CHKERRQ(KSPConvergedDefaultCreate(&ctx));
+      CHKERRQ(KSPSetConvergenceTest(ksp,KSPLSQRConvergedDefault,ctx,KSPConvergedDefaultDestroy));
       break;
     }
   }
 
-  ierr = KSPSetUpNorms_Private(ksp,PETSC_FALSE,&normtype,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-ksp_norm_type","KSP Norm type","KSPSetNormType",KSPNormTypes,(PetscEnum)normtype,(PetscEnum*)&normtype,&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPSetNormType(ksp,normtype);CHKERRQ(ierr); }
+  CHKERRQ(KSPSetUpNorms_Private(ksp,PETSC_FALSE,&normtype,NULL));
+  CHKERRQ(PetscOptionsEnum("-ksp_norm_type","KSP Norm type","KSPSetNormType",KSPNormTypes,(PetscEnum)normtype,(PetscEnum*)&normtype,&flg));
+  if (flg) CHKERRQ(KSPSetNormType(ksp,normtype));
 
-  ierr = PetscOptionsInt("-ksp_check_norm_iteration","First iteration to compute residual norm","KSPSetCheckNormIteration",ksp->chknorm,&ksp->chknorm,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsInt("-ksp_check_norm_iteration","First iteration to compute residual norm","KSPSetCheckNormIteration",ksp->chknorm,&ksp->chknorm,NULL));
 
-  ierr = PetscOptionsBool("-ksp_lag_norm","Lag the calculation of the residual norm","KSPSetLagNorm",ksp->lagnorm,&flag,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-ksp_lag_norm","Lag the calculation of the residual norm","KSPSetLagNorm",ksp->lagnorm,&flag,&flg));
   if (flg) {
-    ierr = KSPSetLagNorm(ksp,flag);CHKERRQ(ierr);
+    CHKERRQ(KSPSetLagNorm(ksp,flag));
   }
 
-  ierr = KSPGetDiagonalScale(ksp,&flag);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ksp_diagonal_scale","Diagonal scale matrix before building preconditioner","KSPSetDiagonalScale",flag,&flag,&flg);CHKERRQ(ierr);
+  CHKERRQ(KSPGetDiagonalScale(ksp,&flag));
+  CHKERRQ(PetscOptionsBool("-ksp_diagonal_scale","Diagonal scale matrix before building preconditioner","KSPSetDiagonalScale",flag,&flag,&flg));
   if (flg) {
-    ierr = KSPSetDiagonalScale(ksp,flag);CHKERRQ(ierr);
+    CHKERRQ(KSPSetDiagonalScale(ksp,flag));
   }
-  ierr = KSPGetDiagonalScaleFix(ksp,&flag);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-ksp_diagonal_scale_fix","Fix diagonally scaled matrix after solve","KSPSetDiagonalScaleFix",flag,&flag,&flg);CHKERRQ(ierr);
+  CHKERRQ(KSPGetDiagonalScaleFix(ksp,&flag));
+  CHKERRQ(PetscOptionsBool("-ksp_diagonal_scale_fix","Fix diagonally scaled matrix after solve","KSPSetDiagonalScaleFix",flag,&flag,&flg));
   if (flg) {
-    ierr = KSPSetDiagonalScaleFix(ksp,flag);CHKERRQ(ierr);
+    CHKERRQ(KSPSetDiagonalScaleFix(ksp,flag));
   }
 
-  ierr = PetscOptionsBool("-ksp_constant_null_space","Add constant null space to Krylov solver matrix","MatSetNullSpace",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-ksp_constant_null_space","Add constant null space to Krylov solver matrix","MatSetNullSpace",PETSC_FALSE,&flg,&set));
   if (set && flg) {
     MatNullSpace nsp;
     Mat          Amat = NULL;
 
-    ierr = MatNullSpaceCreate(comm,PETSC_TRUE,0,NULL,&nsp);CHKERRQ(ierr);
-    if (ksp->pc) { ierr = PCGetOperators(ksp->pc,&Amat,NULL);CHKERRQ(ierr); }
+    CHKERRQ(MatNullSpaceCreate(comm,PETSC_TRUE,0,NULL,&nsp));
+    if (ksp->pc) CHKERRQ(PCGetOperators(ksp->pc,&Amat,NULL));
     if (Amat) {
-      ierr = MatSetNullSpace(Amat,nsp);CHKERRQ(ierr);
-      ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
+      CHKERRQ(MatSetNullSpace(Amat,nsp));
+      CHKERRQ(MatNullSpaceDestroy(&nsp));
     } else SETERRQ(comm,PETSC_ERR_ARG_WRONGSTATE,"Cannot set nullspace, matrix has not yet been provided");
   }
 
   flg = PETSC_FALSE;
   if (ksp->pc) {
-    ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCKSP,&flg);CHKERRQ(ierr);
-    if (!flg) {ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCBJACOBI,&flg);CHKERRQ(ierr);}
-    if (!flg) {ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCDEFLATION,&flg);CHKERRQ(ierr);}
+    CHKERRQ(PetscObjectTypeCompare((PetscObject)ksp->pc,PCKSP,&flg));
+    if (!flg) CHKERRQ(PetscObjectTypeCompare((PetscObject)ksp->pc,PCBJACOBI,&flg));
+    if (!flg) CHKERRQ(PetscObjectTypeCompare((PetscObject)ksp->pc,PCDEFLATION,&flg));
   }
 
   if (flg) {
     /* A hack for using dynamic tolerance in preconditioner */
-    ierr = PetscOptionsString("-sub_ksp_dynamic_tolerance","Use dynamic tolerance for PC if PC is a KSP","KSPMonitorDynamicTolerance","stdout",monfilename,sizeof(monfilename),&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsString("-sub_ksp_dynamic_tolerance","Use dynamic tolerance for PC if PC is a KSP","KSPMonitorDynamicTolerance","stdout",monfilename,sizeof(monfilename),&flg));
     if (flg) {
       KSPDynTolCtx *scale;
-      ierr        = PetscMalloc1(1,&scale);CHKERRQ(ierr);
+      CHKERRQ(PetscMalloc1(1,&scale));
       scale->bnrm = -1.0;
       scale->coef = 1.0;
-      ierr        = PetscOptionsReal("-sub_ksp_dynamic_tolerance_param","Parameter of dynamic tolerance for inner PCKSP","KSPMonitorDynamicToleranceParam",scale->coef,&scale->coef,&flg);CHKERRQ(ierr);
-      ierr        = KSPMonitorSet(ksp,KSPMonitorDynamicTolerance,scale,KSPMonitorDynamicToleranceDestroy);CHKERRQ(ierr);
+      CHKERRQ(PetscOptionsReal("-sub_ksp_dynamic_tolerance_param","Parameter of dynamic tolerance for inner PCKSP","KSPMonitorDynamicToleranceParam",scale->coef,&scale->coef,&flg));
+      CHKERRQ(KSPMonitorSet(ksp,KSPMonitorDynamicTolerance,scale,KSPMonitorDynamicToleranceDestroy));
     }
   }
 
   /*
    Calls Python function
   */
-  ierr = PetscOptionsString("-ksp_monitor_python","Use Python function","KSPMonitorSet",NULL,monfilename,sizeof(monfilename),&flg);CHKERRQ(ierr);
-  if (flg) {ierr = PetscPythonMonitorSet((PetscObject)ksp,monfilename);CHKERRQ(ierr);}
+  CHKERRQ(PetscOptionsString("-ksp_monitor_python","Use Python function","KSPMonitorSet",NULL,monfilename,sizeof(monfilename),&flg));
+  if (flg) CHKERRQ(PetscPythonMonitorSet((PetscObject)ksp,monfilename));
   /*
     Graphically plots preconditioned residual norm and range of residual element values
   */
-  ierr = PetscOptionsBool("-ksp_monitor_lg_range","Monitor graphically range of preconditioned residual norm","KSPMonitorSet",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-ksp_monitor_lg_range","Monitor graphically range of preconditioned residual norm","KSPMonitorSet",PETSC_FALSE,&flg,&set));
   if (set && flg) {
     PetscViewer ctx;
 
-    ierr = PetscViewerDrawOpen(comm,NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,&ctx);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,KSPMonitorLGRange,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerDrawOpen(comm,NULL,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,&ctx));
+    CHKERRQ(KSPMonitorSet(ksp,KSPMonitorLGRange,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy));
   }
   /* TODO Do these show up in help? */
-  ierr = PetscOptionsHasName(((PetscObject) ksp)->options, prefix, "-ksp_converged_rate", &flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHasName(((PetscObject) ksp)->options, prefix, "-ksp_converged_rate", &flg));
   if (flg) {
     const char *RateTypes[] = {"default", "residual", "error", "PetscRateType", "RATE_", NULL};
     PetscEnum rtype = (PetscEnum) 1;
 
-    ierr = PetscOptionsGetEnum(((PetscObject) ksp)->options, prefix, "-ksp_converged_rate_type", RateTypes, &rtype, &flg);CHKERRQ(ierr);
-    if (rtype == (PetscEnum) 0 || rtype == (PetscEnum) 1) {ierr = KSPSetResidualHistory(ksp, NULL, PETSC_DETERMINE, PETSC_TRUE);CHKERRQ(ierr);}
-    if (rtype == (PetscEnum) 0 || rtype == (PetscEnum) 2) {ierr = KSPSetErrorHistory(ksp, NULL, PETSC_DETERMINE, PETSC_TRUE);CHKERRQ(ierr);}
+    CHKERRQ(PetscOptionsGetEnum(((PetscObject) ksp)->options, prefix, "-ksp_converged_rate_type", RateTypes, &rtype, &flg));
+    if (rtype == (PetscEnum) 0 || rtype == (PetscEnum) 1) CHKERRQ(KSPSetResidualHistory(ksp, NULL, PETSC_DETERMINE, PETSC_TRUE));
+    if (rtype == (PetscEnum) 0 || rtype == (PetscEnum) 2) CHKERRQ(KSPSetErrorHistory(ksp, NULL, PETSC_DETERMINE, PETSC_TRUE));
   }
-  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view",&ksp->viewer,&ksp->format,&ksp->view);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_pre",&ksp->viewerPre,&ksp->formatPre,&ksp->viewPre);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view",&ksp->viewer,&ksp->format,&ksp->view));
+  CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_pre",&ksp->viewerPre,&ksp->formatPre,&ksp->viewPre));
 
   flg = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ksp_converged_reason_view_cancel","Cancel all the converged reason view functions set using KSPConvergedReasonViewSet","KSPConvergedReasonViewCancel",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-ksp_converged_reason_view_cancel","Cancel all the converged reason view functions set using KSPConvergedReasonViewSet","KSPConvergedReasonViewCancel",PETSC_FALSE,&flg,&set));
   if (set && flg) {
-    ierr = KSPConvergedReasonViewCancel(ksp);CHKERRQ(ierr);
+    CHKERRQ(KSPConvergedReasonViewCancel(ksp));
   }
-  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_converged_rate",&ksp->viewerRate,&ksp->formatRate,&ksp->viewRate);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_mat",&ksp->viewerMat,&ksp->formatMat,&ksp->viewMat);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_pmat",&ksp->viewerPMat,&ksp->formatPMat,&ksp->viewPMat);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_rhs",&ksp->viewerRhs,&ksp->formatRhs,&ksp->viewRhs);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_solution",&ksp->viewerSol,&ksp->formatSol,&ksp->viewSol);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_mat_explicit",&ksp->viewerMatExp,&ksp->formatMatExp,&ksp->viewMatExp);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_eigenvalues",&ksp->viewerEV,&ksp->formatEV,&ksp->viewEV);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_singularvalues",&ksp->viewerSV,&ksp->formatSV,&ksp->viewSV);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_eigenvalues_explicit",&ksp->viewerEVExp,&ksp->formatEVExp,&ksp->viewEVExp);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_final_residual",&ksp->viewerFinalRes,&ksp->formatFinalRes,&ksp->viewFinalRes);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_preconditioned_operator_explicit",&ksp->viewerPOpExp,&ksp->formatPOpExp,&ksp->viewPOpExp);CHKERRQ(ierr);
-  ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_diagonal_scale",&ksp->viewerDScale,&ksp->formatDScale,&ksp->viewDScale);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_converged_rate",&ksp->viewerRate,&ksp->formatRate,&ksp->viewRate));
+  CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_mat",&ksp->viewerMat,&ksp->formatMat,&ksp->viewMat));
+  CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_pmat",&ksp->viewerPMat,&ksp->formatPMat,&ksp->viewPMat));
+  CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_rhs",&ksp->viewerRhs,&ksp->formatRhs,&ksp->viewRhs));
+  CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_solution",&ksp->viewerSol,&ksp->formatSol,&ksp->viewSol));
+  CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_mat_explicit",&ksp->viewerMatExp,&ksp->formatMatExp,&ksp->viewMatExp));
+  CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_eigenvalues",&ksp->viewerEV,&ksp->formatEV,&ksp->viewEV));
+  CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_singularvalues",&ksp->viewerSV,&ksp->formatSV,&ksp->viewSV));
+  CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_eigenvalues_explicit",&ksp->viewerEVExp,&ksp->formatEVExp,&ksp->viewEVExp));
+  CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_final_residual",&ksp->viewerFinalRes,&ksp->formatFinalRes,&ksp->viewFinalRes));
+  CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_preconditioned_operator_explicit",&ksp->viewerPOpExp,&ksp->formatPOpExp,&ksp->viewPOpExp));
+  CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_view_diagonal_scale",&ksp->viewerDScale,&ksp->formatDScale,&ksp->viewDScale));
 
   /* Deprecated options */
   if (!ksp->viewEV) {
-    ierr = PetscOptionsDeprecated("-ksp_compute_eigenvalues",NULL,"3.9","Use -ksp_view_eigenvalues");CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_compute_eigenvalues",&ksp->viewerEV,&ksp->formatEV,&ksp->viewEV);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsDeprecated("-ksp_compute_eigenvalues",NULL,"3.9","Use -ksp_view_eigenvalues"));
+    CHKERRQ(PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_compute_eigenvalues",&ksp->viewerEV,&ksp->formatEV,&ksp->viewEV));
   }
   if (!ksp->viewEV) {
-    ierr = PetscOptionsDeprecated("-ksp_plot_eigenvalues",NULL,"3.9","Use -ksp_view_eigenvalues draw");CHKERRQ(ierr);
-    ierr = PetscOptionsName("-ksp_plot_eigenvalues", "[deprecated since PETSc 3.9; use -ksp_view_eigenvalues draw]", "KSPView", &ksp->viewEV);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsDeprecated("-ksp_plot_eigenvalues",NULL,"3.9","Use -ksp_view_eigenvalues draw"));
+    CHKERRQ(PetscOptionsName("-ksp_plot_eigenvalues", "[deprecated since PETSc 3.9; use -ksp_view_eigenvalues draw]", "KSPView", &ksp->viewEV));
     if (ksp->viewEV) {
       ksp->formatEV = PETSC_VIEWER_DEFAULT;
       ksp->viewerEV = PETSC_VIEWER_DRAW_(comm);
-      ierr = PetscObjectReference((PetscObject) ksp->viewerEV);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectReference((PetscObject) ksp->viewerEV));
     }
   }
   if (!ksp->viewEV) {
-    ierr = PetscOptionsDeprecated("-ksp_plot_eigencontours",NULL,"3.9","Use -ksp_view_eigenvalues draw::draw_contour");CHKERRQ(ierr);
-    ierr = PetscOptionsName("-ksp_plot_eigencontours", "[deprecated since PETSc 3.9; use -ksp_view_eigenvalues draw::draw_contour]", "KSPView", &ksp->viewEV);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsDeprecated("-ksp_plot_eigencontours",NULL,"3.9","Use -ksp_view_eigenvalues draw::draw_contour"));
+    CHKERRQ(PetscOptionsName("-ksp_plot_eigencontours", "[deprecated since PETSc 3.9; use -ksp_view_eigenvalues draw::draw_contour]", "KSPView", &ksp->viewEV));
     if (ksp->viewEV) {
       ksp->formatEV = PETSC_VIEWER_DRAW_CONTOUR;
       ksp->viewerEV = PETSC_VIEWER_DRAW_(comm);
-      ierr = PetscObjectReference((PetscObject) ksp->viewerEV);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectReference((PetscObject) ksp->viewerEV));
     }
   }
   if (!ksp->viewEVExp) {
-    ierr = PetscOptionsDeprecated("-ksp_compute_eigenvalues_explicitly",NULL,"3.9","Use -ksp_view_eigenvalues_explicit");CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_compute_eigenvalues_explicitly",&ksp->viewerEVExp,&ksp->formatEVExp,&ksp->viewEVExp);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsDeprecated("-ksp_compute_eigenvalues_explicitly",NULL,"3.9","Use -ksp_view_eigenvalues_explicit"));
+    CHKERRQ(PetscOptionsGetViewer(comm, ((PetscObject) ksp)->options,prefix, "-ksp_compute_eigenvalues_explicitly",&ksp->viewerEVExp,&ksp->formatEVExp,&ksp->viewEVExp));
   }
   if (!ksp->viewEVExp) {
-    ierr = PetscOptionsDeprecated("-ksp_plot_eigenvalues_explicitly",NULL,"3.9","Use -ksp_view_eigenvalues_explicit draw");CHKERRQ(ierr);
-    ierr = PetscOptionsName("-ksp_plot_eigenvalues_explicitly","[deprecated since PETSc 3.9; use -ksp_view_eigenvalues_explicit draw]","KSPView",&ksp->viewEVExp);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsDeprecated("-ksp_plot_eigenvalues_explicitly",NULL,"3.9","Use -ksp_view_eigenvalues_explicit draw"));
+    CHKERRQ(PetscOptionsName("-ksp_plot_eigenvalues_explicitly","[deprecated since PETSc 3.9; use -ksp_view_eigenvalues_explicit draw]","KSPView",&ksp->viewEVExp));
     if (ksp->viewEVExp) {
       ksp->formatEVExp = PETSC_VIEWER_DEFAULT;
       ksp->viewerEVExp = PETSC_VIEWER_DRAW_(comm);
-      ierr = PetscObjectReference((PetscObject) ksp->viewerEVExp);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectReference((PetscObject) ksp->viewerEVExp));
     }
   }
   if (!ksp->viewSV) {
-    ierr = PetscOptionsDeprecated("-ksp_compute_singularvalues",NULL,"3.9","Use -ksp_view_singularvalues");CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_compute_singularvalues",&ksp->viewerSV,&ksp->formatSV,&ksp->viewSV);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsDeprecated("-ksp_compute_singularvalues",NULL,"3.9","Use -ksp_view_singularvalues"));
+    CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_compute_singularvalues",&ksp->viewerSV,&ksp->formatSV,&ksp->viewSV));
   }
   if (!ksp->viewFinalRes) {
-    ierr = PetscOptionsDeprecated("-ksp_final_residual",NULL,"3.9","Use -ksp_view_final_residual");CHKERRQ(ierr);
-    ierr = PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_final_residual",&ksp->viewerFinalRes,&ksp->formatFinalRes,&ksp->viewFinalRes);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsDeprecated("-ksp_final_residual",NULL,"3.9","Use -ksp_view_final_residual"));
+    CHKERRQ(PetscOptionsGetViewer(comm,((PetscObject) ksp)->options,prefix,"-ksp_final_residual",&ksp->viewerFinalRes,&ksp->formatFinalRes,&ksp->viewFinalRes));
   }
 
 #if defined(PETSC_HAVE_SAWS)
   /*
     Publish convergence information using AMS
   */
-  ierr = PetscOptionsBool("-ksp_monitor_saws","Publish KSP progress using SAWs","KSPMonitorSet",PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-ksp_monitor_saws","Publish KSP progress using SAWs","KSPMonitorSet",PETSC_FALSE,&flg,&set));
   if (set && flg) {
     void *ctx;
-    ierr = KSPMonitorSAWsCreate(ksp,&ctx);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,KSPMonitorSAWs,ctx,KSPMonitorSAWsDestroy);CHKERRQ(ierr);
-    ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
+    CHKERRQ(KSPMonitorSAWsCreate(ksp,&ctx));
+    CHKERRQ(KSPMonitorSet(ksp,KSPMonitorSAWs,ctx,KSPMonitorSAWsDestroy));
+    CHKERRQ(KSPSetComputeSingularValues(ksp,PETSC_TRUE));
   }
 #endif
 
   /* -----------------------------------------------------------------------*/
-  ierr = KSPSetUpNorms_Private(ksp,PETSC_FALSE,NULL,&pcside);CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-ksp_pc_side","KSP preconditioner side","KSPSetPCSide",PCSides,(PetscEnum)pcside,(PetscEnum*)&pcside,&flg);CHKERRQ(ierr);
-  if (flg) {ierr = KSPSetPCSide(ksp,pcside);CHKERRQ(ierr);}
+  CHKERRQ(KSPSetUpNorms_Private(ksp,PETSC_FALSE,NULL,&pcside));
+  CHKERRQ(PetscOptionsEnum("-ksp_pc_side","KSP preconditioner side","KSPSetPCSide",PCSides,(PetscEnum)pcside,(PetscEnum*)&pcside,&flg));
+  if (flg) CHKERRQ(KSPSetPCSide(ksp,pcside));
 
   if (ksp->viewSV || ksp->viewEV) {
-    ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
+    CHKERRQ(KSPSetComputeSingularValues(ksp,PETSC_TRUE));
   }
 
 #if defined(PETSC_HAVE_SAWS)
   {
     PetscBool set;
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-ksp_saws_block","Block for SAWs at end of KSPSolve","PetscObjectSAWsBlock",((PetscObject)ksp)->amspublishblock,&flg,&set);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsBool("-ksp_saws_block","Block for SAWs at end of KSPSolve","PetscObjectSAWsBlock",((PetscObject)ksp)->amspublishblock,&flg,&set));
     if (set) {
-      ierr = PetscObjectSAWsSetBlock((PetscObject)ksp,flg);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectSAWsSetBlock((PetscObject)ksp,flg));
     }
   }
 #endif
 
   nmax = ksp->nmax;
-  ierr = PetscOptionsDeprecated("-ksp_matsolve_block_size","-ksp_matsolve_batch_size","3.15",NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-ksp_matsolve_batch_size", "Maximum number of columns treated simultaneously", "KSPSetMatSolveBatchSize", nmax, &nmax, &flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsDeprecated("-ksp_matsolve_block_size","-ksp_matsolve_batch_size","3.15",NULL));
+  CHKERRQ(PetscOptionsInt("-ksp_matsolve_batch_size", "Maximum number of columns treated simultaneously", "KSPSetMatSolveBatchSize", nmax, &nmax, &flg));
   if (flg) {
-    ierr = KSPSetMatSolveBatchSize(ksp, nmax);CHKERRQ(ierr);
+    CHKERRQ(KSPSetMatSolveBatchSize(ksp, nmax));
   }
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ksp_use_explicittranspose","Explicitly transpose the system in KSPSolveTranspose","KSPSetUseExplicitTranspose",ksp->transpose.use_explicittranspose,&flg,&set);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-ksp_use_explicittranspose","Explicitly transpose the system in KSPSolveTranspose","KSPSetUseExplicitTranspose",ksp->transpose.use_explicittranspose,&flg,&set));
   if (set) {
-    ierr = KSPSetUseExplicitTranspose(ksp,flg);CHKERRQ(ierr);
+    CHKERRQ(KSPSetUseExplicitTranspose(ksp,flg));
   }
 
   if (ksp->ops->setfromoptions) {
-    ierr = (*ksp->ops->setfromoptions)(PetscOptionsObject,ksp);CHKERRQ(ierr);
+    CHKERRQ((*ksp->ops->setfromoptions)(PetscOptionsObject,ksp));
   }
   skipoptions:
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
-  ierr = PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)ksp);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)ksp));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ksp->setfromoptionscalled++;
   PetscFunctionReturn(0);
@@ -694,9 +680,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 @*/
 PetscErrorCode KSPResetFromOptions(KSP ksp)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  if (ksp->setfromoptionscalled) {ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);}
+  if (ksp->setfromoptionscalled) CHKERRQ(KSPSetFromOptions(ksp));
   PetscFunctionReturn(0);
 }

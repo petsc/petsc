@@ -26,13 +26,13 @@ int main(int argc, char *argv[])
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_GHOSTED,DMDA_STENCIL_BOX,nx,ny,nz,
                       PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,2,NULL,NULL,NULL,&da);CHKERRQ(ierr);
 
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMView(da,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,&A);CHKERRQ(ierr);
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
+  CHKERRQ(DMView(da,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(DMCreateMatrix(da,&A));
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(DMDestroy(&da));
   ierr = PetscFinalize();
   return ierr;
 }

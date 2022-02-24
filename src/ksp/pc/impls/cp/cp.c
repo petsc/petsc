@@ -17,41 +17,40 @@ static PetscErrorCode PCSetUp_CP(PC pc)
 {
   PC_CP          *cp = (PC_CP*)pc->data;
   PetscInt       i,j,*colcnt;
-  PetscErrorCode ierr;
   PetscBool      flg;
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)pc->pmat->data;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJ,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJ,&flg));
   PetscCheckFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles SeqAIJ matrices");
 
-  ierr = MatGetLocalSize(pc->pmat,&cp->m,&cp->n);CHKERRQ(ierr);
+  CHKERRQ(MatGetLocalSize(pc->pmat,&cp->m,&cp->n));
   PetscCheckFalse(cp->m != cp->n,PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently only for square matrices");
 
-  if (!cp->work) {ierr = MatCreateVecs(pc->pmat,&cp->work,NULL);CHKERRQ(ierr);}
-  if (!cp->d) {ierr = PetscMalloc1(cp->n,&cp->d);CHKERRQ(ierr);}
+  if (!cp->work) CHKERRQ(MatCreateVecs(pc->pmat,&cp->work,NULL));
+  if (!cp->d) CHKERRQ(PetscMalloc1(cp->n,&cp->d));
   if (cp->a && pc->flag != SAME_NONZERO_PATTERN) {
-    ierr  = PetscFree3(cp->a,cp->i,cp->j);CHKERRQ(ierr);
+    CHKERRQ(PetscFree3(cp->a,cp->i,cp->j));
     cp->a = NULL;
   }
 
   /* convert to column format */
   if (!cp->a) {
-    ierr = PetscMalloc3(aij->nz,&cp->a,cp->n+1,&cp->i,aij->nz,&cp->j);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc3(aij->nz,&cp->a,cp->n+1,&cp->i,aij->nz,&cp->j));
   }
-  ierr = PetscCalloc1(cp->n,&colcnt);CHKERRQ(ierr);
+  CHKERRQ(PetscCalloc1(cp->n,&colcnt));
 
   for (i=0; i<aij->nz; i++) colcnt[aij->j[i]]++;
   cp->i[0] = 0;
   for (i=0; i<cp->n; i++) cp->i[i+1] = cp->i[i] + colcnt[i];
-  ierr = PetscArrayzero(colcnt,cp->n);CHKERRQ(ierr);
+  CHKERRQ(PetscArrayzero(colcnt,cp->n));
   for (i=0; i<cp->m; i++) {  /* over rows */
     for (j=aij->i[i]; j<aij->i[i+1]; j++) {  /* over columns in row */
       cp->j[cp->i[aij->j[j]]+colcnt[aij->j[j]]]   = i;
       cp->a[cp->i[aij->j[j]]+colcnt[aij->j[j]]++] = aij->a[j];
     }
   }
-  ierr = PetscFree(colcnt);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(colcnt));
 
   /* compute sum of squares of each column d[] */
   for (i=0; i<cp->n; i++) {  /* over columns */
@@ -65,14 +64,13 @@ static PetscErrorCode PCSetUp_CP(PC pc)
 static PetscErrorCode PCApply_CP(PC pc,Vec bb,Vec xx)
 {
   PC_CP          *cp = (PC_CP*)pc->data;
-  PetscErrorCode ierr;
   PetscScalar    *b,*x,xt;
   PetscInt       i,j;
 
   PetscFunctionBegin;
-  ierr = VecCopy(bb,cp->work);CHKERRQ(ierr);
-  ierr = VecGetArray(cp->work,&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(bb,cp->work));
+  CHKERRQ(VecGetArray(cp->work,&b));
+  CHKERRQ(VecGetArray(xx,&x));
 
   for (i=0; i<cp->n; i++) {  /* over columns */
     xt = 0.;
@@ -89,33 +87,31 @@ static PetscErrorCode PCApply_CP(PC pc,Vec bb,Vec xx)
     for (j=cp->i[i]; j<cp->i[i+1]; j++) b[cp->j[j]] -= xt*cp->a[j]; /* over rows in column updating b*/
   }
 
-  ierr = VecRestoreArray(cp->work,&b);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(cp->work,&b));
+  CHKERRQ(VecRestoreArray(xx,&x));
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
 static PetscErrorCode PCReset_CP(PC pc)
 {
   PC_CP          *cp = (PC_CP*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(cp->d);CHKERRQ(ierr);
-  ierr = VecDestroy(&cp->work);CHKERRQ(ierr);
-  ierr = PetscFree3(cp->a,cp->i,cp->j);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(cp->d));
+  CHKERRQ(VecDestroy(&cp->work));
+  CHKERRQ(PetscFree3(cp->a,cp->i,cp->j));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCDestroy_CP(PC pc)
 {
   PC_CP          *cp = (PC_CP*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCReset_CP(pc);CHKERRQ(ierr);
-  ierr = PetscFree(cp->d);CHKERRQ(ierr);
-  ierr = PetscFree3(cp->a,cp->i,cp->j);CHKERRQ(ierr);
-  ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  CHKERRQ(PCReset_CP(pc));
+  CHKERRQ(PetscFree(cp->d));
+  CHKERRQ(PetscFree3(cp->a,cp->i,cp->j));
+  CHKERRQ(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
@@ -168,10 +164,9 @@ M*/
 PETSC_EXTERN PetscErrorCode PCCreate_CP(PC pc)
 {
   PC_CP          *cp;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr     = PetscNewLog(pc,&cp);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(pc,&cp));
   pc->data = (void*)cp;
 
   pc->ops->apply           = PCApply_CP;
@@ -184,4 +179,3 @@ PETSC_EXTERN PetscErrorCode PCCreate_CP(PC pc)
   pc->ops->applyrichardson = NULL;
   PetscFunctionReturn(0);
 }
-

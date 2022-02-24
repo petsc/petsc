@@ -17,47 +17,47 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
-  ierr = PetscStrcpy(dir,".");CHKERRQ(ierr);
-  ierr = PetscOptionsGetString(NULL,NULL,"-load_dir",dir,sizeof(dir),NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-nmat",&nmat,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-reset",&reset,NULL);CHKERRQ(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  CHKERRQ(PetscStrcpy(dir,"."));
+  CHKERRQ(PetscOptionsGetString(NULL,NULL,"-load_dir",dir,sizeof(dir),NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nmat",&nmat,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-reset",&reset,NULL));
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPSetOperators(ksp,A,A));
   for (i=0; i<nmat; i++) {
     j = i+400;
-    ierr = PetscSNPrintf(name,sizeof(name),"%s/A_%d.dat",dir,j);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = MatLoad(A,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscSNPrintf(name,sizeof(name),"%s/A_%d.dat",dir,j));
+    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
+    CHKERRQ(MatLoad(A,viewer));
+    CHKERRQ(PetscViewerDestroy(&viewer));
     if (i == 0) {
-      ierr = MatCreateVecs(A,&x,&b);CHKERRQ(ierr);
+      CHKERRQ(MatCreateVecs(A,&x,&b));
     }
-    ierr = PetscSNPrintf(name,sizeof(name),"%s/rhs_%d.dat",dir,j);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = VecLoad(b,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-    ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPHPDDM,&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscSNPrintf(name,sizeof(name),"%s/rhs_%d.dat",dir,j));
+    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,&viewer));
+    CHKERRQ(VecLoad(b,viewer));
+    CHKERRQ(PetscViewerDestroy(&viewer));
+    CHKERRQ(KSPSetFromOptions(ksp));
+    CHKERRQ(KSPSolve(ksp,b,x));
+    CHKERRQ(PetscObjectTypeCompare((PetscObject)ksp,KSPHPDDM,&flg));
 #if defined(PETSC_HAVE_HPDDM)
     if (flg && reset) {
-      ierr = KSPHPDDMGetDeflationSpace(ksp,&U);CHKERRQ(ierr);
-      ierr = KSPReset(ksp);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-      ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-      ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+      CHKERRQ(KSPHPDDMGetDeflationSpace(ksp,&U));
+      CHKERRQ(KSPReset(ksp));
+      CHKERRQ(KSPSetOperators(ksp,A,A));
+      CHKERRQ(KSPSetFromOptions(ksp));
+      CHKERRQ(KSPSetUp(ksp));
       if (U) {
-        ierr = KSPHPDDMSetDeflationSpace(ksp,U);CHKERRQ(ierr);
-        ierr = MatDestroy(&U);CHKERRQ(ierr);
+        CHKERRQ(KSPHPDDMSetDeflationSpace(ksp,U));
+        CHKERRQ(MatDestroy(&U));
       }
     }
 #endif
   }
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&b));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(KSPDestroy(&ksp));
   ierr = PetscFinalize();
   return ierr;
 }

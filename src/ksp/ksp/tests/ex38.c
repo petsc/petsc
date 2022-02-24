@@ -48,15 +48,15 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   n1 = 64;
   n2 = 64;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n1",&n1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n2",&n2,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n1",&n1,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n2",&n2,NULL));
 
   h     = 1.0/n1;
   gamma = 4.0;
   beta  = 0.01;
-  ierr = PetscOptionsGetReal(NULL,NULL,"-h",&h,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-gamma",&gamma,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(NULL,NULL,"-beta",&beta,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-h",&h,NULL));
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-gamma",&gamma,NULL));
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-beta",&beta,NULL));
   gamma = gamma/h;
   beta  = beta/(h*h);
 
@@ -73,19 +73,19 @@ int main(int argc,char **args)
      preallocation of matrix memory is crucial for attaining good
      performance. See the matrix chapter of the users manual for details.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n1*n2,n1*n2);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A,5,NULL,5,NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A,5,NULL);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n1*n2,n1*n2));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatMPIAIJSetPreallocation(A,5,NULL,5,NULL));
+  CHKERRQ(MatSeqAIJSetPreallocation(A,5,NULL));
+  CHKERRQ(MatSetUp(A));
 
   /*
      Currently, all PETSc parallel matrix formats are partitioned by
      contiguous chunks of rows across the processors.  Determine which
      rows of the matrix are locally owned.
   */
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
+  CHKERRQ(MatGetOwnershipRange(A,&Istart,&Iend));
 
   /*
      Set matrix elements for the 2-D, five-point stencil in parallel.
@@ -94,30 +94,30 @@ int main(int argc,char **args)
         appropriate processor during matrix assembly).
       - Always specify global rows and columns of matrix entries.
    */
-  ierr = PetscLogStageRegister("Assembly", &stage);CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
+  CHKERRQ(PetscLogStageRegister("Assembly", &stage));
+  CHKERRQ(PetscLogStagePush(stage));
   co1  = gamma * h * h / 2.0;
   co2  = beta * h * h;
   for (Ii=Istart; Ii<Iend; Ii++) {
     i = Ii/n2; j = Ii - i*n2;
     if (i>0) {
       J    = Ii - n2;  v = -1.0 + co1*(PetscScalar)i;
-      ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
     }
     if (i<n1-1) {
       J    = Ii + n2;  v = -1.0 + co1*(PetscScalar)i;
-      ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
     }
     if (j>0) {
       J    = Ii - 1;  v = -1.0 + co1*(PetscScalar)j;
-      ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
     }
     if (j<n2-1) {
       J    = Ii + 1;  v = -1.0 + co1*(PetscScalar)j;
-      ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
+      CHKERRQ(MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES));
     }
     v    = 4.0 + co2;
-    ierr = MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(A,1,&Ii,1,&Ii,&v,INSERT_VALUES));
   }
 
   /*
@@ -126,9 +126,9 @@ int main(int argc,char **args)
      Computations can be done while messages are in transition
      by placing code between these two statements.
   */
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(PetscLogStagePop());
 
   /*
      Create parallel vectors.
@@ -146,16 +146,16 @@ int main(int argc,char **args)
         (replacing the PETSC_DECIDE argument in the VecSetSizes() statement
         below).
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr = VecSetSizes(b,PETSC_DECIDE,n1*n2);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&b));
+  CHKERRQ(VecSetSizes(b,PETSC_DECIDE,n1*n2));
+  CHKERRQ(VecSetFromOptions(b));
+  CHKERRQ(VecDuplicate(b,&x));
+  CHKERRQ(VecDuplicate(b,&u));
 
   /*
      Set right-hand side.
   */
-  ierr = VecSet(b,1.0);CHKERRQ(ierr);
+  CHKERRQ(VecSet(b,1.0));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Create the linear solver and set various options
@@ -163,13 +163,13 @@ int main(int argc,char **args)
   /*
      Create linear solver context
   */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
 
   /*
      Set operators. Here the matrix that defines the linear system
      also serves as the preconditioning matrix.
   */
-  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  CHKERRQ(KSPSetOperators(ksp,A,A));
 
   /*
      Set linear solver defaults for this problem (optional).
@@ -177,7 +177,7 @@ int main(int argc,char **args)
        we can then directly call any KSP and PC routines to set
        various options.
   */
-  ierr = KSPSetTolerances(ksp,1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,200);CHKERRQ(ierr);
+  CHKERRQ(KSPSetTolerances(ksp,1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,200));
 
   /*
     Set runtime options, e.g.,
@@ -186,13 +186,13 @@ int main(int argc,char **args)
     KSPSetFromOptions() is called _after_ any other customization
     routines.
   */
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPSetFromOptions(ksp));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  CHKERRQ(KSPSolve(ksp,b,x));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Clean up
@@ -201,9 +201,9 @@ int main(int argc,char **args)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr);  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(KSPDestroy(&ksp));
+  CHKERRQ(VecDestroy(&u));  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&b));  CHKERRQ(MatDestroy(&A));
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

@@ -10,29 +10,27 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMatMultNumeric_AIJ_AIJ_AIJ_wHYPRE(Mat
 
 PETSC_INTERN PetscErrorCode MatProductNumeric_ABC_Transpose_AIJ_AIJ(Mat RAP)
 {
-  PetscErrorCode ierr;
   Mat_Product    *product = RAP->product;
   Mat            Rt,R=product->A,A=product->B,P=product->C;
 
   PetscFunctionBegin;
-  ierr = MatTransposeGetMat(R,&Rt);CHKERRQ(ierr);
-  ierr = MatTransposeMatMatMultNumeric_AIJ_AIJ_AIJ_wHYPRE(Rt,A,P,RAP);CHKERRQ(ierr);
+  CHKERRQ(MatTransposeGetMat(R,&Rt));
+  CHKERRQ(MatTransposeMatMatMultNumeric_AIJ_AIJ_AIJ_wHYPRE(Rt,A,P,RAP));
   PetscFunctionReturn(0);
 }
 
 PETSC_INTERN PetscErrorCode MatProductSymbolic_ABC_Transpose_AIJ_AIJ(Mat RAP)
 {
-  PetscErrorCode ierr;
   Mat_Product    *product = RAP->product;
   Mat            Rt,R=product->A,A=product->B,P=product->C;
   PetscBool      flg;
 
   PetscFunctionBegin;
   /* local sizes of matrices will be checked by the calling subroutines */
-  ierr = MatTransposeGetMat(R,&Rt);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompareAny((PetscObject)Rt,&flg,MATSEQAIJ,MATSEQAIJMKL,MATMPIAIJ,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatTransposeGetMat(R,&Rt));
+  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)Rt,&flg,MATSEQAIJ,MATSEQAIJMKL,MATMPIAIJ,NULL));
   PetscCheckFalse(!flg,PetscObjectComm((PetscObject)Rt),PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)Rt)->type_name);
-  ierr = MatTransposeMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Rt,A,P,product->fill,RAP);CHKERRQ(ierr);
+  CHKERRQ(MatTransposeMatMatMultSymbolic_AIJ_AIJ_AIJ_wHYPRE(Rt,A,P,product->fill,RAP));
   RAP->ops->productnumeric = MatProductNumeric_ABC_Transpose_AIJ_AIJ;
   PetscFunctionReturn(0);
 }
@@ -51,7 +49,6 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose_AIJ_AIJ(Mat C)
 
 PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,PetscReal fill,Mat D)
 {
-  PetscErrorCode ierr;
   Mat            BC;
   PetscBool      scalable;
   Mat_Product    *product;
@@ -60,19 +57,19 @@ PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Pets
   MatCheckProduct(D,4);
   PetscCheckFalse(D->product->data,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data not empty");
   product = D->product;
-  ierr = MatProductCreate(B,C,NULL,&BC);CHKERRQ(ierr);
-  ierr = MatProductSetType(BC,MATPRODUCT_AB);CHKERRQ(ierr);
-  ierr = PetscStrcmp(product->alg,"scalable",&scalable);CHKERRQ(ierr);
+  CHKERRQ(MatProductCreate(B,C,NULL,&BC));
+  CHKERRQ(MatProductSetType(BC,MATPRODUCT_AB));
+  CHKERRQ(PetscStrcmp(product->alg,"scalable",&scalable));
   if (scalable) {
-    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(B,C,fill,BC);CHKERRQ(ierr);
-    ierr = MatZeroEntries(BC);CHKERRQ(ierr); /* initialize value entries of BC */
-    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ(A,BC,fill,D);CHKERRQ(ierr);
+    CHKERRQ(MatMatMultSymbolic_MPIAIJ_MPIAIJ(B,C,fill,BC));
+    CHKERRQ(MatZeroEntries(BC)); /* initialize value entries of BC */
+    CHKERRQ(MatMatMultSymbolic_MPIAIJ_MPIAIJ(A,BC,fill,D));
   } else {
-    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(B,C,fill,BC);CHKERRQ(ierr);
-    ierr = MatZeroEntries(BC);CHKERRQ(ierr); /* initialize value entries of BC */
-    ierr = MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(A,BC,fill,D);CHKERRQ(ierr);
+    CHKERRQ(MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(B,C,fill,BC));
+    CHKERRQ(MatZeroEntries(BC)); /* initialize value entries of BC */
+    CHKERRQ(MatMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(A,BC,fill,D));
   }
-  ierr = MatDestroy(&product->Dwork);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&product->Dwork));
   product->Dwork = BC;
 
   D->ops->matmatmultnumeric = MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ;
@@ -81,7 +78,6 @@ PetscErrorCode MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Pets
 
 PetscErrorCode MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Mat D)
 {
-  PetscErrorCode ierr;
   Mat_Product    *product;
   Mat            BC;
 
@@ -91,30 +87,28 @@ PetscErrorCode MatMatMatMultNumeric_MPIAIJ_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C,Mat D
   product = D->product;
   BC = product->Dwork;
   PetscCheckFalse(!BC->ops->matmultnumeric,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing numeric operation");
-  ierr = (*BC->ops->matmultnumeric)(B,C,BC);CHKERRQ(ierr);
+  CHKERRQ((*BC->ops->matmultnumeric)(B,C,BC));
   PetscCheckFalse(!D->ops->matmultnumeric,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Missing numeric operation");
-  ierr = (*D->ops->matmultnumeric)(A,BC,D);CHKERRQ(ierr);
+  CHKERRQ((*D->ops->matmultnumeric)(A,BC,D));
   PetscFunctionReturn(0);
 }
 
 /* ----------------------------------------------------- */
 PetscErrorCode MatDestroy_MPIAIJ_RARt(void *data)
 {
-  PetscErrorCode ierr;
   Mat_RARt       *rart = (Mat_RARt*)data;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(&rart->Rt);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&rart->Rt));
   if (rart->destroy) {
-    ierr = (*rart->destroy)(rart->data);CHKERRQ(ierr);
+    CHKERRQ((*rart->destroy)(rart->data));
   }
-  ierr = PetscFree(rart);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(rart));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatProductNumeric_RARt_MPIAIJ_MPIAIJ(Mat C)
 {
-  PetscErrorCode ierr;
   Mat_RARt       *rart;
   Mat            A,R,Rt;
 
@@ -125,16 +119,15 @@ PetscErrorCode MatProductNumeric_RARt_MPIAIJ_MPIAIJ(Mat C)
   A    = C->product->A;
   R    = C->product->B;
   Rt   = rart->Rt;
-  ierr = MatTranspose(R,MAT_REUSE_MATRIX,&Rt);CHKERRQ(ierr);
+  CHKERRQ(MatTranspose(R,MAT_REUSE_MATRIX,&Rt));
   if (rart->data) C->product->data = rart->data;
-  ierr = (*C->ops->matmatmultnumeric)(R,A,Rt,C);CHKERRQ(ierr);
+  CHKERRQ((*C->ops->matmatmultnumeric)(R,A,Rt,C));
   C->product->data = rart;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatProductSymbolic_RARt_MPIAIJ_MPIAIJ(Mat C)
 {
-  PetscErrorCode ierr;
   Mat            A,R,Rt;
   Mat_RARt       *rart;
 
@@ -143,13 +136,13 @@ PetscErrorCode MatProductSymbolic_RARt_MPIAIJ_MPIAIJ(Mat C)
   PetscCheckFalse(C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
   A    = C->product->A;
   R    = C->product->B;
-  ierr = MatTranspose(R,MAT_INITIAL_MATRIX,&Rt);CHKERRQ(ierr);
+  CHKERRQ(MatTranspose(R,MAT_INITIAL_MATRIX,&Rt));
   /* product->Dwork is used to store A*Rt in MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ() */
-  ierr = MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(R,A,Rt,C->product->fill,C);CHKERRQ(ierr);
+  CHKERRQ(MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ(R,A,Rt,C->product->fill,C));
   C->ops->productnumeric = MatProductNumeric_RARt_MPIAIJ_MPIAIJ;
 
   /* create a supporting struct */
-  ierr = PetscNew(&rart);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(&rart));
   rart->Rt      = Rt;
   rart->data    = C->product->data;
   rart->destroy = C->product->destroy;

@@ -16,71 +16,71 @@ int main(int argc,char **argv)
   VecScatter     ctx;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   PetscCheckFalse(size <2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run more than one processor");
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
   n    = bs*n;
 
   /* Create vector x over shared memory */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
+  CHKERRQ(VecSetSizes(x,n,PETSC_DECIDE));
+  CHKERRQ(VecSetFromOptions(x));
 
-  ierr = VecGetOwnershipRange(x,&low,NULL);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&array);CHKERRQ(ierr);
+  CHKERRQ(VecGetOwnershipRange(x,&low,NULL));
+  CHKERRQ(VecGetArray(x,&array));
   for (i=0; i<n; i++) {
     array[i] = (PetscScalar)(i + low);
   }
-  ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(x,&array));
 
   /* Create a sequential vector y */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&y);CHKERRQ(ierr);
-  ierr = VecSet(y,0.0);CHKERRQ(ierr);
+  CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&y));
+  CHKERRQ(VecSet(y,0.0));
 
   /* Create two index sets */
   if (rank == 0) {
-    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,ix0,PETSC_COPY_VALUES,&isx);CHKERRQ(ierr);
-    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,iy0,PETSC_COPY_VALUES,&isy);CHKERRQ(ierr);
+    CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,3,ix0,PETSC_COPY_VALUES,&isx));
+    CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,3,iy0,PETSC_COPY_VALUES,&isy));
   } else {
-    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,ix1,PETSC_COPY_VALUES,&isx);CHKERRQ(ierr);
-    ierr = ISCreateBlock(PETSC_COMM_SELF,bs,3,iy1,PETSC_COPY_VALUES,&isy);CHKERRQ(ierr);
+    CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,3,ix1,PETSC_COPY_VALUES,&isx));
+    CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,3,iy1,PETSC_COPY_VALUES,&isy));
   }
 
   if (rank == 10) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"\n[%d] isx:\n",rank);CHKERRQ(ierr);
-    ierr = ISView(isx,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"\n[%d] isx:\n",rank));
+    CHKERRQ(ISView(isx,PETSC_VIEWER_STDOUT_SELF));
   }
 
-  ierr = VecScatterCreate(x,isx,y,isy,&ctx);CHKERRQ(ierr);
-  ierr = VecScatterSetFromOptions(ctx);CHKERRQ(ierr);
+  CHKERRQ(VecScatterCreate(x,isx,y,isy,&ctx));
+  CHKERRQ(VecScatterSetFromOptions(ctx));
 
   /* Test forward vecscatter */
-  ierr = VecScatterBegin(ctx,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  CHKERRQ(VecScatterBegin(ctx,x,y,ADD_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterEnd(ctx,x,y,ADD_VALUES,SCATTER_FORWARD));
   if (rank == 0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] y:\n",rank);CHKERRQ(ierr);
-    ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"[%d] y:\n",rank));
+    CHKERRQ(VecView(y,PETSC_VIEWER_STDOUT_SELF));
   }
 
   /* Test reverse vecscatter */
-  ierr = VecScale(y,-1.0);CHKERRQ(ierr);
+  CHKERRQ(VecScale(y,-1.0));
   if (rank) {
-    ierr = VecScale(y,1.0/(size - 1));CHKERRQ(ierr);
+    CHKERRQ(VecScale(y,1.0/(size - 1)));
   }
 
-  ierr = VecScatterBegin(ctx,y,x,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ctx,y,x,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecScatterBegin(ctx,y,x,ADD_VALUES,SCATTER_REVERSE));
+  CHKERRQ(VecScatterEnd(ctx,y,x,ADD_VALUES,SCATTER_REVERSE));
+  CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
 
   /* Free spaces */
-  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
-  ierr = ISDestroy(&isx);CHKERRQ(ierr);
-  ierr = ISDestroy(&isy);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  CHKERRQ(VecScatterDestroy(&ctx));
+  CHKERRQ(ISDestroy(&isx));
+  CHKERRQ(ISDestroy(&isy));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
   ierr = PetscFinalize();
   return ierr;
 }

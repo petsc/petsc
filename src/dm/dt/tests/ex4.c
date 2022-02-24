@@ -14,26 +14,25 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
   const PetscInt    *numDofs;
   const PetscInt    ***perms = NULL;
   const PetscScalar ***flips = NULL;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDualSpaceCreate(PETSC_COMM_SELF,&sp);CHKERRQ(ierr);
-  ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, tensor ? PETSC_FALSE : PETSC_TRUE), &dm);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetType(sp,PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetDM(sp,dm);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetOrder(sp,order);CHKERRQ(ierr);
-  ierr = PetscDualSpaceLagrangeSetContinuity(sp,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = PetscDualSpaceLagrangeSetTensor(sp,tensor);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetFromOptions(sp);CHKERRQ(ierr);
-  ierr = PetscDualSpaceSetUp(sp);CHKERRQ(ierr);
-  ierr = PetscDualSpaceGetDimension(sp,&nFunc);CHKERRQ(ierr);
-  ierr = PetscDualSpaceGetSymmetries(sp,&perms,&flips);CHKERRQ(ierr);
+  CHKERRQ(PetscDualSpaceCreate(PETSC_COMM_SELF,&sp));
+  CHKERRQ(DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, tensor ? PETSC_FALSE : PETSC_TRUE), &dm));
+  CHKERRQ(PetscDualSpaceSetType(sp,PETSCDUALSPACELAGRANGE));
+  CHKERRQ(PetscDualSpaceSetDM(sp,dm));
+  CHKERRQ(PetscDualSpaceSetOrder(sp,order));
+  CHKERRQ(PetscDualSpaceLagrangeSetContinuity(sp,PETSC_TRUE));
+  CHKERRQ(PetscDualSpaceLagrangeSetTensor(sp,tensor));
+  CHKERRQ(PetscDualSpaceSetFromOptions(sp));
+  CHKERRQ(PetscDualSpaceSetUp(sp));
+  CHKERRQ(PetscDualSpaceGetDimension(sp,&nFunc));
+  CHKERRQ(PetscDualSpaceGetSymmetries(sp,&perms,&flips));
   if (!perms && !flips) {
-    ierr = PetscDualSpaceDestroy(&sp);CHKERRQ(ierr);
-    ierr = DMDestroy(&dm);CHKERRQ(ierr);
+    CHKERRQ(PetscDualSpaceDestroy(&sp));
+    CHKERRQ(DMDestroy(&dm));
     PetscFunctionReturn(0);
   }
-  ierr = PetscMalloc6(nFunc,&ids,nFunc,&idsCopy,nFunc,&idsCopy2,nFunc*dim,&vals,nFunc*dim,&valsCopy,nFunc*dim,&valsCopy2);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc6(nFunc,&ids,nFunc,&idsCopy,nFunc,&idsCopy2,nFunc*dim,&vals,nFunc*dim,&valsCopy,nFunc*dim,&valsCopy2));
   for (i = 0; i < nFunc; i++) ids[i] = idsCopy2[i] = i;
   for (i = 0; i < nFunc; i++) {
     PetscQuadrature q;
@@ -41,15 +40,15 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
     const PetscReal *points;
     const PetscReal *weights;
 
-    ierr = PetscDualSpaceGetFunctional(sp,i,&q);CHKERRQ(ierr);
-    ierr = PetscQuadratureGetData(q,NULL,&Nc,&numPoints,&points,&weights);CHKERRQ(ierr);
+    CHKERRQ(PetscDualSpaceGetFunctional(sp,i,&q));
+    CHKERRQ(PetscQuadratureGetData(q,NULL,&Nc,&numPoints,&points,&weights));
     PetscCheckFalse(Nc != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support scalar quadrature, not %D components",Nc);
     for (j = 0; j < dim; j++) vals[dim * i + j] = valsCopy2[dim * i + j] = (PetscScalar) points[j];
   }
-  ierr = PetscDualSpaceGetNumDof(sp,&numDofs);CHKERRQ(ierr);
-  ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
-  ierr = DMPlexGetTransitiveClosure(dm,0,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
-  ierr = DMPlexGetDepthLabel(dm,&depthLabel);CHKERRQ(ierr);
+  CHKERRQ(PetscDualSpaceGetNumDof(sp,&numDofs));
+  CHKERRQ(DMPlexGetDepth(dm,&depth));
+  CHKERRQ(DMPlexGetTransitiveClosure(dm,0,PETSC_TRUE,&closureSize,&closure));
+  CHKERRQ(DMPlexGetDepthLabel(dm,&depthLabel));
   for (i = 0, offset = 0; i < closureSize; i++, offset += numDofs[depth]) {
     PetscInt          point = closure[2 * i], numFaces, j;
     const PetscInt    **pointPerms = perms ? perms[i] : NULL;
@@ -57,11 +56,11 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
     PetscBool         anyPrinted = PETSC_FALSE;
 
     if (!pointPerms && !pointFlips) continue;
-    ierr = DMLabelGetValue(depthLabel,point,&depth);CHKERRQ(ierr);
+    CHKERRQ(DMLabelGetValue(depthLabel,point,&depth));
     {
       DMPolytopeType ct;
       /* The number of arrangements is no longer based on the number of faces */
-      ierr = DMPlexGetCellType(dm, point, &ct);CHKERRQ(ierr);
+      CHKERRQ(DMPlexGetCellType(dm, point, &ct));
       numFaces = DMPolytopeTypeGetNumArrangments(ct) / 2;
     }
     for (j = -numFaces; j < numFaces; j++) {
@@ -83,15 +82,15 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
         char name[256];
 
         anyPrinted = PETSC_TRUE;
-        ierr = PetscSNPrintf(name,256,"%DD, %s, Order %D, Point %D Symmetry %D",dim,tensor ? "Tensor" : "Simplex", order, point,j);CHKERRQ(ierr);
-        ierr = ISCreateGeneral(PETSC_COMM_SELF,numDofs[depth],idsCopy,PETSC_USE_POINTER,&is);CHKERRQ(ierr);
-        ierr = PetscObjectSetName((PetscObject)is,name);CHKERRQ(ierr);
-        ierr = ISView(is,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-        ierr = ISDestroy(&is);CHKERRQ(ierr);
-        ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dim,numDofs[depth]*dim,valsCopy,&vec);CHKERRQ(ierr);
-        ierr = PetscObjectSetName((PetscObject)vec,name);CHKERRQ(ierr);
-        ierr = VecView(vec,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-        ierr = VecDestroy(&vec);CHKERRQ(ierr);
+        CHKERRQ(PetscSNPrintf(name,256,"%DD, %s, Order %D, Point %D Symmetry %D",dim,tensor ? "Tensor" : "Simplex", order, point,j));
+        CHKERRQ(ISCreateGeneral(PETSC_COMM_SELF,numDofs[depth],idsCopy,PETSC_USE_POINTER,&is));
+        CHKERRQ(PetscObjectSetName((PetscObject)is,name));
+        CHKERRQ(ISView(is,PETSC_VIEWER_STDOUT_SELF));
+        CHKERRQ(ISDestroy(&is));
+        CHKERRQ(VecCreateSeqWithArray(PETSC_COMM_SELF,dim,numDofs[depth]*dim,valsCopy,&vec));
+        CHKERRQ(PetscObjectSetName((PetscObject)vec,name));
+        CHKERRQ(VecView(vec,PETSC_VIEWER_STDOUT_SELF));
+        CHKERRQ(VecDestroy(&vec));
       }
       for (k = 0; k < numDofs[depth]; k++) {
         PetscInt kLocal = perm ? perm[k] : k;
@@ -110,10 +109,10 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
     }
     if (anyPrinted && !printed) printed = PETSC_TRUE;
   }
-  ierr = DMPlexRestoreTransitiveClosure(dm,0,PETSC_TRUE,&closureSize,&closure);CHKERRQ(ierr);
-  ierr = PetscFree6(ids,idsCopy,idsCopy2,vals,valsCopy,valsCopy2);CHKERRQ(ierr);
-  ierr = PetscDualSpaceDestroy(&sp);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(DMPlexRestoreTransitiveClosure(dm,0,PETSC_TRUE,&closureSize,&closure));
+  CHKERRQ(PetscFree6(ids,idsCopy,idsCopy2,vals,valsCopy,valsCopy2));
+  CHKERRQ(PetscDualSpaceDestroy(&sp));
+  CHKERRQ(DMDestroy(&dm));
   PetscFunctionReturn(0);
 }
 
@@ -127,7 +126,7 @@ int main(int argc, char **argv)
     for (dim = 1; dim <= 3; dim++) {
       if (dim == 1 && tensor) continue;
       for (order = 0; order <= (tensor ? 5 : 6); order++) {
-        ierr = CheckSymmetry(dim,order,tensor ? PETSC_TRUE : PETSC_FALSE);CHKERRQ(ierr);
+        CHKERRQ(CheckSymmetry(dim,order,tensor ? PETSC_TRUE : PETSC_FALSE));
       }
     }
   }

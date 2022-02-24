@@ -11,8 +11,8 @@ int main(int argc,char **argv)
   char           access_token[512];
 
   ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
-  ierr = PetscGoogleDriveRefresh(PETSC_COMM_WORLD,NULL,access_token,sizeof(access_token));CHKERRQ(ierr);
-  ierr = PetscGoogleDriveUpload(PETSC_COMM_WORLD,access_token,"googledriveupload.c");CHKERRQ(ierr);
+  CHKERRQ(PetscGoogleDriveRefresh(PETSC_COMM_WORLD,NULL,access_token,sizeof(access_token)));
+  CHKERRQ(PetscGoogleDriveUpload(PETSC_COMM_WORLD,access_token,"googledriveupload.c"));
   ierr = PetscFinalize();
   return ierr;
 }
@@ -26,4 +26,3 @@ int main(int argc,char **argv)
      TODO: determine how to run this test without making a google refresh token public
 
 TEST*/
-

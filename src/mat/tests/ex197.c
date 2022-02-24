@@ -12,56 +12,56 @@ int main(int argc,char **args)
   PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,2,2);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = MatSetUp(A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
+  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,2,2));
+  CHKERRQ(MatSetType(A,MATAIJ));
+  CHKERRQ(MatSetFromOptions(A));
+  CHKERRQ(MatSetUp(A));
 
   i = 0; j = 0; v = 2.0;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
   i = 0; j = 1; v = 3.0 + 4.0*PETSC_i;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
   i = 1; j = 0; v = 5.0 + 6.0*PETSC_i;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
   i = 1; j = 1; v = 7.0 + 8.0*PETSC_i;
-  ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES));
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   /* Create vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr);
-  ierr = VecSetSizes(y,PETSC_DECIDE,2);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(y);CHKERRQ(ierr);
-  ierr = VecDuplicate(y,&ys);CHKERRQ(ierr);
-  ierr = VecDuplicate(y,&x);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&y));
+  CHKERRQ(VecSetSizes(y,PETSC_DECIDE,2));
+  CHKERRQ(VecSetFromOptions(y));
+  CHKERRQ(VecDuplicate(y,&ys));
+  CHKERRQ(VecDuplicate(y,&x));
 
   i = 0; v = 10.0 + 11.0*PETSC_i;
-  ierr = VecSetValues(x,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(VecSetValues(x,1,&i,&v,INSERT_VALUES));
   i = 1; v = 100.0 + 120.0*PETSC_i;
-  ierr = VecSetValues(x,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+  CHKERRQ(VecSetValues(x,1,&i,&v,INSERT_VALUES));
+  CHKERRQ(VecAssemblyBegin(x));
+  CHKERRQ(VecAssemblyEnd(x));
 
-  ierr = MatMultHermitianTranspose(A,x,y);CHKERRQ(ierr);
-  ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatMultHermitianTransposeAdd(A,x,y,ys);CHKERRQ(ierr);
-  ierr = VecView(ys,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(MatMultHermitianTranspose(A,x,y));
+  CHKERRQ(VecView(y,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(MatMultHermitianTransposeAdd(A,x,y,ys));
+  CHKERRQ(VecView(ys,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = MatHermitianTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  ierr = MatCreateHermitianTranspose(A,&C);CHKERRQ(ierr);
-  ierr = MatMultHermitianTransposeEqual(B,C,4,&flg);CHKERRQ(ierr);
+  CHKERRQ(MatHermitianTranspose(A,MAT_INITIAL_MATRIX,&B));
+  CHKERRQ(MatCreateHermitianTranspose(A,&C));
+  CHKERRQ(MatMultHermitianTransposeEqual(B,C,4,&flg));
   PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"B^Hx != C^Hx");
-  ierr = MatMultHermitianTransposeAddEqual(B,C,4,&flg);CHKERRQ(ierr);
+  CHKERRQ(MatMultHermitianTransposeAddEqual(B,C,4,&flg));
   PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"y+B^Hx != y+C^Hx");
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&C));
+  CHKERRQ(MatDestroy(&B));
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
 
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = VecDestroy(&ys);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
+  CHKERRQ(VecDestroy(&ys));
   ierr = PetscFinalize();
   return ierr;
 }

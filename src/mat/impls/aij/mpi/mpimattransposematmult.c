@@ -10,14 +10,13 @@
 
 PetscErrorCode MatDestroy_MPIDense_MatTransMatMult(void *data)
 {
-  PetscErrorCode      ierr;
   Mat_MatTransMatMult *atb = (Mat_MatTransMatMult*)data;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(&atb->mA);CHKERRQ(ierr);
-  ierr = VecDestroy(&atb->bt);CHKERRQ(ierr);
-  ierr = VecDestroy(&atb->ct);CHKERRQ(ierr);
-  ierr = PetscFree(atb);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&atb->mA));
+  CHKERRQ(VecDestroy(&atb->bt));
+  CHKERRQ(VecDestroy(&atb->ct));
+  CHKERRQ(PetscFree(atb));
   PetscFunctionReturn(0);
 }
 
@@ -25,7 +24,6 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat,Mat,Mat);
 
 PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat C)
 {
-  PetscErrorCode      ierr;
   Mat_MatTransMatMult *atb;
   PetscBool           cisdense;
 
@@ -34,22 +32,22 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Ma
   PetscCheckFalse(C->product->data,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Extra product struct not empty");
 
   /* create output dense matrix C = A^T*B */
-  ierr = MatSetSizes(C,A->cmap->n,B->cmap->n,A->cmap->N,B->cmap->N);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompareAny((PetscObject)C,&cisdense,MATMPIDENSE,MATMPIDENSECUDA,"");CHKERRQ(ierr);
+  CHKERRQ(MatSetSizes(C,A->cmap->n,B->cmap->n,A->cmap->N,B->cmap->N));
+  CHKERRQ(PetscObjectTypeCompareAny((PetscObject)C,&cisdense,MATMPIDENSE,MATMPIDENSECUDA,""));
   if (!cisdense) {
-    ierr = MatSetType(C,((PetscObject)B)->type_name);CHKERRQ(ierr);
+    CHKERRQ(MatSetType(C,((PetscObject)B)->type_name));
   }
-  ierr = MatSetUp(C);CHKERRQ(ierr);
+  CHKERRQ(MatSetUp(C));
 
   /* create additional data structure for the product */
-  ierr = PetscNew(&atb);CHKERRQ(ierr);
+  CHKERRQ(PetscNew(&atb));
   if (B->cmap->N) {
-    ierr = MatCreateMAIJ(A,B->cmap->N,&atb->mA);CHKERRQ(ierr);
+    CHKERRQ(MatCreateMAIJ(A,B->cmap->N,&atb->mA));
     if (!atb->mA->assembled) {
-      ierr = MatAssemblyBegin(atb->mA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(atb->mA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      CHKERRQ(MatAssemblyBegin(atb->mA,MAT_FINAL_ASSEMBLY));
+      CHKERRQ(MatAssemblyEnd(atb->mA,MAT_FINAL_ASSEMBLY));
     }
-    ierr = MatCreateVecs(atb->mA,&atb->ct,&atb->bt);CHKERRQ(ierr);
+    CHKERRQ(MatCreateVecs(atb->mA,&atb->ct,&atb->bt));
   }
   C->product->data    = atb;
   C->product->destroy = MatDestroy_MPIDense_MatTransMatMult;
@@ -60,7 +58,6 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Ma
 
 static PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat C)
 {
-  PetscErrorCode      ierr;
   const PetscScalar   *Barray,*ctarray;
   PetscScalar         *Carray,*btarray;
   PetscInt            i,j,m=A->rmap->n,n=A->cmap->n,ldb,BN=B->cmap->N,ldc;
@@ -72,36 +69,36 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat
   atb = (Mat_MatTransMatMult *)C->product->data;
   PetscCheckFalse(!atb,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing product struct");
   if (!BN) {
-    ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
     PetscFunctionReturn(0);
   }
   bt = atb->bt;
   ct = atb->ct;
 
   /* transpose local array of B, then copy it to vector bt */
-  ierr = MatDenseGetArrayRead(B,&Barray);CHKERRQ(ierr);
-  ierr = MatDenseGetLDA(B,&ldb);CHKERRQ(ierr);
-  ierr = VecGetArray(bt,&btarray);CHKERRQ(ierr);
+  CHKERRQ(MatDenseGetArrayRead(B,&Barray));
+  CHKERRQ(MatDenseGetLDA(B,&ldb));
+  CHKERRQ(VecGetArray(bt,&btarray));
   for (j=0; j<BN; j++)
     for (i=0; i<m; i++)
       btarray[i*BN + j] = Barray[j*ldb + i];
-  ierr = VecRestoreArray(bt,&btarray);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArrayRead(B,&Barray);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(bt,&btarray));
+  CHKERRQ(MatDenseRestoreArrayRead(B,&Barray));
 
   /* compute ct = mA^T * cb */
-  ierr = MatMultTranspose(atb->mA,bt,ct);CHKERRQ(ierr);
+  CHKERRQ(MatMultTranspose(atb->mA,bt,ct));
 
   /* transpose local array of ct to matrix C */
-  ierr = MatDenseGetArray(C,&Carray);CHKERRQ(ierr);
-  ierr = MatDenseGetLDA(C,&ldc);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(ct,&ctarray);CHKERRQ(ierr);
+  CHKERRQ(MatDenseGetArray(C,&Carray));
+  CHKERRQ(MatDenseGetLDA(C,&ldc));
+  CHKERRQ(VecGetArrayRead(ct,&ctarray));
   for (j=0; j<BN; j++)
     for (i=0; i<n; i++)
       Carray[j*ldc + i] = ctarray[i*BN + j];
-  ierr = VecRestoreArrayRead(ct,&ctarray);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(C,&Carray);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(ct,&ctarray));
+  CHKERRQ(MatDenseRestoreArray(C,&Carray));
+  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }

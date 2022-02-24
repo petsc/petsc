@@ -18,12 +18,9 @@
 @*/
 PetscErrorCode TaoPythonSetType(Tao tao, const char pyname[])
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidCharPointer(pyname,2);
-  ierr = PetscTryMethod(tao,"TaoPythonSetType_C",(Tao,const char[]),(tao,pyname));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(tao,"TaoPythonSetType_C",(Tao,const char[]),(tao,pyname)));
   PetscFunctionReturn(0);
 }
-

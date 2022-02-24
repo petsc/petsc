@@ -35,132 +35,130 @@ typedef enum {READ=1, WRITE=2, READ_WRITE=3} AccessMode;
 static PetscErrorCode PCSetUp_SVD(PC pc)
 {
   PC_SVD         *jac = (PC_SVD*)pc->data;
-  PetscErrorCode ierr;
   PetscScalar    *a,*u,*v,*d,*work;
   PetscBLASInt   nb,lwork;
   PetscInt       i,n;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(&jac->A);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(((PetscObject)pc->pmat)->comm,&size);CHKERRMPI(ierr);
+  CHKERRQ(MatDestroy(&jac->A));
+  CHKERRMPI(MPI_Comm_size(((PetscObject)pc->pmat)->comm,&size));
   if (size > 1) {
     Mat redmat;
 
-    ierr = MatCreateRedundantMatrix(pc->pmat,size,PETSC_COMM_SELF,MAT_INITIAL_MATRIX,&redmat);CHKERRQ(ierr);
-    ierr = MatConvert(redmat,MATSEQDENSE,MAT_INITIAL_MATRIX,&jac->A);CHKERRQ(ierr);
-    ierr = MatDestroy(&redmat);CHKERRQ(ierr);
+    CHKERRQ(MatCreateRedundantMatrix(pc->pmat,size,PETSC_COMM_SELF,MAT_INITIAL_MATRIX,&redmat));
+    CHKERRQ(MatConvert(redmat,MATSEQDENSE,MAT_INITIAL_MATRIX,&jac->A));
+    CHKERRQ(MatDestroy(&redmat));
   } else {
-    ierr = MatConvert(pc->pmat,MATSEQDENSE,MAT_INITIAL_MATRIX,&jac->A);CHKERRQ(ierr);
+    CHKERRQ(MatConvert(pc->pmat,MATSEQDENSE,MAT_INITIAL_MATRIX,&jac->A));
   }
   if (!jac->diag) {    /* assume square matrices */
-    ierr = MatCreateVecs(jac->A,&jac->diag,&jac->work);CHKERRQ(ierr);
+    CHKERRQ(MatCreateVecs(jac->A,&jac->diag,&jac->work));
   }
   if (!jac->U) {
-    ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->U);CHKERRQ(ierr);
-    ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->Vt);CHKERRQ(ierr);
+    CHKERRQ(MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->U));
+    CHKERRQ(MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->Vt));
   }
-  ierr  = MatGetSize(jac->A,&n,NULL);CHKERRQ(ierr);
+  CHKERRQ(MatGetSize(jac->A,&n,NULL));
   if (!n) {
-    ierr = PetscInfo(pc,"Matrix has zero rows, skipping svd\n");CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(pc,"Matrix has zero rows, skipping svd\n"));
     PetscFunctionReturn(0);
   }
-  ierr  = PetscBLASIntCast(n,&nb);CHKERRQ(ierr);
+  CHKERRQ(PetscBLASIntCast(n,&nb));
   lwork = 5*nb;
-  ierr  = PetscMalloc1(lwork,&work);CHKERRQ(ierr);
-  ierr  = MatDenseGetArray(jac->A,&a);CHKERRQ(ierr);
-  ierr  = MatDenseGetArray(jac->U,&u);CHKERRQ(ierr);
-  ierr  = MatDenseGetArray(jac->Vt,&v);CHKERRQ(ierr);
-  ierr  = VecGetArray(jac->diag,&d);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(lwork,&work));
+  CHKERRQ(MatDenseGetArray(jac->A,&a));
+  CHKERRQ(MatDenseGetArray(jac->U,&u));
+  CHKERRQ(MatDenseGetArray(jac->Vt,&v));
+  CHKERRQ(VecGetArray(jac->diag,&d));
 #if !defined(PETSC_USE_COMPLEX)
   {
     PetscBLASInt lierr;
-    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+    CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("A","A",&nb,&nb,a,&nb,d,u,&nb,v,&nb,work,&lwork,&lierr));
     PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);
-    ierr = PetscFPTrapPop();CHKERRQ(ierr);
+    CHKERRQ(PetscFPTrapPop());
   }
 #else
   {
     PetscBLASInt lierr;
     PetscReal    *rwork,*dd;
-    ierr = PetscMalloc1(5*nb,&rwork);CHKERRQ(ierr);
-    ierr = PetscMalloc1(nb,&dd);CHKERRQ(ierr);
-    ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(5*nb,&rwork));
+    CHKERRQ(PetscMalloc1(nb,&dd));
+    CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("A","A",&nb,&nb,a,&nb,dd,u,&nb,v,&nb,work,&lwork,rwork,&lierr));
     PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"gesv() error %d",lierr);
-    ierr = PetscFree(rwork);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(rwork));
     for (i=0; i<n; i++) d[i] = dd[i];
-    ierr = PetscFree(dd);CHKERRQ(ierr);
-    ierr = PetscFPTrapPop();CHKERRQ(ierr);
+    CHKERRQ(PetscFree(dd));
+    CHKERRQ(PetscFPTrapPop());
   }
 #endif
-  ierr = MatDenseRestoreArray(jac->A,&a);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(jac->U,&u);CHKERRQ(ierr);
-  ierr = MatDenseRestoreArray(jac->Vt,&v);CHKERRQ(ierr);
+  CHKERRQ(MatDenseRestoreArray(jac->A,&a));
+  CHKERRQ(MatDenseRestoreArray(jac->U,&u));
+  CHKERRQ(MatDenseRestoreArray(jac->Vt,&v));
   for (i=n-1; i>=0; i--) if (PetscRealPart(d[i]) > jac->zerosing) break;
   jac->nzero = n-1-i;
   if (jac->monitor) {
-    ierr = PetscViewerASCIIAddTab(jac->monitor,((PetscObject)pc)->tablevel);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(jac->monitor,"    SVD: condition number %14.12e, %D of %D singular values are (nearly) zero\n",(double)PetscRealPart(d[0]/d[n-1]),jac->nzero,n);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIAddTab(jac->monitor,((PetscObject)pc)->tablevel));
+    CHKERRQ(PetscViewerASCIIPrintf(jac->monitor,"    SVD: condition number %14.12e, %D of %D singular values are (nearly) zero\n",(double)PetscRealPart(d[0]/d[n-1]),jac->nzero,n));
     if (n >= 10) {              /* print 5 smallest and 5 largest */
-      ierr = PetscViewerASCIIPrintf(jac->monitor,"    SVD: smallest singular values: %14.12e %14.12e %14.12e %14.12e %14.12e\n",(double)PetscRealPart(d[n-1]),(double)PetscRealPart(d[n-2]),(double)PetscRealPart(d[n-3]),(double)PetscRealPart(d[n-4]),(double)PetscRealPart(d[n-5]));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(jac->monitor,"    SVD: largest singular values : %14.12e %14.12e %14.12e %14.12e %14.12e\n",(double)PetscRealPart(d[4]),(double)PetscRealPart(d[3]),(double)PetscRealPart(d[2]),(double)PetscRealPart(d[1]),(double)PetscRealPart(d[0]));CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIPrintf(jac->monitor,"    SVD: smallest singular values: %14.12e %14.12e %14.12e %14.12e %14.12e\n",(double)PetscRealPart(d[n-1]),(double)PetscRealPart(d[n-2]),(double)PetscRealPart(d[n-3]),(double)PetscRealPart(d[n-4]),(double)PetscRealPart(d[n-5])));
+      CHKERRQ(PetscViewerASCIIPrintf(jac->monitor,"    SVD: largest singular values : %14.12e %14.12e %14.12e %14.12e %14.12e\n",(double)PetscRealPart(d[4]),(double)PetscRealPart(d[3]),(double)PetscRealPart(d[2]),(double)PetscRealPart(d[1]),(double)PetscRealPart(d[0])));
     } else {                    /* print all singular values */
       char     buf[256],*p;
       size_t   left = sizeof(buf),used;
       PetscInt thisline;
       for (p=buf,i=n-1,thisline=1; i>=0; i--,thisline++) {
-        ierr  = PetscSNPrintfCount(p,left," %14.12e",&used,(double)PetscRealPart(d[i]));CHKERRQ(ierr);
+        CHKERRQ(PetscSNPrintfCount(p,left," %14.12e",&used,(double)PetscRealPart(d[i])));
         left -= used;
         p    += used;
         if (thisline > 4 || i==0) {
-          ierr     = PetscViewerASCIIPrintf(jac->monitor,"    SVD: singular values:%s\n",buf);CHKERRQ(ierr);
+          CHKERRQ(PetscViewerASCIIPrintf(jac->monitor,"    SVD: singular values:%s\n",buf));
           p        = buf;
           thisline = 0;
         }
       }
     }
-    ierr = PetscViewerASCIISubtractTab(jac->monitor,((PetscObject)pc)->tablevel);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIISubtractTab(jac->monitor,((PetscObject)pc)->tablevel));
   }
-  ierr = PetscInfo(pc,"Largest and smallest singular values %14.12e %14.12e\n",(double)PetscRealPart(d[0]),(double)PetscRealPart(d[n-1]));CHKERRQ(ierr);
+  CHKERRQ(PetscInfo(pc,"Largest and smallest singular values %14.12e %14.12e\n",(double)PetscRealPart(d[0]),(double)PetscRealPart(d[n-1])));
   for (i=0; i<n-jac->nzero; i++) d[i] = 1.0/d[i];
   for (; i<n; i++) d[i] = 0.0;
   if (jac->essrank > 0) for (i=0; i<n-jac->nzero-jac->essrank; i++) d[i] = 0.0; /* Skip all but essrank eigenvalues */
-  ierr = PetscInfo(pc,"Number of zero or nearly singular values %D\n",jac->nzero);CHKERRQ(ierr);
-  ierr = VecRestoreArray(jac->diag,&d);CHKERRQ(ierr);
+  CHKERRQ(PetscInfo(pc,"Number of zero or nearly singular values %D\n",jac->nzero));
+  CHKERRQ(VecRestoreArray(jac->diag,&d));
 #if defined(foo)
   {
     PetscViewer viewer;
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"joe",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-    ierr = MatView(jac->A,viewer);CHKERRQ(ierr);
-    ierr = MatView(jac->U,viewer);CHKERRQ(ierr);
-    ierr = MatView(jac->Vt,viewer);CHKERRQ(ierr);
-    ierr = VecView(jac->diag,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,"joe",FILE_MODE_WRITE,&viewer));
+    CHKERRQ(MatView(jac->A,viewer));
+    CHKERRQ(MatView(jac->U,viewer));
+    CHKERRQ(MatView(jac->Vt,viewer));
+    CHKERRQ(VecView(jac->diag,viewer));
+    CHKERRQ(PetscViewerDestroy(viewer));
   }
 #endif
-  ierr = PetscFree(work);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(work));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCSVDGetVec(PC pc,PCSide side,AccessMode amode,Vec x,Vec *xred)
 {
   PC_SVD         *jac = (PC_SVD*)pc->data;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr  = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size));
   *xred = NULL;
   switch (side) {
   case PC_LEFT:
     if (size == 1) *xred = x;
     else {
-      if (!jac->left2red) {ierr = VecScatterCreateToAll(x,&jac->left2red,&jac->leftred);CHKERRQ(ierr);}
+      if (!jac->left2red) CHKERRQ(VecScatterCreateToAll(x,&jac->left2red,&jac->leftred));
       if (amode & READ) {
-        ierr = VecScatterBegin(jac->left2red,x,jac->leftred,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        ierr = VecScatterEnd(jac->left2red,x,jac->leftred,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        CHKERRQ(VecScatterBegin(jac->left2red,x,jac->leftred,INSERT_VALUES,SCATTER_FORWARD));
+        CHKERRQ(VecScatterEnd(jac->left2red,x,jac->leftred,INSERT_VALUES,SCATTER_FORWARD));
       }
       *xred = jac->leftred;
     }
@@ -168,10 +166,10 @@ static PetscErrorCode PCSVDGetVec(PC pc,PCSide side,AccessMode amode,Vec x,Vec *
   case PC_RIGHT:
     if (size == 1) *xred = x;
     else {
-      if (!jac->right2red) {ierr = VecScatterCreateToAll(x,&jac->right2red,&jac->rightred);CHKERRQ(ierr);}
+      if (!jac->right2red) CHKERRQ(VecScatterCreateToAll(x,&jac->right2red,&jac->rightred));
       if (amode & READ) {
-        ierr = VecScatterBegin(jac->right2red,x,jac->rightred,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-        ierr = VecScatterEnd(jac->right2red,x,jac->rightred,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        CHKERRQ(VecScatterBegin(jac->right2red,x,jac->rightred,INSERT_VALUES,SCATTER_FORWARD));
+        CHKERRQ(VecScatterEnd(jac->right2red,x,jac->rightred,INSERT_VALUES,SCATTER_FORWARD));
       }
       *xred = jac->rightred;
     }
@@ -184,22 +182,21 @@ static PetscErrorCode PCSVDGetVec(PC pc,PCSide side,AccessMode amode,Vec x,Vec *
 static PetscErrorCode PCSVDRestoreVec(PC pc,PCSide side,AccessMode amode,Vec x,Vec *xred)
 {
   PC_SVD         *jac = (PC_SVD*)pc->data;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size));
   switch (side) {
   case PC_LEFT:
     if (size != 1 && amode & WRITE) {
-      ierr = VecScatterBegin(jac->left2red,jac->leftred,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd(jac->left2red,jac->leftred,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      CHKERRQ(VecScatterBegin(jac->left2red,jac->leftred,x,INSERT_VALUES,SCATTER_REVERSE));
+      CHKERRQ(VecScatterEnd(jac->left2red,jac->leftred,x,INSERT_VALUES,SCATTER_REVERSE));
     }
     break;
   case PC_RIGHT:
     if (size != 1 && amode & WRITE) {
-      ierr = VecScatterBegin(jac->right2red,jac->rightred,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd(jac->right2red,jac->rightred,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      CHKERRQ(VecScatterBegin(jac->right2red,jac->rightred,x,INSERT_VALUES,SCATTER_REVERSE));
+      CHKERRQ(VecScatterEnd(jac->right2red,jac->rightred,x,INSERT_VALUES,SCATTER_REVERSE));
     }
     break;
   default: SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Side must be LEFT or RIGHT");
@@ -225,24 +222,23 @@ static PetscErrorCode PCApply_SVD(PC pc,Vec x,Vec y)
 {
   PC_SVD         *jac = (PC_SVD*)pc->data;
   Vec            work = jac->work,xred,yred;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCSVDGetVec(pc,PC_RIGHT,READ,x,&xred);CHKERRQ(ierr);
-  ierr = PCSVDGetVec(pc,PC_LEFT,WRITE,y,&yred);CHKERRQ(ierr);
+  CHKERRQ(PCSVDGetVec(pc,PC_RIGHT,READ,x,&xred));
+  CHKERRQ(PCSVDGetVec(pc,PC_LEFT,WRITE,y,&yred));
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = MatMultTranspose(jac->U,xred,work);CHKERRQ(ierr);
+  CHKERRQ(MatMultTranspose(jac->U,xred,work));
 #else
-  ierr = MatMultHermitianTranspose(jac->U,xred,work);CHKERRQ(ierr);
+  CHKERRQ(MatMultHermitianTranspose(jac->U,xred,work));
 #endif
-  ierr = VecPointwiseMult(work,work,jac->diag);CHKERRQ(ierr);
+  CHKERRQ(VecPointwiseMult(work,work,jac->diag));
 #if !defined(PETSC_USE_COMPLEX)
-  ierr = MatMultTranspose(jac->Vt,work,yred);CHKERRQ(ierr);
+  CHKERRQ(MatMultTranspose(jac->Vt,work,yred));
 #else
-  ierr = MatMultHermitianTranspose(jac->Vt,work,yred);CHKERRQ(ierr);
+  CHKERRQ(MatMultHermitianTranspose(jac->Vt,work,yred));
 #endif
-  ierr = PCSVDRestoreVec(pc,PC_RIGHT,READ,x,&xred);CHKERRQ(ierr);
-  ierr = PCSVDRestoreVec(pc,PC_LEFT,WRITE,y,&yred);CHKERRQ(ierr);
+  CHKERRQ(PCSVDRestoreVec(pc,PC_RIGHT,READ,x,&xred));
+  CHKERRQ(PCSVDRestoreVec(pc,PC_LEFT,WRITE,y,&yred));
   PetscFunctionReturn(0);
 }
 
@@ -250,34 +246,32 @@ static PetscErrorCode PCApplyTranspose_SVD(PC pc,Vec x,Vec y)
 {
   PC_SVD         *jac = (PC_SVD*)pc->data;
   Vec            work = jac->work,xred,yred;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCSVDGetVec(pc,PC_LEFT,READ,x,&xred);CHKERRQ(ierr);
-  ierr = PCSVDGetVec(pc,PC_RIGHT,WRITE,y,&yred);CHKERRQ(ierr);
-  ierr = MatMult(jac->Vt,xred,work);CHKERRQ(ierr);
-  ierr = VecPointwiseMult(work,work,jac->diag);CHKERRQ(ierr);
-  ierr = MatMult(jac->U,work,yred);CHKERRQ(ierr);
-  ierr = PCSVDRestoreVec(pc,PC_LEFT,READ,x,&xred);CHKERRQ(ierr);
-  ierr = PCSVDRestoreVec(pc,PC_RIGHT,WRITE,y,&yred);CHKERRQ(ierr);
+  CHKERRQ(PCSVDGetVec(pc,PC_LEFT,READ,x,&xred));
+  CHKERRQ(PCSVDGetVec(pc,PC_RIGHT,WRITE,y,&yred));
+  CHKERRQ(MatMult(jac->Vt,xred,work));
+  CHKERRQ(VecPointwiseMult(work,work,jac->diag));
+  CHKERRQ(MatMult(jac->U,work,yred));
+  CHKERRQ(PCSVDRestoreVec(pc,PC_LEFT,READ,x,&xred));
+  CHKERRQ(PCSVDRestoreVec(pc,PC_RIGHT,WRITE,y,&yred));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCReset_SVD(PC pc)
 {
   PC_SVD         *jac = (PC_SVD*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(&jac->A);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->U);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->Vt);CHKERRQ(ierr);
-  ierr = VecDestroy(&jac->diag);CHKERRQ(ierr);
-  ierr = VecDestroy(&jac->work);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&jac->right2red);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&jac->left2red);CHKERRQ(ierr);
-  ierr = VecDestroy(&jac->rightred);CHKERRQ(ierr);
-  ierr = VecDestroy(&jac->leftred);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&jac->A));
+  CHKERRQ(MatDestroy(&jac->U));
+  CHKERRQ(MatDestroy(&jac->Vt));
+  CHKERRQ(VecDestroy(&jac->diag));
+  CHKERRQ(VecDestroy(&jac->work));
+  CHKERRQ(VecScatterDestroy(&jac->right2red));
+  CHKERRQ(VecScatterDestroy(&jac->left2red));
+  CHKERRQ(VecDestroy(&jac->rightred));
+  CHKERRQ(VecDestroy(&jac->leftred));
   PetscFunctionReturn(0);
 }
 
@@ -294,48 +288,45 @@ static PetscErrorCode PCReset_SVD(PC pc)
 static PetscErrorCode PCDestroy_SVD(PC pc)
 {
   PC_SVD         *jac = (PC_SVD*)pc->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCReset_SVD(pc);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&jac->monitor);CHKERRQ(ierr);
-  ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  CHKERRQ(PCReset_SVD(pc));
+  CHKERRQ(PetscViewerDestroy(&jac->monitor));
+  CHKERRQ(PetscFree(pc->data));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCSetFromOptions_SVD(PetscOptionItems *PetscOptionsObject,PC pc)
 {
-  PetscErrorCode ierr;
   PC_SVD         *jac = (PC_SVD*)pc->data;
   PetscBool      flg,set;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"SVD options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-pc_svd_zero_sing","Singular values smaller than this treated as zero","None",jac->zerosing,&jac->zerosing,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_svd_ess_rank","Essential rank of operator (0 to use entire operator)","None",jac->essrank,&jac->essrank,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_svd_monitor","Monitor the conditioning, and extremal singular values","None",jac->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"SVD options"));
+  CHKERRQ(PetscOptionsReal("-pc_svd_zero_sing","Singular values smaller than this treated as zero","None",jac->zerosing,&jac->zerosing,NULL));
+  CHKERRQ(PetscOptionsInt("-pc_svd_ess_rank","Essential rank of operator (0 to use entire operator)","None",jac->essrank,&jac->essrank,NULL));
+  CHKERRQ(PetscOptionsBool("-pc_svd_monitor","Monitor the conditioning, and extremal singular values","None",jac->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set));
   if (set) {                    /* Should make PCSVDSetMonitor() */
     if (flg && !jac->monitor) {
-      ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)pc),"stdout",&jac->monitor);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerASCIIOpen(PetscObjectComm((PetscObject)pc),"stdout",&jac->monitor));
     } else if (!flg) {
-      ierr = PetscViewerDestroy(&jac->monitor);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerDestroy(&jac->monitor));
     }
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCView_SVD(PC pc,PetscViewer viewer)
 {
   PC_SVD         *svd = (PC_SVD*)pc->data;
-  PetscErrorCode ierr;
   PetscBool      iascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  All singular values smaller than %g treated as zero\n",(double)svd->zerosing);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Provided essential rank of the matrix %D (all other eigenvalues are zeroed)\n",svd->essrank);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  All singular values smaller than %g treated as zero\n",(double)svd->zerosing));
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Provided essential rank of the matrix %D (all other eigenvalues are zeroed)\n",svd->essrank));
   }
   PetscFunctionReturn(0);
 }
@@ -371,14 +362,13 @@ M*/
 PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc)
 {
   PC_SVD         *jac;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /*
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr          = PetscNewLog(pc,&jac);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(pc,&jac));
   jac->zerosing = 1.e-12;
   pc->data      = (void*)jac;
 
@@ -399,4 +389,3 @@ PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc)
   pc->ops->applyrichardson = NULL;
   PetscFunctionReturn(0);
 }
-

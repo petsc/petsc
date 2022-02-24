@@ -46,59 +46,59 @@ int main(int argc,char **argv)
 
   /* Initialize program and set problem parameters */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   appctx.a  = -1.0;
-  ierr      = PetscOptionsGetReal(NULL,NULL,"-a",&appctx.a,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-a",&appctx.a,NULL));
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC, 60, 1, 1,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC, 60, 1, 1,NULL,&da));
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
 
   /* Create vector data structures for approximate and exact solutions */
-  ierr = DMCreateGlobalVector(da,&U);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(da,&U));
 
   /* Create timestepping solver context */
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetDM(ts,da);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
+  CHKERRQ(TSSetDM(ts,da));
 
   /* Function evaluation */
-  ierr = PetscOptionsGetBool(NULL,NULL,"-useLaxWendroff",&useLaxWendroff,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-useLaxWendroff",&useLaxWendroff,NULL));
   if (useLaxWendroff) {
     if (rank == 0) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"... Use Lax-Wendroff finite volume\n");CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"... Use Lax-Wendroff finite volume\n"));
     }
-    ierr = TSSetIFunction(ts,NULL,IFunction_LaxWendroff,&appctx);CHKERRQ(ierr);
+    CHKERRQ(TSSetIFunction(ts,NULL,IFunction_LaxWendroff,&appctx));
   } else {
     if (rank == 0) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"... Use Lax-LaxFriedrichs finite difference\n");CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"... Use Lax-LaxFriedrichs finite difference\n"));
     }
-    ierr = TSSetIFunction(ts,NULL,IFunction_LaxFriedrichs,&appctx);CHKERRQ(ierr);
+    CHKERRQ(TSSetIFunction(ts,NULL,IFunction_LaxFriedrichs,&appctx));
   }
 
   /* Customize timestepping solver */
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&M,0,0,0,0,0,0,0,0,0,0,0));
   dt = 1.0/(PetscAbsReal(appctx.a)*M);
-  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
-  ierr = TSSetMaxSteps(ts,100);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts,100.0);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  CHKERRQ(TSSetTimeStep(ts,dt));
+  CHKERRQ(TSSetMaxSteps(ts,100));
+  CHKERRQ(TSSetMaxTime(ts,100.0));
+  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  CHKERRQ(TSSetType(ts,TSBEULER));
+  CHKERRQ(TSSetFromOptions(ts));
 
   /* Evaluate initial conditions */
-  ierr = InitialConditions(ts,U,&appctx);CHKERRQ(ierr);
+  CHKERRQ(InitialConditions(ts,U,&appctx));
 
   /* For testing accuracy of TS with already known solution, e.g., '-ts_monitor_lg_error' */
-  ierr = TSSetSolutionFunction(ts,(PetscErrorCode (*)(TS,PetscReal,Vec,void*))Solution,&appctx);CHKERRQ(ierr);
+  CHKERRQ(TSSetSolutionFunction(ts,(PetscErrorCode (*)(TS,PetscReal,Vec,void*))Solution,&appctx));
 
   /* Run the timestepping solver */
-  ierr = TSSolve(ts,U);CHKERRQ(ierr);
+  CHKERRQ(TSSolve(ts,U));
 
   /* Free work space */
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = VecDestroy(&U);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  CHKERRQ(TSDestroy(&ts));
+  CHKERRQ(VecDestroy(&U));
+  CHKERRQ(DMDestroy(&da));
 
   ierr = PetscFinalize();
   return ierr;
@@ -117,14 +117,13 @@ int main(int argc,char **argv)
 PetscErrorCode InitialConditions(TS ts,Vec U,AppCtx *appctx)
 {
   PetscScalar    *u;
-  PetscErrorCode ierr;
   PetscInt       i,mstart,mend,um,M;
   DM             da;
   PetscReal      h;
 
-  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&mstart,0,0,&um,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(TSGetDM(ts,&da));
+  CHKERRQ(DMDAGetCorners(da,&mstart,0,0,&um,0,0));
+  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&M,0,0,0,0,0,0,0,0,0,0,0));
   h    = 1.0/M;
   mend = mstart + um;
   /*
@@ -136,7 +135,7 @@ PetscErrorCode InitialConditions(TS ts,Vec U,AppCtx *appctx)
     - Note that the Fortran interface to VecGetArray() differs from the
       C version.  See the users manual for details.
   */
-  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecGetArray(da,U,&u));
 
   /*
      We initialize the solution array by simply writing the solution
@@ -146,7 +145,7 @@ PetscErrorCode InitialConditions(TS ts,Vec U,AppCtx *appctx)
   for (i=mstart; i<mend; i++) u[i] = PetscSinReal(PETSC_PI*i*6.*h) + 3.*PetscSinReal(PETSC_PI*i*2.*h);
 
   /* Restore vector */
-  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArray(da,U,&u));
   return 0;
 }
 /* --------------------------------------------------------------------- */
@@ -166,18 +165,17 @@ PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *appctx)
 {
   PetscScalar    *u;
   PetscReal      a=appctx->a,h,PI6,PI2;
-  PetscErrorCode ierr;
   PetscInt       i,mstart,mend,um,M;
   DM             da;
 
-  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&mstart,0,0,&um,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(TSGetDM(ts,&da));
+  CHKERRQ(DMDAGetCorners(da,&mstart,0,0,&um,0,0));
+  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&M,0,0,0,0,0,0,0,0,0,0,0));
   h    = 1.0/M;
   mend = mstart + um;
 
   /* Get a pointer to vector data. */
-  ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecGetArray(da,U,&u));
 
   /* u[i] = sin(6*PI*(x[i] - a*t)) + 3 * sin(2*PI*(x[i] - a*t)) */
   PI6 = PETSC_PI*6.;
@@ -187,7 +185,7 @@ PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *appctx)
   }
 
   /* Restore vector */
-  ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArray(da,U,&u));
   return 0;
 }
 
@@ -199,7 +197,6 @@ PetscErrorCode Solution(TS ts,PetscReal t,Vec U,AppCtx *appctx)
  */
 PetscErrorCode IFunction_LaxFriedrichs(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void* ctx)
 {
-  PetscErrorCode ierr;
   AppCtx         *appctx=(AppCtx*)ctx;
   PetscInt       mstart,mend,M,i,um;
   DM             da;
@@ -208,24 +205,24 @@ PetscErrorCode IFunction_LaxFriedrichs(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,vo
   PetscReal      dt;
 
   PetscFunctionBegin;
-  ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-  ierr = TSGetSolution(ts,&Uold);CHKERRQ(ierr);
+  CHKERRQ(TSGetTimeStep(ts,&dt));
+  CHKERRQ(TSGetSolution(ts,&Uold));
 
-  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&mstart,0,0,&um,0,0);CHKERRQ(ierr);
+  CHKERRQ(TSGetDM(ts,&da));
+  CHKERRQ(DMDAGetInfo(da,0,&M,0,0,0,0,0,0,0,0,0,0,0));
+  CHKERRQ(DMDAGetCorners(da,&mstart,0,0,&um,0,0));
   h    = 1.0/M;
   mend = mstart + um;
   /* printf(" mstart %d, um %d\n",mstart,um); */
 
-  ierr = DMGetLocalVector(da,&localUold);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,Uold,INSERT_VALUES,localUold);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,Uold,INSERT_VALUES,localUold);CHKERRQ(ierr);
+  CHKERRQ(DMGetLocalVector(da,&localUold));
+  CHKERRQ(DMGlobalToLocalBegin(da,Uold,INSERT_VALUES,localUold));
+  CHKERRQ(DMGlobalToLocalEnd(da,Uold,INSERT_VALUES,localUold));
 
   /* Get pointers to vector data */
-  ierr = DMDAVecGetArrayRead(da,U,&uarray);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayRead(da,localUold,&uoldarray);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecGetArrayRead(da,U,&uarray));
+  CHKERRQ(DMDAVecGetArrayRead(da,localUold,&uoldarray));
+  CHKERRQ(DMDAVecGetArray(da,F,&f));
 
   /* advection */
   c = appctx->a*dt/h; /* Courant-Friedrichs-Lewy number (CFL number) */
@@ -236,10 +233,10 @@ PetscErrorCode IFunction_LaxFriedrichs(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,vo
   }
 
   /* Restore vectors */
-  ierr = DMDAVecRestoreArrayRead(da,U,&uarray);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayRead(da,localUold,&uoldarray);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&localUold);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArrayRead(da,U,&uarray));
+  CHKERRQ(DMDAVecRestoreArrayRead(da,localUold,&uoldarray));
+  CHKERRQ(DMDAVecRestoreArray(da,F,&f));
+  CHKERRQ(DMRestoreLocalVector(da,&localUold));
   PetscFunctionReturn(0);
 }
 
@@ -248,7 +245,6 @@ PetscErrorCode IFunction_LaxFriedrichs(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,vo
 */
 PetscErrorCode IFunction_LaxWendroff(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void* ctx)
 {
-  PetscErrorCode ierr;
   AppCtx         *appctx=(AppCtx*)ctx;
   PetscInt       mstart,mend,M,i,um;
   DM             da;
@@ -257,24 +253,24 @@ PetscErrorCode IFunction_LaxWendroff(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void
   PetscReal      dt,a;
 
   PetscFunctionBegin;
-  ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
-  ierr = TSGetSolution(ts,&Uold);CHKERRQ(ierr);
+  CHKERRQ(TSGetTimeStep(ts,&dt));
+  CHKERRQ(TSGetSolution(ts,&Uold));
 
-  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&mstart,0,0,&um,0,0);CHKERRQ(ierr);
+  CHKERRQ(TSGetDM(ts,&da));
+  CHKERRQ(DMDAGetInfo(da,0,&M,0,0,0,0,0,0,0,0,0,0,0));
+  CHKERRQ(DMDAGetCorners(da,&mstart,0,0,&um,0,0));
   h    = 1.0/M;
   mend = mstart + um;
   /* printf(" mstart %d, um %d\n",mstart,um); */
 
-  ierr = DMGetLocalVector(da,&localUold);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,Uold,INSERT_VALUES,localUold);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,Uold,INSERT_VALUES,localUold);CHKERRQ(ierr);
+  CHKERRQ(DMGetLocalVector(da,&localUold));
+  CHKERRQ(DMGlobalToLocalBegin(da,Uold,INSERT_VALUES,localUold));
+  CHKERRQ(DMGlobalToLocalEnd(da,Uold,INSERT_VALUES,localUold));
 
   /* Get pointers to vector data */
-  ierr = DMDAVecGetArrayRead(da,U,&uarray);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayRead(da,localUold,&uoldarray);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecGetArrayRead(da,U,&uarray));
+  CHKERRQ(DMDAVecGetArrayRead(da,localUold,&uoldarray));
+  CHKERRQ(DMDAVecGetArray(da,F,&f));
 
   /* advection -- finite volume (appctx->a < 0 -- can be relaxed?) */
   lambda = dt/h;
@@ -287,10 +283,10 @@ PetscErrorCode IFunction_LaxWendroff(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void
   }
 
   /* Restore vectors */
-  ierr = DMDAVecRestoreArrayRead(da,U,&uarray);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArrayRead(da,localUold,&uoldarray);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&localUold);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArrayRead(da,U,&uarray));
+  CHKERRQ(DMDAVecRestoreArrayRead(da,localUold,&uoldarray));
+  CHKERRQ(DMDAVecRestoreArray(da,F,&f));
+  CHKERRQ(DMRestoreLocalVector(da,&localUold));
   PetscFunctionReturn(0);
 }
 

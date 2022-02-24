@@ -15,16 +15,16 @@ int main(int argc,char **argv)
   PetscScalar    sum;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,0,"-stencil_width",&stencil_width,0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,0,"-dof",&dof,0);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,0,"-stencil_width",&stencil_width,0));
+  CHKERRQ(PetscOptionsGetInt(NULL,0,"-dof",&dof,0));
 
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_MIRROR,DM_BOUNDARY_MIRROR,DM_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(da,&xstart,&ystart,&zstart,&m,&n,&p);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_MIRROR,DM_BOUNDARY_MIRROR,DM_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,NULL,NULL,NULL,&da));
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
+  CHKERRQ(DMDAGetCorners(da,&xstart,&ystart,&zstart,&m,&n,&p));
 
-  ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
-  ierr = DMDAVecGetArrayDOF(da,global,&vglobal);CHKERRQ(ierr);
+  CHKERRQ(DMCreateGlobalVector(da,&global));
+  CHKERRQ(DMDAVecGetArrayDOF(da,global,&vglobal));
   for (k=zstart; k<zstart+p; k++) {
     for (j=ystart; j<ystart+n; j++) {
       for (i=xstart; i<xstart+m; i++) {
@@ -34,23 +34,23 @@ int main(int argc,char **argv)
       }
     }
   }
-  ierr = DMDAVecRestoreArrayDOF(da,global,&vglobal);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArrayDOF(da,global,&vglobal));
 
-  ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalBegin(da,global,ADD_VALUES,local);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,global,ADD_VALUES,local);CHKERRQ(ierr);
+  CHKERRQ(DMCreateLocalVector(da,&local));
+  CHKERRQ(DMGlobalToLocalBegin(da,global,ADD_VALUES,local));
+  CHKERRQ(DMGlobalToLocalEnd(da,global,ADD_VALUES,local));
 
-  ierr = VecSum(local,&sum);CHKERRQ(ierr);
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"sum %g\n",(double)PetscRealPart(sum));CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout);CHKERRQ(ierr);
-  ierr = PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sview);CHKERRQ(ierr);
-  ierr = VecView(local,sview);CHKERRQ(ierr);
-  ierr = PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sview);CHKERRQ(ierr);
-  ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecSum(local,&sum));
+  CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"sum %g\n",(double)PetscRealPart(sum)));
+  CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout));
+  CHKERRQ(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sview));
+  CHKERRQ(VecView(local,sview));
+  CHKERRQ(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,&sview));
+  CHKERRQ(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = VecDestroy(&local);CHKERRQ(ierr);
-  ierr = VecDestroy(&global);CHKERRQ(ierr);
+  CHKERRQ(DMDestroy(&da));
+  CHKERRQ(VecDestroy(&local));
+  CHKERRQ(VecDestroy(&global));
 
   ierr = PetscFinalize();
   return ierr;
@@ -65,4 +65,3 @@ int main(int argc,char **argv)
      nsize: 3
 
 TEST*/
-

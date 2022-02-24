@@ -11,9 +11,9 @@
 
 static PetscErrorCode oursneslinesearchshellfunction(SNESLineSearch linesearch, void *ctx)
 {
-  PetscErrorCode ierr = 0;
-  (*(void (*)(SNESLineSearch*,void*,PetscErrorCode*))(((PetscObject)linesearch)->fortran_func_pointers[0]))(&linesearch,ctx,&ierr);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionBegin;
+  CHKERR_FORTRAN_VOID_FUNCTION((*(void (*)(SNESLineSearch*,void*,PetscErrorCode*))(((PetscObject)linesearch)->fortran_func_pointers[0]))(&linesearch,ctx,&ierr));
+  PetscFunctionReturn(0);
 }
 
 PETSC_EXTERN void sneslinesearchshellsetuserfunc_(SNESLineSearch *linesearch,void (*func)(SNESLineSearch*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)

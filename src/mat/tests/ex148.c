@@ -20,56 +20,56 @@ int main(int argc,char **args)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
 #endif
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   /* Create and set PETSc vectors 'input' and 'output' */
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD, &rdm);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD, &rdm));
+  CHKERRQ(PetscRandomSetFromOptions(rdm));
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&input);CHKERRQ(ierr);
-  ierr = VecSetSizes(input,PETSC_DECIDE,N0*N1);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(input);CHKERRQ(ierr);
-  ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
-  ierr = VecDuplicate(input,&output);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)input, "Real space vector");CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)output, "Reconstructed vector");CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&input));
+  CHKERRQ(VecSetSizes(input,PETSC_DECIDE,N0*N1));
+  CHKERRQ(VecSetFromOptions(input));
+  CHKERRQ(VecSetRandom(input,rdm));
+  CHKERRQ(VecDuplicate(input,&output));
+  CHKERRQ(PetscObjectSetName((PetscObject)input, "Real space vector"));
+  CHKERRQ(PetscObjectSetName((PetscObject)output, "Reconstructed vector"));
 
   /* Get FFTW vectors 'x', 'y' and 'z' */
   DIM    = 2;
   dim[0] = N0; dim[1] = N1;
-  ierr   = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
-  ierr   = MatCreateVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
+  CHKERRQ(MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A));
+  CHKERRQ(MatCreateVecsFFTW(A,&x,&y,&z));
 
   /* Scatter PETSc vector 'input' to FFTW vector 'x' */
-  ierr = VecScatterPetscToFFTW(A,input,x);CHKERRQ(ierr);
+  CHKERRQ(VecScatterPetscToFFTW(A,input,x));
 
   /* Apply forward FFT */
-  ierr = MatMult(A,x,y);CHKERRQ(ierr);
+  CHKERRQ(MatMult(A,x,y));
 
   /* Apply backward FFT */
-  ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
+  CHKERRQ(MatMultTranspose(A,y,z));
 
   /* Scatter FFTW vector 'z' to PETSc vector 'output' */
-  ierr = VecScatterFFTWToPetsc(A,z,output);CHKERRQ(ierr);
+  CHKERRQ(VecScatterFFTWToPetsc(A,z,output));
 
   /* Check accuracy */
   fac  = 1.0/(PetscReal)N;
-  ierr = VecScale(output,fac);CHKERRQ(ierr);
-  ierr = VecAXPY(output,-1.0,input);CHKERRQ(ierr);
-  ierr = VecNorm(output,NORM_1,&enorm);CHKERRQ(ierr);
+  CHKERRQ(VecScale(output,fac));
+  CHKERRQ(VecAXPY(output,-1.0,input));
+  CHKERRQ(VecNorm(output,NORM_1,&enorm));
   if (enorm > 1.e-11 && rank == 0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm));
   }
 
   /* Free spaces */
-  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
-  ierr = VecDestroy(&input);CHKERRQ(ierr);
-  ierr = VecDestroy(&output);CHKERRQ(ierr);
-  ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
-  ierr = VecDestroy(&z);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomDestroy(&rdm));
+  CHKERRQ(VecDestroy(&input));
+  CHKERRQ(VecDestroy(&output));
+  CHKERRQ(VecDestroy(&x));
+  CHKERRQ(VecDestroy(&y));
+  CHKERRQ(VecDestroy(&z));
+  CHKERRQ(MatDestroy(&A));
 
   ierr = PetscFinalize();
   return ierr;

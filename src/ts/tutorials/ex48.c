@@ -180,15 +180,15 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->eps      = 1.e-6;
 
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex48.c", options->debug, &options->debug, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-plot_ref", "Plot the reference fields", "ex48.c", options->plotRef, &options->plotRef, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-mu", "mu", "ex48.c", options->mu, &options->mu, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-eta", "eta", "ex48.c", options->eta, &options->eta, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-beta", "beta", "ex48.c", options->beta, &options->beta, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-Jop", "Jop", "ex48.c", options->Jop, &options->Jop, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-m", "m", "ex48.c", options->m, &options->m, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-eps", "eps", "ex48.c", options->eps, &options->eps, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-implicit", "Use implicit time integrator", "ex48.c", options->implicit, &options->implicit, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsInt("-debug", "The debugging level", "ex48.c", options->debug, &options->debug, NULL));
+  CHKERRQ(PetscOptionsBool("-plot_ref", "Plot the reference fields", "ex48.c", options->plotRef, &options->plotRef, NULL));
+  CHKERRQ(PetscOptionsReal("-mu", "mu", "ex48.c", options->mu, &options->mu, NULL));
+  CHKERRQ(PetscOptionsReal("-eta", "eta", "ex48.c", options->eta, &options->eta, NULL));
+  CHKERRQ(PetscOptionsReal("-beta", "beta", "ex48.c", options->beta, &options->beta, NULL));
+  CHKERRQ(PetscOptionsReal("-Jop", "Jop", "ex48.c", options->Jop, &options->Jop, NULL));
+  CHKERRQ(PetscOptionsReal("-m", "m", "ex48.c", options->m, &options->m, NULL));
+  CHKERRQ(PetscOptionsReal("-eps", "eps", "ex48.c", options->eps, &options->eps, NULL));
+  CHKERRQ(PetscOptionsBool("-implicit", "Use implicit time integrator", "ex48.c", options->implicit, &options->implicit, NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   options->ke = PetscSqrtScalar(options->Jop);
   if (options->Jop==0.0) {
@@ -207,7 +207,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     options->kx = 0;
     options->DeltaPrime = -2.0;
   }
-  ierr = PetscPrintf(comm, "DeltaPrime=%g\n",options->DeltaPrime);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(comm, "DeltaPrime=%g\n",options->DeltaPrime));
 
   PetscFunctionReturn(0);
 }
@@ -223,48 +223,46 @@ static void f_n(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 
 static PetscErrorCode PostStep(TS ts)
 {
-  PetscErrorCode    ierr;
-  DM                dm;
-  AppCtx            *ctx;
-  PetscInt          stepi,num;
-  Vec               X;
+  DM        dm;
+  AppCtx   *ctx;
+  PetscInt  stepi,num;
+  Vec       X;
+
   PetscFunctionBegin;
-  ierr = TSGetApplicationContext(ts, &ctx);CHKERRQ(ierr);
+  CHKERRQ(TSGetApplicationContext(ts, &ctx));
   if (ctx->debug<1) PetscFunctionReturn(0);
-  ierr = TSGetSolution(ts, &X);CHKERRQ(ierr);
-  ierr = VecGetDM(X, &dm);CHKERRQ(ierr);
-  ierr = TSGetStepNumber(ts, &stepi);CHKERRQ(ierr);
-  ierr = DMGetOutputSequenceNumber(dm, &num, NULL);CHKERRQ(ierr);
-  if (num < 0) {ierr = DMSetOutputSequenceNumber(dm, 0, 0.0);CHKERRQ(ierr);}
-  ierr = PetscObjectSetName((PetscObject) X, "u");CHKERRQ(ierr);
-  ierr = VecViewFromOptions(X, NULL, "-vec_view");CHKERRQ(ierr);
+  CHKERRQ(TSGetSolution(ts, &X));
+  CHKERRQ(VecGetDM(X, &dm));
+  CHKERRQ(TSGetStepNumber(ts, &stepi));
+  CHKERRQ(DMGetOutputSequenceNumber(dm, &num, NULL));
+  if (num < 0) CHKERRQ(DMSetOutputSequenceNumber(dm, 0, 0.0));
+  CHKERRQ(PetscObjectSetName((PetscObject) X, "u"));
+  CHKERRQ(VecViewFromOptions(X, NULL, "-vec_view"));
   /* print integrals */
   {
     PetscDS          prob;
     DM               plex;
     PetscScalar den, tt[5];
-    ierr = DMConvert(dm, DMPLEX, &plex);CHKERRQ(ierr);
-    ierr = DMGetDS(plex, &prob);CHKERRQ(ierr);
-    ierr = PetscDSSetObjective(prob, 0, &f_n);CHKERRQ(ierr);
-    ierr = DMPlexComputeIntegralFEM(plex,X,tt,ctx);CHKERRQ(ierr);
+    CHKERRQ(DMConvert(dm, DMPLEX, &plex));
+    CHKERRQ(DMGetDS(plex, &prob));
+    CHKERRQ(PetscDSSetObjective(prob, 0, &f_n));
+    CHKERRQ(DMPlexComputeIntegralFEM(plex,X,tt,ctx));
     den = tt[0];
-    ierr = DMDestroy(&plex);CHKERRQ(ierr);
-    PetscPrintf(PetscObjectComm((PetscObject)dm), "%D) total perturbed mass = %g\n", stepi, (double) PetscRealPart(den));CHKERRQ(ierr);
+    CHKERRQ(DMDestroy(&plex));
+    CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)dm), "%D) total perturbed mass = %g\n", stepi, (double) PetscRealPart(den)));
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreate(comm, dm));
+  CHKERRQ(DMSetType(*dm, DMPLEX));
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
 
-  ierr = DMGetBoundingBox(*dm, ctx->lower, ctx->upper);CHKERRQ(ierr);
+  CHKERRQ(DMGetBoundingBox(*dm, ctx->lower, ctx->upper));
   ctx->a = (ctx->upper[0] - ctx->lower[0])/2.0;
   ctx->b = (ctx->upper[1] - ctx->lower[1])/2.0;
   PetscFunctionReturn(0);
@@ -335,26 +333,25 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
   PetscDS        ds;
   DMLabel        label;
   const PetscInt id = 1;
-  PetscErrorCode ierr, f;
 
   PetscFunctionBeginUser;
-  ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
-  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(ds, 0, f0_n,     f1_n);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(ds, 1, f0_Omega, f1_Omega);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(ds, 2, f0_psi,   f1_psi);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(ds, 3, f0_phi,   f1_phi);CHKERRQ(ierr);
-  ierr = PetscDSSetResidual(ds, 4, f0_jz,    f1_jz);CHKERRQ(ierr);
+  CHKERRQ(DMGetLabel(dm, "marker", &label));
+  CHKERRQ(DMGetDS(dm, &ds));
+  CHKERRQ(PetscDSSetResidual(ds, 0, f0_n,     f1_n));
+  CHKERRQ(PetscDSSetResidual(ds, 1, f0_Omega, f1_Omega));
+  CHKERRQ(PetscDSSetResidual(ds, 2, f0_psi,   f1_psi));
+  CHKERRQ(PetscDSSetResidual(ds, 3, f0_phi,   f1_phi));
+  CHKERRQ(PetscDSSetResidual(ds, 4, f0_jz,    f1_jz));
   ctx->initialFuncs[0] = initialSolution_n;
   ctx->initialFuncs[1] = initialSolution_Omega;
   ctx->initialFuncs[2] = initialSolution_psi;
   ctx->initialFuncs[3] = initialSolution_phi;
   ctx->initialFuncs[4] = initialSolution_jz;
-  for (f = 0; f < 5; ++f) {
-    ierr = PetscDSSetImplicit(ds, f, ctx->implicit);CHKERRQ(ierr);
-    ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, f, 0, NULL, (void (*)(void)) ctx->initialFuncs[f], NULL, ctx, NULL);CHKERRQ(ierr);
+  for (PetscInt f = 0; f < 5; ++f) {
+    CHKERRQ(PetscDSSetImplicit(ds, f, ctx->implicit));
+    CHKERRQ(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, f, 0, NULL, (void (*)(void)) ctx->initialFuncs[f], NULL, ctx, NULL));
   }
-  ierr = PetscDSSetContext(ds, 0, ctx);CHKERRQ(ierr);
+  CHKERRQ(PetscDSSetContext(ds, 0, ctx));
   PetscFunctionReturn(0);
 }
 
@@ -362,14 +359,13 @@ static PetscErrorCode SetupEquilibriumFields(DM dm, DM dmAux, AppCtx *ctx)
 {
   PetscErrorCode (*eqFuncs[3])(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar [], void *) = {log_n_0, Omega_0, psi_0};
   Vec            eq;
-  PetscErrorCode ierr;
   AppCtx *ctxarr[3];
 
   ctxarr[0] = ctxarr[1] = ctxarr[2] = ctx; /* each variable could have a different context */
   PetscFunctionBegin;
-  ierr = DMCreateLocalVector(dmAux, &eq);CHKERRQ(ierr);
-  ierr = DMProjectFunctionLocal(dmAux, 0.0, eqFuncs, (void **)ctxarr, INSERT_ALL_VALUES, eq);CHKERRQ(ierr);
-  ierr = DMSetAuxiliaryVec(dm, NULL, 0, 0, eq);CHKERRQ(ierr);
+  CHKERRQ(DMCreateLocalVector(dmAux, &eq));
+  CHKERRQ(DMProjectFunctionLocal(dmAux, 0.0, eqFuncs, (void **)ctxarr, INSERT_ALL_VALUES, eq));
+  CHKERRQ(DMSetAuxiliaryVec(dm, NULL, 0, 0, eq));
   if (ctx->plotRef) {  /* plot reference functions */
     PetscViewer       viewer = NULL;
     PetscBool         isHDF5,isVTK;
@@ -377,36 +373,36 @@ static PetscErrorCode SetupEquilibriumFields(DM dm, DM dmAux, AppCtx *ctx)
     Vec               global;
     PetscInt          dim;
 
-    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-    ierr = DMCreateGlobalVector(dmAux,&global);CHKERRQ(ierr);
-    ierr = VecSet(global,.0);CHKERRQ(ierr); /* BCs! */
-    ierr = DMLocalToGlobalBegin(dmAux,eq,INSERT_VALUES,global);CHKERRQ(ierr);
-    ierr = DMLocalToGlobalEnd(dmAux,eq,INSERT_VALUES,global);CHKERRQ(ierr);
-    ierr = PetscViewerCreate(PetscObjectComm((PetscObject)dmAux),&viewer);CHKERRQ(ierr);
+    CHKERRQ(DMGetDimension(dm, &dim));
+    CHKERRQ(DMCreateGlobalVector(dmAux,&global));
+    CHKERRQ(VecSet(global,.0)); /* BCs! */
+    CHKERRQ(DMLocalToGlobalBegin(dmAux,eq,INSERT_VALUES,global));
+    CHKERRQ(DMLocalToGlobalEnd(dmAux,eq,INSERT_VALUES,global));
+    CHKERRQ(PetscViewerCreate(PetscObjectComm((PetscObject)dmAux),&viewer));
 #ifdef PETSC_HAVE_HDF5
-    ierr = PetscViewerSetType(viewer,PETSCVIEWERHDF5);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerSetType(viewer,PETSCVIEWERHDF5));
 #else
-    ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerSetType(viewer,PETSCVIEWERVTK));
 #endif
-    ierr = PetscViewerSetFromOptions(viewer);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&isHDF5);CHKERRQ(ierr);
-    ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isVTK);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerSetFromOptions(viewer));
+    CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&isHDF5));
+    CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isVTK));
     if (isHDF5) {
-      ierr = PetscSNPrintf(buf, 256, "uEquilibrium-%dD.h5", dim);CHKERRQ(ierr);
+      CHKERRQ(PetscSNPrintf(buf, 256, "uEquilibrium-%dD.h5", dim));
     } else if (isVTK) {
-      ierr = PetscSNPrintf(buf, 256, "uEquilibrium-%dD.vtu", dim);CHKERRQ(ierr);
-      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_VTK_VTU);CHKERRQ(ierr);
+      CHKERRQ(PetscSNPrintf(buf, 256, "uEquilibrium-%dD.vtu", dim));
+      CHKERRQ(PetscViewerPushFormat(viewer,PETSC_VIEWER_VTK_VTU));
     }
-    ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer,buf);CHKERRQ(ierr);
-    if (isHDF5) {ierr = DMView(dmAux,viewer);CHKERRQ(ierr);}
+    CHKERRQ(PetscViewerFileSetMode(viewer,FILE_MODE_WRITE));
+    CHKERRQ(PetscViewerFileSetName(viewer,buf));
+    if (isHDF5) CHKERRQ(DMView(dmAux,viewer));
     /* view equilibrium fields, this will overwrite fine grids with coarse grids! */
-    ierr = PetscObjectSetName((PetscObject) global, "u0");CHKERRQ(ierr);
-    ierr = VecView(global,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = VecDestroy(&global);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectSetName((PetscObject) global, "u0"));
+    CHKERRQ(VecView(global,viewer));
+    CHKERRQ(PetscViewerDestroy(&viewer));
+    CHKERRQ(VecDestroy(&global));
   }
-  ierr = VecDestroy(&eq);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&eq));
   PetscFunctionReturn(0);
 }
 
@@ -414,18 +410,17 @@ static PetscErrorCode SetupAuxDM(DM dm, PetscInt NfAux, PetscFE feAux[], AppCtx 
 {
   DM             dmAux, coordDM;
   PetscInt       f;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* MUST call DMGetCoordinateDM() in order to get p4est setup if present */
-  ierr = DMGetCoordinateDM(dm, &coordDM);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoordinateDM(dm, &coordDM));
   if (!feAux) PetscFunctionReturn(0);
-  ierr = DMClone(dm, &dmAux);CHKERRQ(ierr);
-  ierr = DMSetCoordinateDM(dmAux, coordDM);CHKERRQ(ierr);
-  for (f = 0; f < NfAux; ++f) {ierr = DMSetField(dmAux, f, NULL, (PetscObject) feAux[f]);CHKERRQ(ierr);}
-  ierr = DMCreateDS(dmAux);CHKERRQ(ierr);
-  ierr = SetupEquilibriumFields(dm, dmAux, user);CHKERRQ(ierr);
-  ierr = DMDestroy(&dmAux);CHKERRQ(ierr);
+  CHKERRQ(DMClone(dm, &dmAux));
+  CHKERRQ(DMSetCoordinateDM(dmAux, coordDM));
+  for (f = 0; f < NfAux; ++f) CHKERRQ(DMSetField(dmAux, f, NULL, (PetscObject) feAux[f]));
+  CHKERRQ(DMCreateDS(dmAux));
+  CHKERRQ(SetupEquilibriumFields(dm, dmAux, user));
+  CHKERRQ(DMDestroy(&dmAux));
   PetscFunctionReturn(0);
 }
 
@@ -436,48 +431,47 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
   PetscInt        dim, Nf = 5, NfAux = 3, f;
   PetscBool       simplex;
   MPI_Comm        comm;
-  PetscErrorCode  ierr;
 
   PetscFunctionBeginUser;
   /* Create finite element */
-  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMPlexIsSimplex(dm, &simplex);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe[0]);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe[0], "density");CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe[1]);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe[1], "vorticity");CHKERRQ(ierr);
-  ierr = PetscFECopyQuadrature(fe[0], fe[1]);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe[2]);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe[2], "flux");CHKERRQ(ierr);
-  ierr = PetscFECopyQuadrature(fe[0], fe[2]);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe[3]);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe[3], "potential");CHKERRQ(ierr);
-  ierr = PetscFECopyQuadrature(fe[0], fe[3]);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe[4]);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) fe[4], "current");CHKERRQ(ierr);
-  ierr = PetscFECopyQuadrature(fe[0], fe[4]);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject) dm, &comm));
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(DMPlexIsSimplex(dm, &simplex));
+  CHKERRQ(PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe[0]));
+  CHKERRQ(PetscObjectSetName((PetscObject) fe[0], "density"));
+  CHKERRQ(PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe[1]));
+  CHKERRQ(PetscObjectSetName((PetscObject) fe[1], "vorticity"));
+  CHKERRQ(PetscFECopyQuadrature(fe[0], fe[1]));
+  CHKERRQ(PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe[2]));
+  CHKERRQ(PetscObjectSetName((PetscObject) fe[2], "flux"));
+  CHKERRQ(PetscFECopyQuadrature(fe[0], fe[2]));
+  CHKERRQ(PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe[3]));
+  CHKERRQ(PetscObjectSetName((PetscObject) fe[3], "potential"));
+  CHKERRQ(PetscFECopyQuadrature(fe[0], fe[3]));
+  CHKERRQ(PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &fe[4]));
+  CHKERRQ(PetscObjectSetName((PetscObject) fe[4], "current"));
+  CHKERRQ(PetscFECopyQuadrature(fe[0], fe[4]));
 
-  ierr = PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &feAux[0]);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) feAux[0], "n_0");CHKERRQ(ierr);
-  ierr = PetscFECopyQuadrature(fe[0], feAux[0]);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &feAux[1]);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) feAux[1], "vorticity_0");CHKERRQ(ierr);
-  ierr = PetscFECopyQuadrature(fe[0], feAux[1]);CHKERRQ(ierr);
-  ierr = PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &feAux[2]);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) feAux[2], "flux_0");CHKERRQ(ierr);
-  ierr = PetscFECopyQuadrature(fe[0], feAux[2]);CHKERRQ(ierr);
+  CHKERRQ(PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &feAux[0]));
+  CHKERRQ(PetscObjectSetName((PetscObject) feAux[0], "n_0"));
+  CHKERRQ(PetscFECopyQuadrature(fe[0], feAux[0]));
+  CHKERRQ(PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &feAux[1]));
+  CHKERRQ(PetscObjectSetName((PetscObject) feAux[1], "vorticity_0"));
+  CHKERRQ(PetscFECopyQuadrature(fe[0], feAux[1]));
+  CHKERRQ(PetscFECreateDefault(comm, dim, 1, simplex, NULL, -1, &feAux[2]));
+  CHKERRQ(PetscObjectSetName((PetscObject) feAux[2], "flux_0"));
+  CHKERRQ(PetscFECopyQuadrature(fe[0], feAux[2]));
   /* Set discretization and boundary conditions for each mesh */
-  for (f = 0; f < Nf; ++f) {ierr = DMSetField(dm, f, NULL, (PetscObject) fe[f]);CHKERRQ(ierr);}
-  ierr = DMCreateDS(dm);CHKERRQ(ierr);
-  ierr = SetupProblem(dm, ctx);CHKERRQ(ierr);
+  for (f = 0; f < Nf; ++f) CHKERRQ(DMSetField(dm, f, NULL, (PetscObject) fe[f]));
+  CHKERRQ(DMCreateDS(dm));
+  CHKERRQ(SetupProblem(dm, ctx));
   while (cdm) {
-    ierr = SetupAuxDM(dm, NfAux, feAux, ctx);CHKERRQ(ierr);
-    ierr = DMCopyDisc(dm, cdm);CHKERRQ(ierr);
-    ierr = DMGetCoarseDM(cdm, &cdm);CHKERRQ(ierr);
+    CHKERRQ(SetupAuxDM(dm, NfAux, feAux, ctx));
+    CHKERRQ(DMCopyDisc(dm, cdm));
+    CHKERRQ(DMGetCoarseDM(cdm, &cdm));
   }
-  for (f = 0; f < Nf; ++f) {ierr = PetscFEDestroy(&fe[f]);CHKERRQ(ierr);}
-  for (f = 0; f < NfAux; ++f) {ierr = PetscFEDestroy(&feAux[f]);CHKERRQ(ierr);}
+  for (f = 0; f < Nf; ++f) CHKERRQ(PetscFEDestroy(&fe[f]));
+  for (f = 0; f < NfAux; ++f) CHKERRQ(PetscFEDestroy(&feAux[f]));
   PetscFunctionReturn(0);
 }
 
@@ -495,45 +489,45 @@ int main(int argc, char **argv)
   ctxarr[0] = ctxarr[1] = ctxarr[2] = ctxarr[3] = ctxarr[4] = &ctx; /* each variable could have a different context */
   s_ctx = &ctx;
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
+  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &ctx));
   /* create mesh and problem */
-  ierr = CreateMesh(PETSC_COMM_WORLD, &ctx, &dm);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(dm, &ctx);CHKERRQ(ierr);
-  ierr = PetscMalloc1(5, &ctx.initialFuncs);CHKERRQ(ierr);
-  ierr = SetupDiscretization(dm, &ctx);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dm, &u);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) u, "u");CHKERRQ(ierr);
-  ierr = VecDuplicate(u, &r);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) r, "r");CHKERRQ(ierr);
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &ctx, &dm));
+  CHKERRQ(DMSetApplicationContext(dm, &ctx));
+  CHKERRQ(PetscMalloc1(5, &ctx.initialFuncs));
+  CHKERRQ(SetupDiscretization(dm, &ctx));
+  CHKERRQ(DMCreateGlobalVector(dm, &u));
+  CHKERRQ(PetscObjectSetName((PetscObject) u, "u"));
+  CHKERRQ(VecDuplicate(u, &r));
+  CHKERRQ(PetscObjectSetName((PetscObject) r, "r"));
   /* create TS */
-  ierr = TSCreate(PETSC_COMM_WORLD, &ts);CHKERRQ(ierr);
-  ierr = TSSetDM(ts, dm);CHKERRQ(ierr);
-  ierr = TSSetApplicationContext(ts, &ctx);CHKERRQ(ierr);
-  ierr = DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, &ctx);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(PETSC_COMM_WORLD, &ts));
+  CHKERRQ(TSSetDM(ts, dm));
+  CHKERRQ(TSSetApplicationContext(ts, &ctx));
+  CHKERRQ(DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, &ctx));
   if (ctx.implicit) {
-    ierr = DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &ctx);CHKERRQ(ierr);
-    ierr = DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, &ctx);CHKERRQ(ierr);
+    CHKERRQ(DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, &ctx));
+    CHKERRQ(DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, &ctx));
   } else {
-    ierr = DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, &ctx);CHKERRQ(ierr);
+    CHKERRQ(DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, &ctx));
   }
-  ierr = TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSSetPostStep(ts, PostStep);CHKERRQ(ierr);
+  CHKERRQ(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER));
+  CHKERRQ(TSSetFromOptions(ts));
+  CHKERRQ(TSSetPostStep(ts, PostStep));
   /* make solution & solve */
-  ierr = DMProjectFunction(dm, t, ctx.initialFuncs, (void **)ctxarr, INSERT_ALL_VALUES, u);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(dm, NULL, "-dm_view");CHKERRQ(ierr);
-  ierr = PostStep(ts);CHKERRQ(ierr); /* print the initial state */
-  ierr = TSSolve(ts, u);CHKERRQ(ierr);
-  ierr = TSGetTime(ts, &t);CHKERRQ(ierr);
-  ierr = DMComputeL2Diff(dm, t, ctx.initialFuncs, (void **)ctxarr, u, &L2error);CHKERRQ(ierr);
-  if (L2error < 1.0e-11) {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n");CHKERRQ(ierr);}
-  else                   {ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", L2error);CHKERRQ(ierr);}
-  ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
-  ierr = PetscFree(ctx.initialFuncs);CHKERRQ(ierr);
+  CHKERRQ(DMProjectFunction(dm, t, ctx.initialFuncs, (void **)ctxarr, INSERT_ALL_VALUES, u));
+  CHKERRQ(TSSetSolution(ts,u));
+  CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
+  CHKERRQ(PostStep(ts)); /* print the initial state */
+  CHKERRQ(TSSolve(ts, u));
+  CHKERRQ(TSGetTime(ts, &t));
+  CHKERRQ(DMComputeL2Diff(dm, t, ctx.initialFuncs, (void **)ctxarr, u, &L2error));
+  if (L2error < 1.0e-11) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: < 1.0e-11\n"));
+  else                   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", L2error));
+  CHKERRQ(VecDestroy(&u));
+  CHKERRQ(VecDestroy(&r));
+  CHKERRQ(TSDestroy(&ts));
+  CHKERRQ(DMDestroy(&dm));
+  CHKERRQ(PetscFree(ctx.initialFuncs));
   ierr = PetscFinalize();
   return ierr;
 }

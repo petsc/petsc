@@ -25,8 +25,8 @@ PETSC_EXTERN const char* PetscCUFFTGetErrorName(cufftResult);
 
 /* Could not find exactly which CUDART_VERSION introduced cudaGetErrorName. At least it was in CUDA 8.0 (Sep. 2016) */
 #if PETSC_PKG_CUDA_VERSION_GE(8,0,0)
-#define CHKERRCUDA(cerr) do {                                           \
-    const cudaError_t _p_cuda_err__ = cerr;                             \
+#define CHKERRCUDA(...) do {                                            \
+    const cudaError_t _p_cuda_err__ = __VA_ARGS__;                      \
     if (PetscUnlikely(_p_cuda_err__ != cudaSuccess)) {                  \
       const char *name  = cudaGetErrorName(_p_cuda_err__);              \
       const char *descr = cudaGetErrorString(_p_cuda_err__);            \
@@ -35,15 +35,15 @@ PETSC_EXTERN const char* PetscCUFFTGetErrorName(cufftResult);
     }                                                                   \
   } while (0)
 #else /* PETSC_PKG_CUDA_VERSION_GE(8,0,0) */
-#define CHKERRCUDA(cerr) do { \
-  const cudaError_t _p_cuda_err__ = cerr; \
+#define CHKERRCUDA(...) do { \
+  const cudaError_t _p_cuda_err__ = __VA_ARGS__; \
   PetscCheck(_p_cuda_err__ == cudaSuccess,PETSC_COMM_SELF,PETSC_ERR_GPU,"cuda error %d",(PetscErrorCode)_p_cuda_err__);
 } while (0)
 
 #endif /* PETSC_PKG_CUDA_VERSION_GE(8,0,0) */
 
-#define CHKERRCUBLAS(stat)   do {                                       \
-    const cublasStatus_t _p_cublas_stat__ = stat;                       \
+#define CHKERRCUBLAS(...)   do {                                        \
+    const cublasStatus_t _p_cublas_stat__ = __VA_ARGS__;                \
     if (PetscUnlikely(_p_cublas_stat__ != CUBLAS_STATUS_SUCCESS)) {     \
       const char *name = PetscCUBLASGetErrorName(_p_cublas_stat__);     \
       if (((_p_cublas_stat__ == CUBLAS_STATUS_NOT_INITIALIZED) ||       \
@@ -62,9 +62,9 @@ PETSC_EXTERN const char* PetscCUFFTGetErrorName(cufftResult);
   } while (0)
 
 #if (CUSPARSE_VER_MAJOR > 10 || CUSPARSE_VER_MAJOR == 10 && CUSPARSE_VER_MINOR >= 2) /* According to cuda/10.1.168 on OLCF Summit */
-#define CHKERRCUSPARSE(stat)\
+#define CHKERRCUSPARSE(...)\
 do {\
-  const cusparseStatus_t _p_cusparse_stat__ = stat;\
+  const cusparseStatus_t _p_cusparse_stat__ = __VA_ARGS__;\
   if (PetscUnlikely(_p_cusparse_stat__)) {\
     const char *name  = cusparseGetErrorName(_p_cusparse_stat__);\
     const char *descr = cusparseGetErrorString(_p_cusparse_stat__);\
@@ -73,14 +73,14 @@ do {\
   }\
 } while (0)
 #else  /* (CUSPARSE_VER_MAJOR > 10 || CUSPARSE_VER_MAJOR == 10 && CUSPARSE_VER_MINOR >= 2) */
-#define CHKERRCUSPARSE(stat) do { \
-  const cusparseStatus_t _p_cusparse_stat__ = stat; \
+#define CHKERRCUSPARSE(...) do { \
+  const cusparseStatus_t _p_cusparse_stat__ = __VA_ARGS__; \
   PetscCheck(_p_cusparse_stat__ == CUSPARSE_STATUS_SUCCESS,PETSC_COMM_SELF,PETSC_ERR_GPU,"cuSPARSE errorcode %d",(PetscErrorCode)_p_cusparse_stat__); \
   } while (0)
 #endif /* (CUSPARSE_VER_MAJOR > 10 || CUSPARSE_VER_MAJOR == 10 && CUSPARSE_VER_MINOR >= 2) */
 
-#define CHKERRCUSOLVER(stat) do {                                       \
-    const cusolverStatus_t _p_cusolver_stat__ = stat;                   \
+#define CHKERRCUSOLVER(...) do {                                        \
+    const cusolverStatus_t _p_cusolver_stat__ = __VA_ARGS__;            \
     if (PetscUnlikely(_p_cusolver_stat__ != CUSOLVER_STATUS_SUCCESS)) { \
       const char *name = PetscCUSolverGetErrorName(_p_cusolver_stat__); \
       if (((_p_cusolver_stat__ == CUSOLVER_STATUS_NOT_INITIALIZED) ||   \
@@ -98,8 +98,8 @@ do {\
     }                                                                   \
   } while (0)
 
-#define CHKERRCUFFT(res)     do {                                       \
-    const cufftResult_t _p_cufft_stat__ = res;                          \
+#define CHKERRCUFFT(...)     do {                                       \
+    const cufftResult_t _p_cufft_stat__ = __VA_ARGS__;                  \
     if (PetscUnlikely(_p_cufft_stat__ != CUFFT_SUCCESS)) {              \
       const char *name = PetscCUFFTGetErrorName(_p_cufft_stat__);       \
       if (((_p_cufft_stat__ == CUFFT_SETUP_FAILED)  ||                  \
@@ -117,8 +117,8 @@ do {\
     }                                                                   \
   } while (0)
 
-#define CHKERRCURAND(stat)   do {                                       \
-    const curandStatus_t _p_curand_stat__ = stat;                       \
+#define CHKERRCURAND(...)   do {                                        \
+    const curandStatus_t _p_curand_stat__ = __VA_ARGS__;                \
     if (PetscUnlikely(_p_curand_stat__ != CURAND_STATUS_SUCCESS)) {     \
       if (((_p_curand_stat__ == CURAND_STATUS_INITIALIZATION_FAILED) || \
            (_p_curand_stat__ == CURAND_STATUS_ALLOCATION_FAILED))    && \
@@ -156,8 +156,8 @@ PETSC_EXTERN PetscErrorCode PetscCUSOLVERDnGetHandle(cusolverDnHandle_t*);
 /* hipBLAS does not have hipblasGetErrorName(). We create one on our own. */
 PETSC_EXTERN const char* PetscHIPBLASGetErrorName(hipblasStatus_t); /* PETSC_EXTERN since it is exposed by the CHKERRHIPBLAS macro */
 
-#define CHKERRHIP(cerr)     do {                                        \
-    const hipError_t _p_hip_err__ = cerr;                               \
+#define CHKERRHIP(...)     do {                                         \
+    const hipError_t _p_hip_err__ = __VA_ARGS__;                        \
     if (PetscUnlikely(_p_hip_err__ != hipSuccess)) {                    \
       const char *name  = hipGetErrorName(_p_hip_err__);                \
       const char *descr = hipGetErrorString(_p_hip_err__);              \
@@ -166,8 +166,8 @@ PETSC_EXTERN const char* PetscHIPBLASGetErrorName(hipblasStatus_t); /* PETSC_EXT
     }                                                                   \
   } while (0)
 
-#define CHKERRHIPBLAS(stat) do {                                        \
-    const hipblasStatus_t _p_hipblas_stat__ = stat;                     \
+#define CHKERRHIPBLAS(...) do {                                         \
+    const hipblasStatus_t _p_hipblas_stat__ = __VA_ARGS__;              \
     if (PetscUnlikely(_p_hipblas_stat__ != HIPBLAS_STATUS_SUCCESS)) {   \
       const char *name = PetscHIPBLASGetErrorName(_p_hipblas_stat__);   \
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_GPU,"hipBLAS error %d (%s)",    \
@@ -176,8 +176,8 @@ PETSC_EXTERN const char* PetscHIPBLASGetErrorName(hipblasStatus_t); /* PETSC_EXT
   } while (0)
 
 /* TODO: SEK:  Need to figure out the hipsolver issues */
-#define CHKERRHIPSOLVER(stat) do { \
-    const hipsolverStatus_t _p_hipsolver_stat__ = stat; \
+#define CHKERRHIPSOLVER(...) do { \
+    const hipsolverStatus_t _p_hipsolver_stat__ = __VA_ARGS__; \
     PetscCheck(!_p_hipsolver_stat__,PETSC_COMM_SELF,PETSC_ERR_GPU,"HIPSOLVER error %d",(PetscErrorCode)_p_hipsolver_stat__); \
   } while (0)
 

@@ -16,7 +16,6 @@
 */
 PetscErrorCode  DMLocalToLocalCreate_DA(DM da)
 {
-  PetscErrorCode ierr;
   PetscInt       *idx,left,j,count,up,down,i,bottom,top,k,dim=da->dim;
   DM_DA          *dd = (DM_DA*)da->data;
 
@@ -29,15 +28,15 @@ PetscErrorCode  DMLocalToLocalCreate_DA(DM da)
      global to local to read from an array with the ghost values
      rather then from the plain array.
   */
-  ierr = VecScatterCopy(dd->gtol,&dd->ltol);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent((PetscObject)da,(PetscObject)dd->ltol);CHKERRQ(ierr);
+  CHKERRQ(VecScatterCopy(dd->gtol,&dd->ltol));
+  CHKERRQ(PetscLogObjectParent((PetscObject)da,(PetscObject)dd->ltol));
   if (dim == 1) {
     left = dd->xs - dd->Xs;
-    ierr = PetscMalloc1(dd->xe-dd->xs,&idx);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(dd->xe-dd->xs,&idx));
     for (j=0; j<dd->xe-dd->xs; j++) idx[j] = left + j;
   } else if (dim == 2) {
     left  = dd->xs - dd->Xs; down  = dd->ys - dd->Ys; up    = down + dd->ye-dd->ys;
-    ierr  = PetscMalloc1((dd->xe-dd->xs)*(up - down),&idx);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1((dd->xe-dd->xs)*(up - down),&idx));
     count = 0;
     for (i=down; i<up; i++) {
       for (j=0; j<dd->xe-dd->xs; j++) {
@@ -49,7 +48,7 @@ PetscErrorCode  DMLocalToLocalCreate_DA(DM da)
     bottom = dd->ys - dd->Ys; top = bottom + dd->ye-dd->ys;
     down   = dd->zs - dd->Zs; up  = down + dd->ze-dd->zs;
     count  = (dd->xe-dd->xs)*(top-bottom)*(up-down);
-    ierr   = PetscMalloc1(count,&idx);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(count,&idx));
     count  = 0;
     for (i=down; i<up; i++) {
       for (j=bottom; j<top; j++) {
@@ -60,8 +59,8 @@ PetscErrorCode  DMLocalToLocalCreate_DA(DM da)
     }
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_CORRUPT,"DMDA has invalid dimension %D",dim);
 
-  ierr = VecScatterRemap(dd->ltol,idx,NULL);CHKERRQ(ierr);
-  ierr = PetscFree(idx);CHKERRQ(ierr);
+  CHKERRQ(VecScatterRemap(dd->ltol,idx,NULL));
+  CHKERRQ(PetscFree(idx));
   PetscFunctionReturn(0);
 }
 
@@ -89,15 +88,14 @@ PetscErrorCode  DMLocalToLocalCreate_DA(DM da)
 */
 PetscErrorCode  DMLocalToLocalBegin_DA(DM da,Vec g,InsertMode mode,Vec l)
 {
-  PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   if (!dd->ltol) {
-    ierr = DMLocalToLocalCreate_DA(da);CHKERRQ(ierr);
+    CHKERRQ(DMLocalToLocalCreate_DA(da));
   }
-  ierr = VecScatterBegin(dd->ltol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  CHKERRQ(VecScatterBegin(dd->ltol,g,l,mode,SCATTER_FORWARD));
   PetscFunctionReturn(0);
 }
 
@@ -126,13 +124,11 @@ PetscErrorCode  DMLocalToLocalBegin_DA(DM da,Vec g,InsertMode mode,Vec l)
 */
 PetscErrorCode  DMLocalToLocalEnd_DA(DM da,Vec g,InsertMode mode,Vec l)
 {
-  PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidHeaderSpecific(g,VEC_CLASSID,2);
-  ierr = VecScatterEnd(dd->ltol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  CHKERRQ(VecScatterEnd(dd->ltol,g,l,mode,SCATTER_FORWARD));
   PetscFunctionReturn(0);
 }
-

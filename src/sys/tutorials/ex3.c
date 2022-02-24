@@ -37,44 +37,44 @@ int main(int argc,char **argv)
       - The user can also optionally log floating point operations
         with the routine PetscLogFlops().
   */
-  ierr = PetscLogEventRegister("User event",PETSC_VIEWER_CLASSID,&USER_EVENT);CHKERRQ(ierr);
-  ierr = PetscLogEventGetId("User event",&check_USER_EVENT);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventRegister("User event",PETSC_VIEWER_CLASSID,&USER_EVENT));
+  CHKERRQ(PetscLogEventGetId("User event",&check_USER_EVENT));
   PetscCheckFalse(USER_EVENT != check_USER_EVENT,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Event Ids do not match");
 
-  ierr = PetscLogEventBegin(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventBegin(USER_EVENT,0,0,0,0));
   icount = 0;
   for (i=0; i<imax; i++) icount++;
-  ierr = PetscLogFlops(imax);CHKERRQ(ierr);
-  ierr = PetscSleep(0.5);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogFlops(imax));
+  CHKERRQ(PetscSleep(0.5));
+  CHKERRQ(PetscLogEventEnd(USER_EVENT,0,0,0,0));
 
   /*
      We disable the logging of an event.
 
   */
-  ierr = PetscLogEventDeactivate(USER_EVENT);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscSleep(0.5);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventDeactivate(USER_EVENT));
+  CHKERRQ(PetscLogEventBegin(USER_EVENT,0,0,0,0));
+  CHKERRQ(PetscSleep(0.5));
+  CHKERRQ(PetscLogEventEnd(USER_EVENT,0,0,0,0));
 
   /*
      We next enable the logging of an event
   */
-  ierr = PetscLogEventActivate(USER_EVENT);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscSleep(0.5);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
+  CHKERRQ(PetscLogEventActivate(USER_EVENT));
+  CHKERRQ(PetscLogEventBegin(USER_EVENT,0,0,0,0));
+  CHKERRQ(PetscSleep(0.5));
+  CHKERRQ(PetscLogEventEnd(USER_EVENT,0,0,0,0));
 
   /*
      We test event logging imbalance
   */
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  if (rank == 0) {ierr = PetscSleep(0.5);CHKERRQ(ierr);}
-  ierr = PetscLogEventSync(USER_EVENT,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRMPI(ierr);
-  ierr = PetscSleep(0.5);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
+  if (rank == 0) CHKERRQ(PetscSleep(0.5));
+  CHKERRQ(PetscLogEventSync(USER_EVENT,PETSC_COMM_WORLD));
+  CHKERRQ(PetscLogEventBegin(USER_EVENT,0,0,0,0));
+  CHKERRMPI(MPI_Barrier(PETSC_COMM_WORLD));
+  CHKERRQ(PetscSleep(0.5));
+  CHKERRQ(PetscLogEventEnd(USER_EVENT,0,0,0,0));
 
   ierr = PetscFinalize();
   return ierr;

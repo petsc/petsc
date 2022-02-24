@@ -36,9 +36,9 @@ int main(int argc,char **args)
 
   PetscInitializeFortran();
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&vec);CHKERRQ(ierr);
-  ierr = VecSetSizes(vec,PETSC_DECIDE,m);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&vec));
+  CHKERRQ(VecSetSizes(vec,PETSC_DECIDE,m));
+  CHKERRQ(VecSetFromOptions(vec));
 
   /*
      Call Fortran routine - the use of MPI_Comm_c2f() allows
@@ -49,8 +49,8 @@ int main(int argc,char **args)
 
   ex7f_(&vec,&fcomm);
 
-  ierr = VecView(vec,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(&vec);CHKERRQ(ierr);
+  CHKERRQ(VecView(vec,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(VecDestroy(&vec));
   ierr = PetscFinalize();
   return ierr;
 }

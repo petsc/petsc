@@ -57,62 +57,62 @@ int main(int argc,char **argv)
   /* set up discretization matrix for fine grid */
   /* ML requires input of fine-grid matrix. It determines nlevels. */
   fine_ctx.mx = 9; fine_ctx.my = 9;
-  ierr        = PetscOptionsGetInt(NULL,NULL,"-mx",&mx,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mx",&mx,&flg));
   if (flg) fine_ctx.mx = mx;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-my",&my,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-my",&my,&flg));
   if (flg) fine_ctx.my = my;
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",fine_ctx.mx,fine_ctx.my);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Fine grid size %D by %D\n",fine_ctx.mx,fine_ctx.my));
   n    = fine_ctx.mx*fine_ctx.my;
 
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-Nx",&Nx,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-Ny",&Ny,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-Nx",&Nx,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-Ny",&Ny,NULL));
 
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,fine_ctx.mx,fine_ctx.my,Nx,Ny,1,1,NULL,NULL,&fine_ctx.da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(fine_ctx.da);CHKERRQ(ierr);
-  ierr = DMSetUp(fine_ctx.da);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(fine_ctx.da,&fine_ctx.x);CHKERRQ(ierr);
-  ierr = VecDuplicate(fine_ctx.x,&fine_ctx.b);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(fine_ctx.x,&nlocal);CHKERRQ(ierr);
-  ierr = DMCreateLocalVector(fine_ctx.da,&fine_ctx.localX);CHKERRQ(ierr);
-  ierr = VecDuplicate(fine_ctx.localX,&fine_ctx.localF);CHKERRQ(ierr);
-  ierr = MatCreateAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,NULL,3,NULL,&A);CHKERRQ(ierr);
-  ierr = FormJacobian_Grid(&fine_ctx,&A);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,fine_ctx.mx,fine_ctx.my,Nx,Ny,1,1,NULL,NULL,&fine_ctx.da));
+  CHKERRQ(DMSetFromOptions(fine_ctx.da));
+  CHKERRQ(DMSetUp(fine_ctx.da));
+  CHKERRQ(DMCreateGlobalVector(fine_ctx.da,&fine_ctx.x));
+  CHKERRQ(VecDuplicate(fine_ctx.x,&fine_ctx.b));
+  CHKERRQ(VecGetLocalSize(fine_ctx.x,&nlocal));
+  CHKERRQ(DMCreateLocalVector(fine_ctx.da,&fine_ctx.localX));
+  CHKERRQ(VecDuplicate(fine_ctx.localX,&fine_ctx.localF));
+  CHKERRQ(MatCreateAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,NULL,3,NULL,&A));
+  CHKERRQ(FormJacobian_Grid(&fine_ctx,&A));
 
   /* create linear solver */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCML);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPGetPC(ksp,&pc));
+  CHKERRQ(PCSetType(pc,PCML));
 
   /* set options, then solve system */
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr); /* calls PCSetFromOptions_MG/ML */
+  CHKERRQ(KSPSetFromOptions(ksp)); /* calls PCSetFromOptions_MG/ML */
 
   for (i=0; i<3; i++) {
     if (i<2) {
       /* set values for rhs vector */
-      ierr = VecSet(fine_ctx.b,i+1.0);CHKERRQ(ierr);
+      CHKERRQ(VecSet(fine_ctx.b,i+1.0));
       /* modify A */
-      ierr = MatShift(A,1.0);CHKERRQ(ierr);
-      ierr = MatScale(A,2.0);CHKERRQ(ierr);
-      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+      CHKERRQ(MatShift(A,1.0));
+      CHKERRQ(MatScale(A,2.0));
+      CHKERRQ(KSPSetOperators(ksp,A,A));
     } else {  /* test SAME_NONZERO_PATTERN */
-      ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+      CHKERRQ(KSPSetOperators(ksp,A,A));
     }
-    ierr = KSPSolve(ksp,fine_ctx.b,fine_ctx.x);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+    CHKERRQ(KSPSolve(ksp,fine_ctx.b,fine_ctx.x));
+    CHKERRQ(KSPGetIterationNumber(ksp,&its));
     if (its > 6) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Warning: Number of iterations = %D greater than expected\n",its);CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Warning: Number of iterations = %D greater than expected\n",its));
     }
   }
 
   /* free data structures */
-  ierr = VecDestroy(&fine_ctx.x);CHKERRQ(ierr);
-  ierr = VecDestroy(&fine_ctx.b);CHKERRQ(ierr);
-  ierr = DMDestroy(&fine_ctx.da);CHKERRQ(ierr);
-  ierr = VecDestroy(&fine_ctx.localX);CHKERRQ(ierr);
-  ierr = VecDestroy(&fine_ctx.localF);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&fine_ctx.x));
+  CHKERRQ(VecDestroy(&fine_ctx.b));
+  CHKERRQ(DMDestroy(&fine_ctx.da));
+  CHKERRQ(VecDestroy(&fine_ctx.localX));
+  CHKERRQ(VecDestroy(&fine_ctx.localF));
+  CHKERRQ(MatDestroy(&A));
+  CHKERRQ(KSPDestroy(&ksp));
   ierr = PetscFinalize();
   return ierr;
 }
@@ -120,7 +120,6 @@ int main(int argc,char **argv)
 int FormJacobian_Grid(GridCtx *grid,Mat *J)
 {
   Mat                    jac = *J;
-  PetscErrorCode         ierr;
   PetscInt               i,j,row,mx,my,xs,ys,xm,ym,Xs,Ys,Xm,Ym,col[5];
   PetscInt               grow;
   const PetscInt         *ltog;
@@ -132,10 +131,10 @@ int FormJacobian_Grid(GridCtx *grid,Mat *J)
   hxdhy = hx/hy;               hydhx = hy/hx;
 
   /* Get ghost points */
-  ierr = DMDAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
-  ierr = DMGetLocalToGlobalMapping(grid->da,&ltogm);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetIndices(ltogm,&ltog);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0));
+  CHKERRQ(DMDAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0));
+  CHKERRQ(DMGetLocalToGlobalMapping(grid->da,&ltogm));
+  CHKERRQ(ISLocalToGlobalMappingGetIndices(ltogm,&ltog));
 
   /* Evaluate Jacobian of function */
   for (j=ys; j<ys+ym; j++) {
@@ -149,19 +148,19 @@ int FormJacobian_Grid(GridCtx *grid,Mat *J)
         v[2] = two*(hydhx + hxdhy); col[2] = grow;
         v[3] = -hydhx; col[3] = ltog[row + 1];
         v[4] = -hxdhy; col[4] = ltog[row + Xm];
-        ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES));
       } else if ((i > 0 && i < mx-1) || (j > 0 && j < my-1)) {
         value = .5*two*(hydhx + hxdhy);
-        ierr  = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES));
       } else {
         value = .25*two*(hydhx + hxdhy);
-        ierr  = MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValues(jac,1,&grow,1,&grow,&value,INSERT_VALUES));
       }
     }
   }
-  ierr = ISLocalToGlobalMappingRestoreIndices(ltogm,&ltog);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(ISLocalToGlobalMappingRestoreIndices(ltogm,&ltog));
+  CHKERRQ(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY));
   return 0;
 }
 

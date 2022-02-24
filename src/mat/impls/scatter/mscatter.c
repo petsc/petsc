@@ -39,64 +39,59 @@ PetscErrorCode  MatScatterGetVecScatter(Mat mat,VecScatter *scatter)
 
 PetscErrorCode MatDestroy_Scatter(Mat mat)
 {
-  PetscErrorCode ierr;
   Mat_Scatter    *scatter = (Mat_Scatter*)mat->data;
 
   PetscFunctionBegin;
-  ierr = VecScatterDestroy(&scatter->scatter);CHKERRQ(ierr);
-  ierr = PetscFree(mat->data);CHKERRQ(ierr);
+  CHKERRQ(VecScatterDestroy(&scatter->scatter));
+  CHKERRQ(PetscFree(mat->data));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatMult_Scatter(Mat A,Vec x,Vec y)
 {
   Mat_Scatter    *scatter = (Mat_Scatter*)A->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheckFalse(!scatter->scatter,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
-  ierr = VecZeroEntries(y);CHKERRQ(ierr);
-  ierr = VecScatterBegin(scatter->scatter,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scatter->scatter,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  CHKERRQ(VecZeroEntries(y));
+  CHKERRQ(VecScatterBegin(scatter->scatter,x,y,ADD_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterEnd(scatter->scatter,x,y,ADD_VALUES,SCATTER_FORWARD));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatMultAdd_Scatter(Mat A,Vec x,Vec y,Vec z)
 {
   Mat_Scatter    *scatter = (Mat_Scatter*)A->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheckFalse(!scatter->scatter,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
-  if (z != y) {ierr = VecCopy(y,z);CHKERRQ(ierr);}
-  ierr = VecScatterBegin(scatter->scatter,x,z,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scatter->scatter,x,z,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  if (z != y) CHKERRQ(VecCopy(y,z));
+  CHKERRQ(VecScatterBegin(scatter->scatter,x,z,ADD_VALUES,SCATTER_FORWARD));
+  CHKERRQ(VecScatterEnd(scatter->scatter,x,z,ADD_VALUES,SCATTER_FORWARD));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatMultTranspose_Scatter(Mat A,Vec x,Vec y)
 {
   Mat_Scatter    *scatter = (Mat_Scatter*)A->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheckFalse(!scatter->scatter,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
-  ierr = VecZeroEntries(y);CHKERRQ(ierr);
-  ierr = VecScatterBegin(scatter->scatter,x,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scatter->scatter,x,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  CHKERRQ(VecZeroEntries(y));
+  CHKERRQ(VecScatterBegin(scatter->scatter,x,y,ADD_VALUES,SCATTER_REVERSE));
+  CHKERRQ(VecScatterEnd(scatter->scatter,x,y,ADD_VALUES,SCATTER_REVERSE));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatMultTransposeAdd_Scatter(Mat A,Vec x,Vec y,Vec z)
 {
   Mat_Scatter    *scatter = (Mat_Scatter*)A->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscCheckFalse(!scatter->scatter,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
-  if (z != y) {ierr = VecCopy(y,z);CHKERRQ(ierr);}
-  ierr = VecScatterBegin(scatter->scatter,x,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scatter->scatter,x,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  if (z != y) CHKERRQ(VecCopy(y,z));
+  CHKERRQ(VecScatterBegin(scatter->scatter,x,z,ADD_VALUES,SCATTER_REVERSE));
+  CHKERRQ(VecScatterEnd(scatter->scatter,x,z,ADD_VALUES,SCATTER_REVERSE));
   PetscFunctionReturn(0);
 }
 
@@ -262,21 +257,20 @@ M*/
 PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
 {
   Mat_Scatter    *b;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  ierr = PetscNewLog(A,&b);CHKERRQ(ierr);
+  CHKERRQ(PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps)));
+  CHKERRQ(PetscNewLog(A,&b));
 
   A->data = (void*)b;
 
-  ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
+  CHKERRQ(PetscLayoutSetUp(A->rmap));
+  CHKERRQ(PetscLayoutSetUp(A->cmap));
 
   A->assembled    = PETSC_TRUE;
   A->preallocated = PETSC_FALSE;
 
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATSCATTER);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectChangeTypeName((PetscObject)A,MATSCATTER));
   PetscFunctionReturn(0);
 }
 
@@ -311,14 +305,12 @@ PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
 @*/
 PetscErrorCode  MatCreateScatter(MPI_Comm comm,VecScatter scatter,Mat *A)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatCreate(comm,A);CHKERRQ(ierr);
-  ierr = MatSetSizes(*A,scatter->vscat.to_n,scatter->vscat.from_n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(*A,MATSCATTER);CHKERRQ(ierr);
-  ierr = MatScatterSetVecScatter(*A,scatter);CHKERRQ(ierr);
-  ierr = MatSetUp(*A);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(comm,A));
+  CHKERRQ(MatSetSizes(*A,scatter->vscat.to_n,scatter->vscat.from_n,PETSC_DETERMINE,PETSC_DETERMINE));
+  CHKERRQ(MatSetType(*A,MATSCATTER));
+  CHKERRQ(MatScatterSetVecScatter(*A,scatter));
+  CHKERRQ(MatSetUp(*A));
   PetscFunctionReturn(0);
 }
 
@@ -338,7 +330,6 @@ PetscErrorCode  MatCreateScatter(MPI_Comm comm,VecScatter scatter,Mat *A)
 PetscErrorCode  MatScatterSetVecScatter(Mat mat,VecScatter scatter)
 {
   Mat_Scatter    *mscatter = (Mat_Scatter*)mat->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -347,10 +338,9 @@ PetscErrorCode  MatScatterSetVecScatter(Mat mat,VecScatter scatter)
   PetscCheckFalse(mat->rmap->n != scatter->vscat.to_n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of local rows in matrix %" PetscInt_FMT " not equal local scatter size %" PetscInt_FMT,mat->rmap->n,scatter->vscat.to_n);
   PetscCheckFalse(mat->cmap->n != scatter->vscat.from_n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of local columns in matrix %" PetscInt_FMT " not equal local scatter size %" PetscInt_FMT,mat->cmap->n,scatter->vscat.from_n);
 
-  ierr = PetscObjectReference((PetscObject)scatter);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&mscatter->scatter);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectReference((PetscObject)scatter));
+  CHKERRQ(VecScatterDestroy(&mscatter->scatter));
 
   mscatter->scatter = scatter;
   PetscFunctionReturn(0);
 }
-

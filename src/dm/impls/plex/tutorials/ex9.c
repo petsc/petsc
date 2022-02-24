@@ -17,22 +17,20 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->condLimit   = PETSC_DETERMINE;
 
   ierr = PetscOptionsBegin(comm, "", "Mesh Quality Evaluation Options", "DMPLEX");CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-report", "Output a mesh quality report", "ex9.c", options->report, &options->report, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-cond_limit", "Condition number limit for cell output", "ex9.c", options->condLimit, &options->condLimit, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-orth_qual_atol", "Absolute tolerance for Orthogonal Quality", "ex9.c", options->tol, &options->tol, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsBool("-report", "Output a mesh quality report", "ex9.c", options->report, &options->report, NULL));
+  CHKERRQ(PetscOptionsReal("-cond_limit", "Condition number limit for cell output", "ex9.c", options->condLimit, &options->condLimit, NULL));
+  CHKERRQ(PetscOptionsReal("-orth_qual_atol", "Absolute tolerance for Orthogonal Quality", "ex9.c", options->tol, &options->tol, NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  ierr = DMCreate(comm, dm);CHKERRQ(ierr);
-  ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-  ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
+  CHKERRQ(DMCreate(comm, dm));
+  CHKERRQ(DMSetType(*dm, DMPLEX));
+  CHKERRQ(DMSetFromOptions(*dm));
+  CHKERRQ(DMViewFromOptions(*dm, NULL, "-dm_view"));
   PetscFunctionReturn(0);
 }
 
@@ -45,12 +43,12 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &ctx);CHKERRQ(ierr);
-  ierr = CreateMesh(PETSC_COMM_WORLD, &ctx, &dm);CHKERRQ(ierr);
-  ierr = DMPlexCheckCellShape(dm, ctx.report, ctx.condLimit);CHKERRQ(ierr);
-  ierr = DMPlexComputeOrthogonalQuality(dm, NULL, ctx.tol, &OQ, &OQLabel);CHKERRQ(ierr);
-  ierr = VecDestroy(&OQ);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &ctx));
+  CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &ctx, &dm));
+  CHKERRQ(DMPlexCheckCellShape(dm, ctx.report, ctx.condLimit));
+  CHKERRQ(DMPlexComputeOrthogonalQuality(dm, NULL, ctx.tol, &OQ, &OQLabel));
+  CHKERRQ(VecDestroy(&OQ));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

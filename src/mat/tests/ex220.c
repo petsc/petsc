@@ -12,14 +12,14 @@ int main(int argc, char **argv)
     PetscBool           flg;
 
     ierr = PetscInitialize(&argc, &argv, (char*)0, help);if (ierr) return ierr;
-    ierr = PetscOptionsGetString(NULL, NULL, "-f", filename, sizeof(filename), &flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsGetString(NULL, NULL, "-f", filename, sizeof(filename), &flg));
     PetscCheckFalse(!flg,PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate a filename for input with the -f option");
 
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD, filename, FILE_MODE_READ, &viewer);CHKERRQ(ierr);
-    ierr = MatCreateDense(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, 36, 36, NULL, &A);CHKERRQ(ierr);
-    ierr = MatLoad(A, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD, filename, FILE_MODE_READ, &viewer));
+    CHKERRQ(MatCreateDense(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, 36, 36, NULL, &A));
+    CHKERRQ(MatLoad(A, viewer));
+    CHKERRQ(PetscViewerDestroy(&viewer));
+    CHKERRQ(MatDestroy(&A));
     ierr = PetscFinalize();
     return ierr;
 }

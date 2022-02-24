@@ -18,29 +18,29 @@ int main(int argc,char **argv)
   struct cudaPointerAttributes attr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
-  ierr = PetscMalloc1(n,&ptrs);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(n,&ptrs));
   for (i=0; i<n; i++) {
-    if (i%2) {ierr = PetscMalloc1(i+16,&ptrs[i]);CHKERRQ(ierr);}
-    else {cerr = cudaMalloc((void**)&ptrs[i],(i+16)*sizeof(PetscScalar));CHKERRCUDA(cerr);}
+    if (i%2) CHKERRQ(PetscMalloc1(i+16,&ptrs[i]));
+    else CHKERRCUDA(cudaMalloc((void**)&ptrs[i],(i+16)*sizeof(PetscScalar)));
   }
 
-  ierr = PetscTime(&tstart);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&tstart));
   for (i=0; i<n; i++) {
     cerr = cudaPointerGetAttributes(&attr,ptrs[i]);
     if (cerr) cudaGetLastError();
   }
-  ierr = PetscTime(&tend);CHKERRQ(ierr);
+  CHKERRQ(PetscTime(&tend));
   time = (tend-tstart)*1e6/n;
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Average cudaPointerGetAttributes() time = %.2f microseconds\n",time);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Average cudaPointerGetAttributes() time = %.2f microseconds\n",time));
 
   for (i=0; i<n; i++) {
-    if (i%2) {ierr = PetscFree(ptrs[i]);CHKERRQ(ierr);}
-    else {cerr = cudaFree(ptrs[i]);CHKERRCUDA(cerr);}
+    if (i%2) CHKERRQ(PetscFree(ptrs[i]));
+    else CHKERRCUDA(cudaFree(ptrs[i]));
   }
-  ierr = PetscFree(ptrs);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(ptrs));
 
   ierr = PetscFinalize();
   return ierr;

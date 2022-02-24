@@ -12,10 +12,10 @@ int main(int argc,char **args)
   PetscScalar    x[6][9];
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Test is only for sequential");
-  ierr   = MatCreateSeqSBAIJ(PETSC_COMM_SELF,bs,m*bs,m*bs,1,NULL,&A);CHKERRQ(ierr);
-  ierr   = MatSetOption(A,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSeqSBAIJ(PETSC_COMM_SELF,bs,m*bs,m*bs,1,NULL,&A));
+  CHKERRQ(MatSetOption(A,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE));
   rstart = 0;
 
   row[0] =rstart+0;  row[1] =rstart+2;
@@ -23,12 +23,12 @@ int main(int argc,char **args)
   for (i=0; i<6; i++) {
     for (j =0; j< 9; j++) x[i][j] = (PetscScalar)val++;
   }
-  ierr = MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
+  CHKERRQ(MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES));
+  CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatView(A,PETSC_VIEWER_BINARY_WORLD));
 
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&A));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -11,12 +11,12 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
-  ierr = PetscOptionsGetInt(NULL,NULL,"-step",&step,NULL);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,10,0,step,&is);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-step",&step,NULL));
+  CHKERRQ(ISCreateStride(PETSC_COMM_SELF,10,0,step,&is));
 
-  ierr = ISToGeneral(is);CHKERRQ(ierr);
+  CHKERRQ(ISToGeneral(is));
 
-  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  CHKERRQ(ISDestroy(&is));
 
   ierr = PetscFinalize();
   return ierr;

@@ -42,13 +42,12 @@ PETSC_EXTERN void petscviewerfilegetname_(PetscViewer *viewer, char* name, Petsc
 
 static PetscErrorCode PetscFixSlashN(const char *in, char **out)
 {
-  PetscErrorCode ierr;
   PetscInt       i;
   size_t         len;
 
   PetscFunctionBegin;
-  ierr = PetscStrallocpy(in,out);CHKERRQ(ierr);
-  ierr = PetscStrlen(*out,&len);CHKERRQ(ierr);
+  CHKERRQ(PetscStrallocpy(in,out));
+  CHKERRQ(PetscStrlen(*out,&len));
   for (i=0; i<(int)len-1; i++) {
     if ((*out)[i] == '\\' && (*out)[i+1] == 'n') {(*out)[i] = ' '; (*out)[i+1] = '\n';}
   }

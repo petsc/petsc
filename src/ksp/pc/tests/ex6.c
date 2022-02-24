@@ -30,55 +30,55 @@ int main(int argc,char **args)
   PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   N    = (m+1)*(m+1); /* dimension of matrix */
   M    = m*m; /* number of elements */
   h    = 1.0/m;    /* mesh width */
   x1   = (m+1)/2;
   x2   = x1;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-x1",&x1,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-x2",&x2,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-x1",&x1,NULL));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-x2",&x2,NULL));
   /* create stiffness matrix */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,9,NULL,&C);CHKERRQ(ierr);
+  CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,9,NULL,&C));
 
   /* forms the element stiffness for the Laplacian */
-  ierr = FormElementStiffness(h*h,Ke);CHKERRQ(ierr);
+  CHKERRQ(FormElementStiffness(h*h,Ke));
   for (i=0; i<M; i++) {
     /* node numbers for the four corners of element */
     idx[0] = (m+1)*(i/m) + (i % m);
     idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
-    ierr   = MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(C,4,idx,4,idx,Ke,ADD_VALUES));
   }
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   for (ol=0; ol<m+2; ++ol) {
 
-    ierr = PCASMCreateSubdomains2D(m+1,m+1,x1,x2,1,0,&Nsub1,&is1,&islocal1);CHKERRQ(ierr);
-    ierr = MatIncreaseOverlap(C,Nsub1,is1,ol);CHKERRQ(ierr);
-    ierr = PCASMCreateSubdomains2D(m+1,m+1,x1,x2,1,ol,&Nsub2,&is2,&islocal2);CHKERRQ(ierr);
+    CHKERRQ(PCASMCreateSubdomains2D(m+1,m+1,x1,x2,1,0,&Nsub1,&is1,&islocal1));
+    CHKERRQ(MatIncreaseOverlap(C,Nsub1,is1,ol));
+    CHKERRQ(PCASMCreateSubdomains2D(m+1,m+1,x1,x2,1,ol,&Nsub2,&is2,&islocal2));
 
-    ierr = PetscPrintf(PETSC_COMM_SELF,"flg == 1 => both index sets are same\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"flg == 1 => both index sets are same\n"));
     if (Nsub1 != Nsub2) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: No of indes sets don't match\n");CHKERRQ(ierr);
+      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Error: No of indes sets don't match\n"));
     }
 
     for (i=0; i<Nsub1; ++i) {
-      ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF,"i =  %D,flg = %d \n",i,(int)flg);CHKERRQ(ierr);
+      CHKERRQ(ISEqual(is1[i],is2[i],&flg));
+      CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"i =  %D,flg = %d \n",i,(int)flg));
 
     }
-    for (i=0; i<Nsub1; ++i) {ierr = ISDestroy(&is1[i]);CHKERRQ(ierr);}
-    for (i=0; i<Nsub2; ++i) {ierr = ISDestroy(&is2[i]);CHKERRQ(ierr);}
-    for (i=0; i<Nsub1; ++i) {ierr = ISDestroy(&islocal1[i]);CHKERRQ(ierr);}
-    for (i=0; i<Nsub2; ++i) {ierr = ISDestroy(&islocal2[i]);CHKERRQ(ierr);}
+    for (i=0; i<Nsub1; ++i) CHKERRQ(ISDestroy(&is1[i]));
+    for (i=0; i<Nsub2; ++i) CHKERRQ(ISDestroy(&is2[i]));
+    for (i=0; i<Nsub1; ++i) CHKERRQ(ISDestroy(&islocal1[i]));
+    for (i=0; i<Nsub2; ++i) CHKERRQ(ISDestroy(&islocal2[i]));
 
-    ierr = PetscFree(is1);CHKERRQ(ierr);
-    ierr = PetscFree(is2);CHKERRQ(ierr);
-    ierr = PetscFree(islocal1);CHKERRQ(ierr);
-    ierr = PetscFree(islocal2);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(is1));
+    CHKERRQ(PetscFree(is2));
+    CHKERRQ(PetscFree(islocal1));
+    CHKERRQ(PetscFree(islocal2));
   }
-  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&C));
   ierr = PetscFinalize();
   return ierr;
 }

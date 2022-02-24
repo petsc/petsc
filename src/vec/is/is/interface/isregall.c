@@ -15,15 +15,12 @@ PETSC_EXTERN PetscErrorCode ISCreate_Block(IS);
 @*/
 PetscErrorCode  ISRegisterAll(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (ISRegisterAllCalled) PetscFunctionReturn(0);
   ISRegisterAllCalled = PETSC_TRUE;
 
-  ierr = ISRegister(ISGENERAL, ISCreate_General);CHKERRQ(ierr);
-  ierr = ISRegister(ISSTRIDE,  ISCreate_Stride);CHKERRQ(ierr);
-  ierr = ISRegister(ISBLOCK,   ISCreate_Block);CHKERRQ(ierr);
+  CHKERRQ(ISRegister(ISGENERAL, ISCreate_General));
+  CHKERRQ(ISRegister(ISSTRIDE,  ISCreate_Stride));
+  CHKERRQ(ISRegister(ISBLOCK,   ISCreate_Block));
   PetscFunctionReturn(0);
 }
-

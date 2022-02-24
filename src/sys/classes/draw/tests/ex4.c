@@ -12,16 +12,15 @@ static char help[] = "Demonstrates use of PetscDrawZoom()\n";
 
 PetscErrorCode zoomfunction(PetscDraw draw,void *dummy)
 {
-  int            i;
-  MPI_Comm       comm = PetscObjectComm((PetscObject)draw);
-  PetscMPIInt    size,rank;
-  PetscErrorCode ierr;
+  int         i;
+  MPI_Comm    comm = PetscObjectComm((PetscObject)draw);
+  PetscMPIInt size,rank;
 
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(comm,&size));
+  CHKERRMPI(MPI_Comm_rank(comm,&rank));
   for (i=rank; i<256; i+=size) {
     PetscReal y = ((PetscReal)i)/(256-1);
-    ierr = PetscDrawLine(draw,0.0,y,1.0,y,i);CHKERRQ(ierr);
+    CHKERRQ(PetscDrawLine(draw,0.0,y,1.0,y,i));
   }
   return 0;
 }
@@ -33,10 +32,10 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
-  ierr = PetscDrawCreate(PETSC_COMM_WORLD,NULL,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);
-  ierr = PetscDrawZoom(draw,zoomfunction,NULL);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawCreate(PETSC_COMM_WORLD,NULL,"Title",x,y,width,height,&draw));
+  CHKERRQ(PetscDrawSetFromOptions(draw));
+  CHKERRQ(PetscDrawZoom(draw,zoomfunction,NULL));
+  CHKERRQ(PetscDrawDestroy(&draw));
   ierr = PetscFinalize();
   return ierr;
 }

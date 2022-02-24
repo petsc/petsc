@@ -27,26 +27,26 @@ int main(int argc,char **argv)
   sshort[0]  = oshort[0]  = 5;
   sshort[1]  = oshort[1]  = 19;
 
-  ierr = PetscByteSwap(sint,PETSC_INT,2);CHKERRQ(ierr);
-  ierr = PetscByteSwap(sbool,PETSC_BOOL,2);CHKERRQ(ierr);
-  ierr = PetscByteSwap(sscalar,PETSC_SCALAR,2);CHKERRQ(ierr);
-  ierr = PetscByteSwap(sdouble,PETSC_DOUBLE,2);CHKERRQ(ierr);
-  ierr = PetscByteSwap(sfloat,PETSC_FLOAT,2);CHKERRQ(ierr);
-  ierr = PetscByteSwap(sshort,PETSC_SHORT,2);CHKERRQ(ierr);
+  CHKERRQ(PetscByteSwap(sint,PETSC_INT,2));
+  CHKERRQ(PetscByteSwap(sbool,PETSC_BOOL,2));
+  CHKERRQ(PetscByteSwap(sscalar,PETSC_SCALAR,2));
+  CHKERRQ(PetscByteSwap(sdouble,PETSC_DOUBLE,2));
+  CHKERRQ(PetscByteSwap(sfloat,PETSC_FLOAT,2));
+  CHKERRQ(PetscByteSwap(sshort,PETSC_SHORT,2));
 
-  ierr = PetscByteSwap(sint,PETSC_INT,2);CHKERRQ(ierr);
-  ierr = PetscByteSwap(sbool,PETSC_BOOL,2);CHKERRQ(ierr);
-  ierr = PetscByteSwap(sscalar,PETSC_SCALAR,2);CHKERRQ(ierr);
-  ierr = PetscByteSwap(sdouble,PETSC_DOUBLE,2);CHKERRQ(ierr);
-  ierr = PetscByteSwap(sfloat,PETSC_FLOAT,2);CHKERRQ(ierr);
-  ierr = PetscByteSwap(sshort,PETSC_SHORT,2);CHKERRQ(ierr);
+  CHKERRQ(PetscByteSwap(sint,PETSC_INT,2));
+  CHKERRQ(PetscByteSwap(sbool,PETSC_BOOL,2));
+  CHKERRQ(PetscByteSwap(sscalar,PETSC_SCALAR,2));
+  CHKERRQ(PetscByteSwap(sdouble,PETSC_DOUBLE,2));
+  CHKERRQ(PetscByteSwap(sfloat,PETSC_FLOAT,2));
+  CHKERRQ(PetscByteSwap(sshort,PETSC_SHORT,2));
 
-  if ((sint[0] !=oint[0])|| (sint[1] != oint[1]))             {ierr = PetscPrintf(PETSC_COMM_SELF,"Byteswap mismatch for PETSC_INT\n");CHKERRQ(ierr);}
-  if ((sbool[0] !=obool[0])|| (sbool[1] != obool[1]))         {ierr = PetscPrintf(PETSC_COMM_SELF,"Byteswap mismatch for PETSC_BOOL\n");CHKERRQ(ierr);}
-  if ((sscalar[0] !=oscalar[0])|| (sscalar[1] != oscalar[1])) {ierr = PetscPrintf(PETSC_COMM_SELF,"Byteswap mismatch for PETSC_SCALAR\n");CHKERRQ(ierr);}
-  if ((sdouble[0] !=odouble[0])|| (sdouble[1] != odouble[1])) {ierr = PetscPrintf(PETSC_COMM_SELF,"Byteswap mismatch for PETSC_DOUBLE\n");CHKERRQ(ierr);}
-  if ((sfloat[0] !=ofloat[0])|| (sfloat[1] != ofloat[1]))     {ierr = PetscPrintf(PETSC_COMM_SELF,"Byteswap mismatch for PETSC_FLOAT\n");CHKERRQ(ierr);}
-  if ((sshort[0] !=oshort[0])|| (sshort[1] != oshort[1]))     {ierr = PetscPrintf(PETSC_COMM_SELF,"Byteswap mismatch for PETSC_SHORT\n");CHKERRQ(ierr);}
+  if ((sint[0] !=oint[0])|| (sint[1] != oint[1]))             CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Byteswap mismatch for PETSC_INT\n"));
+  if ((sbool[0] !=obool[0])|| (sbool[1] != obool[1]))         CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Byteswap mismatch for PETSC_BOOL\n"));
+  if ((sscalar[0] !=oscalar[0])|| (sscalar[1] != oscalar[1])) CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Byteswap mismatch for PETSC_SCALAR\n"));
+  if ((sdouble[0] !=odouble[0])|| (sdouble[1] != odouble[1])) CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Byteswap mismatch for PETSC_DOUBLE\n"));
+  if ((sfloat[0] !=ofloat[0])|| (sfloat[1] != ofloat[1]))     CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Byteswap mismatch for PETSC_FLOAT\n"));
+  if ((sshort[0] !=oshort[0])|| (sshort[1] != oshort[1]))     CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Byteswap mismatch for PETSC_SHORT\n"));
 
   ierr = PetscFinalize();
   return ierr;

@@ -18,15 +18,14 @@ typedef struct {
 static PetscErrorCode TSSSPGetWorkVectors(TS ts,PetscInt n,Vec **work)
 {
   TS_SSP         *ssp = (TS_SSP*)ts->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscCheckFalse(ssp->workout,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Work vectors already gotten");
+  PetscCheck(!ssp->workout,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Work vectors already gotten");
   if (ssp->nwork < n) {
     if (ssp->nwork > 0) {
-      ierr = VecDestroyVecs(ssp->nwork,&ssp->work);CHKERRQ(ierr);
+      CHKERRQ(VecDestroyVecs(ssp->nwork,&ssp->work));
     }
-    ierr = VecDuplicateVecs(ts->vec_sol,n,&ssp->work);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicateVecs(ts->vec_sol,n,&ssp->work));
     ssp->nwork = n;
   }
   *work = ssp->work;
@@ -60,22 +59,21 @@ static PetscErrorCode TSSSPStep_RK_2(TS ts,PetscReal t0,PetscReal dt,Vec sol)
   TS_SSP         *ssp = (TS_SSP*)ts->data;
   Vec            *work,F;
   PetscInt       i,s;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   s    = ssp->nstages;
-  ierr = TSSSPGetWorkVectors(ts,2,&work);CHKERRQ(ierr);
+  CHKERRQ(TSSSPGetWorkVectors(ts,2,&work));
   F    = work[1];
-  ierr = VecCopy(sol,work[0]);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(sol,work[0]));
   for (i=0; i<s-1; i++) {
     PetscReal stage_time = t0+dt*(i/(s-1.));
-    ierr = TSPreStage(ts,stage_time);CHKERRQ(ierr);
-    ierr = TSComputeRHSFunction(ts,stage_time,work[0],F);CHKERRQ(ierr);
-    ierr = VecAXPY(work[0],dt/(s-1.),F);CHKERRQ(ierr);
+    CHKERRQ(TSPreStage(ts,stage_time));
+    CHKERRQ(TSComputeRHSFunction(ts,stage_time,work[0],F));
+    CHKERRQ(VecAXPY(work[0],dt/(s-1.),F));
   }
-  ierr = TSComputeRHSFunction(ts,t0+dt,work[0],F);CHKERRQ(ierr);
-  ierr = VecAXPBYPCZ(sol,(s-1.)/s,dt/s,1./s,work[0],F);CHKERRQ(ierr);
-  ierr = TSSSPRestoreWorkVectors(ts,2,&work);CHKERRQ(ierr);
+  CHKERRQ(TSComputeRHSFunction(ts,t0+dt,work[0],F));
+  CHKERRQ(VecAXPBYPCZ(sol,(s-1.)/s,dt/s,1./s,work[0],F));
+  CHKERRQ(TSSSPRestoreWorkVectors(ts,2,&work));
   PetscFunctionReturn(0);
 }
 
@@ -94,48 +92,47 @@ static PetscErrorCode TSSSPStep_RK_3(TS ts,PetscReal t0,PetscReal dt,Vec sol)
   Vec            *work,F;
   PetscInt       i,s,n,r;
   PetscReal      c,stage_time;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   s = ssp->nstages;
   n = (PetscInt)(PetscSqrtReal((PetscReal)s)+0.001);
   r = s-n;
-  PetscCheckFalse(n*n != s,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for optimal third order schemes with %d stages, must be a square number at least 4",s);
-  ierr = TSSSPGetWorkVectors(ts,3,&work);CHKERRQ(ierr);
+  PetscCheck(n*n == s,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for optimal third order schemes with %d stages, must be a square number at least 4",s);
+  CHKERRQ(TSSSPGetWorkVectors(ts,3,&work));
   F    = work[2];
-  ierr = VecCopy(sol,work[0]);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(sol,work[0]));
   for (i=0; i<(n-1)*(n-2)/2; i++) {
     c          = (i<n*(n+1)/2) ? 1.*i/(s-n) : (1.*i-n)/(s-n);
     stage_time = t0+c*dt;
-    ierr       = TSPreStage(ts,stage_time);CHKERRQ(ierr);
-    ierr       = TSComputeRHSFunction(ts,stage_time,work[0],F);CHKERRQ(ierr);
-    ierr       = VecAXPY(work[0],dt/r,F);CHKERRQ(ierr);
+    CHKERRQ(TSPreStage(ts,stage_time));
+    CHKERRQ(TSComputeRHSFunction(ts,stage_time,work[0],F));
+    CHKERRQ(VecAXPY(work[0],dt/r,F));
   }
-  ierr = VecCopy(work[0],work[1]);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(work[0],work[1]));
   for (; i<n*(n+1)/2-1; i++) {
     c          = (i<n*(n+1)/2) ? 1.*i/(s-n) : (1.*i-n)/(s-n);
     stage_time = t0+c*dt;
-    ierr       = TSPreStage(ts,stage_time);CHKERRQ(ierr);
-    ierr       = TSComputeRHSFunction(ts,stage_time,work[0],F);CHKERRQ(ierr);
-    ierr       = VecAXPY(work[0],dt/r,F);CHKERRQ(ierr);
+    CHKERRQ(TSPreStage(ts,stage_time));
+    CHKERRQ(TSComputeRHSFunction(ts,stage_time,work[0],F));
+    CHKERRQ(VecAXPY(work[0],dt/r,F));
   }
   {
     c          = (i<n*(n+1)/2) ? 1.*i/(s-n) : (1.*i-n)/(s-n);
     stage_time = t0+c*dt;
-    ierr       = TSPreStage(ts,stage_time);CHKERRQ(ierr);
-    ierr       = TSComputeRHSFunction(ts,stage_time,work[0],F);CHKERRQ(ierr);
-    ierr       = VecAXPBYPCZ(work[0],1.*n/(2*n-1.),(n-1.)*dt/(r*(2*n-1)),(n-1.)/(2*n-1.),work[1],F);CHKERRQ(ierr);
+    CHKERRQ(TSPreStage(ts,stage_time));
+    CHKERRQ(TSComputeRHSFunction(ts,stage_time,work[0],F));
+    CHKERRQ(VecAXPBYPCZ(work[0],1.*n/(2*n-1.),(n-1.)*dt/(r*(2*n-1)),(n-1.)/(2*n-1.),work[1],F));
     i++;
   }
   for (; i<s; i++) {
     c          = (i<n*(n+1)/2) ? 1.*i/(s-n) : (1.*i-n)/(s-n);
     stage_time = t0+c*dt;
-    ierr       = TSPreStage(ts,stage_time);CHKERRQ(ierr);
-    ierr       = TSComputeRHSFunction(ts,stage_time,work[0],F);CHKERRQ(ierr);
-    ierr       = VecAXPY(work[0],dt/r,F);CHKERRQ(ierr);
+    CHKERRQ(TSPreStage(ts,stage_time));
+    CHKERRQ(TSComputeRHSFunction(ts,stage_time,work[0],F));
+    CHKERRQ(VecAXPY(work[0],dt/r,F));
   }
-  ierr = VecCopy(work[0],sol);CHKERRQ(ierr);
-  ierr = TSSSPRestoreWorkVectors(ts,3,&work);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(work[0],sol));
+  CHKERRQ(TSSSPRestoreWorkVectors(ts,3,&work));
   PetscFunctionReturn(0);
 }
 
@@ -154,43 +151,40 @@ static PetscErrorCode TSSSPStep_RK_10_4(TS ts,PetscReal t0,PetscReal dt,Vec sol)
   Vec             *work,F;
   PetscInt        i;
   PetscReal       stage_time;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = TSSSPGetWorkVectors(ts,3,&work);CHKERRQ(ierr);
+  CHKERRQ(TSSSPGetWorkVectors(ts,3,&work));
   F    = work[2];
-  ierr = VecCopy(sol,work[0]);CHKERRQ(ierr);
+  CHKERRQ(VecCopy(sol,work[0]));
   for (i=0; i<5; i++) {
     stage_time = t0+c[i]*dt;
-    ierr       = TSPreStage(ts,stage_time);CHKERRQ(ierr);
-    ierr       = TSComputeRHSFunction(ts,stage_time,work[0],F);CHKERRQ(ierr);
-    ierr       = VecAXPY(work[0],dt/6,F);CHKERRQ(ierr);
+    CHKERRQ(TSPreStage(ts,stage_time));
+    CHKERRQ(TSComputeRHSFunction(ts,stage_time,work[0],F));
+    CHKERRQ(VecAXPY(work[0],dt/6,F));
   }
-  ierr = VecAXPBYPCZ(work[1],1./25,9./25,0,sol,work[0]);CHKERRQ(ierr);
-  ierr = VecAXPBY(work[0],15,-5,work[1]);CHKERRQ(ierr);
+  CHKERRQ(VecAXPBYPCZ(work[1],1./25,9./25,0,sol,work[0]));
+  CHKERRQ(VecAXPBY(work[0],15,-5,work[1]));
   for (; i<9; i++) {
     stage_time = t0+c[i]*dt;
-    ierr       = TSPreStage(ts,stage_time);CHKERRQ(ierr);
-    ierr       = TSComputeRHSFunction(ts,stage_time,work[0],F);CHKERRQ(ierr);
-    ierr       = VecAXPY(work[0],dt/6,F);CHKERRQ(ierr);
+    CHKERRQ(TSPreStage(ts,stage_time));
+    CHKERRQ(TSComputeRHSFunction(ts,stage_time,work[0],F));
+    CHKERRQ(VecAXPY(work[0],dt/6,F));
   }
   stage_time = t0+dt;
-  ierr       = TSPreStage(ts,stage_time);CHKERRQ(ierr);
-  ierr       = TSComputeRHSFunction(ts,stage_time,work[0],F);CHKERRQ(ierr);
-  ierr       = VecAXPBYPCZ(work[1],3./5,dt/10,1,work[0],F);CHKERRQ(ierr);
-  ierr       = VecCopy(work[1],sol);CHKERRQ(ierr);
-  ierr       = TSSSPRestoreWorkVectors(ts,3,&work);CHKERRQ(ierr);
+  CHKERRQ(TSPreStage(ts,stage_time));
+  CHKERRQ(TSComputeRHSFunction(ts,stage_time,work[0],F));
+  CHKERRQ(VecAXPBYPCZ(work[1],3./5,dt/10,1,work[0],F));
+  CHKERRQ(VecCopy(work[1],sol));
+  CHKERRQ(TSSSPRestoreWorkVectors(ts,3,&work));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSSetUp_SSP(TS ts)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = TSCheckImplicitTerm(ts);CHKERRQ(ierr);
-  ierr = TSGetAdapt(ts,&ts->adapt);CHKERRQ(ierr);
-  ierr = TSAdaptCandidatesClear(ts->adapt);CHKERRQ(ierr);
+  CHKERRQ(TSCheckImplicitTerm(ts));
+  CHKERRQ(TSGetAdapt(ts,&ts->adapt));
+  CHKERRQ(TSAdaptCandidatesClear(ts->adapt));
   PetscFunctionReturn(0);
 }
 
@@ -200,15 +194,14 @@ static PetscErrorCode TSStep_SSP(TS ts)
   Vec            sol  = ts->vec_sol;
   PetscBool      stageok,accept = PETSC_TRUE;
   PetscReal      next_time_step = ts->time_step;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = (*ssp->onestep)(ts,ts->ptime,ts->time_step,sol);CHKERRQ(ierr);
-  ierr = TSPostStage(ts,ts->ptime,0,&sol);CHKERRQ(ierr);
-  ierr = TSAdaptCheckStage(ts->adapt,ts,ts->ptime+ts->time_step,sol,&stageok);CHKERRQ(ierr);
+  CHKERRQ((*ssp->onestep)(ts,ts->ptime,ts->time_step,sol));
+  CHKERRQ(TSPostStage(ts,ts->ptime,0,&sol));
+  CHKERRQ(TSAdaptCheckStage(ts->adapt,ts,ts->ptime+ts->time_step,sol,&stageok));
   if (!stageok) {ts->reason = TS_DIVERGED_STEP_REJECTED; PetscFunctionReturn(0);}
 
-  ierr = TSAdaptChoose(ts->adapt,ts,ts->time_step,NULL,&next_time_step,&accept);CHKERRQ(ierr);
+  CHKERRQ(TSAdaptChoose(ts->adapt,ts,ts->time_step,NULL,&next_time_step,&accept));
   if (!accept) {ts->reason = TS_DIVERGED_STEP_REJECTED; PetscFunctionReturn(0);}
 
   ts->ptime += ts->time_step;
@@ -220,10 +213,9 @@ static PetscErrorCode TSStep_SSP(TS ts)
 static PetscErrorCode TSReset_SSP(TS ts)
 {
   TS_SSP         *ssp = (TS_SSP*)ts->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ssp->work) {ierr = VecDestroyVecs(ssp->nwork,&ssp->work);CHKERRQ(ierr);}
+  if (ssp->work) CHKERRQ(VecDestroyVecs(ssp->nwork,&ssp->work));
   ssp->nwork   = 0;
   ssp->workout = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -232,16 +224,15 @@ static PetscErrorCode TSReset_SSP(TS ts)
 static PetscErrorCode TSDestroy_SSP(TS ts)
 {
   TS_SSP         *ssp = (TS_SSP*)ts->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSReset_SSP(ts);CHKERRQ(ierr);
-  ierr = PetscFree(ssp->type_name);CHKERRQ(ierr);
-  ierr = PetscFree(ts->data);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetType_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetType_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetNumStages_C",NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetNumStages_C",NULL);CHKERRQ(ierr);
+  CHKERRQ(TSReset_SSP(ts));
+  CHKERRQ(PetscFree(ssp->type_name));
+  CHKERRQ(PetscFree(ts->data));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetType_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetType_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetNumStages_C",NULL));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetNumStages_C",NULL));
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -265,12 +256,10 @@ static PetscErrorCode TSDestroy_SSP(TS ts)
 @*/
 PetscErrorCode TSSSPSetType(TS ts,TSSSPType ssptype)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidCharPointer(ssptype,2);
-  ierr = PetscTryMethod(ts,"TSSSPSetType_C",(TS,TSSSPType),(ts,ssptype));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ts,"TSSSPSetType_C",(TS,TSSSPType),(ts,ssptype)));
   PetscFunctionReturn(0);
 }
 
@@ -291,11 +280,9 @@ PetscErrorCode TSSSPSetType(TS ts,TSSSPType ssptype)
 @*/
 PetscErrorCode TSSSPGetType(TS ts,TSSSPType *type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscUseMethod(ts,"TSSSPGetType_C",(TS,TSSSPType*),(ts,type));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(ts,"TSSSPGetType_C",(TS,TSSSPType*),(ts,type)));
   PetscFunctionReturn(0);
 }
 
@@ -318,11 +305,9 @@ PetscErrorCode TSSSPGetType(TS ts,TSSSPType *type)
 @*/
 PetscErrorCode TSSSPSetNumStages(TS ts,PetscInt nstages)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscTryMethod(ts,"TSSSPSetNumStages_C",(TS,PetscInt),(ts,nstages));CHKERRQ(ierr);
+  CHKERRQ(PetscTryMethod(ts,"TSSSPSetNumStages_C",(TS,PetscInt),(ts,nstages)));
   PetscFunctionReturn(0);
 }
 
@@ -343,25 +328,23 @@ PetscErrorCode TSSSPSetNumStages(TS ts,PetscInt nstages)
 @*/
 PetscErrorCode TSSSPGetNumStages(TS ts,PetscInt *nstages)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscUseMethod(ts,"TSSSPGetNumStages_C",(TS,PetscInt*),(ts,nstages));CHKERRQ(ierr);
+  CHKERRQ(PetscUseMethod(ts,"TSSSPGetNumStages_C",(TS,PetscInt*),(ts,nstages)));
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode TSSSPSetType_SSP(TS ts,TSSSPType type)
 {
-  PetscErrorCode ierr,(*r)(TS,PetscReal,PetscReal,Vec);
   TS_SSP         *ssp = (TS_SSP*)ts->data;
+  PetscErrorCode (*r)(TS,PetscReal,PetscReal,Vec);
 
   PetscFunctionBegin;
-  ierr = PetscFunctionListFind(TSSSPList,type,&r);CHKERRQ(ierr);
+  CHKERRQ(PetscFunctionListFind(TSSSPList,type,&r));
   PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TS_SSP type %s given",type);
   ssp->onestep = r;
-  ierr = PetscFree(ssp->type_name);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(type,&ssp->type_name);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(ssp->type_name));
+  CHKERRQ(PetscStrallocpy(type,&ssp->type_name));
   ts->default_adapt_type = TSADAPTNONE;
   PetscFunctionReturn(0);
 }
@@ -394,19 +377,18 @@ static PetscErrorCode TSSetFromOptions_SSP(PetscOptionItems *PetscOptionsObject,
 {
   char           tname[256] = TSSSPRKS2;
   TS_SSP         *ssp       = (TS_SSP*)ts->data;
-  PetscErrorCode ierr;
   PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead(PetscOptionsObject,"SSP ODE solver options");CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHead(PetscOptionsObject,"SSP ODE solver options"));
   {
-    ierr = PetscOptionsFList("-ts_ssp_type","Type of SSP method","TSSSPSetType",TSSSPList,tname,tname,sizeof(tname),&flg);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsFList("-ts_ssp_type","Type of SSP method","TSSSPSetType",TSSSPList,tname,tname,sizeof(tname),&flg));
     if (flg) {
-      ierr = TSSSPSetType(ts,tname);CHKERRQ(ierr);
+      CHKERRQ(TSSSPSetType(ts,tname));
     }
-    ierr = PetscOptionsInt("-ts_ssp_nstages","Number of stages","TSSSPSetNumStages",ssp->nstages,&ssp->nstages,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsInt("-ts_ssp_nstages","Number of stages","TSSSPSetNumStages",ssp->nstages,&ssp->nstages,NULL));
   }
-  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
 
@@ -414,11 +396,10 @@ static PetscErrorCode TSView_SSP(TS ts,PetscViewer viewer)
 {
   TS_SSP         *ssp = (TS_SSP*)ts->data;
   PetscBool      ascii;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&ascii);CHKERRQ(ierr);
-  if (ascii) {ierr = PetscViewerASCIIPrintf(viewer,"  Scheme: %s\n",ssp->type_name);CHKERRQ(ierr);}
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&ascii));
+  if (ascii) CHKERRQ(PetscViewerASCIIPrintf(viewer,"  Scheme: %s\n",ssp->type_name));
   PetscFunctionReturn(0);
 }
 
@@ -469,10 +450,9 @@ M*/
 PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
 {
   TS_SSP         *ssp;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSSSPInitializePackage();CHKERRQ(ierr);
+  CHKERRQ(TSSSPInitializePackage());
 
   ts->ops->setup          = TSSetUp_SSP;
   ts->ops->step           = TSStep_SSP;
@@ -481,15 +461,15 @@ PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_SSP;
   ts->ops->view           = TSView_SSP;
 
-  ierr = PetscNewLog(ts,&ssp);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(ts,&ssp));
   ts->data = (void*)ssp;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetType_C",TSSSPGetType_SSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetType_C",TSSSPSetType_SSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetNumStages_C",TSSSPGetNumStages_SSP);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetNumStages_C",TSSSPSetNumStages_SSP);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetType_C",TSSSPGetType_SSP));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetType_C",TSSSPSetType_SSP));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSSPGetNumStages_C",TSSSPGetNumStages_SSP));
+  CHKERRQ(PetscObjectComposeFunction((PetscObject)ts,"TSSSPSetNumStages_C",TSSSPSetNumStages_SSP));
 
-  ierr = TSSSPSetType(ts,TSSSPRKS2);CHKERRQ(ierr);
+  CHKERRQ(TSSSPSetType(ts,TSSSPRKS2));
   ssp->nstages = 5;
   PetscFunctionReturn(0);
 }
@@ -504,15 +484,13 @@ PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
 @*/
 PetscErrorCode TSSSPInitializePackage(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (TSSSPPackageInitialized) PetscFunctionReturn(0);
   TSSSPPackageInitialized = PETSC_TRUE;
-  ierr = PetscFunctionListAdd(&TSSSPList,TSSSPRKS2, TSSSPStep_RK_2);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&TSSSPList,TSSSPRKS3, TSSSPStep_RK_3);CHKERRQ(ierr);
-  ierr = PetscFunctionListAdd(&TSSSPList,TSSSPRK104,TSSSPStep_RK_10_4);CHKERRQ(ierr);
-  ierr = PetscRegisterFinalize(TSSSPFinalizePackage);CHKERRQ(ierr);
+  CHKERRQ(PetscFunctionListAdd(&TSSSPList,TSSSPRKS2, TSSSPStep_RK_2));
+  CHKERRQ(PetscFunctionListAdd(&TSSSPList,TSSSPRKS3, TSSSPStep_RK_3));
+  CHKERRQ(PetscFunctionListAdd(&TSSSPList,TSSSPRK104,TSSSPStep_RK_10_4));
+  CHKERRQ(PetscRegisterFinalize(TSSSPFinalizePackage));
   PetscFunctionReturn(0);
 }
 
@@ -526,10 +504,8 @@ PetscErrorCode TSSSPInitializePackage(void)
 @*/
 PetscErrorCode TSSSPFinalizePackage(void)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   TSSSPPackageInitialized = PETSC_FALSE;
-  ierr = PetscFunctionListDestroy(&TSSSPList);CHKERRQ(ierr);
+  CHKERRQ(PetscFunctionListDestroy(&TSSSPList));
   PetscFunctionReturn(0);
 }

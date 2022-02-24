@@ -6,7 +6,6 @@
 
 PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim,PetscInt np[],PetscInt *_npoints,PetscReal **_xi)
 {
-  PetscErrorCode ierr;
   PetscReal      *xi;
   PetscInt       d,npoints=0,cnt;
   PetscReal      ds[] = {0.0,0.0,0.0};
@@ -28,7 +27,7 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim,P
     ds[d] = 2.0 / ((PetscReal)np[d]);
   }
 
-  ierr = PetscMalloc1(dim*npoints,&xi);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(dim*npoints,&xi));
   switch (dim) {
     case 1:
       cnt = 0;
@@ -70,22 +69,21 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim,P
 
 PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt dim,PetscInt np_1d,PetscInt *_npoints,PetscReal **_xi)
 {
-  PetscErrorCode  ierr;
   PetscQuadrature quadrature;
   const PetscReal *quadrature_xi;
   PetscReal       *xi;
   PetscInt        d,q,npoints_q;
 
   PetscFunctionBegin;
-  ierr = PetscDTGaussTensorQuadrature(dim,1,np_1d,-1.0,1.0,&quadrature);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(quadrature,NULL,NULL,&npoints_q,&quadrature_xi,NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc1(dim*npoints_q,&xi);CHKERRQ(ierr);
+  CHKERRQ(PetscDTGaussTensorQuadrature(dim,1,np_1d,-1.0,1.0,&quadrature));
+  CHKERRQ(PetscQuadratureGetData(quadrature,NULL,NULL,&npoints_q,&quadrature_xi,NULL));
+  CHKERRQ(PetscMalloc1(dim*npoints_q,&xi));
   for (q=0; q<npoints_q; q++) {
     for (d=0; d<dim; d++) {
       xi[dim*q+d] = quadrature_xi[dim*q+d];
     }
   }
-  ierr = PetscQuadratureDestroy(&quadrature);CHKERRQ(ierr);
+  CHKERRQ(PetscQuadratureDestroy(&quadrature));
   *_npoints = npoints_q;
   *_xi = xi;
   PetscFunctionReturn(0);
@@ -93,7 +91,6 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt dim,Pet
 
 PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm,DM dmc,PetscInt npoints,DMSwarmPICLayoutType layout)
 {
-  PetscErrorCode    ierr;
   PetscInt          dim,npoints_q;
   PetscInt          nel,npe,e,q,k,d;
   const PetscInt    *element_list;
@@ -107,17 +104,17 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm,DM dmc,PetscIn
   PetscInt          pcnt;
 
   PetscFunctionBegin;
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm,&dim));
   switch (layout) {
     case DMSWARMPIC_LAYOUT_REGULAR:
     {
       PetscInt np_dir[3];
       np_dir[0] = np_dir[1] = np_dir[2] = npoints;
-      ierr = private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(dim,np_dir,&npoints_q,&xi);CHKERRQ(ierr);
+      CHKERRQ(private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(dim,np_dir,&npoints_q,&xi));
     }
       break;
     case DMSWARMPIC_LAYOUT_GAUSS:
-      ierr = private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(dim,npoints,&npoints_q,&xi);CHKERRQ(ierr);
+      CHKERRQ(private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(dim,npoints,&npoints_q,&xi));
       break;
 
     case DMSWARMPIC_LAYOUT_SUBDIVISION:
@@ -131,18 +128,18 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm,DM dmc,PetscIn
       }
       np_dir[1] = np_dir[0];
       np_dir[2] = np_dir[0];
-      ierr = private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(dim,np_dir,&npoints_q,&xi);CHKERRQ(ierr);
+      CHKERRQ(private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(dim,np_dir,&npoints_q,&xi));
     }
       break;
     default:
       SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"A valid DMSwarmPIC layout must be provided");
   }
 
-  ierr = DMDAGetElements(dmc,&nel,&npe,&element_list);CHKERRQ(ierr);
-  ierr = PetscMalloc1(dim*npe,&elcoor);CHKERRQ(ierr);
-  ierr = PetscMalloc1(npoints_q,&basis);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetElements(dmc,&nel,&npe,&element_list));
+  CHKERRQ(PetscMalloc1(dim*npe,&elcoor));
+  CHKERRQ(PetscMalloc1(npoints_q,&basis));
   for (q=0; q<npoints_q; q++) {
-    ierr = PetscMalloc1(npe,&basis[q]);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(npe,&basis[q]));
 
     switch (dim) {
       case 1:
@@ -169,12 +166,12 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm,DM dmc,PetscIn
     }
   }
 
-  ierr = DMSwarmSetLocalSizes(dm,npoints_q*nel,-1);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmSetLocalSizes(dm,npoints_q*nel,-1));
+  CHKERRQ(DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
+  CHKERRQ(DMSwarmGetField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
 
-  ierr = DMGetCoordinatesLocal(dmc,&coor);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(coor,&_coor);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoordinatesLocal(dmc,&coor));
+  CHKERRQ(VecGetArrayRead(coor,&_coor));
   pcnt = 0;
   for (e=0; e<nel; e++) {
     const PetscInt *element = &element_list[npe*e];
@@ -198,35 +195,34 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm,DM dmc,PetscIn
       pcnt++;
     }
   }
-  ierr = VecRestoreArrayRead(coor,&_coor);CHKERRQ(ierr);
-  ierr = DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid);CHKERRQ(ierr);
-  ierr = DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor);CHKERRQ(ierr);
-  ierr = DMDARestoreElements(dmc,&nel,&npe,&element_list);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(coor,&_coor));
+  CHKERRQ(DMSwarmRestoreField(dm,DMSwarmPICField_cellid,NULL,NULL,(void**)&swarm_cellid));
+  CHKERRQ(DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&swarm_coor));
+  CHKERRQ(DMDARestoreElements(dmc,&nel,&npe,&element_list));
 
-  ierr = PetscFree(xi);CHKERRQ(ierr);
-  ierr = PetscFree(elcoor);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(xi));
+  CHKERRQ(PetscFree(elcoor));
   for (q=0; q<npoints_q; q++) {
-    ierr = PetscFree(basis[q]);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(basis[q]));
   }
-  ierr = PetscFree(basis);CHKERRQ(ierr);
+  CHKERRQ(PetscFree(basis));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM dm,DM celldm,DMSwarmPICLayoutType layout,PetscInt layout_param)
 {
-  PetscErrorCode  ierr;
   DMDAElementType etype;
   PetscInt        dim;
 
   PetscFunctionBegin;
-  ierr = DMDAGetElementType(celldm,&etype);CHKERRQ(ierr);
-  ierr = DMGetDimension(celldm,&dim);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetElementType(celldm,&etype));
+  CHKERRQ(DMGetDimension(celldm,&dim));
   switch (etype) {
     case DMDA_ELEMENT_P1:
       SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DA support is not currently available for DMDA_ELEMENT_P1");
     case DMDA_ELEMENT_Q1:
       PetscCheckFalse(dim == 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Support only available for dim = 2, 3");
-      ierr = private_DMSwarmInsertPointsUsingCellDM_DA_Q1(dm,celldm,layout_param,layout);CHKERRQ(ierr);
+      CHKERRQ(private_DMSwarmInsertPointsUsingCellDM_DA_Q1(dm,celldm,layout_param,layout));
       break;
   }
   PetscFunctionReturn(0);
@@ -234,7 +230,6 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM dm,DM celldm,DMSwarm
 
 PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm,PetscReal *swarm_field,DM dm,Vec v_field)
 {
-  PetscErrorCode    ierr;
   Vec               v_field_l,denom_l,coor_l,denom;
   PetscScalar       *_field_l,*_denom_l;
   PetscInt          k,p,e,npoints,nel,npe;
@@ -246,25 +241,25 @@ PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm,PetscReal *swarm_fiel
   const PetscScalar *_coor;
 
   PetscFunctionBegin;
-  ierr = VecZeroEntries(v_field);CHKERRQ(ierr);
+  CHKERRQ(VecZeroEntries(v_field));
 
-  ierr = DMGetLocalVector(dm,&v_field_l);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dm,&denom);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(dm,&denom_l);CHKERRQ(ierr);
-  ierr = VecZeroEntries(v_field_l);CHKERRQ(ierr);
-  ierr = VecZeroEntries(denom);CHKERRQ(ierr);
-  ierr = VecZeroEntries(denom_l);CHKERRQ(ierr);
+  CHKERRQ(DMGetLocalVector(dm,&v_field_l));
+  CHKERRQ(DMGetGlobalVector(dm,&denom));
+  CHKERRQ(DMGetLocalVector(dm,&denom_l));
+  CHKERRQ(VecZeroEntries(v_field_l));
+  CHKERRQ(VecZeroEntries(denom));
+  CHKERRQ(VecZeroEntries(denom_l));
 
-  ierr = VecGetArray(v_field_l,&_field_l);CHKERRQ(ierr);
-  ierr = VecGetArray(denom_l,&_denom_l);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(v_field_l,&_field_l));
+  CHKERRQ(VecGetArray(denom_l,&_denom_l));
 
-  ierr = DMGetCoordinatesLocal(dm,&coor_l);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(coor_l,&_coor);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoordinatesLocal(dm,&coor_l));
+  CHKERRQ(VecGetArrayRead(coor_l,&_coor));
 
-  ierr = DMDAGetElements(dm,&nel,&npe,&element_list);CHKERRQ(ierr);
-  ierr = DMSwarmGetLocalSize(swarm,&npoints);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&mpfield_coor);CHKERRQ(ierr);
-  ierr = DMSwarmGetField(swarm,DMSwarmPICField_cellid,NULL,NULL,(void**)&mpfield_cell);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetElements(dm,&nel,&npe,&element_list));
+  CHKERRQ(DMSwarmGetLocalSize(swarm,&npoints));
+  CHKERRQ(DMSwarmGetField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&mpfield_coor));
+  CHKERRQ(DMSwarmGetField(swarm,DMSwarmPICField_cellid,NULL,NULL,(void**)&mpfield_cell));
 
   for (p=0; p<npoints; p++) {
     PetscReal         *coor_p;
@@ -298,44 +293,43 @@ PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm,PetscReal *swarm_fiel
     }
   }
 
-  ierr = DMSwarmRestoreField(swarm,DMSwarmPICField_cellid,NULL,NULL,(void**)&mpfield_cell);CHKERRQ(ierr);
-  ierr = DMSwarmRestoreField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&mpfield_coor);CHKERRQ(ierr);
-  ierr = DMDARestoreElements(dm,&nel,&npe,&element_list);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(coor_l,&_coor);CHKERRQ(ierr);
-  ierr = VecRestoreArray(v_field_l,&_field_l);CHKERRQ(ierr);
-  ierr = VecRestoreArray(denom_l,&_denom_l);CHKERRQ(ierr);
+  CHKERRQ(DMSwarmRestoreField(swarm,DMSwarmPICField_cellid,NULL,NULL,(void**)&mpfield_cell));
+  CHKERRQ(DMSwarmRestoreField(swarm,DMSwarmPICField_coor,NULL,NULL,(void**)&mpfield_coor));
+  CHKERRQ(DMDARestoreElements(dm,&nel,&npe,&element_list));
+  CHKERRQ(VecRestoreArrayRead(coor_l,&_coor));
+  CHKERRQ(VecRestoreArray(v_field_l,&_field_l));
+  CHKERRQ(VecRestoreArray(denom_l,&_denom_l));
 
-  ierr = DMLocalToGlobalBegin(dm,v_field_l,ADD_VALUES,v_field);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm,v_field_l,ADD_VALUES,v_field);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalBegin(dm,denom_l,ADD_VALUES,denom);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(dm,denom_l,ADD_VALUES,denom);CHKERRQ(ierr);
+  CHKERRQ(DMLocalToGlobalBegin(dm,v_field_l,ADD_VALUES,v_field));
+  CHKERRQ(DMLocalToGlobalEnd(dm,v_field_l,ADD_VALUES,v_field));
+  CHKERRQ(DMLocalToGlobalBegin(dm,denom_l,ADD_VALUES,denom));
+  CHKERRQ(DMLocalToGlobalEnd(dm,denom_l,ADD_VALUES,denom));
 
-  ierr = VecPointwiseDivide(v_field,v_field,denom);CHKERRQ(ierr);
+  CHKERRQ(VecPointwiseDivide(v_field,v_field,denom));
 
-  ierr = DMRestoreLocalVector(dm,&v_field_l);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(dm,&denom_l);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm,&denom);CHKERRQ(ierr);
+  CHKERRQ(DMRestoreLocalVector(dm,&v_field_l));
+  CHKERRQ(DMRestoreLocalVector(dm,&denom_l));
+  CHKERRQ(DMRestoreGlobalVector(dm,&denom));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DMSwarmDataField dfield[],Vec vecs[])
 {
-  PetscErrorCode  ierr;
   PetscInt        f,dim;
   DMDAElementType etype;
 
   PetscFunctionBegin;
-  ierr = DMDAGetElementType(celldm,&etype);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetElementType(celldm,&etype));
   PetscCheckFalse(etype == DMDA_ELEMENT_P1,PetscObjectComm((PetscObject)swarm),PETSC_ERR_SUP,"Only Q1 DMDA supported");
 
-  ierr = DMGetDimension(swarm,&dim);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(swarm,&dim));
   switch (dim) {
     case 2:
       for (f=0; f<nfields; f++) {
         PetscReal *swarm_field;
 
-        ierr = DMSwarmDataFieldGetEntries(dfield[f],(void**)&swarm_field);CHKERRQ(ierr);
-        ierr = DMSwarmProjectField_ApproxQ1_DA_2D(swarm,swarm_field,celldm,vecs[f]);CHKERRQ(ierr);
+        CHKERRQ(DMSwarmDataFieldGetEntries(dfield[f],(void**)&swarm_field));
+        CHKERRQ(DMSwarmProjectField_ApproxQ1_DA_2D(swarm,swarm_field,celldm,vecs[f]));
       }
       break;
     case 3:

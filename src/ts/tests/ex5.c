@@ -175,7 +175,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   /* Inputs */
-  ierr = readinput(&put);CHKERRQ(ierr);
+  CHKERRQ(readinput(&put));
 
   sfctemp   = put.Ts;
   dewtemp   = put.Td;
@@ -183,7 +183,7 @@ int main(int argc,char **argv)
   airtemp   = put.Ta;
   pwat      = put.pwt;
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Initial Temperature = %g\n",(double)sfctemp);CHKERRQ(ierr); /* input surface temperature */
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Initial Temperature = %g\n",(double)sfctemp)); /* input surface temperature */
 
   deep_grnd_temp = sfctemp - 10;   /* set underlying ground layer temperature */
   emma           = emission(pwat); /* accounts for radiative effects of water vapor */
@@ -207,7 +207,7 @@ int main(int argc,char **argv)
   mixratio = calcmixingr(sfctemp,pressure1);
   rh       = (x/mixratio)*100;
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Initial RH = %.1f percent\n\n",(double)rh);CHKERRQ(ierr);   /* prints initial relative humidity */
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Initial RH = %.1f percent\n\n",(double)rh));   /* prints initial relative humidity */
 
   time = 3600*put.time;                         /* sets amount of timesteps to run model */
 
@@ -215,17 +215,17 @@ int main(int argc,char **argv)
   /*------------------------------------------*/
 
   /* Create grid */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,20,20,PETSC_DECIDE,PETSC_DECIDE,dof,1,NULL,NULL,&da);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(da);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
-  ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
+  CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,20,20,PETSC_DECIDE,PETSC_DECIDE,dof,1,NULL,NULL,&da));
+  CHKERRQ(DMSetFromOptions(da));
+  CHKERRQ(DMSetUp(da));
+  CHKERRQ(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0));
 
   /* Define output window for each variable of interest */
-  ierr = DMDASetFieldName(da,0,"Ts");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,1,"Ta");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,2,"u");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,3,"v");CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,4,"p");CHKERRQ(ierr);
+  CHKERRQ(DMDASetFieldName(da,0,"Ts"));
+  CHKERRQ(DMDASetFieldName(da,1,"Ta"));
+  CHKERRQ(DMDASetFieldName(da,2,"u"));
+  CHKERRQ(DMDASetFieldName(da,3,"v"));
+  CHKERRQ(DMDASetFieldName(da,4,"p"));
 
   /* set values for appctx */
   user.da             = da;
@@ -245,82 +245,82 @@ int main(int argc,char **argv)
 
   /* set values for MonitorCtx */
   usermonitor.drawcontours = PETSC_FALSE;
-  ierr = PetscOptionsHasName(NULL,NULL,"-drawcontours",&usermonitor.drawcontours);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-drawcontours",&usermonitor.drawcontours));
   if (usermonitor.drawcontours) {
     PetscReal bounds[] = {1000.0,-1000.,  -1000.,-1000.,  1000.,-1000.,  1000.,-1000.,  1000,-1000, 100700,100800};
-    ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,300,300,&usermonitor.drawviewer);CHKERRQ(ierr);
-    ierr = PetscViewerDrawSetBounds(usermonitor.drawviewer,dof,bounds);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,300,300,&usermonitor.drawviewer));
+    CHKERRQ(PetscViewerDrawSetBounds(usermonitor.drawviewer,dof,bounds));
   }
   usermonitor.interval = 1;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-monitor_interval",&usermonitor.interval,NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-monitor_interval",&usermonitor.interval,NULL));
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DA;
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMCreateGlobalVector(da,&T);CHKERRQ(ierr);
-  ierr = VecDuplicate(T,&rhs);CHKERRQ(ierr); /* r: vector to put the computed right hand side */
+  CHKERRQ(DMCreateGlobalVector(da,&T));
+  CHKERRQ(VecDuplicate(T,&rhs)); /* r: vector to put the computed right hand side */
 
-  ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,rhs,RhsFunc,&user);CHKERRQ(ierr);
+  CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
+  CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
+  CHKERRQ(TSSetType(ts,TSBEULER));
+  CHKERRQ(TSSetRHSFunction(ts,rhs,RhsFunc,&user));
 
   /* Set Jacobian evaluation routine - use coloring to compute finite difference Jacobian efficiently */
-  ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
-  ierr = DMCreateMatrix(da,&J);CHKERRQ(ierr);
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  CHKERRQ(DMSetMatType(da,MATAIJ));
+  CHKERRQ(DMCreateMatrix(da,&J));
+  CHKERRQ(TSGetSNES(ts,&snes));
   if (use_coloring) {
     ISColoring iscoloring;
-    ierr = DMCreateColoring(da,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetUp(J,iscoloring,matfdcoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,matfdcoloring);CHKERRQ(ierr);
+    CHKERRQ(DMCreateColoring(da,IS_COLORING_GLOBAL,&iscoloring));
+    CHKERRQ(MatFDColoringCreate(J,iscoloring,&matfdcoloring));
+    CHKERRQ(MatFDColoringSetFromOptions(matfdcoloring));
+    CHKERRQ(MatFDColoringSetUp(J,iscoloring,matfdcoloring));
+    CHKERRQ(ISColoringDestroy(&iscoloring));
+    CHKERRQ(MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts));
+    CHKERRQ(SNESSetJacobian(snes,J,J,SNESComputeJacobianDefaultColor,matfdcoloring));
   } else {
-    ierr = SNESSetJacobian(snes,J,J,SNESComputeJacobianDefault,NULL);CHKERRQ(ierr);
+    CHKERRQ(SNESSetJacobian(snes,J,J,SNESComputeJacobianDefault,NULL));
   }
 
   /* Define what to print for ts_monitor option */
-  ierr = PetscOptionsHasName(NULL,NULL,"-monitor_off",&monitor_off);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsHasName(NULL,NULL,"-monitor_off",&monitor_off));
   if (!monitor_off) {
-    ierr = TSMonitorSet(ts,Monitor,&usermonitor,NULL);CHKERRQ(ierr);
+    CHKERRQ(TSMonitorSet(ts,Monitor,&usermonitor,NULL));
   }
-  ierr  = FormInitialSolution(da,T,&user);CHKERRQ(ierr);
+  CHKERRQ(FormInitialSolution(da,T,&user));
   dt    = TIMESTEP; /* initial time step */
   ftime = TIMESTEP*time;
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"time %D, ftime %g hour, TIMESTEP %g\n",time,(double)(ftime/3600),(double)dt);CHKERRQ(ierr);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"time %D, ftime %g hour, TIMESTEP %g\n",time,(double)(ftime/3600),(double)dt));
 
-  ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
-  ierr = TSSetMaxSteps(ts,time);CHKERRQ(ierr);
-  ierr = TSSetMaxTime(ts,ftime);CHKERRQ(ierr);
-  ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts,T);CHKERRQ(ierr);
-  ierr = TSSetDM(ts,da);CHKERRQ(ierr);
+  CHKERRQ(TSSetTimeStep(ts,dt));
+  CHKERRQ(TSSetMaxSteps(ts,time));
+  CHKERRQ(TSSetMaxTime(ts,ftime));
+  CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
+  CHKERRQ(TSSetSolution(ts,T));
+  CHKERRQ(TSSetDM(ts,da));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  CHKERRQ(TSSetFromOptions(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,T);CHKERRQ(ierr);
-  ierr = TSGetSolveTime(ts,&ftime);CHKERRQ(ierr);
-  ierr = TSGetStepNumber(ts,&steps);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Solution T after %g hours %D steps\n",(double)(ftime/3600),steps);CHKERRQ(ierr);
+  CHKERRQ(TSSolve(ts,T));
+  CHKERRQ(TSGetSolveTime(ts,&ftime));
+  CHKERRQ(TSGetStepNumber(ts,&steps));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Solution T after %g hours %D steps\n",(double)(ftime/3600),steps));
 
-  if (matfdcoloring) {ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);}
+  if (matfdcoloring) CHKERRQ(MatFDColoringDestroy(&matfdcoloring));
   if (usermonitor.drawcontours) {
-    ierr = PetscViewerDestroy(&usermonitor.drawviewer);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerDestroy(&usermonitor.drawviewer));
   }
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
-  ierr = VecDestroy(&T);CHKERRQ(ierr);
-  ierr = VecDestroy(&rhs);CHKERRQ(ierr);
-  ierr = TSDestroy(&ts);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  CHKERRQ(MatDestroy(&J));
+  CHKERRQ(VecDestroy(&T));
+  CHKERRQ(VecDestroy(&rhs));
+  CHKERRQ(TSDestroy(&ts));
+  CHKERRQ(DMDestroy(&da));
 
   ierr = PetscFinalize();
   return ierr;
@@ -539,10 +539,10 @@ PetscErrorCode FormInitialSolution(DM da,Vec Xglobal,void *ctx)
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   /* Get pointers to vector data */
-  ierr = DMDAVecGetArray(da,Xglobal,&X);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecGetArray(da,Xglobal,&X));
 
   /* Get local grid boundaries */
-  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   /* Compute function over the locally owned part of the grid */
 
@@ -571,7 +571,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec Xglobal,void *ctx)
   }
 
   /* Restore vectors */
-  ierr = DMDAVecRestoreArray(da,Xglobal,&X);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArray(da,Xglobal,&X));
   PetscFunctionReturn(0);
 }
 
@@ -592,7 +592,6 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
 {
   AppCtx         *user = (AppCtx*)ctx;       /* user-defined application context */
   DM             da    = user->da;
-  PetscErrorCode ierr;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscReal      dhx,dhy;
   Vec            localT;
@@ -622,8 +621,8 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
   PetscInt    xend,yend;
 
   PetscFunctionBeginUser;
-  ierr = DMGetLocalVector(da,&localT);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  CHKERRQ(DMGetLocalVector(da,&localT));
+  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
 
   dhx = (PetscReal)(Mx-1)/(5000*(Mx-1));  /* dhx = 1/dx; assume 2D space domain: [0.0, 1.e5] x [0.0, 1.e5] */
   dhy = (PetscReal)(My-1)/(5000*(Mx-1));  /* dhy = 1/dy; */
@@ -634,15 +633,15 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  ierr = DMGlobalToLocalBegin(da,Xglobal,INSERT_VALUES,localT);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(da,Xglobal,INSERT_VALUES,localT);CHKERRQ(ierr);
+  CHKERRQ(DMGlobalToLocalBegin(da,Xglobal,INSERT_VALUES,localT));
+  CHKERRQ(DMGlobalToLocalEnd(da,Xglobal,INSERT_VALUES,localT));
 
   /* Get pointers to vector data */
-  ierr = DMDAVecGetArrayRead(da,localT,&X);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,F,&Frhs);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecGetArrayRead(da,localT,&X));
+  CHKERRQ(DMDAVecGetArray(da,F,&Frhs));
 
   /* Get local grid boundaries */
-  ierr = DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetCorners(da,&xs,&ys,NULL,&xm,&ym,NULL));
 
   /* Compute function over the locally owned part of the grid */
   /* the interior points */
@@ -652,11 +651,11 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
       Ts = X[j][i].Ts; u = X[j][i].u; v = X[j][i].v; p = X[j][i].p; /*P = X[j][i].P; */
 
       sfctemp1 = (double)Ts;
-      ierr     = calcfluxs(sfctemp1,airtemp,emma,fract,Tc,&fsfc1);CHKERRQ(ierr);        /* calculates surface net radiative flux */
-      ierr     = sensibleflux(sfctemp1,airtemp,wind,&sheat);CHKERRQ(ierr);              /* calculate sensible heat flux */
-      ierr     = latentflux(sfctemp1,dewtemp,wind,pressure1,&latentheat);CHKERRQ(ierr); /* calculates latent heat flux */
-      ierr     = calc_gflux(sfctemp1,deep_grnd_temp,&groundflux);CHKERRQ(ierr);         /* calculates flux from earth below surface soil layer by conduction */
-      ierr     = calcfluxa(sfctemp1,airtemp,emma,&Ra);CHKERRQ(ierr);                    /* Calculates the change in downward radiative flux */
+      CHKERRQ(calcfluxs(sfctemp1,airtemp,emma,fract,Tc,&fsfc1));        /* calculates surface net radiative flux */
+      CHKERRQ(sensibleflux(sfctemp1,airtemp,wind,&sheat));              /* calculate sensible heat flux */
+      CHKERRQ(latentflux(sfctemp1,dewtemp,wind,pressure1,&latentheat)); /* calculates latent heat flux */
+      CHKERRQ(calc_gflux(sfctemp1,deep_grnd_temp,&groundflux));         /* calculates flux from earth below surface soil layer by conduction */
+      CHKERRQ(calcfluxa(sfctemp1,airtemp,emma,&Ra));                    /* Calculates the change in downward radiative flux */
       fsfc1    = fsfc1 + latentheat + sheat + groundflux;                               /* adds radiative, sensible heat, latent heat, and ground heat flux yielding net flux */
 
       /* convective coefficients for upwinding */
@@ -701,31 +700,30 @@ PetscErrorCode RhsFunc(TS ts,PetscReal t,Vec Xglobal,Vec F,void *ctx)
   }
 
   /* Restore vectors */
-  ierr = DMDAVecRestoreArrayRead(da,localT,&X);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,F,&Frhs);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(da,&localT);CHKERRQ(ierr);
+  CHKERRQ(DMDAVecRestoreArrayRead(da,localT,&X));
+  CHKERRQ(DMDAVecRestoreArray(da,F,&Frhs));
+  CHKERRQ(DMRestoreLocalVector(da,&localT));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec T,void *ctx)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *array;
   MonitorCtx        *user  = (MonitorCtx*)ctx;
   PetscViewer       viewer = user->drawviewer;
   PetscReal         norm;
 
   PetscFunctionBeginUser;
-  ierr = VecNorm(T,NORM_INFINITY,&norm);CHKERRQ(ierr);
+  CHKERRQ(VecNorm(T,NORM_INFINITY,&norm));
 
   if (step%user->interval == 0) {
-    ierr = VecGetArrayRead(T,&array);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"step %D, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",step,(double)time,(double)(((array[0]-273)*9)/5 + 32),(double)(((array[1]-273)*9)/5 + 32),(double)array[2],(double)array[3],(double)array[4],(double)array[5]);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(T,&array);CHKERRQ(ierr);
+    CHKERRQ(VecGetArrayRead(T,&array));
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"step %D, time %8.1f,  %6.4f, %6.4f, %6.4f, %6.4f, %6.4f, %6.4f\n",step,(double)time,(double)(((array[0]-273)*9)/5 + 32),(double)(((array[1]-273)*9)/5 + 32),(double)array[2],(double)array[3],(double)array[4],(double)array[5]));
+    CHKERRQ(VecRestoreArrayRead(T,&array));
   }
 
   if (user->drawcontours) {
-    ierr = VecView(T,viewer);CHKERRQ(ierr);
+    CHKERRQ(VecView(T,viewer));
   }
   PetscFunctionReturn(0);
 }

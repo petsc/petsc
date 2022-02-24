@@ -11,13 +11,13 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   dim = 1;
-  ierr = PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL);CHKERRQ(ierr);
-  ierr = DMCreate(PETSC_COMM_WORLD,&dm);CHKERRQ(ierr);
-  ierr = DMSetType(dm,DMPRODUCT);CHKERRQ(ierr);
-  ierr = DMSetDimension(dm,dim);CHKERRQ(ierr);
-  ierr = DMSetFromOptions(dm);CHKERRQ(ierr);
-  ierr = DMSetUp(dm);CHKERRQ(ierr);
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
+  CHKERRQ(DMCreate(PETSC_COMM_WORLD,&dm));
+  CHKERRQ(DMSetType(dm,DMPRODUCT));
+  CHKERRQ(DMSetDimension(dm,dim));
+  CHKERRQ(DMSetFromOptions(dm));
+  CHKERRQ(DMSetUp(dm));
+  CHKERRQ(DMDestroy(&dm));
   ierr = PetscFinalize();
   return ierr;
 }

@@ -7,7 +7,6 @@
 /* Start MPI requests. If use non-GPU aware MPI, we might need to copy data from device buf to host buf */
 static PetscErrorCode PetscSFLinkStartRequests_MPI(PetscSF sf,PetscSFLink link,PetscSFDirection direction)
 {
-  PetscErrorCode    ierr;
   PetscMPIInt       nreqs;
   MPI_Request       *reqs = NULL;
   PetscSF_Basic     *bas = (PetscSF_Basic*)sf->data;
@@ -18,45 +17,44 @@ static PetscErrorCode PetscSFLinkStartRequests_MPI(PetscSF sf,PetscSFLink link,P
   if (buflen) {
     if (direction == PETSCSF_ROOT2LEAF) {
       nreqs = sf->nleafreqs;
-      ierr = PetscSFLinkGetMPIBuffersAndRequests(sf,link,direction,NULL,NULL,NULL,&reqs);CHKERRQ(ierr);
+      CHKERRQ(PetscSFLinkGetMPIBuffersAndRequests(sf,link,direction,NULL,NULL,NULL,&reqs));
     } else { /* leaf to root */
       nreqs = bas->nrootreqs;
-      ierr = PetscSFLinkGetMPIBuffersAndRequests(sf,link,direction,NULL,NULL,&reqs,NULL);CHKERRQ(ierr);
+      CHKERRQ(PetscSFLinkGetMPIBuffersAndRequests(sf,link,direction,NULL,NULL,&reqs,NULL));
     }
-    ierr = MPI_Startall_irecv(buflen,link->unit,nreqs,reqs);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Startall_irecv(buflen,link->unit,nreqs,reqs));
   }
 
   buflen = (direction == PETSCSF_ROOT2LEAF) ? bas->rootbuflen[PETSCSF_REMOTE] : sf->leafbuflen[PETSCSF_REMOTE];
   if (buflen) {
     if (direction == PETSCSF_ROOT2LEAF) {
       nreqs  = bas->nrootreqs;
-      ierr   = PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/*device2host before sending */);CHKERRQ(ierr);
-      ierr   = PetscSFLinkGetMPIBuffersAndRequests(sf,link,direction,NULL,NULL,&reqs,NULL);CHKERRQ(ierr);
+      CHKERRQ(PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE/*device2host before sending */));
+      CHKERRQ(PetscSFLinkGetMPIBuffersAndRequests(sf,link,direction,NULL,NULL,&reqs,NULL));
     } else { /* leaf to root */
       nreqs  = sf->nleafreqs;
-      ierr   = PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE);CHKERRQ(ierr);
-      ierr   = PetscSFLinkGetMPIBuffersAndRequests(sf,link,direction,NULL,NULL,NULL,&reqs);CHKERRQ(ierr);
+      CHKERRQ(PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_TRUE));
+      CHKERRQ(PetscSFLinkGetMPIBuffersAndRequests(sf,link,direction,NULL,NULL,NULL,&reqs));
     }
-    ierr = PetscSFLinkSyncStreamBeforeCallMPI(sf,link,direction);CHKERRQ(ierr);
-    ierr = MPI_Startall_isend(buflen,link->unit,nreqs,reqs);CHKERRMPI(ierr);
+    CHKERRQ(PetscSFLinkSyncStreamBeforeCallMPI(sf,link,direction));
+    CHKERRMPI(MPI_Startall_isend(buflen,link->unit,nreqs,reqs));
   }
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscSFLinkWaitRequests_MPI(PetscSF sf,PetscSFLink link,PetscSFDirection direction)
 {
-  PetscErrorCode       ierr;
   PetscSF_Basic        *bas = (PetscSF_Basic*)sf->data;
   const PetscMemType   rootmtype_mpi = link->rootmtype_mpi,leafmtype_mpi = link->leafmtype_mpi;
   const PetscInt       rootdirect_mpi = link->rootdirect_mpi,leafdirect_mpi = link->leafdirect_mpi;
 
   PetscFunctionBegin;
-  ierr = MPI_Waitall(bas->nrootreqs,link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi],MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
-  ierr = MPI_Waitall(sf->nleafreqs, link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi],MPI_STATUSES_IGNORE);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Waitall(bas->nrootreqs,link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi],MPI_STATUSES_IGNORE));
+  CHKERRMPI(MPI_Waitall(sf->nleafreqs, link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi],MPI_STATUSES_IGNORE));
   if (direction == PETSCSF_ROOT2LEAF) {
-    ierr = PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_FALSE/* host2device after recving */);CHKERRQ(ierr);
+    CHKERRQ(PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_FALSE/* host2device after recving */));
   } else {
-    ierr = PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_FALSE);CHKERRQ(ierr);
+    CHKERRQ(PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf,link,PETSC_FALSE));
   }
   PetscFunctionReturn(0);
 }
@@ -79,7 +77,6 @@ static PetscErrorCode PetscSFLinkWaitRequests_MPI(PetscSF sf,PetscSFLink link,Pe
 */
 PetscErrorCode PetscSFLinkCreate_MPI(PetscSF sf,MPI_Datatype unit,PetscMemType xrootmtype,const void *rootdata,PetscMemType xleafmtype,const void *leafdata,MPI_Op op,PetscSFOperation sfop,PetscSFLink *mylink)
 {
-  PetscErrorCode    ierr;
   PetscSF_Basic     *bas = (PetscSF_Basic*)sf->data;
   PetscInt          i,j,k,nrootreqs,nleafreqs,nreqs;
   PetscSFLink       *p,link;
@@ -124,19 +121,19 @@ PetscErrorCode PetscSFLinkCreate_MPI(PetscSF sf,MPI_Datatype unit,PetscMemType x
   /* Look for free links in cache */
   for (p=&bas->avail; (link=*p); p=&link->next) {
     if (!link->use_nvshmem) { /* Only check with MPI links */
-      ierr = MPIPetsc_Type_compare(unit,link->unit,&match);CHKERRQ(ierr);
+      CHKERRQ(MPIPetsc_Type_compare(unit,link->unit,&match));
       if (match) {
         /* If root/leafdata will be directly passed to MPI, test if the data used to initialized the MPI requests matches with the current.
            If not, free old requests. New requests will be lazily init'ed until one calls PetscSFLinkGetMPIBuffersAndRequests().
         */
         if (rootdirect_mpi && sf->persistent && link->rootreqsinited[direction][rootmtype][1] && link->rootdatadirect[direction][rootmtype] != rootdata) {
           reqs = link->rootreqs[direction][rootmtype][1]; /* Here, rootmtype = rootmtype_mpi */
-          for (i=0; i<nrootreqs; i++) {if (reqs[i] != MPI_REQUEST_NULL) {ierr = MPI_Request_free(&reqs[i]);CHKERRMPI(ierr);}}
+          for (i=0; i<nrootreqs; i++) {if (reqs[i] != MPI_REQUEST_NULL) CHKERRMPI(MPI_Request_free(&reqs[i]));}
           link->rootreqsinited[direction][rootmtype][1] = PETSC_FALSE;
         }
         if (leafdirect_mpi && sf->persistent && link->leafreqsinited[direction][leafmtype][1] && link->leafdatadirect[direction][leafmtype] != leafdata) {
           reqs = link->leafreqs[direction][leafmtype][1];
-          for (i=0; i<nleafreqs; i++) {if (reqs[i] != MPI_REQUEST_NULL) {ierr = MPI_Request_free(&reqs[i]);CHKERRMPI(ierr);}}
+          for (i=0; i<nleafreqs; i++) {if (reqs[i] != MPI_REQUEST_NULL) CHKERRMPI(MPI_Request_free(&reqs[i]));}
           link->leafreqsinited[direction][leafmtype][1] = PETSC_FALSE;
         }
         *p = link->next; /* Remove from available list */
@@ -145,12 +142,12 @@ PetscErrorCode PetscSFLinkCreate_MPI(PetscSF sf,MPI_Datatype unit,PetscMemType x
     }
   }
 
-  ierr = PetscNew(&link);CHKERRQ(ierr);
-  ierr = PetscSFLinkSetUp_Host(sf,link,unit);CHKERRQ(ierr);
-  ierr = PetscCommGetNewTag(PetscObjectComm((PetscObject)sf),&link->tag);CHKERRQ(ierr); /* One tag per link */
+  CHKERRQ(PetscNew(&link));
+  CHKERRQ(PetscSFLinkSetUp_Host(sf,link,unit));
+  CHKERRQ(PetscCommGetNewTag(PetscObjectComm((PetscObject)sf),&link->tag)); /* One tag per link */
 
   nreqs = (nrootreqs+nleafreqs)*8;
-  ierr  = PetscMalloc1(nreqs,&link->reqs);CHKERRQ(ierr);
+  CHKERRQ(PetscMalloc1(nreqs,&link->reqs));
   for (i=0; i<nreqs; i++) link->reqs[i] = MPI_REQUEST_NULL; /* Initialized to NULL so that we know which need to be freed in Destroy */
 
   for (i=0; i<2; i++) { /* Two communication directions */
@@ -169,13 +166,13 @@ found:
 #if defined(PETSC_HAVE_DEVICE)
   if ((PetscMemTypeDevice(xrootmtype) || PetscMemTypeDevice(xleafmtype)) && !link->deviceinited) {
     #if defined(PETSC_HAVE_CUDA)
-      if (sf->backend == PETSCSF_BACKEND_CUDA)   {ierr = PetscSFLinkSetUp_CUDA(sf,link,unit);CHKERRQ(ierr);} /* Setup streams etc */
+      if (sf->backend == PETSCSF_BACKEND_CUDA)   CHKERRQ(PetscSFLinkSetUp_CUDA(sf,link,unit)); /* Setup streams etc */
     #endif
     #if defined(PETSC_HAVE_HIP)
-      if (sf->backend == PETSCSF_BACKEND_HIP)    {ierr = PetscSFLinkSetUp_HIP(sf,link,unit);CHKERRQ(ierr);} /* Setup streams etc */
+      if (sf->backend == PETSCSF_BACKEND_HIP)    CHKERRQ(PetscSFLinkSetUp_HIP(sf,link,unit)); /* Setup streams etc */
     #endif
     #if defined(PETSC_HAVE_KOKKOS)
-      if (sf->backend == PETSCSF_BACKEND_KOKKOS) {ierr = PetscSFLinkSetUp_Kokkos(sf,link,unit);CHKERRQ(ierr);}
+      if (sf->backend == PETSCSF_BACKEND_KOKKOS) CHKERRQ(PetscSFLinkSetUp_Kokkos(sf,link,unit));
     #endif
   }
 #endif
@@ -189,7 +186,7 @@ found:
         link->rootbuf[i][rootmtype] = (char*)rootdata + bas->rootstart[i]*link->unitbytes;
       } else { /* Have to have a separate rootbuf */
         if (!link->rootbuf_alloc[i][rootmtype]) {
-          ierr = PetscSFMalloc(sf,rootmtype,bas->rootbuflen[i]*link->unitbytes,(void**)&link->rootbuf_alloc[i][rootmtype]);CHKERRQ(ierr);
+          CHKERRQ(PetscSFMalloc(sf,rootmtype,bas->rootbuflen[i]*link->unitbytes,(void**)&link->rootbuf_alloc[i][rootmtype]));
         }
         link->rootbuf[i][rootmtype] = link->rootbuf_alloc[i][rootmtype];
       }
@@ -200,7 +197,7 @@ found:
         link->leafbuf[i][leafmtype] = (char*)leafdata + sf->leafstart[i]*link->unitbytes;
       } else {
         if (!link->leafbuf_alloc[i][leafmtype]) {
-          ierr = PetscSFMalloc(sf,leafmtype,sf->leafbuflen[i]*link->unitbytes,(void**)&link->leafbuf_alloc[i][leafmtype]);CHKERRQ(ierr);
+          CHKERRQ(PetscSFMalloc(sf,leafmtype,sf->leafbuflen[i]*link->unitbytes,(void**)&link->leafbuf_alloc[i][leafmtype]));
         }
         link->leafbuf[i][leafmtype] = link->leafbuf_alloc[i][leafmtype];
       }
@@ -211,13 +208,13 @@ found:
   /* Allocate buffers on host for buffering data on device in cast not use_gpu_aware_mpi */
   if (PetscMemTypeDevice(rootmtype) && PetscMemTypeHost(rootmtype_mpi)) {
     if (!link->rootbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]) {
-      ierr = PetscMalloc(bas->rootbuflen[PETSCSF_REMOTE]*link->unitbytes,&link->rootbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
+      CHKERRQ(PetscMalloc(bas->rootbuflen[PETSCSF_REMOTE]*link->unitbytes,&link->rootbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]));
     }
     link->rootbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST] = link->rootbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST];
   }
   if (PetscMemTypeDevice(leafmtype) && PetscMemTypeHost(leafmtype_mpi)) {
     if (!link->leafbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]) {
-      ierr = PetscMalloc(sf->leafbuflen[PETSCSF_REMOTE]*link->unitbytes,&link->leafbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]);CHKERRQ(ierr);
+      CHKERRQ(PetscMalloc(sf->leafbuflen[PETSCSF_REMOTE]*link->unitbytes,&link->leafbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST]));
     }
     link->leafbuf[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST] = link->leafbuf_alloc[PETSCSF_REMOTE][PETSC_MEMTYPE_HOST];
   }
@@ -247,4 +244,3 @@ found:
   *mylink               = link;
   PetscFunctionReturn(0);
 }
-

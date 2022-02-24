@@ -19,31 +19,31 @@ int main(int argc, char **args)
     PetscReal      norm;
 
     ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
+    CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+    CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
     ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex184","Mat");CHKERRQ(ierr);
     M=8;
-    ierr = PetscOptionsGetInt(NULL,NULL,"-mat_size",&M,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mat_size",&M,NULL));
     bs=3;
-    ierr = PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL);CHKERRQ(ierr);
+    CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL));
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-    ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-    ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M*bs,M*bs);CHKERRQ(ierr);
-    ierr = MatSetBlockSize(A,bs);CHKERRQ(ierr);
-    ierr = MatSetUp(A);CHKERRQ(ierr);
-    ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
-    ierr = PetscMalloc1(m/bs,&dnnz);CHKERRQ(ierr);
+    CHKERRQ(MatCreate(PETSC_COMM_WORLD, &A));
+    CHKERRQ(MatSetFromOptions(A));
+    CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M*bs,M*bs));
+    CHKERRQ(MatSetBlockSize(A,bs));
+    CHKERRQ(MatSetUp(A));
+    CHKERRQ(MatGetLocalSize(A,&m,NULL));
+    CHKERRQ(PetscMalloc1(m/bs,&dnnz));
     for (j = 0; j < m/bs; j++) {
         dnnz[j] = 1;
     }
-    ierr = MatXAIJSetPreallocation(A,bs,dnnz,NULL,NULL,NULL);CHKERRQ(ierr);
-    ierr = PetscFree(dnnz);CHKERRQ(ierr);
+    CHKERRQ(MatXAIJSetPreallocation(A,bs,dnnz,NULL,NULL,NULL));
+    CHKERRQ(PetscFree(dnnz));
 
-    ierr = PetscMalloc1(bs*bs,&v);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+    CHKERRQ(PetscMalloc1(bs*bs,&v));
+    CHKERRQ(MatGetOwnershipRange(A,&rstart,&rend));
     for (j = rstart/bs; j < rend/bs; j++) {
         for (x = 0; x < bs; x++) {
             for (y = 0; y < bs; y++) {
@@ -54,33 +54,33 @@ int main(int argc, char **args)
                 }
             }
         }
-        ierr = MatSetValuesBlocked(A,1,&j,1,&j,v,INSERT_VALUES);CHKERRQ(ierr);
+        CHKERRQ(MatSetValuesBlocked(A,1,&j,1,&j,v,INSERT_VALUES));
     }
-    ierr = PetscFree(v);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    CHKERRQ(PetscFree(v));
+    CHKERRQ(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY));
+    CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
     /* check that A  = inv(inv(A)) */
-    ierr = MatCreate(PETSC_COMM_WORLD,&A_inv);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(A_inv);CHKERRQ(ierr);
-    ierr = MatInvertBlockDiagonalMat(A,A_inv);CHKERRQ(ierr);
+    CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A_inv));
+    CHKERRQ(MatSetFromOptions(A_inv));
+    CHKERRQ(MatInvertBlockDiagonalMat(A,A_inv));
 
     /* Test A_inv * A on a random vector */
-    ierr = MatCreateVecs(A, &X, &Y);CHKERRQ(ierr);
-    ierr = VecSetRandom(X, NULL);CHKERRQ(ierr);
-    ierr = MatMult(A, X, Y);CHKERRQ(ierr);
-    ierr = VecScale(X, -1);CHKERRQ(ierr);
-    ierr = MatMultAdd(A_inv, Y, X, X);CHKERRQ(ierr);
-    ierr = VecNorm(X, NORM_MAX, &norm);CHKERRQ(ierr);
+    CHKERRQ(MatCreateVecs(A, &X, &Y));
+    CHKERRQ(VecSetRandom(X, NULL));
+    CHKERRQ(MatMult(A, X, Y));
+    CHKERRQ(VecScale(X, -1));
+    CHKERRQ(MatMultAdd(A_inv, Y, X, X));
+    CHKERRQ(VecNorm(X, NORM_MAX, &norm));
     if (norm > PETSC_SMALL) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error exceeds tolerance.\nInverse of block diagonal A\n");CHKERRQ(ierr);
-        ierr = MatView(A_inv,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+        CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error exceeds tolerance.\nInverse of block diagonal A\n"));
+        CHKERRQ(MatView(A_inv,PETSC_VIEWER_STDOUT_WORLD));
     }
 
-    ierr = MatDestroy(&A);CHKERRQ(ierr);
-    ierr = MatDestroy(&A_inv);CHKERRQ(ierr);
-    ierr = VecDestroy(&X);CHKERRQ(ierr);
-    ierr = VecDestroy(&Y);CHKERRQ(ierr);
+    CHKERRQ(MatDestroy(&A));
+    CHKERRQ(MatDestroy(&A_inv));
+    CHKERRQ(VecDestroy(&X));
+    CHKERRQ(VecDestroy(&Y));
 
     ierr = PetscFinalize();
     return ierr;

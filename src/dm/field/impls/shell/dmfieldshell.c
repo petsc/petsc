@@ -10,12 +10,11 @@ DMField_Shell;
 PetscErrorCode DMFieldShellGetContext(DMField field, void *ctx)
 {
   PetscBool      flg;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field,DMFIELD_CLASSID,1);
   PetscValidPointer(ctx,2);
-  ierr = PetscObjectTypeCompare((PetscObject)field,DMFIELDSHELL,&flg);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)field,DMFIELDSHELL,&flg));
   if (flg) *(void**)ctx = ((DMField_Shell*)(field->data))->ctx;
   else SETERRQ(PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Cannot get context from non-shell shield");
   PetscFunctionReturn(0);
@@ -24,11 +23,10 @@ PetscErrorCode DMFieldShellGetContext(DMField field, void *ctx)
 static PetscErrorCode DMFieldDestroy_Shell(DMField field)
 {
   DMField_Shell *shell = (DMField_Shell *) field->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (shell->destroy) {ierr = (*(shell->destroy)) (field);CHKERRQ(ierr);}
-  ierr = PetscFree(field->data);CHKERRQ(ierr);
+  if (shell->destroy) CHKERRQ((*(shell->destroy)) (field));
+  CHKERRQ(PetscFree(field->data));
   PetscFunctionReturn(0);
 }
 
@@ -40,19 +38,18 @@ PetscErrorCode DMFieldShellEvaluateFEDefault(DMField field, IS pointIS, PetscQua
   Vec             pushforward;
   PetscInt        dimC, dim, numPoints, Nq, p, Nc;
   PetscScalar    *pfArray;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   Nc   = field->numComponents;
-  ierr = DMGetCoordinateField(dm, &coordField);CHKERRQ(ierr);
-  ierr = DMFieldCreateFEGeom(coordField, pointIS, quad, PETSC_FALSE, &geom);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDim(dm, &dimC);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(quad, &dim, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
-  ierr = PetscMalloc1(dimC * Nq * numPoints, &pfArray);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoordinateField(dm, &coordField));
+  CHKERRQ(DMFieldCreateFEGeom(coordField, pointIS, quad, PETSC_FALSE, &geom));
+  CHKERRQ(DMGetCoordinateDim(dm, &dimC));
+  CHKERRQ(PetscQuadratureGetData(quad, &dim, NULL, &Nq, NULL, NULL));
+  CHKERRQ(ISGetLocalSize(pointIS, &numPoints));
+  CHKERRQ(PetscMalloc1(dimC * Nq * numPoints, &pfArray));
   for (p = 0; p < numPoints * dimC * Nq; p++) pfArray[p] = (PetscScalar) geom->v[p];
-  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)pointIS), dimC, dimC * Nq * numPoints, PETSC_DETERMINE, pfArray, &pushforward);CHKERRQ(ierr);
-  ierr = DMFieldEvaluate(field, pushforward, type, B, D, H);CHKERRQ(ierr);
+  CHKERRQ(VecCreateMPIWithArray(PetscObjectComm((PetscObject)pointIS), dimC, dimC * Nq * numPoints, PETSC_DETERMINE, pfArray, &pushforward));
+  CHKERRQ(DMFieldEvaluate(field, pushforward, type, B, D, H));
   /* TODO: handle covariant/contravariant pullbacks */
   if (D) {
     if (type == PETSC_SCALAR) {
@@ -144,9 +141,9 @@ PetscErrorCode DMFieldShellEvaluateFEDefault(DMField field, IS pointIS, PetscQua
       }
     }
   }
-  ierr = VecDestroy(&pushforward);CHKERRQ(ierr);
-  ierr = PetscFree(pfArray);CHKERRQ(ierr);
-  ierr = PetscFEGeomDestroy(&geom);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&pushforward));
+  CHKERRQ(PetscFree(pfArray));
+  CHKERRQ(PetscFEGeomDestroy(&geom));
   PetscFunctionReturn(0);
 }
 
@@ -160,27 +157,26 @@ PetscErrorCode DMFieldShellEvaluateFVDefault(DMField field, IS pointIS, PetscDat
   PetscScalar    *pfArray;
   PetscQuadrature quad;
   MPI_Comm        comm;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) field, &comm);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDim(dm, &dimC);CHKERRQ(ierr);
-  ierr = DMGetCoordinateField(dm, &coordField);CHKERRQ(ierr);
-  ierr = DMFieldGetFVQuadrature_Internal(coordField, pointIS, &quad);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject) field, &comm));
+  CHKERRQ(DMGetDimension(dm, &dim));
+  CHKERRQ(DMGetCoordinateDim(dm, &dimC));
+  CHKERRQ(DMGetCoordinateField(dm, &coordField));
+  CHKERRQ(DMFieldGetFVQuadrature_Internal(coordField, pointIS, &quad));
   PetscCheck(quad, comm, PETSC_ERR_ARG_WRONGSTATE, "coordinate field must have default quadrature for FV computation");
-  ierr = PetscQuadratureGetData(quad, NULL, NULL, &Nq, NULL, NULL);CHKERRQ(ierr);
+  CHKERRQ(PetscQuadratureGetData(quad, NULL, NULL, &Nq, NULL, NULL));
   PetscCheck(Nq == 1, comm, PETSC_ERR_ARG_WRONGSTATE, "quadrature must have only one point");
-  ierr = DMFieldCreateFEGeom(coordField, pointIS, quad, PETSC_FALSE, &geom);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(pointIS, &numPoints);CHKERRQ(ierr);
-  ierr = PetscMalloc1(dimC * numPoints, &pfArray);CHKERRQ(ierr);
+  CHKERRQ(DMFieldCreateFEGeom(coordField, pointIS, quad, PETSC_FALSE, &geom));
+  CHKERRQ(ISGetLocalSize(pointIS, &numPoints));
+  CHKERRQ(PetscMalloc1(dimC * numPoints, &pfArray));
   for (p = 0; p < numPoints * dimC; p++) pfArray[p] = (PetscScalar) geom->v[p];
-  ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)pointIS), dimC, dimC * numPoints, PETSC_DETERMINE, pfArray, &pushforward);CHKERRQ(ierr);
-  ierr = DMFieldEvaluate(field, pushforward, type, B, D, H);CHKERRQ(ierr);
-  ierr = PetscQuadratureDestroy(&quad);CHKERRQ(ierr);
-  ierr = VecDestroy(&pushforward);CHKERRQ(ierr);
-  ierr = PetscFree(pfArray);CHKERRQ(ierr);
-  ierr = PetscFEGeomDestroy(&geom);CHKERRQ(ierr);
+  CHKERRQ(VecCreateMPIWithArray(PetscObjectComm((PetscObject)pointIS), dimC, dimC * numPoints, PETSC_DETERMINE, pfArray, &pushforward));
+  CHKERRQ(DMFieldEvaluate(field, pushforward, type, B, D, H));
+  CHKERRQ(PetscQuadratureDestroy(&quad));
+  CHKERRQ(VecDestroy(&pushforward));
+  CHKERRQ(PetscFree(pfArray));
+  CHKERRQ(PetscFEGeomDestroy(&geom));
   PetscFunctionReturn(0);
 }
 
@@ -250,12 +246,11 @@ static PetscErrorCode DMFieldInitialize_Shell(DMField field)
 PETSC_INTERN PetscErrorCode DMFieldCreate_Shell(DMField field)
 {
   DMField_Shell *shell;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(field,&shell);CHKERRQ(ierr);
+  CHKERRQ(PetscNewLog(field,&shell));
   field->data = shell;
-  ierr = DMFieldInitialize_Shell(field);CHKERRQ(ierr);
+  CHKERRQ(DMFieldInitialize_Shell(field));
   PetscFunctionReturn(0);
 }
 
@@ -263,14 +258,13 @@ PetscErrorCode DMFieldCreateShell(DM dm, PetscInt numComponents, DMFieldContinui
 {
   DMField        b;
   DMField_Shell  *shell;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   if (ctx) PetscValidPointer(ctx, 4);
   PetscValidPointer(field, 5);
-  ierr = DMFieldCreate(dm,numComponents,continuity,&b);CHKERRQ(ierr);
-  ierr = DMFieldSetType(b,DMFIELDSHELL);CHKERRQ(ierr);
+  CHKERRQ(DMFieldCreate(dm,numComponents,continuity,&b));
+  CHKERRQ(DMFieldSetType(b,DMFIELDSHELL));
   shell = (DMField_Shell *) b->data;
   shell->ctx = ctx;
   *field = b;

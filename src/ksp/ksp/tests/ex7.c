@@ -18,13 +18,12 @@ static char help[] = "Illustrate how to solves a matrix-free linear system with 
  */
 PetscErrorCode MyMatShellMult(Mat As,Vec x,Vec y)
 {
-  PetscErrorCode    ierr;
   Mat               P;
 
   PetscFunctionBegin;
   /* printf("MatShellMult...user should implement this routine without using a matrix\n"); */
-  ierr = MatShellGetContext(As,&P);CHKERRQ(ierr);
-  ierr = MatMult(P,x,y);CHKERRQ(ierr);
+  CHKERRQ(MatShellGetContext(As,&P));
+  CHKERRQ(MatMult(P,x,y));
   PetscFunctionReturn(0);
 }
 
@@ -42,91 +41,91 @@ int main(int argc,char **args)
   PetscBool      flg;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
+  CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          Compute the matrix and right-hand-side vector that define
          the linear system, As x = b.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /* Create vectors */
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) x, "Solution");CHKERRQ(ierr);
-  ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
+  CHKERRQ(PetscObjectSetName((PetscObject) x, "Solution"));
+  CHKERRQ(VecSetSizes(x,PETSC_DECIDE,n));
+  CHKERRQ(VecSetFromOptions(x));
+  CHKERRQ(VecDuplicate(x,&b));
+  CHKERRQ(VecDuplicate(x,&u));
 
   /* Create matrix P, to be used as preconditioner */
-  ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr);
-  ierr = MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(P);CHKERRQ(ierr);
-  ierr = MatSetUp(P);CHKERRQ(ierr);
+  CHKERRQ(MatCreate(PETSC_COMM_WORLD,&P));
+  CHKERRQ(MatSetSizes(P,PETSC_DECIDE,PETSC_DECIDE,n,n));
+  CHKERRQ(MatSetFromOptions(P));
+  CHKERRQ(MatSetUp(P));
 
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
-    ierr   = MatSetValues(P,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
+    CHKERRQ(MatSetValues(P,1,&i,3,col,value,INSERT_VALUES));
   }
   i    = n - 1; col[0] = n - 2; col[1] = n - 1;
-  ierr = MatSetValues(P,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(P,1,&i,2,col,value,INSERT_VALUES));
   i    = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
-  ierr = MatSetValues(P,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKERRQ(MatSetValues(P,1,&i,2,col,value,INSERT_VALUES));
+  CHKERRQ(MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY));
+  CHKERRQ(MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY));
 
   /* Set exact solution */
-  ierr = VecSet(u,one);CHKERRQ(ierr);
+  CHKERRQ(VecSet(u,one));
 
   /* Create a matrix-free matrix As, P is used as a data context in MyMatShellMult() */
-  ierr = MatCreateShell(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,P,&As);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(As);CHKERRQ(ierr);
-  ierr = MatShellSetOperation(As,MATOP_MULT,(void(*)(void))MyMatShellMult);CHKERRQ(ierr);
+  CHKERRQ(MatCreateShell(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,P,&As));
+  CHKERRQ(MatSetFromOptions(As));
+  CHKERRQ(MatShellSetOperation(As,MATOP_MULT,(void(*)(void))MyMatShellMult));
 
   /* Check As is a linear operator: As*(ax + y) = a As*x + As*y */
-  ierr = MatIsLinear(As,10,&flg);CHKERRQ(ierr);
+  CHKERRQ(MatIsLinear(As,10,&flg));
   PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Shell matrix As is non-linear! Use '-info |grep MatIsLinear' to get detailed report");
 
   /* Compute right-hand-side vector. */
-  ierr = MatMult(As,u,b);CHKERRQ(ierr);
+  CHKERRQ(MatMult(As,u,b));
 
-  ierr = MatSetOption(As,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatMultTranspose(As,u,x);CHKERRQ(ierr);
-  ierr = VecAXPY(x,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_INFINITY,&norm);CHKERRQ(ierr);
+  CHKERRQ(MatSetOption(As,MAT_SYMMETRIC,PETSC_TRUE));
+  CHKERRQ(MatMultTranspose(As,u,x));
+  CHKERRQ(VecAXPY(x,-1.0,b));
+  CHKERRQ(VecNorm(x,NORM_INFINITY,&norm));
   PetscCheckFalse(norm > PETSC_SMALL,PetscObjectComm((PetscObject)As),PETSC_ERR_PLIB,"Error ||A x-A^T x||_\\infty: %1.6e",norm);
-  ierr = MatSetOption(As,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatMultHermitianTranspose(As,u,x);CHKERRQ(ierr);
-  ierr = VecAXPY(x,-1.0,b);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_INFINITY,&norm);CHKERRQ(ierr);
+  CHKERRQ(MatSetOption(As,MAT_HERMITIAN,PETSC_TRUE));
+  CHKERRQ(MatMultHermitianTranspose(As,u,x));
+  CHKERRQ(VecAXPY(x,-1.0,b));
+  CHKERRQ(VecNorm(x,NORM_INFINITY,&norm));
   PetscCheckFalse(norm > PETSC_SMALL,PetscObjectComm((PetscObject)As),PETSC_ERR_PLIB,"Error ||A x-A^H x||_\\infty: %1.6e",norm);
 
   /* Create the linear solver and set various options */
-  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ksp,As,P);CHKERRQ(ierr);
+  CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
+  CHKERRQ(KSPSetOperators(ksp,As,P));
 
   /* Set linear solver defaults for this problem (optional). */
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-5,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+  CHKERRQ(KSPGetPC(ksp,&pc));
+  CHKERRQ(PCSetType(pc,PCNONE));
+  CHKERRQ(KSPSetTolerances(ksp,1.e-5,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT));
 
   /* Set runtime options */
-  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  CHKERRQ(KSPSetFromOptions(ksp));
 
   /* Solve linear system */
-  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  CHKERRQ(KSPSolve(ksp,b,x));
 
   /* Check the error */
-  ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(x,-1.0,u));
+  CHKERRQ(VecNorm(x,NORM_2,&norm));
+  CHKERRQ(KSPGetIterationNumber(ksp,&its));
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %D\n",(double)norm,its));
 
   /* Free work space. */
-  ierr = VecDestroy(&x);CHKERRQ(ierr); ierr = VecDestroy(&u);CHKERRQ(ierr);
-  ierr = VecDestroy(&b);CHKERRQ(ierr); ierr = MatDestroy(&P);CHKERRQ(ierr);
-  ierr = MatDestroy(&As);CHKERRQ(ierr);
-  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  CHKERRQ(VecDestroy(&x)); CHKERRQ(VecDestroy(&u));
+  CHKERRQ(VecDestroy(&b)); CHKERRQ(MatDestroy(&P));
+  CHKERRQ(MatDestroy(&As));
+  CHKERRQ(KSPDestroy(&ksp));
 
   ierr = PetscFinalize();
   return ierr;

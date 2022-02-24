@@ -28,10 +28,10 @@ typedef struct {
 PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
 {
   ZoomCtx           *zctx = (ZoomCtx*)ctx;
-  PetscErrorCode    ierr;
   PetscInt          m,n,i,j,k,dof,id,c1,c2,c3,c4;
   PetscReal         min,max,x1,x2,x3,x4,y_1,y2,y3,y4;
   const PetscScalar *xy,*v;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   m    = zctx->m;
@@ -67,26 +67,26 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
       y4   = PetscRealPart(xy[2*id+1]);
       c4   = PetscDrawRealToColor(PetscRealPart(v[k+dof*id]),min,max);
 
-      ierr = PetscDrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
-      ierr = PetscDrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4);CHKERRQ(ierr);
+      CHKERRQ(PetscDrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3));
+      CHKERRQ(PetscDrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4));
       if (zctx->showgrid) {
-        ierr = PetscDrawLine(draw,x1,y_1,x2,y2,PETSC_DRAW_BLACK);CHKERRQ(ierr);
-        ierr = PetscDrawLine(draw,x2,y2,x3,y3,PETSC_DRAW_BLACK);CHKERRQ(ierr);
-        ierr = PetscDrawLine(draw,x3,y3,x4,y4,PETSC_DRAW_BLACK);CHKERRQ(ierr);
-        ierr = PetscDrawLine(draw,x4,y4,x1,y_1,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+        CHKERRQ(PetscDrawLine(draw,x1,y_1,x2,y2,PETSC_DRAW_BLACK));
+        CHKERRQ(PetscDrawLine(draw,x2,y2,x3,y3,PETSC_DRAW_BLACK));
+        CHKERRQ(PetscDrawLine(draw,x3,y3,x4,y4,PETSC_DRAW_BLACK));
+        CHKERRQ(PetscDrawLine(draw,x4,y4,x1,y_1,PETSC_DRAW_BLACK));
       }
     }
   }
   if (zctx->showaxis && !zctx->rank) {
     if (zctx->name0 || zctx->name1) {
       PetscReal xl,yl,xr,yr,x,y;
-      ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
+      CHKERRQ(PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr));
       x  = xl + .30*(xr - xl);
       xl = xl + .01*(xr - xl);
       y  = yr - .30*(yr - yl);
       yl = yl + .01*(yr - yl);
-      if (zctx->name0) {ierr = PetscDrawString(draw,x,yl,PETSC_DRAW_BLACK,zctx->name0);CHKERRQ(ierr);}
-      if (zctx->name1) {ierr = PetscDrawStringVertical(draw,xl,y,PETSC_DRAW_BLACK,zctx->name1);CHKERRQ(ierr);}
+      if (zctx->name0) CHKERRQ(PetscDrawString(draw,x,yl,PETSC_DRAW_BLACK,zctx->name0));
+      if (zctx->name1) CHKERRQ(PetscDrawStringVertical(draw,xl,y,PETSC_DRAW_BLACK,zctx->name1));
     }
     /*
        Ideally we would use the PetscDrawAxis object to manage displaying the coordinate limits
@@ -96,16 +96,16 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
       double xmin = (double)zctx->xmin, ymin = (double)zctx->ymin;
       double xmax = (double)zctx->xmax, ymax = (double)zctx->ymax;
       char   value[16]; size_t len; PetscReal w;
-      ierr = PetscSNPrintf(value,16,"%0.2e",xmin);CHKERRQ(ierr);
-      ierr = PetscDrawString(draw,xmin,ymin - .05*(ymax - ymin),PETSC_DRAW_BLACK,value);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(value,16,"%0.2e",xmax);CHKERRQ(ierr);
-      ierr = PetscStrlen(value,&len);CHKERRQ(ierr);
-      ierr = PetscDrawStringGetSize(draw,&w,NULL);CHKERRQ(ierr);
-      ierr = PetscDrawString(draw,xmax - len*w,ymin - .05*(ymax - ymin),PETSC_DRAW_BLACK,value);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(value,16,"%0.2e",ymin);CHKERRQ(ierr);
-      ierr = PetscDrawString(draw,xmin - .05*(xmax - xmin),ymin,PETSC_DRAW_BLACK,value);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(value,16,"%0.2e",ymax);CHKERRQ(ierr);
-      ierr = PetscDrawString(draw,xmin - .05*(xmax - xmin),ymax,PETSC_DRAW_BLACK,value);CHKERRQ(ierr);
+      CHKERRQ(PetscSNPrintf(value,16,"%0.2e",xmin));
+      CHKERRQ(PetscDrawString(draw,xmin,ymin - .05*(ymax - ymin),PETSC_DRAW_BLACK,value));
+      CHKERRQ(PetscSNPrintf(value,16,"%0.2e",xmax));
+      CHKERRQ(PetscStrlen(value,&len));
+      CHKERRQ(PetscDrawStringGetSize(draw,&w,NULL));
+      CHKERRQ(PetscDrawString(draw,xmax - len*w,ymin - .05*(ymax - ymin),PETSC_DRAW_BLACK,value));
+      CHKERRQ(PetscSNPrintf(value,16,"%0.2e",ymin));
+      CHKERRQ(PetscDrawString(draw,xmin - .05*(xmax - xmin),ymin,PETSC_DRAW_BLACK,value));
+      CHKERRQ(PetscSNPrintf(value,16,"%0.2e",ymax));
+      CHKERRQ(PetscDrawString(draw,xmin - .05*(xmax - xmin),ymax,PETSC_DRAW_BLACK,value));
     }
   }
   ierr = PetscDrawCollectiveEnd(draw);CHKERRQ(ierr);
@@ -115,7 +115,6 @@ PetscErrorCode VecView_MPI_Draw_DA2d_Zoom(PetscDraw draw,void *ctx)
 PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 {
   DM                 da,dac,dag;
-  PetscErrorCode     ierr;
   PetscInt           N,s,M,w,ncoors = 4;
   const PetscInt     *lx,*ly;
   PetscReal          coors[4];
@@ -136,56 +135,56 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   zctx.showgrid = PETSC_FALSE;
   zctx.showaxis = PETSC_TRUE;
 
-  ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDrawGetDraw(viewer,0,&draw));
+  CHKERRQ(PetscDrawIsNull(draw,&isnull));
   if (isnull) PetscFunctionReturn(0);
 
-  ierr = PetscViewerDrawGetBounds(viewer,&nbounds,&bounds);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerDrawGetBounds(viewer,&nbounds,&bounds));
 
-  ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
+  CHKERRQ(VecGetDM(xin,&da));
   PetscCheck(da,PetscObjectComm((PetscObject)xin),PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
 
-  ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&zctx.rank);CHKERRMPI(ierr);
+  CHKERRQ(PetscObjectGetComm((PetscObject)xin,&comm));
+  CHKERRMPI(MPI_Comm_rank(comm,&zctx.rank));
 
-  ierr = DMDAGetInfo(da,NULL,&M,&N,NULL,&zctx.m,&zctx.n,NULL,&w,&s,&bx,&by,NULL,&st);CHKERRQ(ierr);
-  ierr = DMDAGetOwnershipRanges(da,&lx,&ly,NULL);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetInfo(da,NULL,&M,&N,NULL,&zctx.m,&zctx.n,NULL,&w,&s,&bx,&by,NULL,&st));
+  CHKERRQ(DMDAGetOwnershipRanges(da,&lx,&ly,NULL));
 
   /*
      Obtain a sequential vector that is going to contain the local values plus ONE layer of
      ghosted values to draw the graphics from. We also need its corresponding DMDA (dac) that will
      update the local values pluse ONE layer of ghost values.
   */
-  ierr = PetscObjectQuery((PetscObject)da,"GraphicsGhosted",(PetscObject*)&xlocal);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectQuery((PetscObject)da,"GraphicsGhosted",(PetscObject*)&xlocal));
   if (!xlocal) {
     if (bx !=  DM_BOUNDARY_NONE || by !=  DM_BOUNDARY_NONE || s != 1 || st != DMDA_STENCIL_BOX) {
       /*
          if original da is not of stencil width one, or periodic or not a box stencil then
          create a special DMDA to handle one level of ghost points for graphics
       */
-      ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,w,1,lx,ly,&dac);CHKERRQ(ierr);
-      ierr = DMSetUp(dac);CHKERRQ(ierr);
-      ierr = PetscInfo(da,"Creating auxilary DMDA for managing graphics ghost points\n");CHKERRQ(ierr);
+      CHKERRQ(DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,w,1,lx,ly,&dac));
+      CHKERRQ(DMSetUp(dac));
+      CHKERRQ(PetscInfo(da,"Creating auxilary DMDA for managing graphics ghost points\n"));
     } else {
       /* otherwise we can use the da we already have */
       dac = da;
     }
     /* create local vector for holding ghosted values used in graphics */
-    ierr = DMCreateLocalVector(dac,&xlocal);CHKERRQ(ierr);
+    CHKERRQ(DMCreateLocalVector(dac,&xlocal));
     if (dac != da) {
       /* don't keep any public reference of this DMDA, is is only available through xlocal */
-      ierr = PetscObjectDereference((PetscObject)dac);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectDereference((PetscObject)dac));
     } else {
       /* remove association between xlocal and da, because below we compose in the opposite
          direction and if we left this connect we'd get a loop, so the objects could
          never be destroyed */
-      ierr = PetscObjectRemoveReference((PetscObject)xlocal,"__PETSc_dm");CHKERRQ(ierr);
+      CHKERRQ(PetscObjectRemoveReference((PetscObject)xlocal,"__PETSc_dm"));
     }
-    ierr = PetscObjectCompose((PetscObject)da,"GraphicsGhosted",(PetscObject)xlocal);CHKERRQ(ierr);
-    ierr = PetscObjectDereference((PetscObject)xlocal);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectCompose((PetscObject)da,"GraphicsGhosted",(PetscObject)xlocal));
+    CHKERRQ(PetscObjectDereference((PetscObject)xlocal));
   } else {
     if (bx !=  DM_BOUNDARY_NONE || by !=  DM_BOUNDARY_NONE || s != 1 || st != DMDA_STENCIL_BOX) {
-      ierr = VecGetDM(xlocal, &dac);CHKERRQ(ierr);
+      CHKERRQ(VecGetDM(xlocal, &dac));
     } else {
       dac = da;
     }
@@ -194,74 +193,74 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   /*
       Get local (ghosted) values of vector
   */
-  ierr = DMGlobalToLocalBegin(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(xlocal,&zctx.v);CHKERRQ(ierr);
+  CHKERRQ(DMGlobalToLocalBegin(dac,xin,INSERT_VALUES,xlocal));
+  CHKERRQ(DMGlobalToLocalEnd(dac,xin,INSERT_VALUES,xlocal));
+  CHKERRQ(VecGetArrayRead(xlocal,&zctx.v));
 
   /*
       Get coordinates of nodes
   */
-  ierr = DMGetCoordinates(da,&xcoor);CHKERRQ(ierr);
+  CHKERRQ(DMGetCoordinates(da,&xcoor));
   if (!xcoor) {
-    ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRQ(ierr);
-    ierr = DMGetCoordinates(da,&xcoor);CHKERRQ(ierr);
+    CHKERRQ(DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0));
+    CHKERRQ(DMGetCoordinates(da,&xcoor));
   }
 
   /*
       Determine the min and max coordinates in plot
   */
-  ierr = VecStrideMin(xcoor,0,NULL,&zctx.xmin);CHKERRQ(ierr);
-  ierr = VecStrideMax(xcoor,0,NULL,&zctx.xmax);CHKERRQ(ierr);
-  ierr = VecStrideMin(xcoor,1,NULL,&zctx.ymin);CHKERRQ(ierr);
-  ierr = VecStrideMax(xcoor,1,NULL,&zctx.ymax);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-draw_contour_axis",&zctx.showaxis,NULL);CHKERRQ(ierr);
+  CHKERRQ(VecStrideMin(xcoor,0,NULL,&zctx.xmin));
+  CHKERRQ(VecStrideMax(xcoor,0,NULL,&zctx.xmax));
+  CHKERRQ(VecStrideMin(xcoor,1,NULL,&zctx.ymin));
+  CHKERRQ(VecStrideMax(xcoor,1,NULL,&zctx.ymax));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-draw_contour_axis",&zctx.showaxis,NULL));
   if (zctx.showaxis) {
     coors[0] = zctx.xmin - .05*(zctx.xmax - zctx.xmin); coors[1] = zctx.ymin - .05*(zctx.ymax - zctx.ymin);
     coors[2] = zctx.xmax + .05*(zctx.xmax - zctx.xmin); coors[3] = zctx.ymax + .05*(zctx.ymax - zctx.ymin);
   } else {
     coors[0] = zctx.xmin; coors[1] = zctx.ymin; coors[2] = zctx.xmax; coors[3] = zctx.ymax;
   }
-  ierr = PetscOptionsGetRealArray(NULL,NULL,"-draw_coordinates",coors,&ncoors,NULL);CHKERRQ(ierr);
-  ierr = PetscInfo(da,"Preparing DMDA 2d contour plot coordinates %g %g %g %g\n",(double)coors[0],(double)coors[1],(double)coors[2],(double)coors[3]);CHKERRQ(ierr);
+  CHKERRQ(PetscOptionsGetRealArray(NULL,NULL,"-draw_coordinates",coors,&ncoors,NULL));
+  CHKERRQ(PetscInfo(da,"Preparing DMDA 2d contour plot coordinates %g %g %g %g\n",(double)coors[0],(double)coors[1],(double)coors[2],(double)coors[3]));
 
   /*
       Get local ghosted version of coordinates
   */
-  ierr = PetscObjectQuery((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject*)&xcoorl);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectQuery((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject*)&xcoorl));
   if (!xcoorl) {
     /* create DMDA to get local version of graphics */
-    ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,2,1,lx,ly,&dag);CHKERRQ(ierr);
-    ierr = DMSetUp(dag);CHKERRQ(ierr);
-    ierr = PetscInfo(dag,"Creating auxilary DMDA for managing graphics coordinates ghost points\n");CHKERRQ(ierr);
-    ierr = DMCreateLocalVector(dag,&xcoorl);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl);CHKERRQ(ierr);
-    ierr = PetscObjectDereference((PetscObject)dag);CHKERRQ(ierr);
-    ierr = PetscObjectDereference((PetscObject)xcoorl);CHKERRQ(ierr);
+    CHKERRQ(DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,2,1,lx,ly,&dag));
+    CHKERRQ(DMSetUp(dag));
+    CHKERRQ(PetscInfo(dag,"Creating auxilary DMDA for managing graphics coordinates ghost points\n"));
+    CHKERRQ(DMCreateLocalVector(dag,&xcoorl));
+    CHKERRQ(PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl));
+    CHKERRQ(PetscObjectDereference((PetscObject)dag));
+    CHKERRQ(PetscObjectDereference((PetscObject)xcoorl));
   } else {
-    ierr = VecGetDM(xcoorl,&dag);CHKERRQ(ierr);
+    CHKERRQ(VecGetDM(xcoorl,&dag));
   }
-  ierr = DMGlobalToLocalBegin(dag,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(dag,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(xcoorl,&zctx.xy);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinateName(da,0,&zctx.name0);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinateName(da,1,&zctx.name1);CHKERRQ(ierr);
+  CHKERRQ(DMGlobalToLocalBegin(dag,xcoor,INSERT_VALUES,xcoorl));
+  CHKERRQ(DMGlobalToLocalEnd(dag,xcoor,INSERT_VALUES,xcoorl));
+  CHKERRQ(VecGetArrayRead(xcoorl,&zctx.xy));
+  CHKERRQ(DMDAGetCoordinateName(da,0,&zctx.name0));
+  CHKERRQ(DMDAGetCoordinateName(da,1,&zctx.name1));
 
   /*
       Get information about size of area each processor must do graphics for
   */
-  ierr = DMDAGetInfo(dac,NULL,&M,&N,NULL,NULL,NULL,NULL,&zctx.dof,NULL,&bx,&by,NULL,NULL);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(dac,NULL,NULL,NULL,&zctx.m,&zctx.n,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-draw_contour_grid",&zctx.showgrid,NULL);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetInfo(dac,NULL,&M,&N,NULL,NULL,NULL,NULL,&zctx.dof,NULL,&bx,&by,NULL,NULL));
+  CHKERRQ(DMDAGetGhostCorners(dac,NULL,NULL,NULL,&zctx.m,&zctx.n,NULL));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-draw_contour_grid",&zctx.showgrid,NULL));
 
-  ierr = DMDASelectFields(da,&ndisplayfields,&displayfields);CHKERRQ(ierr);
-  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-draw_ports",&useports,NULL);CHKERRQ(ierr);
+  CHKERRQ(DMDASelectFields(da,&ndisplayfields,&displayfields));
+  CHKERRQ(PetscViewerGetFormat(viewer,&format));
+  CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-draw_ports",&useports,NULL));
   if (format == PETSC_VIEWER_DRAW_PORTS) useports = PETSC_TRUE;
   if (useports) {
-    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-    ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-    ierr = PetscDrawClear(draw);CHKERRQ(ierr);
-    ierr = PetscDrawViewPortsCreate(draw,ndisplayfields,&ports);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerDrawGetDraw(viewer,0,&draw));
+    CHKERRQ(PetscDrawCheckResizedWindow(draw));
+    CHKERRQ(PetscDrawClear(draw));
+    CHKERRQ(PetscDrawViewPortsCreate(draw,ndisplayfields,&ports));
   }
 
   /*
@@ -271,8 +270,8 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     zctx.k = displayfields[i];
 
     /* determine the min and max value in plot */
-    ierr = VecStrideMin(xin,zctx.k,NULL,&zctx.min);CHKERRQ(ierr);
-    ierr = VecStrideMax(xin,zctx.k,NULL,&zctx.max);CHKERRQ(ierr);
+    CHKERRQ(VecStrideMin(xin,zctx.k,NULL,&zctx.min));
+    CHKERRQ(VecStrideMax(xin,zctx.k,NULL,&zctx.max));
     if (zctx.k < nbounds) {
       zctx.min = bounds[2*zctx.k];
       zctx.max = bounds[2*zctx.k+1];
@@ -281,32 +280,32 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
       zctx.min -= 1.e-12;
       zctx.max += 1.e-12;
     }
-    ierr = PetscInfo(da,"DMDA 2d contour plot min %g max %g\n",(double)zctx.min,(double)zctx.max);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(da,"DMDA 2d contour plot min %g max %g\n",(double)zctx.min,(double)zctx.max));
 
     if (useports) {
-      ierr = PetscDrawViewPortsSet(ports,i);CHKERRQ(ierr);
+      CHKERRQ(PetscDrawViewPortsSet(ports,i));
     } else {
       const char *title;
-      ierr = PetscViewerDrawGetDraw(viewer,i,&draw);CHKERRQ(ierr);
-      ierr = DMDAGetFieldName(da,zctx.k,&title);CHKERRQ(ierr);
-      if (title) {ierr = PetscDrawSetTitle(draw,title);CHKERRQ(ierr);}
+      CHKERRQ(PetscViewerDrawGetDraw(viewer,i,&draw));
+      CHKERRQ(DMDAGetFieldName(da,zctx.k,&title));
+      if (title) CHKERRQ(PetscDrawSetTitle(draw,title));
     }
 
-    ierr = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
-    ierr = PetscDrawScalePopup(popup,zctx.min,zctx.max);CHKERRQ(ierr);
-    ierr = PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
-    ierr = PetscDrawZoom(draw,VecView_MPI_Draw_DA2d_Zoom,&zctx);CHKERRQ(ierr);
-    if (!useports) {ierr = PetscDrawSave(draw);CHKERRQ(ierr);}
+    CHKERRQ(PetscDrawGetPopup(draw,&popup));
+    CHKERRQ(PetscDrawScalePopup(popup,zctx.min,zctx.max));
+    CHKERRQ(PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]));
+    CHKERRQ(PetscDrawZoom(draw,VecView_MPI_Draw_DA2d_Zoom,&zctx));
+    if (!useports) CHKERRQ(PetscDrawSave(draw));
   }
   if (useports) {
-    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
-    ierr = PetscDrawSave(draw);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerDrawGetDraw(viewer,0,&draw));
+    CHKERRQ(PetscDrawSave(draw));
   }
 
-  ierr = PetscDrawViewPortsDestroy(ports);CHKERRQ(ierr);
-  ierr = PetscFree(displayfields);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(xcoorl,&zctx.xy);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(xlocal,&zctx.v);CHKERRQ(ierr);
+  CHKERRQ(PetscDrawViewPortsDestroy(ports));
+  CHKERRQ(PetscFree(displayfields));
+  CHKERRQ(VecRestoreArrayRead(xcoorl,&zctx.xy));
+  CHKERRQ(VecRestoreArrayRead(xlocal,&zctx.v));
   PetscFunctionReturn(0);
 }
 
@@ -314,7 +313,6 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension, PetscInt timestep, hsize_t *chunkDims)
 {
   PetscMPIInt    comm_size;
-  PetscErrorCode ierr;
   hsize_t        chunk_size, target_size, dim;
   hsize_t        vec_size = sizeof(PetscScalar)*da->M*da->N*da->P*da->w;
   hsize_t        avg_local_vec_size,KiB = 1024,MiB = KiB*KiB,GiB = MiB*KiB,min_size = MiB;
@@ -323,7 +321,7 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension
   PetscInt       zslices=da->p, yslices=da->n, xslices=da->m;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)xin), &comm_size);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)xin), &comm_size));
   avg_local_vec_size = (hsize_t) PetscCeilInt(vec_size,comm_size);      /* we will attempt to use this as the chunk size */
 
   target_size = (hsize_t) PetscMin((PetscInt64)vec_size,PetscMin((PetscInt64)max_chunk_size,PetscMax((PetscInt64)avg_local_vec_size,PetscMax(PetscCeilInt64(vec_size,max_chunks),(PetscInt64)min_size))));
@@ -429,21 +427,20 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   PetscInt          timestep=PETSC_MIN_INT, dimension;
   const PetscScalar *x;
   const char        *vecname;
-  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5IsTimestepping(viewer, &timestepping);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5OpenGroup(viewer, &file_id, &group));
+  CHKERRQ(PetscViewerHDF5IsTimestepping(viewer, &timestepping));
   if (timestepping) {
-    ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerHDF5GetTimestep(viewer, &timestep));
   }
-  ierr = PetscViewerHDF5GetBaseDimension2(viewer,&dim2);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5GetSPOutput(viewer,&spoutput);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5GetBaseDimension2(viewer,&dim2));
+  CHKERRQ(PetscViewerHDF5GetSPOutput(viewer,&spoutput));
 
-  ierr = VecGetDM(xin,&dm);CHKERRQ(ierr);
+  CHKERRQ(VecGetDM(xin,&dm));
   PetscCheck(dm,PetscObjectComm((PetscObject)xin),PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
   da = (DM_DA*)dm->data;
-  ierr = DMGetDimension(dm, &dimension);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(dm, &dimension));
 
   /* Create the dataspace for the dataset.
    *
@@ -464,23 +461,23 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
     ++dim;
   }
   if (dimension == 3) {
-    ierr           = PetscHDF5IntCast(da->P,dims+dim);CHKERRQ(ierr);
+    CHKERRQ(PetscHDF5IntCast(da->P,dims+dim));
     maxDims[dim]   = dims[dim];
     chunkDims[dim] = dims[dim];
     ++dim;
   }
   if (dimension > 1) {
-    ierr           = PetscHDF5IntCast(da->N,dims+dim);CHKERRQ(ierr);
+    CHKERRQ(PetscHDF5IntCast(da->N,dims+dim));
     maxDims[dim]   = dims[dim];
     chunkDims[dim] = dims[dim];
     ++dim;
   }
-  ierr           = PetscHDF5IntCast(da->M,dims+dim);CHKERRQ(ierr);
+  CHKERRQ(PetscHDF5IntCast(da->M,dims+dim));
   maxDims[dim]   = dims[dim];
   chunkDims[dim] = dims[dim];
   ++dim;
   if (da->w > 1 || dim2) {
-    ierr           = PetscHDF5IntCast(da->w,dims+dim);CHKERRQ(ierr);
+    CHKERRQ(PetscHDF5IntCast(da->w,dims+dim));
     maxDims[dim]   = dims[dim];
     chunkDims[dim] = dims[dim];
     ++dim;
@@ -492,7 +489,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   ++dim;
 #endif
 
-  ierr = VecGetHDF5ChunkSize(da, xin, dimension, timestep, chunkDims);CHKERRQ(ierr);
+  CHKERRQ(VecGetHDF5ChunkSize(da, xin, dimension, timestep, chunkDims));
 
   PetscStackCallHDF5Return(filespace,H5Screate_simple,(dim, dims, maxDims));
 
@@ -510,7 +507,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
 #endif
 
   /* Create the dataset with default properties and close filespace */
-  ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetName((PetscObject)xin,&vecname));
   if (!H5Lexists(group, vecname, H5P_DEFAULT)) {
     /* Create chunk */
     PetscStackCallHDF5Return(chunkspace,H5Pcreate,(H5P_DATASET_CREATE));
@@ -529,9 +526,9 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
     offset[dim] = timestep;
     ++dim;
   }
-  if (dimension == 3) {ierr = PetscHDF5IntCast(da->zs,offset + dim++);CHKERRQ(ierr);}
-  if (dimension > 1)  {ierr = PetscHDF5IntCast(da->ys,offset + dim++);CHKERRQ(ierr);}
-  ierr = PetscHDF5IntCast(da->xs/da->w,offset + dim++);CHKERRQ(ierr);
+  if (dimension == 3) CHKERRQ(PetscHDF5IntCast(da->zs,offset + dim++));
+  if (dimension > 1)  CHKERRQ(PetscHDF5IntCast(da->ys,offset + dim++));
+  CHKERRQ(PetscHDF5IntCast(da->xs/da->w,offset + dim++));
   if (da->w > 1 || dim2) offset[dim++] = 0;
 #if defined(PETSC_USE_COMPLEX)
   offset[dim++] = 0;
@@ -541,10 +538,10 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
     count[dim] = 1;
     ++dim;
   }
-  if (dimension == 3) {ierr = PetscHDF5IntCast(da->ze - da->zs,count + dim++);CHKERRQ(ierr);}
-  if (dimension > 1)  {ierr = PetscHDF5IntCast(da->ye - da->ys,count + dim++);CHKERRQ(ierr);}
-  ierr = PetscHDF5IntCast((da->xe - da->xs)/da->w,count + dim++);CHKERRQ(ierr);
-  if (da->w > 1 || dim2) {ierr = PetscHDF5IntCast(da->w,count + dim++);CHKERRQ(ierr);}
+  if (dimension == 3) CHKERRQ(PetscHDF5IntCast(da->ze - da->zs,count + dim++));
+  if (dimension > 1)  CHKERRQ(PetscHDF5IntCast(da->ye - da->ys,count + dim++));
+  CHKERRQ(PetscHDF5IntCast((da->xe - da->xs)/da->w,count + dim++));
+  if (da->w > 1 || dim2) CHKERRQ(PetscHDF5IntCast(da->w,count + dim++));
 #if defined(PETSC_USE_COMPLEX)
   count[dim++] = 2;
 #endif
@@ -552,19 +549,19 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   PetscStackCallHDF5Return(filespace,H5Dget_space,(dset_id));
   PetscStackCallHDF5(H5Sselect_hyperslab,(filespace, H5S_SELECT_SET, offset, NULL, count, NULL));
 
-  ierr   = VecGetArrayRead(xin, &x);CHKERRQ(ierr);
+  CHKERRQ(VecGetArrayRead(xin, &x));
   PetscStackCallHDF5(H5Dwrite,(dset_id, memscalartype, memspace, filespace, hdf5->dxpl_id, x));
   PetscStackCallHDF5(H5Fflush,(file_id, H5F_SCOPE_GLOBAL));
-  ierr   = VecRestoreArrayRead(xin, &x);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArrayRead(xin, &x));
 
   #if defined(PETSC_USE_COMPLEX)
   {
     PetscBool tru = PETSC_TRUE;
-    ierr = PetscViewerHDF5WriteObjectAttribute(viewer,(PetscObject)xin,"complex",PETSC_BOOL,&tru);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerHDF5WriteObjectAttribute(viewer,(PetscObject)xin,"complex",PETSC_BOOL,&tru));
   }
   #endif
   if (timestepping) {
-    ierr = PetscViewerHDF5WriteObjectAttribute(viewer,(PetscObject)xin,"timestepping",PETSC_BOOL,&timestepping);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerHDF5WriteObjectAttribute(viewer,(PetscObject)xin,"timestepping",PETSC_BOOL,&timestepping));
   }
 
   /* Close/release resources */
@@ -574,7 +571,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   PetscStackCallHDF5(H5Sclose,(filespace));
   PetscStackCallHDF5(H5Sclose,(memspace));
   PetscStackCallHDF5(H5Dclose,(dset_id));
-  ierr   = PetscInfo(xin,"Wrote Vec object with name %s\n",vecname);CHKERRQ(ierr);
+  CHKERRQ(PetscInfo(xin,"Wrote Vec object with name %s\n",vecname));
   PetscFunctionReturn(0);
 }
 #endif
@@ -584,7 +581,6 @@ extern PetscErrorCode VecView_MPI_Draw_DA1d(Vec,PetscViewer);
 #if defined(PETSC_HAVE_MPIIO)
 static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool write)
 {
-  PetscErrorCode    ierr;
   MPI_File          mfdes;
   PetscMPIInt       gsizes[4],lsizes[4],lstarts[4],asiz,dof;
   MPI_Datatype      view;
@@ -596,12 +592,12 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
   PetscBool         skipheader;
 
   PetscFunctionBegin;
-  ierr = VecGetSize(xin,&vecrows);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryGetSkipHeader(viewer,&skipheader);CHKERRQ(ierr);
+  CHKERRQ(VecGetSize(xin,&vecrows));
+  CHKERRQ(PetscViewerBinaryGetSkipHeader(viewer,&skipheader));
   if (!write) {
     /* Read vector header. */
     if (!skipheader) {
-      ierr = PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerBinaryRead(viewer,tr,2,NULL,PETSC_INT));
       type = tr[0];
       rows = tr[1];
       PetscCheckFalse(type != VEC_FILE_CLASSID,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Not vector next in file");
@@ -611,40 +607,40 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
     tr[0] = VEC_FILE_CLASSID;
     tr[1] = vecrows;
     if (!skipheader) {
-      ierr  = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT));
     }
   }
 
-  ierr       = PetscMPIIntCast(dd->w,&dof);CHKERRQ(ierr);
+  CHKERRQ(PetscMPIIntCast(dd->w,&dof));
   gsizes[0]  = dof;
-  ierr       = PetscMPIIntCast(dd->M,gsizes+1);CHKERRQ(ierr);
-  ierr       = PetscMPIIntCast(dd->N,gsizes+2);CHKERRQ(ierr);
-  ierr       = PetscMPIIntCast(dd->P,gsizes+3);CHKERRQ(ierr);
+  CHKERRQ(PetscMPIIntCast(dd->M,gsizes+1));
+  CHKERRQ(PetscMPIIntCast(dd->N,gsizes+2));
+  CHKERRQ(PetscMPIIntCast(dd->P,gsizes+3));
   lsizes[0]  = dof;
-  ierr       = PetscMPIIntCast((dd->xe-dd->xs)/dof,lsizes+1);CHKERRQ(ierr);
-  ierr       = PetscMPIIntCast(dd->ye-dd->ys,lsizes+2);CHKERRQ(ierr);
-  ierr       = PetscMPIIntCast(dd->ze-dd->zs,lsizes+3);CHKERRQ(ierr);
+  CHKERRQ(PetscMPIIntCast((dd->xe-dd->xs)/dof,lsizes+1));
+  CHKERRQ(PetscMPIIntCast(dd->ye-dd->ys,lsizes+2));
+  CHKERRQ(PetscMPIIntCast(dd->ze-dd->zs,lsizes+3));
   lstarts[0] = 0;
-  ierr       = PetscMPIIntCast(dd->xs/dof,lstarts+1);CHKERRQ(ierr);
-  ierr       = PetscMPIIntCast(dd->ys,lstarts+2);CHKERRQ(ierr);
-  ierr       = PetscMPIIntCast(dd->zs,lstarts+3);CHKERRQ(ierr);
-  ierr       = MPI_Type_create_subarray(da->dim+1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRMPI(ierr);
-  ierr       = MPI_Type_commit(&view);CHKERRMPI(ierr);
+  CHKERRQ(PetscMPIIntCast(dd->xs/dof,lstarts+1));
+  CHKERRQ(PetscMPIIntCast(dd->ys,lstarts+2));
+  CHKERRQ(PetscMPIIntCast(dd->zs,lstarts+3));
+  CHKERRMPI(MPI_Type_create_subarray(da->dim+1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view));
+  CHKERRMPI(MPI_Type_commit(&view));
 
-  ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
-  ierr = MPI_File_set_view(mfdes,off,MPIU_SCALAR,view,(char*)"native",MPI_INFO_NULL);CHKERRMPI(ierr);
-  ierr = VecGetArrayRead(xin,&array);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes));
+  CHKERRQ(PetscViewerBinaryGetMPIIOOffset(viewer,&off));
+  CHKERRMPI(MPI_File_set_view(mfdes,off,MPIU_SCALAR,view,(char*)"native",MPI_INFO_NULL));
+  CHKERRQ(VecGetArrayRead(xin,&array));
   asiz = lsizes[1]*(lsizes[2] > 0 ? lsizes[2] : 1)*(lsizes[3] > 0 ? lsizes[3] : 1)*dof;
   if (write) {
-    ierr = MPIU_File_write_all(mfdes,(PetscScalar*)array,asiz,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    CHKERRQ(MPIU_File_write_all(mfdes,(PetscScalar*)array,asiz,MPIU_SCALAR,MPI_STATUS_IGNORE));
   } else {
-    ierr = MPIU_File_read_all(mfdes,(PetscScalar*)array,asiz,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    CHKERRQ(MPIU_File_read_all(mfdes,(PetscScalar*)array,asiz,MPIU_SCALAR,MPI_STATUS_IGNORE));
   }
-  ierr = MPI_Type_get_extent(view,&ul,&ub);CHKERRMPI(ierr);
-  ierr = PetscViewerBinaryAddMPIIOOffset(viewer,ub);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(xin,&array);CHKERRQ(ierr);
-  ierr = MPI_Type_free(&view);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Type_get_extent(view,&ul,&ub));
+  CHKERRQ(PetscViewerBinaryAddMPIIOOffset(viewer,ub));
+  CHKERRQ(VecRestoreArrayRead(xin,&array));
+  CHKERRMPI(MPI_Type_free(&view));
   PetscFunctionReturn(0);
 }
 #endif
@@ -652,7 +648,6 @@ static PetscErrorCode DMDAArrayMPIIO(DM da,PetscViewer viewer,Vec xin,PetscBool 
 PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
 {
   DM                da;
-  PetscErrorCode    ierr;
   PetscInt          dim;
   Vec               natural;
   PetscBool         isdraw,isvtk,isglvis;
@@ -663,77 +658,77 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
+  CHKERRQ(VecGetDM(xin,&da));
   PetscCheck(da,PetscObjectComm((PetscObject)xin),PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isvtk);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERVTK,&isvtk));
 #if defined(PETSC_HAVE_HDF5)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5));
 #endif
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERGLVIS,&isglvis);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERGLVIS,&isglvis));
   if (isdraw) {
-    ierr = DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+    CHKERRQ(DMDAGetInfo(da,&dim,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
     if (dim == 1) {
-      ierr = VecView_MPI_Draw_DA1d(xin,viewer);CHKERRQ(ierr);
+      CHKERRQ(VecView_MPI_Draw_DA1d(xin,viewer));
     } else if (dim == 2) {
-      ierr = VecView_MPI_Draw_DA2d(xin,viewer);CHKERRQ(ierr);
+      CHKERRQ(VecView_MPI_Draw_DA2d(xin,viewer));
     } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot graphically view vector associated with this dimensional DMDA %D",dim);
   } else if (isvtk) {           /* Duplicate the Vec */
     Vec Y;
-    ierr = VecDuplicate(xin,&Y);CHKERRQ(ierr);
+    CHKERRQ(VecDuplicate(xin,&Y));
     if (((PetscObject)xin)->name) {
       /* If xin was named, copy the name over to Y. The duplicate names are safe because nobody else will ever see Y. */
-      ierr = PetscObjectSetName((PetscObject)Y,((PetscObject)xin)->name);CHKERRQ(ierr);
+      CHKERRQ(PetscObjectSetName((PetscObject)Y,((PetscObject)xin)->name));
     }
-    ierr = VecCopy(xin,Y);CHKERRQ(ierr);
+    CHKERRQ(VecCopy(xin,Y));
     {
       PetscObject dmvtk;
       PetscBool   compatible,compatibleSet;
-      ierr = PetscViewerVTKGetDM(viewer,&dmvtk);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerVTKGetDM(viewer,&dmvtk));
       if (dmvtk) {
         PetscValidHeaderSpecific((DM)dmvtk,DM_CLASSID,2);
-        ierr = DMGetCompatibility(da,(DM)dmvtk,&compatible,&compatibleSet);CHKERRQ(ierr);
+        CHKERRQ(DMGetCompatibility(da,(DM)dmvtk,&compatible,&compatibleSet));
         PetscCheck(compatibleSet && compatible,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_INCOMP,"Cannot confirm compatibility of DMs associated with Vecs viewed in the same VTK file. Check that grids are the same.");
       }
-      ierr = PetscViewerVTKAddField(viewer,(PetscObject)da,DMDAVTKWriteAll,PETSC_DEFAULT,PETSC_VTK_POINT_FIELD,PETSC_FALSE,(PetscObject)Y);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerVTKAddField(viewer,(PetscObject)da,DMDAVTKWriteAll,PETSC_DEFAULT,PETSC_VTK_POINT_FIELD,PETSC_FALSE,(PetscObject)Y));
     }
 #if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {
-    ierr = VecView_MPI_HDF5_DA(xin,viewer);CHKERRQ(ierr);
+    CHKERRQ(VecView_MPI_HDF5_DA(xin,viewer));
 #endif
   } else if (isglvis) {
-    ierr = VecView_GLVis(xin,viewer);CHKERRQ(ierr);
+    CHKERRQ(VecView_GLVis(xin,viewer));
   } else {
 #if defined(PETSC_HAVE_MPIIO)
     PetscBool isbinary,isMPIIO;
 
-    ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
     if (isbinary) {
-      ierr = PetscViewerBinaryGetUseMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerBinaryGetUseMPIIO(viewer,&isMPIIO));
       if (isMPIIO) {
-        ierr = DMDAArrayMPIIO(da,viewer,xin,PETSC_TRUE);CHKERRQ(ierr);
+        CHKERRQ(DMDAArrayMPIIO(da,viewer,xin,PETSC_TRUE));
         PetscFunctionReturn(0);
       }
     }
 #endif
 
     /* call viewer on natural ordering */
-    ierr = PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix);CHKERRQ(ierr);
-    ierr = DMDACreateNaturalVector(da,&natural);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,prefix);CHKERRQ(ierr);
-    ierr = DMDAGlobalToNaturalBegin(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
-    ierr = DMDAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
-    ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)natural,name);CHKERRQ(ierr);
+    CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix));
+    CHKERRQ(DMDACreateNaturalVector(da,&natural));
+    CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)natural,prefix));
+    CHKERRQ(DMDAGlobalToNaturalBegin(da,xin,INSERT_VALUES,natural));
+    CHKERRQ(DMDAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural));
+    CHKERRQ(PetscObjectGetName((PetscObject)xin,&name));
+    CHKERRQ(PetscObjectSetName((PetscObject)natural,name));
 
-    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerGetFormat(viewer,&format));
     if (format == PETSC_VIEWER_BINARY_MATLAB) {
       /* temporarily remove viewer format so it won't trigger in the VecView() */
-      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_DEFAULT);CHKERRQ(ierr);
+      CHKERRQ(PetscViewerPushFormat(viewer,PETSC_VIEWER_DEFAULT));
     }
 
     ((PetscObject)natural)->donotPetscObjectPrintClassNamePrefixType = PETSC_TRUE;
-    ierr = VecView(natural,viewer);CHKERRQ(ierr);
+    CHKERRQ(VecView(natural,viewer));
     ((PetscObject)natural)->donotPetscObjectPrintClassNamePrefixType = PETSC_FALSE;
 
     if (format == PETSC_VIEWER_BINARY_MATLAB) {
@@ -744,31 +739,31 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
       PetscInt    dim,ni,nj,nk,pi,pj,pk,dof,n;
 
       /* set the viewer format back into the viewer */
-      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-      ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-      ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
-      ierr = DMDAGetInfo(da,&dim,&ni,&nj,&nk,&pi,&pj,&pk,&dof,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-      ierr = PetscFPrintf(comm,info,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n");CHKERRQ(ierr);
-      ierr = PetscFPrintf(comm,info,"#$$ tmp = PetscBinaryRead(fd); \n");CHKERRQ(ierr);
-      if (dim == 1) { ierr = PetscFPrintf(comm,info,"#$$ tmp = reshape(tmp,%d,%d);\n",dof,ni);CHKERRQ(ierr); }
-      if (dim == 2) { ierr = PetscFPrintf(comm,info,"#$$ tmp = reshape(tmp,%d,%d,%d);\n",dof,ni,nj);CHKERRQ(ierr); }
-      if (dim == 3) { ierr = PetscFPrintf(comm,info,"#$$ tmp = reshape(tmp,%d,%d,%d,%d);\n",dof,ni,nj,nk);CHKERRQ(ierr); }
+      CHKERRQ(PetscViewerPopFormat(viewer));
+      CHKERRQ(PetscObjectGetComm((PetscObject)viewer,&comm));
+      CHKERRQ(PetscViewerBinaryGetInfoPointer(viewer,&info));
+      CHKERRQ(DMDAGetInfo(da,&dim,&ni,&nj,&nk,&pi,&pj,&pk,&dof,NULL,NULL,NULL,NULL,NULL));
+      CHKERRQ(PetscFPrintf(comm,info,"#--- begin code written by PetscViewerBinary for MATLAB format ---#\n"));
+      CHKERRQ(PetscFPrintf(comm,info,"#$$ tmp = PetscBinaryRead(fd); \n"));
+      if (dim == 1) { CHKERRQ(PetscFPrintf(comm,info,"#$$ tmp = reshape(tmp,%d,%d);\n",dof,ni)); }
+      if (dim == 2) { CHKERRQ(PetscFPrintf(comm,info,"#$$ tmp = reshape(tmp,%d,%d,%d);\n",dof,ni,nj)); }
+      if (dim == 3) { CHKERRQ(PetscFPrintf(comm,info,"#$$ tmp = reshape(tmp,%d,%d,%d,%d);\n",dof,ni,nj,nk)); }
 
       for (n=0; n<dof; n++) {
-        ierr = DMDAGetFieldName(da,n,&fieldname);CHKERRQ(ierr);
+        CHKERRQ(DMDAGetFieldName(da,n,&fieldname));
         if (!fieldname || !fieldname[0]) {
-          ierr = PetscSNPrintf(fieldbuf,sizeof fieldbuf,"field%D",n);CHKERRQ(ierr);
+          CHKERRQ(PetscSNPrintf(fieldbuf,sizeof fieldbuf,"field%D",n));
           fieldname = fieldbuf;
         }
-        if (dim == 1) { ierr = PetscFPrintf(comm,info,"#$$ Set.%s.%s = squeeze(tmp(%d,:))';\n",name,fieldname,n+1);CHKERRQ(ierr); }
-        if (dim == 2) { ierr = PetscFPrintf(comm,info,"#$$ Set.%s.%s = squeeze(tmp(%d,:,:))';\n",name,fieldname,n+1);CHKERRQ(ierr); }
-        if (dim == 3) { ierr = PetscFPrintf(comm,info,"#$$ Set.%s.%s = permute(squeeze(tmp(%d,:,:,:)),[2 1 3]);\n",name,fieldname,n+1);CHKERRQ(ierr);}
+        if (dim == 1) { CHKERRQ(PetscFPrintf(comm,info,"#$$ Set.%s.%s = squeeze(tmp(%d,:))';\n",name,fieldname,n+1)); }
+        if (dim == 2) { CHKERRQ(PetscFPrintf(comm,info,"#$$ Set.%s.%s = squeeze(tmp(%d,:,:))';\n",name,fieldname,n+1)); }
+        if (dim == 3) { CHKERRQ(PetscFPrintf(comm,info,"#$$ Set.%s.%s = permute(squeeze(tmp(%d,:,:,:)),[2 1 3]);\n",name,fieldname,n+1));}
       }
-      ierr = PetscFPrintf(comm,info,"#$$ clear tmp; \n");CHKERRQ(ierr);
-      ierr = PetscFPrintf(comm,info,"#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n");CHKERRQ(ierr);
+      CHKERRQ(PetscFPrintf(comm,info,"#$$ clear tmp; \n"));
+      CHKERRQ(PetscFPrintf(comm,info,"#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n"));
     }
 
-    ierr = VecDestroy(&natural);CHKERRQ(ierr);
+    CHKERRQ(VecDestroy(&natural));
   }
   PetscFunctionReturn(0);
 }
@@ -778,7 +773,6 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5*) viewer->data;
   DM             da;
-  PetscErrorCode ierr;
   int            dim,rdim;
   hsize_t        dims[6]={0},count[6]={0},offset[6]={0};
   PetscBool      dim2=PETSC_FALSE,timestepping=PETSC_FALSE;
@@ -803,16 +797,16 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   scalartype = H5T_NATIVE_DOUBLE;
 #endif
 
-  ierr = PetscViewerHDF5OpenGroup(viewer, &file_id, &group);CHKERRQ(ierr);
-  ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5CheckTimestepping_Internal(viewer, vecname);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5IsTimestepping(viewer, &timestepping);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerHDF5OpenGroup(viewer, &file_id, &group));
+  CHKERRQ(PetscObjectGetName((PetscObject)xin,&vecname));
+  CHKERRQ(PetscViewerHDF5CheckTimestepping_Internal(viewer, vecname));
+  CHKERRQ(PetscViewerHDF5IsTimestepping(viewer, &timestepping));
   if (timestepping) {
-    ierr = PetscViewerHDF5GetTimestep(viewer, &timestep);CHKERRQ(ierr);
+    CHKERRQ(PetscViewerHDF5GetTimestep(viewer, &timestep));
   }
-  ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
+  CHKERRQ(VecGetDM(xin,&da));
   dd   = (DM_DA*)da->data;
-  ierr = DMGetDimension(da, &dimension);CHKERRQ(ierr);
+  CHKERRQ(DMGetDimension(da, &dimension));
 
   /* Open dataset */
   PetscStackCallHDF5Return(dset_id,H5Dopen2,(group, vecname, H5P_DEFAULT));
@@ -855,21 +849,21 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
     ++dim;
   }
   if (dimension == 3) {
-    ierr = PetscHDF5IntCast(dd->zs,offset + dim);CHKERRQ(ierr);
-    ierr = PetscHDF5IntCast(dd->ze - dd->zs,count + dim);CHKERRQ(ierr);
+    CHKERRQ(PetscHDF5IntCast(dd->zs,offset + dim));
+    CHKERRQ(PetscHDF5IntCast(dd->ze - dd->zs,count + dim));
     ++dim;
   }
   if (dimension > 1) {
-    ierr = PetscHDF5IntCast(dd->ys,offset + dim);CHKERRQ(ierr);
-    ierr = PetscHDF5IntCast(dd->ye - dd->ys,count + dim);CHKERRQ(ierr);
+    CHKERRQ(PetscHDF5IntCast(dd->ys,offset + dim));
+    CHKERRQ(PetscHDF5IntCast(dd->ye - dd->ys,count + dim));
     ++dim;
   }
-  ierr = PetscHDF5IntCast(dd->xs/dd->w,offset + dim);CHKERRQ(ierr);
-  ierr = PetscHDF5IntCast((dd->xe - dd->xs)/dd->w,count + dim);CHKERRQ(ierr);
+  CHKERRQ(PetscHDF5IntCast(dd->xs/dd->w,offset + dim));
+  CHKERRQ(PetscHDF5IntCast((dd->xe - dd->xs)/dd->w,count + dim));
   ++dim;
   if (dd->w > 1 || dim2) {
     offset[dim] = 0;
-    ierr = PetscHDF5IntCast(dd->w,count + dim);CHKERRQ(ierr);
+    CHKERRQ(PetscHDF5IntCast(dd->w,count + dim));
     ++dim;
   }
 #if defined(PETSC_USE_COMPLEX)
@@ -882,9 +876,9 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   PetscStackCallHDF5Return(memspace,H5Screate_simple,(dim, count, NULL));
   PetscStackCallHDF5(H5Sselect_hyperslab,(filespace, H5S_SELECT_SET, offset, NULL, count, NULL));
 
-  ierr   = VecGetArray(xin, &x);CHKERRQ(ierr);
+  CHKERRQ(VecGetArray(xin, &x));
   PetscStackCallHDF5(H5Dread,(dset_id, scalartype, memspace, filespace, hdf5->dxpl_id, x));
-  ierr   = VecRestoreArray(xin, &x);CHKERRQ(ierr);
+  CHKERRQ(VecRestoreArray(xin, &x));
 
   /* Close/release resources */
   if (group != file_id) {
@@ -900,7 +894,6 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
 {
   DM             da;
-  PetscErrorCode ierr;
   Vec            natural;
   const char     *prefix;
   PetscInt       bs;
@@ -911,35 +904,34 @@ PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
 #endif
 
   PetscFunctionBegin;
-  ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
+  CHKERRQ(VecGetDM(xin,&da));
   dd   = (DM_DA*)da->data;
 #if defined(PETSC_HAVE_MPIIO)
-  ierr = PetscViewerBinaryGetUseMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
+  CHKERRQ(PetscViewerBinaryGetUseMPIIO(viewer,&isMPIIO));
   if (isMPIIO) {
-    ierr = DMDAArrayMPIIO(da,viewer,xin,PETSC_FALSE);CHKERRQ(ierr);
+    CHKERRQ(DMDAArrayMPIIO(da,viewer,xin,PETSC_FALSE));
     PetscFunctionReturn(0);
   }
 #endif
 
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix);CHKERRQ(ierr);
-  ierr = DMDACreateNaturalVector(da,&natural);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)natural,((PetscObject)xin)->name);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,prefix);CHKERRQ(ierr);
-  ierr = VecLoad(natural,viewer);CHKERRQ(ierr);
-  ierr = DMDANaturalToGlobalBegin(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
-  ierr = DMDANaturalToGlobalEnd(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
-  ierr = VecDestroy(&natural);CHKERRQ(ierr);
-  ierr = PetscInfo(xin,"Loading vector from natural ordering into DMDA\n");CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL,((PetscObject)xin)->prefix,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix));
+  CHKERRQ(DMDACreateNaturalVector(da,&natural));
+  CHKERRQ(PetscObjectSetName((PetscObject)natural,((PetscObject)xin)->name));
+  CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)natural,prefix));
+  CHKERRQ(VecLoad(natural,viewer));
+  CHKERRQ(DMDANaturalToGlobalBegin(da,natural,INSERT_VALUES,xin));
+  CHKERRQ(DMDANaturalToGlobalEnd(da,natural,INSERT_VALUES,xin));
+  CHKERRQ(VecDestroy(&natural));
+  CHKERRQ(PetscInfo(xin,"Loading vector from natural ordering into DMDA\n"));
+  CHKERRQ(PetscOptionsGetInt(NULL,((PetscObject)xin)->prefix,"-vecload_block_size",&bs,&flag));
   if (flag && bs != dd->w) {
-    ierr = PetscInfo(xin,"Block size in file %D not equal to DMDA's dof %D\n",bs,dd->w);CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(xin,"Block size in file %D not equal to DMDA's dof %D\n",bs,dd->w));
   }
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode  VecLoad_Default_DA(Vec xin, PetscViewer viewer)
 {
-  PetscErrorCode ierr;
   DM             da;
   PetscBool      isbinary;
 #if defined(PETSC_HAVE_HDF5)
@@ -947,19 +939,19 @@ PetscErrorCode  VecLoad_Default_DA(Vec xin, PetscViewer viewer)
 #endif
 
   PetscFunctionBegin;
-  ierr = VecGetDM(xin,&da);CHKERRQ(ierr);
+  CHKERRQ(VecGetDM(xin,&da));
   PetscCheck(da,PetscObjectComm((PetscObject)xin),PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
 
 #if defined(PETSC_HAVE_HDF5)
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5));
 #endif
-  ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
 
   if (isbinary) {
-    ierr = VecLoad_Binary_DA(xin,viewer);CHKERRQ(ierr);
+    CHKERRQ(VecLoad_Binary_DA(xin,viewer));
 #if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {
-    ierr = VecLoad_HDF5_DA(xin,viewer);CHKERRQ(ierr);
+    CHKERRQ(VecLoad_HDF5_DA(xin,viewer));
 #endif
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for vector loading", ((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);

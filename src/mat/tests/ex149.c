@@ -23,61 +23,60 @@ int main(int argc,char **args)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
 #endif
 
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
+  CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD, &rdm);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
+  CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD, &rdm));
+  CHKERRQ(PetscRandomSetFromOptions(rdm));
 
-  ierr = VecCreate(PETSC_COMM_WORLD,&input);CHKERRQ(ierr);
-  ierr = VecSetSizes(input,PETSC_DECIDE,N);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(input);CHKERRQ(ierr);
-  ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
-  ierr = VecDuplicate(input,&output);CHKERRQ(ierr);
-/*  ierr = VecGetSize(input,&vsize);CHKERRQ(ierr); */
+  CHKERRQ(VecCreate(PETSC_COMM_WORLD,&input));
+  CHKERRQ(VecSetSizes(input,PETSC_DECIDE,N));
+  CHKERRQ(VecSetFromOptions(input));
+  CHKERRQ(VecSetRandom(input,rdm));
+  CHKERRQ(VecDuplicate(input,&output));
+/*  CHKERRQ(VecGetSize(input,&vsize)); */
 /*  printf("Size of the input Vector is %d\n",vsize); */
 
   DIM    = 3;
   dim[0] = N0; dim[1] = N1; dim[2] = N2;
 
-  ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
-  ierr = MatCreateVecs(A,&z,NULL);CHKERRQ(ierr);
-  ierr = VecGetSize(y,&vsize);CHKERRQ(ierr);
+  CHKERRQ(MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A));
+  CHKERRQ(MatCreateVecs(A,&x,&y));
+  CHKERRQ(MatCreateVecs(A,&z,NULL));
+  CHKERRQ(VecGetSize(y,&vsize));
   printf("The vector size from the main routine is %d\n",vsize);
 
-  ierr = InputTransformFFT(A,input,x);CHKERRQ(ierr);
-  ierr = MatMult(A,x,y);CHKERRQ(ierr);
-  ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
-  ierr = OutputTransformFFT(A,z,output);CHKERRQ(ierr);
+  CHKERRQ(InputTransformFFT(A,input,x));
+  CHKERRQ(MatMult(A,x,y));
+  CHKERRQ(MatMultTranspose(A,y,z));
+  CHKERRQ(OutputTransformFFT(A,z,output));
 
   fac  = 1.0/(PetscReal)N;
-  ierr = VecScale(output,fac);CHKERRQ(ierr);
+  CHKERRQ(VecScale(output,fac));
 
-  ierr = VecAssemblyBegin(input);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(input);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(output);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(output);CHKERRQ(ierr);
+  CHKERRQ(VecAssemblyBegin(input));
+  CHKERRQ(VecAssemblyEnd(input));
+  CHKERRQ(VecAssemblyBegin(output));
+  CHKERRQ(VecAssemblyEnd(output));
 
-  ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(output,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  CHKERRQ(VecView(input,PETSC_VIEWER_STDOUT_WORLD));
+  CHKERRQ(VecView(output,PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = VecAXPY(output,-1.0,input);CHKERRQ(ierr);
-  ierr = VecNorm(output,NORM_1,&enorm);CHKERRQ(ierr);
+  CHKERRQ(VecAXPY(output,-1.0,input));
+  CHKERRQ(VecNorm(output,NORM_1,&enorm));
 /*  if (enorm > 1.e-14) { */
   if (rank == 0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm));
   }
 /*      } */
 
-/* ierr = MatCreateVecs(A,&z,NULL);CHKERRQ(ierr); */
+/* CHKERRQ(MatCreateVecs(A,&z,NULL)); */
 /*  printf("Vector size from ex148 %d\n",vsize); */
-/*  ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr); */
-/*      ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr); */
-/*      ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr); */
+/*  CHKERRQ(PetscObjectSetName((PetscObject) x, "Real space vector")); */
+/*      CHKERRQ(PetscObjectSetName((PetscObject) y, "Frequency space vector")); */
+/*      CHKERRQ(PetscObjectSetName((PetscObject) z, "Reconstructed vector")); */
 
   ierr = PetscFinalize();
   return ierr;
 
 }
-
