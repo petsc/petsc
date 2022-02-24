@@ -934,7 +934,7 @@ M*/
     PetscStackPush(PetscStringize(func));                                                      \
     PetscErrorCode __ierr = func(__VA_ARGS__);                                                 \
     PetscStackPop;                                                                             \
-    PetscAssert(!__ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in %s(): error code %d",PetscStringize(func),__ierr); \
+    PetscCheck(!__ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in %s(): error code %d",PetscStringize(func),__ierr); \
   } while (0)
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 
