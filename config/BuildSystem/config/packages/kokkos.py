@@ -95,6 +95,7 @@ class Configure(config.package.CMakePackage):
       raise RuntimeError("Kokkos only supports a single parallel system during its configuration")
 
     args.append('-DKokkos_ENABLE_SERIAL=ON')
+    args.append('-DKokkos_ENABLE_LIBDL=OFF')
     if self.openmp.found:
       args.append('-DKokkos_ENABLE_OPENMP=ON')
       self.system = 'OpenMP'
