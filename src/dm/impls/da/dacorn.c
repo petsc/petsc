@@ -64,8 +64,8 @@ PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
-  if (nf < 0 || nf >= dd->w) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
-  if (!dd->fieldname) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
+  PetscCheckFalse(nf < 0 || nf >= dd->w,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
+  PetscCheckFalse(!dd->fieldname,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   ierr = PetscFree(dd->fieldname[nf]);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name,&dd->fieldname[nf]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -123,9 +123,9 @@ PetscErrorCode  DMDASetFieldNames(DM da,const char * const *names)
   PetscInt       nf = 0;
 
   PetscFunctionBegin;
-  if (!dd->fieldname) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
+  PetscCheckFalse(!dd->fieldname,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   while (names[nf++]) {};
-  if (nf != dd->w+1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid number of fields %D",nf-1);
+  PetscCheckFalse(nf != dd->w+1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid number of fields %D",nf-1);
   ierr = PetscStrArrayallocpy(names,&fieldname);CHKERRQ(ierr);
   ierr = PetscStrArrayDestroy(&dd->fieldname);CHKERRQ(ierr);
   dd->fieldname = fieldname;
@@ -138,7 +138,7 @@ PetscErrorCode  DMDASetFieldNames(DM da,const char * const *names)
 
    Not collective; name will contain a common value
 
-   Input Parameter:
+   Input Parameters:
 +  da - the distributed array
 -  nf - field number for the DMDA (0, 1, ... dof-1), where dof indicates the
         number of degrees of freedom per node within the DMDA
@@ -160,8 +160,8 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(name,3);
-  if (nf < 0 || nf >= dd->w) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
-  if (!dd->fieldname) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
+  PetscCheckFalse(nf < 0 || nf >= dd->w,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
+  PetscCheckFalse(!dd->fieldname,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   *name = dd->fieldname[nf];
   PetscFunctionReturn(0);
 }
@@ -192,8 +192,8 @@ PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
-  if (nf < 0 || nf >= dm->dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
-  if (!dd->coordinatename) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"You should call DMSetUp() first");
+  PetscCheckFalse(nf < 0 || nf >= dm->dim,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
+  PetscCheckFalse(!dd->coordinatename,PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   ierr = PetscFree(dd->coordinatename[nf]);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name,&dd->coordinatename[nf]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -204,7 +204,7 @@ PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
 
    Not collective; name will contain a common value
 
-   Input Parameter:
+   Input Parameters:
 +  dm - the DM
 -  nf -  number for the DMDA (0, 1, ... dim-1)
 
@@ -227,8 +227,8 @@ PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
   PetscValidPointer(name,3);
-  if (nf < 0 || nf >= dm->dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
-  if (!dd->coordinatename) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"You should call DMSetUp() first");
+  PetscCheckFalse(nf < 0 || nf >= dm->dim,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
+  PetscCheckFalse(!dd->coordinatename,PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   *name = dd->coordinatename[nf];
   PetscFunctionReturn(0);
 }
@@ -243,10 +243,12 @@ PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
 .  da - the distributed array
 
    Output Parameters:
-+  x,y,z - the corner indices (where y and z are optional; these are used
-           for 2D and 3D problems)
--  m,n,p - widths in the corresponding directions (where n and p are optional;
-           these are used for 2D and 3D problems)
++  x - the corner index for the first dimension
+.  y - the corner index for the second dimension (only used in 2D and 3D problems)
+.  z - the corner index for the third dimension (only used in 3D problems)
+.  m - the width in the first dimension
+.  n - the width in the second dimension (only used in 2D and 3D problems)
+-  p - the width in the third dimension (only used in 3D problems)
 
    Note:
    The corner information is independent of the number of degrees of
@@ -414,7 +416,7 @@ PetscErrorCode DMDAGetCoordinateArray(DM dm,void *xc)
 
    Not collective
 
-   Input Parameter:
+   Input Parameters:
 +  dm - the DM
 -  xc - the coordinates
 

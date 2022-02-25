@@ -20,4 +20,5 @@ PETSC_INTERN PetscErrorCode PetscSFGetRootRanks_Allgatherv(PetscSF,PetscInt*,con
 PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Allgatherv(PetscSF,PetscInt*,const PetscMPIInt**,const PetscInt**,const PetscInt**);
 PETSC_INTERN PetscErrorCode PetscSFCreateLocalSF_Allgatherv(PetscSF,PetscSF*);
 PETSC_INTERN PetscErrorCode PetscSFGetGraph_Allgatherv(PetscSF,PetscInt*,PetscInt*,const PetscInt**,const PetscSFNode**);
+PETSC_INTERN PetscErrorCode PetscSFReduceEnd_Allgatherv(PetscSF,MPI_Datatype,const void*,void*,MPI_Op);
 #endif

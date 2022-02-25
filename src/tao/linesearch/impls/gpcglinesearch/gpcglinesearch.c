@@ -75,7 +75,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
 
   ierr = VecDot(g,s,&gdx);CHKERRQ(ierr);
   if (gdx > 0) {
-     ierr = PetscInfo1(ls,"Line search error: search direction is not descent direction. dot(g,s) = %g\n",(double)gdx);CHKERRQ(ierr);
+     ierr = PetscInfo(ls,"Line search error: search direction is not descent direction. dot(g,s) = %g\n",(double)gdx);CHKERRQ(ierr);
     ls->reason = TAOLINESEARCH_FAILED_ASCENT;
     PetscFunctionReturn(0);
   }
@@ -89,7 +89,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
   rho=0; actred=0;
 
   if (ls->step < 0) {
-    ierr = PetscInfo1(ls,"Line search error: initial step parameter %g< 0\n",(double)ls->step);CHKERRQ(ierr);
+    ierr = PetscInfo(ls,"Line search error: initial step parameter %g< 0\n",(double)ls->step);CHKERRQ(ierr);
     ls->reason = TAOLINESEARCH_HALTED_OTHER;
     PetscFunctionReturn(0);
   }
@@ -159,27 +159,27 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
      break;
     }
     if (ls->step == ls->stepmax) {
-      ierr = PetscInfo1(ls,"Step is at the upper bound, stepmax (%g)\n",(double)ls->stepmax);CHKERRQ(ierr);
+      ierr = PetscInfo(ls,"Step is at the upper bound, stepmax (%g)\n",(double)ls->stepmax);CHKERRQ(ierr);
       ls->reason = TAOLINESEARCH_HALTED_UPPERBOUND;
       break;
     }
     if (ls->step == ls->stepmin) {
-      ierr = PetscInfo1(ls,"Step is at the lower bound, stepmin (%g)\n",(double)ls->stepmin);CHKERRQ(ierr);
+      ierr = PetscInfo(ls,"Step is at the lower bound, stepmin (%g)\n",(double)ls->stepmin);CHKERRQ(ierr);
       ls->reason = TAOLINESEARCH_HALTED_LOWERBOUND;
       break;
     }
     if ((ls->nfeval+ls->nfgeval) >= ls->max_funcs) {
-      ierr = PetscInfo2(ls,"Number of line search function evals (%D) > maximum (%D)\n",ls->nfeval+ls->nfgeval,ls->max_funcs);CHKERRQ(ierr);
+      ierr = PetscInfo(ls,"Number of line search function evals (%D) > maximum (%D)\n",ls->nfeval+ls->nfgeval,ls->max_funcs);CHKERRQ(ierr);
       ls->reason = TAOLINESEARCH_HALTED_MAXFCN;
       break;
     }
     if ((neP->bracket) && (ls->stepmax - ls->stepmin <= ls->rtol*ls->stepmax)) {
-      ierr = PetscInfo1(ls,"Relative width of interval of uncertainty is at most rtol (%g)\n",(double)ls->rtol);CHKERRQ(ierr);
+      ierr = PetscInfo(ls,"Relative width of interval of uncertainty is at most rtol (%g)\n",(double)ls->rtol);CHKERRQ(ierr);
       ls->reason = TAOLINESEARCH_HALTED_RTOL;
       break;
     }
   }
-  ierr = PetscInfo2(ls,"%D function evals in line search, step = %g\n",ls->nfeval+ls->nfgeval,(double)ls->step);CHKERRQ(ierr);
+  ierr = PetscInfo(ls,"%D function evals in line search, step = %g\n",ls->nfeval+ls->nfgeval,(double)ls->step);CHKERRQ(ierr);
   /* set new solution vector and compute gradient if necessary */
   ierr = VecCopy(neP->W2, x);CHKERRQ(ierr);
   if (ls->reason == TAOLINESEARCH_CONTINUE_ITERATING) {
@@ -227,5 +227,6 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch ls)
   ls->ops->view  = TaoLineSearchView_GPCG;
   ls->ops->destroy = TaoLineSearchDestroy_GPCG;
   ls->ops->setfromoptions = NULL;
+  ls->ops->monitor = NULL;
   PetscFunctionReturn(0);
 }

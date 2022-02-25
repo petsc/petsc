@@ -76,7 +76,7 @@ int main(int argc,char **args)
        ierr = PetscObjectTypeCompare((PetscObject)A,MATMPISBAIJ,&isSbaij);CHKERRQ(ierr);
     }
 
-    if (!rank) {
+    if (rank == 0) {
       if (isDense) {
         printf(" Convert DENSE matrices A and B into ScaLAPACK matrix... \n");
       } else if (isAij) {
@@ -90,9 +90,9 @@ int main(int argc,char **args)
 
     /* Test accuracy */
     ierr = MatMultEqual(A,Ae,5,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != A_scalapack.");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != A_scalapack.");
     ierr = MatMultEqual(B,Be,5,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"B != B_scalapack.");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"B != B_scalapack.");
   }
 
   if (!isScaLAPACK) {

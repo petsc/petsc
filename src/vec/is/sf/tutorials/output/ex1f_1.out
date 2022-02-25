@@ -37,3 +37,34 @@ PetscSF Object: 3 MPI processes
 [0] 0: 301 -1 200 -1
 [1] 0: 101 -1 300 -1 102 -1
 [2] 0: 201 -1 100 -1 102 -1
+PetscSF Object: 3 MPI processes
+  type: basic
+  [0] Number of roots=6, leaves=2, remote ranks=2
+  [0] 0 <- (2,2)
+  [0] 1 <- (1,0)
+  [1] Number of roots=4, leaves=3, remote ranks=2
+  [1] 0 <- (0,2)
+  [1] 1 <- (2,0)
+  [1] 2 <- (0,4)
+  [2] Number of roots=4, leaves=3, remote ranks=2
+  [2] 0 <- (1,2)
+  [2] 1 <- (0,0)
+  [2] 2 <- (0,4)
+  [0] Roots referenced by my leaves, by rank
+  [0] 1: 1 edges
+  [0]    1 <- 0
+  [0] 2: 1 edges
+  [0]    0 <- 2
+  [1] Roots referenced by my leaves, by rank
+  [1] 0: 2 edges
+  [1]    0 <- 2
+  [1]    2 <- 4
+  [1] 2: 1 edges
+  [1]    1 <- 0
+  [2] Roots referenced by my leaves, by rank
+  [2] 0: 2 edges
+  [2]    1 <- 0
+  [2]    2 <- 4
+  [2] 1: 1 edges
+  [2]    0 <- 2
+  MultiSF sort=rank-order

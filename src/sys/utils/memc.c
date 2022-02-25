@@ -32,13 +32,15 @@
 .seealso: PetscMemcpy(), PetscMemcmp(), PetscArrayzero(), PetscMemzero(), PetscArraycmp(), PetscArraycpy(), PetscStrallocpy(),
           PetscArraymove()
 @*/
-PetscErrorCode  PetscMemcmp(const void *str1,const void *str2,size_t len,PetscBool  *e)
+PetscErrorCode PetscMemcmp(const void *str1,const void *str2,size_t len,PetscBool  *e)
 {
   int r;
 
+  if (!len) {*e = PETSC_TRUE; return 0;}
+
   PetscFunctionBegin;
-  if (len > 0 && !str1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to compare at a null pointer");
-  if (len > 0 && !str2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to compare at a null pointer");
+  PetscCheckFalse(!str1,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to compare at a null pointer");
+  PetscCheckFalse(!str2,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to compare at a null pointer");
   r = memcmp((char*)str1,(char*)str2,len);
   if (!r) *e = PETSC_TRUE;
   else    *e = PETSC_FALSE;
@@ -72,7 +74,7 @@ PetscErrorCode PetscProcessPlacementView(PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  if (!isascii) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Only ASCII viewer is supported");
+  PetscCheckFalse(!isascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Only ASCII viewer is supported");
 
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRMPI(ierr);
   hwloc_topology_init ( &topology);
@@ -80,7 +82,7 @@ PetscErrorCode PetscProcessPlacementView(PetscViewer viewer)
   set = hwloc_bitmap_alloc();
 
   err = hwloc_get_proc_cpubind(topology, getpid(), set, HWLOC_CPUBIND_PROCESS);
-  if (err) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error %d from hwloc_get_proc_cpubind()",err);
+  PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error %d from hwloc_get_proc_cpubind()",err);
   ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"MPI rank %d Process id: %d coreid %d\n",rank,getpid(),hwloc_bitmap_first(set));CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);

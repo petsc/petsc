@@ -2,8 +2,7 @@
 #include <petsc/private/drawimpl.h>                          /*I  "petscdraw.h" I*/
 
 #if defined(PETSC_USE_DEBUG)
-#define PetscDrawValidColor(color) \
-do { if (PetscUnlikely((color)<0||(color)>=256)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Color value %D out of range [0..255]",(PetscInt)(color)); } while (0)
+#define PetscDrawValidColor(color) PetscCheck((color)>=0&&(color)<256,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Color value %" PetscInt_FMT " out of range [0..255]",(PetscInt)(color))
 #else
 #define PetscDrawValidColor(color) do {} while (0)
 #endif
@@ -447,7 +446,7 @@ static PetscErrorCode PetscDrawGetImage_Image(PetscDraw draw,unsigned char palet
   if (h) *h = (unsigned int)img->h;
   if (pixels) *pixels = NULL;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)draw),&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscMemcpy(palette,img->palette,sizeof(img->palette));CHKERRQ(ierr);
     ierr = PetscMalloc1((size_t)(img->w*img->h),&buffer);CHKERRQ(ierr);
     if (pixels) *pixels = buffer;

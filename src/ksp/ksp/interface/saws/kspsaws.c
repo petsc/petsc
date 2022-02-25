@@ -13,10 +13,10 @@ typedef struct {
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  ksp - KSP to monitor
 
-   Output Arguments:
+   Output Parameter:
 .  ctx - context for monitor
 
    Level: developer
@@ -31,7 +31,7 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp,void **ctx)
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,&mon);CHKERRQ(ierr);
   mon->viewer = PETSC_VIEWER_SAWS_(PetscObjectComm((PetscObject)ksp));
-  if (!mon->viewer) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Cannot create SAWs default viewer");
+  PetscCheckFalse(!mon->viewer,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Cannot create SAWs default viewer");
   *ctx = (void*)mon;
   PetscFunctionReturn(0);
 }
@@ -41,7 +41,7 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp,void **ctx)
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  ctx - monitor context
 
    Level: developer
@@ -91,7 +91,7 @@ PetscErrorCode KSPMonitorSAWs(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
     ierr = KSPComputeEigenvalues(ksp,n,mon->eigr,mon->eigi,&mon->neigs);CHKERRQ(ierr);
 
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-    if (!rank) {
+    if (rank == 0) {
       SAWs_Delete("/PETSc/ksp_monitor_saws/eigr");
       SAWs_Delete("/PETSc/ksp_monitor_saws/eigi");
 
@@ -101,7 +101,7 @@ PetscErrorCode KSPMonitorSAWs(KSP ksp,PetscInt n,PetscReal rnorm,void *ctx)
         PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/eigr",mon->eigr,mon->neigs,SAWs_READ,SAWs_DOUBLE));
         PetscStackCallSAWs(SAWs_Register,("/PETSc/ksp_monitor_saws/eigi",mon->eigi,mon->neigs,SAWs_READ,SAWs_DOUBLE));
       }
-      ierr = PetscInfo2(ksp,"KSP extreme singular values min=%g max=%g\n",(double)emin,(double)emax);CHKERRQ(ierr);
+      ierr = PetscInfo(ksp,"KSP extreme singular values min=%g max=%g\n",(double)emin,(double)emax);CHKERRQ(ierr);
       ierr = PetscSAWsBlock();CHKERRQ(ierr);
     }
   }

@@ -116,7 +116,7 @@ PETSC_EXTERN PetscErrorCode PetscSFCreateInverseSF(PetscSF,PetscSF*);
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF,PetscLayout,PetscInt,const PetscInt*,PetscCopyMode,const PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscSFCreateFromLayouts(PetscLayout,PetscLayout,PetscSF*);
 PETSC_DEPRECATED_FUNCTION("Use PetscSFCreateFromLayouts (since v3.15)")
-PETSC_STATIC_INLINE PetscErrorCode PetscLayoutsCreateSF(PetscLayout rmap, PetscLayout lmap, PetscSF* sf) { return PetscSFCreateFromLayouts(rmap, lmap, sf); }
+static inline PetscErrorCode PetscLayoutsCreateSF(PetscLayout rmap, PetscLayout lmap, PetscSF* sf) { return PetscSFCreateFromLayouts(rmap, lmap, sf); }
 PETSC_EXTERN PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout,PetscInt,const PetscInt*,const PetscInt*,PetscInt,PetscInt,const PetscInt*,const PetscInt*,PetscInt,PetscSF*,PetscSF*);
 
 /* PetscSection interoperability */
@@ -140,11 +140,16 @@ PETSC_EXTERN PetscErrorCode PetscSFReduceEnd(PetscSF,MPI_Datatype,const void*,vo
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2);
 PETSC_EXTERN PetscErrorCode PetscSFReduceWithMemTypeBegin(PetscSF,MPI_Datatype,PetscMemType,const void*,PetscMemType,void *,MPI_Op)
   PetscAttrMPIPointerWithType(4,2) PetscAttrMPIPointerWithType(6,2);
+
 /* Atomically modifies (using provided operation) rootdata using leafdata from each leaf, value at root at time of modification is returned in leafupdate. */
 PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpBegin(PetscSF,MPI_Datatype,void*,const void*,void*,MPI_Op)
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2) PetscAttrMPIPointerWithType(5,2);
 PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpEnd(PetscSF,MPI_Datatype,void*,const void*,void*,MPI_Op)
   PetscAttrMPIPointerWithType(3,2) PetscAttrMPIPointerWithType(4,2) PetscAttrMPIPointerWithType(5,2);
+
+PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpWithMemTypeBegin(PetscSF,MPI_Datatype,PetscMemType,void*,PetscMemType,const void*,PetscMemType,void*,MPI_Op)
+  PetscAttrMPIPointerWithType(4,2) PetscAttrMPIPointerWithType(6,2) PetscAttrMPIPointerWithType(8,2);
+
 /* Compute the degree of every root vertex (number of leaves in its star) */
 PETSC_EXTERN PetscErrorCode PetscSFComputeDegreeBegin(PetscSF,const PetscInt**);
 PETSC_EXTERN PetscErrorCode PetscSFComputeDegreeEnd(PetscSF,const PetscInt**);
@@ -166,23 +171,23 @@ PETSC_EXTERN PetscErrorCode PetscSFComposeInverse(PetscSF,PetscSF,PetscSF*);
 #define MPIU_REPLACE MPI_REPLACE PETSC_DEPRECATED_MACRO("GCC warning \"MPIU_REPLACE macro is deprecated use MPI_REPLACE (since version 3.15)\"")
 
 PETSC_DEPRECATED_FUNCTION("Use PetscSFGetRootRanks (since v3.12)")
-PETSC_STATIC_INLINE PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt **ranks,const PetscInt **roffset,const PetscInt **rmine,const PetscInt **rremote)
+static inline PetscErrorCode PetscSFGetRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt **ranks,const PetscInt **roffset,const PetscInt **rmine,const PetscInt **rremote)
 { return PetscSFGetRootRanks(sf,nranks,ranks,roffset,rmine,rremote); }
 
 PETSC_DEPRECATED_FUNCTION("Use PetscSFCreateEmbeddedRootSF (since v3.15)")
-PETSC_STATIC_INLINE PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nselected,const PetscInt *selected,PetscSF *esf)
+static inline PetscErrorCode PetscSFCreateEmbeddedSF(PetscSF sf,PetscInt nselected,const PetscInt *selected,PetscSF *esf)
 { return PetscSFCreateEmbeddedRootSF(sf,nselected,selected,esf); }
 
 PETSC_DEPRECATED_FUNCTION("Use PetscSFBcastBegin (since v3.15)")
-PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastAndOpBegin(PetscSF sf,MPI_Datatype unit,const void* rootdata,void* leafdata,MPI_Op op)
+static inline PetscErrorCode PetscSFBcastAndOpBegin(PetscSF sf,MPI_Datatype unit,const void* rootdata,void* leafdata,MPI_Op op)
 { return PetscSFBcastBegin(sf,unit,rootdata,leafdata,op); }
 
 PETSC_DEPRECATED_FUNCTION("Use PetscSFBcastEnd (since v3.15)")
-PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastAndOpEnd(PetscSF sf,MPI_Datatype unit,const void* rootdata,void* leafdata,MPI_Op op)
+static inline PetscErrorCode PetscSFBcastAndOpEnd(PetscSF sf,MPI_Datatype unit,const void* rootdata,void* leafdata,MPI_Op op)
 { return PetscSFBcastEnd(sf,unit,rootdata,leafdata,op); }
 
 PETSC_DEPRECATED_FUNCTION("Use PetscSFBcastWithMemTypeBegin (since v3.15)")
-PETSC_STATIC_INLINE PetscErrorCode PetscSFBcastAndOpWithMemtypeBegin(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
+static inline PetscErrorCode PetscSFBcastAndOpWithMemtypeBegin(PetscSF sf,MPI_Datatype unit,PetscMemType rootmtype,const void *rootdata,PetscMemType leafmtype,void *leafdata,MPI_Op op)
 { return PetscSFBcastWithMemTypeBegin(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op); }
 
 #endif

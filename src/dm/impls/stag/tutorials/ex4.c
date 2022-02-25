@@ -108,12 +108,14 @@ int main(int argc,char **argv)
   ierr = KSPSetType(ksp,KSPFGMRES);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
   ierr = PetscOptionsSetValue(NULL,"-ksp_converged_reason","");CHKERRQ(ierr); /* To get info on direct solve success */
+  ierr = KSPSetDM(ksp,ctx->dmStokes);CHKERRQ(ierr);
+  ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
   {
     KSPConvergedReason reason;
     ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
-    if (reason < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Linear solve failed");
+    PetscCheckFalse(reason < 0,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Linear solve failed");
   }
 
   /* Dump solution by converting to DMDAs and dumping */

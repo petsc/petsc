@@ -7,10 +7,10 @@
 PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim,PetscInt np[],PetscInt *_npoints,PetscReal **_xi)
 {
   PetscErrorCode ierr;
-  PetscReal *xi;
-  PetscInt d,npoints=0,cnt;
-  PetscReal ds[] = {0.0,0.0,0.0};
-  PetscInt ii,jj,kk;
+  PetscReal      *xi;
+  PetscInt       d,npoints=0,cnt;
+  PetscReal      ds[] = {0.0,0.0,0.0};
+  PetscInt       ii,jj,kk;
 
   PetscFunctionBegin;
   switch (dim) {
@@ -29,7 +29,6 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim,P
   }
 
   ierr = PetscMalloc1(dim*npoints,&xi);CHKERRQ(ierr);
-
   switch (dim) {
     case 1:
       cnt = 0;
@@ -64,20 +63,18 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim,P
       }
       break;
   }
-
   *_npoints = npoints;
   *_xi = xi;
-
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt dim,PetscInt np_1d,PetscInt *_npoints,PetscReal **_xi)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
   PetscQuadrature quadrature;
   const PetscReal *quadrature_xi;
-  PetscReal *xi;
-  PetscInt d,q,npoints_q;
+  PetscReal       *xi;
+  PetscInt        d,q,npoints_q;
 
   PetscFunctionBegin;
   ierr = PetscDTGaussTensorQuadrature(dim,1,np_1d,-1.0,1.0,&quadrature);CHKERRQ(ierr);
@@ -89,27 +86,25 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt dim,Pet
     }
   }
   ierr = PetscQuadratureDestroy(&quadrature);CHKERRQ(ierr);
-
   *_npoints = npoints_q;
   *_xi = xi;
-
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm,DM dmc,PetscInt npoints,DMSwarmPICLayoutType layout)
 {
-  PetscErrorCode ierr;
-  PetscInt dim,npoints_q;
-  PetscInt nel,npe,e,q,k,d;
-  const PetscInt *element_list;
-  PetscReal **basis;
-  PetscReal *xi;
-  Vec coor;
+  PetscErrorCode    ierr;
+  PetscInt          dim,npoints_q;
+  PetscInt          nel,npe,e,q,k,d;
+  const PetscInt    *element_list;
+  PetscReal         **basis;
+  PetscReal         *xi;
+  Vec               coor;
   const PetscScalar *_coor;
-  PetscReal *elcoor;
-  PetscReal *swarm_coor;
-  PetscInt *swarm_cellid;
-  PetscInt pcnt;
+  PetscReal         *elcoor;
+  PetscReal         *swarm_coor;
+  PetscInt          *swarm_cellid;
+  PetscInt          pcnt;
 
   PetscFunctionBegin;
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
@@ -144,7 +139,6 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm,DM dmc,PetscIn
   }
 
   ierr = DMDAGetElements(dmc,&nel,&npe,&element_list);CHKERRQ(ierr);
-
   ierr = PetscMalloc1(dim*npe,&elcoor);CHKERRQ(ierr);
   ierr = PetscMalloc1(npoints_q,&basis);CHKERRQ(ierr);
   for (q=0; q<npoints_q; q++) {
@@ -215,15 +209,14 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm,DM dmc,PetscIn
     ierr = PetscFree(basis[q]);CHKERRQ(ierr);
   }
   ierr = PetscFree(basis);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM dm,DM celldm,DMSwarmPICLayoutType layout,PetscInt layout_param)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
   DMDAElementType etype;
-  PetscInt dim;
+  PetscInt        dim;
 
   PetscFunctionBegin;
   ierr = DMDAGetElementType(celldm,&etype);CHKERRQ(ierr);
@@ -232,7 +225,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM dm,DM celldm,DMSwarm
     case DMDA_ELEMENT_P1:
       SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DA support is not currently available for DMDA_ELEMENT_P1");
     case DMDA_ELEMENT_Q1:
-      if (dim == 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Support only available for dim = 2, 3");
+      PetscCheckFalse(dim == 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Support only available for dim = 2, 3");
       ierr = private_DMSwarmInsertPointsUsingCellDM_DA_Q1(dm,celldm,layout_param,layout);CHKERRQ(ierr);
       break;
   }
@@ -241,15 +234,15 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM dm,DM celldm,DMSwarm
 
 PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm,PetscReal *swarm_field,DM dm,Vec v_field)
 {
-  PetscErrorCode ierr;
-  Vec v_field_l,denom_l,coor_l,denom;
-  PetscScalar *_field_l,*_denom_l;
-  PetscInt k,p,e,npoints,nel,npe;
-  PetscInt *mpfield_cell;
-  PetscReal *mpfield_coor;
-  const PetscInt *element_list;
-  const PetscInt *element;
-  PetscScalar xi_p[2],Ni[4];
+  PetscErrorCode    ierr;
+  Vec               v_field_l,denom_l,coor_l,denom;
+  PetscScalar       *_field_l,*_denom_l;
+  PetscInt          k,p,e,npoints,nel,npe;
+  PetscInt          *mpfield_cell;
+  PetscReal         *mpfield_coor;
+  const PetscInt    *element_list;
+  const PetscInt    *element;
+  PetscScalar       xi_p[2],Ni[4];
   const PetscScalar *_coor;
 
   PetscFunctionBegin;
@@ -274,10 +267,10 @@ PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm,PetscReal *swarm_fiel
   ierr = DMSwarmGetField(swarm,DMSwarmPICField_cellid,NULL,NULL,(void**)&mpfield_cell);CHKERRQ(ierr);
 
   for (p=0; p<npoints; p++) {
-    PetscReal *coor_p;
+    PetscReal         *coor_p;
     const PetscScalar *x0;
     const PetscScalar *x2;
-    PetscScalar dx[2];
+    PetscScalar       dx[2];
 
     e = mpfield_cell[p];
     coor_p = &mpfield_coor[2*p];
@@ -322,19 +315,18 @@ PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm,PetscReal *swarm_fiel
   ierr = DMRestoreLocalVector(dm,&v_field_l);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&denom_l);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm,&denom);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DMSwarmDataField dfield[],Vec vecs[])
 {
-  PetscErrorCode ierr;
-  PetscInt f,dim;
+  PetscErrorCode  ierr;
+  PetscInt        f,dim;
   DMDAElementType etype;
 
   PetscFunctionBegin;
   ierr = DMDAGetElementType(celldm,&etype);CHKERRQ(ierr);
-  if (etype == DMDA_ELEMENT_P1) SETERRQ(PetscObjectComm((PetscObject)swarm),PETSC_ERR_SUP,"Only Q1 DMDA supported");
+  PetscCheckFalse(etype == DMDA_ELEMENT_P1,PetscObjectComm((PetscObject)swarm),PETSC_ERR_SUP,"Only Q1 DMDA supported");
 
   ierr = DMGetDimension(swarm,&dim);CHKERRQ(ierr);
   switch (dim) {

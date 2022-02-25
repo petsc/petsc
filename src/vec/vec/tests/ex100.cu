@@ -2,6 +2,7 @@
 static char help[] = "Tests I/O of vectors for different data formats (binary,HDF5)\n\n";
 
 #include <petscvec.h>
+#include <petscdevice.h>
 #include <petscviewerhdf5.h>
 
 /* Note:  Most applications would not read and write a vector within
@@ -27,7 +28,12 @@ int main(int argc,char **args)
   PetscScalar const *values;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
-  ierr = PetscCUDAInitialize(PETSC_COMM_WORLD, PETSC_DEFAULT);CHKERRQ(ierr);
+  {
+    PetscDeviceContext dctx; /* unused, only there to force initialization of device */
+
+    ierr = PetscDeviceContextGetCurrentContext(&dctx);CHKERRQ(ierr);
+  }
+
   mpiio_use = vstage2 = vstage3 = PETSC_FALSE;
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-binary",&isbinary,NULL);CHKERRQ(ierr);
@@ -77,7 +83,7 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in adios to vector.dat ...\n");CHKERRQ(ierr);
     ierr = PetscViewerADIOSOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
 #endif
-  } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No data format specified, run with one of -binary -hdf5 -adios options\n");
+  } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No data format specified, run with one of -binary -hdf5 -adios options");
   ierr = VecView(u,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
@@ -108,7 +114,7 @@ int main(int argc,char **args)
   if (vstage2) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Setting vector sizes...\n");CHKERRQ(ierr);
     if (size > 1) {
-      if (!rank) {
+      if (rank == 0) {
         lsize = m/size + size;
         ierr  = VecSetSizes(u,lsize,m);CHKERRQ(ierr);
       } else if (rank == size-1) {
@@ -136,7 +142,7 @@ int main(int argc,char **args)
   ierr = VecGetLocalSize(u,&ldim);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(u,&low,NULL);CHKERRQ(ierr);
   for (i=0; i<ldim; i++) {
-    if (values[i] != (PetscScalar)(i + low)) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Data check failed!\n");
+    PetscCheckFalse(values[i] != (PetscScalar)(i + low),PETSC_COMM_WORLD,PETSC_ERR_SUP,"Data check failed!");
   }
   ierr = VecRestoreArrayRead(u,&values);CHKERRQ(ierr);
 

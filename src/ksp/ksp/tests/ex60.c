@@ -22,9 +22,9 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
   sized = (PetscMPIInt) PetscSqrtReal((PetscReal) size);
-  if (PetscSqr(sized) != size) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "This test may only be run on a number of processes which is a perfect square, not %d", (int) size);
-  if (M % sized) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "The number of x-vertices %D does not divide the number of x-processes %d", M, (int) sized);
-  if (N % sized) SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "The number of y-vertices %D does not divide the number of y-processes %d", N, (int) sized);
+  PetscCheckFalse(PetscSqr(sized) != size,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "This test may only be run on a number of processes which is a perfect square, not %d", (int) size);
+  PetscCheckFalse(M % sized,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "The number of x-vertices %D does not divide the number of x-processes %d", M, (int) sized);
+  PetscCheckFalse(N % sized,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "The number of y-vertices %D does not divide the number of y-processes %d", N, (int) sized);
   /* Assemble the matrix for the five point stencil, YET AGAIN
        Every other process will be empty */
   ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
@@ -92,7 +92,7 @@ int main(int argc,char **args)
       args: -ksp_view
 
    test:
-      requires: kokkos_kernels
+      requires: !sycl kokkos_kernels
       suffix: 0_kokkos
       args: -ksp_view -mat_type aijkokkos
 
@@ -107,7 +107,7 @@ int main(int argc,char **args)
       args: -ksp_view
 
    test:
-      requires: kokkos_kernels
+      requires: !sycl kokkos_kernels
       suffix: 1_kokkos
       nsize: 4
       args: -ksp_view -mat_type aijkokkos
@@ -124,7 +124,7 @@ int main(int argc,char **args)
       args: -user_subdomains -ksp_view
 
    test:
-      requires: kokkos_kernels
+      requires: !sycl kokkos_kernels
       suffix: 2_kokkos
       nsize: 4
       args: -user_subdomains -ksp_view -mat_type aijkokkos

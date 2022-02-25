@@ -5,15 +5,16 @@
 
 /*@
    ISCompressIndicesGeneral - convert the indices into block indices
+
    Input Parameters:
-+  n - maximum possible length of the index set
-.  nkeys - expected number of keys when PETSC_USE_CTABLE
-.  bs - the size of block
-.  imax - the number of index sets
--  is_in - the non-blocked array of index sets
++    n - maximum possible length of the index set
+.    nkeys - expected number of keys when PETSC_USE_CTABLE
+.    bs - the size of block
+.    imax - the number of index sets
+-    is_in - the non-blocked array of index sets
 
    Output Parameter:
-.  is_out - the blocked new index set
+.    is_out - the blocked new index set
 
    Level: intermediate
 
@@ -60,7 +61,7 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,P
         isz++;
       }
 #else
-      if (ival>Nbs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
+      PetscCheckFalse(ival>Nbs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
       if (!PetscBTLookupSet(table,ival)) nidx[isz++] = ival;
 #endif
     }
@@ -72,11 +73,11 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,P
     j    = 0;
     while (tpos) {
       ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid1,&tt);CHKERRQ(ierr);
-      if (tt-- > isz) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than array-dim");
+      PetscCheckFalse(tt-- > isz,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than array-dim");
       nidx[tt] = gid1 - 1;
       j++;
     }
-    if (j != isz) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"table error: jj != isz");
+    PetscCheckFalse(j != isz,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"table error: jj != isz");
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is_in[i]),isz,nidx,PETSC_OWN_POINTER,(is_out+i));CHKERRQ(ierr);
 #else
     ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is_in[i]),isz,nidx,PETSC_COPY_VALUES,(is_out+i));CHKERRQ(ierr);
@@ -106,14 +107,14 @@ PetscErrorCode  ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,con
   PetscFunctionBegin;
   for (i=0; i<imax; i++) {
     ierr = ISSorted(is_in[i],&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Indices are not sorted");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Indices are not sorted");
   }
 
 #if defined(PETSC_USE_CTABLE)
   /* Now check max size */
   for (i=0,maxsz=0; i<imax; i++) {
     ierr = ISGetLocalSize(is_in[i],&len);CHKERRQ(ierr);
-    if (len%bs !=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Indices are not block ordered");
+    PetscCheckFalse(len%bs !=0,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Indices are not block ordered");
     len = len/bs; /* The reduced index size */
     if (len > maxsz) maxsz = len;
   }
@@ -138,15 +139,15 @@ PetscErrorCode  ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,con
       }
     }
     ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
-    if (len%bs !=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Indices are not block ordered");
+    PetscCheckFalse(len%bs !=0,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Indices are not block ordered");
 
     len       = len/bs; /* The reduced index size */
     idx_local = idx;
     for (j=0; j<len; j++) {
       val = idx_local[0];
-      if (val%bs != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Indices are not block ordered");
+      PetscCheckFalse(val%bs != 0,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Indices are not block ordered");
       for (k=0; k<bs; k++) {
-        if (val+k != idx_local[k]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Indices are not block ordered");
+        PetscCheckFalse(val+k != idx_local[k],PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Indices are not block ordered");
       }
       nidx[j]    = val/bs;
       idx_local += bs;
@@ -160,15 +161,16 @@ PetscErrorCode  ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,con
 
 /*@C
    ISExpandIndicesGeneral - convert the indices into non-block indices
+
    Input Parameters:
-+  n - the length of the index set   (not being used)
-.  nkeys - expected number of keys when PETSC_USE_CTABLE (not being used)
-.  bs - the size of block
-.  imax - the number of index sets
--  is_in - the blocked array of index sets
++    n - the length of the index set (not being used)
+.    nkeys - expected number of keys when PETSC_USE_CTABLE (not being used)
+.    bs - the size of block
+.    imax - the number of index sets
+-    is_in - the blocked array of index sets
 
    Output Parameter:
-.  is_out - the non-blocked new index set
+.    is_out - the non-blocked new index set
 
    Level: intermediate
 

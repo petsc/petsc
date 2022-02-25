@@ -81,7 +81,7 @@ endif
 ifneq ($(HIPC),)
 langs += hip.cpp
 endif
-ifneq ($(SYCLCPP),)
+ifneq ($(SYCLC),)
 langs += sycl.cxx
 endif
 ifneq ($(KOKKOS_LIB),)
@@ -181,6 +181,9 @@ $(call soname_function,%) : $(call libname_function,%)
 
 .PRECIOUS: $(call soname_function,%)
 
+$(OBJDIR)/%.o : src/%.sycl.cxx | $$(@D)/.DIR
+	$(PETSC_COMPILE.sycl.cxx) $(abspath $<) -o $@
+
 $(OBJDIR)/%.o : src/%.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $(abspath $<) -o $@
 
@@ -193,9 +196,6 @@ $(OBJDIR)/%.o : src/%.cxx | $$(@D)/.DIR
 #$(OBJDIR)/%.hip.o : src/%.hip.cpp | $$(@D)/.DIR
 $(OBJDIR)/%.o : src/%.hip.cpp | $$(@D)/.DIR
 	$(PETSC_COMPILE.hip.cpp) $(abspath $<) -o $@
-
-$(OBJDIR)/%.o : src/%.sycl.cxx | $$(@D)/.DIR
-	$(PETSC_COMPILE.sycl.cxx) $(abspath $<) -o $@
 
 $(OBJDIR)/%.o : src/%.cu | $$(@D)/.DIR
 	$(PETSC_COMPILE.cu) $(abspath $<) -o $@ # Compile first so that if there is an error, it comes from a normal compile
@@ -239,7 +239,6 @@ $(OBJDIR)/tao/f90-mod/petsctaomod.o   : $(OBJDIR)/ts/f90-mod/petsctsmod.o
 # F2003 interface
 $(OBJDIR)/sys/objects/f2003-src/fsrc/optionenum.o   : $(OBJDIR)/sys/f90-mod/petscsysmod.o
 $(OBJDIR)/sys/classes/bag/f2003-src/fsrc/bagenum.o  : $(OBJDIR)/sys/f90-mod/petscsysmod.o
-src/sys/objects/init.c   : src/sys/objects/cupminit.inc
 
 # all sources should get recompiled when petscvariables changes (i.e when configure is rerun or when petscvariables is manually edited.)
 $(srcs.o) : $(petscvariables)

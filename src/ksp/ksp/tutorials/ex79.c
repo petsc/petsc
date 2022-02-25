@@ -47,10 +47,10 @@ int main(int argc,char **args)
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("PCApply",PC_CLASSID,&event);CHKERRQ(ierr);
   ierr = PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info);CHKERRQ(ierr);
-  if (PetscDefined(USE_LOG) && m > 1 && info.count) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"PCApply() called %d times",info.count);
+  PetscCheckFalse(PetscDefined(USE_LOG) && m > 1 && info.count,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"PCApply() called %d times",info.count);
   ierr = PetscLogEventRegister("PCMatApply",PC_CLASSID,&event);CHKERRQ(ierr);
   ierr = PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info);CHKERRQ(ierr);
-  if (PetscDefined(USE_LOG) && m > 1 && !info.count) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"PCMatApply() never called");
+  PetscCheckFalse(PetscDefined(USE_LOG) && m > 1 && !info.count,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"PCMatApply() never called");
   ierr = PetscFinalize();
   return ierr;
 }
@@ -85,8 +85,8 @@ int main(int argc,char **args)
 
    testset:
       nsize: 1
-      requires: hara
-      args: -pc_type hara
+      requires: h2opus
+      args: -pc_type h2opus -pc_h2opus_init_mat_h2opus_leafsize 10
       test:
          suffix: 3
          output_file: output/ex77_preonly.out

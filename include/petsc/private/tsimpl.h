@@ -27,6 +27,7 @@ PETSC_EXTERN PetscErrorCode TSARKIMEXRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSRosWRegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSGLLERegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSGLLEAdaptRegisterAll(void);
+PETSC_EXTERN PetscErrorCode TSIRKRegisterAll(void);
 
 typedef struct _TSOps *TSOps;
 
@@ -478,9 +479,11 @@ struct _n_TSMonitorLGCtx {
 };
 
 struct _n_TSMonitorSPCtx{
-  PetscDrawSP    sp;
-  PetscInt       howoften; /* when > 0 uses step % howoften, when negative only final solution plotted */
-  PetscInt       ksp_its, snes_its;
+  PetscDrawSP sp;
+  PetscInt    howoften; /* when > 0 uses step % howoften, when negative only final solution plotted */
+  PetscInt    retain;   /* Retain n points plotted to show trajectories, or -1 for all points */
+  PetscBool   phase;    /* Plot in phase space rather than coordinate space */
+  PetscInt    ksp_its, snes_its;
 };
 
 struct _n_TSMonitorEnvelopeCtx {
@@ -490,7 +493,7 @@ struct _n_TSMonitorEnvelopeCtx {
 /*
     Checks if the user provide a TSSetIFunction() but an explicit method is called; generate an error in that case
 */
-PETSC_STATIC_INLINE PetscErrorCode TSCheckImplicitTerm(TS ts)
+static inline PetscErrorCode TSCheckImplicitTerm(TS ts)
 {
   TSIFunction      ifunction;
   DM               dm;
@@ -499,7 +502,7 @@ PETSC_STATIC_INLINE PetscErrorCode TSCheckImplicitTerm(TS ts)
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMTSGetIFunction(dm,&ifunction,NULL);CHKERRQ(ierr);
-  if (ifunction) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"You are attempting to use an explicit ODE integrator but provided an implicit function definition with TSSetIFunction()");
+  PetscCheck(!ifunction,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"You are attempting to use an explicit ODE integrator but provided an implicit function definition with TSSetIFunction()");
   PetscFunctionReturn(0);
 }
 

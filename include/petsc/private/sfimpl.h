@@ -1,9 +1,10 @@
-#if !defined(PETSCSFIMPL_H)
-#define PETSCSFIMPL_H
+#if !defined(SFIMPL_H)
+#define SFIMPL_H
 
 #include <petscvec.h>
 #include <petscsf.h>
-#include <petscdevice.h>
+#include <petsc/private/deviceimpl.h>
+#include <petsc/private/mpiutils.h>
 #include <petsc/private/petscimpl.h>
 
 PETSC_EXTERN PetscLogEvent PETSCSF_SetGraph;
@@ -60,7 +61,6 @@ struct _p_PetscSF {
   struct { /* Fields needed to implement VecScatter behavior */
     PetscInt          from_n,to_n;   /* Recorded local sizes of the input from/to vectors in VecScatterCreate(). Used subsequently for error checking. */
     PetscBool         beginandendtogether;  /* Indicates that the scatter begin and end  function are called together, VecScatterEnd() is then treated as a nop */
-    PetscBool         packongpu;     /* For GPU vectors, pack needed entries on GPU instead of pulling the whole vector down to CPU and then packing on CPU */
     const PetscScalar *xdata;        /* Vector data to read from */
     PetscScalar       *ydata;        /* Vector data to write to. The two pointers are recorded in VecScatterBegin. Memory is not managed by SF. */
     PetscSF           lsf;           /* The local part of the scatter, used in SCATTER_LOCAL. Built on demand. */
@@ -180,8 +180,17 @@ PETSC_EXTERN PetscErrorCode PetscSFFree_HIP(PetscMemType,void*);
 #endif
 
 #if defined(PETSC_HAVE_KOKKOS)
-PETSC_EXTERN PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType,size_t,void**);
-PETSC_EXTERN PetscErrorCode PetscSFFree_Kokkos(PetscMemType,void*);
+  PETSC_EXTERN PetscErrorCode PetscSFMalloc_Kokkos(PetscMemType,size_t,void**);
+  PETSC_EXTERN PetscErrorCode PetscSFFree_Kokkos(PetscMemType,void*);
+ #if defined(PETSC_HAVE_CUDA)
+  static const PetscMemType PETSC_MEMTYPE_KOKKOS = PETSC_MEMTYPE_CUDA;
+ #elif defined(PETSC_HAVE_HIP)
+  static const PetscMemType PETSC_MEMTYPE_KOKKOS = PETSC_MEMTYPE_HIP;
+ #elif defined(PETSC_HAVE_SYCL)
+  static const PetscMemType PETSC_MEMTYPE_KOKKOS = PETSC_MEMTYPE_SYCL;
+ #else
+  static const PetscMemType PETSC_MEMTYPE_KOKKOS = PETSC_MEMTYPE_HOST;
+ #endif
 #endif
 
 /* SF only supports CUDA and Kokkos devices. Even VIENNACL is a device, its device pointers are invisible to SF.

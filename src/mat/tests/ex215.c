@@ -18,7 +18,7 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor test");
+  PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor test");
   /* Determine which type of solver we want to test for */
   herm = PETSC_FALSE;
   symm = PETSC_FALSE;
@@ -68,7 +68,7 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   ierr = MatConvert(A,MATSEQDENSE,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
+  PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
 
   /* Create dense matrix C and X; C holds true solution with identical columns */
   nrhs = 2;
@@ -129,7 +129,7 @@ int main(int argc,char **args)
     ierr = MatCholeskyFactor(F,NULL,NULL);CHKERRQ(ierr);
   } else if (ftyp == MAT_FACTOR_QR) {
     ierr = MatQRFactor(F,NULL,NULL);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Factorization %s not supported in this example\n", MatFactorTypes[ftyp]);
+  } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Factorization %s not supported in this example", MatFactorTypes[ftyp]);
 
   for (nsolve = 0; nsolve < 2; nsolve++) {
     ierr = VecSetRandom(x,rand);CHKERRQ(ierr);
@@ -154,9 +154,9 @@ int main(int argc,char **args)
       ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);  /* u <- (-1.0)b + u */
       ierr = VecNorm(u,NORM_2,&resi);CHKERRQ(ierr);
       if (nsolve) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve error: Norm of error %g, residual %f\n",norm,resi);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve error: Norm of error %g, residual %g\n",(double)norm,(double)resi);CHKERRQ(ierr);
       } else {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolveTranspose error: Norm of error %g, residual %f\n",norm,resi);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolveTranspose error: Norm of error %g, residual %g\n",(double)norm,(double)resi);CHKERRQ(ierr);
       }
     }
   }
@@ -167,7 +167,7 @@ int main(int argc,char **args)
   ierr = MatAXPY(X,-1.0,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatNorm(X,NORM_FROBENIUS,&norm);CHKERRQ(ierr);
   if (norm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"MatMatSolve: Norm of error %g\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"MatMatSolve: Norm of error %g\n",(double)norm);CHKERRQ(ierr);
   }
 
   /* Free data structures */

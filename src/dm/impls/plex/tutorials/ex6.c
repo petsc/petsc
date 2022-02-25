@@ -25,11 +25,11 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     len  = options->Nf;
     ierr = PetscMalloc1(len, &options->Nc);CHKERRQ(ierr);
     ierr = PetscOptionsIntArray("-num_components", "The number of components per field", "ex6.c", options->Nc, &len, &flg);CHKERRQ(ierr);
-    if (flg && (len != options->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %d should be %d", len, options->Nf);
+    PetscCheckFalse(flg && (len != options->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of components array is %d should be %d", len, options->Nf);
     len  = options->Nf;
     ierr = PetscMalloc1(len, &options->k);CHKERRQ(ierr);
     ierr = PetscOptionsIntArray("-order", "The spectral order per field", "ex6.c", options->k, &len, &flg);CHKERRQ(ierr);
-    if (flg && (len != options->Nf)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of order array is %d should be %d", len, options->Nf);
+    PetscCheckFalse(flg && (len != options->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of order array is %d should be %d", len, options->Nf);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -143,7 +143,7 @@ static PetscErrorCode ReadData2D(DM dm, Vec u, AppCtx *user)
         for (ki = 0; ki <= user->k[f]; ++ki) {
           if (ki > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, "  ");CHKERRQ(ierr);}
           for (c = 0; c < user->Nc[f]; ++c) {
-            if (c > 0) ierr = PetscPrintf(PETSC_COMM_SELF, ",");CHKERRQ(ierr);
+            if (c > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, ",");CHKERRQ(ierr);}
             ierr = PetscPrintf(PETSC_COMM_SELF, "%2.0f", (double) PetscRealPart(closure[(kj*(user->k[f]+1) + ki)*user->Nc[f]+c + foff]));CHKERRQ(ierr);
           }
         }
@@ -178,7 +178,7 @@ static PetscErrorCode ReadData3D(DM dm, Vec u, AppCtx *user)
           for (ki = 0; ki <= user->k[f]; ++ki) {
             if (ki > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, "  ");CHKERRQ(ierr);}
             for (c = 0; c < user->Nc[f]; ++c) {
-              if (c > 0) ierr = PetscPrintf(PETSC_COMM_SELF, ",");CHKERRQ(ierr);
+              if (c > 0) {ierr = PetscPrintf(PETSC_COMM_SELF, ",");CHKERRQ(ierr);}
               ierr = PetscPrintf(PETSC_COMM_SELF, "%2.0f", (double) PetscRealPart(closure[((kk*(user->k[f]+1) + kj)*(user->k[f]+1) + ki)*user->Nc[f]+c + foff]));CHKERRQ(ierr);
             }
           }

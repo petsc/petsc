@@ -1,9 +1,9 @@
 DM Object: Generated Mesh 1 MPI processes
   type: plex
 Generated Mesh in 2 dimensions:
-  0-cells: 1582
-  1-cells: 3432
-  2-cells: 1314
+  Number of 0-cells per rank: 1582
+  Number of 1-cells per rank: 3432
+  Number of 2-cells per rank: 1314
 Periodic mesh () coordinates localized
 Labels:
   Cell Sets: 1 strata with value/size (0 (4380))

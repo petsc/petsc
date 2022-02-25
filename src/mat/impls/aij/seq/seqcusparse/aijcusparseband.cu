@@ -9,7 +9,10 @@
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #undef VecType
 #include <../src/mat/impls/aij/seq/seqcusparse/cusparsematimpl.h>
-#if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ > 600 && PETSC_PKG_CUDA_VERSION_GE(11,0,0)
+#define AIJBANDUSEGROUPS 1
+#endif
+#if defined(AIJBANDUSEGROUPS)
 #include <cooperative_groups.h>
 #endif
 
@@ -18,12 +21,12 @@ do {                                                                            
   /* Check synchronous errors, i.e. pre-launch */                                        \
   cudaError_t err = cudaGetLastError();                                                  \
   if (cudaSuccess != err) {                                                              \
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cuda error: %s",cudaGetErrorString(err)); \
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cuda error: %s",cudaGetErrorString(err)); \
   }                                                                                      \
   /* Check asynchronous errors, i.e. kernel failed (ULF) */                              \
   err = cudaDeviceSynchronize();                                                         \
   if (cudaSuccess != err) {                                                              \
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cuda error: %s",cudaGetErrorString(err)); \
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cuda error: %s",cudaGetErrorString(err)); \
   }                                                                                      \
  } while (0)
 
@@ -123,7 +126,7 @@ void __launch_bounds__(1024,1)
   const PetscInt  Nf = gridDim.x, Nblk = gridDim.y, nloc = n/Nf;
   const PetscInt  field = blockIdx.x, blkIdx = blockIdx.y;
   const PetscInt  start = field*nloc, end = start + nloc;
-#if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
+#if defined(AIJBANDUSEGROUPS)
   auto g = cooperative_groups::this_grid();
 #endif
   // A22 panel update for each row A(1,:) and col A(:,1)
@@ -151,7 +154,7 @@ void __launch_bounds__(1024,1)
         Aij[jIdx] -= Lid*baUd[jIdx];
       }
     }
-#if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
+#if defined(AIJBANDUSEGROUPS)
     if (use_group_sync) {
       g.sync();
     } else {
@@ -168,7 +171,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B,Mat A,const Ma
 {
   Mat_SeqAIJ                   *b = (Mat_SeqAIJ*)B->data;
   Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)B->spptr;
-  if (!cusparseTriFactors) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing cusparseTriFactors");
+  PetscCheckFalse(!cusparseTriFactors,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing cusparseTriFactors");
   Mat_SeqAIJCUSPARSE           *cusparsestructA = (Mat_SeqAIJCUSPARSE*)A->spptr;
   Mat_SeqAIJCUSPARSEMultStruct *matstructA;
   CsrMatrix                    *matrixA;
@@ -179,29 +182,18 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B,Mat A,const Ma
   const PetscScalar            *aa_d;
   PetscScalar                  *ba_t = cusparseTriFactors->a_band_d;
   int                          *bi_t = cusparseTriFactors->i_band_d;
-  PetscContainer               container;
-  int                          Ni = 10, team_size=9, Nf, nVec=56, nconcurrent = 1, nsm = -1;
+  int                          Ni = 10, team_size=9, Nf=1, nVec=56, nconcurrent = 1, nsm = -1; // Nf is batch size - not used
 
   PetscFunctionBegin;
   if (A->rmap->n == 0) {
     PetscFunctionReturn(0);
   }
   // cusparse setup
-  if (!cusparsestructA) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing cusparsestructA");
+  PetscCheckFalse(!cusparsestructA,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing cusparsestructA");
   matstructA = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestructA->mat; //  matstruct->cprowIndices
-  if (!matstructA) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing mat struct");
+  PetscCheckFalse(!matstructA,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing mat struct");
   matrixA = (CsrMatrix*)matstructA->mat;
-  if (!matrixA) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing matrix cusparsestructA->mat->mat");
-
-  // factor: get Nf if available
-  ierr = PetscObjectQuery((PetscObject) A, "Nf", (PetscObject *) &container);CHKERRQ(ierr);
-  if (container) {
-    PetscInt *pNf=NULL;
-    ierr = PetscContainerGetPointer(container, (void **) &pNf);CHKERRQ(ierr);
-    Nf = (*pNf)%1000;
-    if ((*pNf)/1000>0) nconcurrent = (*pNf)/1000; // number of SMs to use
-  } else Nf = 1;
-  if (n%Nf) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"n % Nf != 0 %D %D",n,Nf);
+  PetscCheckFalse(!matrixA,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing matrix cusparsestructA->mat->mat");
 
   // get data
   ic      = thrust::raw_pointer_cast(cusparseTriFactors->cpermIndices->data());
@@ -214,7 +206,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B,Mat A,const Ma
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   {
     int bw = (int)(2.*(double)n-1. - (double)(PetscSqrtReal(1.+4.*((double)n*(double)n-(double)b->nz))+PETSC_MACHINE_EPSILON))/2, bm1=bw-1,nl=n/Nf;
-#if PETSC_PKG_CUDA_VERSION_LT(11,0,0)
+#if !defined(AIJBANDUSEGROUPS)
     Ni = 1/nconcurrent;
     Ni = 1;
 #else
@@ -229,13 +221,13 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B,Mat A,const Ma
 #endif
     team_size = bw/Ni + !!(bw%Ni);
     nVec = PetscMin(bw, 1024/team_size);
-    ierr = PetscInfo7(A,"Matrix Bandwidth = %d, number SMs/block = %d, num concurency = %d, num fields = %d, numSMs/GPU = %d, thread group size = %d,%d\n",bw,Ni,nconcurrent,Nf,nsm,team_size,nVec);CHKERRQ(ierr);
+    ierr = PetscInfo(A,"Matrix Bandwidth = %d, number SMs/block = %d, num concurency = %d, num fields = %d, numSMs/GPU = %d, thread group size = %d,%d\n",bw,Ni,nconcurrent,Nf,nsm,team_size,nVec);CHKERRQ(ierr);
     {
       dim3 dimBlockTeam(nVec,team_size);
       dim3 dimBlockLeague(Nf,Ni);
       mat_lu_factor_band_copy_aij_aij<<<dimBlockLeague,dimBlockTeam>>>(n, bw, r, ic, ai_d, aj_d, aa_d, bi_t, ba_t);
       CHECK_LAUNCH_ERROR(); // does a sync
-#if PETSC_PKG_CUDA_VERSION_GE(11,0,0)
+#if defined(AIJBANDUSEGROUPS)
       if (Ni > 1) {
         void *kernelArgs[] = { (void*)&n, (void*)&bw, (void*)&bi_t, (void*)&ba_t, (void*)&nsm };
         cudaLaunchCooperativeKernel((void*)mat_lu_factor_band, dimBlockLeague, dimBlockTeam, kernelArgs, 0, NULL);
@@ -260,15 +252,6 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B,Mat A,const Ma
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatrixNfDestroy(void *ptr)
-{
-  PetscInt *nf = (PetscInt *)ptr;
-  PetscErrorCode  ierr;
-  PetscFunctionBegin;
-  ierr = PetscFree(nf);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
@@ -278,35 +261,18 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B,Mat A,IS isrow,IS is
   const PetscInt     *ic,*ai=a->i,*aj=a->j;
   PetscScalar        *ba_t;
   int                *bi_t;
-  PetscInt           i,n=A->rmap->n,Nf;
+  PetscInt           i,n=A->rmap->n,Nf=1; // Nf batch size - not used
   PetscInt           nzBcsr,bwL,bwU;
   PetscBool          missing;
   Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)B->spptr;
-  PetscContainer               container;
 
   PetscFunctionBegin;
-  if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix must be square");
+  PetscCheckFalse(A->rmap->N != A->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix must be square");
   ierr = MatMissingDiagonal(A,&missing,&i);CHKERRQ(ierr);
-  if (missing) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",i);
-  if (!cusparseTriFactors) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"!cusparseTriFactors");
+  PetscCheckFalse(missing,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %" PetscInt_FMT,i);
+  PetscCheckFalse(!cusparseTriFactors,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"!cusparseTriFactors");
   ierr = MatGetOption(A,MAT_STRUCTURALLY_SYMMETRIC,&missing);CHKERRQ(ierr);
-  if (!missing) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"only structrally symmetric matrices supported");
-
-   // factor: get Nf if available
-  ierr = PetscObjectQuery((PetscObject) A, "Nf", (PetscObject *) &container);CHKERRQ(ierr);
-  if (container) {
-    PetscInt *pNf=NULL;
-    ierr = PetscContainerGetPointer(container, (void **) &pNf);CHKERRQ(ierr);
-    Nf = (*pNf)%1000;
-    ierr = PetscContainerCreate(PETSC_COMM_SELF, &container);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PetscInt), &pNf);CHKERRQ(ierr);
-    *pNf = Nf;
-    ierr = PetscContainerSetPointer(container, (void *)pNf);CHKERRQ(ierr);
-    ierr = PetscContainerSetUserDestroy(container, MatrixNfDestroy);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)B, "Nf", (PetscObject) container);CHKERRQ(ierr);
-    ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
-  } else Nf = 1;
-  if (n%Nf) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"n % Nf != 0 %D %D",n,Nf);
+  PetscCheckFalse(!missing,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"only structrally symmetric matrices supported");
 
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
@@ -330,12 +296,12 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B,Mat A,IS isrow,IS is
   }
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   /* only support structurally symmetric, but it might work */
-  if (bwL!=bwU) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Only symmetric structure supported (now) W_L=%D W_U=%D",bwL,bwU);
+  PetscCheckFalse(bwL!=bwU,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Only symmetric structure supported (now) W_L=%" PetscInt_FMT " W_U=%" PetscInt_FMT,bwL,bwU);
   ierr = MatSeqAIJCUSPARSETriFactors_Reset(&cusparseTriFactors);CHKERRQ(ierr);
   nzBcsr = n + (2*n-1)*bwU - bwU*bwU;
   b->maxnz = b->nz = nzBcsr;
   cusparseTriFactors->nnz = b->nz; // only meta data needed: n & nz
-  ierr = PetscInfo2(A,"Matrix Bandwidth = %D, nnz = %D\n",bwL,b->nz);CHKERRQ(ierr);
+  ierr = PetscInfo(A,"Matrix Bandwidth = %" PetscInt_FMT ", nnz = %" PetscInt_FMT "\n",bwL,b->nz);CHKERRQ(ierr);
   if (!cusparseTriFactors->workVector) { cusparseTriFactors->workVector = new THRUSTARRAY(n); }
   cerr = cudaMalloc(&ba_t,(b->nz+1)*sizeof(PetscScalar));CHKERRCUDA(cerr); // include a place for flops
   cerr = cudaMalloc(&bi_t,(n+1)*sizeof(int));CHKERRCUDA(cerr);
@@ -396,7 +362,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B,Mat A,IS isrow,IS is
 #if defined(PETSC_USE_INFO)
   if (ai[n] != 0) {
     PetscReal af = B->info.fill_ratio_needed;
-    ierr = PetscInfo1(A,"Band fill ratio %g\n",(double)af);CHKERRQ(ierr);
+    ierr = PetscInfo(A,"Band fill ratio %g\n",(double)af);CHKERRQ(ierr);
   } else {
     ierr = PetscInfo(A,"Empty matrix\n");CHKERRQ(ierr);
   }
@@ -554,23 +520,14 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSEBAND(Mat A,Vec bb,Vec xx)
   thrust::device_ptr<PetscScalar>       xGPU;
   Mat_SeqAIJCUSPARSETriFactors          *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)A->spptr;
   THRUSTARRAY                           *tempGPU = (THRUSTARRAY*)cusparseTriFactors->workVector;
-  PetscInt                              n=A->rmap->n, nz=cusparseTriFactors->nnz, Nf;
+  PetscInt                              n=A->rmap->n, nz=cusparseTriFactors->nnz, Nf=1; // Nf is batch size - not used
   PetscInt                              bw = (int)(2.*(double)n-1.-(double)(PetscSqrtReal(1.+4.*((double)n*(double)n-(double)nz))+PETSC_MACHINE_EPSILON))/2; // quadric formula for bandwidth
   PetscErrorCode                        ierr;
-  PetscContainer                        container;
 
   PetscFunctionBegin;
   if (A->rmap->n == 0) {
     PetscFunctionReturn(0);
   }
-  // factor: get Nf if available
-  ierr = PetscObjectQuery((PetscObject) A, "Nf", (PetscObject *) &container);CHKERRQ(ierr);
-  if (container) {
-    PetscInt *pNf=NULL;
-    ierr = PetscContainerGetPointer(container, (void **) &pNf);CHKERRQ(ierr);
-    Nf = (*pNf)%1000;
-  } else Nf = 1;
-  if (n%Nf) SETERRQ2(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"n(%D) % Nf(%D) != 0",n,Nf);
 
   /* Get the GPU pointers */
   ierr = VecCUDAGetArrayWrite(xx,&xarray);CHKERRQ(ierr);

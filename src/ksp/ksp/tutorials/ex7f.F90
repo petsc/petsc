@@ -28,7 +28,7 @@ program main
       PetscReal,parameter :: tol = 1.e-6
       PetscErrorCode  :: ierr
       PetscInt        :: i,j,Ii,JJ,n
-      PetscInt, parameter :: m = 4
+      PetscInt        :: m
       PetscMPIInt     :: myRank,mySize
       PetscInt        :: its,nlocal,first,Istart,Iend
       PetscScalar     :: v
@@ -47,6 +47,7 @@ program main
         stop
       endif
 
+      m = 4
       call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
       CHKERRA(ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,myRank,ierr)

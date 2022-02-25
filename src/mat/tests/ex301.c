@@ -55,7 +55,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(y,negativeone,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
     if (norm > PETSC_SQRT_MACHINE_EPSILON) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Test %d: Norm of error is %g, but should be near 0.\n",i,(double)norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Test %" PetscInt_FMT ": Norm of error is %g, but should be near 0.\n",i,(double)norm);CHKERRQ(ierr);
     }
 
     ierr = MatDestroy(&A);CHKERRQ(ierr);

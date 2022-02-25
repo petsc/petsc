@@ -41,7 +41,7 @@ static PetscErrorCode ISCopy_General(IS is,IS isy)
   ierr = PetscLayoutGetSize(is->map, &N);CHKERRQ(ierr);
   ierr = PetscLayoutGetLocalSize(isy->map, &ny);CHKERRQ(ierr);
   ierr = PetscLayoutGetSize(isy->map, &Ny);CHKERRQ(ierr);
-  if (n != ny || N != Ny) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Index sets incompatible");
+  PetscCheckFalse(n != ny || N != Ny,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Index sets incompatible");
   ierr = PetscArraycpy(isy_general->idx,is_general->idx,n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -53,7 +53,7 @@ static PetscErrorCode ISOnComm_General(IS is,MPI_Comm comm,PetscCopyMode mode,IS
   PetscInt       n;
 
   PetscFunctionBegin;
-  if (mode == PETSC_OWN_POINTER) SETERRQ(comm,PETSC_ERR_ARG_WRONG,"Cannot use PETSC_OWN_POINTER");
+  PetscCheckFalse(mode == PETSC_OWN_POINTER,comm,PETSC_ERR_ARG_WRONG,"Cannot use PETSC_OWN_POINTER");
   ierr = PetscLayoutGetLocalSize(is->map, &n);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,n,sub->idx,mode,newis);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -133,7 +133,7 @@ static PetscErrorCode ISRestoreIndices_General(IS in,const PetscInt *idx[])
 
   PetscFunctionBegin;
    /* F90Array1dCreate() inside ISRestoreArrayF90() does not keep array when zero length array */
-  if (in->map->n > 0  && *idx != sub->idx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
+  PetscCheckFalse(in->map->n > 0  && *idx != sub->idx,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
   PetscFunctionReturn(0);
 }
 
@@ -168,9 +168,7 @@ static PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isou
       PetscMPIInt rank;
       ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)is),&rank);CHKERRMPI(ierr);
       ierr = PetscLayoutGetSize(is->map, &N);CHKERRQ(ierr);
-      if (rank == size-1) {
-        if (nstart != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of nlocal lengths %d != total IS length %d",nstart,N);
-      }
+      PetscCheck((rank != size-1) || (nstart == N),PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Sum of nlocal lengths %" PetscInt_FMT " != total IS length %" PetscInt_FMT,nstart,N);
     }
     nstart -= nlocal;
     ierr    = ISGetIndices(nistmp,&idx);CHKERRQ(ierr);
@@ -194,6 +192,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
   hsize_t         dim, maxDims[3], dims[3], chunkDims[3], count[3],offset[3];
   PetscBool       timestepping;
   PetscInt        bs, N, n, timestep=PETSC_MIN_INT, low;
+  hsize_t         chunksize;
   const PetscInt *ind;
   const char     *isname;
   PetscErrorCode  ierr;
@@ -219,6 +218,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
    * permit extending dataset).
    */
   dim = 0;
+  chunksize = 1;
   if (timestep >= 0) {
     dims[dim]      = timestep+1;
     maxDims[dim]   = H5S_UNLIMITED;
@@ -231,12 +231,26 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
 
   maxDims[dim]   = dims[dim];
   chunkDims[dim] = PetscMax(1,dims[dim]);
+  chunksize      *= chunkDims[dim];
   ++dim;
   if (bs >= 1) {
     dims[dim]      = bs;
     maxDims[dim]   = dims[dim];
     chunkDims[dim] = dims[dim];
+    chunksize      *= chunkDims[dim];
     ++dim;
+  }
+  /* hdf5 chunks must be less than 4GB */
+  if (chunksize > PETSC_HDF5_MAX_CHUNKSIZE/64) {
+    if (bs >= 1) {
+      if (chunkDims[dim-2] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE/64))) {
+        chunkDims[dim-2] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE/64));
+      } if (chunkDims[dim-1] > (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE/64))) {
+        chunkDims[dim-1] = (PetscInt)PetscSqrtReal((PetscReal)(PETSC_HDF5_MAX_CHUNKSIZE/64));
+      }
+    } else {
+      chunkDims[dim-1] = PETSC_HDF5_MAX_CHUNKSIZE/64;
+    }
   }
   PetscStackCallHDF5Return(filespace,H5Screate_simple,(dim, dims, maxDims));
 
@@ -312,8 +326,10 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
   PetscStackCallHDF5(H5Sclose,(memspace));
   PetscStackCallHDF5(H5Dclose,(dset_id));
 
-  ierr = PetscViewerHDF5WriteObjectAttribute(viewer,(PetscObject)is,"timestepping",PETSC_BOOL,&timestepping);CHKERRQ(ierr);
-  ierr = PetscInfo1(is, "Wrote IS object with name %s\n", isname);CHKERRQ(ierr);
+  if (timestepping) {
+    ierr = PetscViewerHDF5WriteObjectAttribute(viewer,(PetscObject)is,"timestepping",PETSC_BOOL,&timestepping);CHKERRQ(ierr);
+  }
+  ierr = PetscInfo(is, "Wrote IS object with name %s\n", isname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
@@ -351,16 +367,16 @@ static PetscErrorCode ISView_General(IS is,PetscViewer viewer)
         ierr = PetscObjectGetName((PetscObject)is,&name);CHKERRQ(ierr);
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%s_%d = [...\n",name,rank);CHKERRQ(ierr);
         for (i=0; i<n; i++) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D\n",idx[i]+1);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%" PetscInt_FMT "\n",idx[i]+1);CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"];\n");CHKERRQ(ierr);
       } else {
         PetscInt  st = 0;
 
         if (fmt == PETSC_VIEWER_ASCII_INDEX) st = is->map->rstart;
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in set %D\n",rank,n);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in set %" PetscInt_FMT "\n",rank,n);CHKERRQ(ierr);
         for (i=0; i<n; i++) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D %D\n",rank,i + st,idx[i]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %" PetscInt_FMT " %" PetscInt_FMT "\n",rank,i + st,idx[i]);CHKERRQ(ierr);
         }
       }
     } else {
@@ -370,16 +386,16 @@ static PetscErrorCode ISView_General(IS is,PetscViewer viewer)
         ierr = PetscObjectGetName((PetscObject)is,&name);CHKERRQ(ierr);
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%s = [...\n",name);CHKERRQ(ierr);
         for (i=0; i<n; i++) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D\n",idx[i]+1);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%" PetscInt_FMT "\n",idx[i]+1);CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"];\n");CHKERRQ(ierr);
       } else {
         PetscInt  st = 0;
 
         if (fmt == PETSC_VIEWER_ASCII_INDEX) st = is->map->rstart;
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of indices in set %D\n",n);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of indices in set %" PetscInt_FMT "\n",n);CHKERRQ(ierr);
         for (i=0; i<n; i++) {
-          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D %D\n",i + st,idx[i]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%" PetscInt_FMT " %" PetscInt_FMT "\n",i + st,idx[i]);CHKERRQ(ierr);
         }
       }
     }
@@ -548,13 +564,15 @@ PetscErrorCode  ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],Pe
 
    Level: beginner
 
-.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGather(), ISBlockSetIndices(), ISGENERAL, PetscCopyMode
+.seealso: ISCreateGeneral(), ISGeneralSetIndicesFromMask(), ISBlockSetIndices(), ISGENERAL, PetscCopyMode
 @*/
 PetscErrorCode  ISGeneralSetIndices(IS is,PetscInt n,const PetscInt idx[],PetscCopyMode mode)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  if (n) PetscValidIntPointer(idx,3);
   ierr = ISClearInfoCache(is,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscUseMethod(is,"ISGeneralSetIndices_C",(IS,PetscInt,const PetscInt[],PetscCopyMode),(is,n,idx,mode));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -567,7 +585,7 @@ PetscErrorCode  ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[
   IS_General     *sub = (IS_General*)is->data;
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
+  PetscCheckFalse(n < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
   if (n) PetscValidIntPointer(idx,3);
 
   ierr = PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)is),n,PETSC_DECIDE,is->map->bs,&map);CHKERRQ(ierr);
@@ -591,6 +609,62 @@ PetscErrorCode  ISGeneralSetIndices_General(IS is,PetscInt n,const PetscInt idx[
 
   ierr = ISSetUp_General(is);CHKERRQ(ierr);
   ierr = ISViewFromOptions(is,NULL,"-is_view");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+   ISGeneralSetIndicesFromMask - Sets the indices for an ISGENERAL index set using a boolean mask
+
+   Collective on IS
+
+   Input Parameters:
++  is - the index set
+.  rstart - the range start index (inclusive)
+.  rend - the range end index (exclusive)
+-  mask - the boolean mask array of length rend-rstart, indices will be set for each PETSC_TRUE value in the array
+
+   Notes:
+   The mask array may be freed by the user after this call.
+
+   Example:
+$  PetscBool mask[] = {PETSC_FALSE, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, PETSC_TRUE};
+$  ISGeneralSetIndicesFromMask(is,10,15,mask);
+   will feed the IS with indices
+$  {11, 14}
+   locally.
+
+   Level: beginner
+
+.seealso: ISCreateGeneral(), ISGeneralSetIndices(), ISGENERAL
+@*/
+PetscErrorCode ISGeneralSetIndicesFromMask(IS is,PetscInt rstart,PetscInt rend,const PetscBool mask[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_CLASSID,1);
+  if (rend-rstart) PetscValidBoolPointer(mask,4);
+  ierr = ISClearInfoCache(is,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscUseMethod(is,"ISGeneralSetIndicesFromMask_C",(IS,PetscInt,PetscInt,const PetscBool[]),(is,rstart,rend,mask));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode ISGeneralSetIndicesFromMask_General(IS is,PetscInt rstart,PetscInt rend,const PetscBool mask[])
+{
+  PetscInt        i,nidx;
+  PetscInt       *idx;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  for (i=0,nidx=0; i<rend-rstart; i++) if (mask[i]) nidx++;
+  ierr = PetscMalloc1(nidx,&idx);CHKERRQ(ierr);
+  for (i=0,nidx=0; i<rend-rstart; i++) {
+    if (mask[i]) {
+      idx[nidx] = i+rstart;
+      nidx++;
+    }
+  }
+  ierr = ISGeneralSetIndices_General(is,nidx,idx,PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -649,6 +723,7 @@ PETSC_EXTERN PetscErrorCode ISCreate_General(IS is)
   is->data = (void *) sub;
   ierr = PetscMemcpy(is->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISGeneralSetIndices_C",ISGeneralSetIndices_General);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)is,"ISGeneralSetIndicesFromMask_C",ISGeneralSetIndicesFromMask_General);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)is,"ISGeneralFilter_C",ISGeneralFilter_General);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

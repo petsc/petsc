@@ -146,6 +146,6 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     nsize: 3
-    args: -dm_plex_dim 3 -dm_plex_box_faces 8,1,1 -dm_plex_simplex 0 -dm_plex_adj_cone 1 -dm_plex_adj_closure 0 -dm_distribute -petscpartitioner_type simple -dm_distribute_overlap 1 -overlap2 1
+    args: -dm_plex_dim 3 -dm_plex_box_faces 8,1,1 -dm_plex_simplex 0 -dm_plex_adj_cone 1 -dm_plex_adj_closure 0 -petscpartitioner_type simple -dm_distribute_overlap 1 -overlap2 1
 
 TEST*/

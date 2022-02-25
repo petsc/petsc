@@ -64,7 +64,7 @@ int main(int argc,char **argv)
      Now any code that needs access to the list of integers
    has access to it here through indices[].
    */
-  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] First index %D\n",rank,nindices[0]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] First index %" PetscInt_FMT "\n",rank,nindices[0]);CHKERRQ(ierr);
 
   /*
      Once we no longer need access to the indices they should

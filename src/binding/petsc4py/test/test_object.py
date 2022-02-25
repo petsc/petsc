@@ -1,5 +1,6 @@
-from petsc4py import PETSc
 import unittest
+
+from petsc4py import PETSc
 
 # --------------------------------------------------------------------
 
@@ -146,6 +147,16 @@ class BaseTestObject(object):
         self.assertEqual(obj.getRefCount(), 1)
         del obj
 
+    def testStateInspection(self):
+        state = self.obj.stateGet()
+        self.obj.stateIncrease()
+        self.assertTrue(state < self.obj.stateGet())
+        self.obj.stateSet(0)
+        self.assertTrue(self.obj.stateGet() == 0)
+        self.obj.stateSet(state)
+        self.assertTrue(self.obj.stateGet() == state)
+
+
 # --------------------------------------------------------------------
 
 class TestObjectRandom(BaseTestObject, unittest.TestCase):
@@ -258,6 +269,7 @@ class TestObjectDMLabel(BaseTestObject, unittest.TestCase):
 # --------------------------------------------------------------------
 
 import numpy
+
 if numpy.iscomplexobj(PETSc.ScalarType()):
     del TestObjectTAO
 

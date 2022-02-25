@@ -36,6 +36,7 @@ class TAOType:
     SHELL    = S_(TAOSHELL)
     ADMM     = S_(TAOADMM)
     ALMM     = S_(TAOALMM)
+    PYTHON   = S_(TAOPYTHON)
 
 class TAOConvergedReason:
     """
@@ -118,6 +119,13 @@ cdef class TAO(Object):
         prefix = str2bytes(prefix, &cprefix)
         CHKERR( TaoSetOptionsPrefix(self.tao, cprefix) )
 
+    def appendOptionsPrefix(self, prefix):
+        """
+        """
+        cdef const char *cprefix = NULL
+        prefix = str2bytes(prefix, &cprefix)
+        CHKERR( TaoAppendOptionsPrefix(self.tao, cprefix) )
+
     def getOptionsPrefix(self):
         """
         """
@@ -149,10 +157,10 @@ cdef class TAO(Object):
     def getAppCtx(self):
         return self.get_attr("__appctx__")
 
-    def setInitial(self, Vec x):
+    def setSolution(self, Vec x):
         """
         """
-        CHKERR( TaoSetInitialVector(self.tao, x.vec) )
+        CHKERR( TaoSetSolution(self.tao, x.vec) )
 
     def setObjective(self, objective, args=None, kargs=None):
         """
@@ -161,7 +169,7 @@ cdef class TAO(Object):
         if kargs is None: kargs = {}
         context = (objective, args, kargs)
         self.set_attr("__objective__", context)
-        CHKERR( TaoSetObjectiveRoutine(self.tao, TAO_Objective, <void*>context) )
+        CHKERR( TaoSetObjective(self.tao, TAO_Objective, <void*>context) )
 
     def setResidual(self, residual, Vec R=None, args=None, kargs=None):
         """
@@ -177,7 +185,7 @@ cdef class TAO(Object):
     def setJacobianResidual(self, jacobian, Mat J=None, Mat P=None, args=None, kargs=None):
         """
         """
-        cdef PetscMat Jmat=NULL
+        cdef PetscMat Jmat = NULL
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat = Jmat
         if P is not None: Pmat = P.mat
@@ -187,28 +195,50 @@ cdef class TAO(Object):
         self.set_attr("__jacobian_residual__", context)
         CHKERR( TaoSetJacobianResidualRoutine(self.tao, Jmat, Pmat, TAO_JacobianResidual, <void*>context) )
 
-    def setGradient(self, gradient, args=None, kargs=None):
+    def setGradient(self, gradient, Vec g or None, args=None, kargs=None):
         """
         """
+        cdef PetscVec gvec = NULL
+        if g is not None: gvec = g.vec
         if args is None: args = ()
         if kargs is None: kargs = {}
         context = (gradient, args, kargs)
         self.set_attr("__gradient__", context)
-        CHKERR( TaoSetGradientRoutine(self.tao, TAO_Gradient, <void*>context) )
+        CHKERR( TaoSetGradient(self.tao, gvec, TAO_Gradient, <void*>context) )
 
-    def setObjectiveGradient(self, objgrad, args=None, kargs=None):
+    def getGradient(self):
         """
         """
+        cdef Vec vec = Vec()
+        CHKERR( TaoGetGradient(self.tao, &vec.vec, NULL, NULL) )
+        PetscINCREF(vec.obj)
+        cdef object gradient = self.get_attr("__gradient__")
+        return (vec, gradient)
+
+    def setObjectiveGradient(self, objgrad, Vec g or None, args=None, kargs=None):
+        """
+        """
+        cdef PetscVec gvec = NULL
+        if g is not None: gvec = g.vec
         if args is None: args = ()
         if kargs is None: kargs = {}
         context = (objgrad, args, kargs)
         self.set_attr("__objgrad__", context)
-        CHKERR( TaoSetObjectiveAndGradientRoutine(self.tao, TAO_ObjGrad, <void*>context) )
+        CHKERR( TaoSetObjectiveAndGradient(self.tao, gvec, TAO_ObjGrad, <void*>context) )
+
+    def getObjectiveAndGradient(self):
+        """
+        """
+        cdef Vec vec = Vec()
+        CHKERR( TaoGetObjectiveAndGradient(self.tao, &vec.vec, NULL, NULL) )
+        PetscINCREF(vec.obj)
+        cdef object objgrad = self.get_attr("__objgrad__")
+        return (vec, objgrad)
 
     def setVariableBounds(self, varbounds, args=None, kargs=None):
         """
         """
-        cdef Vec xl=None, xu=None
+        cdef Vec xl = None, xu = None
         if (isinstance(varbounds, list) or isinstance(varbounds, tuple)):
             ol, ou = varbounds
             xl = <Vec?> ol; xu = <Vec?> ou
@@ -228,7 +258,7 @@ cdef class TAO(Object):
     def setConstraints(self, constraints, Vec C=None, args=None, kargs=None):
         """
         """
-        cdef PetscVec Cvec=NULL
+        cdef PetscVec Cvec = NULL
         if C is not None: Cvec = C.vec
         if args is None: args = ()
         if kargs is None: kargs = {}
@@ -238,7 +268,7 @@ cdef class TAO(Object):
 
     def setHessian(self, hessian, Mat H=None, Mat P=None,
                    args=None, kargs=None):
-        cdef PetscMat Hmat=NULL
+        cdef PetscMat Hmat = NULL
         if H is not None: Hmat = H.mat
         cdef PetscMat Pmat = Hmat
         if P is not None: Pmat = P.mat
@@ -246,13 +276,22 @@ cdef class TAO(Object):
         if kargs is None: kargs = {}
         context = (hessian, args, kargs)
         self.set_attr("__hessian__", context)
-        CHKERR( TaoSetHessianRoutine(self.tao, Hmat, Pmat, TAO_Hessian, <void*>context) )
+        CHKERR( TaoSetHessian(self.tao, Hmat, Pmat, TAO_Hessian, <void*>context) )
+
+    def getHessian(self):
+        cdef Mat J = Mat()
+        cdef Mat P = Mat()
+        CHKERR( TaoGetHessian(self.tao, &J.mat, &P.mat, NULL, NULL) )
+        PetscINCREF(J.obj)
+        PetscINCREF(P.obj)
+        cdef object hessian = self.get_attr("__hessian__")
+        return (J, P, hessian)
 
     def setJacobian(self, jacobian, Mat J=None, Mat P=None,
                     args=None, kargs=None):
         """
         """
-        cdef PetscMat Jmat=NULL
+        cdef PetscMat Jmat = NULL
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat = Jmat
         if P is not None: Pmat = P.mat
@@ -276,7 +315,7 @@ cdef class TAO(Object):
                          args=None, kargs=None):
         """
         """
-        cdef PetscMat Jmat=NULL
+        cdef PetscMat Jmat = NULL
         if J is not None: Jmat = J.mat
         cdef PetscMat Pmat = Jmat
         if P is not None: Pmat = P.mat
@@ -293,7 +332,7 @@ cdef class TAO(Object):
                           args=None, kargs=None):
         """
         """
-        cdef PetscMat Jmat=NULL
+        cdef PetscMat Jmat = NULL
         if J is not None: Jmat = J.mat
         if args is None: args = ()
         if kargs is None: kargs = {}
@@ -301,6 +340,47 @@ cdef class TAO(Object):
         self.set_attr("__jacobian_design__", context)
         CHKERR( TaoSetJacobianDesignRoutine(self.tao, Jmat,
                                             TAO_JacobianDesign, <void*>context) )
+
+
+    def setEqualityConstraints(self, equality_constraints, Vec c,
+                               args=None, kargs=None):
+        """
+        """
+        if args is None: args = ()
+        if kargs is None: kargs = {}
+        context = (equality_constraints, args, kargs)
+        self.set_attr("__equality_constraints__", context)
+        CHKERR( TaoSetEqualityConstraintsRoutine(self.tao, c.vec,
+                                                 TAO_EqualityConstraints, <void*>context) )
+
+
+    def setJacobianEquality(self, jacobian_equality, Mat J=None, Mat P=None,
+                            args=None, kargs=None):
+        """
+        """
+        cdef PetscMat Jmat = NULL
+        if J is not None: Jmat = J.mat
+        cdef PetscMat Pmat = Jmat
+        if P is not None: Pmat = P.mat
+        if args is None: args = ()
+        if kargs is None: kargs = {}
+        context = (jacobian_equality, args, kargs)
+        self.set_attr("__jacobian_equality__", context)
+        CHKERR( TaoSetJacobianEqualityRoutine(self.tao, Jmat, Pmat,
+                                              TAO_JacobianEquality, <void*>context) )
+
+    def setUpdate(self, update, args=None, kargs=None):
+        """
+        """
+        if update is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (update, args, kargs)
+            self.set_attr('__update__', context)
+            CHKERR( TaoSetUpdate(self.tao, TAO_Update, NULL) )
+        else:
+            self.set_attr('__update__', None)
+            CHKERR( TaoSetUpdate(self.tao, NULL, NULL) )
 
     # --------------
 
@@ -389,6 +469,32 @@ cdef class TAO(Object):
         CHKERR( TaoGetTolerances(self.tao, &_gatol, &_grtol, &_gttol) )
         return (toReal(_gatol), toReal(_grtol), toReal(_gttol))
 
+    def setMaximumIterations(self, mit):
+        """
+        """
+        cdef PetscInt _mit = asInt(mit)
+        CHKERR( TaoSetMaximumIterations(self.tao, _mit) )
+
+    def getMaximumIterations(self):
+        """
+        """
+        cdef PetscInt _mit = PETSC_DEFAULT
+        CHKERR( TaoGetMaximumIterations(self.tao, &_mit) )
+        return toInt(_mit)
+
+    def setMaximumFunctionEvaluations(self, mit):
+        """
+        """
+        cdef PetscInt _mit = asInt(mit)
+        CHKERR( TaoSetMaximumFunctionEvaluations(self.tao, _mit) )
+
+    def getMaximumFunctionEvaluations(self):
+        """
+        """
+        cdef PetscInt _mit = PETSC_DEFAULT
+        CHKERR( TaoGetMaximumFunctionEvaluations(self.tao, &_mit) )
+        return toInt(_mit)
+
     def setConstraintTolerances(self, catol=None, crtol=None):
         """
         """
@@ -464,22 +570,14 @@ cdef class TAO(Object):
         """
         """
         if x is not None:
-            CHKERR( TaoSetInitialVector(self.tao, x.vec) )
+            CHKERR( TaoSetSolution(self.tao, x.vec) )
         CHKERR( TaoSolve(self.tao) )
 
     def getSolution(self):
         """
         """
         cdef Vec vec = Vec()
-        CHKERR( TaoGetSolutionVector(self.tao, &vec.vec) )
-        PetscINCREF(vec.obj)
-        return vec
-
-    def getGradient(self):
-        """
-        """
-        cdef Vec vec = Vec()
-        CHKERR( TaoGetGradientVector(self.tao, &vec.vec) )
+        CHKERR( TaoGetSolution(self.tao, &vec.vec) )
         PetscINCREF(vec.obj)
         return vec
 
@@ -598,7 +696,7 @@ cdef class TAO(Object):
         CHKERR( TaoBRGNSetRegularizerObjectiveAndGradientRoutine(self.tao, TAO_BRGNRegObjGrad, <void*>context) )
 
     def setBRGNRegularizerHessian(self, hessian, Mat H=None, args=None, kargs=None):
-        cdef PetscMat Hmat=NULL
+        cdef PetscMat Hmat = NULL
         if H is not None: Hmat = H.mat
         if args is None: args = ()
         if kargs is None: kargs = {}
@@ -630,6 +728,33 @@ cdef class TAO(Object):
         CHKERR( TaoBRGNGetDampingVector(self.tao, &damp.vec) )
         PetscINCREF(damp.obj)
         return damp
+
+    def createPython(self, context=None, comm=None):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscTAO tao = NULL
+        CHKERR( TaoCreate(ccomm, &tao) )
+        PetscCLEAR(self.obj); self.tao = tao
+        CHKERR( TaoSetType(self.tao, TAOPYTHON) )
+        CHKERR( TaoPythonSetContext(self.tao, <void*>context) )
+        return self
+
+    def setPythonContext(self, context):
+        CHKERR( TaoPythonSetContext(self.tao, <void*>context) )
+
+    def getPythonContext(self):
+        cdef void *context = NULL
+        CHKERR( TaoPythonGetContext(self.tao, &context) )
+        if context == NULL: return None
+        else: return <object> context
+
+    def setPythonType(self, py_type):
+        cdef const char *cval = NULL
+        py_type = str2bytes(py_type, &cval)
+        CHKERR( TaoPythonSetType(self.tao, cval) )
+
+    # --- backward compatibility ---
+
+    setInitial = setSolution
 
     # --- application context ---
 
@@ -708,7 +833,7 @@ cdef class TAO(Object):
 
     property gradient:
         def __get__(self):
-            return self.getGradient()
+            return self.getGradient()[0]
 
     # --- convergence ---
 

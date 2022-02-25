@@ -100,7 +100,7 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*) 0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
   ierr = PetscStrcpy(solver,"petsc");CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
@@ -120,7 +120,7 @@ int main(int argc,char **argv)
   ierr = ISCreateStride(PETSC_COMM_WORLD,i,j,1,&perm);CHKERRQ(ierr);
 
   ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix nonzeros = %D, allocated nonzeros = %D\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix nonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",
                      (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
   ierr = MatMult(mat,x,b);CHKERRQ(ierr);
 

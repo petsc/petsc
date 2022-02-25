@@ -118,7 +118,7 @@ PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory tj,TS ts)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)tj,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     char      *dir = tj->dirname;
     PetscBool flg;
 
@@ -130,9 +130,9 @@ PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory tj,TS ts)
       ierr = PetscTestDirectory(dir,'w',&flg);CHKERRQ(ierr);
       if (!flg) {
         ierr = PetscTestFile(dir,'r',&flg);CHKERRQ(ierr);
-        if (flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Specified path is a file - not a dir: %s",dir);
+        PetscCheckFalse(flg,PETSC_COMM_SELF,PETSC_ERR_USER,"Specified path is a file - not a dir: %s",dir);
         ierr = PetscMkdir(dir);CHKERRQ(ierr);
-      } else SETERRQ1(comm,PETSC_ERR_SUP,"Directory %s not empty",tj->dirname);
+      } else SETERRQ(comm,PETSC_ERR_SUP,"Directory %s not empty",tj->dirname);
     }
   }
   ierr = PetscBarrier((PetscObject)tj);CHKERRQ(ierr);

@@ -75,7 +75,7 @@ int main(int argc,char ** argv)
   PetscErrorCode   ierr;
   char             pfdata_file[PETSC_MAX_PATH_LEN]="case9.m";
   PFDATA           *pfdata;
-  PetscInt         numEdges=0,numVertices=0;
+  PetscInt         numEdges=0;
   PetscInt         *edges = NULL;
   PetscInt         i;
   DM               networkdm;
@@ -117,8 +117,6 @@ int main(int argc,char ** argv)
       User.Sbase = pfdata->sbase;
 
       numEdges = pfdata->nbranch;
-      numVertices = pfdata->nbus;
-
       ierr = PetscMalloc1(2*numEdges,&edges);CHKERRQ(ierr);
       ierr = GetListofEdges_Power(pfdata,edges);CHKERRQ(ierr);
     }
@@ -132,7 +130,7 @@ int main(int argc,char ** argv)
     PetscLogStagePush(stage2);
     /* Set number of nodes/edges */
     ierr = DMNetworkSetNumSubNetworks(networkdm,PETSC_DECIDE,1);CHKERRQ(ierr);
-    ierr = DMNetworkAddSubnetwork(networkdm,"",numVertices,numEdges,edges,NULL);CHKERRQ(ierr);
+    ierr = DMNetworkAddSubnetwork(networkdm,"",numEdges,edges,NULL);CHKERRQ(ierr);
 
     /* Set up the network layout */
     ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);

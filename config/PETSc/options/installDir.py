@@ -29,17 +29,9 @@ class Configure(config.base.Configure):
     self.arch     = framework.require('PETSc.options.arch', self)
     return
 
-  def printSudoPasswordMessage(self,needsudo = 1):
-    '''Prints a message that sudo password will be needed for installs of packages'''
-    '''Packages like sowing and make that are never installed in an sudo location would pass 0 for needsudo'''
-    if needsudo and self.installSudoMessage:
-      self.logPrintBox(self.installSudoMessage)
-      self.installSudoMessage = ''
-
   def setInstallDir(self):
     ''' setup installDir to either prefix or if that is not set to PETSC_DIR/PETSC_ARCH'''
     self.installSudo        = ''
-    self.installSudoMessage = ''
     if self.framework.argDB['prefix']:
       self.isprefix = True
       self.dir = os.path.abspath(os.path.expanduser(self.framework.argDB['prefix']))
@@ -50,7 +42,6 @@ class Configure(config.base.Configure):
         os.rmdir(os.path.join(self.dir,'PETScTestDirectory'))
       except Exception as e:
         self.logPrint('Error trying to to test write permissions on directory '+str(e))
-        self.installSudoMessage = 'You do not have write permissions to the --prefix directory '+self.dir+'\nYou will be prompted for the sudo password for any external package installs'
         self.installSudo = 'sudo '
     else:
       self.dir = os.path.abspath(os.path.join(self.petscdir.dir, self.arch.arch))

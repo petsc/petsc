@@ -76,7 +76,7 @@ PetscErrorCode  PetscViewerFileSetName_ADIOS(PetscViewer viewer, const char name
   case FILE_MODE_UNDEFINED:
     SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unsupported file mode %s",PetscFileModes[adios->btype]);
+    SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unsupported file mode %s",PetscFileModes[adios->btype]);
   }
   PetscFunctionReturn(0);
 }

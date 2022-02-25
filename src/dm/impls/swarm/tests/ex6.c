@@ -93,17 +93,17 @@ static PetscReal energy(AppCtx *ctx, PetscInt c)
 
 static PetscErrorCode SetInitialCoordinates(DM dmSw)
 {
-  DM                 dm;
+  DM                dm;
   AppCtx            *ctx;
-  Vec                coordinates;
-  PetscSF            cellSF = NULL;
+  Vec               coordinates;
+  PetscSF           cellSF = NULL;
   PetscReal         *coords;
   PetscInt          *cellid;
   const PetscInt    *found;
   const PetscSFNode *cells;
-  PetscInt           dim, d, c, Np, p;
-  PetscMPIInt        rank;
-  PetscErrorCode     ierr;
+  PetscInt          dim, d, c, Np, p;
+  PetscMPIInt       rank;
+  PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
   ierr = DMGetApplicationContext(dmSw, &ctx);CHKERRQ(ierr);
@@ -132,7 +132,7 @@ static PetscErrorCode SetInitialCoordinates(DM dmSw)
   for (p = 0; p < Np; ++p) {
     const PetscInt part = found ? found[p] : p;
 
-    if (cells[p].rank != rank) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D not found in the mesh", part);
+    PetscCheckFalse(cells[p].rank != rank,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D not found in the mesh", part);
     cellid[part] = cells[p].index;
   }
   ierr = DMSwarmRestoreField(dmSw, DMSwarmPICField_cellid, NULL, NULL, (void **) &cellid);CHKERRQ(ierr);

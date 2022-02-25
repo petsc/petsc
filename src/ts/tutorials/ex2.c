@@ -344,7 +344,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
   PetscDraw      draw;
 
   /*
-     We use the default X windows viewer
+     We use the default X Windows viewer
              PETSC_VIEWER_DRAW_(appctx->comm)
      that is associated with the current communicator. This saves
      the effort of calling PetscViewerDrawOpen() to create the window.
@@ -469,7 +469,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
   */
   ierr = MPI_Comm_rank(appctx->comm,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(appctx->comm,&size);CHKERRMPI(ierr);
-  if (!rank)          copyptr[0]           = 1.0;
+  if (rank == 0)          copyptr[0]           = 1.0;
   if (rank == size-1) copyptr[localsize-1] = 2.0;
 
   /*

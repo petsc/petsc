@@ -15,14 +15,14 @@ static PetscErrorCode CheckGraphNotSet(PetscSF sf)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (sf->graphset) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is set");
+  PetscCheckFalse(sf->graphset,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is set");
   ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
-  if (nroots  >= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is set");
-  if (nleaves >= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is set");
-  if (ilocal)  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is set");
-  if (iremote) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is set");
-  if (sf->minleaf != PETSC_MAX_INT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF minimum leaf is not PETSC_MAX_INT");
-  if (sf->maxleaf != PETSC_MIN_INT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF minimum leaf is not PETSC_MIN_INT");
+  PetscCheckFalse(nroots  >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is set");
+  PetscCheckFalse(nleaves >= 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is set");
+  PetscCheckFalse(ilocal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is set");
+  PetscCheckFalse(iremote,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is set");
+  PetscCheckFalse(sf->minleaf != PETSC_MAX_INT,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF minimum leaf is not PETSC_MAX_INT");
+  PetscCheckFalse(sf->maxleaf != PETSC_MIN_INT,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF minimum leaf is not PETSC_MIN_INT");
   PetscFunctionReturn(0);
 }
 
@@ -36,28 +36,28 @@ static PetscErrorCode CheckGraphEmpty(PetscSF sf)
 
   PetscFunctionBegin;
   ierr = PetscSFGetGraph(sf,&nroots,&nleaves,&ilocal,&iremote);CHKERRQ(ierr);
-  if (nroots)  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is not empty");
-  if (nleaves) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is not empty");
-  if (ilocal)  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is not empty");
-  if (iremote) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is not empty");
+  PetscCheckFalse(nroots,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is not empty");
+  PetscCheckFalse(nleaves,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is not empty");
+  PetscCheckFalse(ilocal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is not empty");
+  PetscCheckFalse(iremote,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF graph is not empty");
   ierr = PetscSFGetLeafRange(sf,&minleaf,&maxleaf);CHKERRQ(ierr);
-  if (minleaf !=  0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF minimum leaf is not 0");
-  if (maxleaf != -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF maximum leaf is not -1");
+  PetscCheckFalse(minleaf !=  0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF minimum leaf is not 0");
+  PetscCheckFalse(maxleaf != -1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF maximum leaf is not -1");
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CheckRanksNotSet(PetscSF sf)
 {
   PetscFunctionBegin;
-  if (sf->nranks != -1)   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF ranks are set");
-  if (sf->ranks  != NULL) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF ranks are set");
+  PetscCheckFalse(sf->nranks != -1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF ranks are set");
+  PetscCheckFalse(sf->ranks  != NULL,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF ranks are set");
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode CheckRanksEmpty(PetscSF sf)
 {
   PetscFunctionBegin;
-  if (sf->nranks != 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF ranks not empty");
+  PetscCheckFalse(sf->nranks != 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SF ranks not empty");
   PetscFunctionReturn(0);
 }
 

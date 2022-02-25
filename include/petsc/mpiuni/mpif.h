@@ -18,6 +18,8 @@
        parameter (MPI_KEYVAL_INVALID = 0)
        MPIUNI_FInt MPI_SUCCESS
        parameter (MPI_SUCCESS = 0)
+       MPIUNI_FInt MPI_ERR_COUNT
+       parameter (MPI_ERR_COUNT = 2)
        MPIUNI_FInt MPI_ERR_OTHER
        parameter (MPI_ERR_OTHER = 17)
        MPIUNI_FInt MPI_ERR_UNKNOWN

@@ -16,10 +16,10 @@ Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 DM Object: Mesh (ex56_) 2 MPI processes
   type: plex
 Mesh in 3 dimensions:
-  0-cells: 12 12
-  1-cells: 20 20
-  2-cells: 11 11
-  3-cells: 2 2
+  Number of 0-cells per rank: 12 12
+  Number of 1-cells per rank: 20 20
+  Number of 2-cells per rank: 11 11
+  Number of 3-cells per rank: 2 2
 Labels:
   depth: 4 strata with value/size (0 (12), 1 (20), 2 (11), 3 (2))
   marker: 1 strata with value/size (1 (27))
@@ -56,10 +56,10 @@ Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 DM Object: Mesh (ex56_) 2 MPI processes
   type: plex
 Mesh in 3 dimensions:
-  0-cells: 45 45
-  1-cells: 96 96
-  2-cells: 68 68
-  3-cells: 16 16
+  Number of 0-cells per rank: 45 45
+  Number of 1-cells per rank: 96 96
+  Number of 2-cells per rank: 68 68
+  Number of 3-cells per rank: 16 16
 Labels:
   celltype: 4 strata with value/size (0 (45), 1 (96), 4 (68), 7 (16))
   depth: 4 strata with value/size (0 (45), 1 (96), 2 (68), 3 (16))

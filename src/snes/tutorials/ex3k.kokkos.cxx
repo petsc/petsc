@@ -133,7 +133,7 @@ PetscErrorCode StubFunction(SNES snes ,Vec x,Vec r,void *ctx)
   ierr = VecAXPY(rk,-1.0,r);CHKERRQ(ierr);
   ierr = VecNorm(rk,NORM_2,&norm);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da,&rk);CHKERRQ(ierr);
-  if (norm > 1e-6) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"KokkosFunction() different from CpuFunction() with a diff norm = %g\n",norm);
+  PetscCheckFalse(norm > 1e-6,PETSC_COMM_SELF,PETSC_ERR_PLIB,"KokkosFunction() different from CpuFunction() with a diff norm = %g",norm);
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
@@ -357,7 +357,7 @@ int main(int argc,char **argv)
      requires: kokkos_kernels
 
    test:
-     requires: kokkos_kernels !complex !single cuda
+     requires: kokkos_kernels !complex !single
      nsize: 2
      args: -dm_vec_type kokkos -dm_mat_type aijkokkos -view_initial -snes_monitor
      output_file: output/ex3k_1.out

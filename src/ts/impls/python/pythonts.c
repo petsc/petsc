@@ -5,7 +5,7 @@
 
    Collective on TS
 
-   Input Parameter:
+   Input Parameters:
 +  ts - the nonlinear solver (TS) context.
 -  pyname - full dotted Python name [package].module[.{class|function}]
 

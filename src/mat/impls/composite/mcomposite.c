@@ -80,7 +80,7 @@ PetscErrorCode MatMult_Composite_Multiplicative(Mat A,Vec x,Vec y)
   PetscInt          i;
 
   PetscFunctionBegin;
-  if (!next) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
+  PetscCheckFalse(!next,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
   in = x;
   if (shell->right) {
     if (!shell->rightwork) {
@@ -118,7 +118,7 @@ PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A,Vec x,Vec y)
   PetscInt          i;
 
   PetscFunctionBegin;
-  if (!tail) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
+  PetscCheckFalse(!tail,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
   in = x;
   if (shell->left) {
     if (!shell->leftwork) {
@@ -161,7 +161,7 @@ PetscErrorCode MatMult_Composite(Mat mat,Vec x,Vec y)
   PetscBool         match;
 
   PetscFunctionBegin;
-  if (!cur) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
+  PetscCheckFalse(!cur,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
   in = x;
   if (shell->right) {
     if (!shell->rightwork) {
@@ -308,7 +308,7 @@ PetscErrorCode MatMultTranspose_Composite(Mat A,Vec x,Vec y)
   PetscInt          i;
 
   PetscFunctionBegin;
-  if (!next) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
+  PetscCheckFalse(!next,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
   in = x;
   if (shell->left) {
     if (!shell->leftwork) {
@@ -387,8 +387,8 @@ PetscErrorCode MatGetDiagonal_Composite(Mat A,Vec v)
   PetscInt          i;
 
   PetscFunctionBegin;
-  if (!next) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
-  if (shell->right || shell->left) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get diagonal if left or right scaling");
+  PetscCheckFalse(!next,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
+  PetscCheckFalse(shell->right || shell->left,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get diagonal if left or right scaling");
 
   ierr = MatGetDiagonal(next->mat,v);CHKERRQ(ierr);
   if (shell->scalings) {ierr = VecScale(v,shell->scalings[0]);CHKERRQ(ierr);}
@@ -507,7 +507,7 @@ PetscErrorCode MatCreateComposite(MPI_Comm comm,PetscInt nmat,const Mat *mats,Ma
   PetscInt       m,n,M,N,i;
 
   PetscFunctionBegin;
-  if (nmat < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must pass in at least one matrix");
+  PetscCheckFalse(nmat < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Must pass in at least one matrix");
   PetscValidPointer(mat,4);
 
   ierr = MatGetLocalSize(mats[0],PETSC_IGNORE,&n);CHKERRQ(ierr);
@@ -745,7 +745,7 @@ static PetscErrorCode MatCompositeSetMergeType_Composite(Mat mat,MatCompositeMer
 
    Logically Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  mat - the composite matrix
 -  type - MAT_COMPOSITE_MERGE RIGHT (default) to start merge from right with the first added matrix (mat[0]),
           MAT_COMPOSITE_MERGE_LEFT to start merge from left with the last added matrix (mat[nmat-1])
@@ -782,7 +782,7 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
   PetscInt          i;
 
   PetscFunctionBegin;
-  if (!next) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
+  PetscCheckFalse(!next,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
   scale = shell->scale;
   if (shell->type == MAT_COMPOSITE_ADDITIVE) {
     if (shell->mergetype == MAT_COMPOSITE_MERGE_RIGHT) {
@@ -837,7 +837,7 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
 
   Collective
 
-   Input Parameters:
+   Input Parameter:
 .  mat - the composite matrix
 
    Options Database Keys:
@@ -906,7 +906,7 @@ static PetscErrorCode MatCompositeGetMat_Composite(Mat mat,PetscInt i,Mat *Ai)
   PetscInt          k;
 
   PetscFunctionBegin;
-  if (i >= shell->nmat) SETERRQ2(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"index out of range: %d >= %d",i,shell->nmat);
+  PetscCheckFalse(i >= shell->nmat,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_OUTOFRANGE,"index out of range: %" PetscInt_FMT " >= %" PetscInt_FMT,i,shell->nmat);
   ilink = shell->head;
   for (k=0; k<i; k++) {
     ilink = ilink->next;
@@ -920,7 +920,7 @@ static PetscErrorCode MatCompositeGetMat_Composite(Mat mat,PetscInt i,Mat *Ai)
 
    Logically Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  mat - the composite matrix
 -  i - the number of requested matrix
 
@@ -962,7 +962,7 @@ PetscErrorCode MatCompositeSetScalings_Composite(Mat mat,const PetscScalar *scal
 
    Logically Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  mat      - the composite matrix
 -  scalings - array of scaling factors with scalings[i] being factor of i-th matrix, for i in [0, nmat)
 

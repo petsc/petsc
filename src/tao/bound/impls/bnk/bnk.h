@@ -202,7 +202,6 @@ typedef struct {
   PetscInt ksp_dtol;
   PetscInt ksp_iter;
   PetscInt ksp_othr;
-  PetscBool is_nash, is_stcg, is_gltr;
 
   /* Implementation specific context */
   void* ctx;

@@ -29,7 +29,7 @@ static char help[] = "Finds the least-squares solution to the under constraint l
    Routines: TaoSetType();
    Routines: TaoSetSeparableObjectiveRoutine();
    Routines: TaoSetJacobianRoutine();
-   Routines: TaoSetInitialVector();
+   Routines: TaoSetSolution();
    Routines: TaoSetFromOptions();
    Routines: TaoSetConvergenceHistory(); TaoGetConvergenceHistory();
    Routines: TaoSolve();
@@ -101,7 +101,7 @@ int main(int argc,char **argv)
   ierr = FormDictionaryMatrix(D,&user);CHKERRQ(ierr);
 
   /* Bind x to tao->solution. */
-  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
   /* Bind D to tao->data->D */
   ierr = TaoBRGNSetDictionaryMatrix(tao,D);CHKERRQ(ierr);
 
@@ -266,7 +266,7 @@ PetscErrorCode InitializeUserData(AppCtx *user)
    test:
       suffix: 2
       localrunfiles: cs1Data_A_b_xGT
-      args: -tao_monitor -tao_max_it 100 -tao_type brgn -tao_brgn_regularization_type l2prox -tao_brgn_regularizer_weight 1e-8 -tao_gatol 1.e-6 -tao_brgn_subsolver_ksp_converged_reason
+      args: -tao_monitor -tao_max_it 100 -tao_type brgn -tao_brgn_regularization_type l2prox -tao_brgn_regularizer_weight 1e-8 -tao_gatol 1.e-6 -tao_brgn_subsolver_tao_bnk_ksp_converged_reason
 
    test:
       suffix: 3

@@ -24,7 +24,7 @@ struct _PetscHeap {
 
 #define B 1                     /* log2(ARITY) */
 #define ARITY (1 << B)          /* tree branching factor */
-PETSC_STATIC_INLINE PetscInt Parent(PetscInt loc)
+static inline PetscInt Parent(PetscInt loc)
 {
   PetscInt p = loc >> B;
   if (p < ARITY) return (PetscInt)(loc != 1);             /* Parent(1) is 0, otherwise fix entries ending up in the hole */
@@ -33,7 +33,7 @@ PETSC_STATIC_INLINE PetscInt Parent(PetscInt loc)
 #define Value(h,loc) ((h)->base[loc].value)
 #define Id(h,loc)  ((h)->base[loc].id)
 
-PETSC_STATIC_INLINE void Swap(PetscHeap h,PetscInt loc,PetscInt loc2)
+static inline void Swap(PetscHeap h,PetscInt loc,PetscInt loc2)
 {
   PetscInt id,val;
   id                  = Id(h,loc);
@@ -43,7 +43,7 @@ PETSC_STATIC_INLINE void Swap(PetscHeap h,PetscInt loc,PetscInt loc2)
   h->base[loc2].id    = id;
   h->base[loc2].value = val;
 }
-PETSC_STATIC_INLINE PetscInt MinChild(PetscHeap h,PetscInt loc)
+static inline PetscInt MinChild(PetscHeap h,PetscInt loc)
 {
   PetscInt min,chld,left,right;
   left  = loc << B;
@@ -85,7 +85,7 @@ PetscErrorCode PetscHeapAdd(PetscHeap h,PetscInt id,PetscInt val)
   PetscFunctionBegin;
   if (1 < h->end && h->end < ARITY) h->end = ARITY;
   loc = h->end++;
-  if (h->end > h->stash) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Addition would exceed allocation %D (%D stashed)",h->alloc,(h->alloc-h->stash));
+  PetscCheckFalse(h->end > h->stash,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Addition would exceed allocation %" PetscInt_FMT " (%" PetscInt_FMT " stashed)",h->alloc,(h->alloc-h->stash));
   h->base[loc].id    = id;
   h->base[loc].value = val;
 
@@ -186,7 +186,7 @@ PetscErrorCode PetscHeapView(PetscHeap h,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Heap size %D with %D stashed\n",h->end-1,h->alloc-h->stash);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Heap size %" PetscInt_FMT " with %" PetscInt_FMT " stashed\n",h->end-1,h->alloc-h->stash);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Heap in (id,value) pairs\n");CHKERRQ(ierr);
     ierr = PetscIntView(2*(h->end-1),(const PetscInt*)(h->base+1),viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Stash in (id,value) pairs\n");CHKERRQ(ierr);

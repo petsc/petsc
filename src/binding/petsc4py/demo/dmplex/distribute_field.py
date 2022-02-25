@@ -20,13 +20,13 @@ if not PETSc.COMM_WORLD.rank:
                          [1.0, 0.5],
                          [0.0, 1.0],
                          [0.5, 1.0],
-                         [1.0, 1.0]], dtype=float)
+                         [1.0, 1.0]], dtype=PETSc.RealType)
     cells = np.asarray([[0,1,4,3],
                         [1,2,5,4],
                         [3,4,7,6],
                         [4,5,8,7]], dtype=PETSc.IntType)
 else:
-    coords = np.zeros((0, 2), dtype=float)
+    coords = np.zeros((0, 2), dtype=PETSc.RealType)
     cells = np.zeros((0, 4), dtype=PETSc.IntType)
 
 plex = PETSc.DMPlex().createFromCellList(dim, cells, coords, comm=PETSc.COMM_WORLD)
@@ -35,11 +35,11 @@ pStart, pEnd = plex.getChart()
 plex.view()
 print("pStart, pEnd: ", pStart, pEnd)
 
-# Create section with 1 field with 1 DoF per vertex, edge amd cell
+# Create section with 1 field with 1 DoF per vertex, edge and cell
 numComp = 1
 # Start with an empty vector
 numDof = [0] * 3
-# Field defined on vertexes
+# Field defined on vertices
 numDof[0] = 1
 # Field defined on edges
 numDof[1] = 1
@@ -64,7 +64,7 @@ origVec.view()
 
 if PETSc.COMM_WORLD.size > 1:
     sf = plex.distribute()
-    sf.view()        
+    sf.view()
 
     newSect, newVec = plex.distributeField(sf, origSect, origVec)
 

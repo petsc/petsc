@@ -1,0 +1,242 @@
+Solving a linear TS problem on 1 processor
+Timestep   0: step size = 0.0005, time = 0., 2-norm error = 1.02978e-15, max norm error = 3.10862e-15
+    Linear solve converged due to CONVERGED_RTOL iterations 2
+Timestep   1: step size = 0.0005, time = 0.0005, 2-norm error = 0.00920347, max norm error = 0.0133108
+    Linear solve converged due to CONVERGED_RTOL iterations 2
+Timestep   2: step size = 0.0005, time = 0.001, 2-norm error = 0.0155367, max norm error = 0.0225476
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep   3: step size = 0.0005, time = 0.0015, 2-norm error = 0.0196742, max norm error = 0.0286633
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep   4: step size = 0.0005, time = 0.002, 2-norm error = 0.0221499, max norm error = 0.0324123
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep   5: step size = 0.0005, time = 0.0025, 2-norm error = 0.0233849, max norm error = 0.034389
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep   6: step size = 0.0005, time = 0.003, 2-norm error = 0.0237097, max norm error = 0.0350595
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep   7: step size = 0.0005, time = 0.0035, 2-norm error = 0.0233823, max norm error = 0.0347873
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep   8: step size = 0.0005, time = 0.004, 2-norm error = 0.0226031, max norm error = 0.033854
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep   9: step size = 0.0005, time = 0.0045, 2-norm error = 0.0215263, max norm error = 0.0324759
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  10: step size = 0.0005, time = 0.005, 2-norm error = 0.0202701, max norm error = 0.0308177
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  11: step size = 0.0005, time = 0.0055, 2-norm error = 0.0189239, max norm error = 0.0290034
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  12: step size = 0.0005, time = 0.006, 2-norm error = 0.0175547, max norm error = 0.0271249
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  13: step size = 0.0005, time = 0.0065, 2-norm error = 0.0162119, max norm error = 0.0252488
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  14: step size = 0.0005, time = 0.007, 2-norm error = 0.0149315, max norm error = 0.0234227
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  15: step size = 0.0005, time = 0.0075, 2-norm error = 0.0137386, max norm error = 0.0216904
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  16: step size = 0.0005, time = 0.008, 2-norm error = 0.0126503, max norm error = 0.0200949
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  17: step size = 0.0005, time = 0.0085, 2-norm error = 0.0116769, max norm error = 0.0186119
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  18: step size = 0.0005, time = 0.009, 2-norm error = 0.0108238, max norm error = 0.0172473
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  19: step size = 0.0005, time = 0.0095, 2-norm error = 0.0100915, max norm error = 0.016002
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  20: step size = 0.0005, time = 0.01, 2-norm error = 0.00947709, max norm error = 0.0148737
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  21: step size = 0.0005, time = 0.0105, 2-norm error = 0.00897433, max norm error = 0.0138579
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  22: step size = 0.0005, time = 0.011, 2-norm error = 0.00857434, max norm error = 0.0130013
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  23: step size = 0.0005, time = 0.0115, 2-norm error = 0.00826626, max norm error = 0.0122408
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  24: step size = 0.0005, time = 0.012, 2-norm error = 0.00803807, max norm error = 0.0115672
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  25: step size = 0.0005, time = 0.0125, 2-norm error = 0.00787736, max norm error = 0.0110129
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  26: step size = 0.0005, time = 0.013, 2-norm error = 0.00777212, max norm error = 0.0105437
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  27: step size = 0.0005, time = 0.0135, 2-norm error = 0.00771124, max norm error = 0.0101605
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  28: step size = 0.0005, time = 0.014, 2-norm error = 0.0076849, max norm error = 0.00985791
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  29: step size = 0.0005, time = 0.0145, 2-norm error = 0.00768474, max norm error = 0.00963958
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  30: step size = 0.0005, time = 0.015, 2-norm error = 0.00770382, max norm error = 0.0094884
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  31: step size = 0.0005, time = 0.0155, 2-norm error = 0.00773653, max norm error = 0.00940753
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  32: step size = 0.0005, time = 0.016, 2-norm error = 0.00777841, max norm error = 0.00939517
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  33: step size = 0.0005, time = 0.0165, 2-norm error = 0.00782602, max norm error = 0.00944572
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  34: step size = 0.0005, time = 0.017, 2-norm error = 0.00787669, max norm error = 0.00956201
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  35: step size = 0.0005, time = 0.0175, 2-norm error = 0.0079284, max norm error = 0.00973858
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  36: step size = 0.0005, time = 0.018, 2-norm error = 0.00797966, max norm error = 0.00997931
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  37: step size = 0.0005, time = 0.0185, 2-norm error = 0.00802935, max norm error = 0.0102298
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  38: step size = 0.0005, time = 0.019, 2-norm error = 0.00807668, max norm error = 0.0104518
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  39: step size = 0.0005, time = 0.0195, 2-norm error = 0.00812107, max norm error = 0.0106481
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  40: step size = 0.0005, time = 0.02, 2-norm error = 0.00816215, max norm error = 0.0108211
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  41: step size = 0.0005, time = 0.0205, 2-norm error = 0.00819966, max norm error = 0.0109733
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  42: step size = 0.0005, time = 0.021, 2-norm error = 0.00823345, max norm error = 0.0111064
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  43: step size = 0.0005, time = 0.0215, 2-norm error = 0.00826344, max norm error = 0.0112225
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  44: step size = 0.0005, time = 0.022, 2-norm error = 0.00828961, max norm error = 0.011323
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  45: step size = 0.0005, time = 0.0225, 2-norm error = 0.00831198, max norm error = 0.0114095
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  46: step size = 0.0005, time = 0.023, 2-norm error = 0.00833061, max norm error = 0.0114831
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  47: step size = 0.0005, time = 0.0235, 2-norm error = 0.00834557, max norm error = 0.011545
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  48: step size = 0.0005, time = 0.024, 2-norm error = 0.00835693, max norm error = 0.0115962
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  49: step size = 0.0005, time = 0.0245, 2-norm error = 0.00836481, max norm error = 0.0116376
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  50: step size = 0.0005, time = 0.025, 2-norm error = 0.0083693, max norm error = 0.0116701
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  51: step size = 0.0005, time = 0.0255, 2-norm error = 0.00837051, max norm error = 0.0116944
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  52: step size = 0.0005, time = 0.026, 2-norm error = 0.00836856, max norm error = 0.011711
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  53: step size = 0.0005, time = 0.0265, 2-norm error = 0.00836355, max norm error = 0.0117207
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  54: step size = 0.0005, time = 0.027, 2-norm error = 0.0083556, max norm error = 0.0117239
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  55: step size = 0.0005, time = 0.0275, 2-norm error = 0.00834481, max norm error = 0.011721
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  56: step size = 0.0005, time = 0.028, 2-norm error = 0.0083313, max norm error = 0.0117126
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  57: step size = 0.0005, time = 0.0285, 2-norm error = 0.00831517, max norm error = 0.011699
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  58: step size = 0.0005, time = 0.029, 2-norm error = 0.00829652, max norm error = 0.0116806
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  59: step size = 0.0005, time = 0.0295, 2-norm error = 0.00827546, max norm error = 0.0116576
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  60: step size = 0.0005, time = 0.03, 2-norm error = 0.00825209, max norm error = 0.0116304
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  61: step size = 0.0005, time = 0.0305, 2-norm error = 0.0082265, max norm error = 0.0115993
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  62: step size = 0.0005, time = 0.031, 2-norm error = 0.00819879, max norm error = 0.0115645
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  63: step size = 0.0005, time = 0.0315, 2-norm error = 0.00816905, max norm error = 0.0115261
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  64: step size = 0.0005, time = 0.032, 2-norm error = 0.00813737, max norm error = 0.0114846
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  65: step size = 0.0005, time = 0.0325, 2-norm error = 0.00810384, max norm error = 0.0114399
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  66: step size = 0.0005, time = 0.033, 2-norm error = 0.00806853, max norm error = 0.0113923
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  67: step size = 0.0005, time = 0.0335, 2-norm error = 0.00803153, max norm error = 0.0113421
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  68: step size = 0.0005, time = 0.034, 2-norm error = 0.00799292, max norm error = 0.0112892
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  69: step size = 0.0005, time = 0.0345, 2-norm error = 0.00795278, max norm error = 0.011234
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  70: step size = 0.0005, time = 0.035, 2-norm error = 0.00791117, max norm error = 0.0111764
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  71: step size = 0.0005, time = 0.0355, 2-norm error = 0.00786818, max norm error = 0.0111168
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  72: step size = 0.0005, time = 0.036, 2-norm error = 0.00782387, max norm error = 0.0110551
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  73: step size = 0.0005, time = 0.0365, 2-norm error = 0.00777831, max norm error = 0.0109915
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  74: step size = 0.0005, time = 0.037, 2-norm error = 0.00773157, max norm error = 0.0109261
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  75: step size = 0.0005, time = 0.0375, 2-norm error = 0.0076837, max norm error = 0.010859
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  76: step size = 0.0005, time = 0.038, 2-norm error = 0.00763477, max norm error = 0.0107903
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  77: step size = 0.0005, time = 0.0385, 2-norm error = 0.00758483, max norm error = 0.0107202
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  78: step size = 0.0005, time = 0.039, 2-norm error = 0.00753396, max norm error = 0.0106486
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  79: step size = 0.0005, time = 0.0395, 2-norm error = 0.00748219, max norm error = 0.0105758
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  80: step size = 0.0005, time = 0.04, 2-norm error = 0.00742959, max norm error = 0.0105017
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  81: step size = 0.0005, time = 0.0405, 2-norm error = 0.00737621, max norm error = 0.0104264
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  82: step size = 0.0005, time = 0.041, 2-norm error = 0.00732209, max norm error = 0.0103501
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  83: step size = 0.0005, time = 0.0415, 2-norm error = 0.00726729, max norm error = 0.0102728
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  84: step size = 0.0005, time = 0.042, 2-norm error = 0.00721186, max norm error = 0.0101946
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  85: step size = 0.0005, time = 0.0425, 2-norm error = 0.00715583, max norm error = 0.0101155
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  86: step size = 0.0005, time = 0.043, 2-norm error = 0.00709926, max norm error = 0.0100357
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  87: step size = 0.0005, time = 0.0435, 2-norm error = 0.00704218, max norm error = 0.00995507
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  88: step size = 0.0005, time = 0.044, 2-norm error = 0.00698463, max norm error = 0.00987379
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  89: step size = 0.0005, time = 0.0445, 2-norm error = 0.00692666, max norm error = 0.00979191
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  90: step size = 0.0005, time = 0.045, 2-norm error = 0.00686831, max norm error = 0.00970947
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  91: step size = 0.0005, time = 0.0455, 2-norm error = 0.00680961, max norm error = 0.00962653
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  92: step size = 0.0005, time = 0.046, 2-norm error = 0.00675059, max norm error = 0.00954314
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  93: step size = 0.0005, time = 0.0465, 2-norm error = 0.00669129, max norm error = 0.00945935
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  94: step size = 0.0005, time = 0.047, 2-norm error = 0.00663175, max norm error = 0.00937521
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  95: step size = 0.0005, time = 0.0475, 2-norm error = 0.00657199, max norm error = 0.00929075
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  96: step size = 0.0005, time = 0.048, 2-norm error = 0.00651205, max norm error = 0.00920604
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  97: step size = 0.0005, time = 0.0485, 2-norm error = 0.00645196, max norm error = 0.00912111
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  98: step size = 0.0005, time = 0.049, 2-norm error = 0.00639174, max norm error = 0.00903599
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep  99: step size = 0.0005, time = 0.0495, 2-norm error = 0.00633143, max norm error = 0.00895074
+    Linear solve converged due to CONVERGED_RTOL iterations 0
+Timestep 100: step size = 0.0005, time = 0.05, 2-norm error = 0.00627104, max norm error = 0.00886538
+avg. error (2 norm) = 0.00957673, avg. error (max norm) = 0.0136904
+TS Object: 1 MPI processes
+  type: beuler
+  maximum steps=100
+  maximum time=100.
+  total number of I function evaluations=100
+  total number of I Jacobian evaluations=100
+  total number of linear solver iterations=4
+  total number of linear solve failures=0
+  total number of rejected steps=0
+  using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
+  TSAdapt Object: 1 MPI processes
+    type: none
+  SNES Object: 1 MPI processes
+    type: ksponly
+    maximum iterations=50, maximum function evaluations=10000
+    tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+    total number of linear solver iterations=0
+    total number of function evaluations=1
+    norm schedule ALWAYS
+    KSP Object: 1 MPI processes
+      type: gmres
+        restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+        happy breakdown tolerance 1e-30
+      maximum iterations=10000, nonzero initial guess
+      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      KSPGuess Object: 1 MPI processes
+        type: fischer
+        Model 3, size 10
+      using PRECONDITIONED norm type for convergence test
+    PC Object: 1 MPI processes
+      type: none
+      linear system matrix = precond matrix:
+      Mat Object: 1 MPI processes
+        type: seqaij
+        rows=60, cols=60
+        total: nonzeros=176, allocated nonzeros=176
+        total number of mallocs used during MatSetValues calls=0
+          not using I-node routines

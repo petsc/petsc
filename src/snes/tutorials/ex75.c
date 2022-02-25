@@ -538,7 +538,7 @@ PetscErrorCode MapleTest(MPI_Comm comm, AppCtx *ctx)
         ierr = PetscPrintf(PETSC_COMM_SELF, "%0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e %0.17e\n",
                            (double)x[i], (double)z[j], (double)PetscAbsScalar(vx - vxMaple[i][j]), (double)PetscAbsScalar(vz - vzMaple[i][j]), (double)PetscAbsScalar(p - pMaple[i][j]),
                            (double)PetscAbsScalar(sxx - sxxMaple[i][j]), (double)PetscAbsScalar(sxz - sxzMaple[i][j]), (double)PetscAbsScalar(szz - szzMaple[i][j]), (double)norm);
-        SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid solution, error %g", (double)norm);
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid solution, error %g", (double)norm);
       }
     }
   }

@@ -2,9 +2,17 @@ PetscFE Object: Q1 1 MPI processes
   type: basic
   Basic Finite Element in 2 dimensions with 2 components
   PetscSpace Object: Q1 1 MPI processes
-    type: poly
+    type: sum
     Space in 2 variables with 2 components, size 8
-    Tensor polynomial space of degree 1
+    Sum space of 2 concatenated subspaces (all identical)
+      PetscSpace Object: sum component (sumcomp_) 1 MPI processes
+        type: tensor
+        Space in 2 variables with 1 components, size 4
+        Tensor space of 2 subspaces (all identical)
+          PetscSpace Object: sum component tensor component (sumcomp_tensorcomp_) 1 MPI processes
+            type: poly
+            Space in 1 variables with 1 components, size 2
+            Polynomial space of degree 1
   PetscDualSpace Object: Q1 1 MPI processes
     type: lagrange
     Dual space with 2 components, size 8
@@ -14,9 +22,17 @@ PetscFE Object: Q3 1 MPI processes
   type: basic
   Basic Finite Element in 2 dimensions with 2 components
   PetscSpace Object: Q3 1 MPI processes
-    type: poly
+    type: sum
     Space in 2 variables with 2 components, size 32
-    Tensor polynomial space of degree 3
+    Sum space of 2 concatenated subspaces (all identical)
+      PetscSpace Object: sum component (sumcomp_) 1 MPI processes
+        type: tensor
+        Space in 2 variables with 1 components, size 16
+        Tensor space of 2 subspaces (all identical)
+          PetscSpace Object: sum component tensor component (sumcomp_tensorcomp_) 1 MPI processes
+            type: poly
+            Space in 1 variables with 1 components, size 4
+            Polynomial space of degree 3
   PetscDualSpace Object: Q3 1 MPI processes
     type: lagrange
     Dual space with 2 components, size 32

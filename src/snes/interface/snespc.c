@@ -71,10 +71,10 @@ PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes,Vec X,Vec F)
 
    Collective on SNES
 
-   Input Parameters:
+   Input Parameter:
 .  snes - the SNES context
 
-   Output Parameter:
+   Output Parameters:
 +  F - function vector
 -  fnorm - the norm of F
 

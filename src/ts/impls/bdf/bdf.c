@@ -31,7 +31,7 @@ typedef struct {
 /* Compute Lagrange polynomials on T[:n] evaluated at t.
  * If one has data (T[i], Y[i]), then the interpolation/extrapolation is f(t) = \sum_i L[i]*Y[i].
  */
-PETSC_STATIC_INLINE void LagrangeBasisVals(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar L[])
+static inline void LagrangeBasisVals(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar L[])
 {
   PetscInt k,j;
   for (k=0; k<n; k++)
@@ -40,7 +40,7 @@ PETSC_STATIC_INLINE void LagrangeBasisVals(PetscInt n,PetscReal t,const PetscRea
         L[k] *= (t - T[j])/(T[k] - T[j]);
 }
 
-PETSC_STATIC_INLINE void LagrangeBasisDers(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar dL[])
+static inline void LagrangeBasisDers(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar dL[])
 {
   PetscInt  k,j,i;
   for (k=0; k<n; k++)
@@ -80,8 +80,8 @@ static PetscErrorCode TSBDF_RestoreVecs(TS ts,DM dm,Vec *Xdot,Vec *Ydot)
     ierr = DMRestoreNamedGlobalVector(dm,"TSBDF_Vec_Xdot",Xdot);CHKERRQ(ierr);
     ierr = DMRestoreNamedGlobalVector(dm,"TSBDF_Vec_Ydot",Ydot);CHKERRQ(ierr);
   } else {
-    if (*Xdot != bdf->vec_dot) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"Vec does not match the cache");
-    if (*Ydot != bdf->vec_wrk) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"Vec does not match the cache");
+    PetscCheckFalse(*Xdot != bdf->vec_dot,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"Vec does not match the cache");
+    PetscCheckFalse(*Ydot != bdf->vec_wrk,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"Vec does not match the cache");
     *Xdot = NULL;
     *Ydot = NULL;
   }
@@ -299,7 +299,7 @@ static PetscErrorCode TSStep_BDF(TS ts)
   reject_step:
     ts->reject++; accept = PETSC_FALSE;
     if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
-      ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);
+      ierr = PetscInfo(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);
       ts->reason = TS_DIVERGED_STEP_REJECTED;
     }
   }
@@ -494,7 +494,7 @@ static PetscErrorCode TSBDFSetOrder_BDF(TS ts,PetscInt order)
 
   PetscFunctionBegin;
   if (order == bdf->order) PetscFunctionReturn(0);
-  if (order < 1 || order > 6) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"BDF Order %D not implemented",order);
+  PetscCheckFalse(order < 1 || order > 6,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"BDF Order %D not implemented",order);
   bdf->order = order;
   PetscFunctionReturn(0);
 }
@@ -556,7 +556,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
 
   Logically Collective on TS
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  order - order of the method
 

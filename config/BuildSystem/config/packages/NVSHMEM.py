@@ -9,8 +9,7 @@ class Configure(config.package.Package):
     #self.versionname       = 'NVSHMEM_VENDOR_STRING' # the string has a format like "NVSHMEM v2.0.2"
     #self.versioninclude    = 'nvshmem_constants.h'
     #self.requiresversion   = 1
-    #self.defaultLanguage   = 'CUDA'
-    self.cxx               = 1 # requires C++
+    self.buildLanguages    = ['CUDA'] # requires nvcc
     #self.functions         = ['nvshmem_init', 'nvshmem_finalize']
     self.includes          = ['nvshmem.h']
     self.liblist           = [['libnvshmem.a','libcuda.a'], ['nvshmem.lib','cuda.lib']]

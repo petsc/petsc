@@ -113,6 +113,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   ierr = VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),1,mat->cmap->n,mat->cmap->N,NULL,&gvec);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterViewFromOptions(baij->Mvctx,(PetscObject)mat,"-matmult_vecscatter_view");CHKERRQ(ierr);
 
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)baij->Mvctx);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)baij->lvec);CHKERRQ(ierr);
@@ -231,7 +232,7 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
       r_rmapd[i] = inA->rmap->mapping->indices[i] + 1;
     }
   }
-  if (nt*bs != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt*bs %D n %D",nt*bs,n);
+  PetscCheckFalse(nt*bs != n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt*bs %" PetscInt_FMT " n %" PetscInt_FMT,nt*bs,n);
   ierr = PetscMalloc1(n+1,&uglyrmapd);CHKERRQ(ierr);
   for (i=0; i<inA->rmap->mapping->n; i++) {
     if (r_rmapd[i]) {
@@ -256,7 +257,7 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA,Vec scale)
       r_rmapo[i] = lindices[inA->rmap->mapping->indices[i]];
     }
   }
-  if (nt > no) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt %D no %D",nt,n);
+  PetscCheckFalse(nt > no,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt %" PetscInt_FMT " no %" PetscInt_FMT,nt,n);
   ierr = PetscFree(lindices);CHKERRQ(ierr);
   ierr = PetscMalloc1(nt*bs+1,&uglyrmapo);CHKERRQ(ierr);
   for (i=0; i<inA->rmap->mapping->n; i++) {

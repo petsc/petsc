@@ -143,7 +143,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
         if (user->bcType == DIRICHLET) {
           v[0] = 2.0*(HxdHy + HydHx);
           ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
-          SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !\n");
+          SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !");
         } else if (user->bcType == NEUMANN) {
           num = 0; numi=0; numj=0;
           if (j!=0) {

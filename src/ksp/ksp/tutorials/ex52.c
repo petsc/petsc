@@ -9,6 +9,22 @@ Input parameters include:\n\
 
 #include <petscksp.h>
 
+#if defined(PETSC_HAVE_MUMPS)
+/* Subroutine contributed by Varun Hiremath */
+PetscErrorCode printMumpsMemoryInfo(Mat F)
+{
+  PetscInt       maxMem, sumMem;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  ierr = MatMumpsGetInfog(F,16,&maxMem);CHKERRQ(ierr);
+  ierr = MatMumpsGetInfog(F,17,&sumMem);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "\n MUMPS INFOG(16) :: Max memory in MB = %d", maxMem);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "\n MUMPS INFOG(17) :: Sum memory in MB = %d \n", sumMem);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
+
 int main(int argc,char **args)
 {
   Vec            x,b,u;    /* approx solution, RHS, exact solution */
@@ -177,6 +193,18 @@ int main(int argc,char **args)
     ierr = PCFactorSetUpMatSolverType(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
 
+    if (flg_mumps) {
+      /* Get memory estimates from MUMPS' MatLUFactorSymbolic(), e.g. INFOG(16), INFOG(17).
+         KSPSetUp() below will do nothing inside MatLUFactorSymbolic() */
+      MatFactorInfo info;
+      ierr = MatLUFactorSymbolic(F,A,NULL,NULL,&info);CHKERRQ(ierr);
+      flg = PETSC_FALSE;
+      ierr = PetscOptionsGetBool(NULL,NULL,"-print_mumps_memory",&flg,NULL);CHKERRQ(ierr);
+      if (flg) {
+        ierr = printMumpsMemoryInfo(F);CHKERRQ(ierr);
+      }
+    }
+
     /* sequential ordering */
     icntl = 7; ival = 2;
     ierr = MatMumpsSetIcntl(F,icntl,ival);CHKERRQ(ierr);
@@ -339,7 +367,7 @@ int main(int argc,char **args)
     ierr = MatMumpsGetCntl(F,icntl,&cntl);CHKERRQ(ierr);
 
     /* compute determinant */
-    if (!rank) {
+    if (rank == 0) {
       ierr = MatMumpsGetInfog(F,34,&infog34);CHKERRQ(ierr);
       ierr = MatMumpsGetRinfog(F,12,&rinfo12);CHKERRQ(ierr);
       ierr = MatMumpsGetRinfog(F,13,&rinfo13);CHKERRQ(ierr);
@@ -416,6 +444,13 @@ int main(int argc,char **args)
       requires: mumps
       args: -use_mumps_ch -mat_type sbaij
       output_file: output/ex52_1.out
+
+   test:
+      suffix: mumps_4
+      nsize: 3
+      requires: mumps !complex !single
+      args: -use_mumps_lu -m 50 -n 50 -use_mumps_lu -print_mumps_memory
+      output_file: output/ex52_4.out
 
    test:
       suffix: mumps_omp_2

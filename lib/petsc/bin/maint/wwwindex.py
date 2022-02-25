@@ -170,8 +170,9 @@ def modifylevel(filename,secname):
         loc =m.group(1)
         if loc:
           re_loc = re.compile('<BODY .*>')
-          branch = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).rstrip()
-          edit_branch = 'release' if branch == b'release' else 'main'
+          git_ref = subprocess.check_output(['git', 'rev-parse', 'HEAD']).rstrip()
+          git_ref_release = subprocess.check_output(['git', 'rev-parse', 'origin/release']).rstrip()
+          edit_branch = 'release' if git_ref == git_ref_release else 'main'
           replacementtext = '<BODY BGCOLOR="FFFFFF">\n<div id="edit" align=right><a href="https://gitlab.com/petsc/petsc/-/edit/'+edit_branch+'/'+loc+'"><small>Fix/Edit manual page</small></a></div>'
           buf = re_loc.sub(replacementtext,buf)
       else:
@@ -300,6 +301,7 @@ def main():
 
       PETSC_DIR = argv[1]
       LOC       = argv[2]
+      HEADERDIR = (argv[3] if arg_len > 3 else 'doc/classic/manualpages-sec')
       #fd        = os.popen('/bin/ls -d '+ PETSC_DIR + '/docs/manualpages/*')
       #buf       = fd.read()
       #dirs      = split(strip(buf),'\n')
@@ -318,7 +320,7 @@ def main():
       for dirname in mandirs:
             outfilename  = dirname + '/index.html'
             dname,secname  = posixpath.split(dirname)
-            headfilename = PETSC_DIR + '/src/docs/manualpages-sec/header_' + secname
+            headfilename = PETSC_DIR + '/' + HEADERDIR + '/header_' + secname
             table        = createtable(dirname,levels,secname)
             if not table: continue
             singlelist   = addtolist(dirname,singlelist)

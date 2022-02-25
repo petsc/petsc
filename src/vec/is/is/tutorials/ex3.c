@@ -38,7 +38,7 @@ int main(int argc,char **argv)
   ierr = ISGetIndices(set,&indices);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Printing indices directly\n");CHKERRQ(ierr);
   for (i=0; i<issize; i++) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"%D\n",indices[i]);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"%" PetscInt_FMT "\n",indices[i]);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(set,&indices);CHKERRQ(ierr);
 
@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   ierr = ISBlockGetIndices(set,&indices);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Printing block indices directly\n");CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"%D\n",indices[i]);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"%" PetscInt_FMT "\n",indices[i]);CHKERRQ(ierr);
   }
   ierr = ISBlockRestoreIndices(set,&indices);CHKERRQ(ierr);
 
@@ -56,19 +56,19 @@ int main(int argc,char **argv)
     Check if this is really a block index set
   */
   ierr = PetscObjectTypeCompare((PetscObject)set,ISBLOCK,&isblock);CHKERRQ(ierr);
-  if (!isblock) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index set is not blocked!");
+  PetscCheckFalse(!isblock,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index set is not blocked!");
 
   /*
     Determine the block size of the index set
   */
   ierr = ISGetBlockSize(set,&bs);CHKERRQ(ierr);
-  if (bs != 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Block size is not 3!");
+  PetscCheckFalse(bs != 3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Block size is not 3!");
 
   /*
     Get the number of blocks
   */
   ierr = ISBlockGetLocalSize(set,&n);CHKERRQ(ierr);
-  if (n != 4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of blocks not 4!");
+  PetscCheckFalse(n != 4,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of blocks not 4!");
 
   ierr = ISDestroy(&set);CHKERRQ(ierr);
   ierr = PetscFinalize();

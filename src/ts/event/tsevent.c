@@ -56,7 +56,7 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
 
   Logically Collective
 
-  Input Arguments:
+  Input Parameters:
 + ts - time integration context
 - dt - post event interval step
 
@@ -87,7 +87,7 @@ PetscErrorCode TSSetPostEventIntervalStep(TS ts,PetscReal dt)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  ts - time integration context
 .  tol - scalar tolerance, PETSC_DECIDE to leave current value
 -  vtol - array of tolerances or NULL, used in preference to tol if present
@@ -112,7 +112,7 @@ PetscErrorCode TSSetEventTolerances(TS ts,PetscReal tol,PetscReal vtol[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (vtol) PetscValidRealPointer(vtol,3);
-  if (!ts->event) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set the events first by calling TSSetEventHandler()");
+  PetscCheckFalse(!ts->event,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set the events first by calling TSSetEventHandler()");
 
   event = ts->event;
   if (vtol) {
@@ -359,7 +359,7 @@ static PetscErrorCode TSPostEvent(TS ts,PetscReal t,Vec U)
 }
 
 /* Uses Anderson-Bjorck variant of regula falsi method */
-PETSC_STATIC_INLINE PetscReal TSEventComputeStepSize(PetscReal tleft,PetscReal t,PetscReal tright,PetscScalar fleft,PetscScalar f,PetscScalar fright,PetscInt side,PetscReal dt)
+static inline PetscReal TSEventComputeStepSize(PetscReal tleft,PetscReal t,PetscReal tright,PetscScalar fleft,PetscScalar f,PetscScalar fright,PetscInt side,PetscReal dt)
 {
   PetscReal new_dt, scal = 1.0;
   if (PetscRealPart(fleft)*PetscRealPart(f) < 0) {
@@ -409,7 +409,7 @@ static PetscErrorCode TSEventDetection(TS ts)
       }
     }
   }
-  in = event->status;
+  in = (PetscInt)event->status;
   ierr = MPIU_Allreduce(&in,&out,1,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
   event->status = (TSEventStatus)out;
   PetscFunctionReturn(0);
@@ -464,7 +464,7 @@ static PetscErrorCode TSEventLocation(TS ts,PetscReal *dt)
       if (event->status == TSEVENT_PROCESSING) event->side[i] = -1;
     }
   }
-  in[0] = event->status; in[1] = rollback;
+  in[0] = (PetscInt)event->status; in[1] = rollback;
   ierr = MPIU_Allreduce(in,out,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
   event->status = (TSEventStatus)out[0]; rollback = out[1];
   /* If rollback is true, the status will be overwritten so that an event at the endtime of current time step will be postponed to guarantee corret order */
@@ -611,10 +611,10 @@ PetscErrorCode TSAdjointEventHandler(TS ts)
 
   Logically Collective
 
-  Input Argument:
+  Input Parameter:
 . ts - the TS context
 
-  Output Argument:
+  Output Parameter:
 . nevents - number of events
 
   Level: intermediate

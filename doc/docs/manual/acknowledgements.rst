@@ -96,6 +96,15 @@ Earlier contributors to PETSc include:
 -  Liyang Xu - the interface to PVODE, now SUNDIALS/CVODE
    (``TSSUNDIALS``).
 
+The Toolkit for Advanced Optimization (TAO) developers especially thank Jorge Moré
+for his leadership, vision, and effort on previous versions of TAO.  TAO has 
+also benefited from the work of various researchers who have provided solvers, test problems, 
+and interfaces. In particular, we acknowledge: Adam Denchfield, Elizabeth Dolan, Evan Gawlik,
+Michael Gertz, Xiang Huang, Lisa Grignon, Manojkumar Krishnan, Gabriel Lopez-Calva, 
+Jarek Nieplocha, Boyana Norris, Hansol Suh, Stefan Wild, Limin Zhang, and
+Yurii Zinchenko.  We also thank all TAO users for their 
+comments, bug reports, and encouragement.
+
 PETSc source code contains modified routines from the following public
 domain software packages:
 
@@ -194,3 +203,4 @@ PETSc documentation has been generated using
 
 * `Sowing text processing tools developed by Bill Gropp <http://wgropp.cs.illinois.edu/projects/software/sowing/>`__
 * c2html
+

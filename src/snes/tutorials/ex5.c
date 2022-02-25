@@ -113,7 +113,7 @@ int main(int argc,char **argv)
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   user.param = 6.0;
   ierr       = PetscOptionsGetReal(NULL,NULL,"-par",&user.param,NULL);CHKERRQ(ierr);
-  if (user.param > bratu_lambda_max || user.param < bratu_lambda_min) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lambda, %g, is out of range, [%g, %g]", user.param, bratu_lambda_min, bratu_lambda_max);
+  PetscCheckFalse(user.param > bratu_lambda_max || user.param < bratu_lambda_min,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lambda, %g, is out of range, [%g, %g]", user.param, bratu_lambda_min, bratu_lambda_max);
   ierr       = PetscOptionsGetInt(NULL,NULL,"-mms",&MMS,NULL);CHKERRQ(ierr);
   if (MMS == 3) {
     PetscInt mPar = 2, nPar = 1;
@@ -150,12 +150,12 @@ int main(int argc,char **argv)
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   user.mms_solution = ZeroBCSolution;
   switch (MMS) {
-  case 0: user.mms_solution = NULL; user.mms_forcing = NULL;CHKERRQ(ierr);
+  case 0: user.mms_solution = NULL; user.mms_forcing = NULL;
   case 1: user.mms_solution = MMSSolution1; user.mms_forcing = MMSForcing1; break;
   case 2: user.mms_solution = MMSSolution2; user.mms_forcing = MMSForcing2; break;
   case 3: user.mms_solution = MMSSolution3; user.mms_forcing = MMSForcing3; break;
   case 4: user.mms_solution = MMSSolution4; user.mms_forcing = MMSForcing4; break;
-  default: SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknown MMS type %d",MMS);
+  default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknown MMS type %d",MMS);
   }
   ierr = DMDASNESSetFunctionLocal(da,INSERT_VALUES,(DMDASNESFunction)FormFunctionLocal,&user);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-fd",&flg,NULL);CHKERRQ(ierr);
@@ -193,7 +193,7 @@ int main(int argc,char **argv)
   ierr = SNESGetLinearSolveIterations(snes,&slits);CHKERRQ(ierr);
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetTotalIterations(ksp,&lits);CHKERRQ(ierr);
-  if (lits != slits) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Number of total linear iterations reported by SNES %D does not match reported by KSP %D",slits,lits);
+  PetscCheckFalse(lits != slits,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Number of total linear iterations reported by SNES %D does not match reported by KSP %D",slits,lits);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -214,7 +214,7 @@ int main(int argc,char **argv)
     ierr = VecNorm(e, NORM_2, &errorl2);CHKERRQ(ierr);
     ierr = VecNorm(e, NORM_INFINITY, &errorinf);CHKERRQ(ierr);
     ierr = VecGetSize(e, &N);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "N: %D error L2 %g inf %g\n", N, (double) errorl2/PetscSqrtReal(N), (double) errorinf);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "N: %D error L2 %g inf %g\n", N, (double) errorl2/PetscSqrtReal((PetscReal)N), (double) errorinf);CHKERRQ(ierr);
     ierr = VecDestroy(&e);CHKERRQ(ierr);
     ierr = PetscLogEventSetDof(SNES_Solve, 0, N);CHKERRQ(ierr);
     ierr = PetscLogEventSetError(SNES_Solve, 0, errorl2/PetscSqrtReal(N));CHKERRQ(ierr);
@@ -702,7 +702,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X, Vec B, void *ctx)
      the array.
      */
     ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
-    if (B) ierr = DMDAVecGetArray(da,localB,&b);CHKERRQ(ierr);
+    if (B) {ierr = DMDAVecGetArray(da,localB,&b);CHKERRQ(ierr);}
     /*
      Get local grid boundaries (for 2-dimensional DMDA):
      xs, ys   - starting grid indices (no ghost points)

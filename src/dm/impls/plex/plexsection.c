@@ -90,7 +90,7 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
   DMPolytopeType ct;
   PetscInt       depth, cellHeight, pStart = 0, pEnd = 0;
   PetscInt       Nf, f, Nds, n, dim, d, dep, p;
-  PetscBool     *isFE, hasHybrid = PETSC_FALSE;
+  PetscBool     *isFE, hasCohesive = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -101,11 +101,11 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
   ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
   for (n = 0; n < Nds; ++n) {
     PetscDS   ds;
-    PetscBool isHybrid;
+    PetscBool isCohesive;
 
     ierr = DMGetRegionNumDS(dm, n, NULL, NULL, &ds);CHKERRQ(ierr);
-    ierr = PetscDSGetHybrid(ds, &isHybrid);CHKERRQ(ierr);
-    if (isHybrid) {hasHybrid = PETSC_TRUE; break;}
+    ierr = PetscDSIsCohesive(ds, &isCohesive);CHKERRQ(ierr);
+    if (isCohesive) {hasCohesive = PETSC_TRUE; break;}
   }
   ierr = PetscMalloc1(Nf, &isFE);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) {
@@ -123,7 +123,7 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
     PetscBool avoidTensor;
 
     ierr = DMGetFieldAvoidTensor(dm, f, &avoidTensor);CHKERRQ(ierr);
-    avoidTensor = (avoidTensor || hasHybrid) ? PETSC_TRUE : PETSC_FALSE;
+    avoidTensor = (avoidTensor || hasCohesive) ? PETSC_TRUE : PETSC_FALSE;
     if (label && label[f]) {
       IS              pointIS;
       const PetscInt *points;
@@ -145,7 +145,7 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[],const PetscI
           case DM_POLYTOPE_SEG_PRISM_TENSOR:
           case DM_POLYTOPE_TRI_PRISM_TENSOR:
           case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-            if (hasHybrid) {--d;} break;
+            if (hasCohesive) {--d;} break;
           default: break;
         }
         dof  = d < 0 ? 0 : numDof[f*(dim+1)+d];
@@ -221,7 +221,7 @@ static PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC, const Pets
         /* We assume that a point may have multiple "nodes", which are collections of Nc dofs,
            and that those dofs are numbered n*Nc+c */
         if (Nf) {
-          if (numConst % Nc) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D has %D dof which is not divisible by %D field components", p, numConst, Nc);
+          PetscCheckFalse(numConst % Nc,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %D has %D dof which is not divisible by %D field components", p, numConst, Nc);
           numConst = (numConst/Nc) * cNc;
         } else {
           numConst = PetscMin(numConst, cNc);
@@ -458,7 +458,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
     ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
     if (id == PETSCFE_CLASSID)      {isFE[f] = PETSC_TRUE;}
     else if (id == PETSCFV_CLASSID) {isFE[f] = PETSC_FALSE;}
-    else SETERRQ1(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", f);
+    else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", f);
   }
   /* Allocate boundary point storage for FEM boundaries */
   ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
@@ -468,7 +468,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
 
     ierr = DMGetRegionNumDS(dm, s, NULL, NULL, &dsBC);CHKERRQ(ierr);
     ierr = PetscDSGetNumBoundary(dsBC, &numBd);CHKERRQ(ierr);
-    if (!Nf && numBd) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "number of fields is zero and number of boundary conditions is nonzero (this should never happen)");
+    PetscCheckFalse(!Nf && numBd,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "number of fields is zero and number of boundary conditions is nonzero (this should never happen)");
     for (bd = 0; bd < numBd; ++bd) {
       PetscInt                field;
       DMBoundaryConditionType type;
@@ -591,7 +591,7 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
   for (f = 0; f < Nf; ++f) {
     PetscInt d;
     for (d = 1; d < dim; ++d) {
-      if ((numDof[f*(dim+1)+d] > 0) && (depth < dim)) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
+      PetscCheckFalse((numDof[f*(dim+1)+d] > 0) && (depth < dim),PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated when unknowns are specified on edges or faces.");
     }
   }
   ierr = DMPlexCreateSection(dm, labels, numComp, numDof, numBC, bcFields, bcComps, bcPoints, NULL, &section);CHKERRQ(ierr);

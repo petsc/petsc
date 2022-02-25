@@ -78,7 +78,7 @@ PetscErrorCode VecSetType(Vec vec, VecType method)
   }
 #endif
   ierr = PetscFunctionListFind(VecList,method,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown vector type: %s", method);
+  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown vector type: %s", method);
   if (vec->ops->destroy) {
     ierr = (*vec->ops->destroy)(vec);CHKERRQ(ierr);
     vec->ops->destroy = NULL;
@@ -119,6 +119,26 @@ PetscErrorCode VecGetType(Vec vec, VecType *type)
   PetscValidPointer(type,2);
   ierr = VecRegisterAll();CHKERRQ(ierr);
   *type = ((PetscObject)vec)->type_name;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecGetRootType_Private(Vec vec, VecType *vtype)
+{
+  PetscErrorCode ierr;
+  PetscBool      iscuda, iship, iskokkos, isvcl;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
+  PetscValidPointer(vtype,2);
+  ierr = PetscObjectTypeCompareAny((PetscObject)vec,&iscuda,VECCUDA,VECMPICUDA,VECSEQCUDA,"");CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)vec,&iship,VECHIP,VECMPIHIP,VECSEQHIP,"");CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)vec,&iskokkos,VECKOKKOS,VECMPIKOKKOS,VECSEQKOKKOS,"");CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompareAny((PetscObject)vec,&isvcl,VECVIENNACL,VECMPIVIENNACL,VECSEQVIENNACL,"");CHKERRQ(ierr);
+  if (iscuda)        { *vtype = VECCUDA;     }
+  else if (iship)    { *vtype = VECHIP;      }
+  else if (iskokkos) { *vtype = VECKOKKOS;   }
+  else if (isvcl)    { *vtype = VECVIENNACL; }
+  else               { *vtype = VECSTANDARD; }
   PetscFunctionReturn(0);
 }
 

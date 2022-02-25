@@ -74,11 +74,10 @@ class Configure(config.base.Configure):
         self.addMakeMacro('PETSC_DLL_EXPORTS', '1')
       else:
         # TODO: check that -Wl,-soname,${LIBNAME}.${SL_LINKER_SUFFIX} can be passed (might fail on Intel)
-        # TODO: check whether to use -qmkshrobj or -shared (maybe we can just use self.setCompilers.sharedLibraryFlags)
         # TODO: check whether we need to specify dependent libraries on the link line (long test)
         self.addMakeRule('shared_arch','shared_linux')
-        self.addMakeMacro('SONAME_FUNCTION', '$(1).so.$(2)')
-        self.addMakeMacro('SL_LINKER_FUNCTION', '-shared -Wl,-soname,$(call SONAME_FUNCTION,$(notdir $(1)),$(2))')
+        self.addMakeMacro('SONAME_FUNCTION', '$(1).$(SL_LINKER_SUFFIX).$(2)')
+        self.addMakeMacro('SL_LINKER_FUNCTION', self.framework.getSharedLinkerFlags() + ' -Wl,-soname,$(call SONAME_FUNCTION,$(notdir $(1)),$(2))')
         if config.setCompilers.Configure.isMINGW(self.framework.getCompiler(),self.log):
           self.addMakeMacro('PETSC_DLL_EXPORTS', '1')
       self.addMakeMacro('BUILDSHAREDLIB','yes')
@@ -111,7 +110,7 @@ class Configure(config.base.Configure):
     if self.headers.haveHeader('dlfcn.h') and self.functions.haveFunction('dlerror'):
       ftm = ''
       if self.ftm.defines.get('_GNU_SOURCE'): ftm = '#define _GNU_SOURCE\n'
-      if self.checkCompile('%s#include<stdlib.h>\n#include <dlfcn.h>\n' % ftm, 'Dl_info info;\n\nif (dladdr(exit, &info));\n'):
+      if self.checkCompile('%s#include<stdlib.h>\n#include <dlfcn.h>\n' % ftm, 'Dl_info info;\n\nif (dladdr(exit, &info)) return 0;\n'):
         self.addDefine('HAVE_DLADDR', 1)
         self.headers.check('cxxabi.h')
 

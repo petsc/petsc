@@ -1,0 +1,13 @@
+Jacobi Example
+Standard  C++ Loop 
+Max error = 1.31529e-05, h = 0.019608 
+No of iterations: 9125 
+ 
+RAJA: Sequential Policy - Nested ForallN 
+Max error = 1.31529e-05, h = 0.019608 
+No of iterations: 9125 
+ 
+RAJA: CUDA Policy - Nested ForallN 
+Max error = 1.31529e-05, h = 0.019608 
+No of iterations: 9125 
+ 

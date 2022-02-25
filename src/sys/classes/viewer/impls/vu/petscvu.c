@@ -54,9 +54,9 @@ PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     err = fflush(vu->fd);
-    if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+    PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   }
   PetscFunctionReturn(0);
 }
@@ -127,10 +127,10 @@ static PetscErrorCode  PetscViewerFileSetName_VU(PetscViewer viewer, const char 
     }
     break;
   default:
-    SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP, "Unsupported file mode %s",PetscFileModes[vu->mode]);
+    SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP, "Unsupported file mode %s",PetscFileModes[vu->mode]);
   }
 
-  if (!vu->fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Cannot open PetscViewer file: %s", fname);
+  PetscCheckFalse(!vu->fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Cannot open PetscViewer file: %s", fname);
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject) viewer, "File: %s", name);
 #endif

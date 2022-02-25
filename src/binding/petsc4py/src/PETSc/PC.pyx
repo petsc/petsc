@@ -50,7 +50,7 @@ class PCType(object):
     HMG                = S_(PCHMG)
     DEFLATION          = S_(PCDEFLATION)
     HPDDM              = S_(PCHPDDM)
-    HARA               = S_(PCHARA)
+    H2OPUS             = S_(PCH2OPUS)
 
 class PCSide(object):
     # native
@@ -116,6 +116,11 @@ class PCPatchConstructType(object):
     USER                     = PC_PATCH_USER
     PYTHON                   = PC_PATCH_PYTHON
 
+class PCHPDDMCoarseCorrectionType(object):
+    DEFLATED                 = PC_HPDDM_COARSE_CORRECTION_DEFLATED
+    ADDITIVE                 = PC_HPDDM_COARSE_CORRECTION_ADDITIVE
+    BALANCED                 = PC_HPDDM_COARSE_CORRECTION_BALANCED
+
 # --------------------------------------------------------------------
 
 cdef class PC(Object):
@@ -123,15 +128,16 @@ cdef class PC(Object):
     Type = PCType
     Side = PCSide
 
-    ASMType            = PCASMType
-    GASMType           = PCGASMType
-    MGType             = PCMGType
-    MGCycleType        = PCMGCycleType
-    GAMGType           = PCGAMGType
-    CompositeType      = PCCompositeType
-    SchurFactType      = PCFieldSplitSchurFactType
-    SchurPreType       = PCFieldSplitSchurPreType
-    PatchConstructType = PCPatchConstructType
+    ASMType                   = PCASMType
+    GASMType                  = PCGASMType
+    MGType                    = PCMGType
+    MGCycleType               = PCMGCycleType
+    GAMGType                  = PCGAMGType
+    CompositeType             = PCCompositeType
+    SchurFactType             = PCFieldSplitSchurFactType
+    SchurPreType              = PCFieldSplitSchurPreType
+    PatchConstructType        = PCPatchConstructType
+    HPDDMCoarseCorrectionType = PCHPDDMCoarseCorrectionType
 
     # --- xxx ---
 
@@ -184,6 +190,11 @@ cdef class PC(Object):
         CHKERR( PCGetOptionsPrefix(self.pc, &cval) )
         return bytes2str(cval)
 
+    def appendOptionsPrefix(self, prefix):
+        cdef const char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( PCAppendOptionsPrefix(self.pc, cval) )
+
     def setFromOptions(self):
         CHKERR( PCSetFromOptions(self.pc) )
 
@@ -207,6 +218,11 @@ cdef class PC(Object):
             cflag = PETSC_TRUE
         CHKERR( PCSetUseAmat(self.pc, cflag) )
 
+    def getUseAmat(self):
+        cdef PetscBool cflag = PETSC_FALSE
+        CHKERR( PCGetUseAmat(self.pc, &cflag) )
+        return toBool(cflag)
+
     def setReusePreconditioner(self, flag):
         cdef PetscBool cflag = PETSC_FALSE
         if flag:
@@ -224,6 +240,9 @@ cdef class PC(Object):
 
     def apply(self, Vec x, Vec y):
         CHKERR( PCApply(self.pc, x.vec, y.vec) )
+
+    def matApply(self, Mat x, Mat y):
+        CHKERR( PCMatApply(self.pc, x.mat, y.mat) )
 
     def applyTranspose(self, Vec x, Vec y):
         CHKERR( PCApplyTranspose(self.pc, x.vec, y.vec) )
@@ -797,9 +816,26 @@ cdef class PC(Object):
     def setHPDDMAuxiliaryMat(self, IS uis, Mat uaux):
         CHKERR( PCHPDDMSetAuxiliaryMat(self.pc, uis.iset, uaux.mat, NULL, <void*>NULL) )
 
+    def setHPDDMRHSMat(self, Mat B):
+        CHKERR( PCHPDDMSetRHSMat(self.pc, B.mat) )
+
     def setHPDDMHasNeumannMat(self, has):
         cdef PetscBool phas = has
         CHKERR( PCHPDDMHasNeumannMat(self.pc, phas) )
+
+    def setHPDDMCoarseCorrectionType(self, correction_type):
+        cdef PetscPCHPDDMCoarseCorrectionType ctype = correction_type
+        CHKERR( PCHPDDMSetCoarseCorrectionType(self.pc, ctype) )
+
+    def getHPDDMCoarseCorrectionType(self):
+        cdef PetscPCHPDDMCoarseCorrectionType cval = PC_HPDDM_COARSE_CORRECTION_DEFLATED
+        CHKERR( PCHPDDMGetCoarseCorrectionType(self.pc, &cval) )
+        return cval
+
+    def getHPDDMSTShareSubKSP(self):
+        cdef PetscBool cval = PETSC_FALSE
+        CHKERR( PCHPDDMGetSTShareSubKSP(self.pc, &cval) )
+        return toBool(cval)
 
 # --------------------------------------------------------------------
 
@@ -814,5 +850,6 @@ del PCCompositeType
 del PCFieldSplitSchurPreType
 del PCFieldSplitSchurFactType
 del PCPatchConstructType
+del PCHPDDMCoarseCorrectionType
 
 # --------------------------------------------------------------------

@@ -48,18 +48,18 @@ int main(int argc,char **args)
   /* Compute AtA = A^T*B*A, B = identity matrix */
   ierr = MatPtAP(B,A,MAT_INITIAL_MATRIX,fill,&AtA);CHKERRQ(ierr);
   ierr = MatPtAP(B,A,MAT_REUSE_MATRIX,fill,&AtA);CHKERRQ(ierr);
-  if (!rank) printf("C = A^T*B*A is done...\n");
+  if (rank == 0) printf("C = A^T*B*A is done...\n");
   ierr = MatDestroy(&B);CHKERRQ(ierr);
 
   /* Compute C = A^T*A */
   ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
-  if (!rank) printf("C = A^T*A is done...\n");
+  if (rank == 0) printf("C = A^T*A is done...\n");
   ierr = MatTransposeMatMult(A,A,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
-  if (!rank) printf("REUSE C = A^T*A is done...\n");
+  if (rank == 0) printf("REUSE C = A^T*A is done...\n");
 
   /* Compare C and AtA */
   ierr = MatMultEqual(C,AtA,20,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A^T*A != At*A");
+  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A^T*A != At*A");
   ierr = MatDestroy(&AtA);CHKERRQ(ierr);
 
   ierr = MatDestroy(&C);CHKERRQ(ierr);

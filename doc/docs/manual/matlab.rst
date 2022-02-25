@@ -28,7 +28,7 @@ Dumping ASCII MATLAB data
 One can dump PETSc matrices and vectors to the screen in an ASCII format
 that MATLAB can read in directly. This is done with the command line
 options ``-vec_view ::ascii_matlab`` or ``-mat_view ::ascii_matlab``. To
-write a a file, use ``-vec_view :filename.m:ascii_matlab`` or
+write a file, use ``-vec_view :filename.m:ascii_matlab`` or
 ``-mat_view :filename.m:ascii_matlab``.
 
 This causes the PETSc program to print the vectors and matrices every
@@ -39,7 +39,7 @@ ASCII (see ``PetscViewerASCIIOpen()``, ``PETSC_VIEWER_STDOUT_WORLD``,
 ``PETSC_VIEWER_STDOUT_SELF``, or ``PETSC_VIEWER_STDOUT_(MPI_Comm)``).
 Before calling the viewer set the output type with, for example,
 
-::
+.. code-block::
 
    PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB);
    VecView(A,PETSC_VIEWER_STDOUT_WORLD);
@@ -47,7 +47,7 @@ Before calling the viewer set the output type with, for example,
 
 The name of each PETSc variable printed for MATLAB may be set with
 
-::
+.. code-block::
 
    PetscObjectSetName((PetscObject)A,"name");
 
@@ -59,10 +59,10 @@ Dumping Binary Data for MATLAB
 
 One can also read PETSc binary files (see
 :any:`sec_viewers`) directly into MATLAB via the scripts available
-in ``$PETSC_DIR/share/matlab``. This requires less disk space and is
+in ``$PETSC_DIR/share/petsc/matlab``. This requires less disk space and is
 recommended for all but the smallest data sizes. One can also use
 
-::
+.. code-block::
 
    PetscViewerPushFormat(viewer,PETSC_VIEWER_BINARY_MATLAB)
 
@@ -87,7 +87,7 @@ Sending Data to an Interactive MATLAB Session
 
 One creates a viewer to MATLAB via
 
-::
+.. code-block::
 
    PetscViewerSocketOpen(MPI_Comm,char *machine,int port,PetscViewer *v);
 
@@ -95,7 +95,7 @@ One creates a viewer to MATLAB via
 machine if the MATLAB interactive session is running on the same machine
 as the PETSc program) and then sends matrices or vectors via
 
-::
+.. code-block::
 
    VecView(Vec A,v);
    MatView(Mat B,v);
@@ -129,65 +129,65 @@ Using the MATLAB Compute Engine
 
 One creates access to the MATLAB engine via
 
-::
+.. code-block::
 
    PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *e);
 
 where ``machine`` is the name of the machine hosting MATLAB (``NULL``
 may be used for localhost). One can send objects to MATLAB via
 
-::
+.. code-block::
 
    PetscMatlabEnginePut(PetscMatlabEngine e,PetscObject obj);
 
 One can get objects via
 
-::
+.. code-block::
 
    PetscMatlabEngineGet(PetscMatlabEngine e,PetscObject obj);
 
 Similarly, one can send arrays via
 
-::
+.. code-block::
 
    PetscMatlabEnginePutArray(PetscMatlabEngine e,int m,int n,PetscScalar *array,char *name);
 
 and get them back via
 
-::
+.. code-block::
 
    PetscMatlabEngineGetArray(PetscMatlabEngine e,int m,int n,PetscScalar *array,char *name);
 
 One cannot use MATLAB interactively in this mode but one can send MATLAB
 commands via
 
-::
+.. code-block::
 
    PetscMatlabEngineEvaluate(PetscMatlabEngine,"format",...);
 
 where ``format`` has the usual ``printf()`` format. For example,
 
-::
+.. code-block::
 
    PetscMatlabEngineEvaluate(PetscMatlabEngine,"x = \%g *y + z;",avalue);
 
 The name of each PETSc variable passed to MATLAB may be set with
 
-::
+.. code-block::
 
    PetscObjectSetName((PetscObject)A,"name");
 
 Text responses can be returned from MATLAB via
 
-::
+.. code-block::
 
    PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);
 
 or
 
-::
+.. code-block::
 
-   PetscMatlabEnginedPrintOutput(PetscMatlabEngine,FILE*).
+   PetscMatlabEnginePrintOutput(PetscMatlabEngine,FILE*).
 
 There is a short-cut to starting the MATLAB engine with
 ``PETSC_MATLAB_ENGINE_(MPI_Comm)``.
@@ -210,24 +210,24 @@ Note the value: xx:xx:xx:xx:xx:xx
 
 Login to your MathWorks Account from a computer which has internet access. You will see the available license that your account has. Select a license from the list.
 
-.. figure:: images/mathworks-account.png
+.. figure:: /images/docs/manual/mathworks-account.png
 
 Then, select Install and Activate option and select the Activate to Retrieve License File option.
 
- .. figure:: images/mathworks-account-2.png
+ .. figure:: /images/docs/manual/mathworks-account-2.png
 
 Enter the information and click Continue.
 
-.. figure:: images/mathworks-account-3.png
+.. figure:: /images/docs/manual/mathworks-account-3.png
 
 An option to download the License file will appear. Download it and copy the license file to the cluster (your home directory).
 Now, launch MATLAB where you have sshed into your head node.
 
-.. figure:: images/mathworks-account-4.png
+.. figure:: /images/docs/manual/mathworks-account-4.png
 
 Select the Activate manually without the internet option and click Next >.
 Browse and locate the license file.
 
-.. figure:: images/mathworks-account-5.png
+.. figure:: /images/docs/manual/mathworks-account-5.png
 
 MATLAB is activated and ready to use.

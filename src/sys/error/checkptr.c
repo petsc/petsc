@@ -17,7 +17,7 @@ static PetscInt petsc_checkpointer_intensity = 1;
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  intensity - how much to check pointers for validity
 
    Options Database:
@@ -37,7 +37,7 @@ PetscErrorCode PetscCheckPointerSetIntensity(PetscInt intensity)
   case 2:
     petsc_checkpointer_intensity = intensity;
     break;
-  default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Intensity %D not in 0,1,2",intensity);
+  default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Intensity %" PetscInt_FMT " not in 0,1,2",intensity);
   }
   PetscFunctionReturn(0);
 }
@@ -85,8 +85,10 @@ PetscBool PetscCheckPointer(const void *ptr,PetscDataType dtype)
   if (!ptr) return PETSC_FALSE;
   if (petsc_checkpointer_intensity < 1) return PETSC_TRUE;
 
+#if PetscDefined(USE_DEBUG)
   /* Skip the verbose check if we are inside a hot function. */
-  if (petscstack && petscstack->hotdepth > 0 && petsc_checkpointer_intensity < 2) return PETSC_TRUE;
+  if (petscstack.hotdepth > 0 && petsc_checkpointer_intensity < 2) return PETSC_TRUE;
+#endif
 
   PetscSegvJumpBuf_set = PETSC_TRUE;
 

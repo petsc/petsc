@@ -11,7 +11,8 @@ PC Object: 4 MPI processes
   type: hpddm
   levels: 2
   Neumann matrix attached? FALSE
-  coarse correction: deflated
+  shared subdomain KSP between SLEPc and PETSc? FALSE
+  coarse correction: DEFLATED
   on process #0, value (+ threshold if available) for selecting deflation vectors: 1
   grid and operator complexities: 1.005 16.
   KSP Object: (pc_hpddm_levels_1_) 4 MPI processes

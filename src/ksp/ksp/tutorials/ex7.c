@@ -184,7 +184,7 @@ int main(int argc,char **args)
     */
     for (i=0; i<nlocal; i++) {
       ierr = KSPGetPC(subksp[i],&subpc);CHKERRQ(ierr);
-      if (!rank) {
+      if (rank == 0) {
         if (i%2) {
           ierr = PCSetType(subpc,PCILU);CHKERRQ(ierr);
         } else {
@@ -302,7 +302,7 @@ int main(int argc,char **args)
       test:
         suffix: gamg_kokkos
         nsize: {{1 2}separate output}
-        requires: kokkos_kernels
+        requires: !sycl kokkos_kernels
         args: -mat_type aijkokkos
 
 TEST*/

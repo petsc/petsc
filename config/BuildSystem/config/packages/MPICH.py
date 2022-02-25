@@ -4,7 +4,9 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.download         = ['https://www.mpich.org/static/downloads/3.4.2/mpich-3.4.2.tar.gz',
+    self.download         = ['https://www.mpich.org/static/downloads/4.0/mpich-4.0.tar.gz',
+                             'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-4.0.tar.gz']
+    self.download_solaris = ['https://www.mpich.org/static/downloads/3.4.2/mpich-3.4.2.tar.gz',
                              'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.4.2.tar.gz']
     self.downloaddirnames = ['mpich']
     self.skippackagewithoptions = 1
@@ -22,8 +24,8 @@ class Configure(config.package.GNUPackage):
   def setupHelp(self, help):
     config.package.GNUPackage.setupHelp(self,help)
     import nargs
-    help.addArgument('MPI', '-download-mpich-pm=<hydra, gforker or mpd>',              nargs.Arg(None, 'hydra', 'Launcher for MPI processes'))
-    help.addArgument('MPI', '-download-mpich-device=<ch3:nemesis or see MPICH docs>', nargs.Arg(None, None, 'Communicator for MPI processes'))
+    help.addArgument('MPICH', '-download-mpich-pm=<hydra, gforker or mpd>',              nargs.Arg(None, 'hydra', 'Launcher for MPI processes'))
+    help.addArgument('MPICH', '-download-mpich-device=<ch3:nemesis or see MPICH docs>', nargs.Arg(None, None, 'Communicator for MPI processes'))
     return
 
   def checkDownload(self):
@@ -49,6 +51,7 @@ class Configure(config.package.GNUPackage):
     args.append('--with-pm='+self.argDB['download-mpich-pm'])
     args.append('--disable-java')
     if self.hwloc.found:
+      args.append('--with-hwloc="'+self.hwloc.directory+'"')
       args.append('--with-hwloc-prefix="'+self.hwloc.directory+'"')
     # make sure MPICH does not build with optimization for debug version of PETSc, so we can debug through MPICH
     if self.compilerFlags.debugging:

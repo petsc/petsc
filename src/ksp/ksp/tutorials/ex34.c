@@ -294,7 +294,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J,Mat jac, void *ctx)
    test:
       suffix: hyprestruct
       nsize: 3
-      requires: hypre
+      requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
       args: -ksp_type gmres -pc_type pfmg -dm_mat_type hyprestruct -ksp_monitor -da_refine 3
 
 TEST*/

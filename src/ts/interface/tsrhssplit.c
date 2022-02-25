@@ -1,5 +1,5 @@
 #include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
-
+#include <petscdm.h>
 static PetscErrorCode TSRHSSplitGetRHSSplit(TS ts,const char splitname[],TS_RHSSplitLink *isplit)
 {
   PetscBool       found = PETSC_FALSE;
@@ -122,6 +122,7 @@ $  rhsfunc(TS ts,PetscReal t,Vec u,Vec f,ctx);
 PetscErrorCode TSRHSSplitSetRHSFunction(TS ts,const char splitname[],Vec r,TSRHSFunction rhsfunc,void *ctx)
 {
   TS_RHSSplitLink isplit;
+  DM              dmc;
   Vec             subvec,ralloc = NULL;
   PetscErrorCode  ierr;
 
@@ -131,7 +132,7 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts,const char splitname[],Vec r,TSRHS
 
   /* look up the split */
   ierr = TSRHSSplitGetRHSSplit(ts,splitname,&isplit);CHKERRQ(ierr);
-  if (!isplit) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"The split %s is not created, check the split name or call TSRHSSplitSetIS() to create one",splitname);
+  PetscCheckFalse(!isplit,PETSC_COMM_SELF,PETSC_ERR_USER,"The split %s is not created, check the split name or call TSRHSSplitSetIS() to create one",splitname);
 
   if (!r && ts->vec_sol) {
     ierr = VecGetSubVector(ts->vec_sol,isplit->is,&subvec);CHKERRQ(ierr);
@@ -139,6 +140,18 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts,const char splitname[],Vec r,TSRHS
     r    = ralloc;
     ierr = VecRestoreSubVector(ts->vec_sol,isplit->is,&subvec);CHKERRQ(ierr);
   }
+
+  if (ts->dm) {
+    PetscInt dim;
+
+    ierr = DMGetDimension(ts->dm, &dim);CHKERRQ(ierr);
+    if (dim != -1) {
+      ierr = DMClone(ts->dm, &dmc);CHKERRQ(ierr);
+      ierr = TSSetDM(isplit->ts, dmc);CHKERRQ(ierr);
+      ierr = DMDestroy(&dmc);CHKERRQ(ierr);
+    }
+  }
+
   ierr = TSSetRHSFunction(isplit->ts,r,rhsfunc,ctx);CHKERRQ(ierr);
   ierr = VecDestroy(&ralloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -148,6 +161,9 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts,const char splitname[],Vec r,TSRHS
    TSRHSSplitGetSubTS - Get the sub-TS by split name.
 
    Logically Collective on TS
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
 
    Output Parameters:
 +  splitname - the number of the split
@@ -176,6 +192,9 @@ PetscErrorCode TSRHSSplitGetSubTS(TS ts,const char splitname[],TS *subts)
    TSRHSSplitGetSubTSs - Get an array of all sub-TS contexts.
 
    Logically Collective on TS
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
 
    Output Parameters:
 +  n - the number of splits

@@ -12,7 +12,7 @@
 !  Routines: TaoCreate();
 !  Routines: TaoSetType();
 !  Routines: TaoSetResidualRoutine();
-!  Routines: TaoSetInitialVector();
+!  Routines: TaoSetSolution();
 !  Routines: TaoSetFromOptions();
 !  Routines: TaoSolve();
 !  Routines: TaoDestroy();
@@ -77,7 +77,7 @@
 
 !     Optional: Set initial guess
          call FormStartingPoint(x)
-         call TaoSetInitialVector(tao, x, ierr)
+         call TaoSetSolution(tao, x, ierr)
          CHKERRA(ierr)
 
 !     Check for TAO command line options

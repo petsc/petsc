@@ -21,7 +21,7 @@ static PetscErrorCode TSSSPGetWorkVectors(TS ts,PetscInt n,Vec **work)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ssp->workout) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Work vectors already gotten");
+  PetscCheckFalse(ssp->workout,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Work vectors already gotten");
   if (ssp->nwork < n) {
     if (ssp->nwork > 0) {
       ierr = VecDestroyVecs(ssp->nwork,&ssp->work);CHKERRQ(ierr);
@@ -39,8 +39,8 @@ static PetscErrorCode TSSSPRestoreWorkVectors(TS ts,PetscInt n,Vec **work)
   TS_SSP *ssp = (TS_SSP*)ts->data;
 
   PetscFunctionBegin;
-  if (!ssp->workout) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Work vectors have not been gotten");
-  if (*work != ssp->work) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong work vectors checked out");
+  PetscCheckFalse(!ssp->workout,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Work vectors have not been gotten");
+  PetscCheckFalse(*work != ssp->work,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Wrong work vectors checked out");
   ssp->workout = PETSC_FALSE;
   *work = NULL;
   PetscFunctionReturn(0);
@@ -100,7 +100,7 @@ static PetscErrorCode TSSSPStep_RK_3(TS ts,PetscReal t0,PetscReal dt,Vec sol)
   s = ssp->nstages;
   n = (PetscInt)(PetscSqrtReal((PetscReal)s)+0.001);
   r = s-n;
-  if (n*n != s) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for optimal third order schemes with %d stages, must be a square number at least 4",s);
+  PetscCheckFalse(n*n != s,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for optimal third order schemes with %d stages, must be a square number at least 4",s);
   ierr = TSSSPGetWorkVectors(ts,3,&work);CHKERRQ(ierr);
   F    = work[2];
   ierr = VecCopy(sol,work[0]);CHKERRQ(ierr);
@@ -251,9 +251,9 @@ static PetscErrorCode TSDestroy_SSP(TS ts)
 
    Logically Collective
 
-   Input Arguments:
-   ts - time stepping object
-   ssptype - type of scheme to use
+   Input Parameters:
++  ts - time stepping object
+-  ssptype - type of scheme to use
 
    Options Database Keys:
    -ts_ssp_type <rks2>: Type of SSP method (one of) rks2 rks3 rk104
@@ -279,11 +279,11 @@ PetscErrorCode TSSSPSetType(TS ts,TSSSPType ssptype)
 
    Logically Collective
 
-   Input Argument:
-   ts - time stepping object
+   Input Parameter:
+.  ts - time stepping object
 
-   Output Argument:
-   type - type of scheme being used
+   Output Parameter:
+.  type - type of scheme being used
 
    Level: beginner
 
@@ -304,9 +304,9 @@ PetscErrorCode TSSSPGetType(TS ts,TSSSPType *type)
 
    Logically Collective
 
-   Input Arguments:
-   ts - time stepping object
-   nstages - number of stages
+   Input Parameters:
++  ts - time stepping object
+-  nstages - number of stages
 
    Options Database Keys:
    -ts_ssp_type <rks2>: NumStages of SSP method (one of) rks2 rks3 rk104
@@ -331,11 +331,11 @@ PetscErrorCode TSSSPSetNumStages(TS ts,PetscInt nstages)
 
    Logically Collective
 
-   Input Argument:
-   ts - time stepping object
+   Input Parameter:
+.  ts - time stepping object
 
-   Output Argument:
-   nstages - number of stages
+   Output Parameter:
+.  nstages - number of stages
 
    Level: beginner
 
@@ -358,7 +358,7 @@ static PetscErrorCode TSSSPSetType_SSP(TS ts,TSSSPType type)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListFind(TSSSPList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TS_SSP type %s given",type);
+  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TS_SSP type %s given",type);
   ssp->onestep = r;
   ierr = PetscFree(ssp->type_name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(type,&ssp->type_name);CHKERRQ(ierr);

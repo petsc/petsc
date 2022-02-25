@@ -29,7 +29,7 @@ static char help[]="Finds the nonlinear least-squares solution to the model \n\
    Routines: TaoSetType();
    Routines: TaoSetResidualRoutine();
    Routines: TaoSetMonitor();
-   Routines: TaoSetInitialVector();
+   Routines: TaoSetSolution();
    Routines: TaoSetFromOptions();
    Routines: TaoSolve();
    Routines: TaoDestroy();
@@ -86,7 +86,7 @@ int main(int argc,char **argv)
 
     /* Set the function and Jacobian routines. */
     ierr = FormStartingPoint(x);CHKERRQ(ierr);
-    ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
+    ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
     ierr = TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
 
     /* Check for any TAO command line arguments */
@@ -174,7 +174,7 @@ PetscErrorCode FormStartingPoint(Vec X)
   x[0] = 0.15;
   x[1] = 0.008;
   x[2] = 0.010;
-  VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -433,7 +433,7 @@ PetscErrorCode RunSimulation(PetscReal *x, PetscInt i, PetscReal*f, AppCtx *user
   PetscReal *t = user->t;
   PetscReal *y = user->y;
 #if defined(PETSC_USE_REAL_SINGLE)
-  *f = y[i] - exp(-x[0]*t[i])/(x[1] + x[2]*t[i]); /* expf() for single-precision breaks this example on freebsd, valgrind errors on linux */
+  *f = y[i] - exp(-x[0]*t[i])/(x[1] + x[2]*t[i]); /* expf() for single-precision breaks this example on Freebsd, Valgrind errors on Linux */
 #else
   *f = y[i] - PetscExpScalar(-x[0]*t[i])/(x[1] + x[2]*t[i]);
 #endif

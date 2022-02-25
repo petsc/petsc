@@ -90,16 +90,13 @@ The macro ``CHKERRQ()`` is defined by
    :start-at: #define CHKERRQ
    :end-at: #define CHKERRQ
 
-In addition to ``SETERRQ()``, the macros ``SETERRQ1()``, ``SETERRQ2()``,
-``SETERRQ3()``, and ``SETERRQ4()`` allow one to provide additional
-arguments to a formatted message string, for example,
+The message passed to ``SETERRQ()`` is treated as a ``printf()``-style
+format string, with all additional parameters passed after the string as
+its arguments. For example:
 
-::
+.. code-block::
 
-    SETERRQ2(comm,PETSC_ERR,"Iteration overflow: its %D norm %g",its,(double)norm);
-
-The reason for the numbered format is that C89 CPP macros cannot handle
-a variable number of arguments.
+    SETERRQ(comm,PETSC_ERR,"Iteration overflow: its %D norm %g",its,(double)norm);
 
 Error Handlers
 ~~~~~~~~~~~~~~
@@ -146,7 +143,7 @@ more than likely there is no “terminal”, for example, with Microsoft
 Windows or Apple iPad applications). PETSc provides the replaceable
 function pointer
 
-::
+.. code-block::
 
     (*PetscErrorPrintf)("Format",...);
 
@@ -161,7 +158,7 @@ C++ Exceptions
 
 In PETSc code, when one calls C++ functions that do not return with an error code but might
 instead throw C++ exceptions, one can use ``CHKERRCXX(func)``, which catches the exceptions
-in *func* and then calls ``SETERRQ1()``.  The macro ``CHKERRCXX(func)`` is given by
+in *func* and then calls ``SETERRQ()``.  The macro ``CHKERRCXX(func)`` is given by
 
 .. literalinclude:: /../include/petscerror.h
    :language: c
@@ -283,14 +280,14 @@ Profiling Object Creation and Destruction
 The creation of objects is profiled with the command
 ``PetscLogObjectCreate()``
 
-::
+.. code-block::
 
     PetscLogObjectCreate(PetscObject h);
 
 which logs the creation of any PETSc object. Just before an object is
 destroyed, it should be logged with ``PetscLogObjectDestroy()``
 
-::
+.. code-block::
 
     PetscLogObjectDestroy(PetscObject h);
 
@@ -303,14 +300,14 @@ If an object has a clearly defined parent object (for instance, when a
 work vector is generated for use in a Krylov solver), this information
 is logged with the command ``PetscLogObjectParent()``.
 
-::
+.. code-block::
 
     PetscLogObjectParent(PetscObject parent,PetscObject child);
 
 It is also useful to log information about the state of an object, as
 can be done with the command
 
-::
+.. code-block::
 
     PetscLogObjectState(PetscObject h,const char *format,...);
 
@@ -343,8 +340,5 @@ These routines are normally called by the ``PetscInitialize()`` and
 References
 ----------
 
-.. bibliography:: /../src/docs/tex/petsc.bib
-   :filter: docname in docnames
-
-.. bibliography:: /../src/docs/tex/petscapp.bib
+.. bibliography:: /petsc.bib
    :filter: docname in docnames

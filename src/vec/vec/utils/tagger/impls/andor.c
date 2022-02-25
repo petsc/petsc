@@ -84,7 +84,7 @@ PetscErrorCode VecTaggerSetSubs_AndOr(VecTagger tagger, PetscInt nsubs, VecTagge
     for (i = 0; i < nsubs; i++) {
       VecTagger sub;
 
-      ierr = PetscSNPrintf(tprefix,128,"sub_%D_",i);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(tprefix,128,"sub_%" PetscInt_FMT "_",i);CHKERRQ(ierr);
       ierr = VecTaggerCreate(comm,&sub);CHKERRQ(ierr);
       ierr = VecTaggerSetBlockSize(sub,bs);CHKERRQ(ierr);
       ierr = PetscObjectSetOptionsPrefix((PetscObject)sub,prefix);CHKERRQ(ierr);
@@ -109,9 +109,9 @@ static PetscErrorCode VecTaggerSetFromOptions_AndOr(PetscOptionItems *PetscOptio
   ierr = PetscObjectGetType((PetscObject)tagger,&name);CHKERRQ(ierr);
   ierr = VecTaggerGetSubs_AndOr(tagger,&nsubs,NULL);CHKERRQ(ierr);
   nsubsOrig = nsubs;
-  ierr = PetscSNPrintf(headstring,BUFSIZ,"VecTagger %s options",name);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(funcstring,BUFSIZ,"VecTagger%sSetSubs()",name);CHKERRQ(ierr);
-  ierr = PetscSNPrintf(descstring,BUFSIZ,"number of sub tags in %s tag",name);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(headstring,sizeof(headstring),"VecTagger %s options",name);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(funcstring,sizeof(funcstring),"VecTagger%sSetSubs()",name);CHKERRQ(ierr);
+  ierr = PetscSNPrintf(descstring,sizeof(descstring),"number of sub tags in %s tag",name);CHKERRQ(ierr);
   ierr = PetscOptionsHead(PetscOptionsObject,headstring);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-vec_tagger_num_subs",descstring,funcstring,nsubs,&nsubs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -133,7 +133,7 @@ static PetscErrorCode VecTaggerSetUp_AndOr (VecTagger tagger)
 
   PetscFunctionBegin;
   ierr = VecTaggerGetSubs_AndOr(tagger,&nsubs,&subs);CHKERRQ(ierr);
-  if (!nsubs) SETERRQ(PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_WRONGSTATE,"Must set sub taggers before calling setup.");
+  PetscCheckFalse(!nsubs,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_WRONGSTATE,"Must set sub taggers before calling setup.");
   for (i = 0; i < nsubs; i++) {
     ierr = VecTaggerSetUp(subs[i]);CHKERRQ(ierr);
   }
@@ -154,7 +154,7 @@ static PetscErrorCode VecTaggerView_AndOr(VecTagger tagger, PetscViewer viewer)
 
     ierr = VecTaggerGetSubs_AndOr(tagger,&nsubs,&subs);CHKERRQ(ierr);
     ierr = PetscObjectGetType((PetscObject)tagger,&name);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer," %s of %D subtags:\n",name,nsubs);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," %s of %" PetscInt_FMT " subtags:\n",name,nsubs);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     for (i = 0; i < nsubs; i++) {
       ierr = VecTaggerView(subs[i],viewer);CHKERRQ(ierr);

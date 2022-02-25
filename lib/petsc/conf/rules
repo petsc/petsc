@@ -220,7 +220,7 @@ getautoconfargs:
 #
 #
 
-.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .mtex .make  .fig .svg .eps .pdf .jpg .png .dvi .ps .F95 .f95 .fiat .cu .kokkos.cxx
+.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .make  .fig .svg .eps .pdf .jpg .png .dvi .ps .F95 .f95 .fiat .cu .kokkos.cxx .raja.cxx *.sycl.cxx
 
 #
 #
@@ -230,9 +230,6 @@ getautoconfargs:
 
 .make.tex:
 	${LGRIND} -lmake -d ${LGRIND_DIR}/lgrindef -i $< > $*.tex
-
-.tex.mtex:
-	PYTHONPATH=${PETSC_DIR}/lib/petsc/bin/maint;export PYTHONPATH;cat $< | ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/mapnameslatex.py > $*.mtex
 
 .fig.pdf:
 	fig2dev -L pdf $< $*.pdf
@@ -285,6 +282,15 @@ getautoconfargs:
 #   Compiles CUDA code
 .cu.o:
 	${PETSC_CUCOMPILE_SINGLE} `pwd`/$<
+
+.kokkos.cxx.o:
+	${PETSC_KOKKOSCOMPILE_SINGLE} `pwd`/$<
+
+.sycl.cxx.o:
+	${PETSC_SYCLCOMPILE_SINGLE} `pwd`/$<
+
+.raja.cxx.o:
+	${PETSC_RAJACOMPILE_SINGLE} `pwd`/$<
 
 .F.o .F90.o .F95.o:
 	${PETSC_FCOMPILE_SINGLE} `pwd`/$<
@@ -442,8 +448,8 @@ chk_manualpage_dir:
 manualpages_buildcite: chk_manualpage_dir
 	@-if [ "${MANSEC}" != "" ] ; then \
           if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
-          DOCTEXT_PATH=${PETSC_DIR}/src/docs/doctext; export DOCTEXT_PATH; \
-	  TEXTFILTER_PATH=${PETSC_DIR}/src/docs/doctext; export TEXTFILTER_PATH; \
+          DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext; export DOCTEXT_PATH; \
+	  TEXTFILTER_PATH=${PETSC_DIR}/doc/classic/doctext; export TEXTFILTER_PATH; \
           ${DOCTEXT} -html -indexdir ../$${LMANSEC} \
 		-index ${LOC}/docs/manualpages/manualpages.cit \
 		-mpath ${LOC}/docs/manualpages/$${LMANSEC} ${SOURCED};  fi
@@ -452,10 +458,10 @@ manualpages_buildcite: chk_manualpage_dir
 manualpages:
 	-@if [ "${MANSEC}" != "" ] ; then \
           if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
-          DOCTEXT_PATH=${PETSC_DIR}/src/docs/doctext; export DOCTEXT_PATH; \
+          DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext; export DOCTEXT_PATH; \
           ${DOCTEXT} -html \
             -mpath ${LOC}/docs/manualpages/$${LMANSEC} -heading PETSc \
-            -defn ${PETSC_DIR}/src/docs/doctext/html.def \
+            -defn ${PETSC_DIR}/doc/classic/doctext/html.def \
             -locdir ${LOCDIR} -mapref ${LOC}/docs/manualpages/manualpages.cit -Wargdesc ${SOURCED} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err;\
           chmod -f g+w ${LOC}/docs/manualpages/$${LMANSEC}/* ; fi
 #
@@ -590,10 +596,12 @@ simplehtml: chk_c2html
 html: chk_c2html
 	-@export htmlmap_tmp=$$(mktemp) ;\
           sed -e s?man+../?man+ROOT/docs/manualpages/? ${LOC}/docs/manualpages/manualpages.cit > $$htmlmap_tmp ;\
-          cat ${PETSC_DIR}/src/docs/mpi.www.index >> $$htmlmap_tmp ;\
+          cat ${PETSC_DIR}/doc/classic/mpi.www.index >> $$htmlmap_tmp ;\
           ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
           ${MKDIR} -p $${loc} ;\
+          current_git_sha=$$(git rev-parse HEAD) ;\
+          rel_dir=$$(echo ${PWD} | sed "s%^${PETSC_DIR}/%%") ;\
           for i in ${SOURCEALL} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB}  foo ; do\
             if [ -f $$i ]; then \
               idir=`dirname $$i`;\
@@ -606,7 +614,7 @@ html: chk_c2html
                 IROOT=$${ROOT};\
               fi;\
               ${RM} $${loc}/$$i.html; \
-              echo "<center><a href=\"$${iroot}\">Actual source code: $${iroot}</a></center><br>" > $${loc}/$$i.html; \
+              echo "<center><a href=\"https://gitlab.com/petsc/petsc/-/blob/$$current_git_sha/$$rel_dir/$$i\">Actual source code: $${iroot}</a></center><br>" > $${loc}/$$i.html; \
               sed -e "s/CHKERRMPI(ierr);//g" -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g" -e "s/ierr [ ]*= //g" -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
               awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }' | ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/fixinclude.py $$i $${PETSC_DIR} | \
               egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C )' | \
@@ -615,7 +623,7 @@ html: chk_c2html
           done ;\
           ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`; ${RM} $${loc}/index.html; \
-          cat ${PETSC_DIR}/src/docs/manualpages-sec/header_${MANSEC} | sed -e "s?<A HREF=\"PETSC_DIR[a-z/]*\">Examples</A>?<A HREF=\"$${ROOT}/docs/manualpages/${MANSEC}\">Manual pages</A>?g" -e "s?PETSC_DIR?$${ROOT}/?g"> $${loc}/index.html; \
+          cat ${PETSC_DIR}/doc/classic/manualpages-sec/header_${MANSEC} | sed -e "s?<A HREF=\"PETSC_DIR[a-z/]*\">Examples</A>?<A HREF=\"$${ROOT}/docs/manualpages/${MANSEC}\">Manual pages</A>?g" -e "s?PETSC_DIR?$${ROOT}/?g"> $${loc}/index.html; \
           echo "<p>" >> $${loc}/index.html ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;\
           if [ "${EXAMPLESC}" != "" ] ; then \
@@ -686,7 +694,7 @@ checkbadSource:
 	-@git --no-pager grep -n -P 'for \( ' -- ${GITSRC} >> checkbadSource.out;true
 	-@git --no-pager grep -n -P 'while \( ' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "Space before ) ---------------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P ' \)' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P '(?!.*\\$$) \)' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "Space before CHKERR(Q|MPI|CUDA|CUBLAS|CUSPARSE) ------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '; CHKERR(Q|MPI|CUDA|CUBLAS|CUSPARSE)\(' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "No space after if, for or while ----------------------" >> checkbadSource.out
@@ -702,16 +710,16 @@ checkbadSource:
 	-@echo "{ before SETERRQ -------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '{SETERRQ' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "{ on the same line as a function definition ----------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e '(PetscErrorCode|void|inline|PETSC_EXTERN|PETSC_INTERN|PETSC_STATIC_INLINE)[ ]+[a-zA-Z0-9_-]+(.*)(\s*){$$' -- ${GITSRC} >> checkbadSource.out;true
-	-@echo "wrong usage of PetscDefined() ------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P 'PetscDefined.PETSC' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -e '(PetscErrorCode|void|inline|PETSC_EXTERN|PETSC_INTERN|static inline)[ ]+[a-zA-Z0-9_-]+(.*)(\s*){$$' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "CHKERRQ following SETERRQ ----------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'SETERRQ' -- ${GITSRC} | grep ";CHKERRQ" >> checkbadSource.out;true
 	-@echo "SETERRQ() without defined error code -----------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P 'SETERRQ\(' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v flow.c >> checkbadSource.out;true
+	-@git --no-pager grep -n -P 'SETERRQ\((?!\))' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v "__VA_ARGS__" | grep -v flow.c >> checkbadSource.out;true
+	-@echo "SETERRQ() with trailing newline ----------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P "SETERRQ[1-9]?.*\\\n\"" -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "define keyword in test definition --------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e 'requires:.*define\(' -- ${GITSRC} >> checkbadSource.out;true
-	-@echo "No spaces before { after if|for|while|switch----------" >> checkbadSource.out
+	-@echo "No spaces before { after if|for|while|switch ---------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '(for|while|if|switch)(.*)\){$$' -- ${GITSRC} | grep -v PETSC_ERR  | grep " if " | grep -v flow.c >> checkbadSource.out;true
 	-@echo "No new line at end of file ---------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '[^\n]\z' -- ${GITSRC} >> checkbadSource.out;true
@@ -719,7 +727,7 @@ checkbadSource:
 	-@git --no-pager grep -n -P 'ierr=' -- ${GITSRC} >> checkbadSource.out;true
 #	-@echo "Missing CHKERRQ --------------------------" >> checkbadSource.out
 #	-@git --no-pager grep -P 'ierr = ' -- '*.[ch]' '*.cxx' | grep ');' | egrep -v '(PetscFinalize|PetscInitialize|sys|benchmark|interfaces|fun3d|ftn-custom|f90-custom|CHK)' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 20` ;\
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 21` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\
@@ -736,6 +744,9 @@ checkbadSource:
 	   ${RM} -f badSourceChar.out;\
          fi
 	@test ! -s badSourceChar.out
+
+vermin:
+	@vermin -vvv -t=2.7- -t=3.4- ${VERMIN_OPTIONS} config
 
 lint:
 	${PYTHON3} ${PETSC_DIR}/lib/petsc/bin/maint/petscClangLinter.py --verbose=${V} $(LINTER_OPTIONS)
@@ -860,4 +871,3 @@ updatedatafiles:
             cd "${HOME}/datafiles" && git pull -q; fi
 
 include ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscrules
-

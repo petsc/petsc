@@ -5,23 +5,10 @@
     plots that change dynamically.
 */
 
-#include <petscdraw.h>                       /*I "petscdraw.h" I*/
-#include <petsc/private/petscimpl.h>         /*I "petscsys.h" I*/
+#include <petscdraw.h>              /*I "petscdraw.h" I*/
+#include <petsc/private/drawimpl.h> /*I "petscsys.h" I*/
 
 PetscClassId PETSC_DRAWSP_CLASSID = 0;
-
-struct _p_PetscDrawSP {
-  PETSCHEADER(int);
-  PetscErrorCode (*destroy)(PetscDrawSP);
-  PetscErrorCode (*view)(PetscDrawSP,PetscViewer);
-  int            len,loc;
-  PetscDraw      win;
-  PetscDrawAxis  axis;
-  PetscReal      xmin,xmax,ymin,ymax,*x,*y;
-  int            nopts,dim;
-};
-
-#define CHUNCKSIZE 100
 
 /*@C
     PetscDrawSPCreate - Creates a scatter plot data structure.
@@ -73,10 +60,10 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
   sp->xmax    = -1.e20;
   sp->ymax    = -1.e20;
 
-  ierr = PetscMalloc2(dim*CHUNCKSIZE,&sp->x,dim*CHUNCKSIZE,&sp->y);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory((PetscObject)sp,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscMalloc2(dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->x,dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->y);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory((PetscObject)sp,2*dim*PETSC_DRAW_SP_CHUNK_SIZE*sizeof(PetscReal));CHKERRQ(ierr);
 
-  sp->len     = dim*CHUNCKSIZE;
+  sp->len     = dim*PETSC_DRAW_SP_CHUNK_SIZE;
   sp->loc     = 0;
 
   ierr = PetscDrawAxisCreate(draw,&sp->axis);CHKERRQ(ierr);
@@ -91,7 +78,7 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
 
    Logically Collective on PetscDrawSP
 
-   Input Parameter:
+   Input Parameters:
 +  sp - the line graph context.
 -  dim - the number of curves.
 
@@ -111,9 +98,9 @@ PetscErrorCode  PetscDrawSPSetDimension(PetscDrawSP sp,int dim)
 
   ierr    = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
   sp->dim = dim;
-  ierr    = PetscMalloc2(dim*CHUNCKSIZE,&sp->x,dim*CHUNCKSIZE,&sp->y);CHKERRQ(ierr);
-  ierr    = PetscLogObjectMemory((PetscObject)sp,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
-  sp->len = dim*CHUNCKSIZE;
+  ierr    = PetscMalloc2(dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->x,dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->y);CHKERRQ(ierr);
+  ierr    = PetscLogObjectMemory((PetscObject)sp,2*dim*PETSC_DRAW_SP_CHUNK_SIZE*sizeof(PetscReal));CHKERRQ(ierr);
+  sp->len = dim*PETSC_DRAW_SP_CHUNK_SIZE;
   PetscFunctionReturn(0);
 }
 
@@ -178,8 +165,7 @@ PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP *sp)
 
    Input Parameters:
 +  sp - the scatter plot data structure
--  x, y - the points to two vectors containing the new x and y
-          point for each curve.
+-  x, y - two arrays of length dim containing the new x and y coordinate values for each of the curves. Here  dim is the number of curves passed to PetscDrawSPCreate()
 
    Level: intermediate
 
@@ -199,14 +185,14 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
 
   if (sp->loc+sp->dim >= sp->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
-    ierr     = PetscMalloc2(sp->len+sp->dim*CHUNCKSIZE,&tmpx,sp->len+sp->dim*CHUNCKSIZE,&tmpy);CHKERRQ(ierr);
-    ierr     = PetscLogObjectMemory((PetscObject)sp,2*sp->dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr     = PetscMalloc2(sp->len+sp->dim*PETSC_DRAW_SP_CHUNK_SIZE,&tmpx,sp->len+sp->dim*PETSC_DRAW_SP_CHUNK_SIZE,&tmpy);CHKERRQ(ierr);
+    ierr     = PetscLogObjectMemory((PetscObject)sp,2*sp->dim*PETSC_DRAW_SP_CHUNK_SIZE*sizeof(PetscReal));CHKERRQ(ierr);
     ierr     = PetscArraycpy(tmpx,sp->x,sp->len);CHKERRQ(ierr);
     ierr     = PetscArraycpy(tmpy,sp->y,sp->len);CHKERRQ(ierr);
     ierr     = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
     sp->x    = tmpx;
     sp->y    = tmpy;
-    sp->len += sp->dim*CHUNCKSIZE;
+    sp->len += sp->dim*PETSC_DRAW_SP_CHUNK_SIZE;
   }
   for (i=0; i<sp->dim; i++) {
     if (x[i] > sp->xmax) sp->xmax = x[i];
@@ -250,17 +236,17 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
 
   if (sp->loc+n*sp->dim >= sp->len) { /* allocate more space */
     PetscReal *tmpx,*tmpy;
-    PetscInt  chunk = CHUNCKSIZE;
+    PetscInt  chunk = PETSC_DRAW_SP_CHUNK_SIZE;
     if (n > chunk) chunk = n;
     ierr = PetscMalloc2(sp->len+sp->dim*chunk,&tmpx,sp->len+sp->dim*chunk,&tmpy);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)sp,2*sp->dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)sp,2*sp->dim*PETSC_DRAW_SP_CHUNK_SIZE*sizeof(PetscReal));CHKERRQ(ierr);
     ierr = PetscArraycpy(tmpx,sp->x,sp->len);CHKERRQ(ierr);
     ierr = PetscArraycpy(tmpy,sp->y,sp->len);CHKERRQ(ierr);
     ierr = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
 
     sp->x    = tmpx;
     sp->y    = tmpy;
-    sp->len += sp->dim*CHUNCKSIZE;
+    sp->len += sp->dim*PETSC_DRAW_SP_CHUNK_SIZE;
   }
   for (j=0; j<sp->dim; j++) {
     x = xx[j]; y = yy[j];
@@ -286,7 +272,7 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
 
    Collective on PetscDrawSP
 
-   Input Parameter:
+   Input Parameters:
 +  sp - the line graph context
 -  clear - clear the window before drawing the new plot
 
@@ -323,7 +309,7 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
   ierr = PetscDrawAxisDraw(sp->axis);CHKERRQ(ierr);
 
   ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     int i,j,dim=sp->dim,nopts=sp->nopts;
     for (i=0; i<dim; i++) {
       for (j=0; j<nopts; j++) {

@@ -6,11 +6,13 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.__init__(self, framework)
     self.version       = '3.3.7'
     self.gitcommit     = self.version
-    self.download      = ['git://https://gitlab.com/libeigen/eigen.git','https://gitlab.com/libeigen/eigen/-/archive/'+self.gitcommit+'/eigen-'+self.gitcommit+'.tar.gz']
+    self.download      = ['git://https://gitlab.com/libeigen/eigen.git',
+                          'https://gitlab.com/libeigen/eigen/-/archive/'+self.gitcommit+'/eigen-'+self.gitcommit+'.tar.gz',
+                          'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/eigen-'+self.gitcommit+'.tar.gz']
     self.functions     = []
     self.includes      = ['Eigen/Core']
     self.liblist       = []
-    self.cxx           = 1
+    self.buildLanguages= ['Cxx']
     self.pkgname       = 'eigen3'
     self.includedir    = os.path.join('include', 'eigen3')
     self.useddirectly  = 0

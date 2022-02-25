@@ -5,7 +5,99 @@
 const char *const DMStagStencilTypes[] = {"NONE","STAR","BOX","DMStagStencilType","DM_STAG_STENCIL_",NULL};
 
 /* Strings corresponding the positions in $PETSC_DIR/include/petscdmstag.h */
-const char * const DMStagStencilLocations[] = {"NONE","BACK_DOWN_LEFT","BACK_DOWN","BACK_DOWN_RIGHT","BACK_LEFT","BACK","BACK_RIGHT","BACK_UP_LEFT","BACK_UP","BACK_UP_RIGHT","DOWN_LEFT","DOWN","DOWN_RIGHT","LEFT","ELEMENT","RIGHT","UP_LEFT","UP","UP_RIGHT","FRONT_DOWN_LEFT","FRONT_DOWN","FRONT_DOWN_RIGHT","FRONT_LEFT","FRONT","FRONT_RIGHT","FRONT_UP_LEFT","FRONT_UP","FRONT_UP_RIGHT"};
+const char * const DMStagStencilLocations[] = {"NONE","BACK_DOWN_LEFT","BACK_DOWN","BACK_DOWN_RIGHT","BACK_LEFT","BACK","BACK_RIGHT","BACK_UP_LEFT","BACK_UP","BACK_UP_RIGHT","DOWN_LEFT","DOWN","DOWN_RIGHT","LEFT","ELEMENT","RIGHT","UP_LEFT","UP","UP_RIGHT","FRONT_DOWN_LEFT","FRONT_DOWN","FRONT_DOWN_RIGHT","FRONT_LEFT","FRONT","FRONT_RIGHT","FRONT_UP_LEFT","FRONT_UP","FRONT_UP_RIGHT","DMStagStencilLocation","",NULL};
+
+/*@C
+  DMStagCreateISFromStencils - Create an IS, using global numberings, for a subset of DOF in a DMStag object
+
+  Collective
+
+  Input Parameters:
++ dm - the DMStag object
+. nStencil - the number of stencils provided
+- stencils - an array of DMStagStencil objects (i,j, and k are ignored)
+
+  Output Parameter:
+. is - the global IS
+
+  Note:
+  Redundant entries in s are ignored
+
+  Level: advanced
+
+.seealso: DMSTAG, IS, DMStagStencil, DMCreateGlobalVector
+@*/
+PetscErrorCode DMStagCreateISFromStencils(DM dm,PetscInt nStencil,DMStagStencil* stencils,IS *is)
+{
+  PetscErrorCode         ierr;
+  DMStagStencil          *ss;
+  PetscInt               *idx,*idxLocal;
+  const PetscInt         *ltogidx;
+  PetscInt               p,p2,pmax,i,j,k,d,dim,count,nidx;
+  ISLocalToGlobalMapping ltog;
+  PetscInt               start[DMSTAG_MAX_DIM],n[DMSTAG_MAX_DIM],extraPoint[DMSTAG_MAX_DIM];
+
+  PetscFunctionBegin;
+  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
+  PetscCheckFalse(dim<1 || dim>3,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %D",dim);
+
+  /* Only use non-redundant stencils */
+  ierr = PetscMalloc1(nStencil,&ss);CHKERRQ(ierr);
+  pmax = 0;
+  for (p=0; p<nStencil; ++p) {
+    PetscBool skip = PETSC_FALSE;
+    DMStagStencil stencilPotential = stencils[p];
+    ierr = DMStagStencilLocationCanonicalize(stencils[p].loc,&stencilPotential.loc);CHKERRQ(ierr);
+    for (p2=0; p2<pmax; ++p2) { /* Quadratic complexity algorithm in nStencil */
+      if (stencilPotential.loc == ss[p2].loc && stencilPotential.c == ss[p2].c) {
+        skip = PETSC_TRUE;
+        break;
+      }
+    }
+    if (!skip) {
+      ss[pmax] = stencilPotential;
+      ++pmax;
+    }
+  }
+
+  ierr = PetscMalloc1(pmax,&idxLocal);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(dm,&ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(ltog,&ltogidx);CHKERRQ(ierr);
+  ierr = DMStagGetCorners(dm,&start[0],&start[1],&start[2],&n[0],&n[1],&n[2],&extraPoint[0],&extraPoint[1],&extraPoint[2]);CHKERRQ(ierr);
+  for (d=dim; d<DMSTAG_MAX_DIM; ++d) {
+    start[d]      = 0;
+    n[d]          = 1; /* To allow for a single loop nest below */
+    extraPoint[d] = 0;
+  }
+  nidx = pmax; for (d=0; d<dim; ++d) nidx *= (n[d]+1); /* Overestimate (always assumes extraPoint) */
+  ierr = PetscMalloc1(nidx,&idx);CHKERRQ(ierr);
+  count = 0;
+  /* Note that unused loop variables are not accessed, for lower dimensions */
+  for (k=start[2]; k<start[2]+n[2]+extraPoint[2]; ++k) {
+    for (j=start[1]; j<start[1]+n[1]+extraPoint[1]; ++j) {
+      for (i=start[0]; i<start[0]+n[0]+extraPoint[0]; ++i) {
+        for (p=0; p<pmax; ++p) {
+          ss[p].i = i; ss[p].j = j; ss[p].k = k;
+        }
+        ierr = DMStagStencilToIndexLocal(dm,dim,pmax,ss,idxLocal);CHKERRQ(ierr);
+        for (p=0; p<pmax; ++p) {
+          const PetscInt gidx = ltogidx[idxLocal[p]];
+          if (gidx >= 0) {
+            idx[count] = gidx;
+            ++count;
+          }
+        }
+      }
+    }
+  }
+  ierr = ISLocalToGlobalMappingRestoreIndices(ltog,&ltogidx);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)dm),count,idx,PETSC_OWN_POINTER,is);CHKERRQ(ierr);
+
+  ierr = PetscFree(ss);CHKERRQ(ierr);
+  ierr = PetscFree(idxLocal);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
   DMStagGetLocationDOF - Get number of DOF associated with a given point in a DMStag grid
 
@@ -39,7 +131,7 @@ PetscErrorCode DMStagGetLocationDOF(DM dm,DMStagStencilLocation loc,PetscInt *do
           *dof = stag->dof[0]; break;
         case DMSTAG_ELEMENT:
           *dof = stag->dof[1]; break;
-        default : SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for location %s",DMStagStencilLocations[loc]);
+        default : SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for location %s",DMStagStencilLocations[loc]);
       }
       break;
     case 2:
@@ -56,7 +148,7 @@ PetscErrorCode DMStagGetLocationDOF(DM dm,DMStagStencilLocation loc,PetscInt *do
           *dof = stag->dof[1]; break;
         case DMSTAG_ELEMENT:
           *dof = stag->dof[2]; break;
-        default : SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for location %s",DMStagStencilLocations[loc]);
+        default : SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for location %s",DMStagStencilLocations[loc]);
       }
       break;
     case 3:
@@ -92,10 +184,67 @@ PetscErrorCode DMStagGetLocationDOF(DM dm,DMStagStencilLocation loc,PetscInt *do
           *dof = stag->dof[2]; break;
         case DMSTAG_ELEMENT:
           *dof = stag->dof[3]; break;
-        default : SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for location %s",DMStagStencilLocations[loc]);
+        default : SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for location %s",DMStagStencilLocations[loc]);
       }
       break;
-    default : SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %D",dim);
+    default : SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dimension %D",dim);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+Convert to a location value with only BACK, DOWN, LEFT, and ELEMENT involved
+*/
+PETSC_INTERN PetscErrorCode DMStagStencilLocationCanonicalize(DMStagStencilLocation loc,DMStagStencilLocation *locCanonical)
+{
+  PetscFunctionBegin;
+  switch (loc) {
+    case DMSTAG_ELEMENT:
+      *locCanonical = DMSTAG_ELEMENT;
+      break;
+    case DMSTAG_LEFT:
+    case DMSTAG_RIGHT:
+      *locCanonical = DMSTAG_LEFT;
+      break;
+    case DMSTAG_DOWN:
+    case DMSTAG_UP:
+      *locCanonical = DMSTAG_DOWN;
+      break;
+    case DMSTAG_BACK:
+    case DMSTAG_FRONT:
+      *locCanonical = DMSTAG_BACK;
+      break;
+    case DMSTAG_DOWN_LEFT :
+    case DMSTAG_DOWN_RIGHT :
+    case DMSTAG_UP_LEFT :
+    case DMSTAG_UP_RIGHT :
+      *locCanonical = DMSTAG_DOWN_LEFT;
+      break;
+    case DMSTAG_BACK_LEFT:
+    case DMSTAG_BACK_RIGHT:
+    case DMSTAG_FRONT_LEFT:
+    case DMSTAG_FRONT_RIGHT:
+      *locCanonical = DMSTAG_BACK_LEFT;
+      break;
+    case DMSTAG_BACK_DOWN:
+    case DMSTAG_BACK_UP:
+    case DMSTAG_FRONT_DOWN:
+    case DMSTAG_FRONT_UP:
+      *locCanonical = DMSTAG_BACK_DOWN;
+      break;
+    case DMSTAG_BACK_DOWN_LEFT:
+    case DMSTAG_BACK_DOWN_RIGHT:
+    case DMSTAG_BACK_UP_LEFT:
+    case DMSTAG_BACK_UP_RIGHT:
+    case DMSTAG_FRONT_DOWN_LEFT:
+    case DMSTAG_FRONT_DOWN_RIGHT:
+    case DMSTAG_FRONT_UP_LEFT:
+    case DMSTAG_FRONT_UP_RIGHT:
+      *locCanonical = DMSTAG_BACK_DOWN_LEFT;
+      break;
+    default :
+      *locCanonical = DMSTAG_NULL_LOCATION;
+      break;
   }
   PetscFunctionReturn(0);
 }
@@ -163,16 +312,14 @@ PetscErrorCode DMStagMatGetValuesStencil(DM dm,Mat mat,PetscInt nRow,const DMSta
 PetscErrorCode DMStagMatSetValuesStencil(DM dm,Mat mat,PetscInt nRow,const DMStagStencil *posRow,PetscInt nCol,const DMStagStencil *posCol,const PetscScalar *val,InsertMode insertMode)
 {
   PetscErrorCode ierr;
-  PetscInt       dim;
   PetscInt       *ir,*ic;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(mat,MAT_CLASSID,2);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = PetscMalloc2(nRow,&ir,nCol,&ic);CHKERRQ(ierr);
-  ierr = DMStagStencilToIndexLocal(dm,dim,nRow,posRow,ir);CHKERRQ(ierr);
-  ierr = DMStagStencilToIndexLocal(dm,dim,nCol,posCol,ic);CHKERRQ(ierr);
+  ierr = DMStagStencilToIndexLocal(dm,dm->dim,nRow,posRow,ir);CHKERRQ(ierr);
+  ierr = DMStagStencilToIndexLocal(dm,dm->dim,nCol,posCol,ic);CHKERRQ(ierr);
   ierr = MatSetValuesLocal(mat,nRow,ir,nCol,ic,val,insertMode);CHKERRQ(ierr);
   ierr = PetscFree2(ir,ic);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -238,7 +385,7 @@ PetscErrorCode DMStagStencilToIndexLocal(DM dm,PetscInt dim,PetscInt n,const DMS
 
       ix[idx] = eLocal * epe + stag->locationOffsets[pos[idx].loc] + pos[idx].c;
     }
-  } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %d",dim);
+  } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %d",dim);
   PetscFunctionReturn(0);
 }
 
@@ -260,7 +407,7 @@ PetscErrorCode DMStagStencilToIndexLocal(DM dm,PetscInt dim,PetscInt n,const DMS
   Accepts stencils which refer to global element numbers, but
   only allows access to entries in the local representation (including ghosts).
 
-  This approach is not as efficient as setting values directly with DMStagVecGetArray(), which is recommended for matrix free operators.
+  This approach is not as efficient as getting values directly with DMStagVecGetArray(), which is recommended for matrix free operators.
 
   Level: advanced
 
@@ -270,18 +417,17 @@ PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec,PetscInt n,const DMStagS
 {
   PetscErrorCode    ierr;
   DM_Stag * const   stag = (DM_Stag*)dm->data;
-  PetscInt          nLocal,dim,idx;
+  PetscInt          nLocal,idx;
   PetscInt          *ix;
   PetscScalar const *arr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&nLocal);CHKERRQ(ierr);
-  if (nLocal != stag->entriesGhost) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Vector should be a local vector. Local size %d does not match expected %d\n",nLocal,stag->entriesGhost);
+  PetscCheckFalse(nLocal != stag->entriesGhost,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Vector should be a local vector. Local size %d does not match expected %d",nLocal,stag->entriesGhost);
   ierr = PetscMalloc1(n,&ix);CHKERRQ(ierr);
-  ierr = DMStagStencilToIndexLocal(dm,dim,n,pos,ix);CHKERRQ(ierr);
+  ierr = DMStagStencilToIndexLocal(dm,dm->dim,n,pos,ix);CHKERRQ(ierr);
   ierr = VecGetArrayRead(vec,&arr);CHKERRQ(ierr);
   for (idx=0; idx<n; ++idx) val[idx] = arr[ix[idx]];
   ierr = VecRestoreArrayRead(vec,&arr);CHKERRQ(ierr);
@@ -316,17 +462,16 @@ PetscErrorCode DMStagVecSetValuesStencil(DM dm,Vec vec,PetscInt n,const DMStagSt
 {
   PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
-  PetscInt        dim,nLocal;
+  PetscInt        nLocal;
   PetscInt        *ix;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   PetscValidHeaderSpecific(vec,VEC_CLASSID,2);
-  ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&nLocal);CHKERRQ(ierr);
-  if (nLocal != stag->entries) SETERRQ2(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONG,"Provided vec has a different number of local entries (%D) than expected (%D). It should be a global vector",nLocal,stag->entries);
+  PetscCheckFalse(nLocal != stag->entries,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONG,"Provided vec has a different number of local entries (%D) than expected (%D). It should be a global vector",nLocal,stag->entries);
   ierr = PetscMalloc1(n,&ix);CHKERRQ(ierr);
-  ierr = DMStagStencilToIndexLocal(dm,dim,n,pos,ix);CHKERRQ(ierr);
+  ierr = DMStagStencilToIndexLocal(dm,dm->dim,n,pos,ix);CHKERRQ(ierr);
   ierr = VecSetValuesLocal(vec,n,ix,val,insertMode);CHKERRQ(ierr);
   ierr = PetscFree(ix);CHKERRQ(ierr);
   PetscFunctionReturn(0);

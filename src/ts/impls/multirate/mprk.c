@@ -583,7 +583,7 @@ static PetscErrorCode TSMPRKSetSplits(TS ts)
   PetscFunctionBegin;
   ierr = TSRHSSplitGetSubTS(ts,"slow",&mprk->subts_slow);CHKERRQ(ierr);
   ierr = TSRHSSplitGetSubTS(ts,"fast",&mprk->subts_fast);CHKERRQ(ierr);
-  if (!mprk->subts_slow || !mprk->subts_fast) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up the RHSFunctions for 'slow' and 'fast' components using TSRHSSplitSetRHSFunction() or calling TSSetRHSFunction() for each sub-TS");
+  PetscCheckFalse(!mprk->subts_slow || !mprk->subts_fast,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up the RHSFunctions for 'slow' and 'fast' components using TSRHSSplitSetRHSFunction() or calling TSSetRHSFunction() for each sub-TS");
 
   /* Only copy the DM */
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
@@ -1088,11 +1088,11 @@ static PetscErrorCode TSSetUp_MPRK(TS ts)
   PetscFunctionBegin;
   ierr = TSRHSSplitGetIS(ts,"slow",&mprk->is_slow);CHKERRQ(ierr);
   ierr = TSRHSSplitGetIS(ts,"fast",&mprk->is_fast);CHKERRQ(ierr);
-  if (!mprk->is_slow || !mprk->is_fast) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names 'slow' and 'fast' respectively in order to use the method '%s'",tab->name);
+  PetscCheckFalse(!mprk->is_slow || !mprk->is_fast,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names 'slow' and 'fast' respectively in order to use the method '%s'",tab->name);
 
   if (tab->np == 3) {
     ierr = TSRHSSplitGetIS(ts,"medium",&mprk->is_medium);CHKERRQ(ierr);
-    if (!mprk->is_medium) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names 'slow' and 'medium' and 'fast' respectively in order to use the method '%s'",tab->name);
+    PetscCheckFalse(!mprk->is_medium,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names 'slow' and 'medium' and 'fast' respectively in order to use the method '%s'",tab->name);
     ierr = TSRHSSplitGetIS(ts,"mediumbuffer",&mprk->is_mediumbuffer);CHKERRQ(ierr);
     if (!mprk->is_mediumbuffer) { /* let medium buffer cover whole medium region */
       mprk->is_mediumbuffer = mprk->is_medium;
@@ -1215,7 +1215,7 @@ static PetscErrorCode TSLoad_MPRK(TS ts,PetscViewer viewer)
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  mprktype - type of MPRK-scheme
 
@@ -1292,7 +1292,7 @@ static PetscErrorCode TSMPRKSetType_MPRK(TS ts,TSMPRKType mprktype)
       PetscFunctionReturn(0);
     }
   }
-  SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",mprktype);
+  SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",mprktype);
 }
 
 static PetscErrorCode TSGetStages_MPRK(TS ts,PetscInt *ns,Vec **Y)

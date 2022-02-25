@@ -2,7 +2,7 @@
 #include <petscts.h>
 
 /* these two functions have been stolen from bdf.c */
-PETSC_STATIC_INLINE void LagrangeBasisVals(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar L[])
+static inline void LagrangeBasisVals(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar L[])
 {
   PetscInt k,j;
   for (k=0; k<n; k++) {
@@ -12,7 +12,7 @@ PETSC_STATIC_INLINE void LagrangeBasisVals(PetscInt n,PetscReal t,const PetscRea
   }
 }
 
-PETSC_STATIC_INLINE void LagrangeBasisDers(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar dL[])
+static inline void LagrangeBasisDers(PetscInt n,PetscReal t,const PetscReal T[],PetscScalar dL[])
 {
   PetscInt k,j,i;
   for (k=0; k<n; k++) {
@@ -28,7 +28,7 @@ PETSC_STATIC_INLINE void LagrangeBasisDers(PetscInt n,PetscReal t,const PetscRea
   }
 }
 
-PETSC_STATIC_INLINE PetscInt LagrangeGetId(PetscReal t, PetscInt n, const PetscReal T[], const PetscBool Taken[])
+static inline PetscInt LagrangeGetId(PetscReal t, PetscInt n, const PetscReal T[], const PetscBool Taken[])
 {
   PetscInt _tid = 0;
   while (_tid < n && PetscAbsReal(t-T[_tid]) > PETSC_SMALL) _tid++;
@@ -57,7 +57,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj,TS ts,PetscReal t
   if (id == -1 || id == -tshn - 1) {
     PetscReal t0 = tshn ? tshhist[0]      : 0.0;
     PetscReal tf = tshn ? tshhist[tshn-1] : 0.0;
-    SETERRQ4(PetscObjectComm((PetscObject)tj),PETSC_ERR_PLIB,"Requested time %g is outside the history interval [%g, %g] (%d)",(double)t,(double)t0,(double)tf,tshn);
+    SETERRQ(PetscObjectComm((PetscObject)tj),PETSC_ERR_PLIB,"Requested time %g is outside the history interval [%g, %g] (%d)",(double)t,(double)t0,(double)tf,tshn);
   }
   if (tj->monitor) {
     ierr = PetscViewerASCIIPrintf(tj->monitor,"Reconstructing at time %g, order %D\n",(double)t,tj->lag.order);CHKERRQ(ierr);
@@ -102,7 +102,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj,TS ts,PetscReal t
 
       if (tj->lag.TT[tj->lag.order+1 + s-low]) continue;
       tid = LagrangeGetId(t,tj->lag.order+1,tj->lag.T,tj->lag.TT);
-      if (tid >= 0) SETERRQ(PetscObjectComm((PetscObject)tj),PETSC_ERR_PLIB,"This should not happen");
+      PetscCheckFalse(tid >= 0,PetscObjectComm((PetscObject)tj),PETSC_ERR_PLIB,"This should not happen");
       tid = -tid-1;
       if (tj->monitor) {
         if (tj->lag.T[tid] < PETSC_MAX_REAL) {

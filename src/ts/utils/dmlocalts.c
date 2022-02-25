@@ -10,6 +10,9 @@ typedef struct {
   void *ifunctionlocalctx;
   void *ijacobianlocalctx;
   void *rhsfunctionlocalctx;
+  Vec   lumpedmassinv;
+  Mat   mass;
+  KSP   kspmass;
 } DMTS_Local;
 
 static PetscErrorCode DMTSDestroy_DMLocal(DMTS tdm)
@@ -86,7 +89,7 @@ static PetscErrorCode TSComputeIFunction_DMLocal(TS ts, PetscReal time, Vec X, V
 static PetscErrorCode TSComputeRHSFunction_DMLocal(TS ts, PetscReal time, Vec X, Vec F, void *ctx)
 {
   DM             dm;
-  Vec            locX;
+  Vec            locX, locF;
   DMTS_Local    *dmlocalts = (DMTS_Local *) ctx;
   PetscErrorCode ierr;
 
@@ -96,15 +99,30 @@ static PetscErrorCode TSComputeRHSFunction_DMLocal(TS ts, PetscReal time, Vec X,
   PetscValidHeaderSpecific(F,VEC_CLASSID,4);
   ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm, &locX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm, &locF);CHKERRQ(ierr);
   ierr = VecZeroEntries(locX);CHKERRQ(ierr);
   if (dmlocalts->boundarylocal) {ierr = (*dmlocalts->boundarylocal)(dm,time,locX,NULL,dmlocalts->boundarylocalctx);CHKERRQ(ierr);}
   ierr = DMGlobalToLocalBegin(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(dm, X, INSERT_VALUES, locX);CHKERRQ(ierr);
+  ierr = VecZeroEntries(locF);CHKERRQ(ierr);
+  CHKMEMQ;
+  ierr = (*dmlocalts->rhsfunctionlocal)(dm, time, locX, locF, dmlocalts->rhsfunctionlocalctx);CHKERRQ(ierr);
+  CHKMEMQ;
   ierr = VecZeroEntries(F);CHKERRQ(ierr);
-  CHKMEMQ;
-  ierr = (*dmlocalts->rhsfunctionlocal)(dm, time, locX, F, dmlocalts->rhsfunctionlocalctx);CHKERRQ(ierr);
-  CHKMEMQ;
+  ierr = DMLocalToGlobalBegin(dm, locF, ADD_VALUES, F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(dm, locF, ADD_VALUES, F);CHKERRQ(ierr);
+  if (dmlocalts->lumpedmassinv) {
+    ierr = VecPointwiseMult(F, dmlocalts->lumpedmassinv, F);CHKERRQ(ierr);
+  } else if (dmlocalts->kspmass) {
+    Vec tmp;
+
+    ierr = DMGetGlobalVector(dm, &tmp);CHKERRQ(ierr);
+    ierr = KSPSolve(dmlocalts->kspmass, F, tmp);CHKERRQ(ierr);
+    ierr = VecCopy(tmp, F);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dm, &tmp);CHKERRQ(ierr);
+  }
   ierr = DMRestoreLocalVector(dm, &locX);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm, &locF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -145,7 +163,7 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
       case IS_COLORING_GLOBAL:
         ierr = MatFDColoringSetFunction(fdcoloring, (PetscErrorCode (*)(void)) TSComputeIFunction_DMLocal, dmlocalts);CHKERRQ(ierr);
         break;
-      default: SETERRQ1(PetscObjectComm((PetscObject) ts), PETSC_ERR_SUP, "No support for coloring type '%s'", ISColoringTypes[dm->coloringtype]);
+      default: SETERRQ(PetscObjectComm((PetscObject) ts), PETSC_ERR_SUP, "No support for coloring type '%s'", ISColoringTypes[dm->coloringtype]);
       }
       ierr = PetscObjectSetOptionsPrefix((PetscObject) fdcoloring, ((PetscObject) dm)->prefix);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
@@ -182,7 +200,7 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
 
   Logically Collective
 
-  Input Arguments:
+  Input Parameters:
 + dm   - DM to associate callback with
 . func - local function evaluation
 - ctx  - context for function evaluation
@@ -215,7 +233,7 @@ PetscErrorCode DMTSSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal,
 
   Logically Collective
 
-  Input Arguments:
+  Input Parameters:
 + dm   - DM to associate callback with
 . func - local function evaluation
 - ctx  - context for function evaluation
@@ -250,7 +268,7 @@ PetscErrorCode DMTSSetIFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
 
   Logically Collective
 
-  Input Arguments:
+  Input Parameters:
 + dm - DM to associate callback with
 . func - local Jacobian evaluation
 - ctx - optional context for local Jacobian evaluation
@@ -284,7 +302,7 @@ PetscErrorCode DMTSSetIJacobianLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
 
   Logically Collective
 
-  Input Arguments:
+  Input Parameters:
 + dm   - DM to associate callback with
 . func - local function evaluation
 - ctx  - context for function evaluation
@@ -308,5 +326,99 @@ PetscErrorCode DMTSSetRHSFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscRe
   dmlocalts->rhsfunctionlocalctx = ctx;
 
   ierr = DMTSSetRHSFunction(dm, TSComputeRHSFunction_DMLocal, dmlocalts);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMTSCreateRHSMassMatrix - This creates the mass matrix associated with the given DM, and a solver to invert it, and stores them in the DMTS context.
+
+  Collective on dm
+
+  Input Parameters:
+. dm   - DM providing the mass matrix
+
+  Note: The idea here is that an explicit system can be given a mass matrix, based on the DM, which is inverted on the RHS at each step.
+
+  Level: developer
+
+.seealso: DMTSCreateRHSMassMatrixLumped(), DMTSDestroyRHSMassMatrix(), DMCreateMassMatrix(), DMTS
+@*/
+PetscErrorCode DMTSCreateRHSMassMatrix(DM dm)
+{
+  DMTS           tdm;
+  DMTS_Local    *dmlocalts;
+  const char    *prefix;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm, &tdm);CHKERRQ(ierr);
+  ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);CHKERRQ(ierr);
+  ierr = DMCreateMassMatrix(dm, dm, &dmlocalts->mass);CHKERRQ(ierr);
+  ierr = KSPCreate(PetscObjectComm((PetscObject) dm), &dmlocalts->kspmass);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject) dm, &prefix);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(dmlocalts->kspmass, prefix);CHKERRQ(ierr);
+  ierr = KSPAppendOptionsPrefix(dmlocalts->kspmass, "mass_");CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(dmlocalts->kspmass);CHKERRQ(ierr);
+  ierr = KSPSetOperators(dmlocalts->kspmass, dmlocalts->mass, dmlocalts->mass);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMTSCreateRHSMassMatrixLumped - This creates the lumped mass matrix associated with the given DM, and a solver to invert it, and stores them in the DMTS context.
+
+  Collective on dm
+
+  Input Parameters:
+. dm   - DM providing the mass matrix
+
+  Note: The idea here is that an explicit system can be given a mass matrix, based on the DM, which is inverted on the RHS at each step.
+  Since the matrix is lumped, inversion is trivial.
+
+  Level: developer
+
+.seealso: DMTSCreateRHSMassMatrix(), DMTSDestroyRHSMassMatrix(), DMCreateMassMatrix(), DMTS
+@*/
+PetscErrorCode DMTSCreateRHSMassMatrixLumped(DM dm)
+{
+  DMTS           tdm;
+  DMTS_Local    *dmlocalts;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm, &tdm);CHKERRQ(ierr);
+  ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);CHKERRQ(ierr);
+  ierr = DMCreateMassMatrixLumped(dm, &dmlocalts->lumpedmassinv);CHKERRQ(ierr);
+  ierr = VecReciprocal(dmlocalts->lumpedmassinv);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(dmlocalts->lumpedmassinv, NULL, "-lumped_mass_inv_view");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMTSDestroyRHSMassMatrix - Destroys the mass matrix and solver stored in the DMTS context, if they exist.
+
+  Logically Collective
+
+  Input Parameters:
+. dm   - DM providing the mass matrix
+
+  Level: developer
+
+.seealso: DMTSCreateRHSMassMatrixLumped(), DMCreateMassMatrix(), DMCreateMassMatrix(), DMTS
+@*/
+PetscErrorCode DMTSDestroyRHSMassMatrix(DM dm)
+{
+  DMTS           tdm;
+  DMTS_Local    *dmlocalts;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  ierr = DMGetDMTSWrite(dm, &tdm);CHKERRQ(ierr);
+  ierr = DMLocalTSGetContext(dm, tdm, &dmlocalts);CHKERRQ(ierr);
+  ierr = VecDestroy(&dmlocalts->lumpedmassinv);CHKERRQ(ierr);
+  ierr = MatDestroy(&dmlocalts->mass);CHKERRQ(ierr);
+  ierr = KSPDestroy(&dmlocalts->kspmass);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

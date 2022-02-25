@@ -217,6 +217,7 @@
 # define LAPACKhetrf_ PETSCBLAS(hetrf,HETRF)
 # define LAPACKhetrs_ PETSCBLAS(hetrs,HETRS)
 # define LAPACKhetri_ PETSCBLAS(hetri,HETRI)
+# define LAPACKheev_  PETSCBLAS(heev,HEEV)
 #if !defined(PETSC_MISSING_LAPACK_ORGQR)
 # define LAPACKorgqr_ PETSCBLAS(ungqr,UNGQR)
 #endif

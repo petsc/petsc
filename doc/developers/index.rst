@@ -13,12 +13,8 @@ Information for PETSc developers and those interested in contributing.
    contributing
    style
    integration
+   pipelines
    buildsystem
    testing
    documentation
    design
-
-.. toctree::
-   :hidden:
-
-   copyimages

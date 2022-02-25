@@ -18,25 +18,11 @@
 #include <thrust/sequence.h>
 #include <thrust/system/system_error.h>
 
-#if (CUSPARSE_VER_MAJOR > 10 || CUSPARSE_VER_MAJOR == 10 && CUSPARSE_VER_MINOR >= 2) /* According to cuda/10.1.168 on OLCF Summit */
-#define CHKERRCUSPARSE(stat)\
-do {\
-  if (PetscUnlikely(stat)) {\
-    const char *name  = cusparseGetErrorName(stat);\
-    const char *descr = cusparseGetErrorString(stat);\
-    if ((stat == CUSPARSE_STATUS_NOT_INITIALIZED) || (stat == CUSPARSE_STATUS_ALLOC_FAILED)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_GPU_RESOURCE,"cuSPARSE error %d (%s) : %s. Reports not initialized or alloc failed; this indicates the GPU has run out resources",(int)stat,name,descr); \
-    else SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_GPU,"cuSPARSE error %d (%s) : %s",(int)stat,name,descr);\
-  }\
-} while (0)
-#else
-#define CHKERRCUSPARSE(stat) do {if (PetscUnlikely(stat)) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_GPU,"cusparse error %d",(int)stat);} while (0)
-#endif
-
 #define PetscStackCallThrust(body) do {                                     \
     try {                                                                   \
       body;                                                                 \
     } catch(thrust::system_error& e) {                                      \
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in Thrust %s",e.what());\
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in Thrust %s",e.what());\
     }                                                                       \
   } while (0)
 
@@ -242,7 +228,7 @@ struct Mat_SeqAIJCUSPARSEMultStruct {
  #endif
 };
 
-/* This is a larger struct holding all the matrices for a SpMV, and SpMV Tranpose */
+/* This is a larger struct holding all the matrices for a SpMV, and SpMV Transpose */
 struct Mat_SeqAIJCUSPARSE {
   Mat_SeqAIJCUSPARSEMultStruct *mat;            /* pointer to the matrix on the GPU */
   Mat_SeqAIJCUSPARSEMultStruct *matTranspose;   /* pointer to the matrix on the GPU (for the transpose ... useful for BiCG) */
@@ -250,6 +236,7 @@ struct Mat_SeqAIJCUSPARSE {
   THRUSTINTARRAY32             *rowoffsets_gpu; /* rowoffsets on GPU in non-compressed-row format. It is used to convert CSR to CSC */
   PetscInt                     nrows;           /* number of rows of the matrix seen by GPU */
   MatCUSPARSEStorageFormat     format;          /* the storage format for the matrix on the device */
+  PetscBool                    use_cpu_solve;   /* Use AIJ_Seq (I)LU solve */
   cudaStream_t                 stream;          /* a stream for the parallel SpMV ... this is not owned and should not be deleted */
   cusparseHandle_t             handle;          /* a handle to the cusparse library ... this may not be owned (if we're working in parallel i.e. multiGPUs) */
   PetscObjectState             nonzerostate;    /* track nonzero state to possibly recreate the GPU matrix */
@@ -262,25 +249,29 @@ struct Mat_SeqAIJCUSPARSE {
  #endif
   THRUSTINTARRAY               *csr2csc_i;
   PetscSplitCSRDataStructure   deviceMat;       /* Matrix on device for, eg, assembly */
+
+  /* Stuff for basic COO support */
   THRUSTINTARRAY               *cooPerm;        /* permutation array that sorts the input coo entris by row and col */
   THRUSTINTARRAY               *cooPerm_a;      /* ordered array that indicate i-th nonzero (after sorting) is the j-th unique nonzero */
+
+  /* Stuff for extended COO support */
+  PetscBool                    use_extended_coo; /* Use extended COO format */
+  PetscCount                   *jmap_d; /* perm[disp+jmap[i]..disp+jmap[i+1]) gives indices of entries in v[] associated with i-th nonzero of the matrix */
+  PetscCount                   *perm_d;
+
+  Mat_SeqAIJCUSPARSE() : use_extended_coo(PETSC_FALSE), perm_d(NULL), jmap_d(NULL) {}
 };
 
-PETSC_INTERN PetscErrorCode MatCUSPARSECopyToGPU(Mat);
+PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat);
 PETSC_INTERN PetscErrorCode MatCUSPARSESetStream(Mat, const cudaStream_t stream);
 PETSC_INTERN PetscErrorCode MatCUSPARSESetHandle(Mat, const cusparseHandle_t handle);
 PETSC_INTERN PetscErrorCode MatCUSPARSEClearHandle(Mat);
-PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat,PetscInt,const PetscInt[],const PetscInt[]);
-PETSC_INTERN PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat,const PetscScalar[],InsertMode);
-PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEGetArrayRead(Mat,const PetscScalar**);
-PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSERestoreArrayRead(Mat,const PetscScalar**);
-PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEGetArrayWrite(Mat,PetscScalar**);
-PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSERestoreArrayWrite(Mat,PetscScalar**);
-PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEGetArray(Mat,PetscScalar**);
-PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSERestoreArray(Mat,PetscScalar**);
+PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(Mat,PetscCount,const PetscInt[],const PetscInt[]);
+PETSC_INTERN PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE_Basic(Mat,const PetscScalar[],InsertMode);
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat,Mat,MatReuse,Mat*);
+PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSETriFactors_Reset(Mat_SeqAIJCUSPARSETriFactors_p*);
 
-PETSC_STATIC_INLINE bool isCudaMem(const void *data)
+static inline bool isCudaMem(const void *data)
 {
   cudaError_t                  cerr;
   struct cudaPointerAttributes attr;

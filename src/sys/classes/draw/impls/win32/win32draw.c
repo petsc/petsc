@@ -603,7 +603,6 @@ void MessageLoopThread_Win32(PetscDraw draw)
   WNDCLASSEX      wclass;
   LPVOID          lpMsgBuf;
 
-  PetscFunctionBegin;
   /* initialize window class parameters */
   wclass.cbSize        = sizeof(WNDCLASSEX);
   wclass.style         = CS_SAVEBITS | CS_HREDRAW | CS_VREDRAW;
@@ -649,7 +648,7 @@ void MessageLoopThread_Win32(PetscDraw draw)
     TranslateMessage(&msg);
     DispatchMessage(&msg);
   }
-  PetscFunctionReturnVoid();
+  return;
 }
 
 static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_Win32,
@@ -767,7 +766,6 @@ LRESULT CALLBACK PetscWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 {
   int wmId;
 
-  PetscFunctionBegin;
   switch (message) {
     HANDLE_MSG(hWnd,WM_PAINT,OnPaint_Win32);
     HANDLE_MSG(hWnd,WM_DESTROY,OnDestroy_Win32);
@@ -792,9 +790,9 @@ LRESULT CALLBACK PetscWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
     MouseRecord_Win32(hWnd,PETSC_BUTTON_CENTER);
     break;
   default:
-    PetscFunctionReturn(DefWindowProc(hWnd, message, wParam, lParam));
+    return DefWindowProc(hWnd, message, wParam, lParam);
   }
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 static void OnPaint_Win32(HWND hWnd)
@@ -803,7 +801,6 @@ static void OnPaint_Win32(HWND hWnd)
   HDC         hdc;
   WindowNode  current = NULL;
 
-  PetscFunctionBegin;
   InvalidateRect(hWnd,NULL,TRUE);
   WaitForSingleObject(g_hWindowListMutex, INFINITE);
   current = WindowListHead;
@@ -823,7 +820,7 @@ static void OnPaint_Win32(HWND hWnd)
   }
   EndPaint(hWnd, &ps);
   ReleaseMutex(g_hWindowListMutex);
-  PetscFunctionReturnVoid();
+  return;
 }
 
 static PetscErrorCode MouseRecord_Win32(HWND hWnd,PetscDrawButton button)

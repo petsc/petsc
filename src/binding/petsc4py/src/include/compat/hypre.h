@@ -5,7 +5,7 @@
 
 #define PetscPCHYPREError do { \
     PetscFunctionBegin; \
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires HYPRE",PETSC_FUNCTION_NAME); \
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires HYPRE",PETSC_FUNCTION_NAME); \
     PetscFunctionReturn(PETSC_ERR_SUP);} while (0)
 
 PetscErrorCode PCHYPREGetType(PETSC_UNUSED PC pc,PETSC_UNUSED const char *name[]){PetscPCHYPREError;}

@@ -28,9 +28,9 @@ static PetscErrorCode PetscSFViewCustomLocals_Private(PetscSF sf,const PetscInt 
   ierr = PetscSFGetRootRanks(sf,&nranks,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of roots=%D, leaves=%D, remote ranks=%D\n",rank,nroots,nleaves,nranks);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of roots=%" PetscInt_FMT ", leaves=%" PetscInt_FMT ", remote ranks=%" PetscInt_FMT "\n",rank,nroots,nleaves,nranks);CHKERRQ(ierr);
   for (i=0; i<nleaves; i++) {
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D <- (%D,%D)\n",rank,locals[i],iremote[i].rank,iremote[i].index);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %" PetscInt_FMT " <- (%" PetscInt_FMT ",%" PetscInt_FMT ")\n",rank,locals[i],iremote[i].rank,iremote[i].index);CHKERRQ(ierr);
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -314,10 +314,10 @@ int main(int argc,char **argv)
     unsigned char *rootdata,*leafdata;
     ierr = PetscMalloc2(nrootsalloc,&rootdata,nleavesalloc,&leafdata);CHKERRQ(ierr);
     /* Initialize rootdata buffer in which the result of the reduction will appear. */
-    for (i=0; i<nrootsalloc; i++) rootdata[i] = -1;
+    for (i=0; i<nrootsalloc; i++) rootdata[i] = 0;
     for (i=0; i<nroots; i++) rootdata[i*stride] = 10*(rank+1) + i;
     /* Set leaf values to reduce. */
-    for (i=0; i<nleavesalloc; i++) leafdata[i] = -1;
+    for (i=0; i<nleavesalloc; i++) leafdata[i] = 0;
     for (i=0; i<nleaves; i++) leafdata[i*stride] = 50*(rank+1) + 10*i;
     ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"## Pre-Reduce Rootdata in type of unsigned char\n");CHKERRQ(ierr);
 
@@ -410,7 +410,7 @@ int main(int argc,char **argv)
   }
 
   if (test_embed) {
-    const PetscInt nroots = 1 + (PetscInt) !rank;
+    const PetscInt nroots = 1 + (PetscInt) (rank == 0);
     PetscInt       selected[2];
     PetscSF        esf;
 

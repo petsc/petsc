@@ -67,11 +67,11 @@ int main(int argc,char **argv)
   user.fine.my = user.ratio*(user.coarse.my-1)+1;
   user.fine.mz = user.ratio*(user.coarse.mz-1)+1;
 
-  if (!rank) {
+  if (rank == 0) {
     if (!Test_3D) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"coarse grids: %D %D; fine grids: %D %D\n",user.coarse.mx,user.coarse.my,user.fine.mx,user.fine.my);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"coarse grids: %" PetscInt_FMT " %" PetscInt_FMT "; fine grids: %" PetscInt_FMT " %" PetscInt_FMT "\n",user.coarse.mx,user.coarse.my,user.fine.mx,user.fine.my);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"coarse grids: %D %D %D; fine grids: %D %D %D\n",user.coarse.mx,user.coarse.my,user.coarse.mz,user.fine.mx,user.fine.my,user.fine.mz);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"coarse grids: %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "; fine grids: %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",user.coarse.mx,user.coarse.my,user.coarse.mz,user.fine.mx,user.fine.my,user.fine.mz);CHKERRQ(ierr);
     }
   }
 
@@ -152,7 +152,7 @@ int main(int argc,char **argv)
     ierr = MatMatMatMult(R,Adense,P,MAT_REUSE_MATRIX,fill,&Cdense);CHKERRQ(ierr);
 
     ierr = MatMultEqual(D,Cdense,10,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"D*v != Cdense*v");
+    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"D*v != Cdense*v");
     ierr = MatDestroy(&Adense);CHKERRQ(ierr);
     ierr = MatDestroy(&Cdense);CHKERRQ(ierr);
   }
@@ -163,13 +163,13 @@ int main(int argc,char **argv)
 
   /* Test D == C */
   ierr = MatEqual(D,C,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"D != C");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"D != C");
 
   /* Test C == PtAP */
   ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&PtAP);CHKERRQ(ierr);
   ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&PtAP);CHKERRQ(ierr);
   ierr = MatEqual(C,PtAP,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"C != PtAP");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"C != PtAP");
   ierr = MatDestroy(&PtAP);CHKERRQ(ierr);
 
   /* Clean up */

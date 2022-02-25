@@ -28,10 +28,10 @@ int main(int argc,char **argv)
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecMax(x,&idx,&value);CHKERRQ(ierr);
   ierr = VecMax(x,NULL,&value2);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Maximum value %g index %D (no index %g)\n",(double)value,idx,(double)value2);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Maximum value %g index %" PetscInt_FMT " (no index %g)\n",(double)value,idx,(double)value2);CHKERRQ(ierr);
   ierr = VecMin(x,&idx,&value);CHKERRQ(ierr);
   ierr = VecMin(x,NULL,&value2);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Minimum value %g index %D (no index %g)\n",(double)value,idx,(double)value2);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Minimum value %g index %" PetscInt_FMT " (no index %g)\n",(double)value,idx,(double)value2);CHKERRQ(ierr);
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
 
@@ -43,26 +43,27 @@ int main(int argc,char **argv)
 
    testset:
       diff_args: -j
-      filter: grep -v type
+      filter: grep -v type | grep -v "MPI processes" | grep -v Process
       output_file: output/ex21_1.out
 
       test:
          suffix: 1
+         args: -vec_type {{seq mpi}}
 
       test:
          requires: cuda
          suffix: 1_cuda
-         args: -vec_type cuda
+         args: -vec_type {{cuda mpicuda}}
 
       test:
          requires: kokkos_kernels
          suffix: 1_kokkos
-         args: -vec_type kokkos
+         args: -vec_type {{kokkos mpikokkos}}
 
       test:
          requires: hip
          suffix: 1_hip
-         args: -vec_type hip
+         args: -vec_type {{hip mpihip}}
 
    testset:
       diff_args: -j

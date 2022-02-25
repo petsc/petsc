@@ -12,11 +12,17 @@
 
    Input Parameters:
 +  da - the distributed array
--  x,y,z - the physical coordinates
+.  x  - the first physical coordinate
+.  y  - the second physical coordinate
+-  z  - the third physical coordinate
 
    Output Parameters:
-+   II, JJ, KK - the logical coordinate (-1 on processes that do not contain that point)
--   X, Y, Z, - (optional) the coordinates of the located grid point
++  II - the first logical coordinate (-1 on processes that do not contain that point)
+.  JJ - the second logical coordinate (-1 on processes that do not contain that point)
+.  KK - the third logical coordinate (-1 on processes that do not contain that point)
+.  X  - (optional) the first coordinate of the located grid point
+.  Y  - (optional) the second coordinate of the located grid point
+-  Z  - (optional) the third coordinate of the located grid point
 
    Level: advanced
 
@@ -35,8 +41,8 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
   PetscMPIInt    rank,root;
 
   PetscFunctionBegin;
-  if (da->dim == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot get point from 1d DMDA");
-  if (da->dim == 3) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot get point from 3d DMDA");
+  PetscCheckFalse(da->dim == 1,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot get point from 1d DMDA");
+  PetscCheckFalse(da->dim == 3,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Cannot get point from 3d DMDA");
 
   *II = -1;
   *JJ = -1;
@@ -81,7 +87,6 @@ PetscErrorCode  DMDAGetLogicalCoordinate(DM da,PetscScalar x,PetscScalar y,Petsc
 
    Input Parameters:
 +  da - the distributed array
-.  vec - the vector
 .  dir - Cartesian direction, either DM_X, DM_Y, or DM_Z
 -  gp - global grid point number in this direction
 
@@ -106,10 +111,10 @@ PetscErrorCode  DMDAGetRay(DM da,DMDirection dir,PetscInt gp,Vec *newvec,VecScat
   PetscInt       *indices,i,j;
 
   PetscFunctionBegin;
-  if (da->dim == 3) SETERRQ(PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get slice from 3d DMDA");
+  PetscCheckFalse(da->dim == 3,PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get slice from 3d DMDA");
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) da), &rank);CHKERRMPI(ierr);
   ierr = DMDAGetAO(da, &ao);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     if (da->dim == 1) {
       if (dir == DM_X) {
         ierr = PetscMalloc1(dd->w, &indices);CHKERRQ(ierr);
@@ -121,7 +126,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDirection dir,PetscInt gp,Vec *newvec,VecScat
         ierr = VecSetSizes(*newvec, dd->w, PETSC_DETERMINE);CHKERRQ(ierr);
         ierr = VecSetType(*newvec, VECSEQ);CHKERRQ(ierr);
         ierr = ISCreateGeneral(PETSC_COMM_SELF, dd->w, indices, PETSC_OWN_POINTER, &is);CHKERRQ(ierr);
-      } else if (dir == DM_Y) SETERRQ(PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get Y slice from 1d DMDA");
+      } else PetscCheckFalse(dir == DM_Y,PetscObjectComm((PetscObject) da), PETSC_ERR_SUP, "Cannot get Y slice from 1d DMDA");
       else SETERRQ(PetscObjectComm((PetscObject) da), PETSC_ERR_ARG_OUTOFRANGE, "Unknown DMDirection");
     } else {
       if (dir == DM_Y) {
@@ -174,7 +179,7 @@ PetscErrorCode  DMDAGetRay(DM da,DMDirection dir,PetscInt gp,Vec *newvec,VecScat
 .  dir - Cartesian direction, either DM_X, DM_Y, or DM_Z
 -  gp - global grid point number in this direction
 
-   Output Parameters:
+   Output Parameter:
 .  comm - new communicator
 
    Level: advanced
@@ -205,26 +210,26 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDirection dir,PetscInt gp,MPI_Com
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRMPI(ierr);
   if (dir == DM_Z) {
-    if (da->dim < 3) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"DM_Z invalid for DMDA dim < 3");
-    if (gp < 0 || gp > dd->P) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
+    PetscCheckFalse(da->dim < 3,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"DM_Z invalid for DMDA dim < 3");
+    PetscCheckFalse(gp < 0 || gp > dd->P,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
     if (gp >= zs && gp < zs+zm) flag = 1;
   } else if (dir == DM_Y) {
-    if (da->dim == 1) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"DM_Y invalid for DMDA dim = 1");
-    if (gp < 0 || gp > dd->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
+    PetscCheckFalse(da->dim == 1,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"DM_Y invalid for DMDA dim = 1");
+    PetscCheckFalse(gp < 0 || gp > dd->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
     if (gp >= ys && gp < ys+ym) flag = 1;
   } else if (dir == DM_X) {
-    if (gp < 0 || gp > dd->M) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
+    PetscCheckFalse(gp < 0 || gp > dd->M,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
     if (gp >= xs && gp < xs+xm) flag = 1;
   } else SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
 
   ierr = PetscMalloc2(size,&owners,size,&ranks);CHKERRQ(ierr);
   ierr = MPI_Allgather(&flag,1,MPIU_INT,owners,1,MPIU_INT,PetscObjectComm((PetscObject)da));CHKERRMPI(ierr);
   ict  = 0;
-  ierr = PetscInfo2(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir);CHKERRQ(ierr);
+  ierr = PetscInfo(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
     if (owners[i]) {
       ranks[ict] = i; ict++;
-      ierr       = PetscInfo1(da,"%D ",i);CHKERRQ(ierr);
+      ierr       = PetscInfo(da,"%D ",i);CHKERRQ(ierr);
     }
   }
   ierr = PetscInfo(da,"\n");CHKERRQ(ierr);
@@ -248,7 +253,7 @@ PetscErrorCode  DMDAGetProcessorSubset(DM da,DMDirection dir,PetscInt gp,MPI_Com
 +  da - the distributed array
 -  dir - Cartesian direction, either DM_X, DM_Y, or DM_Z
 
-   Output Parameters:
+   Output Parameter:
 .  subcomm - new communicator
 
    Level: advanced
@@ -277,10 +282,10 @@ PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDirection dir, MPI_Comm *subcom
   ierr = DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   if (dir == DM_Z) {
-    if (da->dim < 3) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"DM_Z invalid for DMDA dim < 3");
+    PetscCheckFalse(da->dim < 3,comm,PETSC_ERR_ARG_OUTOFRANGE,"DM_Z invalid for DMDA dim < 3");
     firstPoint = zs;
   } else if (dir == DM_Y) {
-    if (da->dim == 1) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"DM_Y invalid for DMDA dim = 1");
+    PetscCheckFalse(da->dim == 1,comm,PETSC_ERR_ARG_OUTOFRANGE,"DM_Y invalid for DMDA dim = 1");
     firstPoint = ys;
   } else if (dir == DM_X) {
     firstPoint = xs;
@@ -288,11 +293,11 @@ PetscErrorCode  DMDAGetProcessorSubsets(DM da, DMDirection dir, MPI_Comm *subcom
 
   ierr = PetscMalloc2(size, &firstPoints, size, &subgroupRanks);CHKERRQ(ierr);
   ierr = MPI_Allgather(&firstPoint, 1, MPIU_INT, firstPoints, 1, MPIU_INT, comm);CHKERRMPI(ierr);
-  ierr = PetscInfo2(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir);CHKERRQ(ierr);
+  ierr = PetscInfo(da,"DMDAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir);CHKERRQ(ierr);
   for (p = 0; p < size; ++p) {
     if (firstPoints[p] == firstPoint) {
       subgroupRanks[subgroupSize++] = p;
-      ierr = PetscInfo1(da, "%D ", p);CHKERRQ(ierr);
+      ierr = PetscInfo(da, "%D ", p);CHKERRQ(ierr);
     }
   }
   ierr = PetscInfo(da, "\n");CHKERRQ(ierr);

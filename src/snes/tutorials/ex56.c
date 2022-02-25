@@ -241,7 +241,7 @@ int main(int argc,char **args)
     Lx = 1.; /* or ne for rod */
     max_conv_its = 3;
     ierr = PetscOptionsInt("-max_conv_its","Number of iterations in convergence study","",max_conv_its,&max_conv_its,NULL);CHKERRQ(ierr);
-    if (max_conv_its<=0 || max_conv_its>7) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_USER, "Bad number of iterations for convergence test (%D)",max_conv_its);
+    PetscCheckFalse(max_conv_its<=0 || max_conv_its>7,PETSC_COMM_WORLD, PETSC_ERR_USER, "Bad number of iterations for convergence test (%D)",max_conv_its);
     ierr = PetscOptionsReal("-lx","Length of domain","",Lx,&Lx,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-alpha","material coefficient inside circle","",s_soft_alpha,&s_soft_alpha,NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-test_nonzero_cols","nonzero test","",test_nonzero_cols,&test_nonzero_cols,NULL);CHKERRQ(ierr);
@@ -318,9 +318,9 @@ int main(int argc,char **args)
     }
     ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
     ierr = DMGetCoordinateDim(dm,&dimEmbed);CHKERRQ(ierr);
-    if (dimEmbed != dim) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"dimEmbed != dim %D",dimEmbed);
+    PetscCheckFalse(dimEmbed != dim,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"dimEmbed != dim %D",dimEmbed);
     ierr = VecGetLocalSize(coordinates,&nCoords);CHKERRQ(ierr);
-    if (nCoords % dimEmbed) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");
+    PetscCheckFalse(nCoords % dimEmbed,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");
     ierr = VecGetArray(coordinates,&coords);CHKERRQ(ierr);
     for (i = 0; i < nCoords; i += dimEmbed) {
       PetscInt    j;
@@ -347,7 +347,7 @@ int main(int argc,char **args)
       ierr = PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix);CHKERRQ(ierr);
       ierr = PetscObjectSetOptionsPrefix((PetscObject)newdm,prefix);CHKERRQ(ierr);
       ierr = DMIsForest(newdm,&isForest);CHKERRQ(ierr);
-      if (!isForest) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Converted to non Forest?");
+      PetscCheckFalse(!isForest,PETSC_COMM_WORLD, PETSC_ERR_USER, "Converted to non Forest?");
       ierr = DMDestroy(&dm);CHKERRQ(ierr);
       dm   = newdm;
     } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Convert failed?");
@@ -443,7 +443,7 @@ int main(int argc,char **args)
     ierr = MatSetOption(Amat,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
     ierr = VecGetSize(bb,&N);CHKERRQ(ierr);
     local_sizes[iter] = N;
-    ierr = PetscInfo2(snes,"%D global equations, %D vertices\n",N,N/dim);CHKERRQ(ierr);
+    ierr = PetscInfo(snes,"%D global equations, %D vertices\n",N,N/dim);CHKERRQ(ierr);
     if ((use_nearnullspace || attach_nearnullspace) && N/dim > 1) {
       /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
       DM           subdm;
@@ -472,7 +472,7 @@ int main(int argc,char **args)
     /* test BCs */
     ierr = VecZeroEntries(xx);CHKERRQ(ierr);
     if (test_nonzero_cols) {
-      if (!rank) {
+      if (rank == 0) {
         ierr = VecSetValue(xx,0,1.0,INSERT_VALUES);CHKERRQ(ierr);
       }
       ierr = VecAssemblyBegin(xx);CHKERRQ(ierr);
@@ -481,7 +481,7 @@ int main(int argc,char **args)
     ierr = VecZeroEntries(bb);CHKERRQ(ierr);
     ierr = VecGetSize(bb,&i);CHKERRQ(ierr);
     local_sizes[iter] = i;
-    ierr = PetscInfo2(snes,"%D equations in vector, %D vertices\n",i,i/dim);CHKERRQ(ierr);
+    ierr = PetscInfo(snes,"%D equations in vector, %D vertices\n",i,i/dim);CHKERRQ(ierr);
     ierr = PetscLogStagePop();CHKERRQ(ierr);
     /* solve */
     ierr = PetscLogStagePush(stage[iter]);CHKERRQ(ierr);
@@ -534,7 +534,7 @@ int main(int argc,char **args)
   # HYPRE PtAP broken with complex numbers
   test:
     suffix: hypre
-    requires: hypre !single !complex
+    requires: hypre !single !complex !defined(PETSC_HAVE_HYPRE_DEVICE)
     nsize: 4
     args: -cells 2,2,1 -max_conv_its 2 -lx 1. -alpha .01 -petscspace_degree 2 -ksp_type cg -ksp_monitor_short -ksp_rtol 1.e-8 -pc_type hypre -pc_hypre_type boomeramg -pc_hypre_boomeramg_no_CF true -pc_hypre_boomeramg_agg_nl 1 -pc_hypre_boomeramg_coarsen_type HMIS -pc_hypre_boomeramg_interp_type ext+i -ksp_converged_reason -use_mat_nearnullspace true -petscpartitioner_type simple
 
@@ -571,7 +571,7 @@ int main(int argc,char **args)
       args: -pc_bddc_switch_static -prefix_push pc_bddc_dirichlet_ -approximate -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -prefix_pop -prefix_push pc_bddc_neumann_ -approximate -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 -mg_levels_ksp_max_it 1 -mg_levels_ksp_type chebyshev -prefix_pop
     # HYPRE PtAP broken with complex numbers
     test:
-      requires: hypre !complex
+      requires: hypre !complex !defined(PETSC_HAVE_HYPRE_DEVICE)
       suffix: bddc_approx_hypre
       args: -pc_bddc_switch_static -prefix_push pc_bddc_dirichlet_ -pc_type hypre -pc_hypre_boomeramg_no_CF true -pc_hypre_boomeramg_strong_threshold 0.75 -pc_hypre_boomeramg_agg_nl 1 -pc_hypre_boomeramg_coarsen_type HMIS -pc_hypre_boomeramg_interp_type ext+i -prefix_pop -prefix_push pc_bddc_neumann_ -pc_type hypre -pc_hypre_boomeramg_no_CF true -pc_hypre_boomeramg_strong_threshold 0.75 -pc_hypre_boomeramg_agg_nl 1 -pc_hypre_boomeramg_coarsen_type HMIS -pc_hypre_boomeramg_interp_type ext+i -prefix_pop
     test:
@@ -615,7 +615,7 @@ int main(int argc,char **args)
 
     test:
       suffix: kokkos
-      requires: kokkos_kernels
+      requires: !sycl kokkos_kernels
       args: -ex56_dm_mat_type aijkokkos -ex56_dm_vec_type kokkos
   # Don't run AIJMKL caes with complex scalars because of convergence issues.
   # Note that we need to test both single and multiple MPI rank cases, because these use different sparse MKL routines to implement the PtAP operation.

@@ -48,7 +48,7 @@ PetscErrorCode MatIncreaseOverlap_Normal(Mat A,PetscInt is_max,IS is[],PetscInt 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ov < 0) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
+  PetscCheckFalse(ov < 0,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
   ierr = MatProductCreate(a->A,a->A,NULL,&pattern);CHKERRQ(ierr);
   ierr = MatProductSetType(pattern,MATPRODUCT_AtB);CHKERRQ(ierr);
   ierr = MatProductSetFromOptions(pattern);CHKERRQ(ierr);
@@ -67,7 +67,7 @@ PetscErrorCode MatCreateSubMatrices_Normal(Mat mat,PetscInt n,const IS irow[],co
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (a->left || a->right || irow != icol) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Not implemented");
+  PetscCheckFalse(a->left || a->right || irow != icol,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Not implemented");
   if (scall != MAT_REUSE_MATRIX) {
     ierr = PetscCalloc1(n,submat);CHKERRQ(ierr);
   }
@@ -95,7 +95,7 @@ PetscErrorCode MatPermute_Normal(Mat A,IS rowp,IS colp,Mat *B)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (rowp != colp) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Row permutation and column permutation must be the same");
+  PetscCheckFalse(rowp != colp,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_INCOMP,"Row permutation and column permutation must be the same");
   ierr = ISCreateStride(PetscObjectComm((PetscObject)Aa),Aa->rmap->n,Aa->rmap->rstart,1,&row);CHKERRQ(ierr);
   ierr = ISSetIdentity(row);CHKERRQ(ierr);
   ierr = MatPermute(Aa,row,colp,&C);CHKERRQ(ierr);
@@ -112,7 +112,7 @@ PetscErrorCode MatDuplicate_Normal(Mat A, MatDuplicateOption op, Mat *B)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (a->left || a->right) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not implemented");
+  PetscCheckFalse(a->left || a->right,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not implemented");
   ierr = MatDuplicate(a->A,op,&C);CHKERRQ(ierr);
   ierr = MatCreateNormal(C,B);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
@@ -126,7 +126,7 @@ PetscErrorCode MatCopy_Normal(Mat A,Mat B,MatStructure str)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (a->left || a->right) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not implemented");
+  PetscCheckFalse(a->left || a->right,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not implemented");
   ierr = MatCopy(a->A,b->A,str);CHKERRQ(ierr);
   b->scale = a->scale;
   ierr = VecDestroy(&b->left);CHKERRQ(ierr);
@@ -378,7 +378,7 @@ PetscErrorCode MatProductNumeric_Normal_Dense(Mat C)
   a = (Mat_Normal*)A->data;
   B = C->product->B;
   contents = (Normal_Dense*)C->product->data;
-  if (!contents) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
+  PetscCheckFalse(!contents,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
   if (a->right) {
     ierr = MatCopy(B,C,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatDiagonalScale(C,a->right,NULL);CHKERRQ(ierr);
@@ -419,10 +419,10 @@ PetscErrorCode MatProductSymbolic_Normal_Dense(Mat C)
 
   PetscFunctionBegin;
   MatCheckProduct(C,4);
-  if (C->product->data) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
+  PetscCheckFalse(C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
   A = C->product->A;
   a = (Mat_Normal*)A->data;
-  if (a->left) SETERRQ(PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"Not implemented");
+  PetscCheckFalse(a->left,PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"Not implemented");
   B = C->product->B;
   ierr = MatGetLocalSize(C,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(C,&M,&N);CHKERRQ(ierr);

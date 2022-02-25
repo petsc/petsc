@@ -7,7 +7,7 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM,DM,PetscInt,Pe
 
 static PetscErrorCode private_PetscFECreateDefault_scalar_pk1(DM dm, PetscInt dim, PetscBool isSimplex, PetscInt qorder, PetscFE *fem)
 {
-  const PetscInt Nc = 1;
+  const PetscInt  Nc = 1;
   PetscQuadrature q, fq;
   DM              K;
   PetscSpace      P;
@@ -73,8 +73,8 @@ static PetscErrorCode private_PetscFECreateDefault_scalar_pk1(DM dm, PetscInt di
 
 PetscErrorCode subdivide_triangle(PetscReal v1[2],PetscReal v2[2],PetscReal v3[2],PetscInt depth,PetscInt max,PetscReal xi[],PetscInt *np)
 {
-  PetscReal v12[2],v23[2],v31[2];
-  PetscInt i;
+  PetscReal      v12[2],v23[2],v31[2];
+  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -109,18 +109,17 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_SubDivide(DM dm,DM 
 {
   PetscErrorCode ierr;
   const PetscInt dim = 2;
-  PetscInt q,npoints_q,e,nel,npe,pcnt,ps,pe,d,k,depth;
-  PetscReal *xi;
-  PetscReal **basis;
-  Vec coorlocal;
-  PetscSection coordSection;
-  PetscScalar *elcoor = NULL;
-  PetscReal *swarm_coor;
-  PetscInt *swarm_cellid;
-  PetscReal v1[2],v2[2],v3[2];
+  PetscInt       q,npoints_q,e,nel,npe,pcnt,ps,pe,d,k,depth;
+  PetscReal      *xi;
+  PetscReal      **basis;
+  Vec            coorlocal;
+  PetscSection   coordSection;
+  PetscScalar    *elcoor = NULL;
+  PetscReal      *swarm_coor;
+  PetscInt       *swarm_cellid;
+  PetscReal      v1[2],v2[2],v3[2];
 
   PetscFunctionBegin;
-
   npoints_q = 1;
   for (d=0; d<nsub; d++) { npoints_q *= 4; }
   ierr = PetscMalloc1(dim*npoints_q,&xi);CHKERRQ(ierr);
@@ -177,30 +176,27 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_SubDivide(DM dm,DM 
     ierr = PetscFree(basis[q]);CHKERRQ(ierr);
   }
   ierr = PetscFree(basis);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(DM dm,DM dmc,PetscInt nsub)
 {
-  PetscErrorCode ierr;
-  PetscInt dim,nfaces,nbasis;
-  PetscInt q,npoints_q,e,nel,pcnt,ps,pe,d,k,r;
+  PetscErrorCode  ierr;
+  PetscInt        dim,nfaces,nbasis;
+  PetscInt        q,npoints_q,e,nel,pcnt,ps,pe,d,k,r;
   PetscTabulation T;
-  Vec coorlocal;
-  PetscSection coordSection;
-  PetscScalar *elcoor = NULL;
-  PetscReal *swarm_coor;
-  PetscInt *swarm_cellid;
+  Vec             coorlocal;
+  PetscSection    coordSection;
+  PetscScalar     *elcoor = NULL;
+  PetscReal       *swarm_coor;
+  PetscInt        *swarm_cellid;
   const PetscReal *xiq;
   PetscQuadrature quadrature;
-  PetscFE fe,feRef;
-  PetscBool is_simplex;
+  PetscFE         fe,feRef;
+  PetscBool       is_simplex;
 
   PetscFunctionBegin;
-
   ierr = DMGetDimension(dmc,&dim);CHKERRQ(ierr);
-
   is_simplex = PETSC_FALSE;
   ierr = DMPlexGetHeightStratum(dmc,0,&ps,&pe);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dmc, ps, &nfaces);CHKERRQ(ierr);
@@ -256,25 +252,25 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(DM dm,DM dm
 PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM dm,DM dmc,PetscInt npoints)
 {
   PetscErrorCode ierr;
-  PetscInt dim;
-  PetscInt ii,jj,q,npoints_q,e,nel,npe,pcnt,ps,pe,d,k,nfaces;
-  PetscReal *xi,ds,ds2;
-  PetscReal **basis;
-  Vec coorlocal;
-  PetscSection coordSection;
-  PetscScalar *elcoor = NULL;
-  PetscReal *swarm_coor;
-  PetscInt *swarm_cellid;
-  PetscBool is_simplex;
+  PetscInt       dim;
+  PetscInt       ii,jj,q,npoints_q,e,nel,npe,pcnt,ps,pe,d,k,nfaces;
+  PetscReal      *xi,ds,ds2;
+  PetscReal      **basis;
+  Vec            coorlocal;
+  PetscSection   coordSection;
+  PetscScalar    *elcoor = NULL;
+  PetscReal      *swarm_coor;
+  PetscInt       *swarm_cellid;
+  PetscBool      is_simplex;
 
   PetscFunctionBegin;
   ierr = DMGetDimension(dmc,&dim);CHKERRQ(ierr);
-  if (dim != 2) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only 2D is supported");
+  PetscCheckFalse(dim != 2,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only 2D is supported");
   is_simplex = PETSC_FALSE;
   ierr = DMPlexGetHeightStratum(dmc,0,&ps,&pe);CHKERRQ(ierr);
   ierr = DMPlexGetConeSize(dmc, ps, &nfaces);CHKERRQ(ierr);
   if (nfaces == (dim+1)) { is_simplex = PETSC_TRUE; }
-  if (!is_simplex) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only the simplex is supported");
+  PetscCheckFalse(!is_simplex,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only the simplex is supported");
 
   ierr = PetscMalloc1(dim*npoints*npoints,&xi);CHKERRQ(ierr);
   pcnt = 0;
@@ -290,7 +286,6 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM dm,DM dm
 
       xi[dim*pcnt+0] += 0.35*ds2;
       xi[dim*pcnt+1] += 0.35*ds2;
-
       pcnt++;
     }
   }
@@ -341,20 +336,19 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM dm,DM dm
     ierr = PetscFree(basis[q]);CHKERRQ(ierr);
   }
   ierr = PetscFree(basis);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM dm,DM celldm,DMSwarmPICLayoutType layout,PetscInt layout_param)
 {
   PetscErrorCode ierr;
-  PetscInt dim;
+  PetscInt       dim;
 
   PetscFunctionBegin;
   ierr = DMGetDimension(celldm,&dim);CHKERRQ(ierr);
   switch (layout) {
     case DMSWARMPIC_LAYOUT_REGULAR:
-      if (dim == 3) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"No 3D support for REGULAR+PLEX");
+      PetscCheckFalse(dim == 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"No 3D support for REGULAR+PLEX");
       ierr = private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(dm,celldm,layout_param);CHKERRQ(ierr);
       break;
     case DMSWARMPIC_LAYOUT_GAUSS:
@@ -488,16 +482,16 @@ static PetscErrorCode ComputeLocalCoordinateAffine2d(PetscReal xp[],PetscScalar 
 
 PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm,PetscReal *swarm_field,DM dm,Vec v_field)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
   const PetscReal PLEX_C_EPS = 1.0e-8;
-  Vec v_field_l,denom_l,coor_l,denom;
-  PetscInt k,p,e,npoints;
-  PetscInt *mpfield_cell;
-  PetscReal *mpfield_coor;
-  PetscReal xi_p[2];
-  PetscScalar Ni[3];
-  PetscSection coordSection;
-  PetscScalar *elcoor = NULL;
+  Vec             v_field_l,denom_l,coor_l,denom;
+  PetscInt        k,p,e,npoints;
+  PetscInt        *mpfield_cell;
+  PetscReal       *mpfield_coor;
+  PetscReal       xi_p[2];
+  PetscScalar     Ni[3];
+  PetscSection    coordSection;
+  PetscScalar     *elcoor = NULL;
 
   PetscFunctionBegin;
   ierr = VecZeroEntries(v_field);CHKERRQ(ierr);
@@ -540,7 +534,7 @@ PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm,PetscReal *swarm_fi
         PetscPrintf(PETSC_COMM_SELF,"Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D) with triangle coords (%1.8e,%1.8e) : (%1.8e,%1.8e) : (%1.8e,%1.8e) in %D iterations\n",point.x,point.y,e,coords[0].x,coords[0].y,coords[1].x,coords[1].y,coords[2].x,coords[2].y,failed_counter);
     }
 
-    if (!point_located) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D)\n",point.x,point.y,e);
+    PetscCheckFalse(!point_located,PETSC_COMM_SELF,PETSC_ERR_SUP,"Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D)",point.x,point.y,e);
     else {
       ierr = _ComputeLocalCoordinateAffine2d(coor_p,elcoor,xi_p,&dJ);CHKERRQ(ierr);
       xi_p[0] = 0.5*(xi_p[0] + 1.0);
@@ -582,7 +576,7 @@ PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm,PetscReal *swarm_fi
       PetscPrintf(PETSC_COMM_SELF,"[Error] xi,eta = %+1.8e, %+1.8e\n",xi_p[0],xi_p[1]);
       PetscPrintf(PETSC_COMM_SELF,"[Error] Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D) with triangle coords (%1.8e,%1.8e) : (%1.8e,%1.8e) : (%1.8e,%1.8e)\n",coor_p[0],coor_p[1],e,elcoor[0],elcoor[1],elcoor[2],elcoor[3],elcoor[4],elcoor[5]);
     }
-    if (!point_located) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D)\n",coor_p[0],coor_p[1],e);
+    PetscCheckFalse(!point_located,PETSC_COMM_SELF,PETSC_ERR_SUP,"Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D)",coor_p[0],coor_p[1],e);
     */
 
     Ni[0] = 1.0 - xi_p[0] - xi_p[1];
@@ -598,13 +592,12 @@ PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm,PetscReal *swarm_fi
       ierr = PetscPrintf(PETSC_COMM_SELF,"[Error] xi,eta = %+1.8e, %+1.8e\n",(double)xi_p[0],(double)xi_p[1]);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_SELF,"[Error] Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D) with triangle coords (%1.8e,%1.8e) : (%1.8e,%1.8e) : (%1.8e,%1.8e)\n",(double)coor_p[0],(double)coor_p[1],e,(double)PetscRealPart(elcoor[0]),(double)PetscRealPart(elcoor[1]),(double)PetscRealPart(elcoor[2]),(double)PetscRealPart(elcoor[3]),(double)PetscRealPart(elcoor[4]),(double)PetscRealPart(elcoor[5]));CHKERRQ(ierr);
     }
-    if (!point_located) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D)\n",(double)coor_p[0],(double)coor_p[1],e);
+    PetscCheckFalse(!point_located,PETSC_COMM_SELF,PETSC_ERR_SUP,"Failed to locate point (%1.8e,%1.8e) in local mesh (cell %D)",(double)coor_p[0],(double)coor_p[1],e);
 
     for (k=0; k<3; k++) {
       Ni[k] = Ni[k] * dJ;
       elfield[k] = Ni[k] * swarm_field[p];
     }
-
     ierr = DMPlexVecRestoreClosure(dm,coordSection,coor_l,e,NULL,&elcoor);CHKERRQ(ierr);
 
     ierr = DMPlexVecSetClosure(dm, NULL,v_field_l, e, elfield, ADD_VALUES);CHKERRQ(ierr);
@@ -624,14 +617,13 @@ PetscErrorCode DMSwarmProjectField_ApproxP1_PLEX_2D(DM swarm,PetscReal *swarm_fi
   ierr = DMRestoreLocalVector(dm,&v_field_l);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&denom_l);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dm,&denom);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,PetscInt project_type,PetscInt nfields,DMSwarmDataField dfield[],Vec vecs[])
 {
   PetscErrorCode ierr;
-  PetscInt f,dim;
+  PetscInt       f,dim;
 
   PetscFunctionBegin;
   ierr = DMGetDimension(swarm,&dim);CHKERRQ(ierr);
@@ -649,24 +641,23 @@ PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm,DM celldm,PetscInt pro
     default:
       break;
   }
-
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,PetscInt npoints,PetscReal xi[])
 {
-  PetscBool is_simplex,is_tensorcell;
-  PetscErrorCode ierr;
-  PetscInt dim,nfaces,ps,pe,p,d,nbasis,pcnt,e,k,nel;
-  PetscFE fe;
+  PetscBool       is_simplex,is_tensorcell;
+  PetscErrorCode  ierr;
+  PetscInt        dim,nfaces,ps,pe,p,d,nbasis,pcnt,e,k,nel;
+  PetscFE         fe;
   PetscQuadrature quadrature;
   PetscTabulation T;
-  PetscReal *xiq;
-  Vec coorlocal;
-  PetscSection coordSection;
-  PetscScalar *elcoor = NULL;
-  PetscReal *swarm_coor;
-  PetscInt *swarm_cellid;
+  PetscReal       *xiq;
+  Vec             coorlocal;
+  PetscSection    coordSection;
+  PetscScalar     *elcoor = NULL;
+  PetscReal       *swarm_coor;
+  PetscInt        *swarm_cellid;
 
   PetscFunctionBegin;
   ierr = DMGetDimension(dmc,&dim);CHKERRQ(ierr);
@@ -694,18 +685,18 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,Pets
     for (p=0; p<npoints; p++) {
       PetscReal sum;
       for (d=0; d<dim; d++) {
-        if (xi[dim*p+d] < -1.0) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Points do not fail inside the simplex domain");
+        PetscCheckFalse(xi[dim*p+d] < -1.0,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Points do not fail inside the simplex domain");
       }
       sum = 0.0;
       for (d=0; d<dim; d++) {
         sum += xi[dim*p+d];
       }
-      if (sum > 0.0) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Points do not fail inside the simplex domain");
+      PetscCheckFalse(sum > 0.0,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Points do not fail inside the simplex domain");
     }
   } else if (is_tensorcell) {
     for (p=0; p<npoints; p++) {
       for (d=0; d<dim; d++) {
-        if (PetscAbsReal(xi[dim*p+d]) > 1.0) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Points do not fail inside the tensor domain [-1,1]^d");
+        PetscCheckFalse(PetscAbsReal(xi[dim*p+d]) > 1.0,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Points do not fail inside the tensor domain [-1,1]^d");
       }
     }
   } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only support for d-simplex and d-tensorcell");
@@ -752,6 +743,5 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm,DM dmc,Pets
 
   ierr = PetscQuadratureDestroy(&quadrature);CHKERRQ(ierr);
   ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }

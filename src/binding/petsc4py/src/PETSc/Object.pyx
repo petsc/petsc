@@ -79,6 +79,11 @@ cdef class Object:
         CHKERR( PetscObjectGetOptionsPrefix(self.obj[0], &cval) )
         return bytes2str(cval)
 
+    def appendOptionsPrefix(self, prefix):
+        cdef const char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( PetscObjectAppendOptionsPrefix(self.obj[0], cval) )
+
     def setFromOptions(self):
         CHKERR( PetscObjectSetFromOptions(self.obj[0]) )
 
@@ -173,8 +178,18 @@ cdef class Object:
     def getDict(self):
         return self.get_dict()
 
+    # --- state manipulation ---
     def stateIncrease(self):
         PetscINCSTATE(self.obj)
+
+    def stateGet(self):
+        cdef PetscObjectState state = 0
+        CHKERR( PetscObjectStateGet(self.obj[0], &state) )
+        return toInt(state)
+
+    def stateSet(self, state):
+        cdef PetscObjectState cstate = asInt(state)
+        CHKERR( PetscObjectStateSet(self.obj[0], cstate) )
 
     # --- tab level ---
 

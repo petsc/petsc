@@ -13,7 +13,6 @@ configure_options = [
   '--download-mpich=1',
   '--download-fblaslapack=1',
   '--download-hypre=1',
-  '--download-cmake=1',
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-ptscotch=1',
@@ -38,7 +37,6 @@ configure_options = [
   '--with-petsc4py=1',
   '--download-mpi4py=1',
   '--download-saws',
-  '--package-prefix-hash='+petsc_hash_pkgs,
   '--download-adolc',
   '--download-colpack',
   ]

@@ -12,8 +12,7 @@ class Configure(config.package.Package):
     self.download               = ['git://https://github.com/mfem/mfem.git']
     self.linkedbypetsc          = 0
     self.downloadonWindows      = 1
-    self.cxx                    = 1
-    self.minCxxVersion          = 'c++11'
+    self.buildLanguages         = ['Cxx']
     self.skippackagewithoptions = 1
     self.builtafterpetsc        = 1
     self.noMPIUni               = 1
@@ -173,16 +172,10 @@ class Configure(config.package.Package):
         self.popLanguage()
         g.write('MFEM_USE_CUDA = YES\n')
         g.write('CUDA_CXX = '+petscNvcc+'\n')
-        if hasattr(self.cuda,'gencodearch') and self.cuda.gencodearch:
-          g.write('CUDA_ARCH = sm_'+self.cuda.gencodearch+'\n')
+        if hasattr(self.cuda,'cudaArch') and self.cuda.cudaArch:
+          g.write('CUDA_ARCH = sm_'+self.cuda.cudaArch+'\n')
         g.write('CXXFLAGS := '+cudaFlags+' $(addprefix -Xcompiler ,$(CXXFLAGS))\n')
       g.close()
-
-    #  if installing as Superuser than want to return to regular user for clean and build
-    if self.installSudo:
-       newuser = self.installSudo+' -u $${SUDO_USER} '
-    else:
-       newuser = ''
 
     self.addDefine('HAVE_MFEM',1)
     self.addMakeMacro('MFEM','yes')
@@ -201,7 +194,7 @@ class Configure(config.package.Package):
     self.addMakeRule('mfeminstall','', \
                        ['@echo "*** Installing mfem ***"',\
                           '@(cd '+buildDir+' && \\\n\
-           '+newuser+'${OMAKE} install) >> ${PETSC_ARCH}/lib/petsc/conf/mfem.log 2>&1 || \\\n\
+           '+'${OMAKE} install) >> ${PETSC_ARCH}/lib/petsc/conf/mfem.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building mfem. Check ${PETSC_ARCH}/lib/petsc/conf/mfem.log" && \\\n\
              echo "********************************************************************" && \\\n\

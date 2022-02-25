@@ -12,7 +12,7 @@ PetscErrorCode PetscNvshmemInitializeCheck(void)
   if (!PetscNvshmemInitialized) { /* Note NVSHMEM does not provide a routine to check whether it is initialized */
     nvshmemx_init_attr_t attr;
     attr.mpi_comm = &PETSC_COMM_WORLD;
-    ierr = PetscCUDAInitializeCheck();CHKERRQ(ierr);
+    ierr = PetscDeviceInitialize(PETSC_DEVICE_CUDA);CHKERRQ(ierr);
     ierr = nvshmemx_init_attr(NVSHMEMX_INIT_WITH_MPI_COMM,&attr);CHKERRQ(ierr);
     PetscNvshmemInitialized = PETSC_TRUE;
     PetscBeganNvshmem       = PETSC_TRUE;
@@ -27,7 +27,7 @@ PetscErrorCode PetscNvshmemMalloc(size_t size, void** ptr)
   PetscFunctionBegin;
   ierr = PetscNvshmemInitializeCheck();CHKERRQ(ierr);
   *ptr = nvshmem_malloc(size);
-  if (!*ptr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"nvshmem_malloc() failed to allocate %zu bytes",size);
+  PetscCheckFalse(!*ptr,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"nvshmem_malloc() failed to allocate %zu bytes",size);
   PetscFunctionReturn(0);
 }
 
@@ -38,7 +38,7 @@ PetscErrorCode PetscNvshmemCalloc(size_t size, void**ptr)
   PetscFunctionBegin;
   ierr = PetscNvshmemInitializeCheck();CHKERRQ(ierr);
   *ptr = nvshmem_calloc(size,1);
-  if (!*ptr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"nvshmem_calloc() failed to allocate %zu bytes",size);
+  PetscCheckFalse(!*ptr,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"nvshmem_calloc() failed to allocate %zu bytes",size);
   PetscFunctionReturn(0);
 }
 
@@ -201,7 +201,7 @@ PetscErrorCode PetscSFLinkNvshmemCheck(PetscSF sf,PetscMemType rootmtype,const v
     PetscInt allCuda = oneCuda; /* Assume the same for all ranks. But if not, in opt mode, return value <use_nvshmem> won't be collective! */
    #if defined(PETSC_USE_DEBUG)  /* Check in debug mode. Note MPI_Allreduce is expensive, so only in debug mode */
     ierr = MPI_Allreduce(&oneCuda,&allCuda,1,MPIU_INT,MPI_LAND,comm);CHKERRMPI(ierr);
-    if (allCuda != oneCuda) SETERRQ(comm,PETSC_ERR_SUP,"root/leaf mtypes are inconsistent among ranks, which may lead to SF nvshmem failure in opt mode. Add -use_nvshmem 0 to disable it.");
+    PetscCheckFalse(allCuda != oneCuda,comm,PETSC_ERR_SUP,"root/leaf mtypes are inconsistent among ranks, which may lead to SF nvshmem failure in opt mode. Add -use_nvshmem 0 to disable it.");
    #endif
     if (allCuda) {
       ierr = PetscNvshmemInitializeCheck();CHKERRQ(ierr);

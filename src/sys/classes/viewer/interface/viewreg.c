@@ -118,7 +118,7 @@ static PetscInt  inoviewers = 0;
 PetscErrorCode  PetscOptionsPushGetViewerOff(PetscBool flg)
 {
   PetscFunctionBegin;
-  if (inoviewers > PETSCVIEWERGETVIEWEROFFPUSHESMAX - 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptionsPushGetViewerOff(), perhaps you forgot PetscOptionsPopGetViewerOff()?");
+  PetscCheckFalse(inoviewers > PETSCVIEWERGETVIEWEROFFPUSHESMAX - 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptionsPushGetViewerOff(), perhaps you forgot PetscOptionsPopGetViewerOff()?");
 
   noviewers[inoviewers++] = noviewer;
   noviewer = flg;
@@ -141,7 +141,7 @@ PetscErrorCode  PetscOptionsPushGetViewerOff(PetscBool flg)
 PetscErrorCode  PetscOptionsPopGetViewerOff(void)
 {
   PetscFunctionBegin;
-  if (!inoviewers) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptionsPopGetViewerOff(), perhaps you forgot PetscOptionsPushGetViewerOff()?");
+  PetscCheckFalse(!inoviewers,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptionsPopGetViewerOff(), perhaps you forgot PetscOptionsPushGetViewerOff()?");
   noviewer = noviewers[--inoviewers];
   PetscFunctionReturn(0);
 }
@@ -177,10 +177,11 @@ PetscErrorCode  PetscOptionsGetViewerOff(PetscBool *flg)
 
    Input Parameters:
 +  comm - the communicator to own the viewer
+.  options - options database, use NULL for default global database
 .  pre - the string to prepend to the name or NULL
 -  name - the option one is seeking
 
-   Output Parameter:
+   Output Parameters:
 +  viewer - the viewer, pass NULL if not needed
 .  format - the PetscViewerFormat requested by the user, pass NULL if not needed
 -  set - PETSC_TRUE if found, else PETSC_FALSE
@@ -273,7 +274,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
       }
       if (loc3_fmode) *loc3_fmode++ = 0;
       ierr = PetscStrendswithwhich(*loc0_vtype ? loc0_vtype : "ascii",viewers,&cnt);CHKERRQ(ierr);
-      if (cnt > (PetscInt) sizeof(viewers)-1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown viewer type: %s",loc0_vtype);
+      PetscCheckFalse(cnt > (PetscInt) sizeof(viewers)-1,comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown viewer type: %s",loc0_vtype);
       if (viewer) {
         if (!loc1_fname) {
           switch (cnt) {
@@ -314,7 +315,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
             if (!(*viewer = PETSC_VIEWER_EXODUSII_(comm))) CHKERRQ(PETSC_ERR_PLIB);
             break;
 #endif
-          default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported viewer %s",loc0_vtype);
+          default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported viewer %s",loc0_vtype);
           }
           ierr = PetscObjectReference((PetscObject)*viewer);CHKERRQ(ierr);
         } else {
@@ -328,7 +329,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
             fmode = FILE_MODE_WRITE;
             if (loc3_fmode && *loc3_fmode) { /* Has non-empty file mode ("write" or "append") */
               ierr = PetscEnumFind(PetscFileModes,loc3_fmode,(PetscEnum*)&fmode,&flag);CHKERRQ(ierr);
-              if (!flag) SETERRQ1(comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown file mode: %s",loc3_fmode);
+              PetscCheckFalse(!flag,comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown file mode: %s",loc3_fmode);
             }
             if (loc2_fmt) {
               PetscBool tk,im;
@@ -356,7 +357,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
 
         ierr = PetscEnumFind(PetscViewerFormats,loc2_fmt,(PetscEnum*)&tfmt,&flag);CHKERRQ(ierr);
         if (format) *format = tfmt;
-        if (!flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer format %s",loc2_fmt);
+        PetscCheckFalse(!flag,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer format %s",loc2_fmt);
       } else if (viewer && (cnt == 6) && format) { /* Get format from VTK viewer */
         ierr = PetscViewerGetFormat(*viewer,format);CHKERRQ(ierr);
       }
@@ -401,7 +402,7 @@ PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
 
    Collective on PetscViewer
 
-   Input Parameter:
+   Input Parameters:
 +  viewer      - the PetscViewer context
 -  type        - for example, PETSCVIEWERASCII
 
@@ -438,7 +439,7 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
   ierr = PetscMemzero(viewer->ops,sizeof(struct _PetscViewerOps));CHKERRQ(ierr);
 
   ierr =  PetscFunctionListFind(PetscViewerList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscViewer type given: %s",type);
+  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscViewer type given: %s",type);
 
   ierr = PetscObjectChangeTypeName((PetscObject)viewer,type);CHKERRQ(ierr);
   ierr = (*r)(viewer);CHKERRQ(ierr);

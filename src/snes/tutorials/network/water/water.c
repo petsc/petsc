@@ -59,7 +59,7 @@ int main(int argc,char ** argv)
 
   /* Set numbers of nodes and edges */
   ierr = DMNetworkSetNumSubNetworks(networkdm,PETSC_DECIDE,1);CHKERRQ(ierr);
-  ierr = DMNetworkAddSubnetwork(networkdm,"",waterdata->nvertex,waterdata->nedge,edgelist,NULL);CHKERRQ(ierr);
+  ierr = DMNetworkAddSubnetwork(networkdm,"",waterdata->nedge,edgelist,NULL);CHKERRQ(ierr);
   if (!crank) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"water nvertices %D, nedges %D\n",waterdata->nvertex,waterdata->nedge);CHKERRQ(ierr);
   }
@@ -112,7 +112,7 @@ int main(int argc,char ** argv)
   ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
 
-  if (reason < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"No solution found for the water network");
+  PetscCheckFalse(reason < 0,PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"No solution found for the water network");
   /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   ierr = VecDestroy(&X);CHKERRQ(ierr);

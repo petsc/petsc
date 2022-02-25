@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
   /* Load the data from a file */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
 
   /* Build the matrix */
@@ -96,7 +96,7 @@ int main(int argc,char **argv)
          args: -mat_type seqaijcusparse -pc_factor_mat_solver_type cusparse -mat_cusparse_storage_format csr -vec_type cuda -pc_factor_mat_ordering_type nd
       test: # Test MatSolveTranspose
          suffix: 3_kokkos
-         requires: kokkos_kernels
+         requires: !sycl kokkos_kernels
          args: -mat_type seqaijkokkos -pc_factor_mat_solver_type kokkos -vec_type kokkos
          output_file: output/ex43_3.out
 
@@ -144,7 +144,7 @@ int main(int argc,char **argv)
    test:
       suffix: 10
       nsize: 2
-      requires: kokkos_kernels datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
+      requires: !sycl kokkos_kernels datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/shallow_water1 -mat_type aijkokkos -vec_type kokkos
 
 TEST*/

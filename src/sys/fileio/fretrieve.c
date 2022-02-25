@@ -33,7 +33,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt key
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInfo1(NULL,"Deleting tmp/shared data in an MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
+  ierr = PetscInfo(NULL,"Deleting tmp/shared data in an MPI_Comm %ld\n",(long)comm);CHKERRMPI(ierr);
   ierr = PetscFree(count_val);CHKERRMPI(ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
@@ -47,7 +47,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm,PetscMPIInt key
 +  comm - MPI_Communicator that may share /tmp
 -  len - length of string to hold name
 
-   Output Parameters:
+   Output Parameter:
 .  dir - directory name
 
    Options Database Keys:
@@ -173,9 +173,9 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
     for (i=0; i<size-1; i++) {
       if (rank == i) {
         fd = fopen(filename,"w");
-        if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
+        PetscCheckFalse(!fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
         err = fclose(fd);
-        if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
+        PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
       }
       ierr = MPI_Barrier(comm);CHKERRMPI(ierr);
       if (rank >= i) {
@@ -184,7 +184,7 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
         else cnt = 0;
         if (fd) {
           err = fclose(fd);
-          if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
+          PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
         }
       } else cnt = 0;
 
@@ -194,10 +194,10 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
       if (sum == size) {
         *shared = PETSC_TRUE;
         break;
-      } else if (sum != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Subset of processes share /tmp ");
+      } else PetscCheckFalse(sum != 1,PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Subset of processes share /tmp ");
     }
     *tagvalp = (int)*shared;
-    ierr = PetscInfo2(NULL,"processors %s %s\n",(*shared) ? "share":"do NOT share",(iflg ? tmpname:"/tmp"));CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"processors %s %s\n",(*shared) ? "share":"do NOT share",(iflg ? tmpname:"/tmp"));CHKERRQ(ierr);
   } else *shared = (PetscBool) *tagvalp;
   PetscFunctionReturn(0);
 }
@@ -208,10 +208,10 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
 
    Collective
 
-   Input Parameters:
+   Input Parameter:
 .  comm - MPI_Communicator that may share working directory
 
-   Output Parameters:
+   Output Parameter:
 .  shared - PETSC_TRUE or PETSC_FALSE
 
    Options Database Keys:
@@ -288,9 +288,9 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
     for (i=0; i<size-1; i++) {
       if (rank == i) {
         fd = fopen(filename,"w");
-        if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
+        PetscCheckFalse(!fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
         err = fclose(fd);
-        if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
+        PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
       }
       ierr = MPI_Barrier(comm);CHKERRMPI(ierr);
       if (rank >= i) {
@@ -299,7 +299,7 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
         else cnt = 0;
         if (fd) {
           err = fclose(fd);
-          if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
+          PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
         }
       } else cnt = 0;
 
@@ -309,11 +309,11 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
       if (sum == size) {
         *shared = PETSC_TRUE;
         break;
-      } else if (sum != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Subset of processes share working directory");
+      } else PetscCheckFalse(sum != 1,PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Subset of processes share working directory");
     }
     *tagvalp = (int)*shared;
   } else *shared = (PetscBool) *tagvalp;
-  ierr = PetscInfo1(NULL,"processors %s working directory\n",(*shared) ? "shared" : "do NOT share");CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"processors %s working directory\n",(*shared) ? "shared" : "do NOT share");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -323,12 +323,12 @@ PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
 
     Collective
 
-    Input Parameter:
+    Input Parameters:
 +   comm     - processors accessing the file
 .   url      - name of file, including entire URL (with or without .gz)
 -   llen     - length of localname
 
-    Output Parameter:
+    Output Parameters:
 +   localname - name of local copy of file - valid on only process zero
 -   found - if found or retrieved the file - valid on all processes
 
@@ -348,7 +348,7 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     *found = PETSC_FALSE;
 
     ierr = PetscStrstr(url,".gz",&par);CHKERRQ(ierr);
@@ -367,9 +367,9 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[
       ierr = PetscStrncpy(localname,url,llen);CHKERRQ(ierr);
       ierr = PetscTestFile(url,'r',found);CHKERRQ(ierr);
       if (*found) {
-        ierr = PetscInfo1(NULL,"Found file %s\n",url);CHKERRQ(ierr);
+        ierr = PetscInfo(NULL,"Found file %s\n",url);CHKERRQ(ierr);
       } else {
-        ierr = PetscInfo1(NULL,"Did not find file %s\n",url);CHKERRQ(ierr);
+        ierr = PetscInfo(NULL,"Did not find file %s\n",url);CHKERRQ(ierr);
       }
       goto done;
     }
@@ -413,13 +413,13 @@ PetscErrorCode  PetscFileRetrieve(MPI_Comm comm,const char url[],char localname[
 
         /* check if the file didn't exist so it downloaded an HTML message instead */
         fd = fopen(localname,"r");
-        if (!fd) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscTestFile() indicates %s exists but fopen() cannot open it",localname);
+        PetscCheckFalse(!fd,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PetscTestFile() indicates %s exists but fopen() cannot open it",localname);
         str = fgets(buf,sizeof(buf)-1,fd);
         while (str) {
           ierr = PetscStrstr(buf,"<!DOCTYPE html>",&substring);CHKERRQ(ierr);
-          if (substring) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to download %s it does not appear to exist at this URL, dummy HTML file was downloaded",url);
+          PetscCheckFalse(substring,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to download %s it does not appear to exist at this URL, dummy HTML file was downloaded",url);
           ierr = PetscStrstr(buf,"Not Found",&substring);CHKERRQ(ierr);
-          if (substring) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to download %s it does not appear to exist at this URL, dummy HTML file was downloaded",url);
+          PetscCheckFalse(substring,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unable to download %s it does not appear to exist at this URL, dummy HTML file was downloaded",url);
           str = fgets(buf,sizeof(buf)-1,fd);
         }
         fclose(fd);

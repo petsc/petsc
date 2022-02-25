@@ -11,10 +11,11 @@ and eventually adaptivity.\n\n\n";
 
 typedef struct {
   /* Domain and mesh definition */
-  PetscBool spectral; /* Look at the spectrum along planes in the solution */
-  PetscBool shear;    /* Shear the domain */
-  PetscBool adjoint;  /* Solve the adjoint problem */
-  PetscBool homogeneous;
+  PetscBool spectral;    /* Look at the spectrum along planes in the solution */
+  PetscBool shear;       /* Shear the domain */
+  PetscBool adjoint;     /* Solve the adjoint problem */
+  PetscBool homogeneous; /* Use homogeneous boudnary conditions */
+  PetscBool viewError;   /* Output the solution error */
 } AppCtx;
 
 static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -115,17 +116,19 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->shear    = PETSC_FALSE;
-  options->spectral = PETSC_FALSE;
-  options->adjoint  = PETSC_FALSE;
+  options->shear       = PETSC_FALSE;
+  options->spectral    = PETSC_FALSE;
+  options->adjoint     = PETSC_FALSE;
   options->homogeneous = PETSC_FALSE;
+  options->viewError   = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Poisson Problem Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-shear", "Shear the domain", "ex13.c", options->shear, &options->shear, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-spectral", "Look at the spectrum along planes of the solution", "ex13.c", options->spectral, &options->spectral, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-adjoint", "Solve the adjoint problem", "ex13.c", options->adjoint, &options->adjoint, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-homogeneous", "Use homogeneous boundary conditions", "ex13.c", options->homogeneous, &options->homogeneous, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-error_view", "Output the solution error", "ex13.c", options->viewError, &options->viewError, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
 
@@ -327,7 +330,7 @@ static PetscErrorCode ComputeSpectral(DM dm, Vec u, PetscInt numPlanes, const Pe
       gray   = ray;
       gsvals = svals;
     }
-    if (!rank) {
+    if (rank == 0) {
       /* Sort point along ray */
       ierr = PetscMalloc2(N, &perm, N, &nperm);CHKERRQ(ierr);
       for (i = 0; i < N; ++i) {perm[i] = i;}
@@ -393,6 +396,19 @@ int main(int argc, char **argv)
   ierr = SNESSolve(snes, NULL, u);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes, &u);CHKERRQ(ierr);
   ierr = VecViewFromOptions(u, NULL, "-potential_view");CHKERRQ(ierr);
+  if (user.viewError) {
+    PetscErrorCode (*sol)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
+    void            *ctx;
+    PetscDS          ds;
+    PetscReal        error;
+    PetscInt         N;
+
+    ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+    ierr = PetscDSGetExactSolution(ds, 0, &sol, &ctx);CHKERRQ(ierr);
+    ierr = VecGetSize(u, &N);CHKERRQ(ierr);
+    ierr = DMComputeL2Diff(dm, 0.0, &sol, &ctx, u, &error);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "N: %D L2 error: %g\n", N, (double)error);CHKERRQ(ierr);
+  }
   if (user.spectral) {
     PetscInt  planeDir[2]   = {0,  1};
     PetscReal planeCoord[2] = {0., 1.};
@@ -582,7 +598,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p1_fas_full
     requires: triangle
-    args: -potential_petscspace_degree 1 -dm_refine_hierarchy 5 -dm_distribute \
+    args: -potential_petscspace_degree 1 -dm_refine_hierarchy 5 \
       -snes_max_it 1 -snes_type fas -snes_fas_levels 5 -snes_fas_type full -snes_fas_full_total \
         -fas_coarse_snes_monitor -fas_coarse_snes_max_it 1 -fas_coarse_ksp_atol 1.e-13 \
         -fas_levels_snes_monitor -fas_levels_snes_max_it 1 -fas_levels_snes_type newtonls \
@@ -591,7 +607,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p1_fas_full_homogeneous
     requires: triangle
-    args: -homogeneous -potential_petscspace_degree 1 -dm_refine_hierarchy 5 -dm_distribute \
+    args: -homogeneous -potential_petscspace_degree 1 -dm_refine_hierarchy 5 \
       -snes_max_it 1 -snes_type fas -snes_fas_levels 5 -snes_fas_type full \
         -fas_coarse_snes_monitor -fas_coarse_snes_max_it 1 -fas_coarse_ksp_atol 1.e-13 \
         -fas_levels_snes_monitor -fas_levels_snes_max_it 1 -fas_levels_snes_type newtonls \
@@ -654,16 +670,16 @@ int main(int argc, char **argv)
     suffix: 2d_p1_spectral_1
     requires: triangle fftw !complex
     nsize: 2
-    args: -dm_plex_box_faces 4,4 -dm_distribute -potential_petscspace_degree 1 -spectral -fft_view
+    args: -dm_plex_box_faces 4,4 -potential_petscspace_degree 1 -spectral -fft_view
   test:
     suffix: 2d_p1_adj_0
     requires: triangle
     args: -potential_petscspace_degree 1 -dm_refine 1 -adjoint -adjoint_petscspace_degree 1 -error_petscspace_degree 0
   test:
     nsize: 2
-    requires: kokkos_kernels
+    requires: !sycl kokkos_kernels
     suffix: kokkos
-    args: -dm_plex_dim 3 -dm_plex_box_faces 2,3,6 -dm_distribute -petscpartitioner_type simple -dm_plex_simplex 0 -potential_petscspace_degree 1 \
+    args: -dm_plex_dim 3 -dm_plex_box_faces 2,3,6 -petscpartitioner_type simple -dm_plex_simplex 0 -potential_petscspace_degree 1 \
          -dm_refine 0 -ksp_type cg -ksp_rtol 1.e-11 -ksp_norm_type unpreconditioned -pc_type gamg -pc_gamg_coarse_eq_limit 1000 -pc_gamg_threshold 0.0 \
          -pc_gamg_threshold_scale .5 -mg_levels_ksp_type chebyshev -mg_levels_ksp_max_it 2 -mg_levels_esteig_ksp_type cg -mg_levels_esteig_ksp_max_it 10 \
          -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.05 -mg_levels_pc_type jacobi -ksp_monitor -snes_monitor -dm_view -dm_mat_type aijkokkos -dm_vec_type kokkos

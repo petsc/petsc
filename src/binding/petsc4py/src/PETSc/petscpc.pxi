@@ -50,7 +50,7 @@ cdef extern from * nogil:
     PetscPCType PCHMG
     PetscPCType PCDEFLATION
     PetscPCType PCHPDDM
-    PetscPCType PCHARA
+    PetscPCType PCH2OPUS
 
     ctypedef enum PetscPCSide "PCSide":
         PC_SIDE_DEFAULT
@@ -114,6 +114,11 @@ cdef extern from * nogil:
         PC_PATCH_USER
         PC_PATCH_PYTHON
 
+    ctypedef enum PetscPCHPDDMCoarseCorrectionType "PCHPDDMCoarseCorrectionType":
+        PC_HPDDM_COARSE_CORRECTION_DEFLATED
+        PC_HPDDM_COARSE_CORRECTION_ADDITIVE
+        PC_HPDDM_COARSE_CORRECTION_BALANCED
+
     int PCCreate(MPI_Comm,PetscPC*)
     int PCDestroy(PetscPC*)
     int PCView(PetscPC,PetscViewer)
@@ -131,6 +136,7 @@ cdef extern from * nogil:
     int PCSetUpOnBlocks(PetscPC)
 
     int PCApply(PetscPC,PetscVec,PetscVec)
+    int PCMatApply(PetscPC,PetscMat,PetscMat)
     int PCApplyTranspose(PetscPC,PetscVec,PetscVec)
     int PCApplySymmetricLeft(PetscPC,PetscVec,PetscVec)
     int PCApplySymmetricRight(PetscPC,PetscVec,PetscVec)
@@ -149,6 +155,7 @@ cdef extern from * nogil:
     int PCGetOperatorsSet(PetscPC,PetscBool*,PetscBool*)
     int PCSetCoordinates(PetscPC,PetscInt,PetscInt,PetscReal[])
     int PCSetUseAmat(PetscPC,PetscBool)
+    int PCGetUseAmat(PetscPC,PetscBool*)
 
     int PCComputeExplicitOperator(PetscPC,PetscMat*)
 
@@ -290,8 +297,12 @@ cdef extern from * nogil:
                                              PetscReal,
                                              PetscIS,
                                              void*) except PETSC_ERR_PYTHON
-    int PCHPDDMSetAuxiliaryMat(PetscPC, PetscIS, PetscMat, PetscPCHPDDMAuxiliaryMat, void*)
-    int PCHPDDMHasNeumannMat(PetscPC, PetscBool)
+    int PCHPDDMSetAuxiliaryMat(PetscPC,PetscIS,PetscMat,PetscPCHPDDMAuxiliaryMat,void*)
+    int PCHPDDMSetRHSMat(PetscPC,PetscMat)
+    int PCHPDDMHasNeumannMat(PetscPC,PetscBool)
+    int PCHPDDMSetCoarseCorrectionType(PetscPC,PetscPCHPDDMCoarseCorrectionType)
+    int PCHPDDMGetCoarseCorrectionType(PetscPC,PetscPCHPDDMCoarseCorrectionType*)
+    int PCHPDDMGetSTShareSubKSP(PetscPC,PetscBool*)
 
 # --------------------------------------------------------------------
 

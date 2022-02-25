@@ -36,10 +36,10 @@ PetscErrorCode  MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(M
 
    Not Collective
 
-   Input Arguments:
+   Input Parameter:
 .  sp - null space object
 
-   Output Arguments:
+   Output Parameters:
 +  has_cnst - PETSC_TRUE if the null space contains the constant vector, otherwise PETSC_FALSE
 .  n - number of vectors (excluding constant vector) in null space
 -  vecs - orthonormal vectors that span the null space (excluding the constant vector)
@@ -67,10 +67,10 @@ PetscErrorCode MatNullSpaceGetVecs(MatNullSpace sp,PetscBool *has_const,PetscInt
 
    Collective on Vec
 
-   Input Argument:
+   Input Parameter:
 .  coords - block of coordinates of each node, must have block size set
 
-   Output Argument:
+   Output Parameter:
 .  sp - the null space
 
    Level: advanced
@@ -196,7 +196,7 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sp,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Contains %D vector%s%s\n",sp->n,sp->n==1 ? "" : "s",sp->has_cnst ? " and the constant" : "");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Contains %" PetscInt_FMT " vector%s%s\n",sp->n,sp->n==1 ? "" : "s",sp->has_cnst ? " and the constant" : "");CHKERRQ(ierr);
     if (sp->remove) {ierr = PetscViewerASCIIPrintf(viewer,"Has user-provided removal function\n");CHKERRQ(ierr);}
     if (!(format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL)) {
       for (i=0; i<sp->n; i++) {
@@ -246,7 +246,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",n);
+  PetscCheckFalse(n < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %" PetscInt_FMT ") cannot be negative",n);
   if (n) PetscValidPointer(vecs,4);
   for (i=0; i<n; i++) PetscValidHeaderSpecific(vecs[i],VEC_CLASSID,4);
   PetscValidPointer(SP,5);
@@ -261,13 +261,13 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
     for (i=0; i<n; i++) {
       PetscReal norm;
       ierr = VecNorm(vecs[i],NORM_2,&norm);CHKERRQ(ierr);
-      if (PetscAbsReal(norm - 1) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must have 2-norm of 1.0, it is %g",i,(double)norm);
+      PetscCheckFalse(PetscAbsReal(norm - 1) > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %" PetscInt_FMT " must have 2-norm of 1.0, it is %g",i,(double)norm);
     }
     if (has_cnst) {
       for (i=0; i<n; i++) {
         PetscScalar sum;
         ierr = VecSum(vecs[i],&sum);CHKERRQ(ierr);
-        if (PetscAbsScalar(sum) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must be orthogonal to constant vector, inner product is %g",i,(double)PetscAbsScalar(sum));
+        PetscCheckFalse(PetscAbsScalar(sum) > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %" PetscInt_FMT " must be orthogonal to constant vector, inner product is %g",i,(double)PetscAbsScalar(sum));
       }
     }
     ierr = PetscMalloc1(n-1,&dots);CHKERRQ(ierr);
@@ -275,10 +275,10 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool has_cnst,PetscInt n,c
       PetscInt j;
       ierr = VecMDot(vecs[i],n-i-1,vecs+i+1,dots);CHKERRQ(ierr);
       for (j=0;j<n-i-1;j++) {
-        if (PetscAbsScalar(dots[j]) > PETSC_SQRT_MACHINE_EPSILON) SETERRQ3(PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %D must be orthogonal to vector %D, inner product is %g",i,i+j+1,(double)PetscAbsScalar(dots[j]));
+        PetscCheckFalse(PetscAbsScalar(dots[j]) > PETSC_SQRT_MACHINE_EPSILON,PetscObjectComm((PetscObject)vecs[i]),PETSC_ERR_ARG_WRONG,"Vector %" PetscInt_FMT " must be orthogonal to vector %" PetscInt_FMT ", inner product is %g",i,i+j+1,(double)PetscAbsScalar(dots[j]));
       }
     }
-    PetscFree(dots);CHKERRQ(ierr);
+    ierr = PetscFree(dots);CHKERRQ(ierr);
   }
 
   *SP = NULL;
@@ -429,7 +429,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
   if (sp->has_cnst) {
     ierr = VecDuplicate(l,&r);CHKERRQ(ierr);
     ierr = VecGetSize(l,&N);CHKERRQ(ierr);
-    sum  = 1.0/N;
+    sum  = 1.0/PetscSqrtReal(N);
     ierr = VecSet(l,sum);CHKERRQ(ierr);
     ierr = MatMult(mat,l,r);CHKERRQ(ierr);
     ierr = VecNorm(r,NORM_2,&nrm);CHKERRQ(ierr);
@@ -453,18 +453,18 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
     if (nrm >= tol) consistent = PETSC_FALSE;
     if (flg1) {
       if (consistent) {
-        ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"Null vector %D is likely null vector",j);CHKERRQ(ierr);
+        ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"Null vector %" PetscInt_FMT " is likely null vector",j);CHKERRQ(ierr);
       } else {
-        ierr       = PetscPrintf(PetscObjectComm((PetscObject)sp),"Null vector %D unlikely null vector ",j);CHKERRQ(ierr);
+        ierr       = PetscPrintf(PetscObjectComm((PetscObject)sp),"Null vector %" PetscInt_FMT " unlikely null vector ",j);CHKERRQ(ierr);
         consistent = PETSC_FALSE;
       }
-      ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * v[%D] || = %g\n",j,(double)nrm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PetscObjectComm((PetscObject)sp),"|| A * v[%" PetscInt_FMT "] || = %g\n",j,(double)nrm);CHKERRQ(ierr);
     }
     if (!consistent && flg1) {ierr = VecView(l,viewer);CHKERRQ(ierr);}
     if (!consistent && flg2) {ierr = VecView(l,viewer);CHKERRQ(ierr);}
   }
 
-  if (sp->remove) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot test a null space provided as a function with MatNullSpaceSetFunction()");
+  PetscCheckFalse(sp->remove,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot test a null space provided as a function with MatNullSpaceSetFunction()");
   ierr = VecDestroy(&l);CHKERRQ(ierr);
   if (isNull) *isNull = consistent;
   PetscFunctionReturn(0);

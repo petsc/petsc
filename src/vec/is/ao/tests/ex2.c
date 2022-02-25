@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   ierr = AOPetscToApplication(ao,n,ispetsc);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (ispetsc[i] != isapp[i]) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] Problem with mapping %D to %D\n",rank,i,ispetsc[i]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] Problem with mapping %" PetscInt_FMT " to %" PetscInt_FMT "\n",rank,i,ispetsc[i]);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree2(ispetsc,isapp);CHKERRQ(ierr);

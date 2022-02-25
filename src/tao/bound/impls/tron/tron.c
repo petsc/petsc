@@ -35,7 +35,6 @@ static PetscErrorCode TaoSetFromOptions_TRON(PetscOptionItems *PetscOptionsObjec
   ierr = PetscOptionsHead(PetscOptionsObject,"Newton Trust Region Method for bound constrained optimization");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-tao_tron_maxgpits","maximum number of gradient projections per TRON iterate","TaoSetMaxGPIts",tron->maxgpits,&tron->maxgpits,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -103,7 +102,7 @@ static PetscErrorCode TaoSolve_TRON(Tao tao)
   /* Compute the objective function and gradient */
   ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&tron->f,tao->gradient);CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(tron->f) || PetscIsInfOrNanReal(tron->gnorm)) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+  PetscCheckFalse(PetscIsInfOrNanReal(tron->f) || PetscIsInfOrNanReal(tron->gnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
 
   /* Project the gradient and calculate the norm */
   ierr = VecBoundGradientProjection(tao->gradient,tao->solution,tao->XL,tao->XU,tao->gradient);CHKERRQ(ierr);
@@ -301,7 +300,7 @@ static PetscErrorCode TaoComputeDual_TRON(Tao tao, Vec DXL, Vec DXU)
   PetscValidHeaderSpecific(tao,TAO_CLASSID,1);
   PetscValidHeaderSpecific(DXL,VEC_CLASSID,2);
   PetscValidHeaderSpecific(DXU,VEC_CLASSID,3);
-  if (!tron->Work || !tao->gradient) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Dual variables don't exist yet or no longer exist.\n");
+  PetscCheckFalse(!tron->Work || !tao->gradient,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Dual variables don't exist yet or no longer exist.");
 
   ierr = VecBoundGradientProjection(tao->gradient,tao->solution,tao->XL,tao->XU,tron->Work);CHKERRQ(ierr);
   ierr = VecCopy(tron->Work,DXL);CHKERRQ(ierr);

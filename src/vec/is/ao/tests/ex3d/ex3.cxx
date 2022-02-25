@@ -34,7 +34,7 @@ int main(int argc, char** argv)
   // read in application indices
   ierr = PetscSNPrintf(infile,sizeof(infile),"%s/AO%dCPUs/ao_p%d_appindices.txt",datafiles,size,rank);CHKERRQ(ierr);
   ifstream fin(infile);
-  if (!fin) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"File not found: %s",infile);
+  if (!fin) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"File not found: %s",infile);
   vector<PetscInt>  myapp;
   int tmp=-1;
   while (!fin.eof()) {
@@ -43,7 +43,10 @@ int main(int argc, char** argv)
     if (tmp==-1) break;
     myapp.push_back(tmp);
   }
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] has %D indices.\n",rank,myapp.size());CHKERRQ(ierr);
+#if __cplusplus >= 201103L // c++11
+  static_assert(is_same<decltype(myapp.size()),size_t>::value,"");
+#endif
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] has %zu indices.\n",rank,myapp.size());CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_WORLD, myapp.size(), &(myapp[0]), PETSC_USE_POINTER, &isapp);CHKERRQ(ierr);

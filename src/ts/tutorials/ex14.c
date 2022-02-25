@@ -571,7 +571,7 @@ static PetscErrorCode THICreate(MPI_Comm comm,THI *inthi)
       thi->alpha      = 0.5;
       break;
     default:
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"HOM experiment '%c' not implemented",homexp[0]);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"HOM experiment '%c' not implemented",homexp[0]);
     }
     ierr = PetscOptionsEnum("-thi_quadrature","Quadrature to use for 3D elements","",QuadratureTypes,(PetscEnum)quad,(PetscEnum*)&quad,NULL);CHKERRQ(ierr);
     switch (quad) {
@@ -778,9 +778,10 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info,const Node ***x,co
         PetscInt  ls = 0;
         Node      n[8],ndot[8],*fn[8];
         PetscReal zn[8],etabase = 0;
+
         PrmHexGetZ(pn,k,zm,zn);
         HexExtract(x,i,j,k,n);
-        HexExtract(xdot,i,j,k,ndot);CHKERRQ(ierr);
+        HexExtract(xdot,i,j,k,ndot);
         HexExtractRef(f,i,j,k,fn);
         if (thi->no_slip && k == 0) {
           for (l=0; l<4; l++) n[l].u = n[l].v = 0;
@@ -988,7 +989,7 @@ static PetscErrorCode THIMatrixStatistics(THI thi,Mat B,PetscViewer viewer)
   ierr = MatNorm(B,NORM_FROBENIUS,&nrm);CHKERRQ(ierr);
   ierr = MatGetSize(B,&m,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)B),&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     PetscScalar val0,val2;
     ierr = MatGetValue(B,0,0,&val0);CHKERRQ(ierr);
     ierr = MatGetValue(B,2,2,&val2);CHKERRQ(ierr);
@@ -1013,7 +1014,7 @@ static PetscErrorCode THISurfaceStatistics(DM pack,Vec X,PetscReal *min,PetscRea
   *min = *max = *mean = 0;
   ierr = DMDAGetInfo(da3,0, &mz,&my,&mx, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da3,&zs,&ys,&xs,&zm,&ym,&xm);CHKERRQ(ierr);
-  if (zs != 0 || zm != mz) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unexpected decomposition");
+  PetscCheckFalse(zs != 0 || zm != mz,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unexpected decomposition");
   ierr = DMDAVecGetArray(da3,X3,&x);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
@@ -1259,7 +1260,7 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info,const Node ***x3,c
   ym = info->ym;
   zm = info->xm;
 
-  if (zm > 1024) SETERRQ(((PetscObject)info->da)->comm,PETSC_ERR_SUP,"Need to allocate more space");
+  PetscCheckFalse(zm > 1024,((PetscObject)info->da)->comm,PETSC_ERR_SUP,"Need to allocate more space");
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
       {                         /* Self-coupling */
@@ -1418,7 +1419,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
   tag  = ((PetscObject)viewer3)->tag;
   ierr = VecGetArrayRead(X3,(const PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(X2,(const PetscScalar**)&x2);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     PetscScalar *array,*array2;
     ierr = PetscMalloc2(nmax,&array,nmax2,&array2);CHKERRQ(ierr);
     for (r=0; r<size; r++) {
@@ -1431,15 +1432,15 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
         ierr = MPI_Recv(range,6,MPIU_INT,r,tag,comm,MPI_STATUS_IGNORE);CHKERRMPI(ierr);
       }
       zs = range[0];ys = range[1];xs = range[2];zm = range[3];ym = range[4];xm = range[5];
-      if (xm*ym*zm*dof > nmax) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"should not happen");
+      PetscCheckFalse(xm*ym*zm*dof > nmax,PETSC_COMM_SELF,PETSC_ERR_PLIB,"should not happen");
       if (r) {
         ierr = MPI_Recv(array,nmax,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn);CHKERRMPI(ierr);
-        if (nn != xm*ym*zm*dof) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"corrupt da3 send");
+        PetscCheckFalse(nn != xm*ym*zm*dof,PETSC_COMM_SELF,PETSC_ERR_PLIB,"corrupt da3 send");
         y3   = (Node*)array;
         ierr = MPI_Recv(array2,nmax2,MPIU_SCALAR,r,tag,comm,&status);CHKERRMPI(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&nn2);CHKERRMPI(ierr);
-        if (nn2 != xm*ym*dof2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"corrupt da2 send");
+        PetscCheckFalse(nn2 != xm*ym*dof2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"corrupt da2 send");
         y2 = (PetscScalar(*)[PRMNODE_SIZE])array2;
       } else {
         y3 = (Node*)x;

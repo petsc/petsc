@@ -223,7 +223,7 @@ PetscErrorCode  PetscViewerGetType(PetscViewer viewer,PetscViewerType *type)
 
    Logically Collective on PetscViewer
 
-   Input Parameter:
+   Input Parameters:
 +  viewer - the PetscViewer context
 -  prefix - the prefix to prepend to all option names
 
@@ -481,7 +481,7 @@ PetscErrorCode  PetscViewerRead(PetscViewer viewer, void *data, PetscInt num, Pe
       c      = i;
     }
     if (count) *count = c;
-    else if (c < num) SETERRQ2(PetscObjectComm((PetscObject) viewer), PETSC_ERR_FILE_READ, "Insufficient data, only read %D < %D strings", c, num);
+    else PetscCheckFalse(c < num,PetscObjectComm((PetscObject) viewer), PETSC_ERR_FILE_READ, "Insufficient data, only read %" PetscInt_FMT " < %" PetscInt_FMT " strings", c, num);
   } else {
     ierr = (*viewer->ops->read)(viewer, data, num, count, dtype);CHKERRQ(ierr);
   }
@@ -587,7 +587,7 @@ PetscErrorCode  PetscViewerCheckReadable(PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscViewerReadable(viewer, &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Viewer doesn't support reading, or is not in reading mode (FILE_MODE_READ, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE)");
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Viewer doesn't support reading, or is not in reading mode (FILE_MODE_READ, FILE_MODE_UPDATE, FILE_MODE_APPEND_UPDATE)");
   PetscFunctionReturn(0);
 }
 
@@ -611,6 +611,6 @@ PetscErrorCode  PetscViewerCheckWritable(PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   ierr = PetscViewerWritable(viewer, &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Viewer doesn't support writing, or is in FILE_MODE_READ mode");
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Viewer doesn't support writing, or is in FILE_MODE_READ mode");
   PetscFunctionReturn(0);
 }

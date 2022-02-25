@@ -56,8 +56,11 @@ class Configure(config.package.Package):
     self.support_mpi3_nbc = 0
     self.mpi_pkg_version  = ''
     self.mpi_pkg          = '' # mpich,mpich2,mpich3,openmpi,intel,intel2,intel3
-    self.mpiexec          = None
+
+    # mpiexec, absolute path, and sequential run
+    self.mpiexec           = None
     self.mpiexecExecutable = None
+    self.mpiexecseq        = None
     return
 
   def setupHelp(self, help):
@@ -75,12 +78,13 @@ class Configure(config.package.Package):
     self.openmpi = framework.require('config.packages.OpenMPI', self)
     self.cuda    = framework.require('config.packages.cuda',self)
     self.hip     = framework.require('config.packages.hip',self)
-    self.odeps   = [self.cuda,self.hip]
+    self.sycl    = framework.require('config.packages.sycl',self)
+    self.odeps   = [self.cuda,self.hip,self.sycl]
     return
 
   def __str__(self):
     output  = config.package.Package.__str__(self)
-    if self.mpiexec: output  += '  mpiexec: '+self.mpiexec.replace(' -n 1','')+'\n'
+    if self.mpiexec: output  += '  mpiexec: '+self.mpiexec+'\n'
     if self.mpi_pkg: output  += '  Implementation: '+self.mpi_pkg+'\n'
     if hasattr(self,'includepaths'):
       output  += '  MPI C++ include paths: '+ self.includepaths+'\n'
@@ -174,7 +178,7 @@ compiles go through - but one might get run-time errors.  Either\n\
 reconfigure PETSc with --with-shared-libraries=0 or provide MPI with\n\
 shared libraries and run with --known-mpi-shared-libraries=1')
       return
-    self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, defaultArg = 'known-mpi-shared-libraries', executor = self.mpiexec)
+    self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, defaultArg = 'known-mpi-shared-libraries', executor = self.mpiexecseq)
 
     # TODO: Turn this on once shared library checks are working again
     #if self.argDB['with-shared-libraries'] and not self.shared:
@@ -184,10 +188,12 @@ shared libraries and run with --known-mpi-shared-libraries=1')
 
   def configureMPIEXEC(self):
     '''Checking for location of mpiexec'''
+    mpiexecargs = ''
     if self.argDB['with-batch']:
       if 'with-mpiexec' in self.argDB:
         self.logPrintBox('--with-mpiexec is ignored since --with-batch is provided; one cannot run generated executables on the compile server')
       self.mpiexec = 'Not_appropriate_for_batch_systems_You_must_use_your_batch_system_to_submit_MPI_jobs_speak_with_your_local_sys_admin'
+      self.mpiexecseq = 'Not_appropriate_for_batch_systems_You_must_use_your_batch_system_to_submit_MPI_jobs_speak_with_your_local_sys_admin'
       self.addMakeMacro('MPIEXEC', self.mpiexec)
       return
     if 'with-mpiexec' in self.argDB:
@@ -213,8 +219,16 @@ shared libraries and run with --known-mpi-shared-libraries=1')
         for lib in self.lib:
           path.append(os.path.join(os.path.dirname(os.path.dirname(lib)), 'bin'))
         self.pushLanguage('C')
-        if (os.path.basename(self.getCompiler()) == 'mpicc' or os.path.basename(self.getCompiler()) == 'mpiicc') and os.path.dirname(self.getCompiler()):
-          path.append(os.path.dirname(self.getCompiler()))
+        if (os.path.basename(self.getCompiler()) == 'mpicc' or os.path.basename(self.getCompiler()) == 'mpiicc'):
+          if os.path.dirname(self.getCompiler()):
+            path.append(os.path.dirname(self.getCompiler()))
+          else:
+            try:
+              (out,err,status) = config.base.Configure.executeShellCommand('which '+self.getCompiler())
+              if not status and not err:
+                path.append(os.path.dirname(out))
+            except:
+              pass
         self.popLanguage()
         useDefaultPath = 1
       if not self.getExecutable(mpiexecs, path = path, useDefaultPath = useDefaultPath, resultName = 'mpiexec',setMakeMacro=0):
@@ -223,15 +237,26 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       # Support for spaces and () in executable names; also needs to handle optional arguments at the end
       # TODO: This support for spaces and () should be moved to core BuildSystem
       self.mpiexec = self.mpiexec.replace(' ', '\\ ').replace('(', '\\(').replace(')', '\\)').replace('\ -',' -')
-      self.mpiexecExecutable = self.mpiexec
       if (hasattr(self, 'ompi_major_version') and int(self.ompi_major_version) >= 3):
         (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -help all', checkCommand = noCheck, timeout = 60, log = self.log, threads = 1)
         if out.find('--oversubscribe') >=0:
-          self.mpiexec = self.mpiexec + ' --oversubscribe'
+          mpiexecargs += ' --oversubscribe'
 
-    if not self.mpiexecExecutable:
-      self.mpiexecExecutable = self.mpiexec
-    self.getExecutable(self.mpiexecExecutable, getFullPath=1, resultName='mpiexecExecutable')
+    self.getExecutable(self.mpiexec, getFullPath=1, resultName='mpiexecExecutable',setMakeMacro=0)
+
+    if not 'with-mpiexec' in self.argDB and hasattr(self,'isNecMPI') and hasattr(self,'mpiexecExecutable'):
+      self.getExecutable('venumainfo', getFullPath=1, path = os.path.dirname(self.mpiexecExecutable))
+      if hasattr(self,'venumainfo'):
+        try:
+          (out, err, ret) = Configure.executeShellCommand(self.venumainfo + ' | grep "available"',timeout = 60, log = self.log, threads = 1)
+        except Exception as e:
+          self.logWrite('NEC utility venumainfo failed '+str(e)+'\n')
+        else:
+          try:
+            nve = len(out.split('\n'))
+            mpiexecargs += ' -nve ' + str(nve)
+          except Exception as e:
+            self.logWrite('Unable to parse the number of VEs from the NEC utility venumainfo\n'+str(e)+'\n')
 
     # using mpiexec environmental variables make sure mpiexec matches the MPI libraries and save the variables for testing in PetscInitialize()
     # the variable HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE is not currently used. PetscInitialize() can check the existence of the environmental variable to
@@ -249,9 +274,26 @@ shared libraries and run with --known-mpi-shared-libraries=1')
       elif out.find('OMPI_COMM_WORLD_SIZE') > -1:
         if hasattr(self,'mpich_numversion'): raise RuntimeError("Your libraries are from MPICH but it appears your mpiexec is from OpenMPI");
         self.addDefine('HAVE_MPIEXEC_ENVIRONMENTAL_VARIABLE', 'OMP')
+    if hasattr(self,'isNecMPI'):
+      (out, err, ret) = Configure.executeShellCommand(self.mpiexec+' -n 1 -V /usr/bin/true', checkCommand = noCheck, timeout = 120, threads = 1, log = self.log)
+      if ret:
+        self.logWrite('Unable to run '+self.mpiexec+' with option "-n 1 -V /usr/bin/true"\n'+str(out)+'\n'+str(err))
+      else:
+        try:
+          necmpimajor = out.split(' ')[4].split('.')[0]
+          necmpiminor = out.split(' ')[4].split('.')[1]
+          self.addDefine('NECMPI_VERSION_MAJOR', necmpimajor)
+          self.addDefine('NECMPI_VERSION_MINOR', necmpiminor)
+        except Exception as e:
+            self.logWrite('Unable to parse the output of '+self.mpiexec+' with option "-n 1 -V /usr/bin/true"\n'+str(e)+'\n'+str(out)+'\n'+str(err))
 
-    self.addMakeMacro('MPIEXEC', self.mpiexec)
-    self.mpiexec = self.mpiexec + ' -n 1'
+    # use full path if found
+    if self.mpiexecExecutable:
+      self.mpiexec = self.mpiexecExecutable
+    self.addMakeMacro('MPIEXEC', self.mpiexec + mpiexecargs)
+
+    # use sequential runs for testing
+    self.mpiexecseq = self.mpiexec + mpiexecargs + ' -n 1'
 
     if hasattr(self,'mpich_numversion') or hasattr(self,'ompi_major_version'):
 
@@ -264,7 +306,6 @@ shared libraries and run with --known-mpi-shared-libraries=1')
           if result.find("Firewall is enabled") > -1:  hostnameworks = 1
         except:
           self.logPrint("Exception: Unable to get result from socketfilterfw\n")
-
 
       self.getExecutable('hostname')
       if not hostnameworks and hasattr(self,'hostname'):
@@ -322,7 +363,7 @@ Unable to run hostname to check the network')
           self.logPrintDivider()
 
     # check that mpiexec runs an MPI program correctly
-    error_message = 'Unable to run MPI program with '+self.mpiexec+'\n\
+    error_message = 'Unable to run MPI program with '+self.mpiexecseq+'\n\
     (1) make sure this is the correct program to run MPI jobs\n\
     (2) your network may be misconfigured; see https://petsc.org/release/faq/#mpi-network-misconfigure\n\
     (3) you may have VPN running whose network settings may not play nice with MPI\n'
@@ -330,7 +371,7 @@ Unable to run hostname to check the network')
     includes = '#include <mpi.h>'
     body = 'MPI_Init(0,0);\nMPI_Finalize();\n'
     try:
-      ok = self.checkRun(includes, body, executor = self.mpiexec, timeout = 120, threads = 1)
+      ok = self.checkRun(includes, body, executor = self.mpiexecseq, timeout = 120, threads = 1)
       if not ok: raise RuntimeError(error_message)
     except RuntimeError as e:
       if str(e).find('Runaway process exceeded time limit') > -1:
@@ -376,7 +417,7 @@ Unable to run hostname to check the network')
     if not self.checkLink('#include <mpi.h>\n', 'int ptr[1]; MPI_Win win; if (MPI_Accumulate(ptr,1,MPI_INT,0,0,1,MPI_INT,MPI_REPLACE,win));\n'):
       raise RuntimeError('PETSc requires MPI_REPLACE (introduced in MPI-2.1 in 2008). Please update or switch to MPI that supports MPI_REPLACE. Let us know at petsc-maint@mcs.anl.gov if this is not possible')
     # flag broken one-sided tests
-    if not 'HAVE_MSMPI' in self.defines and not (hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) <= 30004300):
+    if not 'HAVE_MSMPI' in self.defines and not (hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) <= 30004300) and not (hasattr(self, 'isNecMPI')):
       self.addDefine('HAVE_MPI_ONE_SIDED', 1)
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
@@ -399,7 +440,10 @@ Unable to run hostname to check the network')
                        if (MPI_Win_shared_query(win,0,&size,&disp_unit,&baseptr));\n'):
         self.addDefine('HAVE_MPI_PROCESS_SHARED_MEMORY', 1)
         self.support_mpi3_shm = 1
-    if self.checkLink('#include <mpi.h>\n',
+    if not any([
+        hasattr(self, 'isIntelMPI'),
+        hasattr(self, 'ompi_version') and (4,1,0) <= self.ompi_version < (4,2,0), # dynamic window tests fail unless using --mca btl vader
+        ]) and self.checkLink('#include <mpi.h>\n',
                       'MPI_Aint size=128; int disp_unit=8,*baseptr; MPI_Win win;\n\
                        if (MPI_Win_allocate(size,disp_unit,MPI_INFO_NULL,MPI_COMM_WORLD,&baseptr,&win));\n\
                        if (MPI_Win_attach(win,baseptr,size));\n\
@@ -427,10 +471,43 @@ Unable to run hostname to check the network')
       openmpi_cuda_test = '#include<mpi.h>\n #include <mpi-ext.h>\n #if defined(MPIX_CUDA_AWARE_SUPPORT) && MPIX_CUDA_AWARE_SUPPORT\n #else\n #error This OpenMPI is not CUDA-aware\n #endif\n'
       if self.checkCompile(openmpi_cuda_test):
         self.addDefine('HAVE_MPI_GPU_AWARE', 1)
+      else:
+        self.testoptions = '-use_gpu_aware_mpi 0'
+    else:
+        self.testoptions = '-use_gpu_aware_mpi 0'
     if self.checkLink('#include <mpi.h>\n', 'int ptr[1]; MPI_Win win; if (MPI_Get_accumulate(ptr,1,MPI_INT,ptr,1,MPI_INT,0,0,1,MPI_INT,MPI_SUM,win));\n'):
       self.addDefine('HAVE_MPI_GET_ACCUMULATE', 1)
     if self.checkLink('#include <mpi.h>\n', 'int ptr[1]; MPI_Win win; MPI_Request req; if (MPI_Rget(ptr,1,MPI_INT,0,1,1,MPI_INT,win,&req));\n'):
       self.addDefine('HAVE_MPI_RGET', 1)
+    self.compilers.CPPFLAGS = oldFlags
+    self.compilers.LIBS = oldLibs
+    self.logWrite(self.framework.restoreLog())
+    return
+
+
+  def configureMPI4(self):
+    '''Check for functions added to the interface in MPI-4'''
+    oldFlags = self.compilers.CPPFLAGS
+    oldLibs  = self.compilers.LIBS
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+    self.framework.saveLog()
+
+    if self.checkLink('#include <mpi.h>\n',
+    '''
+      int         buf[1]={0},dest=1,source=1,tag=0;
+      MPI_Count   count=1;
+      MPI_Request req;
+      MPI_Status  stat;
+      if (MPI_Send_c(buf,count,MPI_INT,dest,tag,MPI_COMM_WORLD)) return 1;
+      if (MPI_Send_init_c(buf,count,MPI_INT,dest,tag,MPI_COMM_WORLD,&req)) return 1;
+      if (MPI_Isend_c(buf,count,MPI_INT,dest,tag,MPI_COMM_WORLD,&req)) return 1;
+      if (MPI_Recv_c(buf,count,MPI_INT,source,tag,MPI_COMM_WORLD,&stat)) return 1;
+      if (MPI_Recv_init_c(buf,count,MPI_INT,source,tag,MPI_COMM_WORLD,&req)) return 1;
+      if (MPI_Irecv_c(buf,count,MPI_INT,source,tag,MPI_COMM_WORLD,&req)) return 1;
+    '''):
+      self.addDefine('HAVE_MPI_LARGE_COUNT', 1)
+
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     self.logWrite(self.framework.restoreLog())
@@ -458,6 +535,7 @@ Unable to run hostname to check the network')
     self.addMakeMacro('MPI_IS_MPIUNI', 1)
     self.framework.packages.append(self)
     self.mpiexec = '${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni'
+    self.mpiexecseq = '${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni'
     self.addMakeMacro('MPIEXEC','${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni')
     self.addDefine('HAVE_MPI_IN_PLACE', 1)
     self.addDefine('HAVE_MPI_TYPE_DUP', 1)
@@ -585,6 +663,7 @@ Unable to run hostname to check the network')
           self.addDefine('HAVE_'+MPICHPKG+'_NUMVERSION',mpich_numversion)
           MPI_VER += '  '+MPICHPKG+'_NUMVERSION: '+mpich_numversion
           if mpichpkg == 'mpich': self.mpich_numversion = mpich_numversion
+          if mpichpkg == 'i_mpi': self.isIntelMPI = 1
         except:
           self.logPrint('Unable to parse '+MPICHPKG+' version from header. Probably a buggy preprocessor')
     if MPI_VER:
@@ -592,6 +671,12 @@ Unable to run hostname to check the network')
       self.mpi_pkg_version = MPI_VER+'\n'
       self.mpi_pkg = 'mpich'+mpich_numversion[0]
       return
+
+    # NEC MPI is derived from MPICH but it does not keep MPICH related NUMVERSION
+    necmpi_test = '#include <mpi.h>\nMPI_NEC_Function f = MPI_NEC_FUNCTION_NULL;\n'
+    if self.checkCompile(necmpi_test):
+      self.isNecMPI = 1
+      self.addDefine('HAVE_NECMPI',1)
 
     # IBM Spectrum MPI is derived from OpenMPI, we do not yet have specific tests for it
     # https://www.ibm.com/us-en/marketplace/spectrum-mpi
@@ -645,16 +730,25 @@ Unable to run hostname to check the network')
     needed=False
     if hasattr(self.compilers, 'CUDAC') and self.cuda.found: needed = True
     if hasattr(self.compilers, 'HIPC') and self.hip.found: needed = True
+    if hasattr(self.compilers, 'SYCLC') and self.sycl.found: needed = True
     if not needed: return
     import re
 
     cflagsOutput = ''
     libsOutput   = ''
     if config.setCompilers.Configure.isCrayPEWrapper(self.setCompilers.CC, self.log):
-      cflagsOutput = self.executeShellCommand(self.compilers.CC + ' --cray-print-opts=cflags', log = self.log)[0]
-      libsOutput   = self.executeShellCommand(self.compilers.CC + ' --cray-print-opts=libs', log = self.log)[0]
+      # check these two env vars to only query MPICH headers and libs. Cray PE may include other libs.
+      var1 = os.environ.get('PE_PKGCONFIG_LIBS').split(':') # the env var is in a format like 'mpich:libsci_mpi:libsci:dsmml'
+      var2 = os.environ.get('PE_PKGCONFIG_PRODUCTS').split(':')
+      env  = None # None means to inherit the current process' environment
+      if ('mpich' in var1 and 'PE_MPICH' in var2): # assume the two env vars appear together if any one is set
+        env = dict(os.environ, PE_PKGCONFIG_LIBS='mpich', PE_PKGCONFIG_PRODUCTS='PE_MPICH') # modify the two env vars only
+
+      cflagsOutput = self.executeShellCommand([self.compilers.CC, '--cray-print-opts=cflags'], env=env, log = self.log)[0]
+      # --no-as-needed since we always need MPI
+      libsOutput   = self.executeShellCommand([self.compilers.CC, '--no-as-needed', '--cray-print-opts=libs'], env=env, log = self.log)[0]
     else:
-      cflagsOutput = self.executeShellCommand(self.compilers.CC + ' -show', log = self.log)[0]
+      cflagsOutput = self.executeShellCommand(self.compilers.CC + ' -show', log = self.log)[0] # not list since CC might be 'mpicc -cc=clang'
       libsOutput   = cflagsOutput # same output as -show
 
     # find include paths
@@ -752,6 +846,7 @@ Unable to run hostname to check the network')
 You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to prevent such hangs. warning message *****')
     self.executeTest(self.configureMPI2) #depends on checkMPIDistro
     self.executeTest(self.configureMPI3) #depends on checkMPIDistro
+    self.executeTest(self.configureMPI4)
     self.executeTest(self.configureMPIEXEC)
     self.executeTest(self.configureMPITypes)
     self.executeTest(self.SGIMPICheck)
@@ -760,7 +855,11 @@ You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to preve
     self.executeTest(self.configureIO) #depends on checkMPIDistro
     self.executeTest(self.findMPIIncludeAndLib)
     self.executeTest(self.PetscArchMPICheck)
-    funcs = '''MPI_Type_get_envelope  MPI_Type_dup MPI_Init_thread MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan MPI_Reduce_scatter MPI_Reduce_scatter_block'''.split()
+    # deadlock AO tests ex1 with test 3
+    if not (hasattr(self, 'isNecMPI')):
+      funcs = '''MPI_Type_get_envelope  MPI_Type_dup MPI_Init_thread MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan MPI_Reduce_scatter MPI_Reduce_scatter_block'''.split()
+    else:
+      funcs = '''MPI_Type_get_envelope  MPI_Type_dup MPI_Init_thread MPI_Iallreduce MPI_Ibarrier MPI_Finalized MPI_Exscan MPI_Reduce_scatter'''.split()
     found, missing = self.libraries.checkClassify(self.dlib, funcs)
     for f in found:
       self.addDefine('HAVE_' + f.upper(),1)

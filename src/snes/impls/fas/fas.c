@@ -352,15 +352,15 @@ static PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
       while (curfas) {
         if (!curfas->smoothu) {
           ierr = PetscDrawPushCurrentPoint(draw,x,bottom);CHKERRQ(ierr);
-          if (curfas->smoothd) ierr = SNESView(curfas->smoothd,viewer);CHKERRQ(ierr);
+          if (curfas->smoothd) {ierr = SNESView(curfas->smoothd,viewer);CHKERRQ(ierr);}
           ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
         } else {
           w    = 0.5*PetscMin(1.0-x,x);
           ierr = PetscDrawPushCurrentPoint(draw,x-w,bottom);CHKERRQ(ierr);
-          if (curfas->smoothd) ierr = SNESView(curfas->smoothd,viewer);CHKERRQ(ierr);
+          if (curfas->smoothd) {ierr = SNESView(curfas->smoothd,viewer);CHKERRQ(ierr);}
           ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
           ierr = PetscDrawPushCurrentPoint(draw,x+w,bottom);CHKERRQ(ierr);
-          if (curfas->smoothu) ierr = SNESView(curfas->smoothu,viewer);CHKERRQ(ierr);
+          if (curfas->smoothu) {ierr = SNESView(curfas->smoothu,viewer);CHKERRQ(ierr);}
           ierr = PetscDrawPopCurrentPoint(draw);CHKERRQ(ierr);
         }
         /* this is totally bogus but we have no way of knowing how low the previous one was draw to */
@@ -446,10 +446,10 @@ static PetscErrorCode SNESFASUpSmooth_Private(SNES snes, Vec B, Vec X, Vec F, Pe
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  snes - SNESFAS
 
-   Output Arguments:
+   Output Parameter:
 .  Xcoarse - vector on level one coarser than snes
 
    Level: developer
@@ -478,11 +478,11 @@ PetscErrorCode SNESFASCreateCoarseVec(SNES snes,Vec *Xcoarse)
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  fine - SNES from which to restrict
 -  Xfine - vector to restrict
 
-   Output Arguments:
+   Output Parameter:
 .  Xcoarse - result of restriction
 
    Level: developer
@@ -874,7 +874,7 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
   PetscBool      isFine;
 
   PetscFunctionBegin;
-  if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  PetscCheckFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   snes->reason = SNES_CONVERGED_ITERATING;
@@ -948,7 +948,7 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
     }
   }
   if (i == snes->max_its) {
-    ierr = PetscInfo1(snes, "Maximum number of iterations has been reached: %D\n", i);CHKERRQ(ierr);
+    ierr = PetscInfo(snes, "Maximum number of iterations has been reached: %D\n", i);CHKERRQ(ierr);
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
   PetscFunctionReturn(0);

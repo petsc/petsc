@@ -64,12 +64,13 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
   PetscValidIntPointer(tag,2);
 
   ierr = MPI_Comm_get_attr(comm,Petsc_Counter_keyval,&counter,&flg);CHKERRMPI(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
 
   if (counter->tag < 1) {
-    ierr = PetscInfo1(NULL,"Out of tags for object, starting to recycle. Comm reference count %d\n",counter->refcount);CHKERRQ(ierr);
+
+    ierr = PetscInfo(NULL,"Out of tags for object, starting to recycle. Comm reference count %" PetscInt_FMT "\n",counter->refcount);CHKERRQ(ierr);
     ierr = MPI_Comm_get_attr(MPI_COMM_WORLD,MPI_TAG_UB,&maxval,&flg);CHKERRMPI(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI error: MPI_Comm_get_attr() is not returning a MPI_TAG_UB");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI error: MPI_Comm_get_attr() is not returning a MPI_TAG_UB");
     counter->tag = *maxval - 128; /* hope that any still active tags were issued right at the beginning of the run */
   }
 
@@ -84,17 +85,104 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
 }
 
 /*@C
-  PetscCommDuplicate - Duplicates the communicator only if it is not already a PETSc communicator.
+  PetscCommGetComm - get an MPI communicator from a PETSc communicator that can be passed off to another package
+
+  Collective
+
+  Input Parameter:
+. comm_in - Input communicator
+
+  Output Parameters:
+. comm_out - Output communicator
+
+  Notes:
+    Use PetscCommRestoreComm() to return the communicator when the external package no longer needs it
+
+    Certain MPI implementations have MPI_Comm_free() that do not work, thus one can run out of available MPI communicators causing
+    mysterious crashes in the code after running a long time. This routine allows reusing previously obtained MPI communicators that
+    are no longer needed.
+
+Level: developer
+
+.seealso: PetscObjectGetNewTag(), PetscCommGetNewTag(), PetscCommDestroy(), PetscCommRestoreComm()
+@*/
+PetscErrorCode  PetscCommGetComm(MPI_Comm comm_in,MPI_Comm *comm_out)
+{
+  PetscErrorCode   ierr;
+  PetscCommCounter *counter;
+  PetscMPIInt      flg;
+
+  PetscFunctionBegin;
+  ierr = PetscSpinlockLock(&PetscCommSpinLock);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(comm_in,Petsc_Counter_keyval,&counter,&flg);CHKERRMPI(ierr);
+  PetscCheckFalse(!flg,comm_in,PETSC_ERR_ARG_WRONGSTATE,"Requires a PETSc communicator as input, do not use something like MPI_COMM_WORLD");
+
+  if (counter->comms) {
+    struct PetscCommStash *pcomms = counter->comms;
+
+    *comm_out = pcomms->comm;
+    counter->comms = pcomms->next;
+    ierr = PetscFree(pcomms);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"Reusing a communicator %ld %ld\n",(long)comm_in,(long)*comm_out);CHKERRQ(ierr);
+  } else {
+    ierr = MPI_Comm_dup(comm_in,comm_out);CHKERRMPI(ierr);
+  }
+  ierr = PetscSpinlockUnlock(&PetscCommSpinLock);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscCommRestoreComm - restores an MPI communicator that was obtained with PetscCommGetComm()
 
   Collective
 
   Input Parameters:
-. comm_in - Input communicator
++  comm_in - Input communicator
+-  comm_out - returned communicator
+
+Level: developer
+
+.seealso: PetscObjectGetNewTag(), PetscCommGetNewTag(), PetscCommDestroy(), PetscCommRestoreComm()
+@*/
+PetscErrorCode PetscCommRestoreComm(MPI_Comm comm_in,MPI_Comm *comm_out)
+{
+  PetscErrorCode        ierr;
+  PetscCommCounter      *counter;
+  PetscMPIInt           flg;
+  struct PetscCommStash *pcomms,*ncomm;
+
+  PetscFunctionBegin;
+  ierr = PetscSpinlockLock(&PetscCommSpinLock);CHKERRQ(ierr);
+  ierr = MPI_Comm_get_attr(comm_in,Petsc_Counter_keyval,&counter,&flg);CHKERRMPI(ierr);
+  PetscCheckFalse(!flg,comm_in,PETSC_ERR_ARG_WRONGSTATE,"Requires a PETSc communicator as input, do not use something like MPI_COMM_WORLD");
+
+  ierr = PetscMalloc(sizeof(struct PetscCommStash),&ncomm);CHKERRQ(ierr);
+  ncomm->comm = *comm_out;
+  ncomm->next = NULL;
+  pcomms = counter->comms;
+  while (pcomms && pcomms->next) pcomms = pcomms->next;
+  if (pcomms) {
+    pcomms->next   = ncomm;
+  } else {
+    counter->comms = ncomm;
+  }
+  *comm_out = 0;
+  ierr = PetscSpinlockUnlock(&PetscCommSpinLock);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscCommDuplicate - Duplicates the communicator only if it is not already a PETSc communicator.
+
+  Collective
+
+  Input Parameter:
+  . comm_in - Input communicator
 
   Output Parameters:
-+ comm_out - Output communicator.  May be comm_in.
-- first_tag - Tag available that has not already been used with this communicator (you may
-              pass in NULL if you do not need a tag)
+  + comm_out - Output communicator.  May be comm_in.
+  - first_tag - Tag available that has not already been used with this communicator (you may
+  pass in NULL if you do not need a tag)
 
   PETSc communicators are just regular MPI communicators that keep track of which
   tags have been used to prevent tag conflict. If you pass a non-PETSc communicator into
@@ -102,7 +190,7 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
   The internal MPI_Comm is used to perform all the MPI calls for PETSc, the outer MPI_Comm is a user
   level MPI_Comm that may be performing communication for the user or other library and so IS NOT used by PETSc.
 
-  Level: developer
+Level: developer
 
 .seealso: PetscObjectGetNewTag(), PetscCommGetNewTag(), PetscCommDestroy()
 @*/
@@ -124,11 +212,11 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
       /* This communicator is not yet known to this system, so we duplicate it and make an internal communicator */
       ierr = MPI_Comm_dup(comm_in,comm_out);CHKERRMPI(ierr);
       ierr = MPI_Comm_get_attr(MPI_COMM_WORLD,MPI_TAG_UB,&maxval,&flg);CHKERRMPI(ierr);
-      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI error: MPI_Comm_get_attr() is not returning a MPI_TAG_UB");
+      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI error: MPI_Comm_get_attr() is not returning a MPI_TAG_UB");
       ierr = PetscNew(&counter);CHKERRQ(ierr); /* all fields of counter are zero'ed */
       counter->tag = *maxval;
       ierr = MPI_Comm_set_attr(*comm_out,Petsc_Counter_keyval,counter);CHKERRMPI(ierr);
-      ierr = PetscInfo3(NULL,"Duplicating a communicator %ld %ld max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval);CHKERRQ(ierr);
+      ierr = PetscInfo(NULL,"Duplicating a communicator %ld %ld max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval);CHKERRQ(ierr);
 
       /* save PETSc communicator inside user communicator, so we can get it next time */
       ucomm.comm = *comm_out;   /* ONLY the comm part of the union is significant. */
@@ -139,8 +227,8 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
       *comm_out = ucomm.comm;
       /* pull out the inner MPI_Comm and hand it back to the caller */
       ierr = MPI_Comm_get_attr(*comm_out,Petsc_Counter_keyval,&counter,&flg);CHKERRMPI(ierr);
-      if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tag/name counter attribute set");
-      ierr = PetscInfo2(NULL,"Using internal PETSc communicator %ld %ld\n",(long)comm_in,(long)*comm_out);CHKERRQ(ierr);
+      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tag/name counter attribute set");
+      ierr = PetscInfo(NULL,"Using internal PETSc communicator %ld %ld\n",(long)comm_in,(long)*comm_out);CHKERRQ(ierr);
     }
   } else *comm_out = comm_in;
 
@@ -154,9 +242,9 @@ PetscErrorCode  PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPII
   }
 
   if (counter->tag < 1) {
-    ierr = PetscInfo1(NULL,"Out of tags for object, starting to recycle. Comm reference count %d\n",counter->refcount);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"Out of tags for object, starting to recycle. Comm reference count %" PetscInt_FMT "\n",counter->refcount);CHKERRQ(ierr);
     ierr = MPI_Comm_get_attr(MPI_COMM_WORLD,MPI_TAG_UB,&maxval,&flg);CHKERRMPI(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI error: MPI_Comm_get_attr() is not returning a MPI_TAG_UB");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI error: MPI_Comm_get_attr() is not returning a MPI_TAG_UB");
     counter->tag = *maxval - 128; /* hope that any still active tags were issued right at the beginning of the run */
   }
 
@@ -193,10 +281,10 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
   ierr = MPI_Comm_get_attr(icomm,Petsc_Counter_keyval,&counter,&flg);CHKERRMPI(ierr);
   if (!flg) { /* not a PETSc comm, check if it has an inner comm */
     ierr = MPI_Comm_get_attr(icomm,Petsc_InnerComm_keyval,&ucomm,&flg);CHKERRMPI(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"MPI_Comm does not have tag/name counter nor does it have inner MPI_Comm");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"MPI_Comm does not have tag/name counter nor does it have inner MPI_Comm");
     icomm = ucomm.comm;
     ierr = MPI_Comm_get_attr(icomm,Petsc_Counter_keyval,&counter,&flg);CHKERRMPI(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected tag/name counter, problem with corrupted memory");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected tag/name counter, problem with corrupted memory");
   }
 
   counter->refcount--;
@@ -209,10 +297,10 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
       ierr = MPI_Comm_get_attr(ocomm,Petsc_InnerComm_keyval,&ucomm,&flg);CHKERRMPI(ierr);
       if (flg) {
         ierr = MPI_Comm_delete_attr(ocomm,Petsc_InnerComm_keyval);CHKERRMPI(ierr);
-      } else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Outer MPI_Comm %ld does not have expected reference to inner comm %d, problem with corrupted memory",(long int)ocomm,(long int)icomm);
+      } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Outer MPI_Comm %ld does not have expected reference to inner comm %ld, problem with corrupted memory",(long int)ocomm,(long int)icomm);
     }
 
-    ierr = PetscInfo1(NULL,"Deleting PETSc MPI_Comm %ld\n",(long)icomm);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"Deleting PETSc MPI_Comm %ld\n",(long)icomm);CHKERRQ(ierr);
     ierr = MPI_Comm_free(&icomm);CHKERRMPI(ierr);
   }
   *comm = MPI_COMM_NULL;

@@ -89,7 +89,7 @@ PetscErrorCode  PetscDrawInitializePackage(void)
 
    Collective on PetscDraw
 
-   Input Parameter:
+   Input Parameters:
 +  draw - the window
 -  w,h - the new width and height of the window
 
@@ -368,7 +368,7 @@ PetscErrorCode  PetscDrawGetPopup(PetscDraw draw,PetscDraw *popup)
 /*@C
   PetscDrawSetDisplay - Sets the display where a PetscDraw object will be displayed
 
-  Input Parameter:
+  Input Parameters:
 + draw - the drawing context
 - display - the X windows display
 
@@ -443,7 +443,7 @@ PetscErrorCode  PetscDrawGetSingleton(PetscDraw draw,PetscDraw *sdraw)
   } else {
     if (draw->ops->getsingleton) {
       ierr = (*draw->ops->getsingleton)(draw,sdraw);CHKERRQ(ierr);
-    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get singleton for this type %s of draw object",((PetscObject)draw)->type_name);
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get singleton for this type %s of draw object",((PetscObject)draw)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -482,7 +482,7 @@ PetscErrorCode  PetscDrawRestoreSingleton(PetscDraw draw,PetscDraw *sdraw)
   } else {
     if (draw->ops->restoresingleton) {
       ierr = (*draw->ops->restoresingleton)(draw,sdraw);CHKERRQ(ierr);
-    } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot restore singleton for this type %s of draw object",((PetscObject)draw)->type_name);
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot restore singleton for this type %s of draw object",((PetscObject)draw)->type_name);
   }
   PetscFunctionReturn(0);
 }

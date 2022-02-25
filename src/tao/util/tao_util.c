@@ -2,7 +2,7 @@
 #include <petsctao.h>      /*I "petsctao.h" I*/
 #include <petscsys.h>
 
-PETSC_STATIC_INLINE PetscReal Fischer(PetscReal a, PetscReal b)
+static inline PetscReal Fischer(PetscReal a, PetscReal b)
 {
   /* Method suggested by Bob Vanderbei */
    if (a + b <= 0) {
@@ -23,7 +23,7 @@ PETSC_STATIC_INLINE PetscReal Fischer(PetscReal a, PetscReal b)
 .  L - lower bounds
 -  U - upper bounds
 
-   Output Parameters:
+   Output Parameter:
 .  FB - The Fischer-Burmeister function vector
 
    Notes:
@@ -64,7 +64,7 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
   ierr = VecGetOwnershipRange(FB, low + 4, high + 4);CHKERRQ(ierr);
 
   for (i = 1; i < 4; ++i) {
-    if (low[0] != low[i] || high[0] != high[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vectors must be identically loaded over processors");
+    PetscCheckFalse(low[0] != low[i] || high[0] != high[i],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vectors must be identically loaded over processors");
   }
 
   ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
@@ -101,7 +101,7 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
+static inline PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
 {
   /* Method suggested by Bob Vanderbei */
    if (a + b <= 0) {
@@ -123,7 +123,7 @@ PETSC_STATIC_INLINE PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
 .  U - upper bounds
 -  mu - smoothing parameter
 
-   Output Parameters:
+   Output Parameter:
 .  FB - The Smoothed Fischer-Burmeister function vector
 
    Notes:
@@ -165,7 +165,7 @@ PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FB)
   ierr = VecGetOwnershipRange(FB, low + 4, high + 4);CHKERRQ(ierr);
 
   for (i = 1; i < 4; ++i) {
-    if (low[0] != low[i] || high[0] != high[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vectors must be identically loaded over processors");
+    PetscCheckFalse(low[0] != low[i] || high[0] != high[i],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vectors must be identically loaded over processors");
   }
 
   ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
@@ -203,12 +203,12 @@ PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FB)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscReal fischnorm(PetscReal a, PetscReal b)
+static inline PetscReal fischnorm(PetscReal a, PetscReal b)
 {
   return PetscSqrtReal(a*a + b*b);
 }
 
-PETSC_STATIC_INLINE PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
+static inline PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
 {
   return PetscSqrtReal(a*a + b*b + 2.0*c*c);
 }
@@ -374,7 +374,7 @@ PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec 
 .  T1 - work vector
 -  T2 - work vector
 
-   Output Parameter:
+   Output Parameters:
 +  Da - diagonal perturbation component of the result
 .  Db - row scaling component of the result
 -  Dm - derivative with respect to scaling parameter
@@ -464,17 +464,17 @@ PetscErrorCode MatDSFischer(Mat jac, Vec X, Vec Con,Vec XL, Vec XU, PetscReal mu
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscReal ST_InternalPN(PetscScalar in, PetscReal lb, PetscReal ub)
+static inline PetscReal ST_InternalPN(PetscScalar in, PetscReal lb, PetscReal ub)
 {
   return PetscMax(0,(PetscReal)PetscRealPart(in)-ub) - PetscMax(0,-(PetscReal)PetscRealPart(in)-PetscAbsReal(lb));
 }
 
-PETSC_STATIC_INLINE PetscReal ST_InternalNN(PetscScalar in, PetscReal lb, PetscReal ub)
+static inline PetscReal ST_InternalNN(PetscScalar in, PetscReal lb, PetscReal ub)
 {
   return PetscMax(0,(PetscReal)PetscRealPart(in) + PetscAbsReal(ub)) - PetscMax(0,-(PetscReal)PetscRealPart(in) - PetscAbsReal(lb));
 }
 
-PETSC_STATIC_INLINE PetscReal ST_InternalPP(PetscScalar in, PetscReal lb, PetscReal ub)
+static inline PetscReal ST_InternalPP(PetscScalar in, PetscReal lb, PetscReal ub)
 {
   return PetscMax(0, (PetscReal)PetscRealPart(in)-ub) + PetscMin(0, (PetscReal)PetscRealPart(in) - lb);
 }
@@ -488,7 +488,7 @@ PETSC_STATIC_INLINE PetscReal ST_InternalPP(PetscScalar in, PetscReal lb, PetscR
 .  lb - lower bound
 -  ub - upper bound
 
-   Output Parameters:
+   Output Parameter:
 .  out - Soft thresholded output vector
 
    Notes:
@@ -514,9 +514,9 @@ PetscErrorCode TaoSoftThreshold(Vec in, PetscReal lb, PetscReal ub, Vec out)
   ierr = VecGetLocalSize(in, &nlocal);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in, &mlocal);CHKERRQ(ierr);
 
-  if (nlocal != mlocal) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Input and output vectors need to be of same size.");
-  if (lb == ub) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Lower bound and upper bound need to be different.");
-  if (lb > ub) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Lower bound needs to be lower than upper bound.");
+  PetscCheckFalse(nlocal != mlocal,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Input and output vectors need to be of same size.");
+  PetscCheckFalse(lb == ub,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Lower bound and upper bound need to be different.");
+  PetscCheckFalse(lb > ub,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Lower bound needs to be lower than upper bound.");
 
   if (ub >= 0 && lb < 0) {
     for (i=0; i<nlocal; i++) outarray[i] = ST_InternalPN(inarray[i], lb, ub);

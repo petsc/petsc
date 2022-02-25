@@ -54,7 +54,7 @@ static PetscErrorCode DMRefineHook_DMKSP(DM dm,DM dmc,void *ctx)
 
    Not Collective
 
-   Input Argument:
+   Input Parameters:
 +  kdm - Original DMKSP
 -  nkdm - DMKSP to receive the data, should have been created with DMKSPCreate()
 
@@ -95,10 +95,10 @@ PetscErrorCode DMKSPCopy(DMKSP kdm,DMKSP nkdm)
 
    Logically Collective
 
-   Input Argument:
+   Input Parameter:
 .  dm - DM to be used with KSP
 
-   Output Argument:
+   Output Parameter:
 .  snesdm - private DMKSP context
 
    Level: developer
@@ -131,10 +131,10 @@ PetscErrorCode DMGetDMKSP(DM dm,DMKSP *kspdm)
 
    Logically Collective
 
-   Input Argument:
+   Input Parameter:
 .  dm - DM to be used with KSP
 
-   Output Argument:
+   Output Parameter:
 .  kspdm - private DMKSP context
 
    Level: developer
@@ -149,7 +149,7 @@ PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMGetDMKSP(dm,&kdm);CHKERRQ(ierr);
-  if (!kdm->originaldm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"DMKSP has a NULL originaldm");
+  PetscCheckFalse(!kdm->originaldm,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"DMKSP has a NULL originaldm");
   if (kdm->originaldm != dm) {  /* Copy on write */
     DMKSP oldkdm = kdm;
     ierr      = PetscInfo(dm,"Copying DMKSP due to write\n");CHKERRQ(ierr);
@@ -168,7 +168,7 @@ PetscErrorCode DMGetDMKSPWrite(DM dm,DMKSP *kspdm)
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dmsrc - DM to obtain context from
 -  dmdest - DM to add context to
 
@@ -199,7 +199,7 @@ PetscErrorCode DMCopyDMKSP(DM dmsrc,DM dmdest)
 
    Not Collective
 
-   Input Argument:
+   Input Parameters:
 +  dm - DM to be used with KSP
 .  func - matrix evaluation function, see KSPSetComputeOperators() for calling sequence
 -  ctx - context for matrix evaluation
@@ -231,10 +231,10 @@ PetscErrorCode DMKSPSetComputeOperators(DM dm,PetscErrorCode (*func)(KSP,Mat,Mat
 
    Not Collective
 
-   Input Argument:
+   Input Parameter:
 .  dm - DM to be used with KSP
 
-   Output Arguments:
+   Output Parameters:
 +  func - matrix evaluation function, see KSPSetComputeOperators() for calling sequence
 -  ctx - context for matrix evaluation
 
@@ -260,7 +260,7 @@ PetscErrorCode DMKSPGetComputeOperators(DM dm,PetscErrorCode (**func)(KSP,Mat,Ma
 
    Not Collective
 
-   Input Argument:
+   Input Parameters:
 +  dm - DM to be used with KSP
 .  func - right hand side evaluation function, see KSPSetComputeRHS() for calling sequence
 -  ctx - context for right hand side evaluation
@@ -292,7 +292,7 @@ PetscErrorCode DMKSPSetComputeRHS(DM dm,PetscErrorCode (*func)(KSP,Vec,void*),vo
 
    Not Collective
 
-   Input Argument:
+   Input Parameters:
 +  dm - DM to be used with KSP
 .  func - initial guess evaluation function, see KSPSetComputeInitialGuess() for calling sequence
 -  ctx - context for right hand side evaluation
@@ -323,10 +323,10 @@ PetscErrorCode DMKSPSetComputeInitialGuess(DM dm,PetscErrorCode (*func)(KSP,Vec,
 
    Not Collective
 
-   Input Argument:
+   Input Parameter:
 .  dm - DM to be used with KSP
 
-   Output Arguments:
+   Output Parameters:
 +  func - right hand side evaluation function, see KSPSetComputeRHS() for calling sequence
 -  ctx - context for right hand side evaluation
 
@@ -352,10 +352,10 @@ PetscErrorCode DMKSPGetComputeRHS(DM dm,PetscErrorCode (**func)(KSP,Vec,void*),v
 
    Not Collective
 
-   Input Argument:
+   Input Parameter:
 .  dm - DM to be used with KSP
 
-   Output Arguments:
+   Output Parameters:
 +  func - initial guess evaluation function, see KSPSetComputeInitialGuess() for calling sequence
 -  ctx - context for right hand side evaluation
 

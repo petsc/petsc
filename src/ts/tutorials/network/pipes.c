@@ -34,7 +34,7 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm,Wash wash)
   /* (1) all processes get global and local number of edges */
   ierr = MPI_Bcast(&numEdges,1,MPIU_INT,0,comm);CHKERRMPI(ierr);
   nedges = numEdges/size; /* local nedges */
-  if (!rank) {
+  if (rank == 0) {
     nedges += numEdges - size*(numEdges/size);
   }
   wash->Nedge = numEdges;
@@ -53,7 +53,7 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm,Wash wash)
   /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] own lists row %d - %d\n",rank,estart,eend);CHKERRQ(ierr); */
 
   /* (2) distribute row block edgelist to all processors */
-  if (!rank) {
+  if (rank == 0) {
     vtype = wash->vtype;
     for (i=1; i<size; i++) {
       /* proc[0] sends edgelist to proc[i] */
@@ -74,7 +74,7 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm,Wash wash)
   wash->edgelist = edgelist;
 
   /* (3) all processes get global and local number of vertices, without ghost vertices */
-  if (!rank) {
+  if (rank == 0) {
     for (i=0; i<size; i++) {
       for (e=eowners[i]; e<eowners[i+1]; e++) {
         v = edgelist[2*e];
@@ -195,7 +195,7 @@ PetscErrorCode WASHIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
 
     /* Evaluate upstream boundary */
     ierr = DMNetworkGetComponent(networkdm,vfrom,0,&type,(void**)&junction,NULL);CHKERRQ(ierr);
-    if (junction->type != JUNCTION && junction->type != RESERVOIR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"junction type is not supported");
+    PetscCheckFalse(junction->type != JUNCTION && junction->type != RESERVOIR,PETSC_COMM_SELF,PETSC_ERR_SUP,"junction type is not supported");
     juncx = (PipeField*)(xarr + offsetfrom);
     juncf = (PetscScalar*)(farr + offsetfrom);
 
@@ -204,7 +204,7 @@ PetscErrorCode WASHIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void* ctx)
 
     /* Evaluate downstream boundary */
     ierr = DMNetworkGetComponent(networkdm,vto,0,&type,(void**)&junction,NULL);CHKERRQ(ierr);
-    if (junction->type != JUNCTION && junction->type != VALVE) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"junction type is not supported");
+    PetscCheckFalse(junction->type != JUNCTION && junction->type != VALVE,PETSC_COMM_SELF,PETSC_ERR_SUP,"junction type is not supported");
     juncx = (PipeField*)(xarr + offsetto);
     juncf = (PetscScalar*)(farr + offsetto);
     nend  = pipe->nnodes - 1;
@@ -433,7 +433,7 @@ PetscErrorCode WashNetworkCleanUp(Wash wash)
   ierr = MPI_Comm_rank(wash->comm,&rank);CHKERRMPI(ierr);
   ierr = PetscFree(wash->edgelist);CHKERRQ(ierr);
   ierr = PetscFree(wash->vtype);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscFree2(wash->junction,wash->pipe);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -487,7 +487,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
     numVertices = 0;
     numEdges    = 0;
     edgelist    = NULL;
-    if (!rank) {
+    if (rank == 0) {
       numVertices = wash->nvertex;
       numEdges    = wash->nedge;
 
@@ -526,7 +526,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
     wash->nvertex = npipes + 1;
 
     /* Set local edges and vertices -- proc[0] sets entire network, then distributes */
-    if (!rank) {
+    if (rank == 0) {
       numVertices = wash->nvertex;
       numEdges    = wash->nedge;
 
@@ -564,7 +564,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
     wash->nvertex = npipes + 1;
 
     /* Set local edges and vertices -- proc[0] sets entire network, then distributes */
-    if (!rank) {
+    if (rank == 0) {
       numVertices = wash->nvertex;
       numEdges    = wash->nedge;
 
@@ -594,7 +594,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
   /* set edge global id */
   for (i=0; i<numEdges; i++) pipes[i].id = i;
 
-  if (!rank) { /* set vtype for proc[0] */
+  if (rank == 0) { /* set vtype for proc[0] */
     PetscInt v;
     ierr = PetscMalloc1(2*numEdges,&vtype);CHKERRQ(ierr);
     for (i=0; i<2*numEdges; i++) {
@@ -629,25 +629,20 @@ int main(int argc,char ** argv)
   Wash              wash;
   Junction          junctions,junction;
   Pipe              pipe,pipes;
-  PetscInt          KeyPipe,KeyJunction;
-  PetscInt          *edgelist = NULL,*vtype = NULL;
-  PetscInt          i,e,v,eStart,eEnd,vStart,vEnd,key;
-  PetscInt          vkey,type;
+  PetscInt          KeyPipe,KeyJunction,*edgelist = NULL,*vtype = NULL;
+  PetscInt          i,e,v,eStart,eEnd,vStart,vEnd,key,vkey,type;
+  PetscInt          steps=1,nedges,nnodes=6;
   const PetscInt    *cone;
   DM                networkdm;
   PetscMPIInt       size,rank;
   PetscReal         ftime;
   Vec               X;
   TS                ts;
-  PetscInt          steps=1;
   TSConvergedReason reason;
   PetscBool         viewpipes,viewjuncs,monipipes=PETSC_FALSE,userJac=PETSC_TRUE,viewdm=PETSC_FALSE,viewX=PETSC_FALSE;
   PetscInt          pipesCase=0;
   DMNetworkMonitor  monitor;
   MPI_Comm          comm;
-
-  PetscInt          nedges,nvertices; /* local number of edges and vertices */
-  PetscInt          nnodes = 6;
 
   ierr = PetscInitialize(&argc,&argv,"pOption",help);if (ierr) return ierr;
 
@@ -677,7 +672,6 @@ int main(int argc,char ** argv)
   /* Create a distributed wash network (user-specific) */
   ierr = WashNetworkCreate(comm,pipesCase,&wash);CHKERRQ(ierr);
   nedges      = wash->nedge;
-  nvertices   = wash->nvertex; /* local number of vertices, excluding ghosts */
   edgelist    = wash->edgelist;
   vtype       = wash->vtype;
   junctions   = wash->junction;
@@ -685,7 +679,7 @@ int main(int argc,char ** argv)
 
   /* Set up the network layout */
   ierr = DMNetworkSetNumSubNetworks(networkdm,PETSC_DECIDE,1);CHKERRQ(ierr);
-  ierr = DMNetworkAddSubnetwork(networkdm,NULL,nvertices,nedges,edgelist,NULL);CHKERRQ(ierr);
+  ierr = DMNetworkAddSubnetwork(networkdm,NULL,nedges,edgelist,NULL);CHKERRQ(ierr);
 
   ierr = DMNetworkLayoutSetUp(networkdm);CHKERRQ(ierr);
 
@@ -710,7 +704,7 @@ int main(int argc,char ** argv)
     }
   }
 
-  /* Add Junction component and number of variables to all local vertices, including ghost vertices! (current implementation requires setting the same number of variables at ghost points */
+  /* Add Junction component and number of variables to all local vertices */
   for (v = vStart; v < vEnd; v++) {
     ierr = DMNetworkAddComponent(networkdm,v,KeyJunction,&junctions[v-vStart],2);CHKERRQ(ierr);
   }
@@ -721,7 +715,7 @@ int main(int argc,char ** argv)
     ierr = DMNetworkGetPlex(networkdm,&plexdm);CHKERRQ(ierr);
     ierr = DMPlexGetPartitioner(plexdm, &part);CHKERRQ(ierr);
     ierr = PetscPartitionerSetType(part,PETSCPARTITIONERSIMPLE);CHKERRQ(ierr);
-    ierr = PetscOptionsSetValue(NULL,"-dm_plex_csr_via_mat","true");CHKERRQ(ierr); /* for parmetis */
+    ierr = PetscOptionsSetValue(NULL,"-dm_plex_csr_alg","mat");CHKERRQ(ierr); /* for parmetis */
   }
 
   /* Set up DM for use */

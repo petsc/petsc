@@ -93,7 +93,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   ierr = PetscOptionsReal("-inflow_state", "The inflow state", "ex18.c", options->inflowState, &options->inflowState, NULL);CHKERRQ(ierr);
   d    = 2;
   ierr = PetscOptionsRealArray("-source_loc", "The source location", "ex18.c", options->source, &d, &flg);CHKERRQ(ierr);
-  if (flg && d != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must give dim coordinates for the source location, not %d", d);
+  PetscCheckFalse(flg && d != 2,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must give dim coordinates for the source location, not %d", d);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -118,7 +118,7 @@ static PetscErrorCode ProcessMonitorOptions(MPI_Comm comm, AppCtx *options)
       ierr = PetscStrcasecmp(names[f], func->name, &match);CHKERRQ(ierr);
       if (match) break;
     }
-    if (!func) SETERRQ1(comm, PETSC_ERR_USER, "No known functional '%s'", names[f]);
+    PetscCheckFalse(!func,comm, PETSC_ERR_USER, "No known functional '%s'", names[f]);
     options->monitorFuncs[f] = func;
     /* Jed inserts a de-duplication of functionals here */
     ierr = PetscFree(names[f]);CHKERRQ(ierr);
@@ -669,7 +669,7 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
         break;
       }
       break;
-    default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Dimension %D not supported", dim);
+    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Dimension %D not supported", dim);
   }
   exactFuncs[0] = user->initialGuess[0];
   exactFuncs[1] = user->initialGuess[1];
@@ -696,11 +696,10 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
           break;
         case VEL_SHEAR:
           exactFuncs[0] = shear_bc; break;
-          break;
-        default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", dim);
+        default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", dim);
       }
       break;
-    default: SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Dimension %D not supported", dim);
+    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Dimension %D not supported", dim);
   }
   {
     PetscBool isImplicit = PETSC_FALSE;

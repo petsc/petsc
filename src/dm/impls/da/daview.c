@@ -20,10 +20,10 @@ PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = DMDAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&bx,&by,&bz,&stencil);CHKERRQ(ierr);
     mx   = mxCreateStructMatrix(1,1,8,(const char**)fnames);
-    if (!mx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to generate MATLAB struct array to hold DMDA information");
+    PetscCheckFalse(!mx,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to generate MATLAB struct array to hold DMDA information");
     mxSetFieldByNumber(mx,0,0,mxCreateDoubleScalar((double)dim));
     mxSetFieldByNumber(mx,0,1,mxCreateDoubleScalar((double)m));
     mxSetFieldByNumber(mx,0,2,mxCreateDoubleScalar((double)n));
@@ -56,7 +56,7 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
 
   ierr = DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&bx,&by,&bz,&stencil);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscViewerBinaryWrite(viewer,&dim,1,PETSC_INT);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&m,1,PETSC_INT);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT);CHKERRQ(ierr);
@@ -85,7 +85,7 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da, &dim, &M, &N, &P, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL);CHKERRQ(ierr);
-  if (!da->coordinates) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP, "VTK output requires DMDA coordinates.");
+  PetscCheckFalse(!da->coordinates,PetscObjectComm((PetscObject)da),PETSC_ERR_SUP, "VTK output requires DMDA coordinates.");
   /* Write Header */
   ierr = PetscViewerASCIIPrintf(viewer,"# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Structured Mesh Example\n");CHKERRQ(ierr);
@@ -120,12 +120,17 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 
    Output Parameters:
 +  dim      - dimension of the distributed array (1, 2, or 3)
-.  M, N, P  - global dimension in each direction of the array
-.  m, n, p  - corresponding number of procs in each dimension
+.  M        - global dimension in first direction of the array
+.  N        - global dimension in second direction of the array
+.  P        - global dimension in third direction of the array
+.  m        - corresponding number of procs in first dimension
+.  n        - corresponding number of procs in second dimension
+.  p        - corresponding number of procs in third dimension
 .  dof      - number of degrees of freedom per node
 .  s        - stencil width
-.  bx,by,bz - type of ghost nodes at boundary, one of DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED,
-              DM_BOUNDARY_MIRROR, DM_BOUNDARY_PERIODIC
+.  bx       - type of ghost nodes at boundary in first dimension
+.  by       - type of ghost nodes at boundary in second dimension
+.  bz       - type of ghost nodes at boundary in third dimension
 -  st       - stencil type, either DMDA_STENCIL_STAR or DMDA_STENCIL_BOX
 
    Level: beginner

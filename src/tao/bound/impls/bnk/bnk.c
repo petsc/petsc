@@ -12,17 +12,17 @@ static const char *BNK_AS[64] = {"none", "bertsekas"};
 
 PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
 {
-  PetscErrorCode               ierr;
-  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
-  PC                           pc;
-
-  PetscReal                    f_min, ftrial, prered, actred, kappa, sigma, resnorm;
-  PetscReal                    tau, tau_1, tau_2, tau_max, tau_min, max_radius;
-  PetscBool                    is_bfgs, is_jacobi, is_symmetric, sym_set;
-  PetscInt                     n, N, nDiff;
-  PetscInt                     i_max = 5;
-  PetscInt                     j_max = 1;
-  PetscInt                     i, j;
+  PetscErrorCode    ierr;
+  TAO_BNK           *bnk = (TAO_BNK *)tao->data;
+  PC                pc;
+  PetscReal         f_min, ftrial, prered, actred, kappa, sigma, resnorm;
+  PetscReal         tau, tau_1, tau_2, tau_max, tau_min, max_radius;
+  PetscBool         is_bfgs, is_jacobi, is_symmetric, sym_set;
+  PetscInt          n, N, nDiff;
+  PetscInt          i_max = 5;
+  PetscInt          j_max = 1;
+  PetscInt          i, j;
+  PetscVoidFunction kspTR;
 
   PetscFunctionBegin;
   /* Project the current point onto the feasible set */
@@ -45,7 +45,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   /* Test the initial point for convergence */
   ierr = VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->W);CHKERRQ(ierr);
   ierr = VecNorm(bnk->W, NORM_2, &resnorm);CHKERRQ(ierr);
-  if (PetscIsInfOrNanReal(bnk->f) || PetscIsInfOrNanReal(resnorm)) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+  PetscCheckFalse(PetscIsInfOrNanReal(bnk->f) || PetscIsInfOrNanReal(resnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
   ierr = TaoLogConvergenceHistory(tao,bnk->f,resnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
   ierr = TaoMonitor(tao,tao->niter,bnk->f,resnorm,0.0,1.0);CHKERRQ(ierr);
   ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
@@ -85,7 +85,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
     ierr = MatSetSizes(bnk->M, n, n, N, N);CHKERRQ(ierr);
     ierr = MatLMVMAllocate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
     ierr = MatIsSymmetricKnown(bnk->M, &sym_set, &is_symmetric);CHKERRQ(ierr);
-    if (!sym_set || !is_symmetric) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix in the LMVM preconditioner must be symmetric.");
+    PetscCheckFalse(!sym_set || !is_symmetric,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix in the LMVM preconditioner must be symmetric.");
   } else if (is_jacobi) {
     ierr = PCJacobiSetUseAbs(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
@@ -97,8 +97,9 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   /* Initialize trust-region radius.  The initialization is only performed
      when we are using Nash, Steihaug-Toint or the Generalized Lanczos method. */
   *needH = PETSC_TRUE;
-  if (bnk->is_nash || bnk->is_stcg || bnk->is_gltr) {
-    switch(initType) {
+  ierr = PetscObjectQueryFunction((PetscObject)tao->ksp,"KSPCGSetRadius_C",&kspTR);CHKERRQ(ierr);
+  if (kspTR) {
+    switch (initType) {
     case BNK_INIT_CONSTANT:
       /* Use the initial radius specified */
       tao->trust = tao->trust0;
@@ -114,13 +115,14 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
 
         if (*needH) {
           /* Compute the Hessian at the new step, and extract the inactive subsystem */
-          ierr = bnk->computehessian(tao);CHKERRQ(ierr);
+          ierr = (*bnk->computehessian)(tao);CHKERRQ(ierr);
           ierr = TaoBNKEstimateActiveSet(tao, BNK_AS_NONE);CHKERRQ(ierr);
           ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
           if (bnk->active_idx) {
             ierr = MatCreateSubMatrix(tao->hessian, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->H_inactive);CHKERRQ(ierr);
           } else {
-            ierr = MatDuplicate(tao->hessian, MAT_COPY_VALUES, &bnk->H_inactive);CHKERRQ(ierr);
+            ierr = PetscObjectReference((PetscObject)tao->hessian);CHKERRQ(ierr);
+            bnk->H_inactive = tao->hessian;
           }
           *needH = PETSC_FALSE;
         }
@@ -135,7 +137,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
           ierr = VecAXPY(bnk->W, -1.0, bnk->Xold);CHKERRQ(ierr);
           /* Compute the objective at the trial */
           ierr = TaoComputeObjective(tao, tao->solution, &ftrial);CHKERRQ(ierr);
-          if (PetscIsInfOrNanReal(bnk->f)) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+          PetscCheckFalse(PetscIsInfOrNanReal(bnk->f),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
           ierr = VecCopy(bnk->Xold, tao->solution);CHKERRQ(ierr);
           if (PetscIsInfOrNanReal(ftrial)) {
             tau = bnk->gamma1_i;
@@ -232,7 +234,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
           /* Test the new step for convergence */
           ierr = VecFischer(tao->solution, bnk->unprojected_gradient, tao->XL, tao->XU, bnk->W);CHKERRQ(ierr);
           ierr = VecNorm(bnk->W, NORM_2, &resnorm);CHKERRQ(ierr);
-          if (PetscIsInfOrNanReal(resnorm)) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
+          PetscCheckFalse(PetscIsInfOrNanReal(resnorm),PetscObjectComm((PetscObject)tao),PETSC_ERR_USER, "User provided compute function generated Inf or NaN");
           ierr = TaoLogConvergenceHistory(tao,bnk->f,resnorm,0.0,tao->ksp_its);CHKERRQ(ierr);
           ierr = TaoMonitor(tao,tao->niter,bnk->f,resnorm,0.0,1.0);CHKERRQ(ierr);
           ierr = (*tao->ops->convergencetest)(tao,tao->cnvP);CHKERRQ(ierr);
@@ -263,8 +265,8 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
 
 PetscErrorCode TaoBNKComputeHessian(Tao tao)
 {
-  PetscErrorCode               ierr;
-  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
+  PetscErrorCode ierr;
+  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
 
   PetscFunctionBegin;
   /* Compute the Hessian */
@@ -274,12 +276,8 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
     ierr = MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient);CHKERRQ(ierr);
   }
   /* Prepare the reduced sub-matrices for the inactive set */
-  if (bnk->Hpre_inactive) {
-    ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);
-  }
-  if (bnk->H_inactive) {
-    ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(&bnk->Hpre_inactive);CHKERRQ(ierr);
+  ierr = MatDestroy(&bnk->H_inactive);CHKERRQ(ierr);
   if (bnk->active_idx) {
     ierr = MatCreateSubMatrix(tao->hessian, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->H_inactive);CHKERRQ(ierr);
     if (tao->hessian == tao->hessian_pre) {
@@ -292,12 +290,14 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
       ierr = PCLMVMSetIS(bnk->bfgs_pre, bnk->inactive_idx);CHKERRQ(ierr);
     }
   } else {
-    ierr = MatDuplicate(tao->hessian, MAT_COPY_VALUES, &bnk->H_inactive);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)tao->hessian);CHKERRQ(ierr);
+    bnk->H_inactive = tao->hessian;
     if (tao->hessian == tao->hessian_pre) {
       ierr = PetscObjectReference((PetscObject)bnk->H_inactive);CHKERRQ(ierr);
       bnk->Hpre_inactive = bnk->H_inactive;
     } else {
-      ierr = MatDuplicate(tao->hessian_pre, MAT_COPY_VALUES, &bnk->Hpre_inactive);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)tao->hessian_pre);
+      bnk->Hpre_inactive = tao->hessian_pre;
     }
     if (bnk->bfgs_pre) {
       ierr = PCLMVMClearIS(bnk->bfgs_pre);CHKERRQ(ierr);
@@ -312,9 +312,9 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
 
 PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
 {
-  PetscErrorCode               ierr;
-  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
-  PetscBool                    hessComputed, diagExists;
+  PetscErrorCode ierr;
+  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
+  PetscBool      hessComputed, diagExists;
 
   PetscFunctionBegin;
   switch (asType) {
@@ -430,11 +430,12 @@ PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate)
 
 PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *ksp_reason, PetscInt *step_type)
 {
-  PetscErrorCode               ierr;
-  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
-  PetscInt                     bfgsUpdates = 0;
-  PetscInt                     kspits;
-  PetscBool                    is_lmvm;
+  PetscErrorCode    ierr;
+  TAO_BNK           *bnk = (TAO_BNK *)tao->data;
+  PetscInt          bfgsUpdates = 0;
+  PetscInt          kspits;
+  PetscBool         is_lmvm;
+  PetscVoidFunction kspTR;
 
   PetscFunctionBegin;
   /* If there are no inactive variables left, save some computation and return an adjusted zero step
@@ -446,7 +447,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   }
 
   /* Shift the reduced Hessian matrix */
-  if ((shift) && (bnk->pert > 0)) {
+  if (shift && bnk->pert > 0) {
     ierr = PetscObjectTypeCompare((PetscObject)tao->hessian, MATLMVM, &is_lmvm);CHKERRQ(ierr);
     if (is_lmvm) {
       ierr = MatShift(tao->hessian, bnk->pert);CHKERRQ(ierr);
@@ -472,12 +473,13 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
     bnk->G_inactive = bnk->unprojected_gradient;
     bnk->X_inactive = tao->stepdirection;
   }
-  if (bnk->is_nash || bnk->is_stcg || bnk->is_gltr) {
+  ierr = PetscObjectQueryFunction((PetscObject)tao->ksp,"KSPCGSetRadius_C",&kspTR);CHKERRQ(ierr);
+  if (kspTR) {
     ierr = KSPCGSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp, bnk->G_inactive, bnk->X_inactive);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
-    tao->ksp_its+=kspits;
-    tao->ksp_tot_its+=kspits;
+    tao->ksp_its += kspits;
+    tao->ksp_tot_its += kspits;
     ierr = KSPCGGetNormD(tao->ksp,&bnk->dnorm);CHKERRQ(ierr);
 
     if (0.0 == tao->trust) {
@@ -500,18 +502,18 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
         ierr = KSPCGSetRadius(tao->ksp,tao->trust);CHKERRQ(ierr);
         ierr = KSPSolve(tao->ksp, bnk->G_inactive, bnk->X_inactive);CHKERRQ(ierr);
         ierr = KSPGetIterationNumber(tao->ksp,&kspits);CHKERRQ(ierr);
-        tao->ksp_its+=kspits;
-        tao->ksp_tot_its+=kspits;
+        tao->ksp_its += kspits;
+        tao->ksp_tot_its += kspits;
         ierr = KSPCGGetNormD(tao->ksp,&bnk->dnorm);CHKERRQ(ierr);
 
-        if (bnk->dnorm == 0.0) SETERRQ(PetscObjectComm((PetscObject)tao),PETSC_ERR_PLIB, "Initial direction zero");
+        PetscCheckFalse(bnk->dnorm == 0.0,PetscObjectComm((PetscObject)tao),PETSC_ERR_PLIB, "Initial direction zero");
       }
     }
   } else {
     ierr = KSPSolve(tao->ksp, bnk->G_inactive, bnk->X_inactive);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(tao->ksp, &kspits);CHKERRQ(ierr);
     tao->ksp_its += kspits;
-    tao->ksp_tot_its+=kspits;
+    tao->ksp_tot_its += kspits;
   }
   /* Restore sub vectors back */
   if (bnk->active_idx) {
@@ -559,8 +561,8 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
 
 PetscErrorCode TaoBNKRecomputePred(Tao tao, Vec S, PetscReal *prered)
 {
-  PetscErrorCode               ierr;
-  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
+  PetscErrorCode ierr;
+  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
 
   PetscFunctionBegin;
   /* Extract subvectors associated with the inactive set */
@@ -596,11 +598,10 @@ PetscErrorCode TaoBNKRecomputePred(Tao tao, Vec S, PetscReal *prered)
 
 PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, PetscInt *stepType)
 {
-  PetscErrorCode               ierr;
-  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
-
-  PetscReal                    gdx, e_min;
-  PetscInt                     bfgsUpdates;
+  PetscErrorCode ierr;
+  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
+  PetscReal      gdx, e_min;
+  PetscInt       bfgsUpdates;
 
   PetscFunctionBegin;
   switch (*stepType) {
@@ -610,9 +611,12 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
       /* Newton step is not descent or direction produced Inf or NaN
         Update the perturbation for next time */
       if (bnk->pert <= 0.0) {
+        PetscBool is_gltr;
+
         /* Initialize the perturbation */
         bnk->pert = PetscMin(bnk->imax, PetscMax(bnk->imin, bnk->imfac * bnk->gnorm));
-        if (bnk->is_gltr) {
+        ierr = PetscObjectTypeCompare((PetscObject)(tao->ksp),KSPGLTR,&is_gltr);CHKERRQ(ierr);
+        if (is_gltr) {
           ierr = KSPGLTRGetMinEig(tao->ksp,&e_min);CHKERRQ(ierr);
           bnk->pert = PetscMax(bnk->pert, -e_min);
         }
@@ -669,9 +673,12 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
       case KSP_CONVERGED_CG_NEG_CURVE:
         /* Matrix or preconditioner is indefinite; increase perturbation */
         if (bnk->pert <= 0.0) {
+          PetscBool is_gltr;
+
           /* Initialize the perturbation */
           bnk->pert = PetscMin(bnk->imax, PetscMax(bnk->imin, bnk->imfac * bnk->gnorm));
-          if (bnk->is_gltr) {
+          ierr = PetscObjectTypeCompare((PetscObject)(tao->ksp),KSPGLTR,&is_gltr);CHKERRQ(ierr);
+          if (is_gltr) {
             ierr = KSPGLTRGetMinEig(tao->ksp, &e_min);CHKERRQ(ierr);
             bnk->pert = PetscMax(bnk->pert, -e_min);
           }
@@ -730,12 +737,11 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
 
 PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *steplen, TaoLineSearchConvergedReason *reason)
 {
-  TAO_BNK        *bnk = (TAO_BNK *)tao->data;
-  PetscErrorCode ierr;
+  TAO_BNK                      *bnk = (TAO_BNK *)tao->data;
+  PetscErrorCode               ierr;
   TaoLineSearchConvergedReason ls_reason;
-
-  PetscReal      e_min, gdx;
-  PetscInt       bfgsUpdates;
+  PetscReal                    e_min, gdx;
+  PetscInt                     bfgsUpdates;
 
   PetscFunctionBegin;
   /* Perform the linesearch */
@@ -753,9 +759,12 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *s
       /* Failed to obtain acceptable iterate with Newton step
          Update the perturbation for next time */
       if (bnk->pert <= 0.0) {
+        PetscBool is_gltr;
+
         /* Initialize the perturbation */
         bnk->pert = PetscMin(bnk->imax, PetscMax(bnk->imin, bnk->imfac * bnk->gnorm));
-        if (bnk->is_gltr) {
+        ierr = PetscObjectTypeCompare((PetscObject)(tao->ksp),KSPGLTR,&is_gltr);CHKERRQ(ierr);
+        if (is_gltr) {
           ierr = KSPGLTRGetMinEig(tao->ksp,&e_min);CHKERRQ(ierr);
           bnk->pert = PetscMax(bnk->pert, -e_min);
         }
@@ -1029,7 +1038,6 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
   TAO_BNK        *bnk = (TAO_BNK *)tao->data;
   PetscErrorCode ierr;
   PetscInt       i;
-  KSPType        ksp_type;
 
   PetscFunctionBegin;
   if (!tao->gradient) {
@@ -1083,25 +1091,21 @@ PetscErrorCode TaoSetUp_BNK(Tao tao)
     ierr = PetscObjectReference((PetscObject)(tao->stepdirection));CHKERRQ(ierr);
     ierr = VecDestroy(&bnk->bncg->stepdirection);CHKERRQ(ierr);
     bnk->bncg->stepdirection = tao->stepdirection;
-    ierr = TaoSetInitialVector(bnk->bncg, tao->solution);CHKERRQ(ierr);
+    ierr = TaoSetSolution(bnk->bncg, tao->solution);CHKERRQ(ierr);
     /* Copy over some settings from BNK into BNCG */
     ierr = TaoSetMaximumIterations(bnk->bncg, bnk->max_cg_its);CHKERRQ(ierr);
     ierr = TaoSetTolerances(bnk->bncg, tao->gatol, tao->grtol, tao->gttol);CHKERRQ(ierr);
     ierr = TaoSetFunctionLowerBound(bnk->bncg, tao->fmin);CHKERRQ(ierr);
     ierr = TaoSetConvergenceTest(bnk->bncg, tao->ops->convergencetest, tao->cnvP);CHKERRQ(ierr);
-    ierr = TaoSetObjectiveRoutine(bnk->bncg, tao->ops->computeobjective, tao->user_objP);CHKERRQ(ierr);
-    ierr = TaoSetGradientRoutine(bnk->bncg, tao->ops->computegradient, tao->user_gradP);CHKERRQ(ierr);
-    ierr = TaoSetObjectiveAndGradientRoutine(bnk->bncg, tao->ops->computeobjectiveandgradient, tao->user_objgradP);CHKERRQ(ierr);
+    ierr = TaoSetObjective(bnk->bncg, tao->ops->computeobjective, tao->user_objP);CHKERRQ(ierr);
+    ierr = TaoSetGradient(bnk->bncg, NULL, tao->ops->computegradient, tao->user_gradP);CHKERRQ(ierr);
+    ierr = TaoSetObjectiveAndGradient(bnk->bncg, NULL, tao->ops->computeobjectiveandgradient, tao->user_objgradP);CHKERRQ(ierr);
     ierr = PetscObjectCopyFortranFunctionPointers((PetscObject)tao, (PetscObject)(bnk->bncg));CHKERRQ(ierr);
     for (i=0; i<tao->numbermonitors; ++i) {
       ierr = TaoSetMonitor(bnk->bncg, tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i]);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)(tao->monitorcontext[i]));CHKERRQ(ierr);
     }
   }
-  ierr = KSPGetType(tao->ksp,&ksp_type);CHKERRQ(ierr);
-  ierr = PetscStrcmp(ksp_type,KSPNASH,&bnk->is_nash);CHKERRQ(ierr);
-  ierr = PetscStrcmp(ksp_type,KSPSTCG,&bnk->is_stcg);CHKERRQ(ierr);
-  ierr = PetscStrcmp(ksp_type,KSPGLTR,&bnk->is_gltr);CHKERRQ(ierr);
   bnk->X_inactive = NULL;
   bnk->G_inactive = NULL;
   bnk->inactive_work = NULL;
@@ -1209,8 +1213,13 @@ PetscErrorCode TaoSetFromOptions_BNK(PetscOptionItems *PetscOptionsObject,Tao ta
   ierr = PetscOptionsReal("-tao_bnk_as_step", "(developer) step length used when estimating actively bounded variables", "", bnk->as_step, &bnk->as_step,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-tao_bnk_max_cg_its", "number of BNCG iterations to take for each Newton step", "", bnk->max_cg_its, &bnk->max_cg_its,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+
+  ierr = TaoSetOptionsPrefix(bnk->bncg,((PetscObject)(tao))->prefix);CHKERRQ(ierr);
+  ierr = TaoAppendOptionsPrefix(bnk->bncg,"tao_bnk_cg_");CHKERRQ(ierr);
   ierr = TaoSetFromOptions(bnk->bncg);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
+
+  ierr = KSPSetOptionsPrefix(tao->ksp,((PetscObject)(tao))->prefix);CHKERRQ(ierr);
+  ierr = KSPAppendOptionsPrefix(tao->ksp,"tao_bnk_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1263,55 +1272,55 @@ PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
   trust-region methods, or a line search, or a heuristic mixture of both.
 
     Options Database Keys:
-+ -max_cg_its - maximum number of bounded conjugate-gradient iterations taken in each Newton loop
-. -init_type - trust radius initialization method ("constant", "direction", "interpolation")
-. -update_type - trust radius update method ("step", "direction", "interpolation")
-. -as_type - active-set estimation method ("none", "bertsekas")
-. -as_tol - (developer) initial tolerance used in estimating bounded active variables (-as_type bertsekas)
-. -as_step - (developer) trial step length used in estimating bounded active variables (-as_type bertsekas)
-. -sval - (developer) Hessian perturbation starting value
-. -imin - (developer) minimum initial Hessian perturbation
-. -imax - (developer) maximum initial Hessian perturbation
-. -pmin - (developer) minimum Hessian perturbation
-. -pmax - (developer) aximum Hessian perturbation
-. -pgfac - (developer) Hessian perturbation growth factor
-. -psfac - (developer) Hessian perturbation shrink factor
-. -imfac - (developer) initial merit factor for Hessian perturbation
-. -pmgfac - (developer) merit growth factor for Hessian perturbation
-. -pmsfac - (developer) merit shrink factor for Hessian perturbation
-. -eta1 - (developer) threshold for rejecting step (-update_type reduction)
-. -eta2 - (developer) threshold for accepting marginal step (-update_type reduction)
-. -eta3 - (developer) threshold for accepting reasonable step (-update_type reduction)
-. -eta4 - (developer) threshold for accepting good step (-update_type reduction)
-. -alpha1 - (developer) radius reduction factor for rejected step (-update_type reduction)
-. -alpha2 - (developer) radius reduction factor for marginally accepted bad step (-update_type reduction)
-. -alpha3 - (developer) radius increase factor for reasonable accepted step (-update_type reduction)
-. -alpha4 - (developer) radius increase factor for good accepted step (-update_type reduction)
-. -alpha5 - (developer) radius increase factor for very good accepted step (-update_type reduction)
-. -epsilon - (developer) tolerance for small pred/actual ratios that trigger automatic step acceptance (-update_type reduction)
-. -mu1 - (developer) threshold for accepting very good step (-update_type interpolation)
-. -mu2 - (developer) threshold for accepting good step (-update_type interpolation)
-. -gamma1 - (developer) radius reduction factor for rejected very bad step (-update_type interpolation)
-. -gamma2 - (developer) radius reduction factor for rejected bad step (-update_type interpolation)
-. -gamma3 - (developer) radius increase factor for accepted good step (-update_type interpolation)
-. -gamma4 - (developer) radius increase factor for accepted very good step (-update_type interpolation)
-. -theta - (developer) trust region interpolation factor (-update_type interpolation)
-. -nu1 - (developer) threshold for small line-search step length (-update_type step)
-. -nu2 - (developer) threshold for reasonable line-search step length (-update_type step)
-. -nu3 - (developer) threshold for large line-search step length (-update_type step)
-. -nu4 - (developer) threshold for very large line-search step length (-update_type step)
-. -omega1 - (developer) radius reduction factor for very small line-search step length (-update_type step)
-. -omega2 - (developer) radius reduction factor for small line-search step length (-update_type step)
-. -omega3 - (developer) radius factor for decent line-search step length (-update_type step)
-. -omega4 - (developer) radius increase factor for large line-search step length (-update_type step)
-. -omega5 - (developer) radius increase factor for very large line-search step length (-update_type step)
-. -mu1_i -  (developer) threshold for accepting very good step (-init_type interpolation)
-. -mu2_i -  (developer) threshold for accepting good step (-init_type interpolation)
-. -gamma1_i - (developer) radius reduction factor for rejected very bad step (-init_type interpolation)
-. -gamma2_i - (developer) radius reduction factor for rejected bad step (-init_type interpolation)
-. -gamma3_i - (developer) radius increase factor for accepted good step (-init_type interpolation)
-. -gamma4_i - (developer) radius increase factor for accepted very good step (-init_type interpolation)
-- -theta_i - (developer) trust region interpolation factor (-init_type interpolation)
++ -tao_bnk_max_cg_its - maximum number of bounded conjugate-gradient iterations taken in each Newton loop
+. -tao_bnk_init_type - trust radius initialization method ("constant", "direction", "interpolation")
+. -tao_bnk_update_type - trust radius update method ("step", "direction", "interpolation")
+. -tao_bnk_as_type - active-set estimation method ("none", "bertsekas")
+. -tao_bnk_as_tol - (developer) initial tolerance used in estimating bounded active variables (-as_type bertsekas)
+. -tao_bnk_as_step - (developer) trial step length used in estimating bounded active variables (-as_type bertsekas)
+. -tao_bnk_sval - (developer) Hessian perturbation starting value
+. -tao_bnk_imin - (developer) minimum initial Hessian perturbation
+. -tao_bnk_imax - (developer) maximum initial Hessian perturbation
+. -tao_bnk_pmin - (developer) minimum Hessian perturbation
+. -tao_bnk_pmax - (developer) aximum Hessian perturbation
+. -tao_bnk_pgfac - (developer) Hessian perturbation growth factor
+. -tao_bnk_psfac - (developer) Hessian perturbation shrink factor
+. -tao_bnk_imfac - (developer) initial merit factor for Hessian perturbation
+. -tao_bnk_pmgfac - (developer) merit growth factor for Hessian perturbation
+. -tao_bnk_pmsfac - (developer) merit shrink factor for Hessian perturbation
+. -tao_bnk_eta1 - (developer) threshold for rejecting step (-update_type reduction)
+. -tao_bnk_eta2 - (developer) threshold for accepting marginal step (-update_type reduction)
+. -tao_bnk_eta3 - (developer) threshold for accepting reasonable step (-update_type reduction)
+. -tao_bnk_eta4 - (developer) threshold for accepting good step (-update_type reduction)
+. -tao_bnk_alpha1 - (developer) radius reduction factor for rejected step (-update_type reduction)
+. -tao_bnk_alpha2 - (developer) radius reduction factor for marginally accepted bad step (-update_type reduction)
+. -tao_bnk_alpha3 - (developer) radius increase factor for reasonable accepted step (-update_type reduction)
+. -tao_bnk_alpha4 - (developer) radius increase factor for good accepted step (-update_type reduction)
+. -tao_bnk_alpha5 - (developer) radius increase factor for very good accepted step (-update_type reduction)
+. -tao_bnk_epsilon - (developer) tolerance for small pred/actual ratios that trigger automatic step acceptance (-update_type reduction)
+. -tao_bnk_mu1 - (developer) threshold for accepting very good step (-update_type interpolation)
+. -tao_bnk_mu2 - (developer) threshold for accepting good step (-update_type interpolation)
+. -tao_bnk_gamma1 - (developer) radius reduction factor for rejected very bad step (-update_type interpolation)
+. -tao_bnk_gamma2 - (developer) radius reduction factor for rejected bad step (-update_type interpolation)
+. -tao_bnk_gamma3 - (developer) radius increase factor for accepted good step (-update_type interpolation)
+. -tao_bnk_gamma4 - (developer) radius increase factor for accepted very good step (-update_type interpolation)
+. -tao_bnk_theta - (developer) trust region interpolation factor (-update_type interpolation)
+. -tao_bnk_nu1 - (developer) threshold for small line-search step length (-update_type step)
+. -tao_bnk_nu2 - (developer) threshold for reasonable line-search step length (-update_type step)
+. -tao_bnk_nu3 - (developer) threshold for large line-search step length (-update_type step)
+. -tao_bnk_nu4 - (developer) threshold for very large line-search step length (-update_type step)
+. -tao_bnk_omega1 - (developer) radius reduction factor for very small line-search step length (-update_type step)
+. -tao_bnk_omega2 - (developer) radius reduction factor for small line-search step length (-update_type step)
+. -tao_bnk_omega3 - (developer) radius factor for decent line-search step length (-update_type step)
+. -tao_bnk_omega4 - (developer) radius increase factor for large line-search step length (-update_type step)
+. -tao_bnk_omega5 - (developer) radius increase factor for very large line-search step length (-update_type step)
+. -tao_bnk_mu1_i -  (developer) threshold for accepting very good step (-init_type interpolation)
+. -tao_bnk_mu2_i -  (developer) threshold for accepting good step (-init_type interpolation)
+. -tao_bnk_gamma1_i - (developer) radius reduction factor for rejected very bad step (-init_type interpolation)
+. -tao_bnk_gamma2_i - (developer) radius reduction factor for rejected bad step (-init_type interpolation)
+. -tao_bnk_gamma3_i - (developer) radius increase factor for accepted good step (-init_type interpolation)
+. -tao_bnk_gamma4_i - (developer) radius increase factor for accepted very good step (-init_type interpolation)
+- -tao_bnk_theta_i - (developer) trust region interpolation factor (-init_type interpolation)
 
   Level: beginner
 M*/
@@ -1409,33 +1418,26 @@ PetscErrorCode TaoCreate_BNK(Tao tao)
   bnk->dmin = 1.0e-6;
   bnk->dmax = 1.0e6;
 
-  bnk->M               = NULL;
-  bnk->bfgs_pre        = NULL;
-  bnk->init_type       = BNK_INIT_INTERPOLATION;
-  bnk->update_type     = BNK_UPDATE_REDUCTION;
-  bnk->as_type         = BNK_AS_BERTSEKAS;
-
-  bnk->is_stcg         = PETSC_FALSE;
-  bnk->is_gltr         = PETSC_FALSE;
-  bnk->is_nash         = PETSC_FALSE;
+  bnk->M           = NULL;
+  bnk->bfgs_pre    = NULL;
+  bnk->init_type   = BNK_INIT_INTERPOLATION;
+  bnk->update_type = BNK_UPDATE_REDUCTION;
+  bnk->as_type     = BNK_AS_BERTSEKAS;
 
   /* Create the embedded BNCG solver */
   ierr = TaoCreate(PetscObjectComm((PetscObject)tao), &bnk->bncg);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)bnk->bncg, (PetscObject)tao, 1);CHKERRQ(ierr);
-  ierr = TaoSetOptionsPrefix(bnk->bncg, "tao_bnk_");CHKERRQ(ierr);
   ierr = TaoSetType(bnk->bncg, TAOBNCG);CHKERRQ(ierr);
 
   /* Create the line search */
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1);CHKERRQ(ierr);
-  ierr = TaoLineSearchSetOptionsPrefix(tao->linesearch,tao->hdr.prefix);CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch,morethuente_type);CHKERRQ(ierr);
   ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao);CHKERRQ(ierr);
 
   /*  Set linear solver to default for symmetric matrices */
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject)tao->ksp, (PetscObject)tao, 1);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(tao->ksp,"tao_bnk_");CHKERRQ(ierr);
   ierr = KSPSetType(tao->ksp,KSPSTCG);CHKERRQ(ierr);
   ierr = KSPGetPC(tao->ksp, &pc);CHKERRQ(ierr);
   ierr = PCSetType(pc, PCLMVM);CHKERRQ(ierr);

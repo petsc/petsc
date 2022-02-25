@@ -15,10 +15,10 @@
 !!/*T
 !   Concepts: TAO^Solving a bound constrained minimization problem
 !   Routines: TaoCreate();
-!   Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
-!   Routines: TaoSetHessianRoutine();
+!   Routines: TaoSetType(); TaoSetObjectiveAndGradient();
+!   Routines: TaoSetHessian();
 !   Routines: TaoSetVariableBoundsRoutine();
-!   Routines: TaoSetInitialVector();
+!   Routines: TaoSetSolution();
 !   Routines: TaoSetFromOptions();
 !   Routines: TaoSolve();
 !   Routines: TaoDestroy();
@@ -166,11 +166,11 @@
 
 !     Set minimization function and gradient, hessian evaluation functions
 
-      call TaoSetObjectiveAndGradientRoutine(tao,                       &
+      call TaoSetObjectiveAndGradient(tao,PETSC_NULL_VEC,               &
      &     FormFunctionGradient,0,ierr)
       CHKERRA(ierr)
 
-      call TaoSetHessianRoutine(tao,H,H,FormHessian,                    &
+      call TaoSetHessian(tao,H,H,FormHessian,                    &
      &     0, ierr)
       CHKERRA(ierr)
 
@@ -184,7 +184,7 @@
 ! Set the initial solution guess
       call MSA_InitialPoint(x, ierr)
       CHKERRA(ierr)
-      call TaoSetInitialVector(tao,x,ierr)
+      call TaoSetSolution(tao,x,ierr)
       CHKERRA(ierr)
 
 ! Check for any tao command line options

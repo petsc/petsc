@@ -1,6 +1,6 @@
 ALL: lib
 
-DIRS = ssls asls # isls rscs
+DIRS = ssls asls
 LOCDIR = src/tao/complementarity/impls/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

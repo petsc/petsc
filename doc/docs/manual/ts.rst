@@ -157,11 +157,11 @@ Basic TS Options
 
 The user first creates a ``TS`` object with the command
 
-::
+.. code-block::
 
    int TSCreate(MPI_Comm comm,TS *ts);
 
-::
+.. code-block::
 
    int TSSetProblemType(TS ts,TSProblemType problemtype);
 
@@ -170,13 +170,13 @@ The ``TSProblemType`` is one of ``TS_LINEAR`` or ``TS_NONLINEAR``.
 To set up ``TS`` for solving an ODE, one must set the “initial
 conditions” for the ODE with
 
-::
+.. code-block::
 
    TSSetSolution(TS ts, Vec initialsolution);
 
 One can set the solution method with the routine
 
-::
+.. code-block::
 
    TSSetType(TS ts,TSType type);
 
@@ -260,19 +260,19 @@ A list of available methods is given in the following table.
 
 Set the initial time with the command
 
-::
+.. code-block::
 
    TSSetTime(TS ts,PetscReal time);
 
 One can change the timestep with the command
 
-::
+.. code-block::
 
    TSSetTimeStep(TS ts,PetscReal dt);
 
 can determine the current timestep with the routine
 
-::
+.. code-block::
 
    TSGetTimeStep(TS ts,PetscReal* dt);
 
@@ -282,14 +282,14 @@ the solution form :math:`u^n` to :math:`u^{n+1}.`
 One sets the total number of timesteps to run or the total time to run
 (whatever is first) with the commands
 
-::
+.. code-block::
 
    TSSetMaxSteps(TS ts,PetscInt maxsteps);
    TSSetMaxTime(TS ts,PetscReal maxtime);
 
 and determines the behavior near the final time with
 
-::
+.. code-block::
 
    TSSetExactFinalTime(TS ts,TSExactFinalTimeOption eftopt);
 
@@ -298,32 +298,32 @@ where ``eftopt`` is one of
 ``TS_EXACTFINALTIME_MATCHSTEP``. One performs the requested number of
 time steps with
 
-::
+.. code-block::
 
    TSSolve(TS ts,Vec U);
 
 The solve call implicitly sets up the timestep context; this can be done
 explicitly with
 
-::
+.. code-block::
 
    TSSetUp(TS ts);
 
 One destroys the context with
 
-::
+.. code-block::
 
    TSDestroy(TS *ts);
 
 and views it with
 
-::
+.. code-block::
 
    TSView(TS ts,PetscViewer viewer);
 
 In place of ``TSSolve()``, a single step can be taken using
 
-::
+.. code-block::
 
    TSStep(TS ts);
 
@@ -1063,6 +1063,7 @@ The error tolerances are satisfied when :math:`\rm wlte\le 1.0`.
 The next step size is based on this error estimate, and determined by
 
 .. math::
+   :label: hnew
 
    \begin{aligned}
     \Delta t_{\rm new}(t)&=&\Delta t_{\rm{old}} \min(\alpha_{\max},
@@ -1078,8 +1079,8 @@ rejection is decreased.
 This adaptive controller works in the following way. After completing
 step :math:`k`, if :math:`\rm wlte_{k+1} \le 1.0`, then the step is
 accepted and the next step is modified according to
-(`[eq:hnew] <#eq:hnew>`__); otherwise, the step is rejected and retaken
-with the step length computed in (`[eq:hnew] <#eq:hnew>`__).
+eq:`hnew`; otherwise, the step is rejected and retaken
+with the step length computed in :eq:`hnew`.
 
 ``TSADAPTGLEE`` is an extension of the basic
 adaptor to treat :math:`{\rm Tol}_{\rm A}` and :math:`{\rm Tol}_{\rm R}`
@@ -1094,7 +1095,7 @@ For problems that involve discontinuous right hand sides, one can set an
 of discontinuities (zeros of :math:`g(t,u)`). Events can be defined
 through the event monitoring routine
 
-::
+.. code-block::
 
    TSSetEventHandler(TS ts,PetscInt nevents,PetscInt *direction,PetscBool *terminate,PetscErrorCode (*eventhandler)(TS,PetscReal,Vec,PetscScalar*,void* eventP),PetscErrorCode (*postevent)(TS,PetscInt,PetscInt[],PetscReal,Vec,PetscBool,void* eventP),void *eventP);
 
@@ -1120,6 +1121,16 @@ implicit time-stepping solvers ``TSTHETA``, ``TSARKIMEX``, and
 ``TSROSW``.
 
 .. _sec_tchem:
+
+Explicit integrators with finite flement mass matrices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Discretized finite element problems often have the form :math:`M \dot u = G(t, u)` where :math:`M` is the mass matrix.
+Such problems can be solved using ``DMTSSetIFunction()`` with implicit integrators.
+When :math:`M` is nonsingular (i.e., the problem is an ODE, not a DAE), explicit integrators can be applied to :math:`\dot u = M^{-1} G(t, u)` or :math:`\dot u = \hat M^{-1} G(t, u)`, where :math:`\hat M` is the lumped mass matrix.
+While the true mass matrix generally has a dense inverse and thus must be solved iteratively, the lumped mass matrix is diagonal (e.g., computed via collocated quadrature or row sums of :math:`M`).
+To have PETSc create and apply a (lumped) mass matrix automatically, first use ``DMTSSetRHSFunction()` to specify :math:`G` and set a ``PetscFE` using ``DMAddField()`` and ``DMCreateDS()``, then call either ``DMTSCreateRHSMassMatrix()`` or ``DMTSCreateRHSMassMatrixLumped()`` to automatically create the mass matrix and a ``KSP`` that will be used to apply :math:`M^{-1}`.
+This ``KSP`` can be customized using the ``"mass_"`` prefix.
 
 Using TChem from PETSc
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -1149,7 +1160,7 @@ the installation guide, ``docs/installation/index.htm``.)
 
 To use the Sundials integrators, call
 
-::
+.. code-block::
 
    TSSetType(TS ts,TSType TSSUNDIALS);
 
@@ -1158,7 +1169,7 @@ or use the command line option ``-ts_type`` ``sundials``.
 Sundials’ CVODE solver comes with two main integrator families, Adams
 and BDF (backward differentiation formula). One can select these with
 
-::
+.. code-block::
 
    TSSundialsSetType(TS ts,TSSundialsLmmType [SUNDIALS_ADAMS,SUNDIALS_BDF]);
 
@@ -1170,7 +1181,7 @@ nonlinear solvers, so one cannot change the nonlinear solver options via
 ``SNES``. Rather, Sundials uses the preconditioners within the ``PC``
 package of PETSc, which can be accessed via
 
-::
+.. code-block::
 
    TSSundialsGetPC(TS ts,PC *pc);
 
@@ -1179,7 +1190,7 @@ the usual runtime options can be employed via ``-pc_xxx``.
 
 Finally, one can set the Sundials tolerances via
 
-::
+.. code-block::
 
    TSSundialsSetTolerance(TS ts,double abs,double rel);
 
@@ -1188,7 +1199,7 @@ tolerance.
 
 Other PETSc-Sundials options include
 
-::
+.. code-block::
 
    TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType type);
 
@@ -1198,7 +1209,7 @@ with ``-ts_sundials_gramschmidt_type <modifed,unmodified>``.
 
 The routine
 
-::
+.. code-block::
 
    TSSundialsSetMaxl(TS ts,PetscInt restart);
 
@@ -1226,8 +1237,5 @@ may be set in the options database with ``-ts_sundials_maxl`` ``maxl``.
 
     <hr>
 
-.. bibliography:: /../src/docs/tex/petsc.bib
-   :filter: docname in docnames
-
-.. bibliography:: /../src/docs/tex/petscapp.bib
+.. bibliography:: /petsc.bib
    :filter: docname in docnames

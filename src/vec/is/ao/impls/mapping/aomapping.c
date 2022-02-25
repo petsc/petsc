@@ -39,10 +39,10 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   if (rank) PetscFunctionReturn(0);
   ierr = PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
-    PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %D\n", aomap->N);
+    PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %" PetscInt_FMT "\n", aomap->N);
     PetscViewerASCIIPrintf(viewer, "   App.   PETSc\n");
     for (i = 0; i < aomap->N; i++) {
-      PetscViewerASCIIPrintf(viewer, "%D   %D    %D\n", i, aomap->app[i], aomap->petsc[aomap->appPerm[i]]);
+      PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT "   %" PetscInt_FMT "    %" PetscInt_FMT "\n", i, aomap->app[i], aomap->petsc[aomap->appPerm[i]]);
     }
   }
   PetscFunctionReturn(0);
@@ -118,14 +118,12 @@ PetscErrorCode AOApplicationToPetsc_Mapping(AO ao, PetscInt n, PetscInt *ia)
   PetscFunctionReturn(0);
 }
 
-static struct _AOOps AOps = {AOView_Mapping,
-                             AODestroy_Mapping,
-                             AOPetscToApplication_Mapping,
-                             AOApplicationToPetsc_Mapping,
-                             NULL,
-                             NULL,
-                             NULL,
-                             NULL};
+static struct _AOOps AOps = {
+  PetscDesignatedInitializer(view,AOView_Mapping),
+  PetscDesignatedInitializer(destroy,AODestroy_Mapping),
+  PetscDesignatedInitializer(petsctoapplication,AOPetscToApplication_Mapping),
+  PetscDesignatedInitializer(applicationtopetsc,AOApplicationToPetsc_Mapping),
+};
 
 /*@C
   AOMappingHasApplicationIndex - Searches for the supplied application index.
@@ -309,7 +307,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   if (PetscDefined(USE_DEBUG)) {
     /* Check that the permutations are complementary */
     for (i = 0; i < N; i++) {
-      if (i != aomap->appPerm[aomap->petscPerm[i]]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid ordering");
+      PetscCheckFalse(i != aomap->appPerm[aomap->petscPerm[i]],PETSC_COMM_SELF,PETSC_ERR_PLIB, "Invalid ordering");
     }
   }
   /* Cleanup */
@@ -358,7 +356,7 @@ PetscErrorCode  AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
   ierr = ISGetLocalSize(isapp, &napp);CHKERRQ(ierr);
   if (ispetsc) {
     ierr = ISGetLocalSize(ispetsc, &npetsc);CHKERRQ(ierr);
-    if (napp != npetsc) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Local IS lengths must match");
+    PetscCheckFalse(napp != npetsc,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Local IS lengths must match");
     ierr = ISGetIndices(ispetsc, &mypetsc);CHKERRQ(ierr);
   } else {
     mypetsc = NULL;

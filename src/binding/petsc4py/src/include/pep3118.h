@@ -32,7 +32,7 @@
 # define _PyPetsc_FMT_PETSC_SCALAR  _PyPetsc_FMT_PETSC_REAL
 #endif
 
-PETSC_STATIC_INLINE
+static inline
 int PyPetscBuffer_FillInfo(Py_buffer *view,
                            void *buf, PetscInt count, char typechar,
                            int readonly, int flags)
@@ -81,7 +81,7 @@ int PyPetscBuffer_FillInfo(Py_buffer *view,
   return 0;
 }
 
-PETSC_STATIC_INLINE
+static inline
 void PyPetscBuffer_Release(Py_buffer *view)
 {
   if (view == NULL) return;

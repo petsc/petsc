@@ -42,6 +42,7 @@ struct _KSPGuessOps {
   PetscErrorCode (*formguess)(KSPGuess,Vec,Vec); /* Form initial guess */
   PetscErrorCode (*update)(KSPGuess,Vec,Vec);    /* Update database */
   PetscErrorCode (*setfromoptions)(KSPGuess);
+  PetscErrorCode (*settolerance)(KSPGuess,PetscReal);
   PetscErrorCode (*setup)(KSPGuess);
   PetscErrorCode (*destroy)(KSPGuess);
   PetscErrorCode (*view)(KSPGuess,PetscViewer);
@@ -101,13 +102,13 @@ struct _p_KSP {
                                       passed back to the user */
   PetscReal     *res_hist;            /* If !0 stores residual each at iteration */
   PetscReal     *res_hist_alloc;      /* If !0 means user did not provide buffer, needs deallocation */
-  PetscInt      res_hist_len;         /* current size of residual history array */
-  PetscInt      res_hist_max;         /* actual amount of storage in residual history */
+  size_t        res_hist_len;         /* current size of residual history array */
+  size_t        res_hist_max;         /* actual amount of storage in residual history */
   PetscBool     res_hist_reset;       /* reset history to length zero for each new solve */
   PetscReal     *err_hist;            /* If !0 stores error at each iteration */
   PetscReal     *err_hist_alloc;      /* If !0 means user did not provide buffer, needs deallocation */
-  PetscInt      err_hist_len;         /* current size of error history array */
-  PetscInt      err_hist_max;         /* actual amount of storage in error history */
+  size_t        err_hist_len;         /* current size of error history array */
+  size_t        err_hist_max;         /* actual amount of storage in error history */
   PetscBool     err_hist_reset;       /* reset history to length zero for each new solve */
 
   PetscInt      chknorm;             /* only compute/check norm if iterations is great than this */
@@ -196,7 +197,7 @@ typedef struct {
   Vec        work;
 } KSPConvergedDefaultCtx;
 
-PETSC_STATIC_INLINE PetscErrorCode KSPLogResidualHistory(KSP ksp,PetscReal norm)
+static inline PetscErrorCode KSPLogResidualHistory(KSP ksp,PetscReal norm)
 {
   PetscErrorCode ierr;
 
@@ -209,7 +210,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSPLogResidualHistory(KSP ksp,PetscReal norm)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode KSPLogErrorHistory(KSP ksp)
+static inline PetscErrorCode KSPLogErrorHistory(KSP ksp)
 {
   DM             dm;
   PetscErrorCode ierr;
@@ -232,7 +233,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSPLogErrorHistory(KSP ksp)
     if (0) {
       ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
       ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
-      if (Nf > 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle number of fields %D > 1 right now", Nf);
+      PetscCheck(Nf <= 1,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle number of fields %D > 1 right now", Nf);
       ierr = PetscDSGetExactSolution(ds, 0, &exactSol, &exactCtx);CHKERRQ(ierr);
       ierr = DMComputeL2FieldDiff(dm, 0.0, &exactSol, &exactCtx, u, &error);CHKERRQ(ierr);
     } else {
@@ -245,16 +246,16 @@ PETSC_STATIC_INLINE PetscErrorCode KSPLogErrorHistory(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscScalar KSPNoisyHash_Private(PetscInt xx)
+static inline PetscScalar KSPNoisyHash_Private(PetscInt xx)
 {
-  unsigned int x = xx;
+  unsigned int x = (unsigned int) xx;
   x = ((x >> 16) ^ x) * 0x45d9f3b;
   x = ((x >> 16) ^ x) * 0x45d9f3b;
   x = ((x >> 16) ^ x);
   return (PetscScalar)((PetscInt64)x-2147483648)*5.e-10; /* center around zero, scaled about -1. to 1.*/
 }
 
-PETSC_STATIC_INLINE PetscErrorCode KSPSetNoisy_Private(Vec v)
+static inline PetscErrorCode KSPSetNoisy_Private(Vec v)
 {
   PetscScalar   *a;
   PetscInt       n, istart, i;
@@ -307,7 +308,7 @@ PETSC_EXTERN PetscErrorCode DMCopyDMKSP(DM,DM);
 /*
        These allow the various Krylov methods to apply to either the linear system or its transpose.
 */
-PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpace(KSP ksp,Vec y)
+static inline PetscErrorCode KSP_RemoveNullSpace(KSP ksp,Vec y)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -323,7 +324,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpace(KSP ksp,Vec y)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpaceTranspose(KSP ksp,Vec y)
+static inline PetscErrorCode KSP_RemoveNullSpaceTranspose(KSP ksp,Vec y)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -339,7 +340,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_RemoveNullSpaceTranspose(KSP ksp,Vec y)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode KSP_MatMult(KSP ksp,Mat A,Vec x,Vec y)
+static inline PetscErrorCode KSP_MatMult(KSP ksp,Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -348,7 +349,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_MatMult(KSP ksp,Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode KSP_MatMultTranspose(KSP ksp,Mat A,Vec x,Vec y)
+static inline PetscErrorCode KSP_MatMultTranspose(KSP ksp,Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -357,7 +358,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_MatMultTranspose(KSP ksp,Mat A,Vec x,Vec 
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode KSP_MatMultHermitianTranspose(KSP ksp,Mat A,Vec x,Vec y)
+static inline PetscErrorCode KSP_MatMultHermitianTranspose(KSP ksp,Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -374,7 +375,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_MatMultHermitianTranspose(KSP ksp,Mat A,V
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode KSP_PCApply(KSP ksp,Vec x,Vec y)
+static inline PetscErrorCode KSP_PCApply(KSP ksp,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -388,7 +389,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApply(KSP ksp,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyTranspose(KSP ksp,Vec x,Vec y)
+static inline PetscErrorCode KSP_PCApplyTranspose(KSP ksp,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -402,7 +403,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyTranspose(KSP ksp,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyHermitianTranspose(KSP ksp,Vec x,Vec y)
+static inline PetscErrorCode KSP_PCApplyHermitianTranspose(KSP ksp,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -413,7 +414,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyHermitianTranspose(KSP ksp,Vec x,V
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorAB(KSP ksp,Vec x,Vec y,Vec w)
+static inline PetscErrorCode KSP_PCApplyBAorAB(KSP ksp,Vec x,Vec y,Vec w)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -427,7 +428,7 @@ PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorAB(KSP ksp,Vec x,Vec y,Vec w)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp,Vec x,Vec y,Vec w)
+static inline PetscErrorCode KSP_PCApplyBAorABTranspose(KSP ksp,Vec x,Vec y,Vec w)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -477,7 +478,7 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC,PetscBool*);
 M*/
 #define KSPCheckDot(ksp,beta) do { \
   if (PetscIsInfOrNanScalar(beta)) { \
-    if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");\
+    PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf inner product");\
     else {\
       PetscErrorCode ierr;\
       PCFailedReason pcreason;\
@@ -517,7 +518,7 @@ M*/
 M*/
 #define KSPCheckNorm(ksp,beta) do { \
   if (PetscIsInfOrNanReal(beta)) { \
-    if (ksp->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf norm");\
+    PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to Nan or Inf norm");\
     else {\
       PetscErrorCode ierr;\
       PCFailedReason pcreason;\

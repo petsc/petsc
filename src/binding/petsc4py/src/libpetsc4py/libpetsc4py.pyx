@@ -21,7 +21,7 @@ cdef extern from "Python.h":
     object PyModule_New(char*)
     bint PyModule_Check(object)
     object PyImport_Import(object)
-
+    ctypedef size_t Py_uintptr_t
 # --------------------------------------------------------------------
 
 cdef extern from "custom.h":
@@ -41,6 +41,7 @@ cdef extern from * nogil:
     int MPI_Comm_rank(MPI_Comm,int*)
 
     ctypedef int PetscErrorCode
+    enum: PETSC_ERR_PLIB
     enum: PETSC_ERR_SUP
     enum: PETSC_ERR_USER
     enum: PETSC_ERROR_INITIAL
@@ -146,8 +147,8 @@ cdef PetscErrorCode PetscCHKERR(PetscErrorCode ierr) nogil:
     global fstack, istack
     istack = 0; fstack[istack] = NULL;
     global FUNCT
-    return PetscERROR(PETSC_COMM_SELF,FUNCT,ierr,
-                      PETSC_ERROR_REPEAT, b"", NULL)
+    return PetscERROR(PETSC_COMM_SELF, FUNCT, ierr,
+                      PETSC_ERROR_REPEAT, b"%s", b"")
 
 
 cdef extern from *:
@@ -211,7 +212,7 @@ cdef inline int getCommSize(void *pobj) nogil:
     cdef PetscObject obj = <PetscObject>pobj
     if obj == NULL: return 0
     cdef int size = 0
-    MPI_Comm_size(obj.comm,&size)
+    MPI_Comm_size(obj.comm, &size)
     return size
 
 cdef inline Viewer Viewer_(PetscViewer p):
@@ -251,6 +252,11 @@ cdef inline SNES SNES_(PetscSNES p):
 
 cdef inline TS TS_(PetscTS p):
     cdef TS ob = TS.__new__(TS)
+    ob.obj[0] = newRef(p)
+    return ob
+
+cdef inline TAO TAO_(PetscTAO p):
+    cdef TAO ob = TAO.__new__(TAO)
     ob.obj[0] = newRef(p)
     return ob
 
@@ -404,7 +410,7 @@ cdef int viewcontext(_PyObj ctx, PetscViewer viewer) except -1:
         CHKERR( PetscViewerASCIIPrintf(viewer, b"  Python: %s\n", name) )
     if isstring:
         if name == NULL: name = b"<unknown>"
-        CHKERR( PetscViewerStringSPrintf(viewer,"%s", name) )
+        CHKERR( PetscViewerStringSPrintf(viewer, "%s", name) )
     return 0
 
 # --------------------------------------------------------------------
@@ -456,7 +462,6 @@ cdef extern from * nogil:
         MAT_IGNORE_MATRIX
         MAT_INITIAL_MATRIX
         MAT_REUSE_MATRIX
-
     ctypedef enum MatSORType:
         SOR_FORWARD_SWEEP
         SOR_BACKWARD_SWEEP
@@ -468,6 +473,16 @@ cdef extern from * nogil:
         SOR_EISENSTAT
         SOR_APPLY_UPPER
         SOR_APPLY_LOWER
+    ctypedef enum PetscMatProductType "MatProductType":
+        MATPRODUCT_UNSPECIFIED
+        MATPRODUCT_AB
+        MATPRODUCT_AtB
+        MATPRODUCT_ABt
+        MATPRODUCT_PtAP
+        MATPRODUCT_RARt
+        MATPRODUCT_ABC
+    ctypedef enum MatOperation:
+        pass
 
 cdef extern from * nogil:
     struct _MatOps:
@@ -506,22 +521,38 @@ cdef extern from * nogil:
         PetscErrorCode (*realpart)(PetscMat) except IERR
         PetscErrorCode (*imagpart"imaginarypart")(PetscMat) except IERR
         PetscErrorCode (*conjugate)(PetscMat) except IERR
+        PetscErrorCode (*getdiagonalblock)(PetscMat,PetscMat*) except IERR
+        PetscErrorCode (*productsetfromoptions)(PetscMat) except IERR
+        PetscErrorCode (*productsymbolic)(PetscMat) except IERR
+        PetscErrorCode (*productnumeric)(PetscMat) except IERR
+        PetscErrorCode (*hasoperation)(PetscMat,MatOperation,PetscBool*) except IERR
     ctypedef _MatOps *MatOps
+    ctypedef struct Mat_Product:
+        void *data
     struct _p_Mat:
         void *data
         MatOps ops
         PetscBool assembled
         PetscBool preallocated
         PetscLayout rmap, cmap
+        Mat_Product *product
+
 cdef extern from * nogil:
     PetscErrorCode MatCreateVecs(PetscMat,PetscVec*,PetscVec*)
-    PetscErrorCode MatIsSymmetricKnown(PetscMat,PetscBool*,PetscBool*)
-    PetscErrorCode MatIsHermitianKnown(PetscMat,PetscBool*,PetscBool*)
+    PetscErrorCode MatGetDiagonalBlock(PetscMat,PetscMat*)
     PetscErrorCode MatMult(PetscMat,PetscVec,PetscVec)
     PetscErrorCode MatMultTranspose(PetscMat,PetscVec,PetscVec)
     PetscErrorCode MatMultHermitian"MatMultHermitianTranspose"(PetscMat,PetscVec,PetscVec)
-    PetscErrorCode MatSolve(PetscMat,PetscVec,PetscVec)
+    PetscErrorCode MatMultHermitianAdd"MatMultHermitianTransposeAdd"(PetscMat,PetscVec,PetscVec,PetscVec)
     PetscErrorCode MatSolveTranspose(PetscMat,PetscVec,PetscVec)
+    PetscErrorCode MatSolveAdd(PetscMat,PetscVec,PetscVec,PetscVec)
+    PetscErrorCode MatSolveTransposeAdd(PetscMat,PetscVec,PetscVec,PetscVec)
+    PetscErrorCode MatProductGetType(PetscMat,PetscMatProductType*)
+    PetscErrorCode MatProductGetMats(PetscMat,PetscMat*,PetscMat*,PetscMat*)
+    PetscErrorCode MatCreateSubMatrix(PetscMat,PetscIS,PetscIS,MatReuse,PetscMat*)
+    PetscErrorCode PetscObjectComposedDataRegisterPy(PetscInt*)
+    PetscErrorCode PetscObjectComposedDataGetIntPy(PetscObject,PetscInt,PetscInt*,PetscBool*)
+    PetscErrorCode PetscObjectComposedDataSetIntPy(PetscObject,PetscInt,PetscInt)
 
 @cython.internal
 cdef class _PyMat(_PyObj): pass
@@ -551,6 +582,37 @@ cdef PetscErrorCode MatPythonSetType_PYTHON(PetscMat mat, char name[]) \
     MatPythonSetContext(mat, <void*>ctx)
     PyMat(mat).setname(name)
     return FunctionEnd()
+
+cdef dict dMatOps = {   3 : 'mult',
+                        4 : 'multAdd',
+                        5 : 'multTranspose',
+                        6 : 'multTransposeAdd',
+                        7 : 'solve',
+                        8 : 'solveAdd',
+                        9 : 'solveTranspose',
+                       10 : 'solveTransposeAdd',
+                       13 : 'SOR',
+                       17 : 'getDiagonal',
+                       18 : 'diagonalScale',
+                       19 : 'norm',
+                       23 : 'zeroEntries',
+                       32 : 'getDiagonalBlock',
+                       34 : 'duplicate',
+                       43 : 'copy',
+                       45 : 'scale',
+                       46 : 'shift',
+                       47 : 'setDiagonal',
+                       48 : 'zeroRowsColumns',
+                       59 : 'createSubMatrix',
+                       88 : 'getVecs',
+                      102 : 'conjugate',
+                      105 : 'realPart',
+                      106 : 'imagPart',
+                      113 : 'missingDiagonal',
+                      119 : 'multDiagonalBlock',
+                      121 : 'multHermitian',
+                      122 : 'multHermitianAdd',
+                    }
 
 cdef PetscErrorCode MatCreate_Python(
     PetscMat mat,
@@ -594,18 +656,23 @@ cdef PetscErrorCode MatCreate_Python(
     ops.realpart          = MatRealPart_Python
     ops.imagpart          = MatImagPart_Python
     ops.conjugate         = MatConjugate_Python
+    ops.hasoperation      = MatHasOperation_Python
+    ops.getdiagonalblock  = MatGetDiagonalBlock_Python
+
+    ops.productsetfromoptions = MatProductSetFromOptions_Python
+
     #
     mat.assembled    = PETSC_TRUE  # XXX
     mat.preallocated = PETSC_FALSE # XXX
     #
     CHKERR( PetscObjectComposeFunction(
-            <PetscObject>mat,b"MatGetDiagonalBlock_C",
-            <PetscVoidFunction>MatGetDiagonalBlock_Python) )
-    CHKERR( PetscObjectComposeFunction(
-            <PetscObject>mat,b"MatPythonSetType_C",
+            <PetscObject>mat, b"MatPythonSetType_C",
             <PetscVoidFunction>MatPythonSetType_PYTHON) )
+    CHKERR( PetscObjectComposeFunction(
+            <PetscObject>mat, b"MatProductSetFromOptions_anytype_C",
+            <PetscVoidFunction>MatProductSetFromOptions_Python) )
     CHKERR( PetscObjectChangeTypeName(
-            <PetscObject>mat,MATPYTHON) )
+            <PetscObject>mat, MATPYTHON) )
     #
     cdef ctx = PyMat(NULL)
     mat.data = <void*> ctx
@@ -618,13 +685,13 @@ cdef PetscErrorCode MatDestroy_Python(
     except IERR with gil:
     FunctionBegin(b"MatDestroy_Python")
     CHKERR( PetscObjectComposeFunction(
-            <PetscObject>mat,b"MatGetDiagonalBlock_C",
+            <PetscObject>mat, b"MatPythonSetType_C",
             <PetscVoidFunction>NULL) )
     CHKERR( PetscObjectComposeFunction(
-            <PetscObject>mat,b"MatPythonSetType_C",
+            <PetscObject>mat, b"MatProductSetFromOptions_anytype_C",
             <PetscVoidFunction>NULL) )
     CHKERR( PetscObjectChangeTypeName(
-            <PetscObject>mat,NULL) )
+            <PetscObject>mat, NULL) )
     #
     if not Py_IsInitialized(): return FunctionEnd()
     try:
@@ -647,10 +714,10 @@ cdef PetscErrorCode MatSetFromOptions_Python(
     cdef PetscBool found = PETSC_FALSE
     cdef PetscOptionItems *opts "PetscOptionsObject" = PetscOptionsObject
     CHKERR( PetscOptionsString(
-            b"-mat_python_type",b"Python [package.]module[.{class|function}]",
-            b"MatPythonSetType",defval,name,sizeof(name),&found) ); <void>opts;
+            b"-mat_python_type", b"Python [package.]module[.{class|function}]",
+            b"MatPythonSetType", defval, name, sizeof(name), &found) ); <void>opts;
     if found and name[0]:
-        CHKERR( MatPythonSetType_PYTHON(mat,name) )
+        CHKERR( MatPythonSetType_PYTHON(mat, name) )
     #
     cdef setFromOptions = PyMat(mat).setFromOptions
     if setFromOptions is not None:
@@ -702,10 +769,12 @@ cdef PetscErrorCode MatGetDiagonalBlock_Python(
     FunctionBegin(b"MatGetDiagonalBlock_Python")
     cdef getDiagonalBlock = PyMat(mat).getDiagonalBlock
     if getDiagonalBlock is None:
-        if getCommSize(mat) == 1:
-            out[0] = mat
-            return FunctionEnd()
-    if getDiagonalBlock is None: return UNSUPPORTED(b"getDiagonalBlock")
+        try:
+            mat.ops.getdiagonalblock = NULL
+            CHKERR( MatGetDiagonalBlock(mat, out) )
+        finally:
+            mat.ops.getdiagonalblock = MatGetDiagonalBlock_Python
+        return FunctionEnd()
     cdef Mat sub = getDiagonalBlock(Mat_(mat))
     if sub is not None: out[0] = sub.mat
     return FunctionEnd()
@@ -720,7 +789,13 @@ cdef PetscErrorCode MatCreateSubMatrix_Python(
     except IERR with gil:
     FunctionBegin(b"MatCreateSubMatrix_Python")
     cdef createSubMatrix = PyMat(mat).createSubMatrix
-    if createSubMatrix is None: return UNSUPPORTED(b"createSubMatrix")
+    if createSubMatrix is None:
+       try:
+           mat.ops.createsubmatrix = NULL
+           CHKERR( MatCreateSubMatrix(mat, row, col, op, out) )
+       finally:
+           mat.ops.createsubmatrix = MatCreateSubMatrix_Python
+       return FunctionEnd()
     cdef Mat sub = None
     if op == MAT_IGNORE_MATRIX:
         sub = None
@@ -752,14 +827,14 @@ cdef PetscErrorCode MatSetUp_Python(
     except IERR with gil:
     FunctionBegin(b"MatSetUp_Python")
     cdef PetscInt rbs = -1, cbs = -1
-    CHKERR( PetscLayoutGetBlockSize(mat.rmap,&rbs) )
-    CHKERR( PetscLayoutGetBlockSize(mat.cmap,&cbs) )
+    CHKERR( PetscLayoutGetBlockSize(mat.rmap, &rbs) )
+    CHKERR( PetscLayoutGetBlockSize(mat.cmap, &cbs) )
     if rbs == -1: rbs = 1
     if cbs == -1: cbs = rbs
-    CHKERR( PetscLayoutSetBlockSize(mat.rmap,rbs)  )
-    CHKERR( PetscLayoutSetBlockSize(mat.cmap,cbs)  )
-    CHKERR( PetscLayoutSetUp(mat.rmap)             )
-    CHKERR( PetscLayoutSetUp(mat.cmap)             )
+    CHKERR( PetscLayoutSetBlockSize(mat.rmap, rbs) )
+    CHKERR( PetscLayoutSetBlockSize(mat.cmap, cbs) )
+    CHKERR( PetscLayoutSetUp(mat.rmap) )
+    CHKERR( PetscLayoutSetUp(mat.cmap) )
     mat.preallocated = PETSC_TRUE
     #
     cdef char name[2048]
@@ -767,13 +842,13 @@ cdef PetscErrorCode MatSetUp_Python(
     if PyMat(mat).self is None:
         CHKERR( PetscOptionsGetString(NULL,
                 getPrefix(mat), b"-mat_python_type",
-                name,sizeof(name),&found) )
+                name, sizeof(name), &found) )
         if found and name[0]:
-            CHKERR( MatPythonSetType_PYTHON(mat,name) )
+            CHKERR( MatPythonSetType_PYTHON(mat, name) )
     if PyMat(mat).self is None:
         return PetscSETERR(PETSC_ERR_USER,
             "Python context not set, call one of \n"
-            " * MatPythonSetType(mat,\"[package.]module.class\")\n"
+            " * MatPythonSetType(mat, \"[package.]module.class\")\n"
             " * MatSetFromOptions(mat) and pass option "
             "-mat_python_type [package.]module.class")
     #
@@ -803,7 +878,7 @@ cdef PetscErrorCode MatAssemblyEnd_Python(
     if assembly is None:
         assembly = PyMat(mat).assembly
     if assembly is not None:
-        assembly(Mat_(mat), <int>at)
+        assembly(Mat_(mat), <long>at)
     return FunctionEnd()
 
 cdef PetscErrorCode MatZeroEntries_Python(
@@ -865,11 +940,10 @@ cdef PetscErrorCode MatCreateVecs_Python(
     if createVecs is None:
         try:
             mat.ops.getvecs = NULL
-            CHKERR( MatCreateVecs(mat,x,y) )
+            CHKERR( MatCreateVecs(mat, x, y) )
         finally:
             mat.ops.getvecs = MatCreateVecs_Python
         return FunctionEnd()
-    if createVecs is None: return UNSUPPORTED(b"createVecs")
     cdef Vec u, v
     u, v = createVecs(Mat_(mat))
     if x != NULL:
@@ -900,14 +974,13 @@ cdef PetscErrorCode MatMultTranspose_Python(
     except IERR with gil:
     FunctionBegin(b"MatMultTranspose_Python")
     cdef multTranspose = PyMat(mat).multTranspose
-    cdef PetscBool symmset, symmknown
     if multTranspose is None:
-        symmset = symmknown = PETSC_FALSE
-        CHKERR( MatIsSymmetricKnown(mat,&symmset,&symmknown) )
-        if symmset and symmknown:
-            CHKERR( MatMult(mat,x,y) )
-            return FunctionEnd()
-    if multTranspose is None: return UNSUPPORTED(b"multTranspose")
+        try:
+            mat.ops.multtranspose = NULL
+            CHKERR( MatMultTranspose(mat, x, y) )
+        finally:
+            mat.ops.multtranspose = MatMultTranspose_Python
+        return FunctionEnd()
     multTranspose(Mat_(mat), Vec_(x), Vec_(y))
     return FunctionEnd()
 
@@ -919,14 +992,13 @@ cdef PetscErrorCode MatMultHermitian_Python(
     except IERR with gil:
     FunctionBegin(b"MatMultHermitian_Python")
     cdef multHermitian = PyMat(mat).multHermitian
-    cdef PetscBool hermset, hermknown
     if multHermitian is None:
-        hermset = hermknown = PETSC_FALSE
-        CHKERR( MatIsHermitianKnown(mat,&hermset,&hermknown) )
-        if hermset and hermknown:
-            CHKERR( MatMult(mat,x,y) )
-            return FunctionEnd()
-    if multHermitian is None: return UNSUPPORTED(b"multHermitian")
+        try:
+            mat.ops.multhermitian = NULL
+            CHKERR( MatMultHermitian(mat, x, y) )
+        finally:
+            mat.ops.multhermitian = MatMultHermitian_Python
+        return FunctionEnd()
     multHermitian(Mat_(mat), Vec_(x), Vec_(y))
     return FunctionEnd()
 
@@ -940,16 +1012,15 @@ cdef PetscErrorCode MatMultAdd_Python(
     FunctionBegin(b"MatMultAdd_Python")
     cdef multAdd = PyMat(mat).multAdd
     cdef PetscVec t = NULL
-
     if multAdd is None:
         if v == y:
             CHKERR( VecDuplicate(y, &t) )
-            CHKERR( MatMult(mat,x,t) )
-            CHKERR( VecAXPY(y,1.0,t) )
+            CHKERR( MatMult(mat, x, t) )
+            CHKERR( VecAXPY(y, 1.0, t) )
             CHKERR( VecDestroy(&t) )
         else:
-            CHKERR( MatMult(mat,x,y) )
-            CHKERR( VecAXPY(y,1.0,v) )
+            CHKERR( MatMult(mat, x, y) )
+            CHKERR( VecAXPY(y, 1.0, v) )
         return FunctionEnd()
     if multAdd is None: return UNSUPPORTED(b"multAdd")
     multAdd(Mat_(mat), Vec_(x), Vec_(v), Vec_(y))
@@ -964,9 +1035,16 @@ cdef PetscErrorCode MatMultTransposeAdd_Python(
     except IERR with gil:
     FunctionBegin(b"MatMultTransposeAdd_Python")
     cdef multTransposeAdd = PyMat(mat).multTransposeAdd
+    cdef PetscVec t = NULL
     if multTransposeAdd is None:
-        CHKERR( MatMultTranspose(mat,x,y) )
-        CHKERR( VecAXPY(y,1.0,v)          )
+        if v == y:
+            CHKERR( VecDuplicate(y, &t) )
+            CHKERR( MatMultTranspose(mat, x, t) )
+            CHKERR( VecAXPY(y, 1.0, t) )
+            CHKERR( VecDestroy(&t) )
+        else:
+            CHKERR( MatMultTranspose(mat, x, y) )
+            CHKERR( VecAXPY(y, 1.0, v) )
         return FunctionEnd()
     if multTransposeAdd is None: return UNSUPPORTED(b"multTransposeAdd")
     multTransposeAdd(Mat_(mat), Vec_(x), Vec_(v), Vec_(y))
@@ -982,10 +1060,12 @@ cdef PetscErrorCode MatMultHermitianAdd_Python(
     FunctionBegin(b"MatMultHermitianAdd_Python")
     cdef multHermitianAdd = PyMat(mat).multHermitianAdd
     if multHermitianAdd is None:
-        CHKERR( MatMultHermitian(mat,x,y) )
-        CHKERR( VecAXPY(y,1.0,v)          )
+        try:
+            mat.ops.multhermitianadd = NULL
+            CHKERR( MatMultHermitianAdd(mat, x, v, y) )
+        finally:
+            mat.ops.multhermitianadd = MatMultHermitianAdd_Python
         return FunctionEnd()
-    if multHermitianAdd is None: return UNSUPPORTED(b"multHermitianAdd")
     multHermitianAdd(Mat_(mat), Vec_(x), Vec_(v), Vec_(y))
     return FunctionEnd()
 
@@ -1021,14 +1101,12 @@ cdef PetscErrorCode MatSolveTranspose_Python(
     except IERR with gil:
     FunctionBegin(b"MatSolveTranspose_Python")
     cdef solveTranspose = PyMat(mat).solveTranspose
-    cdef PetscBool symmset, symmknown
     if solveTranspose is None:
-        symmset = symmknown = PETSC_FALSE
-        CHKERR( MatIsSymmetricKnown(mat,&symmset,&symmknown) )
-        if symmset and symmknown:
-            CHKERR( MatSolve(mat,b,x) )
-            return FunctionEnd()
-    if solveTranspose is None: return UNSUPPORTED(b"solveTranspose")
+        try:
+            mat.ops.solvetranspose = NULL
+            CHKERR( MatSolveTranspose(mat, b, x) )
+        finally:
+            mat.ops.solvetranspose = MatSolveTranspose_Python
     solveTranspose(Mat_(mat), Vec_(b), Vec_(x))
     return FunctionEnd()
 
@@ -1042,10 +1120,12 @@ cdef PetscErrorCode MatSolveAdd_Python(
     FunctionBegin(b"MatSolveAdd_Python")
     cdef solveAdd = PyMat(mat).solveAdd
     if solveAdd is None:
-        CHKERR( MatSolve(mat,b,x) )
-        CHKERR( VecAXPY(x,1.0,y)  )
+        try:
+            mat.ops.solveadd = NULL
+            CHKERR( MatSolveAdd(mat, b, y, x) )
+        finally:
+            mat.ops.solveadd = MatSolveAdd_Python
         return FunctionEnd()
-    if solveAdd is None: return UNSUPPORTED(b"solveAdd")
     solveAdd(Mat_(mat), Vec_(b), Vec_(y), Vec_(x))
     return FunctionEnd()
 
@@ -1059,10 +1139,12 @@ cdef PetscErrorCode MatSolveTransposeAdd_Python(
     FunctionBegin(b"MatSolveTransposeAdd_Python")
     cdef solveTransposeAdd = PyMat(mat).solveTransposeAdd
     if solveTransposeAdd is None:
-        CHKERR( MatSolveTranspose(mat,b,x) )
-        CHKERR( VecAXPY(x,1.0,y)           )
+        try:
+            mat.ops.solvetransposeadd = NULL
+            CHKERR( MatSolveTransposeAdd(mat, b, y, x) )
+        finally:
+            mat.ops.solvetransposeadd = MatSolveTransposeAdd_Python
         return FunctionEnd()
-    if solveTransposeAdd is None: return UNSUPPORTED(b"solveTransposeAdd")
     solveTransposeAdd(Mat_(mat), Vec_(b), Vec_(y), Vec_(x))
     return FunctionEnd()
 
@@ -1177,6 +1259,168 @@ cdef PetscErrorCode MatConjugate_Python(
     conjugate(Mat_(mat))
     return FunctionEnd()
 
+cdef PetscErrorCode MatHasOperation_Python(
+    PetscMat mat,
+    MatOperation op,
+    PetscBool *flag
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"MatHasOperation_Python")
+    flag[0] = PETSC_FALSE
+    cdef long i  = <long> op
+    global dMatOps
+    name = dMatOps.get(i, None)
+    cdef void** ops = NULL
+    if name is None:
+        ops = <void**> mat.ops
+        if ops and ops[i]: flag[0] = PETSC_TRUE
+    else:
+        flag[0] = PETSC_TRUE if getattr(PyMat(mat), name) is not None else PETSC_FALSE
+    return FunctionEnd()
+
+cdef PetscErrorCode MatProductNumeric_Python(
+    PetscMat mat
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"MatProductNumeric_Python")
+    cdef PetscMat A = NULL
+    cdef PetscMat B = NULL
+    cdef PetscMat C = NULL
+    cdef PetscMatProductType mtype = MATPRODUCT_UNSPECIFIED
+    CHKERR( MatProductGetMats(mat, &A, &B, &C) )
+    CHKERR( MatProductGetType(mat, &mtype) )
+
+    mtypes = {MATPRODUCT_AB : 'AB', MATPRODUCT_ABt : 'ABt', MATPRODUCT_AtB : 'AtB', MATPRODUCT_PtAP : 'PtAP', MATPRODUCT_RARt: 'RARt', MATPRODUCT_ABC: 'ABC'}
+
+    cdef Mat_Product *product = mat.product
+    cdef PetscInt i = <PetscInt> <Py_uintptr_t> product.data
+    if i < 0 or i > 2:
+      return PetscSETERR(PETSC_ERR_PLIB,
+            "Corrupted composed id")
+    cdef PetscMat pM = C if i == 2 else B if i == 1 else A
+
+    cdef Mat PyA = Mat_(A)
+    cdef Mat PyB = Mat_(B)
+    cdef Mat PyC = Mat_(C)
+    if mtype == MATPRODUCT_ABC:
+      mats = (PyA, PyB, PyC)
+    else:
+      mats = (PyA, PyB, None)
+
+    cdef productNumeric = PyMat(pM).productNumeric
+    if productNumeric is None: return UNSUPPORTED(b"productNumeric")
+    productNumeric(PyC if C == pM else PyB if B == pM else PyA, Mat_(mat), mtypes[mtype], *mats)
+
+    return FunctionEnd()
+
+cdef PetscInt matmatid = -1
+
+cdef PetscErrorCode MatProductSymbolic_Python(
+    PetscMat mat
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"MatProductSymbolic_Python")
+    cdef PetscMat A = NULL
+    cdef PetscMat B = NULL
+    cdef PetscMat C = NULL
+    cdef PetscMatProductType mtype = MATPRODUCT_UNSPECIFIED
+    CHKERR( MatProductGetMats(mat, &A, &B, &C) )
+    CHKERR( MatProductGetType(mat, &mtype) )
+
+    mtypes = {MATPRODUCT_AB : 'AB', MATPRODUCT_ABt : 'ABt', MATPRODUCT_AtB : 'AtB', MATPRODUCT_PtAP : 'PtAP', MATPRODUCT_RARt: 'RARt', MATPRODUCT_ABC: 'ABC'}
+
+    global matmatid
+    cdef PetscInt i = -1
+    cdef PetscBool flg = PETSC_FALSE
+    CHKERR( PetscObjectComposedDataGetIntPy(<PetscObject>mat, matmatid, &i, &flg) )
+    if flg is not PETSC_TRUE:
+      return PetscSETERR(PETSC_ERR_PLIB,
+            "Missing composed id")
+    if i < 0 or i > 2:
+      return PetscSETERR(PETSC_ERR_PLIB,
+            "Corrupted composed id")
+    cdef PetscMat pM = C if i == 2 else B if i == 1 else A
+
+    cdef Mat PyA = Mat_(A)
+    cdef Mat PyB = Mat_(B)
+    cdef Mat PyC = Mat_(C)
+    if mtype == MATPRODUCT_ABC:
+      mats = (PyA, PyB, PyC)
+    else:
+      mats = (PyA, PyB, None)
+
+    cdef productSymbolic = PyMat(pM).productSymbolic
+    if productSymbolic is None: return UNSUPPORTED(b"productSymbolic")
+    productSymbolic(PyC if C == pM else PyB if B == pM else PyA, Mat_(mat), mtypes[mtype], *mats)
+
+    # Store id in matrix product
+    cdef Mat_Product *product = mat.product
+    product.data = <void*> <Py_uintptr_t> i
+
+    cdef MatOps ops = mat.ops
+    ops.productnumeric = MatProductNumeric_Python
+    return FunctionEnd()
+
+cdef PetscErrorCode MatProductSetFromOptions_Python(
+    PetscMat mat
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"MatProductSetFromOptions_Python")
+    cdef PetscMat A = NULL
+    cdef PetscMat B = NULL
+    cdef PetscMat C = NULL
+    CHKERR( MatProductGetMats(mat, &A, &B, &C) )
+    if A == NULL or B == NULL:
+      return PetscSETERR(PETSC_ERR_PLIB,
+            "Missing matrices")
+
+    cdef PetscMatProductType mtype = MATPRODUCT_UNSPECIFIED
+    CHKERR( MatProductGetType(mat, &mtype) )
+    if mtype == MATPRODUCT_UNSPECIFIED:
+      return PetscSETERR(PETSC_ERR_PLIB,
+            "Unknown product type")
+
+    mtypes = {MATPRODUCT_AB : 'AB', MATPRODUCT_ABt : 'ABt', MATPRODUCT_AtB : 'AtB', MATPRODUCT_PtAP : 'PtAP', MATPRODUCT_RARt: 'RARt', MATPRODUCT_ABC: 'ABC'}
+
+    cdef Mat PyA = Mat_(A)
+    cdef Mat PyB = Mat_(B)
+    cdef Mat PyC = Mat_(C)
+    if mtype == MATPRODUCT_ABC:
+      mats = (PyA, PyB, PyC)
+    else:
+      mats = (PyA, PyB, None)
+
+    # Find Python matrix in mats able to perform the product
+    found = False
+    cdef PetscBool mispy = PETSC_FALSE
+    cdef PetscMat pM = NULL
+    cdef Mat mm
+    cdef PetscInt i = -1
+    for i in range(len(mats)):
+      if mats[i] is None: continue
+      mm = mats[i]
+      pM = <PetscMat>mm.mat
+      CHKERR( PetscObjectTypeCompare(<PetscObject>pM, MATPYTHON,  &mispy)  )
+      if mispy:
+        if PyMat(pM).productSetFromOptions is not None:
+          found = PyMat(pM).productSetFromOptions(PyC if C == pM else PyB if B == pM else PyA, mtypes[mtype], *mats)
+          if found: break
+    if not found:
+      return FunctionEnd()
+
+    cdef MatOps ops = mat.ops
+    ops.productsymbolic = MatProductSymbolic_Python
+
+    # Store index (within the product) of the Python matrix which is capable of performing the operation
+    # Cannot be stored in mat.product.data at this stage
+    # Symbolic operation will get this index and store it in the product data
+    global matmatid
+    if matmatid < 0:
+      CHKERR( PetscObjectComposedDataRegisterPy(&matmatid) )
+    CHKERR( PetscObjectComposedDataSetIntPy(<PetscObject>mat, matmatid, i) )
+
+    return FunctionEnd()
+
 # --------------------------------------------------------------------
 
 cdef extern from * nogil:
@@ -1189,6 +1433,7 @@ cdef extern from * nogil:
       PetscErrorCode (*presolve)(PetscPC,PetscKSP,PetscVec,PetscVec) except IERR
       PetscErrorCode (*postsolve)(PetscPC,PetscKSP,PetscVec,PetscVec) except IERR
       PetscErrorCode (*apply)(PetscPC,PetscVec,PetscVec) except IERR
+      PetscErrorCode (*matapply)(PetscPC,PetscMat,PetscMat) except IERR
       PetscErrorCode (*applytranspose)(PetscPC,PetscVec,PetscVec) except IERR
       PetscErrorCode (*applysymmetricleft)(PetscPC,PetscVec,PetscVec) except IERR
       PetscErrorCode (*applysymmetricright)(PetscPC,PetscVec,PetscVec) except IERR
@@ -1196,6 +1441,9 @@ cdef extern from * nogil:
     struct _p_PC:
         void *data
         PCOps ops
+
+cdef extern from * nogil:
+    PetscErrorCode PCMatApply(PetscPC,PetscMat,PetscMat)
 
 @cython.internal
 cdef class _PyPC(_PyObj): pass
@@ -1241,6 +1489,7 @@ cdef PetscErrorCode PCCreate_Python(
     ops.presolve            = PCPreSolve_Python
     ops.postsolve           = PCPostSolve_Python
     ops.apply               = PCApply_Python
+    ops.matapply            = PCMatApply_Python
     ops.applytranspose      = PCApplyTranspose_Python
     ops.applysymmetricleft  = PCApplySymmetricLeft_Python
     ops.applysymmetricright = PCApplySymmetricRight_Python
@@ -1284,13 +1533,13 @@ cdef PetscErrorCode PCSetUp_Python(
     if PyPC(pc).self is None:
         CHKERR( PetscOptionsGetString(NULL,
                 getPrefix(pc), b"-pc_python_type",
-                name,sizeof(name),&found) )
+                name, sizeof(name), &found) )
         if found and name[0]:
-            CHKERR( PCPythonSetType_PYTHON(pc,name) )
+            CHKERR( PCPythonSetType_PYTHON(pc, name) )
     if PyPC(pc).self is None:
         return PetscSETERR(PETSC_ERR_USER,
             "Python context not set, call one of \n"
-            " * PCPythonSetType(pc,\"[package.]module.class\")\n"
+            " * PCPythonSetType(pc, \"[package.]module.class\")\n"
             " * PCSetFromOptions(pc) and pass option "
             "-pc_python_type [package.]module.class")
     #
@@ -1331,10 +1580,10 @@ cdef PetscErrorCode PCSetFromOptions_Python(
     cdef PetscBool found = PETSC_FALSE
     cdef PetscOptionItems *opts "PetscOptionsObject" = PetscOptionsObject
     CHKERR( PetscOptionsString(
-            b"-pc_python_type",b"Python [package.]module[.{class|function}]",
-            b"PCPythonSetType",defval,name,sizeof(name),&found) ); <void>opts;
+            b"-pc_python_type", b"Python [package.]module[.{class|function}]",
+            b"PCPythonSetType", defval, name, sizeof(name), &found) ); <void>opts;
     if found and name[0]:
-        CHKERR( PCPythonSetType_PYTHON(pc,name) )
+        CHKERR( PCPythonSetType_PYTHON(pc, name) )
     #
     cdef setFromOptions = PyPC(pc).setFromOptions
     if setFromOptions is not None:
@@ -1422,6 +1671,25 @@ cdef PetscErrorCode PCApplySymmetricRight_Python(
     cdef applySymmetricRight = PyPC(pc).applySymmetricRight
     applySymmetricRight(PC_(pc), Vec_(x), Vec_(y))
     return FunctionEnd()
+
+cdef PetscErrorCode PCMatApply_Python(
+    PetscPC  pc,
+    PetscMat X,
+    PetscMat Y,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"PCMatApply_Python")
+    cdef matApply = PyPC(pc).matApply
+    if matApply is None:
+        try:
+            pc.ops.matapply = NULL
+            CHKERR( PCMatApply(pc, X, Y) )
+        finally:
+            pc.ops.matapply = PCMatApply_Python
+        return FunctionEnd()
+    matApply(PC_(pc), Mat_(X), Mat_(Y))
+    return FunctionEnd()
+
 
 # --------------------------------------------------------------------
 
@@ -1570,13 +1838,13 @@ cdef PetscErrorCode KSPSetUp_Python(
     if PyKSP(ksp).self is None:
         CHKERR( PetscOptionsGetString(NULL,
                 getPrefix(ksp), b"-ksp_python_type",
-                name,sizeof(name),&found) )
+                name, sizeof(name), &found) )
         if found and name[0]:
-            CHKERR( KSPPythonSetType_PYTHON(ksp,name) )
+            CHKERR( KSPPythonSetType_PYTHON(ksp, name) )
     if PyKSP(ksp).self is None:
         return PetscSETERR(PETSC_ERR_USER,
             "Python context not set, call one of \n"
-            " * KSPPythonSetType(ksp,\"[package.]module.class\")\n"
+            " * KSPPythonSetType(ksp, \"[package.]module.class\")\n"
             " * KSPSetFromOptions(ksp) and pass option "
             "-ksp_python_type [package.]module.class")
     #
@@ -1591,8 +1859,8 @@ cdef PetscErrorCode KSPReset_Python(
     except IERR with gil:
     if getRef(ksp) == 0: return 0
     FunctionBegin(b"KSPReset_Python")
-    CHKERR( PetscObjectCompose(<PetscObject>ksp,b"@ksp.vec_work_sol",NULL) )
-    CHKERR( PetscObjectCompose(<PetscObject>ksp,b"@ksp.vec_work_res",NULL) )
+    CHKERR( PetscObjectCompose(<PetscObject>ksp, b"@ksp.vec_work_sol", NULL) )
+    CHKERR( PetscObjectCompose(<PetscObject>ksp, b"@ksp.vec_work_res", NULL) )
     cdef reset = PyKSP(ksp).reset
     if reset is not None:
         reset(KSP_(ksp))
@@ -1609,10 +1877,10 @@ cdef PetscErrorCode KSPSetFromOptions_Python(
     cdef PetscBool found = PETSC_FALSE
     cdef PetscOptionItems *opts "PetscOptionsObject" = PetscOptionsObject
     CHKERR( PetscOptionsString(
-            b"-ksp_python_type",b"Python [package.]module[.{class|function}]",
-            b"KSPPythonSetType",defval,name,sizeof(name),&found) ); <void>opts;
+            b"-ksp_python_type", b"Python [package.]module[.{class|function}]",
+            b"KSPPythonSetType", defval, name, sizeof(name), &found) ); <void>opts;
     if found and name[0]:
-        CHKERR( KSPPythonSetType_PYTHON(ksp,name) )
+        CHKERR( KSPPythonSetType_PYTHON(ksp, name) )
     #
     cdef setFromOptions = PyKSP(ksp).setFromOptions
     if setFromOptions is not None:
@@ -1670,8 +1938,8 @@ cdef PetscErrorCode KSPSolve_Python(
     except IERR with gil:
     FunctionBegin(b"KSPSolve_Python")
     cdef PetscVec B = NULL, X = NULL
-    CHKERR( KSPGetRhs(ksp,&B)      )
-    CHKERR( KSPGetSolution(ksp,&X) )
+    CHKERR( KSPGetRhs(ksp, &B) )
+    CHKERR( KSPGetSolution(ksp, &X) )
     #
     ksp.iter = 0
     ksp.reason = KSP_CONVERGED_ITERATING
@@ -1682,9 +1950,9 @@ cdef PetscErrorCode KSPSolve_Python(
     else:
         solve = PyKSP(ksp).solve
     if solve is not None:
-        solve(KSP_(ksp),Vec_(B),Vec_(X))
+        solve(KSP_(ksp), Vec_(B), Vec_(X))
     else:
-        KSPSolve_Python_default(ksp,B,X)
+        KSPSolve_Python_default(ksp, B, X)
     return FunctionEnd()
 
 cdef PetscErrorCode KSPSolve_Python_default(
@@ -1701,7 +1969,7 @@ cdef PetscErrorCode KSPSolve_Python_default(
              b"@ksp.vec_work_sol",
              <PetscObject*>&t) )
     if t == NULL:
-        CHKERR( VecDuplicate(X,&t) )
+        CHKERR( VecDuplicate(X, &t) )
         CHKERR( PetscObjectCompose(
                 <PetscObject>ksp,
                  b"@ksp.vec_work_sol",
@@ -1712,7 +1980,7 @@ cdef PetscErrorCode KSPSolve_Python_default(
              b"@ksp.vec_work_res",
              <PetscObject*>&v) )
     if v == NULL:
-        CHKERR( VecDuplicate(B,&v) )
+        CHKERR( VecDuplicate(B, &v) )
         CHKERR( PetscObjectCompose(
                 <PetscObject>ksp,
                  b"@ksp.vec_work_res",
@@ -1722,25 +1990,25 @@ cdef PetscErrorCode KSPSolve_Python_default(
     cdef PetscVec R = NULL
     cdef PetscReal rnorm = 0
     #
-    CHKERR( KSPBuildResidual(ksp,t,v,&R) )
-    CHKERR( VecNorm(R,NORM_2,&rnorm)     )
+    CHKERR( KSPBuildResidual(ksp, t, v, &R) )
+    CHKERR( VecNorm(R, NORM_2, &rnorm) )
     #
-    CHKERR( KSPConverged(ksp,ksp.iter,rnorm,&ksp.reason) )
-    CHKERR( KSPLogHistory(ksp,ksp.norm) )
-    CHKERR( KSPMonitor(ksp,ksp.iter,ksp.norm) )
+    CHKERR( KSPConverged(ksp, ksp.iter, rnorm, &ksp.reason) )
+    CHKERR( KSPLogHistory(ksp, ksp.norm) )
+    CHKERR( KSPMonitor(ksp, ksp.iter, ksp.norm) )
     for its from 0 <= its < ksp.max_its:
         if ksp.reason: break
         KSPPreStep_Python(ksp)
         #
-        KSPStep_Python(ksp,B,X)
-        CHKERR( KSPBuildResidual(ksp,t,v,&R) )
-        CHKERR( VecNorm(R,NORM_2,&rnorm)     )
+        KSPStep_Python(ksp, B, X)
+        CHKERR( KSPBuildResidual(ksp, t, v, &R) )
+        CHKERR( VecNorm(R, NORM_2, &rnorm) )
         ksp.iter += 1
         #
         KSPPostStep_Python(ksp)
-        CHKERR( KSPConverged(ksp,ksp.iter,rnorm,&ksp.reason) )
-        CHKERR( KSPLogHistory(ksp,ksp.norm) )
-        CHKERR( KSPMonitor(ksp,ksp.iter,ksp.norm) )
+        CHKERR( KSPConverged(ksp, ksp.iter, rnorm, &ksp.reason) )
+        CHKERR( KSPLogHistory(ksp, ksp.norm) )
+        CHKERR( KSPMonitor(ksp, ksp.iter, ksp.norm) )
     if ksp.iter == ksp.max_its:
         if ksp.reason == KSP_CONVERGED_ITERATING:
             ksp.reason = KSP_DIVERGED_ITS
@@ -1781,7 +2049,7 @@ cdef PetscErrorCode KSPStep_Python(
     else:
         step = PyKSP(ksp).step
         if step is None: return UNSUPPORTED(b"step")
-    step(KSP_(ksp),Vec_(B),Vec_(X))
+    step(KSP_(ksp), Vec_(B), Vec_(X))
     return FunctionEnd()
 
 # --------------------------------------------------------------------
@@ -1923,14 +2191,14 @@ cdef PetscErrorCode SNESSetUp_Python(
     cdef PetscBool found = PETSC_FALSE
     if PySNES(snes).self is None:
         CHKERR( PetscOptionsGetString(NULL,
-                getPrefix(snes),b"-snes_python_type",
-                name,sizeof(name),&found) )
+                getPrefix(snes), b"-snes_python_type",
+                name, sizeof(name), &found) )
         if found and name[0]:
-            CHKERR( SNESPythonSetType_PYTHON(snes,name) )
+            CHKERR( SNESPythonSetType_PYTHON(snes, name) )
     if PySNES(snes).self is None:
         return PetscSETERR(PETSC_ERR_USER,
             "Python context not set, call one of \n"
-            " * SNESPythonSetType(snes,\"[package.]module.class\")\n"
+            " * SNESPythonSetType(snes, \"[package.]module.class\")\n"
             " * SNESSetFromOptions(snes) and pass option "
             "-snes_python_type [package.]module.class")
     #
@@ -1961,10 +2229,10 @@ cdef PetscErrorCode SNESSetFromOptions_Python(
     cdef PetscBool found = PETSC_FALSE
     cdef PetscOptionItems *opts "PetscOptionsObject" = PetscOptionsObject
     CHKERR( PetscOptionsString(
-            b"-snes_python_type",b"Python [package.]module[.{class|function}]",
-            b"SNESPythonSetType",defval,name,sizeof(name),&found) ); <void>opts;
+            b"-snes_python_type", b"Python [package.]module[.{class|function}]",
+            b"SNESPythonSetType", defval, name, sizeof(name), &found) ); <void>opts;
     if found and name[0]:
-        CHKERR( SNESPythonSetType_PYTHON(snes,name) )
+        CHKERR( SNESPythonSetType_PYTHON(snes, name) )
     #
     cdef setFromOptions = PySNES(snes).setFromOptions
     if setFromOptions is not None:
@@ -1989,8 +2257,8 @@ cdef PetscErrorCode SNESSolve_Python(
     except IERR with gil:
     FunctionBegin(b"SNESSolve_Python")
     cdef PetscVec b = NULL, x = NULL
-    CHKERR( SNESGetRhs(snes,&b)      )
-    CHKERR( SNESGetSolution(snes,&x) )
+    CHKERR( SNESGetRhs(snes, &b) )
+    CHKERR( SNESGetSolution(snes, &x) )
     #
     snes.iter = 0
     snes.reason = SNES_CONVERGED_ITERATING
@@ -2011,40 +2279,40 @@ cdef PetscErrorCode SNESSolve_Python_default(
     #
     cdef PetscVec X=NULL, F=NULL, Y=NULL
     cdef PetscSNESLineSearch ls
-    CHKERR( SNESGetSolution(snes,&X)           )
-    CHKERR( SNESGetFunction(snes,&F,NULL,NULL) )
-    CHKERR( SNESGetSolutionUpdate(snes,&Y)     )
-    CHKERR( SNESGetLineSearch(snes, &ls)       )
+    CHKERR( SNESGetSolution(snes, &X) )
+    CHKERR( SNESGetFunction(snes, &F, NULL, NULL) )
+    CHKERR( SNESGetSolutionUpdate(snes, &Y) )
+    CHKERR( SNESGetLineSearch(snes, &ls) )
     cdef PetscInt  its=0, lits=0
     cdef PetscReal xnorm = 0.0
     cdef PetscReal fnorm = 0.0
     cdef PetscReal ynorm = 0.0
     #
-    CHKERR( VecSet(Y,0.0)                 )
-    CHKERR( SNESComputeFunction(snes,X,F) )
-    CHKERR( VecNorm(X,NORM_2,&xnorm)      )
-    CHKERR( VecNorm(F,NORM_2,&fnorm)      )
+    CHKERR( VecSet(Y, 0.0) )
+    CHKERR( SNESComputeFunction(snes, X, F) )
+    CHKERR( VecNorm(X, NORM_2, &xnorm) )
+    CHKERR( VecNorm(F, NORM_2, &fnorm) )
     #
-    CHKERR( SNESConverged(snes,snes.iter,xnorm,ynorm,fnorm,&snes.reason) )
-    CHKERR( SNESLogHistory(snes,snes.norm,lits) )
-    CHKERR( SNESMonitor(snes,snes.iter,snes.norm) )
+    CHKERR( SNESConverged(snes, snes.iter, xnorm, ynorm, fnorm, &snes.reason) )
+    CHKERR( SNESLogHistory(snes, snes.norm, lits) )
+    CHKERR( SNESMonitor(snes, snes.iter, snes.norm) )
     for its from 0 <= its < snes.max_its:
         if snes.reason: break
         SNESPreStep_Python(snes)
         #
         lits = -snes.linear_its
-        SNESStep_Python(snes,X,F,Y)
+        SNESStep_Python(snes, X, F, Y)
         lits += snes.linear_its
         #
-        CHKERR( SNESLineSearchApply(ls,X,F,&fnorm,Y) )
-        CHKERR( VecNorm(X,NORM_2,&xnorm)      )
-        CHKERR( VecNorm(Y,NORM_2,&ynorm)      )
+        CHKERR( SNESLineSearchApply(ls, X, F, &fnorm, Y) )
+        CHKERR( VecNorm(X, NORM_2, &xnorm) )
+        CHKERR( VecNorm(Y, NORM_2, &ynorm) )
         snes.iter += 1
         #
         SNESPostStep_Python(snes)
-        CHKERR( SNESConverged(snes,snes.iter,xnorm,ynorm,fnorm,&snes.reason) )
-        CHKERR( SNESLogHistory(snes,snes.norm,lits) )
-        CHKERR( SNESMonitor(snes,snes.iter,snes.norm) )
+        CHKERR( SNESConverged(snes, snes.iter, xnorm, ynorm, fnorm, &snes.reason) )
+        CHKERR( SNESLogHistory(snes, snes.norm, lits) )
+        CHKERR( SNESMonitor(snes, snes.iter, snes.norm) )
     if snes.iter == snes.max_its:
         if snes.reason == SNES_CONVERGED_ITERATING:
             snes.reason = SNES_DIVERGED_MAX_IT
@@ -2081,9 +2349,9 @@ cdef PetscErrorCode SNESStep_Python(
     FunctionBegin(b"SNESStep_Python")
     cdef step = PySNES(snes).step
     if step is not None:
-        step(SNES_(snes),Vec_(X),Vec_(F),Vec_(Y))
+        step(SNES_(snes), Vec_(X), Vec_(F), Vec_(Y))
     else:
-        SNESStep_Python_default(snes,X,F,Y)
+        SNESStep_Python_default(snes, X, F, Y)
     return FunctionEnd()
 
 cdef PetscErrorCode SNESStep_Python_default(
@@ -2096,11 +2364,11 @@ cdef PetscErrorCode SNESStep_Python_default(
     FunctionBegin(b"SNESStep_Python_default")
     cdef PetscMat J = NULL, P = NULL
     cdef PetscInt lits = 0
-    CHKERR( SNESGetJacobian(snes,&J,&P,NULL,NULL)   )
-    CHKERR( SNESComputeJacobian(snes,X,J,P)         )
-    CHKERR( KSPSetOperators(snes.ksp,J,P)           )
-    CHKERR( KSPSolve(snes.ksp,F,Y)                  )
-    CHKERR( KSPGetIterationNumber(snes.ksp,&lits)   )
+    CHKERR( SNESGetJacobian(snes, &J, &P, NULL, NULL) )
+    CHKERR( SNESComputeJacobian(snes, X, J, P) )
+    CHKERR( KSPSetOperators(snes.ksp, J, P) )
+    CHKERR( KSPSolve(snes.ksp, F, Y) )
+    CHKERR( KSPGetIterationNumber(snes.ksp, &lits) )
     snes.linear_its += lits
     return FunctionEnd()
 
@@ -2208,7 +2476,7 @@ cdef PetscErrorCode TSPythonSetType_PYTHON(PetscTS ts, char name[]) \
     cdef object ctx = createcontext(name)
     TSPythonSetContext(ts, <void*>ctx)
     PyTS(ts).setname(name)
-    return  0
+    return FunctionEnd()
 
 cdef PetscErrorCode TSCreate_Python(
     PetscTS ts,
@@ -2266,13 +2534,13 @@ cdef PetscErrorCode TSSetUp_Python(
     FunctionBegin(b"TSSetUp_Python")
     #
     cdef PetscVec vec_update = NULL
-    CHKERR( VecDuplicate(ts.vec_sol,&vec_update) )
+    CHKERR( VecDuplicate(ts.vec_sol, &vec_update) )
     CHKERR( PetscObjectCompose(<PetscObject>ts,
                                 b"@ts.vec_update",
                                 <PetscObject>vec_update) )
     CHKERR( VecDestroy(&vec_update) )
     cdef PetscVec vec_dot = NULL
-    CHKERR( VecDuplicate(ts.vec_sol,&vec_dot) )
+    CHKERR( VecDuplicate(ts.vec_sol, &vec_dot) )
     CHKERR( PetscObjectCompose(<PetscObject>ts,
                                 b"@ts.vec_dot",
                                 <PetscObject>vec_dot) )
@@ -2282,14 +2550,14 @@ cdef PetscErrorCode TSSetUp_Python(
     cdef PetscBool found = PETSC_FALSE
     if PyTS(ts).self is None:
         CHKERR( PetscOptionsGetString(NULL,
-                getPrefix(ts),b"-ts_python_type",
-                name,sizeof(name),&found) )
+                getPrefix(ts), b"-ts_python_type",
+                name, sizeof(name), &found) )
         if found and name[0]:
-            CHKERR( TSPythonSetType_PYTHON(ts,name) )
+            CHKERR( TSPythonSetType_PYTHON(ts, name) )
     if PyTS(ts).self is None:
         return PetscSETERR(PETSC_ERR_USER,
             "Python context not set, call one of \n"
-            " * TSPythonSetType(ts,\"[package.]module.class\")\n"
+            " * TSPythonSetType(ts, \"[package.]module.class\")\n"
             " * TSSetFromOptions(ts) and pass option "
             "-ts_python_type [package.]module.class")
     #
@@ -2323,10 +2591,10 @@ cdef PetscErrorCode TSSetFromOptions_Python(
     cdef PetscBool found = PETSC_FALSE
     cdef PetscOptionItems *opts "PetscOptionsObject" = PetscOptionsObject
     CHKERR( PetscOptionsString(
-            b"-ts_python_type",b"Python [package.]module[.{class|function}]",
-            b"TSPythonSetType",defval,name,sizeof(name),&found) ); <void>opts;
+            b"-ts_python_type", b"Python [package.]module[.{class|function}]",
+            b"TSPythonSetType", defval, name, sizeof(name), &found) ); <void>opts;
     if found and name[0]:
-        CHKERR( TSPythonSetType_PYTHON(ts,name) )
+        CHKERR( TSPythonSetType_PYTHON(ts, name) )
     #
     cdef setFromOptions = PyTS(ts).setFromOptions
     if setFromOptions is not None:
@@ -2377,7 +2645,7 @@ cdef PetscErrorCode TSInterpolate_Python(
     FunctionBegin(b"TSInterpolate _Python")
     cdef interpolate = PyTS(ts).interpolate
     if interpolate is None: return UNSUPPORTED(b"interpolate")
-    interpolate(TS_(ts),toReal(t),Vec_(x))
+    interpolate(TS_(ts), toReal(t), Vec_(x))
     return FunctionEnd()
 
 cdef PetscErrorCode TSEvaluateStep_Python(
@@ -2390,7 +2658,7 @@ cdef PetscErrorCode TSEvaluateStep_Python(
     FunctionBegin(b"TSEvaluateStep _Python")
     cdef evaluatestep = PyTS(ts).evaluatestep
     if evaluatestep is None: return UNSUPPORTED(b"evaluatestep")
-    cdef done = evaluatestep(TS_(ts),toInt(o),Vec_(x))
+    cdef done = evaluatestep(TS_(ts), toInt(o), Vec_(x))
     if flag != NULL:
         flag[0] = PETSC_TRUE if done else PETSC_FALSE
     elif not done:
@@ -2407,7 +2675,7 @@ cdef PetscErrorCode SNESTSFormFunction_Python(
     #
     cdef formSNESFunction = PyTS(ts).formSNESFunction
     if formSNESFunction is not None:
-        args = (SNES_(snes),Vec_(x),Vec_(f),TS_(ts))
+        args = (SNES_(snes), Vec_(x), Vec_(f), TS_(ts))
         formSNESFunction(args)
         return FunctionEnd()
     #
@@ -2419,9 +2687,9 @@ cdef PetscErrorCode SNESTSFormFunction_Python(
     #
     cdef PetscReal t = ts.ptime + ts.time_step
     cdef PetscReal a = 1.0/ts.time_step
-    CHKERR( VecCopy(ts.vec_sol,dx)          )
-    CHKERR( VecAXPBY(dx,+a,-a,x)            )
-    CHKERR( TSComputeIFunction(ts,t,x,dx,f,PETSC_FALSE) )
+    CHKERR( VecCopy(ts.vec_sol, dx) )
+    CHKERR( VecAXPBY(dx, +a, -a, x) )
+    CHKERR( TSComputeIFunction(ts, t, x, dx, f, PETSC_FALSE) )
     return FunctionEnd()
 
 cdef PetscErrorCode SNESTSFormJacobian_Python(
@@ -2435,7 +2703,7 @@ cdef PetscErrorCode SNESTSFormJacobian_Python(
     #
     cdef formSNESJacobian = PyTS(ts).formSNESJacobian
     if formSNESJacobian is not None:
-        args = (SNES_(snes),Vec_(x),Mat_(A),Mat_(B),TS_(ts))
+        args = (SNES_(snes), Vec_(x), Mat_(A), Mat_(B), TS_(ts))
         formSNESJacobian(*args)
         return FunctionEnd()
     #
@@ -2447,9 +2715,9 @@ cdef PetscErrorCode SNESTSFormJacobian_Python(
     #
     cdef PetscReal t = ts.ptime + ts.time_step
     cdef PetscReal a = 1.0/ts.time_step
-    CHKERR( VecCopy(ts.vec_sol,dx)                )
-    CHKERR( VecAXPBY(dx,+a,-a,x)                  )
-    CHKERR( TSComputeIJacobian(ts,t,x,dx,a,A,B,PETSC_FALSE) )
+    CHKERR( VecCopy(ts.vec_sol, dx) )
+    CHKERR( VecAXPBY(dx, +a, -a, x) )
+    CHKERR( TSComputeIJacobian(ts, t, x, dx, a, A, B, PETSC_FALSE) )
     return FunctionEnd()
 
 cdef PetscErrorCode TSSolveStep_Python(
@@ -2467,8 +2735,8 @@ cdef PetscErrorCode TSSolveStep_Python(
     #
     cdef PetscInt nits = 0, lits = 0
     CHKERR( SNESSolve(ts.snes, NULL, x) )
-    CHKERR( SNESGetIterationNumber(ts.snes,&nits) )
-    CHKERR( SNESGetLinearSolveIterations(ts.snes,&lits) )
+    CHKERR( SNESGetIterationNumber(ts.snes, &nits) )
+    CHKERR( SNESGetLinearSolveIterations(ts.snes, &lits) )
     ts.snes_its += nits
     ts.ksp_its  += lits
     return FunctionEnd()
@@ -2524,25 +2792,320 @@ cdef PetscErrorCode TSStep_Python_default(
     cdef PetscBool stageok = PETSC_TRUE
     for r from 0 <= r < ts.max_reject:
         tt = ts.ptime + ts.time_step
-        CHKERR( VecCopy(ts.vec_sol,vec_update) )
-        CHKERR( TSPreStage(ts,tt+dt) )
-        TSSolveStep_Python(ts,tt,vec_update)
-        CHKERR( TSPostStage(ts,tt+dt,0,&vec_update) );
-        CHKERR( TSAdaptCheckStage(ts.adapt,ts,tt+dt,vec_update,&stageok) );
+        CHKERR( VecCopy(ts.vec_sol, vec_update) )
+        CHKERR( TSPreStage(ts, tt+dt) )
+        TSSolveStep_Python(ts, tt, vec_update)
+        CHKERR( TSPostStage(ts, tt+dt, 0, &vec_update) );
+        CHKERR( TSAdaptCheckStage(ts.adapt, ts, tt+dt, vec_update, &stageok) );
         if not stageok:
             ts.reject += 1
             continue
-        TSAdaptStep_Python(ts,tt,vec_update,&dt,&accept)
+        TSAdaptStep_Python(ts, tt, vec_update, &dt, &accept)
         if not accept:
             ts.time_step = dt
             ts.reject += 1
             continue
-        CHKERR( VecCopy(vec_update,ts.vec_sol) )
+        CHKERR( VecCopy(vec_update, ts.vec_sol) )
         ts.ptime += ts.time_step
         ts.time_step = dt
         break
     if (not stageok or not accept) and ts.reason == 0:
         ts.reason = TS_DIVERGED_STEP_REJECTED
+    return FunctionEnd()
+
+# --------------------------------------------------------------------
+
+
+cdef extern from * nogil:
+    struct _TaoOps:
+      PetscErrorCode (*destroy)(PetscTAO) except IERR
+      PetscErrorCode (*setup)(PetscTAO) except IERR
+      PetscErrorCode (*solve)(PetscTAO) except IERR
+      PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscTAO) except IERR
+      PetscErrorCode (*view)(PetscTAO,PetscViewer) except IERR
+    ctypedef _TaoOps *TaoOps
+    ctypedef enum TaoConvergedReason:
+      TAO_CONTINUE_ITERATING
+      TAO_DIVERGED_MAXITS
+    struct _p_TAO:
+        void *data
+        TaoOps ops
+        PetscInt niter, max_it
+        TaoConvergedReason reason
+        PetscInt ksp_its, ksp_tot_its
+        PetscKSP ksp
+        PetscVec gradient
+        PetscVec stepdirection
+        PetscTAOLineSearch linesearch
+
+cdef extern from * nogil:
+    PetscErrorCode TaoGetSolution(PetscTAO,PetscVec*)
+    PetscErrorCode TaoComputeObjective(PetscTAO,PetscVec,PetscReal*)
+    PetscErrorCode TaoComputeGradient(PetscTAO,PetscVec,PetscVec)
+    PetscErrorCode TaoComputeObjectiveAndGradient(PetscTAO,PetscVec,PetscReal*,PetscVec)
+    PetscErrorCode TaoMonitor(PetscTAO,PetscInt,PetscReal,PetscReal,PetscReal,PetscReal)
+    PetscErrorCode TaoLogConvergenceHistory(PetscTAO,PetscReal,PetscReal,PetscReal,PetscInt)
+    PetscErrorCode VecNorm(PetscVec,NormType,PetscReal*)
+    PetscErrorCode VecCopy(PetscVec,PetscVec)
+    PetscErrorCode VecScale(PetscVec,PetscReal)
+    PetscErrorCode KSPSetFromOptions(PetscKSP)
+
+    # custom.h
+    PetscErrorCode TaoGetVecs(PetscTAO,PetscVec*,PetscVec*,PetscVec*)
+    PetscErrorCode TaoCheckReals(PetscTAO,PetscReal,PetscReal)
+    PetscErrorCode TaoConverged(PetscTAO)
+    PetscErrorCode TaoComputeUpdate(PetscTAO)
+    PetscErrorCode TaoCreateDefaultLineSearch(PetscTAO)
+    PetscErrorCode TaoCreateDefaultKSP(PetscTAO)
+    PetscErrorCode TaoApplyLineSearch(PetscTAO,PetscReal*,PetscReal*)
+
+@cython.internal
+cdef class _PyTao(_PyObj): pass
+cdef inline _PyTao PyTao(PetscTAO tao):
+    if tao != NULL and tao.data != NULL:
+        return <_PyTao>tao.data
+    else:
+        return _PyTao.__new__(_PyTao)
+
+cdef public PetscErrorCode TaoPythonGetContext(PetscTAO tao, void **ctx) \
+    except IERR:
+    FunctionBegin(b"TaoPythonGetContext")
+    PyTao(tao).getcontext(ctx)
+    return FunctionEnd()
+
+cdef public PetscErrorCode TaoPythonSetContext(PetscTAO tao, void *ctx) \
+    except IERR:
+    FunctionBegin(b"TaoPythonSetContext")
+    PyTao(tao).setcontext(ctx, TAO_(tao))
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoPythonSetType_PYTHON(PetscTAO tao, char name[]) \
+    except IERR with gil:
+    FunctionBegin(b"TaoPythonSetType_PYTHON")
+    if name == NULL: return FunctionEnd() # XXX
+    cdef object ctx = createcontext(name)
+    TaoPythonSetContext(tao, <void*>ctx)
+    PyTao(tao).setname(name)
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoCreate_Python(
+    PetscTAO tao,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoCreate_Python")
+    #
+    cdef TaoOps ops    = tao.ops
+    ops.destroy        = TaoDestroy_Python
+    ops.view           = TaoView_Python
+    ops.solve          = TaoSolve_Python
+    ops.setup          = TaoSetUp_Python
+    ops.setfromoptions = TaoSetFromOptions_Python
+    #
+    CHKERR( PetscObjectComposeFunction(
+            <PetscObject>tao, b"TaoPythonSetType_C",
+            <PetscVoidFunction>TaoPythonSetType_PYTHON) )
+    #
+    tao.max_it = 10000
+    #
+    CHKERR( TaoCreateDefaultLineSearch(tao) )
+    CHKERR( TaoCreateDefaultKSP(tao) )
+    #
+    cdef ctx = PyTao(NULL)
+    tao.data = <void*> ctx
+    Py_INCREF(<PyObject*>tao.data)
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoDestroy_Python(
+    PetscTAO tao,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoDestroy_Python")
+    CHKERR( PetscObjectComposeFunction(
+            <PetscObject>tao, b"TaoPythonSetType_C",
+            <PetscVoidFunction>NULL) )
+    #
+    if not Py_IsInitialized(): return FunctionEnd()
+    try:
+        addRef(tao)
+        TaoPythonSetContext(tao, NULL)
+    finally:
+        delRef(tao)
+        Py_DECREF(<PyObject*>tao.data)
+        tao.data = NULL
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoSetUp_Python(
+    PetscTAO tao,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoSetUp_Python")
+    cdef char name[2048]
+    cdef PetscBool found = PETSC_FALSE
+    if PyTao(tao).self is None:
+        CHKERR( PetscOptionsGetString(NULL,
+                getPrefix(tao), b"-tao_python_type",
+                name, sizeof(name), &found) )
+        if found and name[0]:
+            CHKERR( TaoPythonSetType_PYTHON(tao, name) )
+    if PyTao(tao).self is None:
+        return PetscSETERR(PETSC_ERR_USER,
+            "Python context not set, call one of \n"
+            " * TaoPythonSetType(tao, \"[package.]module.class\")\n"
+            " * TaoSetFromOptions(tao) and pass option "
+            "-tao_python_type [package.]module.class")
+    #
+    cdef setUp = PyTao(tao).setUp
+    if setUp is not None:
+        setUp(TAO_(tao))
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoSetFromOptions_Python(
+    PetscOptionItems *PetscOptionsObject,
+    PetscTAO tao,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoSetFromOptions_Python")
+    #
+    cdef char name[2048], *defval = PyTao(tao).getname()
+    cdef PetscBool found = PETSC_FALSE
+    cdef PetscOptionItems *opts "PetscOptionsObject" = PetscOptionsObject
+    CHKERR( PetscOptionsString(
+            b"-tao_python_type", b"Python [package.]module[.{class|function}]",
+            b"TaoPythonSetType", defval, name, sizeof(name), &found) ); <void>opts;
+    if found and name[0]:
+        CHKERR( TaoPythonSetType_PYTHON(tao, name) )
+    #
+    cdef setFromOptions = PyTao(tao).setFromOptions
+    if setFromOptions is not None:
+        setFromOptions(TAO_(tao))
+    CHKERR( KSPSetFromOptions(tao.ksp) )
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoView_Python(
+    PetscTAO tao,
+    PetscViewer vwr,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoView_Python")
+    viewcontext(PyTao(tao), vwr)
+    cdef view = PyTao(tao).view
+    if view is not None:
+        view(TAO_(tao), Viewer_(vwr))
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoSolve_Python(
+    PetscTAO tao,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoSolve_Python")
+    #
+    tao.niter = 0
+    tao.ksp_its = 0
+    tao.reason = TAO_CONTINUE_ITERATING
+    #
+    cdef solve = PyTao(tao).solve
+    if solve is not None:
+        solve(TAO_(tao))
+    else:
+        TaoSolve_Python_default(tao)
+    #
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoSolve_Python_default(
+    PetscTAO tao,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoSolve_Python_default")
+    #
+    cdef PetscVec X = NULL, G = NULL, S = NULL
+    CHKERR( TaoGetVecs(tao, &X, &G, &S) )
+    #
+    cdef PetscReal f = 0.0
+    cdef PetscReal gnorm = 0.0
+    cdef PetscReal step = 1.0
+    #
+    if G != NULL:
+        CHKERR( TaoComputeObjectiveAndGradient(tao, X, &f, G) )
+        CHKERR( VecNorm(G, NORM_2, &gnorm) )
+    else:
+        CHKERR( TaoComputeObjective(tao, X, &f) )
+    CHKERR( TaoCheckReals(tao, f, gnorm) )
+
+    CHKERR( TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao.ksp_its) )
+    CHKERR( TaoMonitor(tao, tao.niter, f, gnorm, 0.0, step) )
+    CHKERR( TaoConverged(tao) )
+
+    if tao.reason != TAO_CONTINUE_ITERATING:
+        return FunctionEnd()
+
+    cdef PetscInt its = 0
+    for its from 0 <= its < tao.max_it:
+        if tao.reason: break
+        CHKERR( TaoComputeUpdate(tao) )
+
+        TaoPreStep_Python(tao)
+        #
+        tao.ksp_its = 0
+        TaoStep_Python(tao, X, G, S)
+        CHKERR( KSPGetIterationNumber(tao.ksp, &tao.ksp_its) )
+        tao.ksp_tot_its += tao.ksp_its
+        #
+        if G != NULL:
+          CHKERR( TaoApplyLineSearch(tao, &f, &step) )
+          CHKERR( VecNorm(G, NORM_2, &gnorm) )
+        else:
+          CHKERR( TaoComputeObjective(tao, X, &f) )
+        CHKERR( TaoCheckReals(tao, f, gnorm) )
+
+        tao.niter += 1
+        #
+        TaoPostStep_Python(tao)
+        CHKERR( TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao.ksp_its) )
+        CHKERR( TaoMonitor(tao, tao.niter, f, gnorm, 0.0, step) )
+        CHKERR( TaoConverged(tao) )
+
+    if tao.niter == tao.max_it:
+        if tao.reason <= 0:
+            tao.reason = TAO_DIVERGED_MAXITS
+    #
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoStep_Python(
+    PetscTAO tao,
+    PetscVec X,
+    PetscVec G,
+    PetscVec S,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoStep_Python")
+    cdef step = PyTao(tao).step
+    if step is not None:
+        step(TAO_(tao), Vec_(X), Vec_(G) if G != NULL else None, Vec_(S) if S != NULL else None)
+    else:
+        # TaoStep_Python_default(tao,X,G,S)
+        CHKERR( TaoComputeGradient(tao, X, S) )
+        CHKERR( VecCopy(G, S) )
+        CHKERR( VecScale(S, -1.0) )
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoPreStep_Python(
+    PetscTAO tao,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoPreStep_Python")
+    cdef preStep = PyTao(tao).preStep
+    if preStep is not None:
+        preStep(TAO_(tao))
+    return FunctionEnd()
+
+cdef PetscErrorCode TaoPostStep_Python(
+    PetscTAO tao,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"TaoPostStep_Python")
+    cdef postStep = PyTao(tao).postStep
+    if postStep is not None:
+        postStep(TAO_(tao))
     return FunctionEnd()
 
 # --------------------------------------------------------------------
@@ -2558,7 +3121,7 @@ cdef PetscErrorCode PetscPythonMonitorSet_Python(
     assert url_p[0] != 0
     #
     cdef PetscClassId classid = 0
-    CHKERR( PetscObjectGetClassId(obj_p,&classid) )
+    CHKERR( PetscObjectGetClassId(obj_p, &classid) )
     cdef type klass = PyPetscType_Lookup(classid)
     cdef Object ob = klass()
     ob.obj[0] = newRef(obj_p)
@@ -2586,18 +3149,23 @@ cdef extern from * nogil:
   const char* PCPYTHON   '"python"'
   const char* SNESPYTHON '"python"'
   const char* TSPYTHON   '"python"'
+  const char* TAOPYTHON  '"python"'
 
   ctypedef PetscErrorCode MatCreateFunction  (PetscMat)  except IERR
   ctypedef PetscErrorCode PCCreateFunction   (PetscPC)   except IERR
   ctypedef PetscErrorCode KSPCreateFunction  (PetscKSP)  except IERR
   ctypedef PetscErrorCode SNESCreateFunction (PetscSNES) except IERR
   ctypedef PetscErrorCode TSCreateFunction   (PetscTS)   except IERR
+  ctypedef PetscErrorCode TaoCreateFunction  (PetscTAO)  except IERR
 
   PetscErrorCode MatRegister  (const char[],MatCreateFunction* )
   PetscErrorCode PCRegister   (const char[],PCCreateFunction*  )
   PetscErrorCode KSPRegister  (const char[],KSPCreateFunction* )
   PetscErrorCode SNESRegister (const char[],SNESCreateFunction*)
   PetscErrorCode TSRegister   (const char[],TSCreateFunction*  )
+
+  # Tao registration not available with complex numbers
+  PetscErrorCode TaoRegisterCustom (const char[],TaoCreateFunction* )
 
   PetscErrorCode (*PetscPythonMonitorSet_C) \
       (PetscObject, const char[]) except IERR
@@ -2612,6 +3180,9 @@ cdef public PetscErrorCode PetscPythonRegisterAll() except IERR:
     CHKERR( KSPRegister ( KSPPYTHON,  KSPCreate_Python  ) )
     CHKERR( SNESRegister( SNESPYTHON, SNESCreate_Python ) )
     CHKERR( TSRegister  ( TSPYTHON,   TSCreate_Python   ) )
+
+    # No preprocessor in cython
+    CHKERR( TaoRegisterCustom ( TAOPYTHON, TaoCreate_Python ) )
 
     # Python monitors
     global PetscPythonMonitorSet_C

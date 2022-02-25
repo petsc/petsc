@@ -78,7 +78,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
   innerSolverTol = 1.0;
   epsilon = 0.0;
 
-  if (!rank) {
+  if (rank == 0) {
     ierr = init_df_solver(&df);CHKERRQ(ierr);
     grad_list.next = NULL;
     tail_glist = &grad_list;
@@ -114,7 +114,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
     ierr = VecScatterEnd(bmrm->scatter, G, bmrm->local_w, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
 
     /* Bring up the inner solver */
-    if (!rank) {
+    if (rank == 0) {
       ierr = ensure_df_space(tao->niter+1, &df);CHKERRQ(ierr);
       ierr = make_grad_node(bmrm->local_w, &pgrad);CHKERRQ(ierr);
       tail_glist->next = pgrad;
@@ -128,7 +128,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
       /* set up the Q */
       pgrad = grad_list.next;
       for (i=0; i<=tao->niter; i++) {
-        if (!pgrad) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Assert that there are at least tao->niter+1 pgrad available");
+        PetscCheckFalse(!pgrad,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Assert that there are at least tao->niter+1 pgrad available");
         ierr = VecDot(pgrad->V, bmrm->local_w, &reg);CHKERRQ(ierr);
         df.Q[i][tao->niter] = df.Q[tao->niter][i] = reg / lambda;
         pgrad = pgrad->next;
@@ -171,7 +171,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
     pre_epsilon = epsilon;
     epsilon = min_jw - jtwt;
 
-    if (!rank) {
+    if (rank == 0) {
       if (innerSolverTol > epsilon) innerSolverTol = epsilon;
       else if (innerSolverTol < 1e-7) innerSolverTol = 1e-7;
 
@@ -188,7 +188,7 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao)
   }
 
   /* free all the memory */
-  if (!rank) {
+  if (rank == 0) {
     ierr = destroy_grad_list(&grad_list);CHKERRQ(ierr);
     ierr = destroy_df_solver(&df);CHKERRQ(ierr);
   }
@@ -541,7 +541,7 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
     rl      = r;
   }
 
-  if (PetscAbsReal(dlambda) > BMRM_INFTY) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"L2N2_DaiFletcherPGM detected Infeasible QP problem!");
+  PetscCheckFalse(PetscAbsReal(dlambda) > BMRM_INFTY,PETSC_COMM_SELF,PETSC_ERR_PLIB,"L2N2_DaiFletcherPGM detected Infeasible QP problem!");
 
   if (ru == 0) {
     return innerIter;
@@ -609,7 +609,7 @@ PetscInt project(PetscInt n,PetscReal *a,PetscReal b,PetscReal *c,PetscReal *l,P
 PetscErrorCode solve(TAO_DF *df)
 {
   PetscErrorCode ierr;
-  PetscInt       i, j, innerIter, it, it2, luv, info, lscount = 0, projcount = 0;
+  PetscInt       i, j, innerIter, it, it2, luv, info, lscount = 0;
   PetscReal      gd, max, ak, bk, akold, bkold, lamnew, alpha, kktlam=0.0, lam_ext;
   PetscReal      DELTAsv, ProdDELTAsv;
   PetscReal      c, *tempQ;
@@ -634,7 +634,7 @@ PetscErrorCode solve(TAO_DF *df)
   lam_ext = 0.0;
 
   /* Project the initial solution */
-  projcount += project(dim, a, b, tempv, l, u, x, &lam_ext, df);
+  project(dim, a, b, tempv, l, u, x, &lam_ext, df);
 
   /* Compute gradient
      g = Q*x + f; */
@@ -659,7 +659,7 @@ PetscErrorCode solve(TAO_DF *df)
   }
 
   /* Project x_{k} - g_{k} */
-  projcount += project(dim, a, b, y, l, u, tempv, &lam_ext, df);
+  project(dim, a, b, y, l, u, tempv, &lam_ext, df);
 
   /* y = P(x_{k} - g_{k}) - x_{k} */
   max = ALPHA_MIN;
@@ -693,7 +693,7 @@ PetscErrorCode solve(TAO_DF *df)
     for (i = 0; i < dim; i++)  tempv[i] = alpha*g[i] - x[i];
 
     /* Project x_{k} - alpha*g_{k} */
-    projcount += project(dim, a, b, tempv, l, u, y, &lam_ext, df);
+    project(dim, a, b, tempv, l, u, y, &lam_ext, df);
 
     /* gd = \inner{d_{k}}{g_{k}}
         d = P(x_{k} - alpha*g_{k}) - x_{k}

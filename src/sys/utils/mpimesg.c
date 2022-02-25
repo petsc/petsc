@@ -1,5 +1,6 @@
 
 #include <petscsys.h>        /*I  "petscsys.h"  I*/
+#include <petsc/private/mpiutils.h>
 
 /*@C
   PetscGatherNumberOfMessages -  Computes the number of messages a node expects to receive
@@ -41,7 +42,7 @@ PetscErrorCode  PetscGatherNumberOfMessages(MPI_Comm comm,const PetscMPIInt ifla
 
   /* If iflags not provided, compute iflags from ilengths */
   if (!iflags) {
-    if (!ilengths) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Either iflags or ilengths should be provided");
+    PetscCheckFalse(!ilengths,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Either iflags or ilengths should be provided");
     iflags_local = iflags_localm;
     for (i=0; i<size; i++) {
       if (ilengths[i]) iflags_local[i] = 1;
@@ -137,6 +138,80 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
   PetscFunctionReturn(0);
 }
 
+/* Same as PetscGatherNumberOfMessages(), except using PetscInt for ilengths[] */
+PetscErrorCode  PetscGatherNumberOfMessages_Private(MPI_Comm comm,const PetscMPIInt iflags[],const PetscInt ilengths[],PetscMPIInt *nrecvs)
+{
+  PetscMPIInt    size,rank,*recv_buf,i,*iflags_local = NULL,*iflags_localm = NULL;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+
+  ierr = PetscMalloc2(size,&recv_buf,size,&iflags_localm);CHKERRQ(ierr);
+
+  /* If iflags not provided, compute iflags from ilengths */
+  if (!iflags) {
+    PetscCheckFalse(!ilengths,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Either iflags or ilengths should be provided");
+    iflags_local = iflags_localm;
+    for (i=0; i<size; i++) {
+      if (ilengths[i]) iflags_local[i] = 1;
+      else iflags_local[i] = 0;
+    }
+  } else iflags_local = (PetscMPIInt*) iflags;
+
+  /* Post an allreduce to determine the numer of messages the current node will receive */
+  ierr    = MPIU_Allreduce(iflags_local,recv_buf,size,MPI_INT,MPI_SUM,comm);CHKERRMPI(ierr);
+  *nrecvs = recv_buf[rank];
+
+  ierr = PetscFree2(recv_buf,iflags_localm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* Same as PetscGatherMessageLengths(), except using PetscInt for message lengths */
+PetscErrorCode  PetscGatherMessageLengths_Private(MPI_Comm comm,PetscMPIInt nsends,PetscMPIInt nrecvs,const PetscInt ilengths[],PetscMPIInt **onodes,PetscInt **olengths)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size,rank,tag,i,j;
+  MPI_Request    *s_waits  = NULL,*r_waits = NULL;
+  MPI_Status     *w_status = NULL;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
+  ierr = PetscCommGetNewTag(comm,&tag);CHKERRQ(ierr);
+
+  /* cannot use PetscMalloc3() here because in the call to MPI_Waitall() they MUST be contiguous */
+  ierr    = PetscMalloc2(nrecvs+nsends,&r_waits,nrecvs+nsends,&w_status);CHKERRQ(ierr);
+  s_waits = r_waits+nrecvs;
+
+  /* Post the Irecv to get the message length-info */
+  ierr = PetscMalloc1(nrecvs,olengths);CHKERRQ(ierr);
+  for (i=0; i<nrecvs; i++) {
+    ierr = MPI_Irecv((*olengths)+i,1,MPIU_INT,MPI_ANY_SOURCE,tag,comm,r_waits+i);CHKERRMPI(ierr);
+  }
+
+  /* Post the Isends with the message length-info */
+  for (i=0,j=0; i<size; ++i) {
+    if (ilengths[i]) {
+      ierr = MPI_Isend((void*)(ilengths+i),1,MPIU_INT,i,tag,comm,s_waits+j);CHKERRMPI(ierr);
+      j++;
+    }
+  }
+
+  /* Post waits on sends and receivs */
+  if (nrecvs+nsends) {ierr = MPI_Waitall(nrecvs+nsends,r_waits,w_status);CHKERRMPI(ierr);}
+
+  /* Pack up the received data */
+  ierr = PetscMalloc1(nrecvs,onodes);CHKERRQ(ierr);
+  for (i=0; i<nrecvs; ++i) {
+    (*onodes)[i] = w_status[i].MPI_SOURCE;
+    if (w_status[i].MPI_SOURCE == rank) (*olengths)[i] = ilengths[rank]; /* See comments in PetscGatherMessageLengths */
+  }
+  ierr = PetscFree2(r_waits,w_status);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
   PetscGatherMessageLengths2 - Computes info about messages that a MPI-node will receive,
   including (from-id,length) pairs for each message. Same functionality as PetscGatherMessageLengths()
@@ -148,12 +223,13 @@ PetscErrorCode  PetscGatherMessageLengths(MPI_Comm comm,PetscMPIInt nsends,Petsc
 + comm      - Communicator
 . nsends    - number of messages that are to be sent.
 . nrecvs    - number of messages being received
-- ilengths1, ilengths2 - array of integers of length sizeof(comm)
-              a non zero ilengths[i] represent a message to i of length ilengths[i]
+. ilengths1 - first array of integers of length sizeof(comm)
+- ilengths2 - second array of integers of length sizeof(comm)
 
   Output Parameters:
 + onodes    - list of node-ids from which messages are expected
-- olengths1, olengths2 - corresponding message lengths
+. olengths1 - first corresponding message lengths
+- olengths2 - second  message lengths
 
   Level: developer
 
@@ -200,7 +276,7 @@ PetscErrorCode  PetscGatherMessageLengths2(MPI_Comm comm,PetscMPIInt nsends,Pets
       j++;
     }
   }
-  if (j != nsends) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"j %d not equal to expected number of sends %d\n",j,nsends);
+  PetscCheckFalse(j != nsends,PETSC_COMM_SELF,PETSC_ERR_PLIB,"j %d not equal to expected number of sends %d",j,nsends);
 
   /* Post waits on sends and receivs */
   if (nrecvs+nsends) {ierr = MPI_Waitall(nrecvs+nsends,r_waits,w_status);CHKERRMPI(ierr);}

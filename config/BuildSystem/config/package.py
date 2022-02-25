@@ -41,6 +41,8 @@ class Package(config.base.Configure):
 
     # These are specified for the package
     self.required               = 0    # 1 means the package is required
+    self.devicePackage          = 0    # 1 if PETSC_HAVE_DEVICE should be defined by
+                                       # inclusion of this package
     self.lookforbydefault       = 0    # 1 means the package is not required, but always look for and use if found
                                        # cannot tell the difference between user requiring it with --with-PACKAGE=1 and
                                        # this flag being one so hope user never requires it. Needs to be fixed in an overhaul of
@@ -49,6 +51,7 @@ class Package(config.base.Configure):
     self.linkedbypetsc          = 1    # 1 indicates PETSc shared libraries (and PETSc executables) need to link against this library
     self.gitcommit              = None # Git commit to use for downloads
     self.gitcommitmain          = None # Git commit to use for petsc/main or similar non-release branches
+    self.gitsubmodules          = []   # List of git submodues that should be cloned along with the repo
     self.download               = []   # list of URLs where repository or tarballs may be found (git is tested before tarballs)
     self.deps                   = []   # other packages whose dlib or include we depend on, usually we also use self.framework.require()
     self.odeps                  = []   # dependent packages that are optional
@@ -62,8 +65,9 @@ class Package(config.base.Configure):
     self.functionsDefine        = []   # optional functions we wish to check for in the libraries that should generate a PETSC_HAVE_ define
     self.functionsFortran       = 0    # 1 means the symbols in self.functions are Fortran symbols, so name-mangling is done
     self.functionsCxx           = [0, '', ''] # 1 means the symbols in self.functions symbol are C++ symbol, so name-mangling with prototype/call is done
-    self.cxx                    = 0    # 1 means requires C++
-    self.fc                     = 0    # 1 means requires fortran
+    self.buildLanguages         = ['C']  # Languages the package is written in, hence also the compilers needed to build it. Normally only contains one
+                                         # language, but can have multiple, such as ['FC', 'Cxx']. In petsc's terminology, languages are C, Cxx, FC, CUDA, HIP, SYCL.
+                                         # We use the first language in the list to check include headers, library functions and versions.
     self.noMPIUni               = 0    # 1 means requires a real MPI
     self.libdir                 = 'lib'     # location of libraries in the package directory tree
     self.altlibdir              = 'lib64'   # alternate location of libraries in the package directory tree
@@ -71,8 +75,8 @@ class Package(config.base.Configure):
     self.license                = None # optional license text
     self.excludedDirs           = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
     self.downloadonWindows      = 0  # 1 means the --download-package works on Microsoft Windows
-    self.minCxxVersion          = self.framework.compilers.cxxDialectRange[0] # minimum c++ standard version required by the package, e.g. 'c++11'
-    self.maxCxxVersion          = self.framework.compilers.cxxDialectRange[1] # maximum c++ standard version allowed by the package, e.g. 'c++14', must be greater than self.minCxxVersion
+    self.minCxxVersion          = framework.compilers.setCompilers.cxxDialectRange['Cxx'][0] # minimum c++ standard version required by the package, e.g. 'c++11'
+    self.maxCxxVersion          = framework.compilers.setCompilers.cxxDialectRange['Cxx'][1] # maximum c++ standard version allowed by the package, e.g. 'c++14', must be greater than self.minCxxVersion
     self.publicInstall          = 1  # Installs the package in the --prefix directory if it was given. Packages that are only used
                                      # during the configuration/installation process such as sowing, make etc should be marked as 0
     self.parallelMake           = 1  # 1 indicates the package supports make -j np option
@@ -89,7 +93,7 @@ class Package(config.base.Configure):
 
     # Outside coupling
     self.defaultInstallDir      = ''
-    self.installSudo            = '' # if user does not have write access to prefix directory then this is set to sudo
+    self.PrefixWriteCheck       = 1 # check if specified prefix location is writable for 'make install'
 
     self.isMPI                  = 0 # Is an MPI implementation, needed to check for compiler wrappers
     self.hastests               = 0 # indicates that PETSc make alltests has tests for this package
@@ -100,6 +104,7 @@ class Package(config.base.Configure):
     self.builtafterpetsc        = 0  # package is compiled/installed after PETSc is compiled
 
     self.downloaded             = 0  # 1 indicates that this package is being downloaded during this run (internal use only)
+    self.testoptions            = '' # Any PETSc options that should be used when this package is installed and the test harness is run
     self.executablename         = '' # full path of executable, for example cmake, bfort etc
     return
 
@@ -145,7 +150,7 @@ class Package(config.base.Configure):
       self.petscdir        = FakePETScDir()
     # All packages depend on make
     self.make          = framework.require('config.packages.make',self)
-    if not self.isMPI and not self.package in ['make','cuda','hip','thrust','valgrind','hwloc','x']:
+    if not self.isMPI and not self.package in ['make','cuda','hip','sycl','thrust','hwloc','x']:
       # force MPI to be the first package (except for those listed above) configured since all other packages
       # may depend on its compilers defined here
       self.mpi         = framework.require('config.packages.MPI',self)
@@ -234,7 +239,7 @@ class Package(config.base.Configure):
     return flags
 
   def getSharedFlag(self,cflags):
-    for flag in ['-PIC', '-fPIC', '-KPIC', '-qpic']:
+    for flag in ['-PIC', '-fPIC', '-KPIC', '-qpic', '-fpic']:
       if cflags.find(flag) >=0: return flag
     return ''
 
@@ -260,7 +265,9 @@ class Package(config.base.Configure):
   def removeWarningFlags(self,flags):
     outflags = []
     for flag in flags:
-      if not flag in ['-Werror','-Wall','-Wwrite-strings','-Wno-strict-aliasing','-Wno-unknown-pragmas','-Wno-unused-variable','-Wno-unused-dummy-argument','-fvisibility=hidden','-std=c89','-pedantic','--coverage','-Mfree','-fdefault-integer-8']:
+      if not flag in ['-Werror','-Wall','-Wwrite-strings','-Wno-strict-aliasing','-Wno-unknown-pragmas',
+                      '-Wno-unused-variable','-Wno-unused-dummy-argument','-fvisibility=hidden','-std=c89',
+                      '-pedantic','--coverage','-Mfree','-fdefault-integer-8','-fsanitize=address']:
         outflags.append(flag)
     return outflags
 
@@ -297,8 +304,11 @@ class Package(config.base.Configure):
     '''To turn off various warnings or errors the compilers may produce with external packages, remove or add appropriate compiler flags'''
     outflags = self.removeWarningFlags(flags.split())
     with self.Language('C'):
-      if config.setCompilers.Configure.isDarwinCatalina(self.log) and config.setCompilers.Configure.isClang(self.getCompiler(), self.log):
-        outflags.append('-Wno-implicit-function-declaration')
+      if config.setCompilers.Configure.isClang(self.getCompiler(), self.log):
+        if config.setCompilers.Configure.isDarwin(self.log):
+          outflags.append('-fno-common')
+        if config.setCompilers.Configure.isDarwinCatalina(self.log):
+          outflags.append('-Wno-implicit-function-declaration')
     return ' '.join(outflags)
 
   def updatePackageFFlags(self,flags):
@@ -388,23 +398,23 @@ class Package(config.base.Configure):
     self.updatehgDir()
     if (self.publicInstall or 'package-prefix-hash' in self.argDB) and not ('package-prefix-hash' in self.argDB and (hasattr(self,'postProcess') or self.builtafterpetsc)):
       self.installDir = self.defaultInstallDir
-      self.installSudo= self.installDirProvider.installSudo
     else:
       self.installDir = self.confDir
-      self.installSudo= ''
+    if self.PrefixWriteCheck and self.publicInstall and not 'package-prefix-hash' in self.argDB and self.installDirProvider.installSudo:
+      if self.installDirProvider.dir in ['/usr','/usr/local']: prefixdir = os.path.join(self.installDirProvider.dir,'petsc')
+      else: prefixdir = self.installDirProvider.dir
+      msg='''\
+Specified prefix-dir: %s is read-only! "%s" cannot install at this location! Suggest:
+      sudo mkdir %s
+      sudo chown $USER %s
+Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.package, prefixdir, prefixdir)
+      raise RuntimeError(msg)
     self.includeDir = os.path.join(self.installDir, 'include')
     self.libDir     = os.path.join(self.installDir, 'lib')
     installDir = self.Install()
     if not installDir:
       raise RuntimeError(self.package+' forgot to return the install directory from the method Install()\n')
     return os.path.abspath(installDir)
-
-  def withSudo(self, *args):
-    """Convert args to a list prepended by sudo when using sudo"""
-    if self.installSudo:
-      return [self.installSudo] + list(args)
-    else:
-      return list(args)
 
   def getChecksum(self,source, chunkSize = 1024*1024):
     '''Return the md5 checksum for a given file, which may also be specified by its filename
@@ -751,7 +761,10 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
           else:
             raise RuntimeError('Unable to run git stash/clean in repository: '+self.packageDir+'.\nPerhaps its a git error!')
         try:
-          config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
+          if self.gitsubmodules:
+            config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '--recurse-submodules', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
+          else:
+            config.base.Configure.executeShellCommand([self.sourceControl.git, 'checkout', '-f', gitcommit_hash], cwd=self.packageDir, log = self.log)
         except:
           raise RuntimeError('Unable to checkout commit: '+self.gitcommit+' in repository: '+self.packageDir+'.\nPerhaps its a git error!')
       # write a commit-tag file
@@ -834,7 +847,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
           continue
       self.logPrintBox('Trying to download '+url+' for '+self.PACKAGE)
       try:
-        retriever.genericRetrieve(url, self.externalPackagesDir, self.package)
+        retriever.genericRetrieve(url, self.externalPackagesDir, self.package, self.gitsubmodules)
         self.logWrite(retriever.restoreLog())
         retriever.saveLog()
         pkgdir = self.getDir()
@@ -854,10 +867,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     raise RuntimeError('No custom installation implemented for package '+self.package+'\n')
 
   def checkInclude(self, incl, hfiles, otherIncludes = [], timeout = 600.0):
-    if self.cxx:
-      self.headers.pushLanguage('C++')
-    else:
-      self.headers.pushLanguage(self.defaultLanguage)
+    self.headers.pushLanguage(self.buildLanguages[0]) # default is to use the first language in checking
     self.headers.saveLog()
     ret = self.executeTest(self.headers.checkInclude, [incl, hfiles],{'otherIncludes' : otherIncludes, 'timeout': timeout})
     self.logWrite(self.headers.restoreLog())
@@ -962,17 +972,16 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
         self.logPrint('Not checking for library in '+location+': '+str(lib)+' because no functions given to check for')
 
       self.libraries.saveLog()
-      if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx}):
+      if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': 'Cxx' in self.buildLanguages}):
         self.lib = lib
         if self.functionsDefine:
-          self.executeTest(self.libraries.check,[lib, self.functionsDefine],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': self.cxx, 'functionDefine': 1})
+          self.executeTest(self.libraries.check,[lib, self.functionsDefine],{'otherLibs' : self.dlib, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2], 'cxxLink': 'Cxx' in self.buildLanguages, 'functionDefine': 1})
         self.logWrite(self.libraries.restoreLog())
         self.logPrint('Checking for optional headers '+str(self.optionalincludes)+' in '+location+': '+str(incl))
         if self.checkInclude(incl, self.optionalincludes, self.dinclude, timeout = 60.0):
           self.foundoptionalincludes = 1
         self.logPrint('Checking for headers '+str(self.includes)+' in '+location+': '+str(incl))
-        # For packages (ex. kokkos) that we are incapable of checking their includes, we set 'doNotCheckIncludes=1' as a workaround.
-        if (not self.includes) or (hasattr(self, 'doNotCheckIncludes') and self.doNotCheckIncludes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 60.0):
+        if (not self.includes) or self.checkInclude(incl, self.includes, self.dinclude, timeout = 60.0):
           if self.includes:
             self.include = testedincl
           self.found     = 1
@@ -1016,11 +1025,11 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
           blaslapackconflict = 1
 
     cxxVersionRange = (self.minCxxVersion,self.maxCxxVersion)
-    cxxVersionConflict = not inVersionRange(cxxVersionRange,self.compilers.cxxDialectRange)
+    cxxVersionConflict = not inVersionRange(cxxVersionRange,self.setCompilers.cxxDialectRange[self.getDefaultLanguage()])
     # if user did not request option, then turn it off if conflicts with configuration
     if self.lookforbydefault and 'with-'+self.package not in self.framework.clArgDB:
-      if (self.cxx and not hasattr(self.compilers, 'CXX')) or \
-         (self.fc and not hasattr(self.compilers, 'FC')) or \
+      if ('Cxx' in self.buildLanguages and not hasattr(self.compilers, 'CXX')) or \
+         ('FC'  in self.buildLanguages and not hasattr(self.compilers, 'FC')) or \
          (self.noMPIUni and self.mpi.usingMPIUni) or \
          cxxVersionConflict or \
          (not self.defaultPrecision.lower() in self.precisions) or \
@@ -1032,14 +1041,14 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     if self.argDB['with-'+self.package]:
       if blaslapackconflict:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit BLAS/Lapack indices')
-      if self.cxx and not hasattr(self.compilers, 'CXX'):
+      if 'Cxx' in self.buildLanguages and not hasattr(self.compilers, 'CXX'):
         raise RuntimeError('Cannot use '+self.name+' without C++, make sure you do NOT have --with-cxx=0')
-      if self.fc and not hasattr(self.compilers, 'FC'):
+      if 'FC'  in self.buildLanguages and not hasattr(self.compilers, 'FC'):
         raise RuntimeError('Cannot use '+self.name+' without Fortran, make sure you do NOT have --with-fc=0')
       if self.noMPIUni and self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
       if cxxVersionConflict:
-        raise RuntimeError('Cannot use '+self.name+' as it requires -std=['+','.join(map(str,cxxVersionRange))+'], while your compiler seemingly only supports -std=['+','.join(map(str,self.compilers.cxxDialectRange))+']')
+        raise RuntimeError('Cannot use '+self.name+' as it requires -std=['+','.join(map(str,cxxVersionRange))+'], while your compiler seemingly only supports -std=['+','.join(map(str,self.setCompilers.cxxDialectRange[self.getDefaultLanguage()]))+']')
       if self.download and self.argDB.get('download-'+self.downloadname.lower()) and not self.downloadonWindows and (self.setCompilers.CC.find('win32fe') >= 0):
         raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' with Microsoft compilers')
       if not self.defaultPrecision.lower() in self.precisions:
@@ -1087,16 +1096,44 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
         self.version = ''
         return
       self.versioninclude = self.includes[0]
-    if self.cxx:
-      self.pushLanguage('C++')
-    else:
-      self.pushLanguage(self.defaultLanguage)
+    self.pushLanguage(self.buildLanguages[0]) # default is to use the first language in checking
     flagsArg = self.getPreprocessorFlagsArg()
     oldFlags = getattr(self.compilers, flagsArg)
-    setattr(self.compilers, flagsArg, oldFlags+' '+self.headers.toString(self.include))
+    if self.language[-1] == 'HIP':
+      extraFlags = ' -o -' # Force 'hipcc -E' to output to stdout, instead of *.cui files (as of hip-4.0. hip-4.1+ does not need it, but does not get hurt either).
+    else:
+      extraFlags = ''
+    setattr(self.compilers, flagsArg, oldFlags+extraFlags+' '+self.headers.toString(self.include))
     self.compilers.saveLog()
+
+    # X.py uses a weird list of two headers.
+    if not isinstance(self.versioninclude,list):
+      headerList = [self.versioninclude]
+    else:
+      headerList = self.versioninclude
+
+    includeLines = ''
+    for header in headerList:
+      includeLines += '#include "'+header+'"\n'
     try:
-      output = self.outputPreprocess('#include "'+self.versioninclude+'"\n;petscpkgver('+self.versionname+');\n')
+      # We once used '#include "'+self.versioninclude+'"\npetscpkgver('+self.versionname+');\n',
+      # but some preprocessors are picky (ex. dpcpp -E), reporting errors on the code above even
+      # it is just supposed to do preprocessing:
+      #
+      #  error: C++ requires a type specifier for all declarations
+      #  petscpkgver(__SYCL_COMPILER_VERSION);
+      #  ^
+      #
+      # So we instead use this compilable code.
+      output = self.outputPreprocess(
+'''
+{x}
+#define  PetscXstr_(s) PetscStr_(s)
+#define  PetscStr_(s)  #s
+char     *ver = "petscpkgver(" PetscXstr_({y}) ")";
+'''.format(x=includeLines, y=self.versionname))
+       # Ex. char *ver = "petscpkgver(" "20211206" ")";
+       # But after stripping spaces, quotes etc below, it becomes char*ver=petscpkgver(20211206);
       self.logWrite(self.compilers.restoreLog())
     except:
       self.log.write('For '+self.package+' unable to run preprocessor to obtain version information, skipping version check\n')
@@ -1111,11 +1148,14 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     output = re.sub('#.*\n','\n',output)
     #strip newlines,spaces,quotes
     output = re.sub('[\n "]*','',output)
+    #strip backslash. Mumps' version macro already has "" around it, giving output: char *ver = petscpkgver(" "\"5.4.1\"" ")";
+    output = output.replace('\\','')
     #now split over ';'
     loutput = output.split(';')
     version = ''
     for i in loutput:
       if i.find('petscpkgver') >=0:
+        self.log.write('Found version string: ' + i +'\n')
         version = i.split('(')[1].split(')')[0]
         break
     if not version:
@@ -1233,12 +1273,11 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
         self.executeShellCommand(mpifc + ' -show', log = self.log)[0]
       except:
         pass
-    # redo compiler detection
+    # redo compiler detection, copy the package cxx dialect restrictions though
+    oldPackageRanges = self.setCompilers.cxxDialectPackageRanges
     self.setCompilers.updateMPICompilers(mpicc,mpicxx,mpifc)
-    # copy the package cxx dialect restrictions though
-    oldPackageRanges = self.compilers.cxxDialectPackageRanges
+    self.setCompilers.cxxDialectPackageRanges = oldPackageRanges
     self.compilers.__init__(self.framework)
-    self.compilers.cxxDialectPackageRanges = oldPackageRanges
     self.compilers.headerPrefix = self.headerPrefix
     self.compilers.setup()
     self.compilerFlags.saveLog()
@@ -1254,6 +1293,21 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
   def rmArgs(self,args,rejects):
     self.logPrint('Removing configure arguments '+str(rejects))
     return [arg for arg in args if not arg in rejects]
+
+  def rmArgsPair(self,args,rejects):
+    '''Remove an argument and the next argument from a list of arguments'''
+    '''For example: --ccbin compiler'''
+    self.logPrint('Removing paired configure arguments '+str(rejects))
+    nargs = []
+    rmnext = 0
+    for arg in args:
+      if rmnext:
+        rmnext = 0
+      elif arg in rejects:
+        rmnext = 1
+      else:
+        nargs.append(arg)
+    return nargs
 
   def rmArgsStartsWith(self,args,rejectstarts):
     rejects = []
@@ -1296,7 +1350,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
     if self.framework.argDB['prefix']:
       try:
         self.logPrintBox('Installing PETSc; this may take several minutes')
-        output,err,ret  = config.package.Package.executeShellCommand(self.installDirProvider.installSudo+self.make.make+' install PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=60, log = self.log)
+        output,err,ret  = config.package.Package.executeShellCommand(self.make.make+' install PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch, cwd=self.petscdir.dir, timeout=60, log = self.log)
         self.log.write(output+err)
       except RuntimeError as e:
         raise RuntimeError('Error running make install on PETSc: '+str(e))
@@ -1738,8 +1792,7 @@ class GNUPackage(Package):
       output2,err2,ret2  = config.base.Configure.executeShellCommand(self.make.make+' clean', cwd=self.packageDir, timeout=200, log = self.log)
       output3,err3,ret3  = config.base.Configure.executeShellCommand(pmake, cwd=self.packageDir, timeout=6000, log = self.log)
       self.logPrintBox('Running make install on '+self.PACKAGE+'; this may take several minutes')
-      self.installDirProvider.printSudoPasswordMessage(self.installSudo)
-      output4,err4,ret4  = config.base.Configure.executeShellCommand(self.installSudo+self.make.make+' install', cwd=self.packageDir, timeout=1000, log = self.log)
+      output4,err4,ret4  = config.base.Configure.executeShellCommand(self.make.make+' install', cwd=self.packageDir, timeout=1000, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error running make; make install on '+self.PACKAGE+': '+str(e))
       raise RuntimeError('Error running make; make install on '+self.PACKAGE)
@@ -1785,15 +1838,18 @@ class CMakePackage(Package):
     args.append('-DCMAKE_C_FLAGS_RELEASE:STRING="'+cflags+'"')
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
-      self.framework.pushLanguage('Cxx')
+      lang = self.framework.pushLanguage('Cxx')
       args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
       args.append('-DMPI_CXX_COMPILER="'+self.framework.getCompiler()+'"')
       cxxFlags = self.updatePackageCxxFlags(self.framework.getCompilerFlags())
       args.append('-DCMAKE_CXX_FLAGS:STRING="{cxxFlags}"'.format(cxxFlags=cxxFlags))
       args.append('-DCMAKE_CXX_FLAGS_DEBUG:STRING="{cxxFlags}"'.format(cxxFlags=cxxFlags))
       args.append('-DCMAKE_CXX_FLAGS_RELEASE:STRING="{cxxFlags}"'.format(cxxFlags=cxxFlags))
-      args.append('-DCMAKE_CXX_STANDARD={stdver}'.format(stdver=self.compilers.cxxdialect[-2:]))
-      args.append('-DCMAKE_CXX_STANDARD_REQUIRED=ON')
+      langdialect = getattr(self.setCompilers,lang+'dialect',None)
+      if langdialect:
+        # langdialect is only set as an attribute if the user specifically chose a dialect
+        # (see config/setCompilers.py::checkCxxDialect())
+        args.append('-DCMAKE_CXX_STANDARD={stdver}'.format(stdver=langdialect[-2:])) # extract '17' from c++17
       self.framework.popLanguage()
 
     if hasattr(self.compilers, 'FC'):
@@ -1851,9 +1907,8 @@ class CMakePackage(Package):
         raise RuntimeError('Error configuring '+self.PACKAGE+' with cmake')
       try:
         self.logPrintBox('Compiling and installing '+self.PACKAGE+'; this may take several minutes')
-        self.installDirProvider.printSudoPasswordMessage()
         output2,err2,ret2  = config.package.Package.executeShellCommand(self.make.make_jnp+' '+self.makerulename, cwd=folder, timeout=3000, log = self.log)
-        output3,err3,ret3  = config.package.Package.executeShellCommand(self.installSudo+' '+self.make.make+' install', cwd=folder, timeout=3000, log = self.log)
+        output3,err3,ret3  = config.package.Package.executeShellCommand(self.make.make+' install', cwd=folder, timeout=3000, log = self.log)
       except RuntimeError as e:
         self.logPrint('Error running make on  '+self.PACKAGE+': '+str(e))
         raise RuntimeError('Error running make on  '+self.PACKAGE)

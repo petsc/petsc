@@ -65,7 +65,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat,MatOrderingType typ
 
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,&ia,&ja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot get rows for matrix");
+  PetscCheckFalse(!done,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot get rows for matrix");
 
   ierr = PetscMalloc2(n,&lens,n,&permr);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
@@ -174,9 +174,9 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(rperm,3);
   PetscValidPointer(cperm,4);
-  if (!mat->assembled) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (mat->factortype) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  if (!type) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Ordering type cannot be null");
+  PetscCheckFalse(!mat->assembled,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  PetscCheckFalse(mat->factortype,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  PetscCheckFalse(!type,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Ordering type cannot be null");
 
   ierr = PetscStrcmp(type,MATORDERINGEXTERNAL,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -225,11 +225,11 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   }
 
   ierr = MatGetLocalSize(mat,&mmat,&nmat);CHKERRQ(ierr);
-  if (mmat != nmat) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",mmat,nmat);
+  PetscCheckFalse(mmat != nmat,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %" PetscInt_FMT " columns %" PetscInt_FMT,mmat,nmat);
 
   ierr = MatOrderingRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(MatOrderingList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);
+  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);
 
   ierr = PetscLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*r)(mat,type,rperm,cperm);CHKERRQ(ierr);

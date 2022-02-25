@@ -116,7 +116,7 @@ static PetscErrorCode KSPSolve_GCR(KSP ksp)
   do {
     ierr = KSPSolve_GCR_cycle(ksp);CHKERRQ(ierr);
     if (ksp->reason) PetscFunctionReturn(0); /* catch case when convergence occurs inside the cycle */
-  } while (ksp->its < ksp->max_it);CHKERRQ(ierr);
+  } while (ksp->its < ksp->max_it);
 
   if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
   PetscFunctionReturn(0);
@@ -146,7 +146,7 @@ static PetscErrorCode KSPSetUp_GCR(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
   ierr = MatCreateVecs(A, &ctx->R, NULL);CHKERRQ(ierr);
@@ -278,7 +278,7 @@ static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp,PetscInt *restart)
 
    Not Collective
 
-   Input Parameter:
+   Input Parameters:
 +  ksp - the Krylov space context
 -  restart - integer restart value
 

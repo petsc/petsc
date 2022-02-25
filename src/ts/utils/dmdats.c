@@ -64,7 +64,7 @@ static PetscErrorCode TSComputeIFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,3);
   PetscValidHeaderSpecific(F,VEC_CLASSID,5);
-  if (!dmdats->ifunctionlocal) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Corrupt context");
+  PetscCheckFalse(!dmdats->ifunctionlocal,PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Corrupt context");
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm,&Xdotloc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm,Xdot,INSERT_VALUES,Xdotloc);CHKERRQ(ierr);
@@ -97,7 +97,7 @@ static PetscErrorCode TSComputeIFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
     ierr = DMLocalToGlobalEnd(dm,Floc,ADD_VALUES,F);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dm,&Floc);CHKERRQ(ierr);
   } break;
-  default: SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"Cannot use imode=%d",(int)dmdats->ifunctionlocalimode);
+  default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"Cannot use imode=%d",(int)dmdats->ifunctionlocalimode);
   }
   ierr = DMDAVecRestoreArray(dm,Xloc,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&Xloc);CHKERRQ(ierr);
@@ -116,7 +116,7 @@ static PetscErrorCode TSComputeIJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Vec Xd
   void           *x,*xdot;
 
   PetscFunctionBegin;
-  if (!dmdats->ifunctionlocal) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Corrupt context");
+  PetscCheckFalse(!dmdats->ifunctionlocal,PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Corrupt context");
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
 
   if (dmdats->ijacobianlocal) {
@@ -154,7 +154,7 @@ static PetscErrorCode TSComputeRHSFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec 
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,3);
   PetscValidHeaderSpecific(F,VEC_CLASSID,4);
-  if (!dmdats->rhsfunctionlocal) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Corrupt context");
+  PetscCheckFalse(!dmdats->rhsfunctionlocal,PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Corrupt context");
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm,&Xloc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
@@ -183,7 +183,7 @@ static PetscErrorCode TSComputeRHSFunction_DMDA(TS ts,PetscReal ptime,Vec X,Vec 
     ierr = DMLocalToGlobalEnd(dm,Floc,ADD_VALUES,F);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dm,&Floc);CHKERRQ(ierr);
   } break;
-  default: SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"Cannot use imode=%d",(int)dmdats->rhsfunctionlocalimode);
+  default: SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"Cannot use imode=%d",(int)dmdats->rhsfunctionlocalimode);
   }
   ierr = DMDAVecRestoreArray(dm,Xloc,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&Xloc);CHKERRQ(ierr);
@@ -200,7 +200,7 @@ static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat 
   void           *x;
 
   PetscFunctionBegin;
-  if (!dmdats->rhsfunctionlocal) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Corrupt context");
+  PetscCheckFalse(!dmdats->rhsfunctionlocal,PetscObjectComm((PetscObject)ts),PETSC_ERR_PLIB,"Corrupt context");
   ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
 
   if (dmdats->rhsjacobianlocal) {
@@ -228,7 +228,7 @@ static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts,PetscReal ptime,Vec X,Mat 
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm - DM to associate callback with
 .  imode - insert mode for the residual
 .  func - local residual evaluation
@@ -270,7 +270,7 @@ PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm,InsertMode imode,DMDATSRHSFunctio
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm    - DM to associate callback with
 .  func  - local RHS Jacobian evaluation routine
 -  ctx   - optional context for local jacobian evaluation
@@ -311,7 +311,7 @@ PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm,DMDATSRHSJacobianLocal func,void 
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm   - DM to associate callback with
 .  func - local residual evaluation
 -  ctx  - optional context for local residual evaluation
@@ -350,7 +350,7 @@ PetscErrorCode DMDATSSetIFunctionLocal(DM dm,InsertMode imode,DMDATSIFunctionLoc
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  dm   - DM to associate callback with
 .  func - local residual evaluation
 -  ctx   - optional context for local residual evaluation

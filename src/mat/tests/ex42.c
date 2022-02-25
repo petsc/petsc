@@ -57,7 +57,7 @@ int main(int argc,char **args)
   ierr = PetscMalloc1(nd,&is1);CHKERRQ(ierr);
   ierr = PetscMalloc1(nd,&is2);CHKERRQ(ierr);
   ierr = PetscMalloc1(m ,&idx);CHKERRQ(ierr);
-  for (i = 0; i < m; i++) {idx[i] = i;CHKERRQ(ierr);}
+  for (i = 0; i < m; i++) {idx[i] = i;}
 
   /* Create the random Index Sets */
   for (i=0; i<nd; i++) {
@@ -102,7 +102,7 @@ int main(int argc,char **args)
   /* Now see if the serial and parallel case have the same answers */
   for (i=0; i<nd; ++i) {
     ierr = MatEqual(submatA[i],submatB[i],&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"%D-th paralle submatA != seq submatB",i);
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"%" PetscInt_FMT "-th paralle submatA != seq submatB",i);
   }
 
   /* Free Allocated Memory */

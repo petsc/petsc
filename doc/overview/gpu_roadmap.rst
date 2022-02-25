@@ -26,30 +26,36 @@ other select operations) using each of:
    :widths: auto
    :header-rows: 1
 
-   * - Language/Programming Model
+   * - Programming Model
      - Supporting Package
      - ``Vec`` Status
      - ``Mat`` Status
+     - Supported GPU types
    * - CUDA
      - cuBLAS/cuSparse
      - SUPPORTED
      - SUPPORTED
+     - NVIDIA GPUs
    * - HIP
      - Rocm
      - SUPPORTED
      - IN DEVELOPMENT
+     - AMD GPUs
    * - SYCL
      - MKL
+     - NOT YET SUPPORTED
      - NOT YET SUPPORTED
      - NOT YET SUPPORTED
    * - OpenCL
      - ViennaCL
      - SUPPORTED
      - SUPPORTED
+     - NVIDIA, AMD, INTEL GPUs
    * - Kokkos
-     - ---
+     - Kokkos and Kokkos-Kernels
      - SUPPORTED
-     - IN DEVELOPMENT
+     - SUPPORTED
+     - NVIDIA, AMD, INTEL GPUs
 
 ---------------------------------
 

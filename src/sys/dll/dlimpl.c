@@ -1,4 +1,3 @@
-
 /*
    Low-level routines for managing dynamic link libraries (DLLs).
 */
@@ -11,12 +10,6 @@
 #endif
 
 #include <petsc/private/petscimpl.h>
-
-/* XXX Should be done better !!!*/
-#if !defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-#undef PETSC_HAVE_WINDOWS_H
-#undef PETSC_HAVE_DLFCN_H
-#endif
 
 #if defined(PETSC_HAVE_WINDOWS_H)
 #include <windows.h>
@@ -84,7 +77,7 @@ PetscErrorCode  PetscDLOpen(const char name[],PetscDLMode mode,PetscDLHandle *ha
     LocalFree(buff);
     PetscFunctionReturn(ierr);
 #else
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open dynamic library:\n  %s\n  Error message from LoadLibrary() %s\n",name,"unavailable");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open dynamic library:\n  %s\n  Error message from LoadLibrary() %s",name,"unavailable");
 #endif
   }
 
@@ -120,7 +113,7 @@ PetscErrorCode  PetscDLOpen(const char name[],PetscDLMode mode,PetscDLHandle *ha
 #else
     const char *errmsg = "unavailable";
 #endif
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open dynamic library:\n  %s\n  Error message from dlopen() %s\n",name,errmsg);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open dynamic library:\n  %s\n  Error message from dlopen() %s",name,errmsg);
   }
   /*
      --- unimplemented ---
@@ -252,7 +245,7 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
   if (handle) dlhandle = (dlhandle_t) handle;
   else {
 
-#if defined(PETSC_HAVE_DLOPEN) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_HAVE_DLOPEN)
     /* Attempt to retrieve the main executable's dlhandle. */
     { int dlflags1 = 0, dlflags2 = 0;
 #if defined(PETSC_HAVE_RTLD_LAZY)
@@ -283,7 +276,7 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
       dlhandle = dlopen(NULL, dlflags1|dlflags2);
 #if defined(PETSC_HAVE_DLERROR)
       { const char *e = (const char*) dlerror();
-        if (e) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error opening main executable as a dynamic library:\n  Error message from dlopen(): '%s'\n", e);
+        PetscCheckFalse(e,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error opening main executable as a dynamic library:\n  Error message from dlopen(): '%s'", e);
       }
 #endif
 #endif
@@ -346,7 +339,7 @@ PetscErrorCode PetscDLAddr(void (*func)(void), char **name)
     Dl_info        info;
     PetscErrorCode ierr;
 
-    ierr = dladdr(*(void **) &func, &info);if (!ierr) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Failed to lookup symbol: %s", dlerror());
+    ierr = dladdr(*(void **) &func, &info);PetscCheckFalse(!ierr,PETSC_COMM_SELF, PETSC_ERR_LIB, "Failed to lookup symbol: %s", dlerror());
 #ifdef PETSC_HAVE_CXX
     ierr = PetscDemangleSymbol(info.dli_sname, name);CHKERRQ(ierr);
 #else

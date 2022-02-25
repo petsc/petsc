@@ -17,7 +17,7 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* Create seqaij A */
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
@@ -77,7 +77,7 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(Rt_dense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Rt_dense,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatGetLocalSize(Rt_dense,&m,&n);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"Rt_dense: %D,%D\n",m,n);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Rt_dense: %" PetscInt_FMT ",%" PetscInt_FMT "\n",m,n);CHKERRQ(ierr);
 
   /* Get Rt_dense by Apply MatTransposeColoring to R */
   ierr = MatTransColoringApplySpToDen(matcoloring,R,Rt_dense);CHKERRQ(ierr);
@@ -112,7 +112,7 @@ int main(int argc,char **argv)
   ierr = MatRARt(A,R,MAT_INITIAL_MATRIX,2.0,&C);CHKERRQ(ierr);
   ierr = MatRARt(A,R,MAT_REUSE_MATRIX,2.0,&C);CHKERRQ(ierr);
   ierr = MatEqual(C,PtAP,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: PtAP != RARt");
+  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: PtAP != RARt");
 
   /* Free spaces */
   ierr = MatDestroy(&C);CHKERRQ(ierr);

@@ -15,8 +15,10 @@
 
     Output Parameters:
 +   button - one of PETSC_BUTTON_LEFT, PETSC_BUTTON_CENTER, PETSC_BUTTON_RIGHT, PETSC_BUTTON_WHEEL_UP, PETSC_BUTTON_WHEEL_DOWN
-.   x_user, y_user - user coordinates of location (user may pass in NULL).
--   x_phys, y_phys - window coordinates (user may pass in NULL).
+.   x_user - horizontal user coordinate of location (user may pass in NULL).
+.   y_user - vertical user coordinate of location (user may pass in NULL).
+.   x_phys - horizontal window coordinate (user may pass in NULL).
+-   y_phys - vertical window coordinate (user may pass in NULL).
 
     Notes:
     Only processor 0 actually waits for the button to be pressed.

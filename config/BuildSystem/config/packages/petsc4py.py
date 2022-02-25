@@ -10,6 +10,7 @@ class Configure(config.package.Package):
     self.useddirectly           = 0
     self.linkedbypetsc          = 0
     self.builtafterpetsc        = 1
+    self.PrefixWriteCheck       = 0
     return
 
   def setupHelp(self,help):
@@ -25,6 +26,7 @@ class Configure(config.package.Package):
     self.setCompilers    = framework.require('config.setCompilers',self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.installdir      = framework.require('PETSc.options.installDir',self)
+    self.mpi             = framework.require('config.packages.MPI',self)
     return
 
   def getDir(self):
@@ -62,12 +64,6 @@ class Configure(config.package.Package):
     if numpy_include is not None:
       newdir += 'NUMPY_INCLUDE="'+numpy_include+'" '
 
-    #  if installing as Superuser than want to return to regular user for clean and build
-    if self.installSudo:
-       newuser = self.installSudo+' -u $${SUDO_USER} '
-    else:
-       newuser = ''
-
     self.addDefine('HAVE_PETSC4PY',1)
     self.addDefine('PETSC4PY_INSTALL_PATH','"'+os.path.join(self.installdir.dir,'lib')+'"')
     self.addMakeMacro('PETSC4PY','yes')
@@ -75,7 +71,7 @@ class Configure(config.package.Package):
                        ['@echo "*** Building petsc4py ***"',\
                           '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+newuser+newdir+archflags+self.python.pyexe+' setup.py build )  || \\\n\
+           '+newdir+archflags+self.python.pyexe+' setup.py build )  || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building petsc4py." && \\\n\
              echo "********************************************************************" && \\\n\
@@ -95,6 +91,8 @@ class Configure(config.package.Package):
                           '@echo "====================================="'])
 
     np = self.make.make_test_np
+    if self.mpi.usingMPIUni:
+      np = 1
     # TODO: some tests currently have issues with np > 4, this should be fixed
     np = min(np,4)
     if 'with-petsc4py-test-np' in self.argDB and self.argDB['with-petsc4py-test-np']:
@@ -102,8 +100,8 @@ class Configure(config.package.Package):
     self.addMakeMacro('PETSC4PY_NP',np)
     self.addMakeRule('petsc4pytest', '',
         ['@echo "*** Testing petsc4py on ${PETSC4PY_NP} processes ***"',
-         '@PYTHONPATH=%s:${PETSC_MPI4PY_PYTHONPATH}:${PYTHONPATH} ${MPIEXEC} -n ${PETSC4PY_NP} %s %s --verbose' % \
-             (installLibPath, self.python.pyexe, os.path.join(self.packageDir, 'test', 'runtests.py')),
+         '@PYTHONPATH=%s:${PETSC_MPI4PY_PYTHONPATH}:${PYTHONPATH} PETSC_OPTIONS="%s" ${MPIEXEC} -n ${PETSC4PY_NP} %s %s --verbose' % \
+             (installLibPath, '{PETSC_OPTIONS} -check_pointer_intensity 0 -error_output_stdout -malloc_dump ${PETSC_TEST_OPTIONS}', self.python.pyexe, os.path.join(self.packageDir, 'test', 'runtests.py')),
          '@echo "====================================="'])
 
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:

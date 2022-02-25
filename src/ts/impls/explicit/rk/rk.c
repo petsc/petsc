@@ -32,12 +32,24 @@ static RKTableauLink RKTableauList;
 .seealso: TSRK, TSRKType, TSRKSetType()
 M*/
 /*MC
-     TSRK2A - Second order RK scheme.
+     TSRK2A - Second order RK scheme (Heun's method).
 
      This method has two stages.
 
      Options database:
 .     -ts_rk_type 2a
+
+     Level: advanced
+
+.seealso: TSRK, TSRKType, TSRKSetType()
+M*/
+/*MC
+     TSRK2B - Second order RK scheme (the midpoint method).
+
+     This method has two stages.
+
+     Options database:
+.     -ts_rk_type 2b
 
      Level: advanced
 
@@ -195,6 +207,13 @@ PetscErrorCode TSRKRegisterAll(void)
       b[2]      =  {RC(0.5),RC(0.5)},
       bembed[2] =  {RC(1.0),0};
     ierr = TSRKRegister(TSRK2A,2,2,&A[0][0],b,NULL,bembed,0,NULL);CHKERRQ(ierr);
+  }
+  {
+    const PetscReal
+      A[2][2]   = {{0,0},
+                   {RC(0.5),0}},
+      b[2]      =  {0,RC(1.0)},
+    ierr = TSRKRegister(TSRK2B,2,2,&A[0][0],b,NULL,NULL,0,NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -483,7 +502,7 @@ PetscErrorCode TSRKGetTableau_RK(TS ts, PetscInt *s, const PetscReal **A, const 
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  ts - timestepping context
 
    Output Parameters:
@@ -569,7 +588,7 @@ static PetscErrorCode TSEvaluateStep_RK(TS ts,PetscInt order,Vec X,PetscBool *do
   }
 unavailable:
   if (done) *done = PETSC_FALSE;
-  else SETERRQ3(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"RK '%s' of order %D cannot evaluate step at order %D. Consider using -ts_adapt_type none or a different method that has an embedded estimate.",tab->name,tab->order,order);
+  else SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"RK '%s' of order %D cannot evaluate step at order %D. Consider using -ts_adapt_type none or a different method that has an embedded estimate.",tab->name,tab->order,order);
   PetscFunctionReturn(0);
 }
 
@@ -828,7 +847,7 @@ static PetscErrorCode TSStep_RK(TS ts)
     ts->reject++; accept = PETSC_FALSE;
     if (!ts->reason && ++rejections > ts->max_reject && ts->max_reject >= 0) {
       ts->reason = TS_DIVERGED_STEP_REJECTED;
-      ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);
+      ierr = PetscInfo(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,rejections);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -934,8 +953,8 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
 
       /* Stage values of mu */
       if (ts->vecs_sensip) {
-        ierr = MatMultTranspose(ts->Jacprhs,VecsSensiTemp[nadj],VecDeltaMu);CHKERRQ(ierr);
         if (b[i]) {
+          ierr = MatMultTranspose(ts->Jacprhs,VecsSensiTemp[nadj],VecDeltaMu);CHKERRQ(ierr);
           ierr = VecScale(VecDeltaMu,-h*b[i]);CHKERRQ(ierr);
           if (quadts) {
             ierr = MatDenseGetColumn(quadts->Jacprhs,nadj,&xarr);CHKERRQ(ierr);
@@ -1062,7 +1081,7 @@ static PetscErrorCode TSInterpolate_RK(TS ts,PetscReal itime,Vec X)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  if (!B) SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSRK %s does not have an interpolation formula",rk->tableau->name);
+  PetscCheckFalse(!B,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSRK %s does not have an interpolation formula",rk->tableau->name);
 
   switch (rk->status) {
     case TS_STEP_INCOMPLETE:
@@ -1102,9 +1121,6 @@ static PetscErrorCode TSRKTableauReset(TS ts)
   ierr = PetscFree(rk->work);CHKERRQ(ierr);
   ierr = VecDestroyVecs(tab->s,&rk->Y);CHKERRQ(ierr);
   ierr = VecDestroyVecs(tab->s,&rk->YdotRHS);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(tab->s*ts->numcost,&rk->VecsDeltaLam);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(ts->numcost,&rk->VecsSensiTemp);CHKERRQ(ierr);
-  ierr = VecDestroy(&rk->VecDeltaMu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1284,7 +1300,7 @@ PetscErrorCode TSRKGetOrder(TS ts,PetscInt *order)
 
   Logically collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  rktype - type of RK-scheme
 
@@ -1293,7 +1309,7 @@ PetscErrorCode TSRKGetOrder(TS ts,PetscInt *order)
 
   Level: intermediate
 
-.seealso: TSRKGetType(), TSRK, TSRKType, TSRK1FE, TSRK2A, TSRK3, TSRK3BS, TSRK4, TSRK5F, TSRK5DP, TSRK5BS, TSRK6VR, TSRK7VR, TSRK8VR
+.seealso: TSRKGetType(), TSRK, TSRKType, TSRK1FE, TSRK2A, TSRK2B, TSRK3, TSRK3BS, TSRK4, TSRK5F, TSRK5DP, TSRK5BS, TSRK6VR, TSRK7VR, TSRK8VR
 @*/
 PetscErrorCode TSRKSetType(TS ts,TSRKType rktype)
 {
@@ -1371,7 +1387,7 @@ static PetscErrorCode TSRKSetType_RK(TS ts,TSRKType rktype)
       PetscFunctionReturn(0);
     }
   }
-  SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",rktype);
+  SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",rktype);
 }
 
 static PetscErrorCode  TSGetStages_RK(TS ts,PetscInt *ns,Vec **Y)
@@ -1444,7 +1460,7 @@ static PetscErrorCode SNESTSFormJacobian_RK(SNES snes,Vec x,Mat A,Mat B,TS ts)
 
   Logically collective
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  use_multirate - PETSC_TRUE enables the multirate RK method, sets the basic method to be RK2A and sets the ratio between slow stepsize and fast stepsize to be 2
 

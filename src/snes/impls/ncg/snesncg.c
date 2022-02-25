@@ -41,7 +41,7 @@ static PetscErrorCode SNESSetUp_NCG(SNES snes)
 
   PetscFunctionBegin;
   ierr = SNESSetWorkVecs(snes,2);CHKERRQ(ierr);
-  if (snes->npcside== PC_RIGHT) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNESNCG only supports left preconditioning");
+  PetscCheckFalse(snes->npcside== PC_RIGHT,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNESNCG only supports left preconditioning");
   if (snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_UNPRECONDITIONED;
   PetscFunctionReturn(0);
 }
@@ -134,7 +134,7 @@ static PetscErrorCode SNESSetFromOptions_NCG(PetscOptionItems *PetscOptionsObjec
   ierr = PetscOptionsHead(PetscOptionsObject,"SNES NCG options");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_ncg_monitor","Monitor the beta values used in the NCG iterations","SNES",ncg->monitor ? PETSC_TRUE : PETSC_FALSE, &debug, NULL);CHKERRQ(ierr);
   if (debug) {
-    ncg->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));CHKERRQ(ierr);
+    ncg->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes));
   }
   ierr = PetscOptionsEnum("-snes_ncg_type","NCG Beta type used","SNESNCGSetType",SNESNCGTypes,(PetscEnum)ncg->type,(PetscEnum*)&ncgtype,NULL);CHKERRQ(ierr);
   ierr = SNESNCGSetType(snes, ncgtype);CHKERRQ(ierr);
@@ -272,7 +272,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
   SNESConvergedReason  reason;
 
   PetscFunctionBegin;
-  if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  PetscCheckFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   snes->reason = SNES_CONVERGED_ITERATING;
@@ -433,14 +433,14 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
       ierr = VecDotEnd(dX, dX, &dXdotdX);CHKERRQ(ierr);
       ierr = VecDotEnd(lX, dX, &lXdotdX);CHKERRQ(ierr);
       ierr = VecDotEnd(lX, dXold, &lXdotdXold);CHKERRQ(ierr);
-      beta = PetscRealPart(dXdotdX / (lXdotdXold - lXdotdX));CHKERRQ(ierr);
+      beta = PetscRealPart(dXdotdX / (lXdotdXold - lXdotdX));
       break;
     case SNES_NCG_CD: /* Conjugate Descent */
       ierr = VecDotBegin(dX, dX, &dXdotdX);CHKERRQ(ierr);
       ierr = VecDotBegin(lX, dXold, &lXdotdXold);CHKERRQ(ierr);
       ierr = VecDotEnd(dX, dX, &dXdotdX);CHKERRQ(ierr);
       ierr = VecDotEnd(lX, dXold, &lXdotdXold);CHKERRQ(ierr);
-      beta = PetscRealPart(dXdotdX / lXdotdXold);CHKERRQ(ierr);
+      beta = PetscRealPart(dXdotdX / lXdotdXold);
       break;
     }
     if (ncg->monitor) {
@@ -448,7 +448,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
     }
     ierr = VecAYPX(lX, beta, dX);CHKERRQ(ierr);
   }
-  ierr = PetscInfo1(snes, "Maximum number of iterations has been reached: %D\n", maxits);CHKERRQ(ierr);
+  ierr = PetscInfo(snes, "Maximum number of iterations has been reached: %D\n", maxits);CHKERRQ(ierr);
   if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   PetscFunctionReturn(0);
 }

@@ -34,11 +34,11 @@ int main(int argc,char **argv)
   ierr = VecView(xy,0);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  if (!rank) comm = MPI_COMM_SELF;
+  if (rank == 0) comm = MPI_COMM_SELF;
   else comm = MPI_COMM_NULL;
 
   ierr = DMPatchZoom(da,lower,upper,comm,&sda, NULL,&sf);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = DMCreateGlobalVector(sda,&sxy);CHKERRQ(ierr);
   } else {
     ierr = VecCreateSeq(PETSC_COMM_SELF,0,&sxy);CHKERRQ(ierr);
@@ -47,7 +47,7 @@ int main(int argc,char **argv)
   ierr = VecScatterBegin(sf,xy,sxy,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(sf,xy,sxy,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   /* Only rank == 0 has the entries of the patch, so run code only at that rank */
-  if (!rank) {
+  if (rank == 0) {
     Field         **vars;
     DMDALocalInfo info;
     PetscInt      i,j;

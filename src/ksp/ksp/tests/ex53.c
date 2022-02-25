@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
    ierr = PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-method",&method,PETSC_NULL);CHKERRQ(ierr);
    ierr = PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-block_size",&block_size,PETSC_NULL);CHKERRQ(ierr);
 
-   if (!rank) {
+   if (rank == 0) {
      ierr = PetscPrintf(PETSC_COMM_SELF,"  matrix size = %D, block size = %D\n",mat_size,block_size);CHKERRQ(ierr);
    }
 

@@ -19,7 +19,7 @@ typedef struct {
   PetscInt degree;         /* vertex degree */
 } GAMGNode;
 
-PETSC_STATIC_INLINE int petsc_geo_mg_compare(const void *a, const void *b)
+static inline int petsc_geo_mg_compare(const void *a, const void *b)
 {
   return (((GAMGNode*)a)->degree - ((GAMGNode*)b)->degree);
 }
@@ -46,10 +46,10 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   aloc = (Iend-my0);
   nloc = (Iend-my0)/bs;
 
-  if (nloc!=a_nloc && aloc!=a_nloc) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Number of local blocks %D must be %D or %D.",a_nloc,nloc,aloc);
+  PetscCheckFalse(nloc!=a_nloc && aloc!=a_nloc,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Number of local blocks %D must be %D or %D.",a_nloc,nloc,aloc);
 
   pc_gamg->data_cell_rows = 1;
-  if (!coords && nloc > 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Need coordinates for pc_gamg_type 'geo'.");
+  PetscCheckFalse(!coords && nloc > 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Need coordinates for pc_gamg_type 'geo'.");
   pc_gamg->data_cell_cols = ndm; /* coordinates */
 
   arrsz = nloc*pc_gamg->data_cell_rows*pc_gamg->data_cell_cols;
@@ -75,7 +75,7 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
       }
     }
   }
-  if (pc_gamg->data[arrsz] != -99.) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"pc_gamg->data[arrsz %D] %g != -99.",arrsz,pc_gamg->data[arrsz]);
+  PetscCheckFalse(pc_gamg->data[arrsz] != -99.,PETSC_COMM_SELF,PETSC_ERR_PLIB,"pc_gamg->data[arrsz %D] %g != -99.",arrsz,pc_gamg->data[arrsz]);
   pc_gamg->data_sz = arrsz;
   PetscFunctionReturn(0);
 }
@@ -115,7 +115,6 @@ PetscErrorCode PCSetFromOptions_GEO(PetscOptionItems *PetscOptionsObject,PC pc)
     /*                        pc_gamg_sa->smooths, */
     /*                        &pc_gamg_sa->smooths, */
     /*                        &flag);  */
-    /* CHKERRQ(ierr); */
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -181,7 +180,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
     in.pointlist[sid+1] = coords[data_stride + lid];
     if (lid>=nFineLoc) nPlotPts++;
   }
-  if (sid != 2*nselected_2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"sid %D != 2*nselected_2 %D",sid,nselected_2);
+  PetscCheckFalse(sid != 2*nselected_2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"sid %D != 2*nselected_2 %D",sid,nselected_2);
 
   in.numberofsegments      = 0;
   in.numberofedges         = 0;
@@ -276,7 +275,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2,PetscInt data_stride,
         if (sel) fprintf(file, "%d %e %e\n",sid++,coords[jj],coords[data_stride + jj]);
       }
       fclose(file);
-      if (sid != nPlotPts) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"sid %D != nPlotPts %D",sid,nPlotPts);
+      PetscCheckFalse(sid != nPlotPts,PETSC_COMM_SELF,PETSC_ERR_PLIB,"sid %D != nPlotPts %D",sid,nPlotPts);
       level++;
     }
   }
@@ -501,7 +500,7 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1,const Pet
           crsGID[idx++]     = cgid;
         }
       }
-      if (idx != (nselected_1+num_crs_ghost)) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"idx %D != (nselected_1 %D + num_crs_ghost %D)",idx,nselected_1,num_crs_ghost);
+      PetscCheckFalse(idx != (nselected_1+num_crs_ghost),PETSC_COMM_SELF,PETSC_ERR_PLIB,"idx %D != (nselected_1 %D + num_crs_ghost %D)",idx,nselected_1,num_crs_ghost);
       ierr = VecRestoreArray(mpimat2->lvec, &cpcol_state);CHKERRQ(ierr);
       /* do locals in 'crsGID' */
       ierr = VecGetArray(locState, &cpcol_state);CHKERRQ(ierr);
@@ -512,7 +511,7 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1,const Pet
           crsGID[idx++]     = cgid;
         }
       }
-      if (idx != nselected_1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"idx %D != nselected_1 %D",idx,nselected_1);
+      PetscCheckFalse(idx != nselected_1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"idx %D != nselected_1 %D",idx,nselected_1);
       ierr = VecRestoreArray(locState, &cpcol_state);CHKERRQ(ierr);
 
       if (a_selected_2 != NULL) { /* output */
@@ -682,7 +681,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
   ierr = MatGetOwnershipRange(Amat, &Istart, &Iend);CHKERRQ(ierr);
   ierr = MatGetBlockSize(Amat, &bs);CHKERRQ(ierr);
   nloc = (Iend-Istart)/bs; my0 = Istart/bs;
-  if ((Iend-Istart) % bs) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"(Iend %D - Istart %D) % bs %D",Iend,Istart,bs);
+  PetscCheckFalse((Iend-Istart) % bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"(Iend %D - Istart %D) % bs %D",Iend,Istart,bs);
 
   /* get 'nLocalSelected' */
   ierr = PetscCDGetMIS(agg_lists, &selected_1);CHKERRQ(ierr);
@@ -725,7 +724,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
     PetscInt  *crsGID = NULL;
     Mat       Gmat2;
 
-    if (dim != data_cols) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"dim %D != data_cols %D",dim,data_cols);
+    PetscCheckFalse(dim != data_cols,PETSC_COMM_SELF,PETSC_ERR_PLIB,"dim %D != data_cols %D",dim,data_cols);
     /* grow ghost data for better coarse grid cover of fine grid */
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET5],0,0,0,0);CHKERRQ(ierr);
     /* messy method, squares graph and gets some data */
@@ -750,14 +749,14 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc,Mat Amat,Mat Gmat,PetscCoarsenData *a
       ierr = PetscFree(crsGID);CHKERRQ(ierr);
 
       /* clean up and create coordinates for coarse grid (output) */
-      if (size > 1) ierr = PetscFree(coords);CHKERRQ(ierr);
+      if (size > 1) {ierr = PetscFree(coords);CHKERRQ(ierr);}
 
       ierr = MPIU_Allreduce(&metric, &tm, 1, MPIU_REAL, MPIU_MAX, comm);CHKERRMPI(ierr);
       if (tm > 1.) { /* needs to be globalized - should not happen */
-        ierr = PetscInfo1(pc," failed metric for coarse grid %e\n",(double)tm);CHKERRQ(ierr);
+        ierr = PetscInfo(pc," failed metric for coarse grid %e\n",(double)tm);CHKERRQ(ierr);
         ierr = MatDestroy(&Prol);CHKERRQ(ierr);
       } else if (metric > .0) {
-        ierr = PetscInfo1(pc,"worst metric for coarse grid = %e\n",(double)metric);CHKERRQ(ierr);
+        ierr = PetscInfo(pc,"worst metric for coarse grid = %e\n",(double)metric);CHKERRQ(ierr);
       }
     } else SETERRQ(comm,PETSC_ERR_PLIB,"3D not implemented for 'geo' AMG");
     { /* create next coords - output */

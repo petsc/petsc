@@ -28,13 +28,13 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example is for exactly two processes");
+  PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example is for exactly two processes");
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRMPI(ierr);
 
   ierr  = PetscMalloc1(3,&ii);CHKERRQ(ierr);
   ierr  = PetscMalloc1(6,&jj);CHKERRQ(ierr);
   ii[0] = 0; ii[1] = 3; ii[2] = 6;
-  if (!rank) {
+  if (rank == 0) {
     jj[0] = 0; jj[1] = 1; jj[2] = 2; jj[3] = 1; jj[4] = 2; jj[5] = 3;
   } else {
     jj[0] = 1; jj[1] = 4; jj[2] = 5; jj[3] = 1; jj[4] = 3; jj[5] = 5;

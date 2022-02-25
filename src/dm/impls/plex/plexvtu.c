@@ -41,7 +41,7 @@ static PetscErrorCode TransferWrite(MPI_Comm comm, PetscViewer viewer,FILE *fp,P
       PetscMPIInt nrecv;
       ierr = MPI_Recv(recv,count,mpidatatype,srank,tag,comm,&status);CHKERRMPI(ierr);
       ierr = MPI_Get_count(&status,mpidatatype,&nrecv);CHKERRMPI(ierr);
-      if (count != nrecv) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
+      PetscCheckFalse(count != nrecv,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Array size mismatch");
       buffer = recv;
     }
     ierr = PetscViewerVTKFWrite(viewer,fp,buffer,count,mpidatatype);CHKERRQ(ierr);
@@ -115,8 +115,8 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm, PetscBool localized, Piece
     types[countcell] = celltype;
     countcell++;
   }
-  if (countcell != piece->ncells) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent cell count");
-  if (countconn != piece->nconn) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent connectivity count");
+  PetscCheckFalse(countcell != piece->ncells,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent cell count");
+  PetscCheckFalse(countconn != piece->nconn,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inconsistent connectivity count");
   *oconn    = conn;
   *ooffsets = offsets;
   *otypes   = types;
@@ -201,13 +201,13 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
     }
     piece.ncells++;
   }
-  if (!rank) {ierr = PetscMalloc1(size,&gpiece);CHKERRQ(ierr);}
+  if (rank == 0) {ierr = PetscMalloc1(size,&gpiece);CHKERRQ(ierr);}
   ierr = MPI_Gather((PetscInt*)&piece,sizeof(piece)/sizeof(PetscInt),MPIU_INT,(PetscInt*)gpiece,sizeof(piece)/sizeof(PetscInt),MPIU_INT,0,comm);CHKERRMPI(ierr);
 
   /*
    * Write file header
    */
-  if (!rank) {
+  if (rank == 0) {
     PetscInt boffset = 0;
 
     for (r=0; r<size; r++) {
@@ -279,7 +279,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
           vector = PETSC_FALSE;
           if (link->ft == PETSC_VTK_CELL_VECTOR_FIELD) {
             vector = PETSC_TRUE;
-            if (fbs > 3) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_SIZ,"Cell vector fields can have at most 3 components, %D given\n", fbs);
+            PetscCheckFalse(fbs > 3,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_SIZ,"Cell vector fields can have at most 3 components, %D given", fbs);
             for (j = 0; j < fbs; j++) {
               const char *compName = NULL;
               if (fv) {
@@ -328,7 +328,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
             }
           }
         }
-        //if (i != bs) SETERRQ2(comm,PETSC_ERR_PLIB,"Total number of field components %D != block size %D",i,bs);
+        //PetscCheckFalse(i != bs,comm,PETSC_ERR_PLIB,"Total number of field components %D != block size %D",i,bs);
       }
       ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"      </CellData>\n");CHKERRQ(ierr);
 
@@ -370,7 +370,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
             fieldname = buf;
           }
           if (link->ft == PETSC_VTK_POINT_VECTOR_FIELD) {
-            if (fbs > 3) SETERRQ1(PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_SIZ,"Point vector fields can have at most 3 components, %D given\n", fbs);
+            PetscCheckFalse(fbs > 3,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_SIZ,"Point vector fields can have at most 3 components, %D given", fbs);
 #if defined(PETSC_USE_COMPLEX)
             ierr = PetscFPrintf(comm,fp,"        <DataArray type=\"%s\" Name=\"%s%s.Re\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%D\" />\n",precision,vecname,fieldname,boffset);CHKERRQ(ierr);
             boffset += gpiece[r].nvertices*3*sizeof(PetscVTUReal) + sizeof(int);
@@ -408,7 +408,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
   ierr = PetscFPrintf(comm,fp,"  <AppendedData encoding=\"raw\">\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fp,"_");CHKERRQ(ierr);
 
-  if (!rank) {
+  if (rank == 0) {
     PetscInt maxsize = 0;
     for (r=0; r<size; r++) {
       maxsize = PetscMax(maxsize, (PetscInt) (gpiece[r].nvertices*3*sizeof(PetscVTUReal)));
@@ -479,7 +479,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
                 }
               }
             }
-            if (cnt != piece.nvertices) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not match");
+            PetscCheckFalse(cnt != piece.nvertices,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not match");
           } else {
             for (i=0; i<piece.nvertices; i++) {
               y[i*3+0] = (PetscVTUReal) PetscRealPart(x[i*dimEmbed+0]);
@@ -581,7 +581,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
                 }
                 for (; j < 3; j++) y[cnt++] = 0.;
               }
-              if (cnt != piece.ncells*3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not match");
+              PetscCheckFalse(cnt != piece.ncells*3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not match");
               ierr = TransferWrite(comm,viewer,fp,r,0,y,buffer,piece.ncells*3,MPIU_VTUREAL,tag);CHKERRQ(ierr);
             }
           } else {
@@ -605,7 +605,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
                   xpoint   = &x[off];
                   y[cnt++] = (PetscVTUReal) (l ? PetscImaginaryPart(xpoint[i]) : PetscRealPart(xpoint[i]));
                 }
-                if (cnt != piece.ncells) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not match");
+                PetscCheckFalse(cnt != piece.ncells,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not match");
                 ierr = TransferWrite(comm,viewer,fp,r,0,y,buffer,piece.ncells,MPIU_VTUREAL,tag);CHKERRQ(ierr);
               }
             }
@@ -688,7 +688,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
                   ierr = DMPlexRestoreTransitiveClosure(dmX, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
                 }
               }
-              if (cnt != piece.nvertices*3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not match");
+              PetscCheckFalse(cnt != piece.nvertices*3,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not match");
               ierr = TransferWrite(comm,viewer,fp,r,0,y,buffer,piece.nvertices*3,MPIU_VTUREAL,tag);CHKERRQ(ierr);
             }
           } else {
@@ -732,7 +732,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
                     ierr = DMPlexRestoreTransitiveClosure(dmX, c, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
                   }
                 }
-                if (cnt != piece.nvertices) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not match");
+                PetscCheckFalse(cnt != piece.nvertices,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Count does not match");
                 ierr = TransferWrite(comm,viewer,fp,r,0,y,buffer,piece.nvertices,MPIU_VTUREAL,tag);CHKERRQ(ierr);
               }
             }
@@ -741,7 +741,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm,PetscViewer viewer)
         ierr = PetscFree(y);CHKERRQ(ierr);
         ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
       }
-    } else if (!rank) {
+    } else if (rank == 0) {
       PetscInt l;
 
       ierr = TransferWrite(comm,viewer,fp,r,0,NULL,buffer,gpiece[r].nvertices*3,MPIU_VTUREAL,tag);CHKERRQ(ierr); /* positions */

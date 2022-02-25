@@ -11,7 +11,7 @@
 !  Concepts: TAO^Solving an unconstrained minimization problem
 !  Routines: TaoCreate();
 !  Routines: TaoSetType();
-!  Routines: TaoSetInitialVector();
+!  Routines: TaoSetSolution();
 !  Routines: TaoSetResidualRoutine();
 !  Routines: TaoSetFromOptions();
 !  Routines: TaoSolve();
@@ -81,7 +81,7 @@
 !  Optional: Set initial guess
       call InitializeData()
       call FormStartingPoint(x)
-      call TaoSetInitialVector(tao, x, ierr)
+      call TaoSetSolution(tao, x, ierr)
       CHKERRA(ierr)
 
 !  Check for TAO command line options

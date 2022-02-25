@@ -37,7 +37,6 @@ program DMPlexTestLandauInterface
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   dim = 2
   call LandauCreateVelocitySpace(PETSC_COMM_WORLD, dim, '', X, J, dm, ierr);CHKERRA(ierr)
-  call LandauCreateMassMatrix(dm, PETSC_NULL_MAT, ierr);CHKERRA(ierr)
   call DMSetUp(dm,ierr);CHKERRA(ierr)
   call VecDuplicate(X,X_0,ierr);CHKERRA(ierr)
   call VecCopy(X,X_0,ierr)
@@ -95,7 +94,7 @@ end program DMPlexTestLandauInterface
 !
 !  test:
 !    suffix: 0
-!    requires: p4est !complex
-!    args: -petscspace_degree 3 -petscspace_poly_tensor 1 -dm_landau_type p4est -dm_landau_ion_masses 2,4 -dm_landau_ion_charges 1,18 -dm_landau_thermal_temps 5,5,.5 -dm_landau_n 1.00018,1,1e-5 -dm_landau_n_0 1e20 -ex1_ts_monitor -ex1_snes_rtol 1.e-14 -ex1_snes_stol 1.e-14 -ex1_snes_monitor -ex1_snes_converged_reason -ex1_ts_type arkimex -ex1_ts_arkimex_type 1bee -ex1_ts_max_snes_failures -1 -ex1_ts_rtol 1e-1 -ex1_ts_dt 1.e-1 -ex1_ts_max_time 1 -ex1_ts_adapt_clip .5,1.25 -ex1_ts_adapt_scale_solve_failed 0.75 -ex1_ts_adapt_time_step_increase_delay 5 -ex1_ts_max_steps 1 -ex1_pc_type lu -ex1_ksp_type preonly -dm_landau_amr_levels_max 7 -dm_landau_domain_radius 5 -dm_landau_amr_re_levels 0 -dm_landau_re_radius 1 -dm_landau_amr_z_refine1 1 -dm_landau_amr_z_refine2 0 -dm_landau_amr_post_refine 0 -dm_landau_z_radius1 .1 -dm_landau_z_radius2 .1 -dm_refine 1 -dm_landau_gpu_assembly false
+!    requires: p4est !complex  !kokkos_kernels !cuda
+!    args: -dm_landau_num_species_grid 1,2 -petscspace_degree 3 -petscspace_poly_tensor 1 -dm_landau_type p4est -dm_landau_ion_masses 2,4 -dm_landau_ion_charges 1,18 -dm_landau_thermal_temps 5,5,.5 -dm_landau_n 1.00018,1,1e-5 -dm_landau_n_0 1e20 -ex1_ts_monitor -ex1_snes_rtol 1.e-14 -ex1_snes_stol 1.e-14 -ex1_snes_monitor -ex1_snes_converged_reason -ex1_ts_type arkimex -ex1_ts_arkimex_type 1bee -ex1_ts_max_snes_failures -1 -ex1_ts_rtol 1e-1 -ex1_ts_dt 1.e-1 -ex1_ts_max_time 1 -ex1_ts_adapt_clip .5,1.25 -ex1_ts_adapt_scale_solve_failed 0.75 -ex1_ts_adapt_time_step_increase_delay 5 -ex1_ts_max_steps 1 -ex1_pc_type lu -ex1_ksp_type preonly -dm_landau_amr_levels_max 2,1 -dm_landau_device_type cpu
 !
 !TEST*/

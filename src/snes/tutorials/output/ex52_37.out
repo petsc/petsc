@@ -1,14 +1,14 @@
 Mesh in 2 dimensions:
-  0-cells: 8 8
-  1-cells: 15 15
-  2-cells: 8 8
+  Number of 0-cells per rank: 8 8
+  Number of 1-cells per rank: 15 15
+  Number of 2-cells per rank: 8 8
 Labels:
   depth: 3 strata of sizes (8, 15, 8)
   marker: 2 strata of sizes (9, 1)
 Mesh in 2 dimensions:
-  0-cells: 23 23
-  1-cells: 54 54
-  2-cells: 32 32
+  Number of 0-cells per rank: 23 23
+  Number of 1-cells per rank: 54 54
+  Number of 2-cells per rank: 32 32
 Labels:
   marker: 2 strata of sizes (17, 1)
   depth: 3 strata of sizes (23, 54, 32)

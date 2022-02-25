@@ -97,11 +97,11 @@ PetscErrorCode VecCompare(Vec a,Vec b)
   ierr = VecMax(b,&locmax[1],&max[1]);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecCompare\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"  min(a)   = %+1.2e [loc %D]\n",(double)min[0],locmin[0]);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"  max(a)   = %+1.2e [loc %D]\n",(double)max[0],locmax[0]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"  min(a)   = %+1.2e [loc %" PetscInt_FMT "]\n",(double)min[0],locmin[0]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"  max(a)   = %+1.2e [loc %" PetscInt_FMT "]\n",(double)max[0],locmax[0]);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"  min(b)   = %+1.2e [loc %D]\n",(double)min[1],locmin[1]);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"  max(b)   = %+1.2e [loc %D]\n",(double)max[1],locmax[1]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"  min(b)   = %+1.2e [loc %" PetscInt_FMT "]\n",(double)min[1],locmin[1]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"  max(b)   = %+1.2e [loc %" PetscInt_FMT "]\n",(double)max[1],locmax[1]);CHKERRQ(ierr);
 
   ierr = VecDuplicate(a,&ref);CHKERRQ(ierr);
   ierr = VecCopy(a,ref);CHKERRQ(ierr);
@@ -128,7 +128,7 @@ PetscErrorCode HeaderlessBinaryRead(const char name[])
 
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscBinaryOpen(name,FILE_MODE_READ,&fdes);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fdes,buffer,VEC_LEN,NULL,PETSC_SCALAR);CHKERRQ(ierr);
     ierr = PetscBinaryClose(fdes);CHKERRQ(ierr);
@@ -138,12 +138,12 @@ PetscErrorCode HeaderlessBinaryRead(const char name[])
       v = PetscAbsScalar(test_values[i]-buffer[i]);
 #if defined(PETSC_USE_COMPLEX)
       if ((PetscRealPart(v) > 1.0e-10) || (PetscImaginaryPart(v) > 1.0e-10)) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"ERROR: Difference > 1.0e-10 occurred (delta = (%+1.12e,%+1.12e) [loc %D])\n",(double)PetscRealPart(buffer[i]),(double)PetscImaginaryPart(buffer[i]),i);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"ERROR: Difference > 1.0e-10 occurred (delta = (%+1.12e,%+1.12e) [loc %" PetscInt_FMT "])\n",(double)PetscRealPart(buffer[i]),(double)PetscImaginaryPart(buffer[i]),i);CHKERRQ(ierr);
         dataverified = PETSC_FALSE;
       }
 #else
       if (PetscRealPart(v) > 1.0e-10) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"ERROR: Difference > 1.0e-10 occurred (delta = %+1.12e [loc %D])\n",(double)PetscRealPart(buffer[i]),i);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"ERROR: Difference > 1.0e-10 occurred (delta = %+1.12e [loc %" PetscInt_FMT "])\n",(double)PetscRealPart(buffer[i]),i);CHKERRQ(ierr);
         dataverified = PETSC_FALSE;
       }
 #endif

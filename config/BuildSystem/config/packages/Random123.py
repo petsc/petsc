@@ -8,7 +8,6 @@ class Configure(config.package.Package):
     self.functions         = []
     self.includes          = ['Random123/ars.h','Random123/philox.h','Random123/threefry.h']
     self.liblist           = []
-    self.cxx               = 0
     self.linkedbypetsc     = 0
     self.defaultLanguage   = 'C++'
     return

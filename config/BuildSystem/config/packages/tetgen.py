@@ -3,11 +3,11 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download     = ['http://www.tetgen.org/1.5/src/tetgen1.5.1.tar.gz',
-                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/tetgen1.5.1.tar.gz']
+    self.download     = ['http://www.tetgen.org/1.5/src/tetgen1.6.0.tar.gz',
+                         'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/tetgen1.6.0.tar.gz']
     self.liblist      = [['libtet.a']]
     self.includes     = ['tetgen.h']
-    self.cxx          = 1
+    self.buildLanguage= 'Cxx'
     return
 
   def setupDependencies(self, framework):
@@ -68,13 +68,12 @@ class Configure(config.package.Package):
       self.framework.outputHeader(configheader)
       try:
         self.logPrintBox('Compiling & installing TetGen; this may take several minutes')
-        self.installDirProvider.printSudoPasswordMessage()
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
-        output,err,ret = config.package.Package.executeShellCommand(self.installSudo+'mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
-        output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make CXX="'+ self.getCompiler() + '" CXXFLAGS="' + cflags + '" PREDCXXFLAGS="' + predcflags + '" tetlib && '+self.installSudo+'cp *.a ' + libDir + ' && rm *.a *.o', timeout=2500, log = self.log)
+        output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
+        output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
+        output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make CXX="'+ self.getCompiler() + '" CXXFLAGS="' + cflags + '" PREDCXXFLAGS="' + predcflags + '" tetlib && cp *.a ' + libDir + ' && rm *.a *.o', timeout=2500, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make on TetGen: '+str(e))
-      output2,err2,ret2  = config.package.Package.executeShellCommand(self.installSudo+'cp -f '+os.path.join(self.packageDir, 'tetgen.h')+' '+includeDir, timeout=60, log = self.log)
+      output2,err2,ret2  = config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'tetgen.h')+' '+includeDir, timeout=60, log = self.log)
       self.postInstall(output1+err1+output2+err2,'make.inc')
 
     self.popLanguage()

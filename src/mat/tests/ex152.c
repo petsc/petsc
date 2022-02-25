@@ -17,9 +17,9 @@ static const char help[] = "Test ParMETIS handling of negative weights.\n\n";
 #include <parmetis.h>
 
 #define CHKERRQPARMETIS(n) \
-  if (n == METIS_ERROR_INPUT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS error due to wrong inputs and/or options"); \
-  else if (n == METIS_ERROR_MEMORY) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS error due to insufficient memory"); \
-  else if (n == METIS_ERROR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS general error"); \
+  PetscCheckFalse(n == METIS_ERROR_INPUT,PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS error due to wrong inputs and/or options"); \
+  else PetscCheckFalse(n == METIS_ERROR_MEMORY,PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS error due to insufficient memory"); \
+  else PetscCheckFalse(n == METIS_ERROR,PETSC_COMM_SELF,PETSC_ERR_LIB,"ParMETIS general error"); \
 
 int main(int argc, char *argv[])
 {
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Parmetis test options","");CHKERRQ(ierr);
   ierr = PetscOptionsString("-prefix","Path and prefix of test file","",prefix,prefix,sizeof(prefix),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -prefix");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify -prefix");
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = PetscMalloc1(size+1,&vtxdist);CHKERRQ(ierr);
@@ -57,18 +57,18 @@ int main(int argc, char *argv[])
 
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"r",&fp);CHKERRQ(ierr);
 
-  red = fread(vtxdist, sizeof(idx_t), size+1, fp);if (red != (size_t) (size+1)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
+  red = fread(vtxdist, sizeof(idx_t), size+1, fp);PetscCheckFalse(red != (size_t) (size+1),PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
 
   ni = vtxdist[rank+1]-vtxdist[rank];
 
   ierr = PetscMalloc1(ni+1,&xadj);CHKERRQ(ierr);
 
-  red = fread(xadj, sizeof(idx_t), ni+1, fp);if (red != (size_t) (ni+1)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
+  red = fread(xadj, sizeof(idx_t), ni+1, fp);PetscCheckFalse(red != (size_t) (ni+1),PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
 
   ierr = PetscMalloc1(xadj[ni],&adjncy);CHKERRQ(ierr);
 
   for (i=0; i<ni; i++) {
-    red = fread(&adjncy[xadj[i]], sizeof(idx_t), xadj[i+1]-xadj[i], fp);if (red != (size_t) (xadj[i+1]-xadj[i])) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
+    red = fread(&adjncy[xadj[i]], sizeof(idx_t), xadj[i+1]-xadj[i], fp);PetscCheckFalse(red != (size_t) (xadj[i+1]-xadj[i]),PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
   }
 
   ierr = PetscFClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   ierr = PetscMalloc3(ni*ndims,&xyz,ni,&part,size,&tpwgts);CHKERRQ(ierr);
   ierr = PetscMalloc1(ni*ndims,&sxyz);CHKERRQ(ierr);
 
-  red = fread(xyz, sizeof(PetscReal), ndims*ni, fp);if (red != (size_t) (ndims*ni)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
+  red = fread(xyz, sizeof(PetscReal), ndims*ni, fp);PetscCheckFalse(red != (size_t) (ndims*ni),PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to read from data file");
   for (i=0; i<ni*ndims; i++) sxyz[i] = (size_t) xyz[i];
 
   ierr = PetscFClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);

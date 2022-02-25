@@ -145,7 +145,6 @@ include "petscdmshell.pxi"
 include "petscdmlabel.pxi"
 include "petscdmswarm.pxi"
 include "petscpartitioner.pxi"
-include "petscadapt.pxi"
 
 # --------------------------------------------------------------------
 
@@ -196,6 +195,8 @@ include "CAPI.pyx"
 
 cdef extern from "Python.h":
     int Py_IsInitialized() nogil
+    int PyList_Insert(object,Py_ssize_t,object) except -1
+    int PyList_Append(object,object) except -1
 
 cdef extern from * nogil:
     int PetscTBEH(MPI_Comm,int,char*,char*,
@@ -219,7 +220,7 @@ cdef int traceback(MPI_Comm       comm,
     fun = bytes2str(cfun)
     fnm = bytes2str(cfile)
     m = "%s() at %s:%d" % (fun, fnm, line)
-    tbl.insert(0, m)
+    PyList_Insert(tbl, 0, m)
     if p != PETSC_ERROR_INITIAL:
         return n
     #
@@ -230,11 +231,11 @@ cdef int traceback(MPI_Comm       comm,
         m = ("Out of memory. "
              "Allocated: %d, "
              "Used by process: %d") % (mem, rss)
-        tbl.append(m)
+        PyList_Append(tbl, m)
     else:
         PetscErrorMessage(n, &text, NULL)
-    if text != NULL: tbl.append(bytes2str(text))
-    if mess != NULL: tbl.append(bytes2str(mess))
+    if text != NULL: PyList_Append(tbl, bytes2str(text))
+    if mess != NULL: PyList_Append(tbl, bytes2str(mess))
     <void>comm; <void>ctx; # unused
     return n
 

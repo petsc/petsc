@@ -113,6 +113,10 @@
 ! PCBDDCInterfaceExtType
       PetscEnum, parameter :: PC_BDDC_INTERFACE_EXT_DIRICHLET=0
       PetscEnum, parameter :: PC_BDDC_INTERFACE_EXT_LUMP=1
+! PCHPDDMCoarseCorrectionType
+      PetscEnum, parameter :: PC_HPDDM_COARSE_CORRECTION_DEFLATED=0
+      PetscEnum, parameter :: PC_HPDDM_COARSE_CORRECTION_ADDITIVE=1
+      PetscEnum, parameter :: PC_HPDDM_COARSE_CORRECTION_BALANCED=2
 !
 ! PCFailedReason
 !

@@ -26,19 +26,19 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 
   ierr = PetscDataTypeFromString("Scalar",&dtype,&found);CHKERRQ(ierr);
-  if (!found) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find scalar datatype");
-  if (dtype != PETSC_SCALAR) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found wrong datatype for scalar");
+  PetscCheckFalse(!found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find scalar datatype");
+  PetscCheckFalse(dtype != PETSC_SCALAR,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found wrong datatype for scalar");
 
   ierr = PetscDataTypeFromString("INT",&dtype,&found);CHKERRQ(ierr);
-  if (!found) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find int datatype");
-  if (dtype != PETSC_INT) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found wrong datatype for int");
+  PetscCheckFalse(!found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find int datatype");
+  PetscCheckFalse(dtype != PETSC_INT,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found wrong datatype for int");
 
   ierr = PetscDataTypeFromString("real",&dtype,&found);CHKERRQ(ierr);
-  if (!found) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find real datatype");
-  if (dtype != PETSC_REAL) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found wrong datatype for real");
+  PetscCheckFalse(!found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find real datatype");
+  PetscCheckFalse(dtype != PETSC_REAL,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found wrong datatype for real");
 
   ierr = PetscDataTypeFromString("abogusdatatype",&dtype,&found);CHKERRQ(ierr);
-  if (found) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found a bogus datatype");
+  PetscCheckFalse(found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found a bogus datatype");
 
   ierr = PetscFinalize();
   return ierr;

@@ -1,0 +1,4 @@
+Solution range [ 0.00000, 1.00000] with extrema at 0 and 51, mean  0.24995, ||x||_TV  0.02000
+Final time  1.00800, steps 28
+Error ||x-x_e||_1 2.7248e-03  ||x-x_e||_sup 2.4944e-02
+Solution range [ 0.00000, 1.00000] with extrema at 0 and 77, mean  0.24995, ||x||_TV  0.02000

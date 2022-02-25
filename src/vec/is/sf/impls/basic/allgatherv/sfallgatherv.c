@@ -68,7 +68,7 @@ PETSC_INTERN PetscErrorCode PetscSFReset_Allgatherv(PetscSF sf)
   ierr = PetscFree(dat->irootloc);CHKERRQ(ierr);
   ierr = PetscFree(dat->recvcounts);CHKERRQ(ierr);
   ierr = PetscFree(dat->displs);CHKERRQ(ierr);
-  if (dat->inuse) SETERRQ(PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
+  PetscCheckFalse(dat->inuse,PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
   for (; link; link=next) {next = link->next; ierr = PetscSFLinkDestroy(sf,link);CHKERRQ(ierr);}
   dat->avail = NULL;
   PetscFunctionReturn(0);
@@ -133,15 +133,36 @@ static PetscErrorCode PetscSFReduceBegin_Allgatherv(PetscSF sf,MPI_Datatype unit
     ierr = PetscSFLinkGetMPIBuffersAndRequests(sf,link,PETSCSF_LEAF2ROOT,&rootbuf,&leafbuf,&req,NULL);CHKERRQ(ierr);
     ierr = PetscMPIIntCast(dat->rootbuflen[PETSCSF_REMOTE],&recvcount);CHKERRQ(ierr);
     /* Allocate a separate leaf buffer on rank 0 */
-    if (!rank && !link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi]) {
+    if (rank == 0 && !link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi]) {
       ierr = PetscSFMalloc(sf,link->leafmtype_mpi,sf->leafbuflen[PETSCSF_REMOTE]*link->unitbytes,(void**)&link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi]);CHKERRQ(ierr);
     }
     /* In case we already copied leafdata from device to host (i.e., no use_gpu_aware_mpi), we need to adjust leafbuf on rank 0 */
-    if (!rank && link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi] == leafbuf) leafbuf = MPI_IN_PLACE;
+    if (rank == 0 && link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi] == leafbuf) leafbuf = MPI_IN_PLACE;
     ierr = PetscMPIIntCast(sf->nleaves*link->bs,&count);CHKERRQ(ierr);
     ierr = PetscSFLinkSyncStreamBeforeCallMPI(sf,link,PETSCSF_LEAF2ROOT);CHKERRQ(ierr);
     ierr = MPI_Reduce(leafbuf,link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi],count,link->basicunit,op,0,comm);CHKERRMPI(ierr); /* Must do reduce with MPI builltin datatype basicunit */
     ierr = MPIU_Iscatterv(link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi],dat->recvcounts,dat->displs,unit,rootbuf,recvcount,unit,0,comm,req);CHKERRMPI(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+PETSC_INTERN PetscErrorCode PetscSFReduceEnd_Allgatherv(PetscSF sf,MPI_Datatype unit,const void *leafdata,void *rootdata,MPI_Op op)
+{
+  PetscErrorCode        ierr;
+  PetscSFLink           link;
+
+  PetscFunctionBegin;
+  if (op == MPI_REPLACE) {
+    /* A rare case happens when op is MPI_REPLACE, using GPUs but no GPU aware MPI. In PetscSFReduceBegin_Allgather(v),
+      we did a device to device copy and in effect finished the communication. But in PetscSFLinkFinishCommunication()
+      of PetscSFReduceEnd_Basic(), it thinks since there is rootbuf, it calls PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI().
+      It does a host to device memory copy on rootbuf, wrongly overwritting the results. So we don't overload
+      PetscSFReduceEnd_Basic() in this case, and just reclaim the link.
+     */
+    ierr = PetscSFLinkGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,&link);CHKERRQ(ierr);
+    ierr = PetscSFLinkReclaim(sf,&link);CHKERRQ(ierr);
+  } else {
+    ierr = PetscSFReduceEnd_Basic(sf,unit,leafdata,rootdata,op);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -157,7 +178,7 @@ static PetscErrorCode PetscSFBcastToZero_Allgatherv(PetscSF sf,MPI_Datatype unit
   ierr = PetscSFLinkGetInUse(sf,unit,rootdata,leafdata,PETSC_OWN_POINTER,&link);CHKERRQ(ierr);
   ierr = PetscSFLinkFinishCommunication(sf,link,PETSCSF_ROOT2LEAF);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)sf),&rank);CHKERRMPI(ierr);
-  if (!rank && PetscMemTypeDevice(leafmtype) && !sf->use_gpu_aware_mpi) {
+  if (rank == 0 && PetscMemTypeDevice(leafmtype) && !sf->use_gpu_aware_mpi) {
     ierr = (*link->Memcpy)(link,PETSC_MEMTYPE_DEVICE,leafdata,PETSC_MEMTYPE_HOST,link->leafbuf[PETSC_MEMTYPE_HOST],sf->leafbuflen[PETSCSF_REMOTE]*link->unitbytes);CHKERRQ(ierr);
   }
   ierr = PetscSFLinkReclaim(sf,&link);CHKERRQ(ierr);
@@ -211,7 +232,7 @@ PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Allgatherv(PetscSF sf,MPI_Dat
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)sf,&comm);CHKERRQ(ierr);
-  if (PetscMemTypeDevice(rootmtype) || PetscMemTypeDevice(leafmtype)) SETERRQ(comm,PETSC_ERR_SUP,"Do FetchAndOp on device");
+  PetscCheckFalse(PetscMemTypeDevice(rootmtype) || PetscMemTypeDevice(leafmtype),comm,PETSC_ERR_SUP,"Do FetchAndOp on device");
   /* Copy leafdata to leafupdate */
   ierr = PetscSFLinkCreate(sf,unit,rootmtype,rootdata,leafmtype,leafdata,op,PETSCSF_FETCH,&link);CHKERRQ(ierr);
   ierr = PetscSFLinkPackLeafData(sf,link,PETSCSF_REMOTE,leafdata);CHKERRQ(ierr); /* Sync the device */
@@ -363,7 +384,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Allgatherv(PetscSF sf)
 
   PetscFunctionBegin;
   sf->ops->BcastEnd        = PetscSFBcastEnd_Basic;
-  sf->ops->ReduceEnd       = PetscSFReduceEnd_Basic;
+  sf->ops->ReduceEnd       = PetscSFReduceEnd_Allgatherv;
 
   sf->ops->SetUp           = PetscSFSetUp_Allgatherv;
   sf->ops->Reset           = PetscSFReset_Allgatherv;

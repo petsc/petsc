@@ -2,9 +2,9 @@ Overlap: 1
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
 Parallel Mesh in 2 dimensions:
-  0-cells: 235 237
-  1-cells: 466 467
-  2-cells: 175 172
+  Number of 0-cells per rank: 235 237
+  Number of 1-cells per rank: 466 467
+  Number of 2-cells per rank: 175 172
 Labels:
   marker: 1 strata with value/size (1 (62))
   Face Sets: 3 strata with value/size (1 (25), 2 (14), 4 (16))
@@ -14,4 +14,4 @@ Labels:
 DM Object: Generated Mesh 2 MPI processes
   type: plex
   Cell balance: 1.02 (max 147, min 144, empty 0)
-  Edge Cut: 25 (on node 0.000)
+  Edge Cut: 25 (on node 1.000)

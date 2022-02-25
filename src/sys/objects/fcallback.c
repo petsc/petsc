@@ -8,9 +8,9 @@ struct _FortranCallbackLink {
 };
 
 typedef struct {
-  PetscInt            basecount;
-  PetscInt            maxsubtypecount;
-  FortranCallbackLink subtypes;
+  PetscFortranCallbackId basecount;
+  PetscFortranCallbackId maxsubtypecount;
+  FortranCallbackLink    subtypes;
 } FortranCallbackBase;
 
 static FortranCallbackBase *_classbase;
@@ -42,11 +42,11 @@ static PetscErrorCode PetscFortranCallbackFinalize(void)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 +  classid - ID of class on which to register callback
 -  subtype - subtype string, or NULL for class ids
 
-   Output Arguments:
+   Output Parameter:
 .  id - callback id
 
    Level: developer
@@ -60,8 +60,10 @@ PetscErrorCode PetscFortranCallbackRegister(PetscClassId classid,const char *sub
   FortranCallbackLink link;
 
   PetscFunctionBegin;
+  if (subtype) PetscValidCharPointer(subtype,2);
+  PetscValidPointer(id,3);
+  PetscCheckFalse(classid < PETSC_SMALLEST_CLASSID || PETSC_LARGEST_CLASSID < classid,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"ClassId %d corrupt",classid);
   *id = 0;
-  if (classid < PETSC_SMALLEST_CLASSID || PETSC_LARGEST_CLASSID < classid) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"ClassId %D corrupt",classid);
   if (classid >= _maxclassid) {
     PetscClassId        newmax = PETSC_SMALLEST_CLASSID + 2*(PETSC_LARGEST_CLASSID-PETSC_SMALLEST_CLASSID);
     FortranCallbackBase *newbase;
@@ -106,10 +108,10 @@ found:
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  classid - class Id
 
-   Output Arguments:
+   Output Parameters:
 +  numbase - number of registered class callbacks
 -  numsubtype - max number of registered subtype callbacks
 
@@ -117,7 +119,7 @@ found:
 
 .seealso: PetscFortranCallbackRegister()
 @*/
-PetscErrorCode PetscFortranCallbackGetSizes(PetscClassId classid,PetscInt *numbase,PetscInt *numsubtype)
+PetscErrorCode PetscFortranCallbackGetSizes(PetscClassId classid,PetscFortranCallbackId *numbase,PetscFortranCallbackId *numsubtype)
 {
 
   PetscFunctionBegin;

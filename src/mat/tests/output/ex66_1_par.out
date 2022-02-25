@@ -1,4 +1,5 @@
-MatMult err 0.000322366
-A Matrix norms:        infty=28.3691, norm_1=28.3691, norm_2=-1.
-A Approx Matrix norms: infty=28.3691, norm_1=28.3691, norm_2=23.9864
-B Approx Matrix norms: infty=-1., norm_1=-1., norm_2=-1.
+MatMult err 0.00038544
+A Matrix norms:        infty=49.8468, norm_1=49.8468, norm_2=-1.
+A Approx Matrix norms: infty=49.8468, norm_1=49.8468, norm_2=46.3661
+B Approx Matrix norms: infty=49.8562, norm_1=49.8562, norm_2=46.3361
+MatMultTranspose err 0.000360918

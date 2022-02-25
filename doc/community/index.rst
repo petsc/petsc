@@ -16,3 +16,5 @@ to all of the PETSc development team, where our response time will be fastest.
    mailing
    meeting
    petsc_team
+
+If you are interested in contributing to PETSc, see :doc:`/developers/contributing`.

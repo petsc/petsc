@@ -33,10 +33,10 @@ static PetscErrorCode MPIPetsc_Type_free(MPI_Datatype *a)
 /*
   Unwrap an MPI datatype recursively in case it is dupped or MPI_Type_contiguous(1,...)'ed from another type.
 
-   Input Arguments:
-+  a  - the datatype to be unwrapped
+   Input Parameter:
+.  a  - the datatype to be unwrapped
 
-   Output Arguments:
+   Output Parameters:
 + atype - the unwrapped datatype, which is either equal(=) to a or equivalent to a.
 - flg   - true if atype != a, which implies caller should MPIPetsc_Type_free(atype) after use. Note atype might be MPI builtin.
 */
@@ -44,6 +44,7 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a,MPI_Datatype *atype,PetscBool
 {
   PetscErrorCode ierr;
   PetscMPIInt    nints,naddrs,ntypes,combiner,ints[1];
+  MPI_Aint       addrs[1];
   MPI_Datatype   types[1];
 
   PetscFunctionBegin;
@@ -52,10 +53,10 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a,MPI_Datatype *atype,PetscBool
   if (a == MPIU_INT || a == MPIU_REAL || a == MPIU_SCALAR) PetscFunctionReturn(0);
   ierr = MPI_Type_get_envelope(a,&nints,&naddrs,&ntypes,&combiner);CHKERRMPI(ierr);
   if (combiner == MPI_COMBINER_DUP) {
-    if (nints != 0 || naddrs != 0 || ntypes != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unexpected returns from MPI_Type_get_envelope()");
-    ierr   = MPI_Type_get_contents(a,0,0,1,ints,NULL,types);CHKERRMPI(ierr);
+    PetscCheckFalse(nints != 0 || naddrs != 0 || ntypes != 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unexpected returns from MPI_Type_get_envelope()");
+    ierr = MPI_Type_get_contents(a,0,0,1,ints,addrs,types);CHKERRMPI(ierr);
     /* Recursively unwrap dupped types. */
-    ierr   = MPIPetsc_Type_unwrap(types[0],atype,flg);CHKERRQ(ierr);
+    ierr = MPIPetsc_Type_unwrap(types[0],atype,flg);CHKERRQ(ierr);
     if (*flg) {
       /* If the recursive call returns a new type, then that means that atype[0] != types[0] and we're on the hook to
        * free types[0].  Note that this case occurs if combiner(types[0]) is MPI_COMBINER_DUP, so we're safe to
@@ -65,8 +66,8 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a,MPI_Datatype *atype,PetscBool
     /* In any case, it's up to the caller to free the returned type in this case. */
     *flg = PETSC_TRUE;
   } else if (combiner == MPI_COMBINER_CONTIGUOUS) {
-    if (nints != 1 || naddrs != 0 || ntypes != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unexpected returns from MPI_Type_get_envelope()");
-    ierr = MPI_Type_get_contents(a,1,0,1,ints,NULL,types);CHKERRMPI(ierr);
+    PetscCheckFalse(nints != 1 || naddrs != 0 || ntypes != 1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unexpected returns from MPI_Type_get_envelope()");
+    ierr = MPI_Type_get_contents(a,1,0,1,ints,addrs,types);CHKERRMPI(ierr);
     if (ints[0] == 1) { /* If a is created by MPI_Type_contiguous(1,..) */
       ierr = MPIPetsc_Type_unwrap(types[0],atype,flg);CHKERRQ(ierr);
       if (*flg) {ierr = MPIPetsc_Type_free(&(types[0]));CHKERRQ(ierr);}

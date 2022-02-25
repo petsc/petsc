@@ -5,7 +5,7 @@
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  mat - the matrix (Mat) object.
 -  pyname - full dotted Python name [package].module[.{class|function}]
 

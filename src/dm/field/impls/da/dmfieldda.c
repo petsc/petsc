@@ -36,7 +36,7 @@ static PetscErrorCode DMFieldView_DA(DMField field,PetscViewer viewer)
     PetscInt nc;
     DM       dm = field->dm;
 
-    PetscViewerASCIIPrintf(viewer, "Field corner values:\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Field corner values:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
     nc = field->numComponents;
@@ -202,7 +202,7 @@ static PetscErrorCode DMFieldEvaluate_DA(DMField field, Vec points, PetscDataTyp
   dafield = (DMField_DA *) field->data;
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   ierr = VecGetLocalSize(points,&N);CHKERRQ(ierr);
-  if (N % dim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Point vector size %D not divisible by coordinate dimension %D\n",N,dim);
+  PetscCheckFalse(N % dim,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Point vector size %D not divisible by coordinate dimension %D",N,dim);
   n = N / dim;
   coordRange = &(dafield->coordRange[0]);
   ierr = VecGetArrayRead(points,&array);CHKERRQ(ierr);
@@ -283,7 +283,7 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
       cD = D ? &((PetscReal *)D)[nc * nq * dim * c] : NULL;
       cH = H ? &((PetscReal *)H)[nc * nq * dim * dim * c] : NULL;
     }
-    if (cell < cStart || cell >= cEnd) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Point %D not a cell [%D,%D), not implemented yet",cell,cStart,cEnd);
+    PetscCheckFalse(cell < cStart || cell >= cEnd,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Point %D not a cell [%D,%D), not implemented yet",cell,cStart,cEnd);
     for (i = 0; i < nc * whol; i++) {work[i] = dafield->cornerCoeffs[i];}
     for (j = 0; j < dim; j++) {
       PetscReal e, d;
@@ -356,7 +356,7 @@ static PetscErrorCode DMFieldEvaluateFV_DA(DMField field, IS cellIS, PetscDataTy
     PetscInt  rem  = cell;
     PetscInt  ijk[3] = {0};
 
-    if (cell < cStart || cell >= cEnd) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Point %D not a cell [%D,%D), not implemented yet",cell,cStart,cEnd);
+    PetscCheckFalse(cell < cStart || cell >= cEnd,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Point %D not a cell [%D,%D), not implemented yet",cell,cStart,cEnd);
     for (i = 0; i < dim; i++) {
       ijk[i] = (rem % cellsPer[i]);
       rem /= cellsPer[i];

@@ -1,0 +1,111 @@
+Label 'subpoint_map':
+[0]: 18 (2)
+[0]: 27 (1)
+[0]: 30 (1)
+[0]: 33 (1)
+[0]: 36 (1)
+[0]: 3 (0)
+[0]: 4 (0)
+[0]: 7 (0)
+[0]: 8 (0)
+[0]: 0 (103)
+[0]: 14 (102)
+[0]: 15 (102)
+[0]: 16 (102)
+[0]: 17 (102)
+[0]: 1 (-103)
+[0]: 20 (-102)
+[0]: 21 (-102)
+[0]: 22 (-102)
+[0]: 23 (-102)
+[0]: 26 (101)
+[0]: 28 (101)
+[0]: 29 (101)
+[0]: 31 (101)
+[0]: 37 (-101)
+[0]: 39 (-101)
+[0]: 40 (-101)
+[0]: 42 (-101)
+Label 'subpoint_map split':
+[0]: 4 (100)
+[0]: 5 (100)
+[0]: 8 (100)
+[0]: 9 (100)
+[0]: 15 (-100)
+[0]: 16 (-100)
+[0]: 17 (-100)
+[0]: 18 (-100)
+[0]: 37 (101)
+[0]: 40 (101)
+[0]: 43 (101)
+[0]: 46 (101)
+[0]: 55 (-101)
+[0]: 56 (-101)
+[0]: 57 (-101)
+[0]: 58 (-101)
+[0]: 23 (102)
+[0]: 30 (-102)
+Label 'cohesive':
+[0]: 2 (1)
+[0]: 31 (1)
+[0]: 32 (1)
+[0]: 33 (1)
+[0]: 34 (1)
+[0]: 59 (1)
+[0]: 60 (1)
+[0]: 61 (1)
+[0]: 62 (1)
+Discrete System with 2 fields
+    cell total dim 36 total comp 6
+    cohesive cell
+  Field displacement FEM 3 components (implicit) (Nq 4 Nqc 1) 1-jet
+    PetscFE Object: displacement 1 MPI processes
+      type: basic
+      Basic Finite Element in 2 dimensions with 3 components
+      PetscSpace Object: displacement 1 MPI processes
+        type: sum
+        Space in 2 variables with 3 components, size 12
+        Sum space of 3 concatenated subspaces (all identical)
+          PetscSpace Object: sum component 1 MPI processes
+            type: tensor
+            Space in 2 variables with 1 components, size 4
+            Tensor space of 2 subspaces (all identical)
+              PetscSpace Object: sum component tensor component (displacement_sumcomp_tensorcomp_) 1 MPI processes
+                type: poly
+                Space in 1 variables with 1 components, size 2
+                Polynomial space of degree 1
+      PetscDualSpace Object: displacement 1 MPI processes
+        type: lagrange
+        Dual space with 3 components, size 12
+        Continuous tensor Lagrange dual space
+        Quadrature of order 3 on 4 points (dim 2)
+  Field fault traction FEM 3 components (implicit) (Nq 4 Nqc 1) 1-jet
+    PetscFE Object: fault traction (faulttraction_) 1 MPI processes
+      type: basic
+      Basic Finite Element in 2 dimensions with 3 components
+      PetscSpace Object: fault traction (faulttraction_) 1 MPI processes
+        type: sum
+        Space in 2 variables with 3 components, size 12
+        Sum space of 3 concatenated subspaces (all identical)
+          PetscSpace Object: sum component (faulttraction_sumcomp_) 1 MPI processes
+            type: tensor
+            Space in 2 variables with 1 components, size 4
+            Tensor space of 2 subspaces (all identical)
+              PetscSpace Object: sum component tensor component (faulttraction_sumcomp_tensorcomp_) 1 MPI processes
+                type: poly
+                Space in 1 variables with 1 components, size 2
+                Polynomial space of degree 1
+      PetscDualSpace Object: fault traction (faulttraction_) 1 MPI processes
+        type: lagrange
+        Dual space with 3 components, size 12
+        Continuous tensor Lagrange dual space
+        Quadrature of order 3 on 4 points (dim 2)
+  Weak Form System with 2 fields
+    boundary_residual_f0
+      (0, 0)
+      (0, 0)
+      (cohesive, 1) (0, 1)
+    boundary_jacobian_g0
+      (0, 1)
+      (0, 1)
+      (cohesive, 1) (1, 0) 

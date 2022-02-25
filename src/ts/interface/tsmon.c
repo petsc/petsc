@@ -1,5 +1,7 @@
 #include <petsc/private/tsimpl.h>        /*I "petscts.h"  I*/
 #include <petscdm.h>
+#include <petscds.h>
+#include <petscdmswarm.h>
 #include <petscdraw.h>
 
 /*@C
@@ -133,7 +135,7 @@ PetscErrorCode  TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscRe
     ierr = PetscMonitorCompare((PetscErrorCode (*)(void))monitor,mctx,mdestroy,(PetscErrorCode (*)(void))ts->monitor[i],ts->monitorcontext[i],ts->monitordestroy[i],&identical);CHKERRQ(ierr);
     if (identical) PetscFunctionReturn(0);
   }
-  if (ts->numbermonitors >= MAXTSMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
+  PetscCheckFalse(ts->numbermonitors >= MAXTSMONITORS,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
   ts->monitor[ts->numbermonitors]          = monitor;
   ts->monitordestroy[ts->numbermonitors]   = mdestroy;
   ts->monitorcontext[ts->numbermonitors++] = (void*)mctx;
@@ -362,12 +364,8 @@ PetscErrorCode  TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
   PetscFunctionReturn(0);
 }
 
-/*
-
-  Creates a TS Monitor SPCtx for use with DM Swarm particle visualizations
-
-*/
-PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscInt howoften,TSMonitorSPCtx *ctx)
+/* Creates a TS Monitor SPCtx for use with DMSwarm particle visualizations */
+PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm,const char host[],const char label[],int x,int y,int m,int n,PetscInt howoften,PetscInt retain,PetscBool phase,TSMonitorSPCtx *ctx)
 {
   PetscDraw      draw;
   PetscErrorCode ierr;
@@ -379,8 +377,9 @@ PetscErrorCode TSMonitorSPCtxCreate(MPI_Comm comm,const char host[],const char l
   ierr = PetscDrawSPCreate(draw,1,&(*ctx)->sp);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   (*ctx)->howoften = howoften;
+  (*ctx)->retain   = retain;
+  (*ctx)->phase    = phase;
   PetscFunctionReturn(0);
-
 }
 
 /*
@@ -493,9 +492,9 @@ PetscErrorCode  TSMonitorDrawSolutionPhase(TS ts,PetscInt step,PetscReal ptime,V
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)ts),&size);CHKERRMPI(ierr);
-  if (size != 1) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Only allowed for sequential runs");
+  PetscCheckFalse(size != 1,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Only allowed for sequential runs");
   ierr = VecGetSize(u,&n);CHKERRQ(ierr);
-  if (n != 2) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Only for ODEs with two unknowns");
+  PetscCheckFalse(n != 2,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Only for ODEs with two unknowns");
 
   ierr = PetscViewerDrawGetDraw(ictx->viewer,0,&draw);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDrawAxis(ictx->viewer,0,&axis);CHKERRQ(ierr);
@@ -1154,49 +1153,67 @@ PetscErrorCode  TSMonitorLGError(TS ts,PetscInt step,PetscReal ptime,Vec u,void 
 -  dctx - the TSMonitorSPCtx object that contains all the options for the monitoring, this is created with TSMonitorSPCtxCreate()
 
    Options Database:
-.   -ts_monitor_sp_swarm
++ -ts_monitor_sp_swarm <n>          - Monitor the solution every n steps, or -1 for plotting only the final solution
+. -ts_monitor_sp_swarm_retain <n>   - Retain n old points so we can see the history, or -1 for all points
+- -ts_monitor_sp_swarm_phase <bool> - Plot in phase space, as opposed to coordinate space
 
    Level: intermediate
 
+.seealso: TSMonitoSet()
 @*/
-PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec u,void *dctx)
+PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx)
 {
-  PetscErrorCode    ierr;
-  TSMonitorSPCtx    ctx = (TSMonitorSPCtx)dctx;
+  TSMonitorSPCtx     ctx = (TSMonitorSPCtx) dctx;
+  DM                 dm, cdm;
   const PetscScalar *yy;
-  PetscReal       *y,*x;
-  PetscInt          Np, p, dim=2;
-  DM                dm;
+  PetscReal         *y, *x;
+  PetscInt           Np, p, dim = 2;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   if (step < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
   if (!step) {
     PetscDrawAxis axis;
-    ierr = PetscDrawSPGetAxis(ctx->sp,&axis);CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetLabels(axis,"Particles","X","Y");CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetLimits(axis, -5, 5, -5, 5);CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetHoldLimits(axis, PETSC_TRUE);CHKERRQ(ierr);
+    PetscReal     dmboxlower[2], dmboxupper[2];
     ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
     ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-    if (dim!=2) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Dimensions improper for monitor arguments! Current support: two dimensions.");
+    PetscCheckFalse(dim != 2,PETSC_COMM_SELF, PETSC_ERR_SUP, "Monitor only supports two dimensional fields");
+    ierr = DMSwarmGetCellDM(dm, &cdm);CHKERRQ(ierr);
+    ierr = DMGetBoundingBox(cdm, dmboxlower, dmboxupper);CHKERRQ(ierr);
     ierr = VecGetLocalSize(u, &Np);CHKERRQ(ierr);
-    Np /= 2*dim;
+    Np /= dim*2;
+    ierr = PetscDrawSPGetAxis(ctx->sp,&axis);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLabels(axis,"Particles","X","V");CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetLimits(axis, dmboxlower[0], dmboxupper[0], -5, 5);CHKERRQ(ierr);
+    ierr = PetscDrawAxisSetHoldLimits(axis, PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscDrawSPSetDimension(ctx->sp, Np);CHKERRQ(ierr);
     ierr = PetscDrawSPReset(ctx->sp);CHKERRQ(ierr);
   }
   ierr = VecGetLocalSize(u, &Np);CHKERRQ(ierr);
-  Np /= 2*dim;
+  Np /= dim*2;
   ierr = VecGetArrayRead(u,&yy);CHKERRQ(ierr);
   ierr = PetscMalloc2(Np, &x, Np, &y);CHKERRQ(ierr);
   /* get points from solution vector */
-  for (p=0; p<Np; ++p) {
-    x[p] = PetscRealPart(yy[2*dim*p]);
-    y[p] = PetscRealPart(yy[2*dim*p+1]);
+  for (p = 0; p < Np; ++p) {
+    if (ctx->phase) {
+      x[p] = PetscRealPart(yy[p*dim*2]);
+      y[p] = PetscRealPart(yy[p*dim*2 + dim]);
+    } else {
+      x[p] = PetscRealPart(yy[p*dim*2]);
+      y[p] = PetscRealPart(yy[p*dim*2 + 1]);
+    }
   }
   ierr = VecRestoreArrayRead(u,&yy);CHKERRQ(ierr);
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
-    ierr = PetscDrawSPAddPoint(ctx->sp,x,y);CHKERRQ(ierr);
-    ierr = PetscDrawSPDraw(ctx->sp,PETSC_FALSE);CHKERRQ(ierr);
+    PetscDraw draw;
+    ierr = PetscDrawSPGetDraw(ctx->sp, &draw);CHKERRQ(ierr);
+    if ((ctx->retain == 0) || (ctx->retain > 0 && !(step % ctx->retain))) {
+      ierr = PetscDrawClear(draw);CHKERRQ(ierr);
+    }
+    ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+    ierr = PetscDrawSPReset(ctx->sp);CHKERRQ(ierr);
+    ierr = PetscDrawSPAddPoint(ctx->sp, x, y);CHKERRQ(ierr);
+    ierr = PetscDrawSPDraw(ctx->sp, PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscDrawSPSave(ctx->sp);CHKERRQ(ierr);
   }
   ierr = PetscFree2(x, y);CHKERRQ(ierr);
@@ -1224,27 +1241,63 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts,PetscInt step,PetscReal ptime,Vec 
 
 .seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSSetSolutionFunction()
 @*/
-PetscErrorCode  TSMonitorError(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscViewerAndFormat *vf)
+PetscErrorCode TSMonitorError(TS ts,PetscInt step,PetscReal ptime,Vec u,PetscViewerAndFormat *vf)
 {
-  PetscErrorCode    ierr;
-  Vec               y;
-  PetscReal         nrm;
-  PetscBool         flg;
+  DM             dm;
+  PetscDS        ds = NULL;
+  PetscInt       Nf = -1, f;
+  PetscBool      flg;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(u,&y);CHKERRQ(ierr);
-  ierr = TSComputeSolutionFunction(ts,ptime,y);CHKERRQ(ierr);
-  ierr = VecAXPY(y,-1.0,u);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)vf->viewer,PETSCVIEWERASCII,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = VecNorm(y,NORM_2,&nrm);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(vf->viewer,"2-norm of error %g\n",(double)nrm);CHKERRQ(ierr);
+  ierr = TSGetDM(ts, &dm);CHKERRQ(ierr);
+  if (dm) {ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);}
+  if (ds) {ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);}
+  if (Nf <= 0) {
+    Vec       y;
+    PetscReal nrm;
+
+    ierr = VecDuplicate(u,&y);CHKERRQ(ierr);
+    ierr = TSComputeSolutionFunction(ts,ptime,y);CHKERRQ(ierr);
+    ierr = VecAXPY(y,-1.0,u);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)vf->viewer,PETSCVIEWERASCII,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = VecNorm(y,NORM_2,&nrm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(vf->viewer,"2-norm of error %g\n",(double)nrm);CHKERRQ(ierr);
+    }
+    ierr = PetscObjectTypeCompare((PetscObject)vf->viewer,PETSCVIEWERDRAW,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = VecView(y,vf->viewer);CHKERRQ(ierr);
+    }
+    ierr = VecDestroy(&y);CHKERRQ(ierr);
+  } else {
+    PetscErrorCode (**exactFuncs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
+    void            **ctxs;
+    Vec               v;
+    PetscReal         ferrors[1];
+
+    ierr = PetscMalloc2(Nf, &exactFuncs, Nf, &ctxs);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {ierr = PetscDSGetExactSolution(ds, f, &exactFuncs[f], &ctxs[f]);CHKERRQ(ierr);}
+    ierr = DMComputeL2FieldDiff(dm, ptime, exactFuncs, ctxs, u, ferrors);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Timestep: %04d time = %-8.4g \t L_2 Error: [", (int) step, (double) ptime);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {
+      if (f > 0) {ierr = PetscPrintf(PETSC_COMM_WORLD, ", ");CHKERRQ(ierr);}
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "%2.3g", (double) ferrors[f]);CHKERRQ(ierr);
+    }
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "]\n");CHKERRQ(ierr);
+
+    ierr = VecViewFromOptions(u, NULL, "-sol_vec_view");CHKERRQ(ierr);
+
+    ierr = PetscOptionsHasName(NULL, NULL, "-exact_vec_view", &flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = DMGetGlobalVector(dm, &v);CHKERRQ(ierr);
+      ierr = DMProjectFunction(dm, ptime, exactFuncs, ctxs, INSERT_ALL_VALUES, v);CHKERRQ(ierr);
+      ierr = PetscObjectSetName((PetscObject) v, "Exact Solution");CHKERRQ(ierr);
+      ierr = VecViewFromOptions(v, NULL, "-exact_vec_view");CHKERRQ(ierr);
+      ierr = DMRestoreGlobalVector(dm, &v);CHKERRQ(ierr);
+    }
+    ierr = PetscFree2(exactFuncs, ctxs);CHKERRQ(ierr);
   }
-  ierr = PetscObjectTypeCompare((PetscObject)vf->viewer,PETSCVIEWERDRAW,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = VecView(y,vf->viewer);CHKERRQ(ierr);
-  }
-  ierr = VecDestroy(&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1375,7 +1428,7 @@ PetscErrorCode  TSMonitorEnvelope(TS ts,PetscInt step,PetscReal ptime,Vec u,void
    Input Parameter:
 .  ts - the TS context
 
-   Output Parameter:
+   Output Parameters:
 +  max - the maximum values
 -  min - the minimum values
 

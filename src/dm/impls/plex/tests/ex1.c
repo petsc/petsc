@@ -65,6 +65,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = PetscLogStagePush(user->stages[STAGE_LOAD]);CHKERRQ(ierr);
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
+  ierr = DMPlexDistributeSetDefault(*dm, PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
 
   /* For topologically periodic meshes, we first localize coordinates,
@@ -118,6 +119,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMConvert(*dm,DMPLEX,&dmConv);CHKERRQ(ierr);
     if (dmConv) {
       ierr = PetscObjectSetOptionsPrefix((PetscObject) dmConv, "conv_seq_2_");CHKERRQ(ierr);
+      ierr = DMPlexDistributeSetDefault(dmConv, PETSC_FALSE);CHKERRQ(ierr);
       ierr = DMSetFromOptions(dmConv);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = dmConv;
@@ -180,6 +182,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     ierr = DMConvert(*dm, DMPLEX, &dmConv);CHKERRQ(ierr);
     if (dmConv) {
       ierr = PetscObjectSetOptionsPrefix((PetscObject) dmConv, "conv_par_2_");CHKERRQ(ierr);
+      ierr = DMPlexDistributeSetDefault(dmConv, PETSC_FALSE);CHKERRQ(ierr);
       ierr = DMSetFromOptions(dmConv);CHKERRQ(ierr);
       ierr = DMDestroy(dm);CHKERRQ(ierr);
       *dm  = dmConv;
@@ -341,6 +344,19 @@ int main(int argc, char **argv)
     nsize: {{2 8}separate output}
     args: -dm_coord_space 0 -ref_dm_refine 1 -dist_dm_distribute -petscpartitioner_type simple -overlap {{0 1 2}separate output} -dm_view ascii::ascii_info
 
+  # Parallel extrusion tests
+  test:
+    suffix: spheresurface_extruded
+    nsize : 4
+    args: -dm_coord_space 0 -dm_plex_shape sphere -dm_extrude 3 -dist_dm_distribute -petscpartitioner_type simple \
+          -dm_plex_check_all -dm_view ::ascii_info_detail -dm_plex_view_coord_system spherical
+
+  test:
+    suffix: spheresurface_extruded_symmetric
+    nsize : 4
+    args: -dm_coord_space 0 -dm_plex_shape sphere -dm_extrude 3 -dm_plex_transform_extrude_symmetric -dist_dm_distribute -petscpartitioner_type simple \
+          -dm_plex_check_all -dm_view ::ascii_info_detail -dm_plex_view_coord_system spherical
+
   # Parallel simple partitioner tests
   test:
     suffix: part_simple_0
@@ -358,12 +374,12 @@ int main(int argc, char **argv)
     suffix: part_parmetis_0
     requires: parmetis
     nsize: 2
-    args: -dm_plex_simplex 0 -ref_dm_refine 1 -dist_dm_distribute -petscpartitioner_type parmetis -dm_view -petscpartitioner_view -test_redistribute -dm_plex_csr_via_mat {{0 1}} -dm_pre_redist_view ::load_balance -dm_post_redist_view ::load_balance -petscpartitioner_view_graph
+    args: -dm_plex_simplex 0 -ref_dm_refine 1 -dist_dm_distribute -petscpartitioner_type parmetis -dm_view -petscpartitioner_view -test_redistribute -dm_plex_csr_alg {{mat graph overlap}} -dm_pre_redist_view ::load_balance -dm_post_redist_view ::load_balance -petscpartitioner_view_graph
   test:
     suffix: part_ptscotch_0
     requires: ptscotch
     nsize: 2
-    args: -dm_plex_simplex 0 -dist_dm_distribute -petscpartitioner_type ptscotch -petscpartitioner_view -petscpartitioner_ptscotch_strategy quality -test_redistribute -dm_plex_csr_via_mat {{0 1}} -dm_pre_redist_view ::load_balance -dm_post_redist_view ::load_balance -petscpartitioner_view_graph
+    args: -dm_plex_simplex 0 -dist_dm_distribute -petscpartitioner_type ptscotch -petscpartitioner_view -petscpartitioner_ptscotch_strategy quality -test_redistribute -dm_plex_csr_alg {{mat graph overlap}} -dm_pre_redist_view ::load_balance -dm_post_redist_view ::load_balance -petscpartitioner_view_graph
   test:
     suffix: part_ptscotch_1
     requires: ptscotch
@@ -451,11 +467,11 @@ int main(int argc, char **argv)
   test:
     suffix: gmsh_14_ext
     requires: !single
-    args: -dm_coord_space 0 -dm_extrude_layers 2 -dm_extrude_thickness 1.5 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -dm_view -dm_plex_check_all
+    args: -dm_coord_space 0 -dm_extrude 2 -dm_plex_transform_extrude_thickness 1.5 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -dm_view -dm_plex_check_all
   test:
     suffix: gmsh_14_ext_s2t
     requires: !single
-    args: -dm_coord_space 0 -dm_extrude_layers 2 -dm_extrude_thickness 1.5 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -dm_view -dm_plex_check_all -ref_dm_refine 1 -ref_dm_plex_transform_type refine_tobox
+    args: -dm_coord_space 0 -dm_extrude 2 -dm_plex_transform_extrude_thickness 1.5 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh -dm_view -dm_plex_check_all -ref_dm_refine 1 -ref_dm_plex_transform_type refine_tobox
   test:
     suffix: gmsh_15_hyb3d
     args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view -dm_plex_check_all
@@ -476,11 +492,11 @@ int main(int argc, char **argv)
   test:
     suffix: gmsh_16_spheresurface_extruded
     nsize : 4
-    args: -dm_coord_space 0 -dm_extrude_layers 3 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -dm_plex_check_all -dm_view -dist_dm_distribute -petscpartitioner_type simple
+    args: -dm_coord_space 0 -dm_extrude 3 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -dm_plex_check_all -dm_view -dist_dm_distribute -petscpartitioner_type simple
   test:
     suffix: gmsh_16_spheresurface_extruded_s2t
     nsize : 4
-    args: -dm_coord_space 0 -dm_extrude_layers 3 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -ref_dm_refine 1 -ref_dm_plex_transform_type refine_tobox -dm_plex_check_all -dm_view -dist_dm_distribute -petscpartitioner_type simple
+    args: -dm_coord_space 0 -dm_extrude 3 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -ref_dm_refine 1 -ref_dm_plex_transform_type refine_tobox -dm_plex_check_all -dm_view -dist_dm_distribute -petscpartitioner_type simple
   test:
     suffix: gmsh_17_hyb3d_interp_ascii
     args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_hexwedge.msh -dm_view -dm_plex_check_all
@@ -521,6 +537,14 @@ int main(int argc, char **argv)
       suffix: gmsh_3d_binary_v41_32_mpiio
       requires: defined(PETSC_HAVE_MPIIO)
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-32.msh -viewer_binary_mpiio
+  test:
+    suffix: gmsh_quad_8node
+    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-qua-8node.msh \
+          -dm_view -dm_plex_check_all
+  test:
+    suffix: gmsh_hex_20node
+    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-hex-20node.msh \
+          -dm_view -dm_plex_check_all
   testset:  # 32bit mesh, parallel
     args: -dm_coord_space 0 -dist_dm_distribute -petscpartitioner_type simple -dm_view ::ascii_info_detail -dm_plex_check_all
     nsize: 2
@@ -759,7 +783,7 @@ int main(int argc, char **argv)
     test:
       suffix: p4est_redistribute
       nsize: 3
-      args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 2,2,1 -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 1 -conv_seq_1_dm_p4est_refine_pattern hash -petscpartitioner_type simple -test_redistribute -dm_plex_csr_via_mat {{0 1}} -dm_view ::load_balance
+      args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 2,2,1 -conv_seq_1_dm_forest_initial_refinement 0 -conv_seq_1_dm_forest_maximum_refinement 1 -conv_seq_1_dm_p4est_refine_pattern hash -petscpartitioner_type simple -test_redistribute -dm_plex_csr_alg {{mat graph overlap}} -dm_view ::load_balance
     test:
       suffix: p4est_gmsh_s2t_3d
       args: -conv_seq_1_dm_forest_initial_refinement 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh
@@ -862,18 +886,18 @@ int main(int argc, char **argv)
   # Boundary layer refiners
   test:
     suffix: ref_bl_1
-    args: -dm_plex_dim 1 -dm_plex_simplex 0 -dm_plex_box_faces 5,1 -dm_view -dm_plex_check_all 0 -ref_dm_refine 1 -ref_dm_plex_transform_type refine_boundary_layer -dm_extrude_layers 2 -final_diagnostics -ref_dm_plex_transform_bl_splits 3 -dm_extrude_column_first {{0 1}}
+    args: -dm_plex_dim 1 -dm_plex_simplex 0 -dm_plex_box_faces 5,1 -dm_view -dm_plex_check_all 0 -ref_dm_refine 1 -ref_dm_plex_transform_type refine_boundary_layer -dm_extrude 2 -final_diagnostics -ref_dm_plex_transform_bl_splits 3
   test:
     suffix: ref_bl_2_tri
     requires: triangle
-    args: -dm_plex_box_faces 5,3 -dm_view -dm_plex_check_all 0 -ref_dm_refine 1 -ref_dm_plex_transform_type refine_boundary_layer -dm_extrude_layers 3 -final_diagnostics -ref_dm_plex_transform_bl_splits 4 -dm_extrude_column_first {{0 1}}
+    args: -dm_plex_box_faces 5,3 -dm_view -dm_plex_check_all 0 -ref_dm_refine 1 -ref_dm_plex_transform_type refine_boundary_layer -dm_extrude 3 -final_diagnostics -ref_dm_plex_transform_bl_splits 4
   test:
     suffix: ref_bl_3_quad
-    args: -dm_plex_simplex 0 -dm_plex_box_faces 5,1 -dm_view -dm_plex_check_all 0 -ref_dm_refine 1 -ref_dm_plex_transform_type refine_boundary_layer -dm_extrude_layers 3 -final_diagnostics -ref_dm_plex_transform_bl_splits 4 -dm_extrude_column_first {{0 1}}
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 5,1 -dm_view -dm_plex_check_all 0 -ref_dm_refine 1 -ref_dm_plex_transform_type refine_boundary_layer -dm_extrude 3 -final_diagnostics -ref_dm_plex_transform_bl_splits 4
   test:
     suffix: ref_bl_spheresurface_extruded
     nsize : 4
-    args: -dm_extrude_layers 3 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -dm_plex_check_all -dm_view -dist_dm_distribute -petscpartitioner_type simple -dm_extrude_column_first {{0 1}separate output} -final_diagnostics -ref_dm_refine 1 -ref_dm_plex_transform_type refine_boundary_layer -ref_dm_plex_transform_bl_splits 2
+    args: -dm_extrude 3 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3 -dm_plex_check_all -dm_view -dist_dm_distribute -petscpartitioner_type simple -final_diagnostics -ref_dm_refine 1 -ref_dm_plex_transform_type refine_boundary_layer -ref_dm_plex_transform_bl_splits 2
   test:
     suffix: ref_bl_3d_hyb
     nsize : 4

@@ -22,9 +22,9 @@ The command line options are:\n\
 /*T
    Concepts: TAO^Solving an unconstrained minimization problem
    Routines: TaoCreate(); TaoSetType();
-   Routines: TaoSetInitialVector();
-   Routines: TaoSetObjectiveAndGradientRoutine();
-   Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
+   Routines: TaoSetSolution();
+   Routines: TaoSetObjectiveAndGradient();
+   Routines: TaoSetHessian(); TaoSetFromOptions();
    Routines: TaoSetMonitor();
    Routines: TaoSolve(); TaoView();
    Routines: TaoDestroy();
@@ -98,13 +98,13 @@ int main(int argc, char **argv)
   ierr = DMCreateGlobalVector(user.dm,&x);CHKERRQ(ierr);
   ierr = MSA_BoundaryConditions(&user);CHKERRQ(ierr);
   ierr = MSA_InitialPoint(&user,x);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
 
   /*
      Initialize the Application context for use in function evaluations  --  application specific, see below.
      Set routines for function and gradient evaluation
   */
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void *)&user);CHKERRQ(ierr);
 
   /*
      Given the command line arguments, calculate the hessian with either the user-
@@ -128,11 +128,11 @@ int main(int argc, char **argv)
     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormGradient,(void*)&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-    ierr = TaoSetHessianRoutine(tao,user.H,user.H,TaoDefaultComputeHessianColor,(void *)matfdcoloring);CHKERRQ(ierr);
+    ierr = TaoSetHessian(tao,user.H,user.H,TaoDefaultComputeHessianColor,(void *)matfdcoloring);CHKERRQ(ierr);
   } else if (fddefault) {
-    ierr = TaoSetHessianRoutine(tao,user.H,user.H,TaoDefaultComputeHessian,(void *)NULL);CHKERRQ(ierr);
+    ierr = TaoSetHessian(tao,user.H,user.H,TaoDefaultComputeHessian,(void *)NULL);CHKERRQ(ierr);
   } else {
-    ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void *)&user);CHKERRQ(ierr);
+    ierr = TaoSetHessian(tao,user.H,user.H,FormHessian,(void *)&user);CHKERRQ(ierr);
   }
 
   /*
@@ -186,7 +186,7 @@ PetscErrorCode FormGradient(Tao tao, Vec X, Vec G,void *userCtx)
     Input Parameters:
 .   tao     - the Tao context
 .   XX      - input vector
-.   userCtx - optional user-defined context, as set by TaoSetObjectiveAndGradientRoutine()
+.   userCtx - optional user-defined context, as set by TaoSetObjectiveAndGradient()
 
     Output Parameters:
 .   fcn     - the newly evaluated function
@@ -371,7 +371,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *u
    Input Parameters:
 .  tao  - the Tao context
 .  x    - input vector
-.  ptr  - optional user-defined context, as set by TaoSetHessianRoutine()
+.  ptr  - optional user-defined context, as set by TaoSetHessian()
 
    Output Parameters:
 .  H    - Hessian matrix
@@ -760,7 +760,7 @@ PetscErrorCode My_Monitor(Tao tao, void *ctx)
   Vec            X;
 
   PetscFunctionBegin;
-  ierr = TaoGetSolutionVector(tao,&X);CHKERRQ(ierr);
+  ierr = TaoGetSolution(tao,&X);CHKERRQ(ierr);
   ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

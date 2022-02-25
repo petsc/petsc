@@ -53,7 +53,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(NULL,NULL, "-check_symmetric", &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatIsSymmetric(A,0.0,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A is not symmetric");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_USER,"A is not symmetric");
   }
   ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
 
@@ -82,7 +82,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(NULL,NULL, "-check_Hermitian", &flg);CHKERRQ(ierr);
   if (flg && size == 1) {
     ierr = MatIsHermitian(A,0.0,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A is not Hermitian");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_USER,"A is not Hermitian");
   }
   ierr = MatSetOption(A,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
 
@@ -101,7 +101,7 @@ int main(int argc,char **args)
     ierr = MatCholeskyFactorNumeric(F,A,&info);CHKERRQ(ierr);
 
     ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD," MatInertia: nneg: %" PetscInt_FMT ", nzero: %" PetscInt_FMT ", npos: %" PetscInt_FMT "\n",nneg,nzero,npos);CHKERRQ(ierr);
     ierr = MatDestroy(&F);CHKERRQ(ierr);
     ierr = ISDestroy(&perm);CHKERRQ(ierr);
     ierr = ISDestroy(&iperm);CHKERRQ(ierr);
@@ -114,9 +114,9 @@ int main(int argc,char **args)
 
   /* Test MatMult */
   ierr = MatMultEqual(A,As,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"MatMult not equal");
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"MatMult not equal");
   ierr = MatMultAddEqual(A,As,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"MatMultAdd not equal");
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"MatMultAdd not equal");
 
   /* Free spaces */
   ierr = MatDestroy(&A);CHKERRQ(ierr);

@@ -112,6 +112,11 @@ cdef class SNES(Object):
         CHKERR( SNESGetOptionsPrefix(self.snes, &cval) )
         return bytes2str(cval)
 
+    def appendOptionsPrefix(self, prefix):
+        cdef const char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( SNESAppendOptionsPrefix(self.snes, cval) )
+
     def setFromOptions(self):
         CHKERR( SNESSetFromOptions(self.snes) )
 
@@ -137,6 +142,7 @@ cdef class SNES(Object):
         CHKERR( SNESSetDM(self.snes, dm.dm) )
 
     # --- FAS ---
+
     def setFASInterpolation(self, level, Mat mat):
         cdef PetscInt clevel = asInt(level)
         CHKERR( SNESFASSetInterpolation(self.snes, clevel, mat.mat) )
@@ -229,6 +235,7 @@ cdef class SNES(Object):
         CHKERR( SNESFASGetSmootherUp(self.snes, clevel, &smooth.snes) )
         PetscINCREF(smooth.obj)
         return smooth
+
     # --- nonlinear preconditioner ---
 
     def getNPC(self):
@@ -245,11 +252,19 @@ cdef class SNES(Object):
     def setNPC(self, SNES snes):
         CHKERR( SNESSetNPC(self.snes, snes.snes) )
 
+    def setNPCSide(self, side):
+        CHKERR( SNESSetNPCSide(self.snes, side) )
+
+    def getNPCSide(self):
+        cdef PetscPCSide side = PC_RIGHT
+        CHKERR( SNESGetNPCSide(self.snes, &side) )
+        return side
+
     # --- user Function/Jacobian routines ---
 
     def setLineSearchPreCheck(self, precheck, args=None, kargs=None):
         cdef PetscSNESLineSearch snesls = NULL
-        SNESGetLineSearch(self.snes, &snesls)
+        CHKERR( SNESGetLineSearch(self.snes, &snesls) )
         if precheck is not None:
             if args  is None: args  = ()
             if kargs is None: kargs = {}
@@ -274,7 +289,7 @@ cdef class SNES(Object):
     def getInitialGuess(self):
         return self.get_attr('__initialguess__')
 
-    def setFunction(self, function, Vec f, args=None, kargs=None):
+    def setFunction(self, function, Vec f or None, args=None, kargs=None):
         cdef PetscVec fvec=NULL
         if f is not None: fvec = f.vec
         if function is not None:
@@ -567,10 +582,12 @@ cdef class SNES(Object):
     def reset(self):
         CHKERR( SNESReset(self.snes) )
 
-    def solve(self, Vec b or None, Vec x):
+    def solve(self, Vec b = None, Vec x = None):
         cdef PetscVec rhs = NULL
+        cdef PetscVec sol = NULL
         if b is not None: rhs = b.vec
-        CHKERR( SNESSolve(self.snes, rhs, x.vec) )
+        if x is not None: sol = x.vec
+        CHKERR( SNESSolve(self.snes, rhs, sol) )
 
     def setConvergedReason(self, reason):
         cdef PetscSNESConvergedReason eval = reason

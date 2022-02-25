@@ -132,7 +132,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose(Mat D)
   ierr = PetscObjectTypeCompare((PetscObject)A,MATTRANSPOSEMAT,&Aistrans);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)B,MATTRANSPOSEMAT,&Bistrans);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)C,MATTRANSPOSEMAT,&Cistrans);CHKERRQ(ierr);
-  if (!Aistrans && !Bistrans && !Cistrans) SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"This should not happen");
+  PetscCheckFalse(!Aistrans && !Bistrans && !Cistrans,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"This should not happen");
   Atrans = 0;
   Ain    = A;
   while (Aistrans) {
@@ -209,7 +209,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose(Mat D)
     case MATPRODUCT_ABC:
       /* TODO custom implementation ? */
       break;
-    default: SETERRQ1(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"ProductType %s is not supported",MatProductTypes[D->product->type]);
+    default: SETERRQ(PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"ProductType %s is not supported",MatProductTypes[D->product->type]);
     }
   }
   ierr = MatProductReplaceMats(Ain,Bin,Cin,D);CHKERRQ(ierr);
@@ -231,17 +231,24 @@ PetscErrorCode MatGetDiagonal_Transpose(Mat A,Vec v)
 PetscErrorCode MatConvert_Transpose(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat_Transpose  *Aa = (Mat_Transpose*)A->data;
-  Mat            B;
   PetscErrorCode ierr;
+  PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = MatTranspose(Aa->A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  if (reuse != MAT_INPLACE_MATRIX) {
-    ierr = MatConvert(B,newtype,reuse,newmat);CHKERRQ(ierr);
-    ierr = MatDestroy(&B);CHKERRQ(ierr);
-  } else {
-    ierr = MatConvert(B,newtype,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
-    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+  ierr = MatHasOperation(Aa->A,MATOP_TRANSPOSE,&flg);CHKERRQ(ierr);
+  if (flg) {
+    Mat B;
+
+    ierr = MatTranspose(Aa->A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    if (reuse != MAT_INPLACE_MATRIX) {
+      ierr = MatConvert(B,newtype,reuse,newmat);CHKERRQ(ierr);
+      ierr = MatDestroy(&B);CHKERRQ(ierr);
+    } else {
+      ierr = MatConvert(B,newtype,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
+      ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+    }
+  } else { /* use basic converter as fallback */
+    ierr = MatConvert_Basic(A,newtype,reuse,newmat);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

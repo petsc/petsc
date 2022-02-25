@@ -3,8 +3,7 @@ static char help[] = "TDycore Mesh Examples\n\n";
 #include <petscdmplex.h>
 
 typedef struct {
-  PetscBool adapt;   /* Flag for adaptation of the surface mesh */
-  PetscBool extrude; /* Flag for extrusion of the suraace mesh */
+  PetscBool adapt; /* Flag for adaptation of the surface mesh */
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -12,12 +11,10 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  options->adapt   = PETSC_FALSE;
-  options->extrude = PETSC_TRUE;
+  options->adapt = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");CHKERRQ(ierr);
   ierr = PetscOptionsBool("-adapt", "Flag for adaptation of the surface mesh", "ex10.c", options->adapt, &options->adapt, NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-extrude", "Flag for extrusion of the surface mesh", "ex10.c", options->extrude, &options->extrude, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -114,7 +111,7 @@ static PetscErrorCode AdaptMesh(DM *dm, AppCtx *ctx)
       ierr = DMLabelGetValue(label, c, &value);CHKERRQ(ierr);
       if (value < 0) continue;
       ierr = PetscFindInt(value, Nv, values, &vidx);CHKERRQ(ierr);
-      if (vidx < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Value %D for cell %D does not exist in label", value, c);
+      PetscCheckFalse(vidx < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Value %D for cell %D does not exist in label", value, c);
       if (volume > volConst[vidx])        {ierr = DMLabelSetValue(adaptLabel, c, DM_ADAPT_REFINE);CHKERRQ(ierr);  ++nAdaptLoc[0];}
       if (volume < volConst[vidx]*ratio) {ierr = DMLabelSetValue(adaptLabel, c, DM_ADAPT_COARSEN);CHKERRQ(ierr); ++nAdaptLoc[1];}
     }
@@ -122,7 +119,7 @@ static PetscErrorCode AdaptMesh(DM *dm, AppCtx *ctx)
     ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
     ierr = MPI_Allreduce(&nAdaptLoc, &nAdapt, 2, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject) dmCur));CHKERRMPI(ierr);
     if (nAdapt[0]) {
-      ierr = PetscInfo2(dmCur, "Adapted mesh, marking %D cells for refinement, and %D cells for coarsening\n", nAdapt[0], nAdapt[1]);CHKERRQ(ierr);
+      ierr = PetscInfo(dmCur, "Adapted mesh, marking %D cells for refinement, and %D cells for coarsening\n", nAdapt[0], nAdapt[1]);CHKERRQ(ierr);
       ierr = DMAdaptLabel(dmCur, adaptLabel, &dmAdapt);CHKERRQ(ierr);
       ierr = DMDestroy(&dmCur);CHKERRQ(ierr);
       ierr = DMViewFromOptions(dmAdapt, NULL, "-adapt_dm_view");CHKERRQ(ierr);
@@ -147,21 +144,11 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "init_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL);CHKERRQ(ierr);
   /* Adapt surface */
   ierr = AdaptMesh(dm, user);CHKERRQ(ierr);
   /* Extrude surface to get volume mesh */
   ierr = DMGetDimension(*dm, &dim);CHKERRQ(ierr);
-  if (dim < 3 && user->extrude) {
-    DM edm;
-
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, "srf_");CHKERRQ(ierr);
-    ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
-    ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject) *dm, NULL);CHKERRQ(ierr);
-    ierr = DMPlexExtrude(*dm, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_TRUE, NULL, PETSC_TRUE, &edm);CHKERRQ(ierr);
-    ierr = DMDestroy(dm);CHKERRQ(ierr);
-    *dm  = edm;
-  }
   ierr = DMLocalizeCoordinates(*dm);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *dm, "Mesh");CHKERRQ(ierr);
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
@@ -188,22 +175,22 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: triangle
-    args: -init_dm_plex_dim 2 -init_dm_plex_box_faces 1,1 -dm_view
+    args: -init_dm_plex_dim 2 -init_dm_plex_box_faces 1,1 -dm_extrude 1 -dm_view
 
   test: # Regularly refine the surface before extrusion
     suffix: 1
     requires: triangle
-    args: -init_dm_plex_dim 2 -srf_dm_refine 2 -dm_view
+    args: -init_dm_plex_dim 2 -init_dm_refine 2 -dm_extrude 1 -dm_view
 
   test: # Parallel run
     suffix: 2
     requires: triangle
     nsize: 5
-    args: -init_dm_plex_dim 2 -srf_dm_refine 3 -petscpartitioner_type simple -dm_distribute -dm_plex_extrude_layers 3 -dm_view
+    args: -init_dm_plex_dim 2 -init_dm_refine 3 -petscpartitioner_type simple -dm_extrude 3 -dm_view
 
   test: # adaptively refine the surface before extrusion
     suffix: 3
     requires: triangle
-    args: -init_dm_plex_dim 2 -init_dm_plex_box_faces 5,5 -adapt -volume_constraint_1 0.01 -volume_constraint_2 0.000625 -dm_plex_extrude_layers 10
+    args: -init_dm_plex_dim 2 -init_dm_plex_box_faces 5,5 -adapt -volume_constraint_1 0.01 -volume_constraint_2 0.000625 -dm_extrude 10
 
 TEST*/

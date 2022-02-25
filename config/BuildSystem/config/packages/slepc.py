@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = '826f6e51c5703029d0715f587d86706ce1648d96' # main jul-15-2021
+    self.gitcommit              = 'db36b5534552377ecd8319916d3df1130d2f220e' # main feb-14-2022
     self.download               = ['git://https://gitlab.com/slepc/slepc.git','https://gitlab.com/slepc/slepc/-/archive/'+self.gitcommit+'/slepc-'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
@@ -27,17 +27,15 @@ class Configure(config.package.Package):
     self.installdir      = framework.require('PETSc.options.installDir',self)
     self.parch           = framework.require('PETSc.options.arch',self)
     self.scalartypes     = framework.require('PETSc.options.scalarTypes',self)
+    self.cuda            = framework.require('config.packages.cuda',self)
+    self.thrust          = framework.require('config.packages.thrust',self)
+    self.hypre           = framework.require('config.packages.hypre',self)
+    self.SuiteSparse     = framework.require('config.packages.SuiteSparse',self)
+    self.odeps           = [self.cuda,self.thrust,self.hypre,self.SuiteSparse]
     return
 
   def Install(self):
     import os
-
-    #  if installing as Superuser than want to return to regular user for clean and build
-    if self.installSudo:
-       newuser = self.installSudo+' -u $${SUDO_USER} '
-    else:
-       newuser = ''
-
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
        iarch = 'installed-'+self.parch.nativeArch.replace('linux-','linux2-')
@@ -58,6 +56,8 @@ class Configure(config.package.Package):
     else:
       configargs = ''
 
+    self.include = [os.path.join(prefix,'include')]
+    self.lib = [os.path.join(prefix,'lib','libslepc.'+self.setCompilers.sharedLibraryExt)]
     self.addDefine('HAVE_SLEPC',1)
     self.addMakeMacro('SLEPC','yes')
     self.addMakeRule('slepcbuild','', \
@@ -74,7 +74,7 @@ class Configure(config.package.Package):
     self.addMakeRule('slepcinstall','', \
                        ['@echo "*** Installing SLEPc ***"',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+newuser+barg+'${OMAKE} install '+barg+')  || \\\n\
+           '+barg+'${OMAKE} install '+barg+')  || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building SLEPc." && \\\n\
              echo "********************************************************************" && \\\n\

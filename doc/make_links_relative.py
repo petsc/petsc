@@ -3,9 +3,17 @@
 import os
 import fileinput
 
-def make_links_relative(root, placeholder="PETSC_DOC_OUT_ROOT_PLACEHOLDER"):
-    """ For .html files in root, replace placeholder with a relative path back up to root """
-    excludes = ["_static", "_sources", "_images", "docs", "src", "include"]
+from ext.html5_petsc import PETSC_DOC_OUT_ROOT_PLACEHOLDER
+from build_classic_docs import classic_docs_subdirs
+
+
+def make_links_relative(root, placeholder=PETSC_DOC_OUT_ROOT_PLACEHOLDER):
+    """ For .html files in root, replace placeholder with a relative path back up to root
+
+        Exclude a specific set of subdirectories.
+    """
+    excludes = ["_static", "_sources", "_images"]
+    excludes.extend(classic_docs_subdirs())
     root_level = root.count(os.path.sep)
     for dirpath, dirnames, filenames in os.walk(root, topdown=True):
         dirnames[:] = [dirname for dirname in dirnames if dirname not in excludes]

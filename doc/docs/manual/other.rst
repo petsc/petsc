@@ -10,7 +10,7 @@ coordinate the work of “worker” PETSc processes, should specify an
 alternative communicator for ``PETSC_COMM_WORLD`` by directly setting
 its value, for example to an existing ``MPI_COMM_WORLD``,
 
-::
+.. code-block::
 
    PETSC_COMM_WORLD=MPI_COMM_WORLD; /* To use an existing MPI_COMM_WORLD */
 
@@ -28,9 +28,9 @@ to enable such customization. To print a list of available options for a
 given program, simply specify the option ``-help`` at
 runtime, e.g.,
 
-::
+.. code-block:: console
 
-   mpiexec -n 1 ./ex1 -help
+   $ mpiexec -n 1 ./ex1 -help
 
 Note that all runtime options correspond to particular PETSc routines
 that can be explicitly called from within a program to set compile-time
@@ -39,7 +39,7 @@ compile-time and runtime choices. For example, when solving a linear
 system, one could explicitly specify use of the Krylov subspace
 technique BiCGStab by calling
 
-::
+.. code-block::
 
    KSPSetType(ksp,KSPBCGS);
 
@@ -64,7 +64,7 @@ Each PETSc process maintains a database of option names and values
 ``PetscInitialize()``, which is listed below in its C/C++ and Fortran
 variants, respectively:
 
-::
+.. code-block::
 
    PetscInitialize(int *argc,char ***args,const char *file,const char *help); /* C */
 
@@ -183,14 +183,14 @@ User-Defined PetscOptions
 Any subroutine in a PETSc program can add entries to the database with
 the command
 
-::
+.. code-block::
 
    PetscOptionsSetValue(PetscOptions options,char *name,char *value);
 
 though this is rarely done. To locate options in the database, one
 should use the commands
 
-::
+.. code-block::
 
    PetscOptionsHasName(PetscOptions options,char *pre,char *name,PetscBool *flg);
    PetscOptionsGetInt(PetscOptions options,char *pre,char *name,PetscInt *value,PetscBool *flg);
@@ -232,7 +232,7 @@ Viewers: Looking at PETSc Objects
 PETSc employs a consistent scheme for examining, printing, and saving
 objects through commands of the form
 
-::
+.. code-block::
 
    XXXView(XXX obj,PetscViewer viewer);
 
@@ -273,7 +273,7 @@ Here ``obj`` is any PETSc object of type ``XXX``, where ``XXX`` is
 The user can control the format of ASCII printed objects with viewers
 created by ``PetscViewerASCIIOpen()`` by calling
 
-::
+.. code-block::
 
    PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format);
 
@@ -284,7 +284,7 @@ for a particular implementation.
 
 The routines
 
-::
+.. code-block::
 
    PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format);
    PetscViewerPopFormat(PetscViewer viewer);
@@ -297,7 +297,7 @@ using ``MatView()``, ``VecView()``, etc. The corresponding routines for
 input of a binary object have the form ``XXXLoad()``. In particular,
 matrix and vector binary input is handled by the following routines:
 
-::
+.. code-block::
 
    MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat);
    VecLoad(PetscViewer viewer,VecType outtype,Vec *newvec);
@@ -432,7 +432,7 @@ it cannot set up the MPI communication and remote processes).
 
 By default the GNU debugger ``gdb`` is used when ``-start_in_debugger``
 or ``-on_error_attach_debugger`` is specified. To employ either
-``xxgdb`` or the common UNIX debugger ``dbx``, one uses command line
+``xxgdb`` or the common Unix debugger ``dbx``, one uses command line
 options as indicated above. On HP-UX machines the debugger ``xdb``
 should be used instead of ``dbx``; on RS/6000 machines the ``xldb``
 debugger is supported as well. On OS X systems with XCode tools,
@@ -466,7 +466,7 @@ checks a stack of error handlers and calls the one on the top. If the
 stack is empty, it selects ``PetscTraceBackErrorHandler()``, which tries
 to print a traceback. A new error handler can be put on the stack with
 
-::
+.. code-block::
 
    PetscPushErrorHandler(PetscErrorCode (*HandlerFunction)(int line,char *dir,char *file,char *message,int number,void*),void *HandlerContext)
 
@@ -475,7 +475,7 @@ error occurred, the file in which the error was detected, the
 corresponding directory, the error message, the error integer, and the
 ``HandlerContext.`` The routine
 
-::
+.. code-block::
 
    PetscPopErrorHandler()
 
@@ -484,7 +484,7 @@ removes the last error handler and discards it.
 PETSc provides two additional error handlers besides
 ``PetscTraceBackErrorHandler()``:
 
-::
+.. code-block::
 
    PetscAbortErrorHandler()
    PetscAttachErrorHandler()
@@ -509,7 +509,7 @@ screen. This can also be set with the command
 
 It is also possible to trap signals by using the command
 
-::
+.. code-block::
 
    PetscPushSignalHandler( PetscErrorCode (*Handler)(int,void *),void *ctx);
 
@@ -524,7 +524,7 @@ There is a separate signal handler for floating-point exceptions. The
 option ``-fp_trap`` turns on the floating-point trap at runtime, and the
 routine
 
-::
+.. code-block::
 
    PetscSetFPTrap(PetscFPTrap flag);
 
@@ -539,20 +539,20 @@ These macros are used throughout the PETSc libraries and can be employed
 by the application programmer as well. When an error is first detected,
 one should set it by calling
 
-::
+.. code-block::
 
    SETERRQ(MPI_Comm comm,PetscErrorCode flag,,char *message);
 
 The user should check the return codes for all PETSc routines (and
 possibly user-defined routines as well) with
 
-::
+.. code-block::
 
    ierr = PetscRoutine(...);CHKERRQ(PetscErrorCode ierr);
 
 Likewise, all memory allocations should be checked with
 
-::
+.. code-block::
 
    ierr = PetscMalloc1(n, &ptr);CHKERRQ(ierr);
 
@@ -567,7 +567,7 @@ this feature if desired by setting this macro before each user-defined
 routine that may call ``SETERRQ()``, ``CHKERRQ()``. A simple example of
 usage is given below.
 
-::
+.. code-block::
 
    PetscErrorCode MyRoutine1()
    {
@@ -641,7 +641,7 @@ Windows as PetscViewers
 For drawing predefined PETSc objects such as matrices and vectors, one
 may first create a viewer using the command
 
-::
+.. code-block::
 
    PetscViewerDrawOpen(MPI_Comm comm,char *display,char *title,int x,int y,int w,int h,PetscViewer *viewer);
 
@@ -653,7 +653,7 @@ formats, including ``PetscDraw``-based ones; see
 To draw directly into the viewer, one must obtain the ``PetscDraw``
 object with the command
 
-::
+.. code-block::
 
    PetscViewerDrawGetDraw(PetscViewer viewer,PetscDraw *draw);
 
@@ -684,7 +684,7 @@ With the default format, one can open a window that is not associated
 with a viewer directly under the X11 Window System or OpenGL with the
 command
 
-::
+.. code-block::
 
    PetscDrawCreate(MPI_Comm comm,char *display,char *title,int x,int y,int w,int h,PetscDraw *win);
    PetscDrawSetFromOptions(win);
@@ -695,14 +695,14 @@ system and viewport. By default, the drawing coordinates are from
 of the window. The application program can change the window coordinates
 with the command
 
-::
+.. code-block::
 
    PetscDrawSetCoordinates(PetscDraw win,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr);
 
 By default, graphics will be drawn in the entire window. To restrict the
 drawing to a portion of the window, one may use the command
 
-::
+.. code-block::
 
    PetscDrawSetViewPort(PetscDraw win,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr);
 
@@ -713,7 +713,7 @@ drawing should be done, must satisfy
 
 To draw a line, one uses the command
 
-::
+.. code-block::
 
    PetscDrawLine(PetscDraw win,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl);
 
@@ -725,19 +725,19 @@ and 255) of the line. A list of predefined colors may be found in
 To ensure that all graphics actually have been displayed, one should use
 the command
 
-::
+.. code-block::
 
    PetscDrawFlush(PetscDraw win);
 
 When displaying by using double buffering, which is set with the command
 
-::
+.. code-block::
 
    PetscDrawSetDoubleBuffer(PetscDraw win);
 
 *all* processes must call
 
-::
+.. code-block::
 
    PetscDrawFlush(PetscDraw win);
 
@@ -748,7 +748,7 @@ the application should pause until receiving mouse input from the user.
 
 Text can be drawn with commands
 
-::
+.. code-block::
 
    PetscDrawString(PetscDraw win,PetscReal x,PetscReal y,int color,char *text);
    PetscDrawStringVertical(PetscDraw win,PetscReal x,PetscReal y,int color,const char *text);
@@ -757,7 +757,7 @@ Text can be drawn with commands
 
 The user can set the text font size or determine it with the commands
 
-::
+.. code-block::
 
    PetscDrawStringSetSize(PetscDraw win,PetscReal width,PetscReal height);
    PetscDrawStringGetSize(PetscDraw win,PetscReal *width,PetscReal *height);
@@ -772,46 +772,46 @@ programmer employs the line graph routines to draw simple line graphs.
 As shown in the :ref:`listing below <listing_draw_test_ex3>`, line
 graphs are created with the command
 
-::
+.. code-block::
 
    PetscDrawLGCreate(PetscDraw win,PetscInt ncurves,PetscDrawLG *ctx);
 
 The argument ``ncurves`` indicates how many curves are to be drawn.
 Points can be added to each of the curves with the command
 
-::
+.. code-block::
 
    PetscDrawLGAddPoint(PetscDrawLG ctx,PetscReal *x,PetscReal *y);
 
 The arguments ``x`` and ``y`` are arrays containing the next point value
 for each curve. Several points for each curve may be added with
 
-::
+.. code-block::
 
    PetscDrawLGAddPoints(PetscDrawLG ctx,PetscInt n,PetscReal **x,PetscReal **y);
 
 The line graph is drawn (or redrawn) with the command
 
-::
+.. code-block::
 
    PetscDrawLGDraw(PetscDrawLG ctx);
 
 A line graph that is no longer needed can be destroyed with the command
 
-::
+.. code-block::
 
    PetscDrawLGDestroy(PetscDrawLG *ctx);
 
 To plot new curves, one can reset a linegraph with the command
 
-::
+.. code-block::
 
    PetscDrawLGReset(PetscDrawLG ctx);
 
 The line graph automatically determines the range of values to display
 on the two axes. The user can change these defaults with the command
 
-::
+.. code-block::
 
    PetscDrawLGSetLimits(PetscDrawLG ctx,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax);
 
@@ -819,14 +819,14 @@ It is also possible to change the display of the axes and to label them.
 This procedure is done by first obtaining the axes context with the
 command
 
-::
+.. code-block::
 
    PetscDrawLGGetAxis(PetscDrawLG ctx,PetscDrawAxis *axis);
 
 One can set the axes’ colors and labels, respectively, by using the
 commands
 
-::
+.. code-block::
 
    PetscDrawAxisSetColors(PetscDrawAxis axis,int axis_lines,int ticks,int text);
    PetscDrawAxisSetLabels(PetscDrawAxis axis,char *top,char *x,char *y);
@@ -864,7 +864,10 @@ Disabling Graphics at Compile Time
 To disable all X-window-based graphics, run ``configure`` with the
 additional option ``--with-x=0``
 
-.. _sec-emacs:
+.. _sec-developer-environments:
+
+Developer Environments
+~~~~~~~~~~~~~~~~~~~~~~
 
 Emacs Users
 ~~~~~~~~~~~
@@ -926,10 +929,10 @@ file and line number where a desired PETSc function is defined. Any
 string in any of the PETSc files can be found with the command ``M-x tags-search``.
 To find repeated occurrences, one can simply use ``M-,`` to find the next occurrence.
 
-VS Code Users
-~~~~~~~~~~~~~
+Visual Studio Code Users
+~~~~~~~~~~~~~~~~~~~~~~~~
 `VS Code <https://code.visualstudio.com/>`_ (unlike :ref:`sec-visual-studio`, described below) is an open source editor with a rich extension ecosystem.
-It has `excellent integration <https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd>`_ with clangd and will automatically pick up ``compile_commands.json`` as produced by a command such as ``bear make -B`` (see :ref:`sec-emacs`).
+It has `excellent integration <https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd>`_ with clangd and will automatically pick up ``compile_commands.json`` as produced by a command such as ``bear make -B`` (see :ref:`sec-developer-environments`).
 If you have no prior attachment to a specific code editor, we recommend trying VS Code.
 
 Vi and Vim Users
@@ -942,7 +945,7 @@ Vim has configurable keymaps: all of the "command mode" commands given that star
 a colon (such as ``:help``) can be assigned to short sequences in "normal mode," which
 is how most Vim users use their most frequently used commands.
 
-See the :ref:`sec-emacs` discussion above for configuration of clangd, which
+See the :ref:`sec-developer-environments` discussion above for configuration of clangd, which
 provides integrated development environment.
 
 Tags
@@ -1150,10 +1153,10 @@ using C++. It is available under GPL v3, LGPL v2 and a commercial
 license and may be obtained, either as part of the Qt SDK or as
 stand-alone software. It supports
 automatic makefile generation using cross-platform ``qmake`` and
-``cmake`` build systems as well as allowing one to import projects based
+CMake build systems as well as allowing one to import projects based
 on existing, possibly hand-written, makefiles. Qt Creator has a visual
 debugger using GDB and LLDB (on Linux and OS X) or Microsoft’s CDB (on
-Windows) as backends. It also has an interface to Valgrind’s “memcheck”
+Microsoft Windows) as backends. It also has an interface to Valgrind’s “memcheck”
 and “callgrind” tools to detect memory leaks and profile code. It has
 built-in support for a variety of version control systems including git,
 mercurial, and subversion. Finally, Qt Creator comes fully equipped with

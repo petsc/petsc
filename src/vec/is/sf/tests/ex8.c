@@ -35,12 +35,12 @@ int main(int argc,char **argv)
   /* Test PetscSFBcastAndOp with op = MPI_REPLACE, which does y = x on rank 0 */
   ierr = VecScatterBegin(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  if (!rank) {ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+  if (rank == 0) {ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
 
   /* Test PetscSFBcastAndOp with op = MPI_SUM, which does y += x */
   ierr = VecScatterBegin(vscat,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(vscat,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  if (!rank) {ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+  if (rank == 0) {ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
 
   /* Test PetscSFReduce with op = MPI_REPLACE, which does x = y */
   ierr = VecScatterBegin(vscat,y,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -70,12 +70,12 @@ int main(int argc,char **argv)
   /* Test PetscSFBcastAndOp with op = MPI_REPLACE, which does y = x on all ranks */
   ierr = VecScatterBegin(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(vscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  if (!rank) {ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+  if (rank == 0) {ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
 
   /* Test PetscSFBcastAndOp with op = MPI_SUM, which does y += x */
   ierr = VecScatterBegin(vscat,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(vscat,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  if (!rank) {ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+  if (rank == 0) {ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
 
   /* Test PetscSFReduce with op = MPI_REPLACE, which does x = y */
   ierr = VecScatterBegin(vscat,y,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -110,18 +110,18 @@ int main(int argc,char **argv)
       test:
         suffix: 1_cuda
         # sf_backend cuda is not needed if compiling only with cuda
-        args: -vec_type cuda -sf_backend cuda -vecscatter_packongpu true
+        args: -vec_type cuda -sf_backend cuda
         requires: cuda
 
       test:
         suffix: 1_hip
-        args: -vec_type hip -sf_backend hip -vecscatter_packongpu true
+        args: -vec_type hip -sf_backend hip
         requires: hip
 
       test:
         suffix: 1_cuda_aware_mpi
         # sf_backend cuda is not needed if compiling only with cuda
-        args: -vec_type cuda -sf_backend cuda -vecscatter_packongpu false
+        args: -vec_type cuda -sf_backend cuda
         requires: cuda defined(PETSC_HAVE_MPI_GPU_AWARE)
 
    testset:
@@ -138,18 +138,18 @@ int main(int argc,char **argv)
       test:
         suffix: 2_cuda
         # sf_backend cuda is not needed if compiling only with cuda
-        args: -vec_type cuda -sf_backend cuda -vecscatter_packongpu true
+        args: -vec_type cuda -sf_backend cuda
         requires: cuda
 
       test:
         suffix: 2_hip
         # sf_backend hip is not needed if compiling only with hip
-        args: -vec_type hip -sf_backend hip -vecscatter_packongpu true
+        args: -vec_type hip -sf_backend hip
         requires: hip
 
       test:
         suffix: 2_cuda_aware_mpi
-        args: -vec_type cuda -vecscatter_packongpu false
+        args: -vec_type cuda
         requires: cuda defined(PETSC_HAVE_MPI_GPU_AWARE)
 
 TEST*/

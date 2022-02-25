@@ -36,14 +36,13 @@ class Configure(config.base.Configure):
     self.libraries     = framework.require('config.libraries', self)
     return
 
-
   def configureScalarType(self):
     '''Choose between real and complex numbers'''
     self.scalartype = self.framework.argDB['with-scalar-type'].lower()
     if self.scalartype == 'complex':
       self.addDefine('USE_COMPLEX', '1')
       if self.languages.clanguage == 'C' and not self.types.c99_complex:
-        raise RuntimeError('C Compiler provided doest not support C99 complex')
+        raise RuntimeError('C Compiler provided does not support C99 complex')
       if self.languages.clanguage == 'Cxx' and not self.types.cxx_complex:
         raise RuntimeError('Cxx compiler provided does not support std::complex')
       if self.languages.clanguage == 'Cxx':
@@ -121,8 +120,6 @@ class Configure(config.base.Configure):
     else:
       raise RuntimeError('--with-precision must be __fp16, single, double, or __float128')
     self.logPrint('Precision is '+str(self.precision))
-    if self.precision == '__float128' and self.scalartype == 'complex' and self.languages.clanguage == 'Cxx':
-      raise RuntimeError('Cannot use --with-precision=__float128 --with-scalar-type=complex and --with-clanguage=cxx because C++ std:complex class has no support for __float128, use --with-clanguage=c')
     return
 
   def configure(self):

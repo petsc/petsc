@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-  if (nproc != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This test can only run on two MPI ranks");
+  PetscCheckFalse(nproc != 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This test can only run on two MPI ranks");
 
   /* Create an MPI vector x of size 12 on two processes, and set x = {0, 1, 2, .., 11} */
   ierr = VecCreateMPI(PETSC_COMM_WORLD,6,PETSC_DECIDE,&x);CHKERRQ(ierr);
@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
   /* Create a seq vector y, and a parallel to sequential (PtoS) vecscatter to scatter x to y */
-  if (!rank) {
+  if (rank == 0) {
     /* On rank 0, seq y is of size 6. We will scatter x[0,1,2,6,7,8] to y[0,1,2,3,4,5] using IS with bs=3 */
     PetscInt idx[2]={0,2};
     PetscInt idy[2]={0,1};

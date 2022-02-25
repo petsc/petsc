@@ -15,8 +15,10 @@ const char DGCitation[] = "@article{Gonzalez1996,\n"
                           "  year    = {1996}\n}\n";
 
 typedef struct {
-  PetscReal stage_time;
-  Vec       X0, X, Xdot;
+  PetscReal    stage_time;
+  Vec          X0, X, Xdot;
+  void        *funcCtx;
+  PetscBool    gonzalez;
   PetscErrorCode (*Sfunc)(TS, PetscReal, Vec, Mat, void *);
   PetscErrorCode (*Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *);
   PetscErrorCode (*Gfunc)(TS, PetscReal, Vec, Vec, void *);
@@ -123,12 +125,13 @@ static PetscErrorCode TSSetUp_DiscGrad(TS ts)
 
 static PetscErrorCode TSSetFromOptions_DiscGrad(PetscOptionItems *PetscOptionsObject, TS ts)
 {
+  TS_DiscGrad   *dg = (TS_DiscGrad *) ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject, "Discrete Gradients ODE solver options");CHKERRQ(ierr);
   {
-    //ierr = PetscOptionsReal("-ts_theta_theta","Location of stage (0<Theta<=1)","TSDiscGradSetTheta",th->Theta,&th->Theta,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ts_discgrad_gonzalez","Use Gonzalez term in discrete gradients formulation","TSDiscGradUseGonzalez",dg->gonzalez,&dg->gonzalez,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -144,6 +147,24 @@ static PetscErrorCode TSView_DiscGrad(TS ts,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Discrete Gradients\n");CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode TSDiscGradIsGonzalez_DiscGrad(TS ts,PetscBool *gonzalez)
+{
+  TS_DiscGrad *dg = (TS_DiscGrad*)ts->data;
+
+  PetscFunctionBegin;
+  *gonzalez = dg->gonzalez;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode TSDiscGradUseGonzalez_DiscGrad(TS ts,PetscBool flg)
+{
+  TS_DiscGrad *dg = (TS_DiscGrad*)ts->data;
+
+  PetscFunctionBegin;
+  dg->gonzalez = flg;
   PetscFunctionReturn(0);
 }
 
@@ -249,7 +270,7 @@ static PetscErrorCode TSStep_DiscGrad(TS ts)
     ts->reject++; accept = PETSC_FALSE;
     if (!ts->reason && ts->max_reject >= 0 && ++rejections > ts->max_reject) {
       ts->reason = TS_DIVERGED_STEP_REJECTED;
-      ierr = PetscInfo2(ts, "Step=%D, step rejections %D greater than current TS allowed, stopping solve\n", ts->steps, rejections);CHKERRQ(ierr);
+      ierr = PetscInfo(ts, "Step=%D, step rejections %D greater than current TS allowed, stopping solve\n", ts->steps, rejections);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -269,25 +290,81 @@ static PetscErrorCode TSGetStages_DiscGrad(TS ts, PetscInt *ns, Vec **Y)
   This defines the nonlinear equation that is to be solved with SNES
     G(U) = F[t0 + 0.5*dt, U, (U-U0)/dt] = 0
 */
+
+/* x = (x+x')/2 */
+/* NEED TO CALCULATE x_{n+1} from x and x_{n}*/
 static PetscErrorCode SNESTSFormFunction_DiscGrad(SNES snes, Vec x, Vec y, TS ts)
 {
+
   TS_DiscGrad   *dg    = (TS_DiscGrad *) ts->data;
-  PetscReal      shift = 1/(0.5*ts->time_step);
-  Vec            X0, Xdot;
+  PetscReal      norm, shift = 1/(0.5*ts->time_step);
+  PetscInt       n;
+  Vec            X0, Xdot, Xp, Xdiff;
+  Mat            S;
+  PetscScalar    F=0, F0=0, Gp;
+  Vec            G, SgF;
   DM             dm, dmsave;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes, &dm);CHKERRQ(ierr);
-  ierr = TSDiscGradGetX0AndXdot(ts, dm, &X0, &Xdot);CHKERRQ(ierr);
-  ierr = VecAXPBYPCZ(Xdot, -shift, shift, 0, X0, x);CHKERRQ(ierr);
 
+  ierr = VecDuplicate(y, &Xp);CHKERRQ(ierr);
+  ierr = VecDuplicate(y, &Xdiff);CHKERRQ(ierr);
+  ierr = VecDuplicate(y, &SgF);CHKERRQ(ierr);
+  ierr = VecDuplicate(y, &G);CHKERRQ(ierr);
+
+  ierr = VecGetLocalSize(y, &n);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD, &S);CHKERRQ(ierr);
+  ierr = MatSetSizes(S, PETSC_DECIDE, PETSC_DECIDE, n, n);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(S);CHKERRQ(ierr);
+  ierr = MatSetUp(S);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(S,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(S,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  ierr = TSDiscGradGetX0AndXdot(ts, dm, &X0, &Xdot);CHKERRQ(ierr);
+  ierr = VecAXPBYPCZ(Xdot, -shift, shift, 0, X0, x);CHKERRQ(ierr); /* Xdot = shift (x - X0) */
+
+  ierr = VecAXPBYPCZ(Xp, -1, 2, 0, X0, x);CHKERRQ(ierr); /* Xp = 2*x - X0 + (0)*Xmid */
+  ierr = VecAXPBYPCZ(Xdiff, -1, 1, 0, X0, Xp);CHKERRQ(ierr); /* Xdiff = xp - X0 + (0)*Xdiff */
+
+  if (dg->gonzalez) {
+    ierr = (*dg->Sfunc)(ts, dg->stage_time, x ,   S,  dg->funcCtx);CHKERRQ(ierr);
+    ierr = (*dg->Ffunc)(ts, dg->stage_time, Xp,  &F,  dg->funcCtx);CHKERRQ(ierr);
+    ierr = (*dg->Ffunc)(ts, dg->stage_time, X0,  &F0, dg->funcCtx);CHKERRQ(ierr);
+    ierr = (*dg->Gfunc)(ts, dg->stage_time, x ,   G,  dg->funcCtx);CHKERRQ(ierr);
+
+    /* Adding Extra Gonzalez Term */
+    ierr = VecDot(Xdiff, G, &Gp);CHKERRQ(ierr);
+    ierr = VecNorm(Xdiff, NORM_2, &norm);CHKERRQ(ierr);
+    if (norm < PETSC_SQRT_MACHINE_EPSILON) {
+      Gp = 0;
+    } else {
+      /* Gp = (1/|xn+1 - xn|^2) * (F(xn+1) - F(xn) - Gp) */
+      Gp = (F - F0 - Gp)/PetscSqr(norm);
+    }
+    ierr = VecAXPY(G, Gp, Xdiff);CHKERRQ(ierr);
+    ierr = MatMult(S, G , SgF);CHKERRQ(ierr); /* S*gradF */
+
+  } else {
+    ierr = (*dg->Sfunc)(ts, dg->stage_time, x, S,  dg->funcCtx);CHKERRQ(ierr);
+    ierr = (*dg->Gfunc)(ts, dg->stage_time, x, G,  dg->funcCtx);CHKERRQ(ierr);
+
+    ierr = MatMult(S, G , SgF);CHKERRQ(ierr); /* Xdot = S*gradF */
+  }
   /* DM monkey-business allows user code to call TSGetDM() inside of functions evaluated on levels of FAS */
   dmsave = ts->dm;
   ts->dm = dm;
-  ierr   = TSComputeIFunction(ts, dg->stage_time, x, Xdot, y, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = VecAXPBYPCZ(y, 1, -1, 0, Xdot, SgF);CHKERRQ(ierr);
   ts->dm = dmsave;
   ierr   = TSDiscGradRestoreX0AndXdot(ts, dm, &X0, &Xdot);CHKERRQ(ierr);
+
+  ierr = VecDestroy(&Xp);CHKERRQ(ierr);
+  ierr = VecDestroy(&Xdiff);CHKERRQ(ierr);
+  ierr = VecDestroy(&SgF);CHKERRQ(ierr);
+  ierr = VecDestroy(&G);CHKERRQ(ierr);
+  ierr = MatDestroy(&S);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -312,7 +389,7 @@ static PetscErrorCode SNESTSFormJacobian_DiscGrad(SNES snes, Vec x, Mat A, Mat B
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSDiscGradGetFormulation_DiscGrad(TS ts, PetscErrorCode (**Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (**Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (**Gfunc)(TS, PetscReal, Vec, Vec, void *))
+static PetscErrorCode TSDiscGradGetFormulation_DiscGrad(TS ts, PetscErrorCode (**Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (**Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (**Gfunc)(TS, PetscReal, Vec, Vec, void *), void *ctx)
 {
   TS_DiscGrad *dg = (TS_DiscGrad *) ts->data;
 
@@ -323,7 +400,7 @@ static PetscErrorCode TSDiscGradGetFormulation_DiscGrad(TS ts, PetscErrorCode (*
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSDiscGradSetFormulation_DiscGrad(TS ts, PetscErrorCode (*Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (*Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (*Gfunc)(TS, PetscReal, Vec, Vec, void *))
+static PetscErrorCode TSDiscGradSetFormulation_DiscGrad(TS ts, PetscErrorCode (*Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (*Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (*Gfunc)(TS, PetscReal, Vec, Vec, void *), void *ctx)
 {
   TS_DiscGrad *dg = (TS_DiscGrad *) ts->data;
 
@@ -331,25 +408,25 @@ static PetscErrorCode TSDiscGradSetFormulation_DiscGrad(TS ts, PetscErrorCode (*
   dg->Sfunc = Sfunc;
   dg->Ffunc = Ffunc;
   dg->Gfunc = Gfunc;
+  dg->funcCtx = ctx;
   PetscFunctionReturn(0);
 }
 
 /*MC
   TSDISCGRAD - ODE solver using the discrete gradients version of the implicit midpoint method
 
-  Level: beginner
-
-  Notes: This is the implicit midpoint rule, with an optional term that guarantees the discrete gradient property. This
+  Notes:
+  This is the implicit midpoint rule, with an optional term that guarantees the discrete gradient property. This
   timestepper applies to systems of the form
 $ u_t = S(u) grad F(u)
   where S(u) is a linear operator, and F is a functional of u.
 
-.seealso: TSCreate(), TSSetType(), TS, TSTHETA, TSDiscGradSetFormulation()
+.seealso: TSCreate(), TSSetType(), TS, TSDISCGRAD, TSDiscGradSetFormulation()
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS ts)
 {
   TS_DiscGrad       *th;
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscCitationsRegister(DGCitation, &DGCite);CHKERRQ(ierr);
@@ -369,8 +446,13 @@ PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS ts)
 
   ierr = PetscNewLog(ts,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
+
+  th->gonzalez = PETSC_FALSE;
+
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSDiscGradGetFormulation_C",TSDiscGradGetFormulation_DiscGrad);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSDiscGradSetFormulation_C",TSDiscGradSetFormulation_DiscGrad);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSDiscGradIsGonzalez_C",TSDiscGradIsGonzalez_DiscGrad);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSDiscGradUseGonzalez_C",TSDiscGradUseGonzalez_DiscGrad);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -400,7 +482,7 @@ $ PetscErrorCode func(TS ts, PetscReal time, Vec u, Vec G, void *)
 
 .seealso: TSDiscGradSetFormulation()
 @*/
-PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (**Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (**Gfunc)(TS, PetscReal, Vec, Vec, void *))
+PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (**Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (**Gfunc)(TS, PetscReal, Vec, Vec, void *), void *ctx)
 {
   PetscErrorCode ierr;
 
@@ -409,7 +491,7 @@ PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS, Pets
   PetscValidPointer(Sfunc, 2);
   PetscValidPointer(Ffunc, 3);
   PetscValidPointer(Gfunc, 4);
-  ierr = PetscUseMethod(ts,"TSDiscGradGetFormulation_C",(TS,PetscErrorCode(**Sfunc)(TS,PetscReal,Vec,Mat,void*),PetscErrorCode(**Ffunc)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode(**Gfunc)(TS,PetscReal,Vec,Vec,void*)),(ts,Sfunc,Ffunc,Gfunc));CHKERRQ(ierr);
+  ierr = PetscUseMethod(ts,"TSDiscGradGetFormulation_C",(TS,PetscErrorCode(**Sfunc)(TS,PetscReal,Vec,Mat,void*),PetscErrorCode(**Ffunc)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode(**Gfunc)(TS,PetscReal,Vec,Vec,void*), void*),(ts,Sfunc,Ffunc,Gfunc,ctx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -423,7 +505,6 @@ PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS, Pets
 . Sfunc - constructor for the S matrix from the formulation
 . Ffunc - functional F from the formulation
 - Gfunc - constructor for the gradient of F from the formulation
-
   Calling sequence of Sfunc:
 $ PetscErrorCode func(TS ts, PetscReal time, Vec u, Mat S, void *)
 
@@ -446,6 +527,58 @@ PetscErrorCode TSDiscGradSetFormulation(TS ts, PetscErrorCode (*Sfunc)(TS, Petsc
   PetscValidFunction(Sfunc, 2);
   PetscValidFunction(Ffunc, 3);
   PetscValidFunction(Gfunc, 4);
-  ierr = PetscTryMethod(ts,"TSDiscGradSetFormulation_C",(TS,PetscErrorCode(*Sfunc)(TS,PetscReal,Vec,Mat,void*),PetscErrorCode(*Ffunc)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode(*Gfunc)(TS,PetscReal,Vec,Vec,void*)),(ts,Sfunc,Ffunc,Gfunc));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ts,"TSDiscGradSetFormulation_C",(TS,PetscErrorCode(*Sfunc)(TS,PetscReal,Vec,Mat,void*),PetscErrorCode(*Ffunc)(TS,PetscReal,Vec,PetscScalar*,void*),PetscErrorCode(*Gfunc)(TS,PetscReal,Vec,Vec,void*), void*),(ts,Sfunc,Ffunc,Gfunc,ctx));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  TSDiscGradIsGonzalez - Checks flag for whether to use additional conservative terms in discrete gradient formulation.
+
+  Not Collective
+
+  Input Parameter:
+.  ts - timestepping context
+
+  Output Parameter:
+.  gonzalez - PETSC_TRUE when using the Gonzalez term
+
+  Level: Advanced
+
+.seealso: TSDiscGradUseGonzalez(), TSDISCGRAD
+@*/
+PetscErrorCode TSDiscGradIsGonzalez(TS ts,PetscBool *gonzalez)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(gonzalez,2);
+  ierr = PetscUseMethod(ts,"TSDiscGradIsGonzalez_C",(TS,PetscBool*),(ts,gonzalez));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
+  TSDiscGradUseGonzalez - Sets discrete gradient formulation with or without additional conservative terms.  Without flag, the discrete gradients timestepper is just backwards euler
+
+  Not Collective
+
+  Input Parameter:
++  ts - timestepping context
+-  flg - PETSC_TRUE to use the Gonzalez term
+
+  Options Database:
+.  -ts_discgrad_gonzalez <flg>
+
+  Level: Intermediate
+
+.seealso: TSDISCGRAD
+@*/
+PetscErrorCode TSDiscGradUseGonzalez(TS ts,PetscBool flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = PetscTryMethod(ts,"TSDiscGradUseGonzalez_C",(TS,PetscBool),(ts,flg));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

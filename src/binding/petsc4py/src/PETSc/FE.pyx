@@ -40,6 +40,18 @@ cdef class FE(Object):
         PetscCLEAR(self.obj); self.fe = newfe
         return self
 
+    def createLagrange(self, dim, nc, isSimplex, k, qorder, comm=None):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscFE newfe = NULL
+        cdef PetscInt cdim = asInt(dim)
+        cdef PetscInt cnc = asInt(nc)
+        cdef PetscInt ck = asInt(k)
+        cdef PetscInt cqorder = asInt(qorder)
+        cdef PetscBool cisSimplex = asBool(isSimplex)
+        CHKERR( PetscFECreateLagrange(ccomm, cdim, cnc, cisSimplex, ck, cqorder, &newfe))
+        PetscCLEAR(self.obj); self.fe = newfe
+        return self
+
     def getQuadrature(self):
         cdef Quad quad = Quad()
         CHKERR( PetscFEGetQuadrature(self.fe, &quad.quad) )

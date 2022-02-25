@@ -41,6 +41,9 @@ PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
   v->minimum_bytes_pinned_memory = 0;
   v->pinned_memory = PETSC_FALSE;
 #endif
+#if defined(PETSC_HAVE_DEVICE)
+  v->boundtocpu = PETSC_TRUE;
+#endif
   ierr = PetscStrallocpy(PETSCRANDER48,&v->defaultrandtype);CHKERRQ(ierr);
   *vec = v;
   PetscFunctionReturn(0);

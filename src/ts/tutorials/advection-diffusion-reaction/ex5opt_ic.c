@@ -169,7 +169,7 @@ PetscErrorCode PerturbedInitialConditions2(DM da,Vec U)
     y = j*hy;
     for (i=xs; i<xs+xm; i++) {
       x = i*hx;
-      if (PetscGTE(x,1.0) && PetscLTE(x,1.5) && PetscGTE(y,1.0) && PetscLTE(y,1.5)) u[j][i].v = PetscPowReal(PetscSinReal(4.0*PETSC_PI*(x-0.5)),2.0)*PetscPowReal(PetscSinReal(4.0*PETSC_PI*y),2.0)/4.0;
+      if (PetscApproximateGTE(x,1.0) && PetscApproximateLTE(x,1.5) && PetscApproximateGTE(y,1.0) && PetscApproximateLTE(y,1.5)) u[j][i].v = PetscPowReal(PetscSinReal(4.0*PETSC_PI*(x-0.5)),2.0)*PetscPowReal(PetscSinReal(4.0*PETSC_PI*y),2.0)/4.0;
       else u[j][i].v = 0.0;
 
       u[j][i].u = 1.0 - 2.0*u[j][i].v;
@@ -300,10 +300,10 @@ int main(int argc,char **argv)
     /* Set initial guess for TAO */
     ierr = VecDuplicate(appctx.U,&P);CHKERRQ(ierr);
     ierr = VecCopy(appctx.U,P);CHKERRQ(ierr);
-    ierr = TaoSetInitialVector(tao,P);CHKERRQ(ierr);
+    ierr = TaoSetSolution(tao,P);CHKERRQ(ierr);
 
     /* Set routine for function and gradient evaluation */
-    ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionAndGradient,&appctx);CHKERRQ(ierr);
+    ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionAndGradient,&appctx);CHKERRQ(ierr);
 
     /* Check for any TAO command line options */
     ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
@@ -332,7 +332,7 @@ int main(int argc,char **argv)
    Input Parameters:
    tao - the Tao context
    P   - the input vector
-   ctx - optional user-defined context, as set by TaoSetObjectiveAndGradientRoutine()
+   ctx - optional user-defined context, as set by TaoSetObjectiveAndGradient()
 
    Output Parameters:
    f   - the newly evaluated function

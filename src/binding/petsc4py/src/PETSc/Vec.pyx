@@ -11,6 +11,9 @@ class VecType(object):
     SEQCUDA    = S_(VECSEQCUDA)
     MPICUDA    = S_(VECMPICUDA)
     CUDA       = S_(VECCUDA)
+    SEQHIP     = S_(VECSEQHIP)
+    MPIHIP     = S_(VECMPIHIP)
+    HIP        = S_(VECHIP)
     NEST       = S_(VECNEST)
     SEQKOKKOS  = S_(VECSEQKOKKOS)
     MPIKOKKOS  = S_(VECMPIKOKKOS)
@@ -251,6 +254,46 @@ cdef class Vec(Object):
             self.set_attr('__array__', cpuarray)
         return self
 
+    def createHIPWithArrays(self, cpuarray=None, hiphandle=None, size=None, bsize=None, comm=None):
+        """
+        Returns an instance of :class:`Vec`, a VECHIP with user provided
+        memory spaces for CPU and GPU arrays.
+
+        :arg cpuarray: A :class:`numpy.ndarray`. Will be lazily allocated if
+            *None*.
+        :arg hiphandle: Address of the array on the GPU. Will be lazily
+            allocated if *None*.
+        :arg size: A :class:`int` denoting the size of the Vec.
+        :arg bsize: A :class:`int` denoting the block size.
+        """
+        cdef PetscInt na=0
+        cdef PetscScalar *sa=NULL
+        cdef PetscScalar *gpuarray = NULL
+        if hiphandle:
+            gpuarray = <PetscScalar*>(<Py_uintptr_t>hiphandle)
+        if cpuarray is not None:
+            cpuarray = iarray_s(cpuarray, &na, &sa)
+
+        if size is None: size = (toInt(na), toInt(PETSC_DECIDE))
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscInt bs=0, n=0, N=0
+        Vec_Sizes(size, bsize, &bs, &n, &N)
+        Sys_Layout(ccomm, bs, &n, &N)
+        if bs == PETSC_DECIDE: bs = 1
+        if na < n:  raise ValueError(
+            "array size %d and vector local size %d block size %d" %
+            (toInt(na), toInt(n), toInt(bs)))
+        cdef PetscVec newvec = NULL
+        if comm_size(ccomm) == 1:
+            CHKERR( VecCreateSeqHIPWithArrays(ccomm,bs,N,sa,gpuarray,&newvec) )
+        else:
+            CHKERR( VecCreateMPIHIPWithArrays(ccomm,bs,n,N,sa,gpuarray,&newvec) )
+        PetscCLEAR(self.obj); self.vec = newvec
+
+        if cpuarray is not None:
+            self.set_attr('__array__', cpuarray)
+        return self
+
     def createViennaCLWithArrays(self, cpuarray=None, viennaclvechandle=None, size=None, bsize=None, comm=None):
         """
         Returns an instance :class:`Vec`, a VECVIENNACL with user provided memory
@@ -336,17 +379,25 @@ cdef class Vec(Object):
             "array size %d and vector local size %d block size %d" %
             (toInt(nz), toInt(n), toInt(bs)))
         cdef PetscVec newvec = NULL
-
-        if ptr.dl_tensor.ctx.device_type == 2:
+        cdef PetscDLDeviceType dltype = ptr.dl_tensor.ctx.device_type
+        if dltype in [kDLCUDA,kDLCUDAManaged]:
             if comm_size(ccomm) == 1:
                 CHKERR( VecCreateSeqCUDAWithArray(ccomm,bs,N,<PetscScalar*>(ptr.dl_tensor.data),&newvec) )
             else:
                 CHKERR( VecCreateMPICUDAWithArray(ccomm,bs,n,N,<PetscScalar*>(ptr.dl_tensor.data),&newvec) )
-        else:
+        elif dltype in [kDLCPU,kDLCUDAHost,kDLROCMHost]:
             if comm_size(ccomm) == 1:
                 CHKERR( VecCreateSeqWithArray(ccomm,bs,N,<PetscScalar*>(ptr.dl_tensor.data),&newvec) )
             else:
                 CHKERR( VecCreateMPIWithArray(ccomm,bs,n,N,<PetscScalar*>(ptr.dl_tensor.data),&newvec) )
+        elif dltype == kDLROCM:
+            if comm_size(ccomm) == 1:
+                CHKERR( VecCreateSeqHIPWithArray(ccomm,bs,N,<PetscScalar*>(ptr.dl_tensor.data),&newvec) )
+            else:
+                CHKERR( VecCreateMPIHIPWithArray(ccomm,bs,n,N,<PetscScalar*>(ptr.dl_tensor.data),&newvec) )
+        else:
+            raise RuntimeError("Device type %d not supported" % toInt(dltype))
+
         PetscCLEAR(self.obj); self.vec = newvec
         self.set_attr('__array__', dltensor)
         cdef int64_t* shape_arr = NULL
@@ -386,33 +437,29 @@ cdef class Vec(Object):
         if vec is None and dltensor is None:
             raise ValueError('Missing input parameters')
         if vec is not None:
-          t0 = self.getType()
-          t1 = vec.getType()
-          if t0 != t1:
-            raise TypeError('Input vector type {} does not match current vector type {}'.format(t1,t0))
-          ctx = (<Object>vec).get_attr('__dltensor_ctx__')
-          if ctx is None:
-            raise ValueError('Input vector has no tensor information')
-          self.set_attr('__dltensor_ctx__', ctx)
+            ctx = (<Object>vec).get_attr('__dltensor_ctx__')
+            if ctx is None:
+                raise ValueError('Input vector has no tensor information')
+            self.set_attr('__dltensor_ctx__', ctx)
         else:
-          if PyCapsule_IsValid(dltensor, 'dltensor'):
-            ptr = <DLManagedTensor*>PyCapsule_GetPointer(dltensor, 'dltensor')
-          elif PyCapsule_IsValid(dltensor, 'used_dltensor'):
-            ptr = <DLManagedTensor*>PyCapsule_GetPointer(dltensor, 'used_dltensor')
-          else:
-            raise ValueError("Expect a dltensor or used_dltensor field")
-          bits = ptr.dl_tensor.dtype.bits
-          if bits != 8*sizeof(PetscScalar):
-            raise TypeError("Tensor dtype = {} does not match PETSc precision".format(ptr.dl_tensor.dtype))
-          ndim = ptr.dl_tensor.ndim
-          shape = ptr.dl_tensor.shape
-          strides = ptr.dl_tensor.strides
-          s1 = oarray_p(empty_p(ndim), NULL, <void**>&shape_arr)
-          s2 = oarray_p(empty_p(ndim), NULL, <void**>&strides_arr)
-          for i in range(ndim):
-            shape_arr[i] = shape[i]
-            strides_arr[i] = strides[i]
-          self.set_attr('__dltensor_ctx__', (ptr.dl_tensor.ctx.device_type, ptr.dl_tensor.ctx.device_id, ndim, s1, s2))
+            if PyCapsule_IsValid(dltensor, 'dltensor'):
+                ptr = <DLManagedTensor*>PyCapsule_GetPointer(dltensor, 'dltensor')
+            elif PyCapsule_IsValid(dltensor, 'used_dltensor'):
+                ptr = <DLManagedTensor*>PyCapsule_GetPointer(dltensor, 'used_dltensor')
+            else:
+                raise ValueError("Expect a dltensor or used_dltensor field")
+            bits = ptr.dl_tensor.dtype.bits
+            if bits != 8*sizeof(PetscScalar):
+                raise TypeError("Tensor dtype = {} does not match PETSc precision".format(ptr.dl_tensor.dtype))
+            ndim = ptr.dl_tensor.ndim
+            shape = ptr.dl_tensor.shape
+            strides = ptr.dl_tensor.strides
+            s1 = oarray_p(empty_p(ndim), NULL, <void**>&shape_arr)
+            s2 = oarray_p(empty_p(ndim), NULL, <void**>&strides_arr)
+            for i in range(ndim):
+                shape_arr[i] = shape[i]
+                strides_arr[i] = strides[i]
+            self.set_attr('__dltensor_ctx__', (ptr.dl_tensor.ctx.device_type, ptr.dl_tensor.ctx.device_id, ndim, s1, s2))
         return self
 
     def clearDLPackInfo(self):
@@ -426,41 +473,48 @@ cdef class Vec(Object):
     def toDLPack(self):
         """
         Return a DLPack tensor. Error out if the tensor information is missing.
-        buildTensorInfo() can be used to get tensor information from an input
+        attachDLPackInfo() can be used to get tensor information from an input
         vector that already has tensor information. This input vector is
         typically created with createWithDlpack().
 
         One can do the following to convert vector X to a DLPack tensor whose
         anxiliary information inherits from Y.
-          X.buildTensorInfo(Y)
+          X.attachDLPackInfo(Y)
           X.toDLPack()
         """
+        cdef int64_t ndim = 0
+        cdef object ctx0 = self.get_attr('__dltensor_ctx__')
+        if ctx0 is None:
+            raise ValueError('Missing tensor information')
+        (device_type, device_id, ndim, shape, strides) = ctx0
+
         cdef DLManagedTensor* dlm_tensor = <DLManagedTensor*>malloc(sizeof(DLManagedTensor))
         cdef DLTensor* dl_tensor = &dlm_tensor.dl_tensor
         cdef PetscScalar *a = NULL
-        cdef int64_t ndim = 0
         cdef int64_t* shape_strides = NULL
         dl_tensor.byte_offset = 0
         cval = self.getType()
-        if cval == self.Type.CUDA or cval == self.Type.SEQCUDA or cval == self.Type.MPICUDA:
-            CHKERR( VecCUDAGetArrayWrite(self.vec, <PetscScalar**>&a) )
+        cdef PetscDLDeviceType dltype = device_type
+        if dltype in [kDLCUDA,kDLCUDAManaged] and cval == self.Type.CUDA or cval == self.Type.SEQCUDA or cval == self.Type.MPICUDA:
+            CHKERR( VecCUDAGetArray(self.vec, <PetscScalar**>&a) )
+        elif dltype == kDLROCM and cval == self.Type.HIP or cval == self.Type.SEQHIP or cval == self.Type.MPIHIP:
+            CHKERR( VecHIPGetArray(self.vec, <PetscScalar**>&a) )
         else:
-            CHKERR( VecGetArrayWrite(self.vec, <PetscScalar**>&a) )
+            CHKERR( VecGetArray(self.vec, <PetscScalar**>&a) )
+            if device_type != kDLCPU:
+                device_type = kDLCPU
+                device_id = 0 #????
+
         dl_tensor.data = <void *>a
 
         cdef DLContext* ctx = &dl_tensor.ctx
-        cdef object ctx0 = self.get_attr('__dltensor_ctx__')
-        if ctx0 is not None:
-            (device_type, device_id, ndim, shape, strides) = ctx0
-            ctx.device_type = device_type
-            ctx.device_id = device_id
-            shape_strides = <int64_t*>malloc(sizeof(int64_t)*2*ndim)
-            for i in range(ndim):
-                shape_strides[i] = shape[i]
-            for i in range(ndim):
-                shape_strides[i+ndim] = strides[i]
-        else:
-            raise ValueError('Missing tensor information')
+        ctx.device_type = device_type
+        ctx.device_id = device_id
+        shape_strides = <int64_t*>malloc(sizeof(int64_t)*2*ndim)
+        for i in range(ndim):
+            shape_strides[i] = shape[i]
+        for i in range(ndim):
+            shape_strides[i+ndim] = strides[i]
         dl_tensor.ndim = ndim
         dl_tensor.shape = shape_strides
         dl_tensor.strides = shape_strides + ndim
@@ -570,6 +624,11 @@ cdef class Vec(Object):
         cdef const char *cval = NULL
         CHKERR( VecGetOptionsPrefix(self.vec, &cval) )
         return bytes2str(cval)
+
+    def appendOptionsPrefix(self, prefix):
+        cdef const char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( VecAppendOptionsPrefix(self.vec, cval) )
 
     def setFromOptions(self):
         CHKERR( VecSetFromOptions(self.vec) )
@@ -696,6 +755,33 @@ cdef class Vec(Object):
             CHKERR( VecCUDARestoreArrayRead(self.vec, <const PetscScalar**>&hdl) )
         elif m[0] == c'w':
             CHKERR( VecCUDARestoreArrayWrite(self.vec, &hdl) )
+        else:
+            raise ValueError("Invalid mode: expected 'rw', 'r', or 'w'")
+
+    def getHIPHandle(self, mode='rw'):
+        cdef PetscScalar *hdl = NULL
+        cdef const char *m = NULL
+        if mode is not None: mode = str2bytes(mode, &m)
+        if m == NULL or (m[0] == c'r' and m[1] == c'w'):
+            CHKERR( VecHIPGetArray(self.vec, &hdl) )
+        elif m[0] == c'r':
+            CHKERR( VecHIPGetArrayRead(self.vec, <const PetscScalar**>&hdl) )
+        elif m[0] == c'w':
+            CHKERR( VecHIPGetArrayWrite(self.vec, &hdl) )
+        else:
+            raise ValueError("Invalid mode: expected 'rw', 'r', or 'w'")
+        return <Py_uintptr_t>hdl
+
+    def restoreHIPHandle(self, handle, mode='rw'):
+        cdef PetscScalar *hdl = <PetscScalar*>(<Py_uintptr_t>handle)
+        cdef const char *m = NULL
+        if mode is not None: mode = str2bytes(mode, &m)
+        if m == NULL or (m[0] == c'r' and m[1] == c'w'):
+            CHKERR( VecHIPRestoreArray(self.vec, &hdl) )
+        elif m[0] == c'r':
+            CHKERR( VecHIPRestoreArrayRead(self.vec, <const PetscScalar**>&hdl) )
+        elif m[0] == c'w':
+            CHKERR( VecHIPRestoreArrayWrite(self.vec, &hdl) )
         else:
             raise ValueError("Invalid mode: expected 'rw', 'r', or 'w'")
 

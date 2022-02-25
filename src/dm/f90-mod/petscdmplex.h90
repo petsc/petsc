@@ -329,10 +329,11 @@
       End Interface
 
       Interface
-        Subroutine DMPlexCreateFromFile(c,str,i,m,ierr)
+        Subroutine DMPlexCreateFromFile(c,str,pstr,i,m,ierr)
           import tDM
           MPI_Comm :: c
           character(len=*) :: str
+          character(len=*) :: pstr
           PetscBool, intent(in) :: i
           DM, intent(out) :: m
           PetscErrorCode, intent(out):: ierr

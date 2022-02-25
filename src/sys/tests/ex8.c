@@ -35,7 +35,7 @@ static PetscErrorCode MakeDatatype(MPI_Datatype *dtype)
   {
     MPI_Aint lb,extent;
     ierr = MPI_Type_get_extent(*dtype,&lb,&extent);CHKERRMPI(ierr);
-    if (extent != sizeof(Unit)) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_LIB,"New type has extent %d != sizeof(Unit) %d",extent,(int)sizeof(Unit));
+    PetscCheckFalse(extent != sizeof(Unit),PETSC_COMM_WORLD,PETSC_ERR_LIB,"New type has extent %d != sizeof(Unit) %d",(int)extent,(int)sizeof(Unit));
   }
   PetscFunctionReturn(0);
 }
@@ -54,8 +54,8 @@ static PetscErrorCode FSend(MPI_Comm comm,const PetscMPIInt tag[],PetscMPIInt to
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (rank != fctx->toranks[tonum]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Rank %d does not match toranks[%d] %d",rank,tonum,fctx->toranks[tonum]);
-  if (fctx->rank != *(PetscMPIInt*)todata) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Todata %d does not match rank %d",*(PetscMPIInt*)todata,fctx->rank);
+  PetscCheckFalse(rank != fctx->toranks[tonum],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Rank %d does not match toranks[%d] %d",rank,tonum,fctx->toranks[tonum]);
+  PetscCheckFalse(fctx->rank != *(PetscMPIInt*)todata,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Todata %d does not match rank %d",*(PetscMPIInt*)todata,fctx->rank);
   ierr = MPI_Isend(&fctx->todata[tonum].rank,1,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRMPI(ierr);
   ierr = MPI_Isend(&fctx->todata[tonum].value,1,MPIU_SCALAR,rank,tag[1],comm,&req[1]);CHKERRMPI(ierr);
   PetscFunctionReturn(0);
@@ -68,7 +68,7 @@ static PetscErrorCode FRecv(MPI_Comm comm,const PetscMPIInt tag[],PetscMPIInt ra
   Unit           *buf;
 
   PetscFunctionBegin;
-  if (*(PetscMPIInt*)fromdata != rank) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Dummy data %d from rank %d corrupt",*(PetscMPIInt*)fromdata,rank);
+  PetscCheckFalse(*(PetscMPIInt*)fromdata != rank,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Dummy data %d from rank %d corrupt",*(PetscMPIInt*)fromdata,rank);
   ierr = PetscSegBufferGet(fctx->seg,1,&buf);CHKERRQ(ierr);
   ierr = MPI_Irecv(&buf->rank,1,MPIU_INT,rank,tag[0],comm,&req[0]);CHKERRMPI(ierr);
   ierr = MPI_Irecv(&buf->value,1,MPIU_SCALAR,rank,tag[1],comm,&req[1]);CHKERRMPI(ierr);
@@ -108,7 +108,7 @@ int main(int argc,char **argv)
   }
   if (verbose) {
     for (i=0; i<nto; i++) {
-      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] TO %d: {%D, %g, \"%s\"}\n",rank,toranks[i],todata[i].rank,(double)PetscRealPart(todata[i].value),todata[i].ok);CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] TO %d: {%" PetscInt_FMT ", %g, \"%s\"}\n",rank,toranks[i],todata[i].rank,(double)PetscRealPart(todata[i].value),todata[i].ok);CHKERRQ(ierr);
     }
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   }
@@ -146,24 +146,24 @@ int main(int argc,char **argv)
     ierr = PetscSortIntWithPermutation(nfrom,iranks,iperm);CHKERRQ(ierr);
     for (i=0; i<nfrom; i++) {
       PetscInt ip = iperm[i];
-      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] FROM %d: {%D, %g, \"%s\"}\n",rank,fromranks[ip],fromdata[ip].rank,(double)PetscRealPart(fromdata[ip].value),fromdata[ip].ok);CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] FROM %d: {%" PetscInt_FMT ", %g, \"%s\"}\n",rank,fromranks[ip],fromdata[ip].rank,(double)PetscRealPart(fromdata[ip].value),fromdata[ip].ok);CHKERRQ(ierr);
     }
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
     ierr = PetscFree2(iranks,iperm);CHKERRQ(ierr);
   }
 
-  if (nto != nfrom) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"[%d] From ranks %d does not match To ranks %d",rank,nto,nfrom);
+  PetscCheckFalse(nto != nfrom,PETSC_COMM_SELF,PETSC_ERR_PLIB,"[%d] From ranks %d does not match To ranks %d",rank,nto,nfrom);
   for (i=1; i<size; i*=2) {
     PetscMPIInt expected_rank = (rank-i+size)%size;
     PetscBool flg;
     for (n=0; n<nfrom; n++) {
       if (expected_rank == fromranks[n]) goto found;
     }
-    SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"[%d] Could not find expected from rank %d",rank,expected_rank);
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"[%d] Could not find expected from rank %d",rank,expected_rank);
     found:
-    if (PetscRealPart(fromdata[n].value) != expected_rank) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"[%d] Got data %g from rank %d",rank,(double)PetscRealPart(fromdata[n].value),expected_rank);
+    PetscCheckFalse(PetscRealPart(fromdata[n].value) != expected_rank,PETSC_COMM_SELF,PETSC_ERR_PLIB,"[%d] Got data %g from rank %d",rank,(double)PetscRealPart(fromdata[n].value),expected_rank);
     ierr = PetscStrcmp(fromdata[n].ok,"ok",&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"[%d] Got string %s from rank %d",rank,fromdata[n].ok,expected_rank);
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"[%d] Got string %s from rank %d",rank,fromdata[n].ok,expected_rank);
   }
   ierr = PetscFree2(todata,toranks);CHKERRQ(ierr);
   ierr = PetscFree(fromdata);CHKERRQ(ierr);

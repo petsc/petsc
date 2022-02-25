@@ -79,11 +79,10 @@ PetscErrorCode DMMoabCreate(MPI_Comm comm, DM *dmb)
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + comm - The communicator for the DMMoab object
 . mbiface - (ptr to) the MOAB Instance; if passed in NULL, MOAB instance is created inside PETSc, and destroyed
          along with the DMMoab
-. pcomm - (ptr to) a ParallelComm; if NULL, creates one internally for the whole communicator
 . ltog_tag - A tag to use to retrieve global id for an entity; if 0, will use GLOBAL_ID_TAG_NAME/tag
 - range - If non-NULL, contains range of entities to which DOFs will be assigned
 
@@ -193,7 +192,7 @@ PetscErrorCode DMMoabGetParallelComm(DM dm, moab::ParallelComm **pcomm)
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm      - The DMMoab object being set
 - mbiface - The MOAB instance being set on this DMMoab
 
@@ -246,7 +245,7 @@ PetscErrorCode DMMoabGetInterface(DM dm, moab::Interface **mbiface)
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm    - The DMMoab object being set
 - range - The entities treated by this DMMoab
 
@@ -390,7 +389,7 @@ PetscErrorCode DMMoabSetLocalElements(DM dm, moab::Range *range)
 #ifdef MOAB_HAVE_MPI
   PetscErrorCode  ierr;
   ierr = MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRMPI(ierr);
-  PetscInfo2(dm, "Created %D local and %D global elements.\n", dmmoab->neleloc, dmmoab->nele);
+  PetscInfo(dm, "Created %D local and %D global elements.\n", dmmoab->neleloc, dmmoab->nele);
 #else
   dmmoab->nele = dmmoab->neleloc;
 #endif
@@ -444,7 +443,7 @@ PetscErrorCode DMMoabGetLocalToGlobalTag(DM dm, moab::Tag *ltog_tag)
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm - The DMMoab object being set
 - bs - The block size used with this DMMoab
 
@@ -489,7 +488,7 @@ PetscErrorCode DMMoabGetBlockSize(DM dm, PetscInt *bs)
   Input Parameter:
 . dm - The DMMoab object being set
 
-  Output Parameter:
+  Output Parameters:
 + neg - The number of global elements in the DMMoab instance
 - nvg - The number of global vertices in the DMMoab instance
 
@@ -513,7 +512,7 @@ PetscErrorCode DMMoabGetSize(DM dm, PetscInt *neg, PetscInt *nvg)
   Input Parameter:
 . dm - The DMMoab object being set
 
-  Output Parameter:
+  Output Parameters:
 + nel - The number of owned elements in this processor
 . neg - The number of ghosted elements in this processor
 . nvl - The number of owned vertices in this processor
@@ -605,7 +604,7 @@ PetscErrorCode DMMoabGetHierarchyLevel(DM dm, PetscInt *nlevel)
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm - The DMMoab object
 - ehandle - The element entity handle
 
@@ -633,7 +632,7 @@ PetscErrorCode DMMoabGetMaterialBlock(DM dm, const moab::EntityHandle ehandle, P
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm - The DMMoab object
 . nconn - Number of entities whose coordinates are needed
 - conn - The vertex entity handles
@@ -671,11 +670,11 @@ PetscErrorCode DMMoabGetVertexCoordinates(DM dm, PetscInt nconn, const moab::Ent
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm - The DMMoab object
 - vhandle - Vertex entity handle
 
-  Output Parameter:
+  Output Parameters:
 + nconn - Number of entities whose coordinates are needed
 - conn - The vertex entity handles
 
@@ -712,7 +711,7 @@ PetscErrorCode DMMoabGetVertexConnectivity(DM dm, moab::EntityHandle vhandle, Pe
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm - The DMMoab object
 . vhandle - Vertex entity handle
 . nconn - Number of entities whose coordinates are needed
@@ -742,11 +741,11 @@ PetscErrorCode DMMoabRestoreVertexConnectivity(DM dm, moab::EntityHandle ehandle
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm - The DMMoab object
 - ehandle - Vertex entity handle
 
-  Output Parameter:
+  Output Parameters:
 + nconn - Number of entities whose coordinates are needed
 - conn - The vertex entity handles
 
@@ -779,7 +778,7 @@ PetscErrorCode DMMoabGetElementConnectivity(DM dm, moab::EntityHandle ehandle, P
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm - The DMMoab object
 - ent - Entity handle
 
@@ -803,7 +802,7 @@ PetscErrorCode DMMoabIsEntityOnBoundary(DM dm, const moab::EntityHandle ent, Pet
 
   /* get the entity type and handle accordingly */
   etype = dmmoab->mbiface->type_from_handle(ent);
-  if (etype >= moab::MBPOLYHEDRON) SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Entity type on the boundary skin is invalid. EntityType = %D\n", etype);
+  PetscCheckFalse(etype >= moab::MBPOLYHEDRON,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Entity type on the boundary skin is invalid. EntityType = %D", etype);
 
   /* get the entity dimension */
   edim = dmmoab->mbiface->dimension_from_handle(ent);
@@ -824,9 +823,9 @@ PetscErrorCode DMMoabIsEntityOnBoundary(DM dm, const moab::EntityHandle ent, Pet
 }
 
 /*@C
-  DMMoabIsEntityOnBoundary - Check whether a given entity is on the boundary (vertex, edge, face, element)
+  DMMoabCheckBoundaryVertices - Check whether a given entity is on the boundary (vertex, edge, face, element)
 
-  Input Parameter:
+  Input Parameters:
 + dm - The DMMoab object
 . nconn - Number of handles
 - cnt - Array of entity handles
@@ -861,7 +860,7 @@ PetscErrorCode DMMoabCheckBoundaryVertices(DM dm, PetscInt nconn, const moab::En
   Input Parameter:
 . dm - The DMMoab object
 
-  Output Parameter:
+  Output Parameters:
 + bdvtx - Boundary vertices
 . bdelems - Boundary elements
 - bdfaces - Boundary faces
@@ -972,9 +971,9 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   /* Get the local and shared vertices and cache it */
-  if (dmmoab->mbiface == NULL) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB Interface before calling SetUp.");
+  PetscCheckFalse(dmmoab->mbiface == NULL,PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB Interface before calling SetUp.");
 #ifdef MOAB_HAVE_MPI
-  if (dmmoab->pcomm == NULL) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB ParallelComm object before calling SetUp.");
+  PetscCheckFalse(dmmoab->pcomm == NULL,PETSC_COMM_WORLD, PETSC_ERR_ORDER, "Set the MOAB ParallelComm object before calling SetUp.");
 #endif
 
   /* Get the entities recursively in the current part of the mesh, if user did not set the local vertices explicitly */
@@ -1003,7 +1002,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 
 #ifdef MOAB_HAVE_MPI
     ierr = MPIU_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRMPI(ierr);
-    PetscInfo4(NULL, "Filset ID: %u, Vertices: local - %D, owned - %D, ghosted - %D.\n", dmmoab->fileset, dmmoab->vlocal->size(), dmmoab->nloc, dmmoab->nghost);
+    PetscInfo(NULL, "Filset ID: %u, Vertices: local - %D, owned - %D, ghosted - %D.\n", dmmoab->fileset, dmmoab->vlocal->size(), dmmoab->nloc, dmmoab->nghost);
 #else
     dmmoab->n = dmmoab->nloc;
 #endif
@@ -1039,7 +1038,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 
 #ifdef MOAB_HAVE_MPI
     ierr = MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm);CHKERRMPI(ierr);
-    PetscInfo3(NULL, "%d-dim elements: owned - %D, ghosted - %D.\n", dmmoab->dim, dmmoab->neleloc, dmmoab->neleghost);
+    PetscInfo(NULL, "%d-dim elements: owned - %D, ghosted - %D.\n", dmmoab->dim, dmmoab->neleloc, dmmoab->neleghost);
 #else
     dmmoab->nele = dmmoab->neleloc;
 #endif
@@ -1054,7 +1053,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
   }
 
   totsize = dmmoab->vlocal->size();
-  if (totsize != dmmoab->nloc + dmmoab->nghost) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Mismatch between local and owned+ghost vertices. %D != %D.", totsize, dmmoab->nloc + dmmoab->nghost);
+  PetscCheckFalse(totsize != dmmoab->nloc + dmmoab->nghost,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Mismatch between local and owned+ghost vertices. %D != %D.", totsize, dmmoab->nloc + dmmoab->nghost);
   ierr = PetscCalloc1(totsize, &dmmoab->gsindices);CHKERRQ(ierr);
   {
     /* first get the local indices */
@@ -1081,14 +1080,14 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     dmmoab->lminmax[0] -= dmmoab->gminmax[0];
     dmmoab->lminmax[1] -= dmmoab->gminmax[0];
 
-    PetscInfo4(NULL, "GLOBAL_ID: Local [min, max] - [%D, %D], Global [min, max] - [%D, %D]\n", dmmoab->lminmax[0], dmmoab->lminmax[1], dmmoab->gminmax[0], dmmoab->gminmax[1]);
+    PetscInfo(NULL, "GLOBAL_ID: Local [min, max] - [%D, %D], Global [min, max] - [%D, %D]\n", dmmoab->lminmax[0], dmmoab->lminmax[1], dmmoab->gminmax[0], dmmoab->gminmax[1]);
   }
-  if (!(dmmoab->bs == dmmoab->numFields || dmmoab->bs == 1)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mismatch between block size and number of component fields. %D != 1 OR %D != %D.", dmmoab->bs, dmmoab->bs, dmmoab->numFields);
+  PetscCheckFalse(!(dmmoab->bs == dmmoab->numFields || dmmoab->bs == 1),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mismatch between block size and number of component fields. %D != 1 OR %D != %D.", dmmoab->bs, dmmoab->bs, dmmoab->numFields);
 
   {
     dmmoab->seqstart = dmmoab->mbiface->id_from_handle(dmmoab->vlocal->front());
     dmmoab->seqend = dmmoab->mbiface->id_from_handle(dmmoab->vlocal->back());
-    PetscInfo2(NULL, "SEQUENCE: Local [min, max] - [%D, %D]\n", dmmoab->seqstart, dmmoab->seqend);
+    PetscInfo(NULL, "SEQUENCE: Local [min, max] - [%D, %D]\n", dmmoab->seqstart, dmmoab->seqend);
 
     ierr = PetscMalloc2(dmmoab->seqend - dmmoab->seqstart + 1, &dmmoab->gidmap, dmmoab->seqend - dmmoab->seqstart + 1, &dmmoab->lidmap);CHKERRQ(ierr);
     ierr = PetscMalloc1(totsize * dmmoab->numFields, &lgmap);CHKERRQ(ierr);
@@ -1200,7 +1199,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 #endif
 
   }
-  PetscInfo3(NULL, "Found %D boundary vertices, %D boundary faces and %D boundary elements.\n", dmmoab->bndyvtx->size(), dmmoab->bndyfaces->size(), dmmoab->bndyelems->size());
+  PetscInfo(NULL, "Found %D boundary vertices, %D boundary faces and %D boundary elements.\n", dmmoab->bndyvtx->size(), dmmoab->bndyfaces->size(), dmmoab->bndyelems->size());
 
   /* Get the material sets and populate the data for all locally owned elements */
   {

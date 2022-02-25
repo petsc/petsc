@@ -206,7 +206,7 @@ PetscErrorCode DMPatchSolve(DM dm)
     const PetscMPIInt newRank = ((gridRank.k%commSize.k)*commSize.j     + gridRank.j%commSize.j)*commSize.i     + (gridRank.i%commSize.i);
 
     ierr = MPI_Comm_split(comm, newComm, newRank, &commz);CHKERRMPI(ierr);
-    if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "Rank %d color %d key %d commz %d\n", rank, newComm, newRank, *((PetscMPIInt*) &commz));CHKERRQ(ierr);}
+    if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "Rank %d color %d key %d commz %p\n", rank, newComm, newRank, (void*)(MPI_Aint)commz);CHKERRQ(ierr);}
   }
   /*
    Assumptions:

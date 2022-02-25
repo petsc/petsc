@@ -11,18 +11,6 @@ static char help[] = "Test of Kokkos matrix assemble with 1D Laplacian. Kokkos v
 
 #include <petscaijdevice.h>
 
-void assemble_mat(Mat A, PetscInt start, PetscInt end, PetscInt Ne, PetscMPIInt rank)
-{
-  PetscInt        i;
-  PetscScalar     values[] = {1,-1,-1,1.1};
-  PetscErrorCode  ierr;
-  for (i=start; i<end; i++) {
-    PetscInt js[] = {i-1, i};
-    ierr = MatSetValues(A,2,js,2,js,values,ADD_VALUES);
-    if (ierr) return;
-  }
-}
-
 int main(int argc,char **argv)
 {
   PetscErrorCode               ierr;
@@ -32,13 +20,10 @@ int main(int argc,char **argv)
   PetscLogEvent                event;
   Vec                          x,y;
   PetscMPIInt                  rank;
-  PetscBool                    view_kokkos_configuration = PETSC_TRUE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-view_kokkos_configuration",&view_kokkos_configuration,NULL);CHKERRQ(ierr);
-
   ierr = PetscOptionsGetInt(NULL,NULL, "-nz_row", &nz, NULL);CHKERRQ(ierr); // for debugging, will be wrong if nz<3
   ierr = PetscOptionsGetInt(NULL,NULL, "-n", &N, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL, "-num_threads", &num_threads, NULL);CHKERRQ(ierr);
@@ -55,35 +40,41 @@ int main(int argc,char **argv)
   ierr = MatSeqAIJSetPreallocation(A, nz, NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A, nz,NULL,nz-1, NULL);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
 
-  // assemble end on CPU. We are not doing it redudent here, and ignoring off proc entries, but we could
-  assemble_mat(A, Istart, Iend, N, rank);CHKERRQ(ierr);
+  // assemble end on CPU. We are not assembling redundant here, and ignoring off proc entries, but we could
+  for (int i=Istart; i<Iend+1; i++) {
+    PetscScalar values[] = {1,1,1,1};
+    PetscInt    js[] = {i-1,i}, nn = (i==N) ? 1 : 2; // negative indices are ignored but >= N are not, so clip end
+    ierr = MatSetValues(A,nn,js,nn,js,values,ADD_VALUES);CHKERRQ(ierr);
+  }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  // test cusparse
+  // test Kokkos
   ierr = VecSet(x,1.0);CHKERRQ(ierr);
   ierr = MatMult(A,x,y);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(y,NULL,"-vec_view");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(y,NULL,"-ex5_vec_view");CHKERRQ(ierr);
 
   // assemble on GPU
-  if (Iend<N) Iend++; // elements, ignore off processor entries so do redundent
+  if (Iend<N) Iend++; // elements, ignore off processor entries so do redundant
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
   ierr = MatKokkosGetDeviceMatWrite(A,&d_mat);CHKERRQ(ierr);
-  ierr = MatZeroEntries(A);CHKERRQ(ierr); // needed?
-  Kokkos:: parallel_for (Kokkos::RangePolicy<> (Istart,Iend), KOKKOS_LAMBDA ( int i) {
-      PetscScalar                  values[] = {1,-1,-1,1.1};
-      PetscInt js[] = {i-1, i};
-      MatSetValuesDevice(d_mat,2,js,2,js,values,ADD_VALUES);
+  Kokkos::fence();
+  Kokkos::parallel_for (Kokkos::RangePolicy<> (Istart,Iend+1), KOKKOS_LAMBDA (int i) {
+      PetscScalar  values[] = {1,1,1,1};
+      PetscInt     js[] = {i-1, i}, nn = (i==N) ? 1 : 2;
+      MatSetValuesDevice(d_mat,nn,js,nn,js,values,ADD_VALUES);
     });
+  Kokkos::fence();
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = VecSet(x,1.0);CHKERRQ(ierr);
   ierr = MatMult(A,x,y);CHKERRQ(ierr);
-  ierr = VecViewFromOptions(y,NULL,"-vec_view");CHKERRQ(ierr);
+  ierr = VecViewFromOptions(y,NULL,"-ex5_vec_view");CHKERRQ(ierr);
   ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRQ(ierr);
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
@@ -96,11 +87,6 @@ int main(int argc,char **argv)
   return ierr;
 }
 
-/*
-     The first test works for Kokkos wtih OpenMP and PThreads, the second with CUDA.
-
-*/
-
 /*TEST
 
    build:
@@ -109,7 +95,7 @@ int main(int argc,char **argv)
    test:
      suffix: 0
      requires: kokkos_kernels double !complex !single
-     args: -view_kokkos_configuration -n 11 -vec_view
+     args: -n 11 -ex5_vec_view
      nsize:  2
 
 TEST*/

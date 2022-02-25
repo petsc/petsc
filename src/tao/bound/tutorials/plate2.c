@@ -20,9 +20,9 @@ The command line options are:\n\
 /*T
    Concepts: TAO^Solving a bound constrained minimization problem
    Routines: TaoCreate();
-   Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
-   Routines: TaoSetHessianRoutine();
-   Routines: TaoSetInitialVector();
+   Routines: TaoSetType(); TaoSetObjectiveAndGradient();
+   Routines: TaoSetHessian();
+   Routines: TaoSetSolution();
    Routines: TaoSetVariableBounds();
    Routines: TaoSetFromOptions();
    Routines: TaoSolve(); TaoView();
@@ -130,10 +130,10 @@ int main(int argc, char **argv)
   /* Set initial solution guess; */
   ierr = MSA_BoundaryConditions(&user);CHKERRQ(ierr);
   ierr = MSA_InitialPoint(&user,x);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
 
   /* Set routines for function, gradient and hessian evaluation */
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*) &user);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void*) &user);CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(x,&m);CHKERRQ(ierr);
   ierr = MatCreateAIJ(MPI_COMM_WORLD,m,m,N,N,7,NULL,3,NULL,&(user.H));CHKERRQ(ierr);
@@ -146,9 +146,9 @@ int main(int argc, char **argv)
       ierr = MatCreateShell(PETSC_COMM_WORLD,m,m,N,N,(void*)&user,&H_shell);CHKERRQ(ierr);
       ierr = MatShellSetOperation(H_shell,MATOP_MULT,(void(*)(void))MyMatMult);CHKERRQ(ierr);
       ierr = MatSetOption(H_shell,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = TaoSetHessianRoutine(tao,H_shell,H_shell,MatrixFreeHessian,(void*)&user);CHKERRQ(ierr);
+      ierr = TaoSetHessian(tao,H_shell,H_shell,MatrixFreeHessian,(void*)&user);CHKERRQ(ierr);
   } else {
-      ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void*)&user);CHKERRQ(ierr);
+      ierr = TaoSetHessian(tao,user.H,user.H,FormHessian,(void*)&user);CHKERRQ(ierr);
   }
 
   /* Set Variable bounds */
@@ -190,7 +190,7 @@ int main(int argc, char **argv)
     Input Parameters:
 .   tao     - the Tao context
 .   X      - input vector
-.   userCtx - optional user-defined context, as set by TaoSetObjectiveAndGradientRoutine()
+.   userCtx - optional user-defined context, as set by TaoSetObjectiveAndGradient()
 
     Output Parameters:
 .   fcn     - the function value
@@ -399,7 +399,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G,void *
    Input Parameters:
 .  tao  - the Tao context
 .  x    - input vector
-.  ptr  - optional user-defined context, as set by TaoSetHessianRoutine()
+.  ptr  - optional user-defined context, as set by TaoSetHessian()
 
    Output Parameters:
 .  A    - Hessian matrix
@@ -979,5 +979,19 @@ PetscErrorCode MyMatMult(Mat H_shell, Vec X, Vec Y)
      suffix: 17
      args: -tao_smonitor -mx 8 -my 8 -bmx 2 -bmy 5 -bheight 0.3 -tao_gatol 1e-4 -tao_type bqnkls -tao_bqnk_mat_type lmvmbfgs
      requires: !single
+
+   test:
+     suffix: 18
+     args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type bnls -tao_gatol 1e-5 -tao_mf_hessian
+     requires: !single
+
+   test:
+     suffix: 19
+     args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type bntr -tao_gatol 1e-5 -tao_mf_hessian
+     requires: !single
+
+   test:
+     suffix: 20
+     args: -tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2 -tao_type bntl -tao_gatol 1e-5 -tao_mf_hessian
 
 TEST*/

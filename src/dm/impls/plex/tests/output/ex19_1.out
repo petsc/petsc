@@ -1,19 +1,21 @@
 DM Object: DMinit 1 MPI processes
   type: plex
 DMinit in 2 dimensions:
-  0-cells: 25
-  1-cells: 56
-  2-cells: 32
+  Number of 0-cells per rank: 25
+  Number of 1-cells per rank: 56
+  Number of 2-cells per rank: 32
 Labels:
-  Face Sets: 4 strata with value/size (1 (4), 4 (4), 3 (4), 2 (4))
-  marker: 4 strata with value/size (4 (9), 1 (7), 2 (9), 3 (7))
+  celltype: 3 strata with value/size (0 (25), 3 (32), 1 (56))
   depth: 3 strata with value/size (0 (25), 1 (56), 2 (32))
+  marker: 4 strata with value/size (4 (9), 1 (7), 2 (9), 3 (7))
+  Face Sets: 4 strata with value/size (1 (4), 4 (4), 3 (4), 2 (4))
 DM Object: DMadapt (adapt_) 1 MPI processes
   type: plex
 DMadapt in 2 dimensions:
-  0-cells: 95
-  1-cells: 258
-  2-cells: 164
+  Number of 0-cells per rank: 35
+  Number of 1-cells per rank: 78
+  Number of 2-cells per rank: 44
 Labels:
+  celltype: 3 strata with value/size (0 (35), 3 (44), 1 (78))
+  depth: 3 strata with value/size (0 (35), 1 (78), 2 (44))
   marker: 4 strata with value/size (1 (10), 4 (2), 2 (2), 3 (10))
-  depth: 3 strata with value/size (0 (95), 1 (258), 2 (164))

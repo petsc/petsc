@@ -41,7 +41,7 @@ Consider the addition of two large vectors, with the result written to a
 third vector. Because there are no dependencies across the different
 entries of each vector, the operation is embarrasingly parallel.
 
-.. figure:: images/stream-results-intel.*
+.. figure:: /images/docs/manual/stream-results-intel.*
    :alt: Memory bandwidth obtained on Intel hardware (dual socket except KNL) over the number of processes used. One can get close to peak memory bandwidth with only a few processes.
    :name: fig_stream_intel
    :width: 80.0%
@@ -117,7 +117,7 @@ CPU are fully saturated. However, full saturation of memory channels is
 only possible if the data is distributed across the different memory
 channels.
 
-.. figure:: images/numa.*
+.. figure:: /images/docs/manual/numa.*
    :alt: Schematic of a two-socket NUMA system. Processes should be spread across both CPUs to obtain full bandwidth.
    :name: fig_numa
    :width: 90.0%
@@ -201,9 +201,9 @@ implementation. The following discussion is based on how processor
 placement is done with MPICH and OpenMPI, where one needs to pass
 ``--bind-to core --map-by socket`` to ``mpirun``:
 
-.. code-block:: none
+.. code-block:: console
 
-   $> mpirun -n 6 --bind-to core --map-by socket ./stream
+   $ mpirun -n 6 --bind-to core --map-by socket ./stream
    process 0 binding: 100000000000100000000000
    process 1 binding: 000000100000000000100000
    process 2 binding: 010000000000010000000000
@@ -220,9 +220,9 @@ practical peak of about 50 GB/sec available on the machine. If, however,
 all MPI processes are located on the same socket, memory bandwidth drops
 significantly:
 
-.. code-block:: none
+.. code-block:: console
 
-   $> mpirun -n 6 --bind-to core --map-by core ./stream
+   $ mpirun -n 6 --bind-to core --map-by core ./stream
    process 0 binding: 100000000000100000000000
    process 1 binding: 010000000000010000000000
    process 2 binding: 001000000000001000000000
@@ -240,9 +240,9 @@ only the first memory channel is fully saturated at 25.5 GB/sec.
   the results on the right obtained by passing
   ``--bind-to core --map-by socket``:
 
-.. code-block:: none
+.. code-block:: console
 
-   $> make streams
+   $ make streams
    np  speedup
    1 1.0
    2 1.58
@@ -269,9 +269,9 @@ only the first memory channel is fully saturated at 25.5 GB/sec.
    23 3.79
    24 3.71
 
-.. code-block:: none
+.. code-block:: console
 
-   $> make streams MPI_BINDING="--bind-to core --map-by socket"
+   $ make streams MPI_BINDING="--bind-to core --map-by socket"
    np  speedup
    1 1.0
    2 1.59
@@ -553,7 +553,7 @@ Memory Allocation for Sparse Matrix Factorization
 
 When symbolically factoring an AIJ matrix, PETSc has to guess how much
 fill there will be. Careful use of the fill parameter in the
-``MatILUInfo`` structure when calling ``MatLUFactorSymbolic()`` or
+``MatFactorInfo`` structure when calling ``MatLUFactorSymbolic()`` or
 ``MatILUFactorSymbolic()`` can reduce greatly the number of mallocs and
 copies required, and thus greatly improve the performance of the
 factorization. One way to determine a good value for the fill parameter
@@ -562,7 +562,7 @@ factorization phase will then print information such as
 
 .. code-block:: none
 
-   Info:MatILUFactorSymbolic_AIJ:Realloc 12 Fill ratio:given 1 needed 2.16423
+   Info:MatILUFactorSymbolic_SeqAIJ:Reallocs 12 Fill ratio:given 1 needed 2.16423
 
 This indicates that the user should have used a fill estimate factor of
 about 2.17 (instead of 1) to prevent the 12 required mallocs and copies.
@@ -570,11 +570,10 @@ The command line option
 
 .. code-block:: none
 
-   -pc_ilu_fill 2.17
+   -pc_factor_fill 2.17
 
 will cause PETSc to preallocate the correct amount of space for
-incomplete (ILU) factorization. The corresponding option for direct (LU)
-factorization is ``-pc_factor_fill <fill_amount>``.
+the factorization.
 
 .. _detecting-memory-problems:
 
@@ -719,7 +718,7 @@ them.
    program, one should always leave at least a ten percent margin
    between the total memory a process is using and the physical size of
    the machine’s memory. One way to estimate the amount of memory used
-   by given process is with the UNIX ``getrusage`` system routine. Also,
+   by given process is with the Unix ``getrusage`` system routine. Also,
    the PETSc option ``-log_view`` prints the amount of memory used by
    the basic PETSc objects, thus providing a lower bound on the memory
    used. Another useful option is ``-malloc_view`` which reports all

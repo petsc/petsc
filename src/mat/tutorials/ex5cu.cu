@@ -16,31 +16,29 @@ static char help[] = "Test of CUDA matrix assemble with simple matrix.\n\n";
 
 #include <petscaijdevice.h>
 __global__
-void assemble_on_gpu(PetscSplitCSRDataStructure d_mat, PetscInt start, PetscInt end, PetscInt Ne, PetscMPIInt rank)
+void assemble_on_gpu(PetscSplitCSRDataStructure d_mat, PetscInt start, PetscInt end, PetscInt N, PetscMPIInt rank)
 {
   const PetscInt  inc = blockDim.x, my0 = threadIdx.x;
   PetscInt        i;
   PetscErrorCode  ierr;
 
-  for (i=start+my0; i<end; i+=inc) {
-    PetscInt    js[] = {i-1, i};
-    PetscScalar is = i;
-    PetscScalar values[] = {is,-2*is,-3*is,4*is};
-    ierr = MatSetValuesDevice(d_mat,2,js,2,js,values,ADD_VALUES);if (ierr) assert(0);
+  for (i=start+my0; i<end+1; i+=inc) {
+    PetscInt    js[] = {i-1, i}, nn = (i==N) ? 1 : 2; // negative indices are igored but >= N are not, so clip end
+    PetscScalar values[] = {1,1,1,1};
+    ierr = MatSetValuesDevice(d_mat,nn,js,nn,js,values,ADD_VALUES);if (ierr) assert(0);
   }
 }
 
-PetscErrorCode assemble_on_cpu(Mat A, PetscInt start, PetscInt end, PetscInt Ne, PetscMPIInt rank)
+PetscErrorCode assemble_on_cpu(Mat A, PetscInt start, PetscInt end, PetscInt N, PetscMPIInt rank)
 {
   PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  for (i=start; i<end; i++) {
-    PetscInt    js[] = {i-1, i};
-    PetscScalar is = i;
-    PetscScalar values[] = {is,-2*is,-3*is,4*is};
-    ierr = MatSetValues(A,2,js,2,js,values,ADD_VALUES);CHKERRQ(ierr);
+  for (i=start; i<end+1; i++) {
+    PetscInt    js[] = {i-1, i}, nn = (i==N) ? 1 : 2;
+    PetscScalar values[] = {1,1,1,1};
+    ierr = MatSetValues(A,nn,js,nn,js,values,ADD_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -48,13 +46,14 @@ PetscErrorCode assemble_on_cpu(Mat A, PetscInt start, PetscInt end, PetscInt Ne,
 int main(int argc,char **args)
 {
   PetscErrorCode             ierr;
-  Mat                        A,Ae;
+  Mat                        A;
   PetscInt                   N=11, nz=3, Istart, Iend, num_threads = 128;
   PetscSplitCSRDataStructure d_mat;
   PetscLogEvent              event;
   cudaError_t                cerr;
   PetscMPIInt                rank,size;
   PetscBool                  testmpiseq = PETSC_FALSE;
+  Vec                        x,y;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL, "-n", &N, NULL);CHKERRQ(ierr);
@@ -68,25 +67,25 @@ int main(int argc,char **args)
 
   ierr = PetscLogEventRegister("GPU operator", MAT_CLASSID, &event);CHKERRQ(ierr);
   ierr = MatCreateAIJCUSPARSE(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,nz,NULL,nz-1,NULL,&A);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRQ(ierr);
   /* current GPU assembly code does not support offprocessor values insertion */
   ierr = assemble_on_cpu(A, Istart, Iend, N, rank);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  ierr = MatComputeOperator(A,MATAIJ,&Ae);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)Ae,"CPU MATRIX");CHKERRQ(ierr);
-  ierr = MatView(Ae,NULL);CHKERRQ(ierr);
-  ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+  // test
+  ierr = VecSet(x,1.0);CHKERRQ(ierr);
+  ierr = MatMult(A,x,y);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(y,NULL,"-ex5_vec_view");CHKERRQ(ierr);
 
   if (testmpiseq && size == 1) {
     ierr = MatConvert(A,MATSEQAIJ,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
     ierr = MatConvert(A,MATMPIAIJCUSPARSE,MAT_INPLACE_MATRIX,&A);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
-  ierr = MatZeroEntries(A);CHKERRQ(ierr);
   ierr = MatCUSPARSEGetDeviceMatWrite(A,&d_mat);CHKERRQ(ierr);
   assemble_on_gpu<<<1,num_threads>>>(d_mat, Istart, Iend, N, rank);
   cerr = cudaDeviceSynchronize();CHKERRCUDA(cerr);
@@ -94,12 +93,14 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRQ(ierr);
 
-  ierr = MatComputeOperator(A,MATAIJ,&Ae);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)Ae,"GPU MATRIX");CHKERRQ(ierr);
-  ierr = MatView(Ae,NULL);CHKERRQ(ierr);
-  ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+  // test
+  ierr = VecSet(x,1.0);CHKERRQ(ierr);
+  ierr = MatMult(A,x,y);CHKERRQ(ierr);
+  ierr = VecViewFromOptions(y,NULL,"-ex5_vec_view");CHKERRQ(ierr);
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
@@ -112,19 +113,19 @@ int main(int argc,char **args)
    test:
       suffix: 0
       diff_args: -j
-      args: -n 11
+      args: -n 11 -ex5_vec_view
       nsize: 1
 
    test:
       suffix: 1
       diff_args: -j
-      args: -n 11
+      args: -n 11 -ex5_vec_view
       nsize: 2
 
    test:
       suffix: 2
       diff_args: -j
-      args: -n 11 -testmpiseq
+      args: -n 11 -testmpiseq -ex5_vec_view
       nsize: 1
 
 TEST*/

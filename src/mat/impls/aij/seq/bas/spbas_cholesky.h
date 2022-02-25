@@ -5,14 +5,14 @@
       Return PETSC_ERR_MEM if there is insufficient space to store the
       row, so garbage collection and/or re-allocation may be done.
 */
-PetscErrorCode spbas_cholesky_row_alloc(spbas_matrix retval, PetscInt k, PetscInt r_nnz,PetscInt * n_alloc_used)
+PetscBool spbas_cholesky_row_alloc(spbas_matrix retval, PetscInt k, PetscInt r_nnz,PetscInt * n_alloc_used)
 {
   PetscFunctionBegin;
   retval.icols[k]  = &retval.alloc_icol[*n_alloc_used];
   retval.values[k] = &retval.alloc_val[*n_alloc_used];
   *n_alloc_used   += r_nnz;
-  if (*n_alloc_used > retval.n_alloc_icol) PetscFunctionReturn(PETSC_ERR_MEM);
-  PetscFunctionReturn(0);
+  if (*n_alloc_used > retval.n_alloc_icol) PetscFunctionReturn(PETSC_FALSE);
+  PetscFunctionReturn(PETSC_TRUE);
 }
 
 /*
@@ -97,7 +97,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
   }
 
   /* Motivate dimension choice */
-  ierr = PetscInfo1(NULL,"   Allocating %d nonzeros: ",n_alloc);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"   Allocating %" PetscInt_FMT " nonzeros: ",n_alloc);CHKERRQ(ierr);
   if (n_alloc_max == n_alloc_est) {
     ierr = PetscInfo(NULL,"this is the correct size\n");CHKERRQ(ierr);
   } else if (n_alloc_now >= n_alloc_est) {
@@ -105,7 +105,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
   } else if (n_alloc_max < n_alloc_est * (1+xtra_perc/100.0)) {
     ierr = PetscInfo(NULL,"the maximum estimate\n");CHKERRQ(ierr);
   } else {
-    ierr = PetscInfo1(NULL,"%6.2f %% more than the estimate\n",xtra_perc);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"%6.2f %% more than the estimate\n",(double)xtra_perc);CHKERRQ(ierr);
   }
 
   /**********************************************************
@@ -251,7 +251,7 @@ PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,         /* I
      with a larger epsdiag_in, a less sparse pattern, and/or a smaller
      droptol
 */
-PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const PetscInt *riip, spbas_matrix pattern, PetscReal droptol, PetscReal epsdiag_in, spbas_matrix * matrix_L)
+PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const PetscInt *riip, spbas_matrix pattern, PetscReal droptol, PetscReal epsdiag_in, spbas_matrix * matrix_L,PetscBool *success)
 {
   PetscInt        jL;
   Mat_SeqAIJ      *a =(Mat_SeqAIJ*)A->data;
@@ -287,11 +287,9 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
 
   epsdiag *= epsdiag_in / nrows;
 
-  ierr = PetscInfo2(NULL,"   Dimensioned Manteuffel shift %g Drop tolerance %g\n", (double)PetscRealPart(epsdiag),(double)droptol);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"   Dimensioned Manteuffel shift %g Drop tolerance %g\n", (double)PetscRealPart(epsdiag),(double)droptol);CHKERRQ(ierr);
 
   if (droptol<1e-10) droptol=1e-10;
-
-  if ((nrows != pattern.nrows) || (ncols != pattern.ncols) || (ncols != nrows)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP,"Dimension error in spbas_incomplete_cholesky\n");
 
   retval.nrows        = nrows;
   retval.ncols        = nrows;
@@ -308,9 +306,6 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
   ierr = PetscCalloc1(nrows, &val);CHKERRQ(ierr);
   ierr = PetscCalloc1(nrows, &lvec);CHKERRQ(ierr);
   ierr = PetscCalloc1(nrows, &max_row_nnz);CHKERRQ(ierr);
-
-  /* Check correct format of sparseness pattern */
-  if (pattern.col_idx_type != SPBAS_DIAGONAL_OFFSETS) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Error in spbas_incomplete_cholesky: must have diagonal offsets in pattern\n");
 
   /* Count the nonzeros on transpose of pattern */
   for (i = 0; i<nrows; i++)  {
@@ -354,20 +349,18 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
     diag[i] = val[i];
     if (PetscRealPart(diag[i])<droptol) {
       ierr = PetscInfo(NULL,"Error in spbas_incomplete_cholesky:\n");CHKERRQ(ierr);
-      ierr = PetscInfo1(NULL,"Negative diagonal in row %d\n",i+1);CHKERRQ(ierr);
+      ierr = PetscInfo(NULL,"Negative diagonal in row %" PetscInt_FMT "\n",i+1);CHKERRQ(ierr);
 
       /* Delete the whole matrix at once. */
       ierr = spbas_delete(retval);CHKERRQ(ierr);
-      return NEGATIVE_DIAGONAL;
+      *success = PETSC_FALSE;
+      PetscFunctionReturn(0);
     }
 
     /* If necessary, allocate arrays */
     if (r_nnz==0) {
-      ierr = spbas_cholesky_row_alloc(retval, i, 1, &n_alloc_used);
-      if (ierr == PETSC_ERR_MEM) {
-        ierr = spbas_cholesky_garbage_collect(&retval,  i, &n_row_alloc_ok, &n_alloc_used, max_row_nnz);CHKERRQ(ierr);
-        ierr = spbas_cholesky_row_alloc(retval, i, 1, &n_alloc_used);CHKERRQ(ierr);
-      } else CHKERRQ(ierr);
+      PetscBool success = spbas_cholesky_row_alloc(retval, i, 1, &n_alloc_used);
+      PetscCheckFalse(!success,PETSC_COMM_SELF,PETSC_ERR_MEM,"spbas_cholesky_row_alloc() failed");
       r_icol = retval.icols[i];
       r_val  = retval.values[i];
     }
@@ -393,13 +386,14 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
 
       if (PetscAbsScalar(val[k]) > droptol || PetscAbsScalar(val[k])< -droptol) {
         /* If necessary, allocate arrays */
-        if (retval.row_nnz[k]==0) {
-          ierr = spbas_cholesky_row_alloc(retval, k, max_row_nnz[k], &n_alloc_used);
-          if (ierr == PETSC_ERR_MEM) {
+        if (!retval.row_nnz[k]) {
+          PetscBool flag,success = spbas_cholesky_row_alloc(retval, k, max_row_nnz[k], &n_alloc_used);
+          if (!success) {
             ierr   = spbas_cholesky_garbage_collect(&retval,  i, &n_row_alloc_ok, &n_alloc_used, max_row_nnz);CHKERRQ(ierr);
-            ierr   = spbas_cholesky_row_alloc(retval, k, max_row_nnz[k], &n_alloc_used);CHKERRQ(ierr);
+            flag   = spbas_cholesky_row_alloc(retval, k, max_row_nnz[k], &n_alloc_used);
+            PetscCheckFalse(!flag,PETSC_COMM_SELF,PETSC_ERR_MEM,"Allocation in spbas_cholesky_row_alloc() failed");
             r_icol = retval.icols[i];
-          } else CHKERRQ(ierr);
+          }
         }
 
         retval.icols[k][retval.row_nnz[k]]  = i;
@@ -430,5 +424,6 @@ PetscErrorCode spbas_incomplete_cholesky(Mat A, const PetscInt *rip, const Petsc
   }
   ierr      = PetscFree(diag);CHKERRQ(ierr);
   *matrix_L = retval;
+  *success  = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

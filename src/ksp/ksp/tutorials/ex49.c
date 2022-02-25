@@ -268,7 +268,7 @@ static PetscErrorCode DMDACoordViewGnuplot2d(DM da,const char prefix[])
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp);CHKERRQ(ierr);
-  if (!fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
+  PetscCheckFalse(!fp,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
   ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"### Element geometry for processor %1.4d ### \n",rank);CHKERRQ(ierr);
 
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
@@ -308,7 +308,7 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],co
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   ierr = PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp);CHKERRQ(ierr);
-  if (!fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
+  PetscCheckFalse(!fp,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
 
   ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"### %s (processor %1.4d) ### \n",comment,rank);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0,0,0);CHKERRQ(ierr);
@@ -371,7 +371,7 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da,Vec fields,const char 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank);CHKERRQ(ierr);
   ierr = PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp);CHKERRQ(ierr);
-  if (!fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
+  PetscCheckFalse(!fp,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
 
   ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"### %s (processor %1.4d) ### \n",comment,rank);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0,0,0);CHKERRQ(ierr);
@@ -865,13 +865,13 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
         maxnbricks = 10;
         ierr       = PetscOptionsGetRealArray(NULL,NULL, "-brick_E",values_E,&maxnbricks,&flg);CHKERRQ(ierr);
         nbricks    = maxnbricks;
-        if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply a list of E values for each brick");
+        PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply a list of E values for each brick");
 
         flg        = PETSC_FALSE;
         maxnbricks = 10;
         ierr       = PetscOptionsGetRealArray(NULL,NULL, "-brick_nu",values_nu,&maxnbricks,&flg);CHKERRQ(ierr);
-        if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply a list of nu values for each brick");
-        if (maxnbricks != nbricks) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply equal numbers of values for E and nu");
+        PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply a list of nu values for each brick");
+        PetscCheckFalse(maxnbricks != nbricks,PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply equal numbers of values for E and nu");
 
         span = 1;
         ierr = PetscOptionsGetInt(NULL,NULL,"-brick_span",&span,&flg);CHKERRQ(ierr);
@@ -1320,7 +1320,7 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
 
    test:
       suffix: hypre_nullspace
-      requires: hypre
+      requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
       args: -elas_ksp_monitor_short -elas_ksp_converged_reason -elas_ksp_type cg -elas_ksp_norm_type natural -mx 22 -my 22 -c_str 2 -brick_E 1,1e-6,1e-2 -brick_nu .3,.2,.4 -brick_span 8 -elas_pc_type hypre -elas_pc_hypre_boomeramg_nodal_coarsen 6 -elas_pc_hypre_boomeramg_vec_interp_variant 3 -elas_pc_hypre_boomeramg_interp_type ext+i -elas_ksp_view
 
    test:

@@ -29,7 +29,7 @@ PetscErrorCode TaoALMMGetType(Tao tao, TaoALMMType *type)
 
 PetscErrorCode TaoALMMGetType_Private(Tao tao, TaoALMMType *type)
 {
-  TAO_ALMM        *auglag = (TAO_ALMM*)tao->data;
+  TAO_ALMM *auglag = (TAO_ALMM*)tao->data;
 
   PetscFunctionBegin;
   *type = auglag->type;
@@ -49,7 +49,7 @@ PetscErrorCode TaoALMMGetType_Private(Tao tao, TaoALMMType *type)
 @*/
 PetscErrorCode TaoALMMSetType(Tao tao, TaoALMMType type)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
@@ -59,10 +59,10 @@ PetscErrorCode TaoALMMSetType(Tao tao, TaoALMMType type)
 
 PetscErrorCode TaoALMMSetType_Private(Tao tao, TaoALMMType type)
 {
-  TAO_ALMM        *auglag = (TAO_ALMM*)tao->data;
+  TAO_ALMM *auglag = (TAO_ALMM*)tao->data;
 
   PetscFunctionBegin;
-  if (tao->setupcalled) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ORDER, "TaoALMMSetType() must be called before TaoSetUp()");
+  PetscCheckFalse(tao->setupcalled,PetscObjectComm((PetscObject)tao), PETSC_ERR_ORDER, "TaoALMMSetType() must be called before TaoSetUp()");
   auglag->type = type;
   PetscFunctionReturn(0);
 }
@@ -82,7 +82,7 @@ PetscErrorCode TaoALMMSetType_Private(Tao tao, TaoALMMType type)
 @*/
 PetscErrorCode TaoALMMGetSubsolver(Tao tao, Tao *subsolver)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
@@ -93,7 +93,7 @@ PetscErrorCode TaoALMMGetSubsolver(Tao tao, Tao *subsolver)
 
 PetscErrorCode TaoALMMGetSubsolver_Private(Tao tao, Tao *subsolver)
 {
-  TAO_ALMM        *auglag = (TAO_ALMM*)tao->data;
+  TAO_ALMM *auglag = (TAO_ALMM*)tao->data;
 
   PetscFunctionBegin;
   *subsolver = auglag->subsolver;
@@ -124,26 +124,27 @@ PetscErrorCode TaoALMMSetSubsolver(Tao tao, Tao subsolver)
 
 PetscErrorCode TaoALMMSetSubsolver_Private(Tao tao, Tao subsolver)
 {
-  TAO_ALMM        *auglag = (TAO_ALMM*)tao->data;
-  PetscBool       compatible;
-  PetscErrorCode  ierr;
+  TAO_ALMM       *auglag = (TAO_ALMM*)tao->data;
+  PetscBool      compatible;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (subsolver == auglag->subsolver) PetscFunctionReturn(0);
   if (tao->bounded) {
     ierr = PetscObjectTypeCompareAny((PetscObject)subsolver, &compatible, TAOSHELL, TAOBNCG, TAOBQNLS, TAOBQNKLS, TAOBQNKTR, TAOBQNKTL, "");CHKERRQ(ierr);
-    if (!compatible) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Subsolver must be a bound-constrained first-order method");
+    PetscCheckFalse(!compatible,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Subsolver must be a bound-constrained first-order method");
   } else {
     ierr = PetscObjectTypeCompareAny((PetscObject)subsolver, &compatible, TAOSHELL, TAOCG, TAOLMVM, TAOBNCG, TAOBQNLS, TAOBQNKLS, TAOBQNKTR, TAOBQNKTL, "");CHKERRQ(ierr);
-    if (!compatible) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Subsolver must be a first-order method");
+    PetscCheckFalse(!compatible,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Subsolver must be a first-order method");
   }
-  if (!compatible) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Subsolver must be a first-order method");
+  PetscCheckFalse(!compatible,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Subsolver must be a first-order method");
   ierr = PetscObjectReference((PetscObject)subsolver);CHKERRQ(ierr);
   ierr = TaoDestroy(&auglag->subsolver);CHKERRQ(ierr);
   auglag->subsolver = subsolver;
   if (tao->setupcalled) {
-    ierr = TaoSetInitialVector(auglag->subsolver, auglag->P);CHKERRQ(ierr);
-    ierr = TaoSetObjectiveAndGradientRoutine(auglag->subsolver, TaoALMMSubsolverObjectiveAndGradient_Private, (void*)auglag);CHKERRQ(ierr);
+    ierr = TaoSetSolution(auglag->subsolver, auglag->P);CHKERRQ(ierr);
+    ierr = TaoSetObjective(auglag->subsolver, TaoALMMSubsolverObjective_Private, (void*)auglag);CHKERRQ(ierr);
+    ierr = TaoSetObjectiveAndGradient(auglag->subsolver, NULL, TaoALMMSubsolverObjectiveAndGradient_Private, (void*)auglag);CHKERRQ(ierr);
     ierr = TaoSetVariableBounds(auglag->subsolver, auglag->PL, auglag->PU);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -170,7 +171,7 @@ PetscErrorCode TaoALMMSetSubsolver_Private(Tao tao, Tao subsolver)
 @*/
 PetscErrorCode TaoALMMGetMultipliers(Tao tao, Vec *Y)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
@@ -181,10 +182,10 @@ PetscErrorCode TaoALMMGetMultipliers(Tao tao, Vec *Y)
 
 PetscErrorCode TaoALMMGetMultipliers_Private(Tao tao, Vec *Y)
 {
-  TAO_ALMM        *auglag = (TAO_ALMM*)tao->data;
+  TAO_ALMM *auglag = (TAO_ALMM*)tao->data;
 
   PetscFunctionBegin;
-  if (!tao->setupcalled) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ORDER, "TaoSetUp() must be called first for scatters to be constructed");
+  PetscCheckFalse(!tao->setupcalled,PetscObjectComm((PetscObject)tao), PETSC_ERR_ORDER, "TaoSetUp() must be called first for scatters to be constructed");
   *Y = auglag->Y;
   PetscFunctionReturn(0);
 }
@@ -214,7 +215,7 @@ PetscErrorCode TaoALMMGetMultipliers_Private(Tao tao, Vec *Y)
 @*/
 PetscErrorCode TaoALMMSetMultipliers(Tao tao, Vec Y)
 {
-  PetscErrorCode  ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
@@ -241,7 +242,7 @@ PetscErrorCode TaoALMMSetMultipliers_Private(Tao tao, Vec Y)
     ierr = VecGetType(tao->constraints_inequality, &Ytype);CHKERRQ(ierr);
   }
   ierr = PetscObjectTypeCompare((PetscObject)Y, Ytype, &same);CHKERRQ(ierr);
-  if (!same) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Given vector for multipliers is not the same type as constraint vectors");
+  PetscCheckFalse(!same,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Given vector for multipliers is not the same type as constraint vectors");
   /* make sure global size matches sum of equality and inequality */
   if (tao->eq_constrained) {
     ierr = VecGetSize(tao->constraints_equality, &Neq);CHKERRQ(ierr);
@@ -255,17 +256,17 @@ PetscErrorCode TaoALMMSetMultipliers_Private(Tao tao, Vec Y)
   }
   N = Neq + Nineq;
   ierr = VecGetSize(Y, &Nuser);CHKERRQ(ierr);
-  if (Nuser != N) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Given vector has wrong global size");
+  PetscCheckFalse(Nuser != N,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Given vector has wrong global size");
   /* if there is only one type of constraint, then we need the local size to match too */
   if (Neq == 0) {
     ierr = VecGetLocalSize(tao->constraints_inequality, &Nineq);CHKERRQ(ierr);
     ierr = VecGetLocalSize(Y, &Nuser);CHKERRQ(ierr);
-    if (Nuser != Nineq) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Given vector has wrong local size");
+    PetscCheckFalse(Nuser != Nineq,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Given vector has wrong local size");
   }
   if (Nineq == 0) {
     ierr = VecGetLocalSize(tao->constraints_equality, &Neq);CHKERRQ(ierr);
     ierr = VecGetLocalSize(Y, &Nuser);CHKERRQ(ierr);
-    if (Nuser != Neq) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Given vector has wrong local size");
+    PetscCheckFalse(Nuser != Neq,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Given vector has wrong local size");
   }
   /* if we got here, the given vector is compatible so we can replace the current one */
   ierr = PetscObjectReference((PetscObject)Y);CHKERRQ(ierr);
@@ -289,7 +290,7 @@ PetscErrorCode TaoALMMSetMultipliers_Private(Tao tao, Vec Y)
                         and slack variable components of the subsolver's solution vector.
                         Not valid for problems with only equality constraints.
 
-   Input Parameters:
+   Input Parameter:
 .  tao - the Tao context for the TAOALMM solver
 
    Output Parameters:
@@ -312,18 +313,13 @@ PetscErrorCode TaoALMMGetPrimalIS(Tao tao, IS *opt_is, IS *slack_is)
 
 PetscErrorCode TaoALMMGetPrimalIS_Private(Tao tao, IS *opt_is, IS *slack_is)
 {
-  TAO_ALMM   *auglag = (TAO_ALMM*)tao->data;
+  TAO_ALMM *auglag = (TAO_ALMM*)tao->data;
 
   PetscFunctionBegin;
-  if (!tao->ineq_constrained) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "Primal space has index sets only for inequality constrained problems");
-  if (!tao->setupcalled) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ORDER, "TaoSetUp() must be called first for index sets to be constructed");
-  if (!opt_is && !slack_is) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_NULL, "Both index set pointers cannot be NULL");
-  if (opt_is) {
-     *opt_is = auglag->Pis[0];
-  }
-  if (slack_is) {
-     *slack_is = auglag->Pis[1];
-  }
+  PetscCheckFalse(!tao->ineq_constrained,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "Primal space has index sets only for inequality constrained problems");
+  PetscCheckFalse(!tao->setupcalled,PetscObjectComm((PetscObject)tao), PETSC_ERR_ORDER, "TaoSetUp() must be called first for index sets to be constructed");
+  if (opt_is) *opt_is = auglag->Pis[0];
+  if (slack_is) *slack_is = auglag->Pis[1];
   PetscFunctionReturn(0);
 }
 
@@ -333,7 +329,7 @@ PetscErrorCode TaoALMMGetPrimalIS_Private(Tao tao, IS *opt_is, IS *slack_is)
                       by TaoALMMGetMultipliers(). Not valid for problems with only one
                       type of constraint.
 
-   Input Parameters:
+   Input Parameter:
 .  tao - the Tao context for the TAOALMM solver
 
    Output Parameters:
@@ -356,18 +352,13 @@ PetscErrorCode TaoALMMGetDualIS(Tao tao, IS *eq_is, IS *ineq_is)
 
 PetscErrorCode TaoALMMGetDualIS_Private(Tao tao, IS *eq_is, IS *ineq_is)
 {
-  TAO_ALMM   *auglag = (TAO_ALMM*)tao->data;
+  TAO_ALMM *auglag = (TAO_ALMM*)tao->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
-  if (!tao->ineq_constrained || !tao->ineq_constrained) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "Dual space has index sets only when problem has both equality and inequality constraints");
-  if (!tao->setupcalled) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ORDER, "TaoSetUp() must be called first for index sets to be constructed");
-  if (!eq_is && !ineq_is) SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_NULL, "Both index set pointers cannot be NULL");
-  if (eq_is) {
-     *eq_is = auglag->Yis[0];
-  }
-  if (ineq_is) {
-     *ineq_is = auglag->Yis[1];
-  }
+  PetscCheckFalse(!tao->ineq_constrained || !tao->ineq_constrained,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "Dual space has index sets only when problem has both equality and inequality constraints");
+  PetscCheckFalse(!tao->setupcalled,PetscObjectComm((PetscObject)tao), PETSC_ERR_ORDER, "TaoSetUp() must be called first for index sets to be constructed");
+  if (eq_is) *eq_is = auglag->Yis[0];
+  if (ineq_is) *ineq_is = auglag->Yis[1];
   PetscFunctionReturn(0);
 }

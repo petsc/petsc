@@ -110,7 +110,7 @@ struct _n_User {
   PetscBool vtkmon;
 };
 
-PETSC_STATIC_INLINE PetscReal DotDIMReal(const PetscReal *x,const PetscReal *y)
+static inline PetscReal DotDIMReal(const PetscReal *x,const PetscReal *y)
 {
   PetscInt  i;
   PetscReal prod=0.0;
@@ -118,13 +118,13 @@ PETSC_STATIC_INLINE PetscReal DotDIMReal(const PetscReal *x,const PetscReal *y)
   for (i=0; i<DIM; i++) prod += x[i]*y[i];
   return prod;
 }
-PETSC_STATIC_INLINE PetscReal NormDIM(const PetscReal *x) { return PetscSqrtReal(PetscAbsReal(DotDIMReal(x,x))); }
+static inline PetscReal NormDIM(const PetscReal *x) { return PetscSqrtReal(PetscAbsReal(DotDIMReal(x,x))); }
 
-PETSC_STATIC_INLINE PetscReal Dot2Real(const PetscReal *x,const PetscReal *y) { return x[0]*y[0] + x[1]*y[1];}
-PETSC_STATIC_INLINE PetscReal Norm2Real(const PetscReal *x) { return PetscSqrtReal(PetscAbsReal(Dot2Real(x,x)));}
-PETSC_STATIC_INLINE void Normalize2Real(PetscReal *x) { PetscReal a = 1./Norm2Real(x); x[0] *= a; x[1] *= a; }
-PETSC_STATIC_INLINE void Waxpy2Real(PetscReal a,const PetscReal *x,const PetscReal *y,PetscReal *w) { w[0] = a*x[0] + y[0]; w[1] = a*x[1] + y[1]; }
-PETSC_STATIC_INLINE void Scale2Real(PetscReal a,const PetscReal *x,PetscReal *y) { y[0] = a*x[0]; y[1] = a*x[1]; }
+static inline PetscReal Dot2Real(const PetscReal *x,const PetscReal *y) { return x[0]*y[0] + x[1]*y[1];}
+static inline PetscReal Norm2Real(const PetscReal *x) { return PetscSqrtReal(PetscAbsReal(Dot2Real(x,x)));}
+static inline void Normalize2Real(PetscReal *x) { PetscReal a = 1./Norm2Real(x); x[0] *= a; x[1] *= a; }
+static inline void Waxpy2Real(PetscReal a,const PetscReal *x,const PetscReal *y,PetscReal *w) { w[0] = a*x[0] + y[0]; w[1] = a*x[1] + y[1]; }
+static inline void Scale2Real(PetscReal a,const PetscReal *x,PetscReal *y) { y[0] = a*x[0]; y[1] = a*x[1]; }
 
 /******************* Advect ********************/
 typedef enum {ADVECT_SOL_TILTED,ADVECT_SOL_BUMP,ADVECT_SOL_BUMP_CAVITY} AdvectSolType;
@@ -220,7 +220,7 @@ static void PhysicsRiemann_Advect(PetscInt dim, PetscInt Nf, const PetscReal *qp
     PetscInt i;
     for (i = 0; i < DIM; ++i) wind[i] = 0.0;
   }
-  /* default: SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for solution type %s",AdvectSolBumpTypes[advect->soltype]); */
+  /* default: SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for solution type %s",AdvectSolBumpTypes[advect->soltype]); */
   }
   wn      = Dot2Real(wind, n);
   flux[0] = (wn > 0 ? xL[0] : xR[0]) * wn;
@@ -486,7 +486,7 @@ static PetscErrorCode PhysicsSolution_SW(Model mod,PetscReal time,const PetscRea
   PetscReal dx[2],r,sigma;
 
   PetscFunctionBeginUser;
-  if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
+  PetscCheckFalse(time != 0.0,mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
   dx[0] = x[0] - 1.5;
   dx[1] = x[1] - 1.0;
   r     = Norm2Real(dx);
@@ -602,7 +602,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod, PetscReal time, const Pet
   EulerNode       *uu  = (EulerNode*)u;
   PetscReal        p0,gamma,c;
   PetscFunctionBeginUser;
-  if (time != 0.0) SETERRQ1(mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
+  PetscCheckFalse(time != 0.0,mod->comm,PETSC_ERR_SUP,"No solution known for time %g",(double)time);
 
   for (i=0; i<DIM; i++) uu->ru[i] = 0.0; /* zero out initial velocity */
   /* set E and rho */
@@ -651,7 +651,7 @@ static PetscErrorCode PhysicsSolution_Euler(Model mod, PetscReal time, const Pet
   else if (eu->type==EULER_LINEAR_WAVE) {
     initLinearWave( uu, gamma, x, mod->bounds[1] - mod->bounds[0]);
   }
-  else SETERRQ1(mod->comm,PETSC_ERR_SUP,"Unknown type %d",eu->type);
+  else SETERRQ(mod->comm,PETSC_ERR_SUP,"Unknown type %d",eu->type);
 
   /* set phys->maxspeed: (mod->maxspeed = phys->maxspeed) in main; */
   eu->sound(&gamma,uu,&c);
@@ -677,7 +677,7 @@ static PetscErrorCode SpeedOfSound_PG(const PetscReal *gamma, const EulerNode *x
 
   PetscFunctionBeginUser;
   Pressure_PG(*gamma,x,&p);
-  if (p<0.) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"negative pressure time %g -- NEED TO FIX!!!!!!",(double) p);
+  PetscCheckFalse(p<0.,PETSC_COMM_WORLD,PETSC_ERR_SUP,"negative pressure time %g -- NEED TO FIX!!!!!!",(double) p);
   /* pars[EULER_PAR_GAMMA] = heat capacity ratio */
   (*c)=PetscSqrtReal(*gamma * p / x->r);
   PetscFunctionReturn(0);
@@ -830,7 +830,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItem
     ierr = PetscOptionsReal("-eu_rho2","Density right of discontinuity","",eu->pars[EULER_PAR_RHOR],&eu->pars[EULER_PAR_RHOR],NULL);CHKERRQ(ierr);
     alpha = 60.;
     ierr = PetscOptionsReal("-eu_alpha","Angle of discontinuity","",alpha,&alpha,NULL);CHKERRQ(ierr);
-    if (alpha<=0. || alpha>90.) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Alpha bust be > 0 and <= 90 (%g)",alpha);
+    PetscCheckFalse(alpha<=0. || alpha>90.,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Alpha bust be > 0 and <= 90 (%g)",alpha);
     eu->pars[EULER_PAR_ITANA] = 1./PetscTanReal( alpha * PETSC_PI / 180.0);
     ierr = PetscOptionsString("-eu_type","Type of Euler test","",type,type,sizeof(type),NULL);CHKERRQ(ierr);
     ierr = PetscStrcmp(type,"linear_wave", &is);CHKERRQ(ierr);
@@ -840,7 +840,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItem
       ierr = PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",PETSC_FUNCTION_NAME,"linear_wave");CHKERRQ(ierr);
     }
     else {
-      if (DIM != 2) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DIM must be 2 unless linear wave test %s",type);
+      PetscCheckFalse(DIM != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"DIM must be 2 unless linear wave test %s",type);
       ierr = PetscStrcmp(type,"iv_shock", &is);CHKERRQ(ierr);
       if (is) {
         eu->type = EULER_IV_SHOCK;
@@ -855,7 +855,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod,Physics phys,PetscOptionItem
         else {
           ierr = PetscStrcmp(type,"shock_tube", &is);CHKERRQ(ierr);
           if (is) eu->type = EULER_SHOCK_TUBE;
-          else SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown Euler type %s",type);
+          else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown Euler type %s",type);
           ierr = PetscPrintf(PETSC_COMM_WORLD,"%s set Euler type: %s\n",PETSC_FUNCTION_NAME,"shock_tube");CHKERRQ(ierr);
         }
       }
@@ -990,7 +990,7 @@ PetscErrorCode CreateMassMatrix(DM dm, Vec *massMatrix, User user)
         sides[1] = faces[g];
         ierr = DMPlexPointLocalRead(dmFace, faces[g], fgeom, &fgB);CHKERRQ(ierr);
         ierr = DMPlexGetJoin(dmMass, 2, sides, &numCells, &cells);CHKERRQ(ierr);
-        if (numCells != 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid join for faces");
+        PetscCheckFalse(numCells != 1,PETSC_COMM_SELF, PETSC_ERR_LIB, "Invalid join for faces");
         ierr = DMPlexPointLocalRead(dmCell, cells[0], cgeom, &cg);CHKERRQ(ierr);
         area += PetscAbsScalar((vertex[0] - cg->centroid[0])*(fgA->centroid[1] - cg->centroid[1]) - (vertex[1] - cg->centroid[1])*(fgA->centroid[0] - cg->centroid[0]));
         area += PetscAbsScalar((vertex[0] - cg->centroid[0])*(fgB->centroid[1] - cg->centroid[1]) - (vertex[1] - cg->centroid[1])*(fgB->centroid[0] - cg->centroid[0]));
@@ -1057,7 +1057,7 @@ static PetscErrorCode ModelFunctionalSetFromOptions(Model mod,PetscOptionItems *
       ierr = PetscStrcasecmp(names[i],link->name,&match);CHKERRQ(ierr);
       if (match) break;
     }
-    if (!link) SETERRQ1(mod->comm,PETSC_ERR_USER,"No known functional '%s'",names[i]);
+    PetscCheckFalse(!link,mod->comm,PETSC_ERR_USER,"No known functional '%s'",names[i]);
     mod->functionalMonitored[i] = link;
     for (j=0; j<i; j++) {
       if (mod->functionalCall[j]->func == link->func && mod->functionalCall[j]->ctx == link->ctx) goto next_name;
@@ -1338,8 +1338,8 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, VecTagger r
   ierr = VecDestroy(&locX);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
 
-  ierr = VecTaggerComputeIS(refineTag,errVec,&refineIS);CHKERRQ(ierr);
-  ierr = VecTaggerComputeIS(coarsenTag,errVec,&coarsenIS);CHKERRQ(ierr);
+  ierr = VecTaggerComputeIS(refineTag,errVec,&refineIS,NULL);CHKERRQ(ierr);
+  ierr = VecTaggerComputeIS(coarsenTag,errVec,&coarsenIS,NULL);CHKERRQ(ierr);
   ierr = ISGetSize(refineIS,&nRefine);CHKERRQ(ierr);
   ierr = ISGetSize(coarsenIS,&nCoarsen);CHKERRQ(ierr);
   if (nRefine) {ierr = DMLabelSetStratumIS(adaptLabel,DM_ADAPT_REFINE,refineIS);CHKERRQ(ierr);}
@@ -1353,13 +1353,13 @@ static PetscErrorCode adaptToleranceFVM(PetscFV fvm, TS ts, Vec sol, VecTagger r
   ierr = MPI_Allreduce(minMaxInd,minMaxIndGlobal,2,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRMPI(ierr);
   minInd = minMaxIndGlobal[0];
   maxInd = -minMaxIndGlobal[1];
-  ierr = PetscInfo2(ts, "error indicator range (%E, %E)\n", minInd, maxInd);CHKERRQ(ierr);
+  ierr = PetscInfo(ts, "error indicator range (%E, %E)\n", minInd, maxInd);CHKERRQ(ierr);
   if (nRefine || nCoarsen) { /* at least one cell is over the refinement threshold */
     ierr = DMAdaptLabel(dm,adaptLabel,&adaptedDM);CHKERRQ(ierr);
   }
   ierr = DMLabelDestroy(&adaptLabel);CHKERRQ(ierr);
   if (adaptedDM) {
-    ierr = PetscInfo2(ts, "Adapted mesh, marking %D cells for refinement, and %D cells for coarsening\n", nRefine, nCoarsen);CHKERRQ(ierr);
+    ierr = PetscInfo(ts, "Adapted mesh, marking %D cells for refinement, and %D cells for coarsening\n", nRefine, nCoarsen);CHKERRQ(ierr);
     if (tsNew) {ierr = initializeTS(adaptedDM, user, tsNew);CHKERRQ(ierr);}
     if (solNew) {
       ierr = DMCreateGlobalVector(adaptedDM, solNew);CHKERRQ(ierr);
@@ -1463,7 +1463,7 @@ int main(int argc, char **argv)
     ierr = (*physcreate)(mod,phys,PetscOptionsObject);CHKERRQ(ierr);
     /* Count number of fields and dofs */
     for (phys->nfields=0,phys->dof=0; phys->field_desc[phys->nfields].name; phys->nfields++) phys->dof += phys->field_desc[phys->nfields].dof;
-    if (phys->dof <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
+    PetscCheckFalse(phys->dof <= 0,comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set dof",physname);
     ierr = ModelFunctionalSetFromOptions(mod,PetscOptionsObject);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -1496,7 +1496,7 @@ int main(int argc, char **argv)
         ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
         ierr = DMGetCoordinateDim(dm,&dimEmbed);CHKERRQ(ierr);
         ierr = VecGetLocalSize(coordinates,&nCoords);CHKERRQ(ierr);
-        if (nCoords % dimEmbed) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");
+        PetscCheckFalse(nCoords % dimEmbed,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Coordinate vector the wrong size");
         ierr = VecGetArray(coordinates,&coords);CHKERRQ(ierr);
         for (i = 0; i < nCoords; i += dimEmbed) {
           PetscInt j;
@@ -1610,7 +1610,7 @@ int main(int argc, char **argv)
       TS             tsNew = NULL;
 
       ierr = PetscMemoryGetCurrentUsage(&bytes);CHKERRQ(ierr);
-      ierr = PetscInfo2(ts, "refinement loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
+      ierr = PetscInfo(ts, "refinement loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
       ierr = DMViewFromOptions(dm, NULL, "-initial_dm_view");CHKERRQ(ierr);
       ierr = VecViewFromOptions(X, NULL, "-initial_vec_view");CHKERRQ(ierr);
 #if 0
@@ -1681,7 +1681,7 @@ int main(int argc, char **argv)
   ierr = DMPlexGetGeometryFVM(plex, NULL, NULL, &minRadius);CHKERRQ(ierr);
   ierr = DMDestroy(&plex);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&phys->maxspeed,&mod->maxspeed,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
-  if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
+  PetscCheckFalse(mod->maxspeed <= 0,comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
   dt   = cfl * minRadius / mod->maxspeed;
   ierr = TSSetTimeStep(ts,dt);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
@@ -1704,7 +1704,7 @@ int main(int argc, char **argv)
       PetscLogDouble bytes;
 
       ierr = PetscMemoryGetCurrentUsage(&bytes);CHKERRQ(ierr);
-      ierr = PetscInfo2(ts, "AMR time step loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
+      ierr = PetscInfo(ts, "AMR time step loop %D: memory used %g\n", adaptIter, bytes);CHKERRQ(ierr);
       ierr = PetscFVSetLimiter(fvm,noneLimiter);CHKERRQ(ierr);
       ierr = adaptToleranceFVM(fvm,ts,X,refineTag,coarsenTag,user,&tsNew,&solNew);CHKERRQ(ierr);
       ierr = PetscFVSetLimiter(fvm,limiter);CHKERRQ(ierr);
@@ -1722,7 +1722,7 @@ int main(int argc, char **argv)
         ierr = DMPlexGetGeometryFVM(dm, NULL, NULL, &minRadius);CHKERRQ(ierr);
         ierr = DMDestroy(&plex);CHKERRQ(ierr);
         ierr = MPI_Allreduce(&phys->maxspeed,&mod->maxspeed,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)ts));CHKERRMPI(ierr);
-        if (mod->maxspeed <= 0) SETERRQ1(comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
+        PetscCheckFalse(mod->maxspeed <= 0,comm,PETSC_ERR_ARG_WRONGSTATE,"Physics '%s' did not set maxspeed",physname);
         dt   = cfl * minRadius / mod->maxspeed;
         ierr = TSSetStepNumber(ts,nsteps);CHKERRQ(ierr);
         ierr = TSSetTime(ts,ftime);CHKERRQ(ierr);
@@ -2315,13 +2315,13 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
       suffix: tut_3
       requires: exodusii
       nsize: 4
-      args: -dm_distribute -dm_distribute_overlap 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -monitor Error -advect_sol_type bump -petscfv_type leastsquares -petsclimiter_type sin
+      args: -dm_distribute_overlap 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -monitor Error -advect_sol_type bump -petscfv_type leastsquares -petsclimiter_type sin
 
     test:
       suffix: tut_4
       requires: exodusii
       nsize: 4
-      args: -dm_distribute -dm_distribute_overlap 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -physics sw -monitor Height,Energy -petscfv_type leastsquares -petsclimiter_type minmod
+      args: -dm_distribute_overlap 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/annulus-20.exo -physics sw -monitor Height,Energy -petscfv_type leastsquares -petsclimiter_type minmod
 
   testset:
     args: -dm_plex_adj_cone -dm_plex_adj_closure 0 -dm_plex_simplex 0 -dm_plex_box_faces 1,1,1
@@ -2341,19 +2341,19 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
       suffix: 2
       requires: exodusii
       nsize: 2
-      args: -dm_distribute -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
+      args: -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside.exo
 
     test:
       suffix: 3
       requires: exodusii
       nsize: 2
-      args: -dm_distribute -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo
+      args: -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo
 
     test:
       suffix: 4
       requires: exodusii
       nsize: 8
-      args: -dm_distribute -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo
+      args: -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo
 
     test:
       suffix: 5
@@ -2369,13 +2369,13 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
       suffix: 8
       requires: exodusii
       nsize: 2
-      args: -dm_distribute -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 1
+      args: -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 1
 
     test:
       suffix: 9
       requires: exodusii
       nsize: 8
-      args: -dm_distribute -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 1
+      args: -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad-15.exo -dm_refine 1
 
     test:
       suffix: 10

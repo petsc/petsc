@@ -169,7 +169,7 @@ PETSC_INTERN PetscInt PCTFS_ivec_ub(PetscInt*,PetscInt);
 PETSC_INTERN PetscInt PCTFS_ivec_sum(PetscInt*,PetscInt);
 PETSC_INTERN vfp      PCTFS_ivec_fct_addr(PetscInt);
 
-PETSC_INTERN PetscErrorCode PCTFS_ivec_non_uniform(PetscInt*,PetscInt*,PetscInt,PetscInt*);
+PETSC_INTERN PetscErrorCode PCTFS_ivec_non_uniform(PetscInt*,PetscInt*,PetscInt,...);
 PETSC_INTERN PetscErrorCode PCTFS_ivec_max(PetscInt*,PetscInt*,PetscInt);
 PETSC_INTERN PetscErrorCode PCTFS_ivec_min(PetscInt*,PetscInt*,PetscInt);
 PETSC_INTERN PetscErrorCode PCTFS_ivec_mult(PetscInt*,PetscInt*,PetscInt);

@@ -477,19 +477,19 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
     ierr = ISGetIndices(is,&id);CHKERRQ(ierr);
     ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
     ierr = VecGetLocalSize(vreduced,&m);CHKERRQ(ierr);
-    if (m != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"IS local length not equal to Vec local length");
+    PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_SUP,"IS local length not equal to Vec local length");
     ierr = VecGetOwnershipRange(vfull,&rstart,&rend);CHKERRQ(ierr);
     y   -= rstart;
     if (alpha == 1.0) {
       for (i=0; i<n; ++i) {
         if (id[i] < 0) continue;
-        if (id[i] < rstart || id[i] >= rend) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+        PetscCheckFalse(id[i] < rstart || id[i] >= rend,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
         y[id[i]] += x[i];
       }
     } else {
       for (i=0; i<n; ++i) {
         if (id[i] < 0) continue;
-        if (id[i] < rstart || id[i] >= rend) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+        PetscCheckFalse(id[i] < rstart || id[i] >= rend,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
         y[id[i]] += alpha*x[i];
       }
     }
@@ -550,7 +550,7 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
     ierr = ISGetLocalSize(is, &n);CHKERRQ(ierr);
     ierr = VecGetLocalSize(vreduced, &m);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(vfull, &rstart, &rend);CHKERRQ(ierr);
-    if (m != n) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "IS local length %D not equal to Vec local length %D", n, m);
+    PetscCheckFalse(m != n,PETSC_COMM_SELF, PETSC_ERR_SUP, "IS local length %" PetscInt_FMT " not equal to Vec local length %" PetscInt_FMT, n, m);
     if (mode == SCATTER_FORWARD) {
       PetscScalar       *y;
       const PetscScalar *x;
@@ -560,7 +560,7 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
       y   -= rstart;
       for (i = 0; i < n; ++i) {
         if (id[i] < 0) continue;
-        if (id[i] < rstart || id[i] >= rend) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+        PetscCheckFalse(id[i] < rstart || id[i] >= rend,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
         y[id[i]] = x[i];
       }
       y   += rstart;
@@ -574,7 +574,7 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
       ierr = VecGetArray(vreduced, &x);CHKERRQ(ierr);
       for (i = 0; i < n; ++i) {
         if (id[i] < 0) continue;
-        if (id[i] < rstart || id[i] >= rend) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+        PetscCheckFalse(id[i] < rstart || id[i] >= rend,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
         x[i] = y[id[i]-rstart];
       }
       ierr = VecRestoreArray(vreduced, &x);CHKERRQ(ierr);
@@ -590,7 +590,7 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
 
    Collective on IS
 
-   Input Parameter:
+   Input Parameters:
 +  S -  a PETSc IS
 -  V - the reference vector space
 
@@ -615,7 +615,7 @@ PetscErrorCode ISComplementVec(IS S, Vec V, IS *T)
 /*@
    VecISSet - Sets the elements of a vector, specified by an index set, to a constant
 
-   Input Parameter:
+   Input Parameters:
 +  V - the vector
 .  S - index set for the locations in the vector
 -  c - the constant
@@ -647,7 +647,7 @@ PetscErrorCode VecISSet(Vec V,IS S, PetscScalar c)
   ierr = VecGetArray(V,&v);CHKERRQ(ierr);
   for (i=0; i<nloc; ++i) {
     if (s[i] < 0) continue;
-    if (s[i] < low || s[i] >= high) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
+    PetscCheckFalse(s[i] < low || s[i] >= high,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only owned values supported");
     v[s[i]-low] = c;
   }
   ierr = ISRestoreIndices(S,&s);CHKERRQ(ierr);
@@ -779,7 +779,7 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
 .      XU - upper bounds
 -      DX  - step direction, can have negative, positive or zero entries
 
-     Output Parameter:
+     Output Parameters:
 +     boundmin -  (may be NULL this it is not computed) maximum value so that   XL[i] <= X[i] + boundmax*DX[i] <= XU[i]
 .     wolfemin -  (may be NULL this it is not computed)
 -     boundmax -   (may be NULL this it is not computed) minimum value so that X[i] + boundmax*DX[i] <= XL[i]  or  XU[i] <= X[i] + boundmax*DX[i]
@@ -835,16 +835,16 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
 
   if (boundmin) {
     ierr = MPIU_Allreduce(&localmin,boundmin,1,MPIU_REAL,MPIU_MIN,comm);CHKERRMPI(ierr);
-    ierr = PetscInfo1(X,"Step Bound Info: Closest Bound: %20.19e\n",(double)*boundmin);CHKERRQ(ierr);
+    ierr = PetscInfo(X,"Step Bound Info: Closest Bound: %20.19e\n",(double)*boundmin);CHKERRQ(ierr);
   }
   if (wolfemin) {
     ierr = MPIU_Allreduce(&localwolfemin,wolfemin,1,MPIU_REAL,MPIU_MIN,comm);CHKERRMPI(ierr);
-    ierr = PetscInfo1(X,"Step Bound Info: Wolfe: %20.19e\n",(double)*wolfemin);CHKERRQ(ierr);
+    ierr = PetscInfo(X,"Step Bound Info: Wolfe: %20.19e\n",(double)*wolfemin);CHKERRQ(ierr);
   }
   if (boundmax) {
     ierr = MPIU_Allreduce(&localmax,boundmax,1,MPIU_REAL,MPIU_MAX,comm);CHKERRMPI(ierr);
     if (*boundmax < 0) *boundmax=PETSC_INFINITY;
-    ierr = PetscInfo1(X,"Step Bound Info: Max: %20.19e\n",(double)*boundmax);CHKERRQ(ierr);
+    ierr = PetscInfo(X,"Step Bound Info: Max: %20.19e\n",(double)*boundmax);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -881,7 +881,7 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
   ierr = VecGetArrayRead(X,&xx);CHKERRQ(ierr);
   ierr = VecGetArrayRead(DX,&dx);CHKERRQ(ierr);
   for (i=0;i<nn;++i) {
-    if (PetscRealPart(xx[i]) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Vector must be positive");
+    PetscCheckFalse(PetscRealPart(xx[i]) < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Vector must be positive");
     else if (PetscRealPart(dx[i])<0) stepmax=PetscMin(stepmax,PetscRealPart(-xx[i]/dx[i]));
   }
   ierr = VecRestoreArrayRead(X,&xx);CHKERRQ(ierr);
@@ -895,12 +895,9 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
 
   Logically Collective on v
 
-  Input Parameter:
+  Input Parameters:
 + v - the vector
 - p - the exponent to use on each element
-
-  Output Parameter:
-. v - the vector
 
   Level: intermediate
 
@@ -975,7 +972,9 @@ PetscErrorCode VecPow(Vec v, PetscScalar p)
   Logically Collective
 
   Input Parameters:
-. Vec1, Vec2, Vec3 - The three vectors
++ Vec1 - The first vector
+. Vec2 - The second vector
+- Vec3 - The third vector
 
   Output Parameter:
 . VMedian - The median vector (this can be any one of the input vectors)

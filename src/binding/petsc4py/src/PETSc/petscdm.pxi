@@ -46,6 +46,8 @@ cdef extern from * nogil:
     int DMGetDimension(PetscDM,PetscInt*)
     int DMSetDimension(PetscDM,PetscInt)
     int DMSetOptionsPrefix(PetscDM,char[])
+    int DMGetOptionsPrefix(PetscDM,char*[])
+    int DMAppendOptionsPrefix(PetscDM,char[])
     int DMSetFromOptions(PetscDM)
     int DMViewFromOptions(PetscDM,PetscObject,char[])
     int DMSetUp(PetscDM)
@@ -60,6 +62,7 @@ cdef extern from * nogil:
     int DMSetField(PetscDM,PetscInt,PetscDMLabel,PetscObject)
     int DMAddField(PetscDM,PetscDMLabel,PetscObject)
     int DMGetField(PetscDM,PetscInt,PetscDMLabel*,PetscObject*)
+    int DMClearFields(PetscDM)
     int DMCopyFields(PetscDM,PetscDM)
     int DMCreateDS(PetscDM)
     int DMClearDS(PetscDM)
@@ -102,7 +105,7 @@ cdef extern from * nogil:
     int DMGetCoarsenLevel(PetscDM,PetscInt*)
 
     int DMAdaptLabel(PetscDM,PetscDMLabel,PetscDM*)
-    int DMAdaptMetric(PetscDM,PetscVec,PetscDMLabel,PetscDM*)
+    int DMAdaptMetric(PetscDM,PetscVec,PetscDMLabel,PetscDMLabel,PetscDM*)
 
     int DMGlobalToLocalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)
     int DMGlobalToLocalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)

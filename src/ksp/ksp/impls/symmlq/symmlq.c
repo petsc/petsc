@@ -29,7 +29,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   X    = ksp->vec_sol;
   B    = ksp->vec_rhs;
@@ -61,7 +61,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);             /* dp = r'*z;      */
   KSPCheckDot(ksp,dp);
   if (PetscAbsScalar(dp) < symmlq->haptol) {
-    ierr        = PetscInfo2(ksp,"Detected happy breakdown %g tolerance %g\n",(double)PetscAbsScalar(dp),(double)symmlq->haptol);CHKERRQ(ierr);
+    ierr        = PetscInfo(ksp,"Detected happy breakdown %g tolerance %g\n",(double)PetscAbsScalar(dp),(double)symmlq->haptol);CHKERRQ(ierr);
     ksp->rnorm  = 0.0;  /* what should we really put here? */
     ksp->reason = KSP_CONVERGED_HAPPY_BREAKDOWN;  /* bugfix proposed by Lourens (lourens.vanzanen@shell.com) */
     PetscFunctionReturn(0);
@@ -132,7 +132,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
     ierr    = VecDot(R,Z,&dp);CHKERRQ(ierr);       /* dp <- r'*z;             */
     KSPCheckDot(ksp,dp);
     if (PetscAbsScalar(dp) < symmlq->haptol) {
-      ierr = PetscInfo2(ksp,"Detected happy breakdown %g tolerance %g\n",(double)PetscAbsScalar(dp),(double)symmlq->haptol);CHKERRQ(ierr);
+      ierr = PetscInfo(ksp,"Detected happy breakdown %g tolerance %g\n",(double)PetscAbsScalar(dp),(double)symmlq->haptol);CHKERRQ(ierr);
       dp   = 0.0;
     }
 

@@ -99,7 +99,7 @@ PetscErrorCode  PetscRandomSetSeed(PetscRandom r,unsigned long seed)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
   r->seed = seed;
-  ierr    = PetscInfo1(NULL,"Setting seed to %d\n",(int)seed);CHKERRQ(ierr);
+  ierr    = PetscInfo(NULL,"Setting seed to %d\n",(int)seed);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -287,7 +287,7 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
 
     ierr = PetscObjectGetName((PetscObject)rnd,&name);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-    if (!((PetscObject)rnd)->amsmem && !rank) {
+    if (!((PetscObject)rnd)->amsmem && rank == 0) {
       char       dir[1024];
 
       ierr = PetscObjectViewSAWs((PetscObject)rnd,viewer);CHKERRQ(ierr);

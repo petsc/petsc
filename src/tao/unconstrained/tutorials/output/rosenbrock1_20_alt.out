@@ -1,0 +1,124 @@
+  0 TAO,  Function value: 1.,  Residual: 2. 
+    0 LS    Function value: 1.,    Step length: 0.
+    1 LS    Function value: 99.,    Step length: 1.
+        stx: 0., fx: 1., dgx: -2.
+        sty: 0., fy: 1., dgy: -2.
+    2 LS    Function value: 0.773446,    Step length: 0.174936
+        stx: 0., fx: 1., dgx: -2.
+        sty: 1., fy: 99., dgy: 396.
+  1 TAO,  Function value: 0.773446,  Residual: 6.07754 
+    0 LS    Function value: 0.773446,    Step length: 0.
+    1 LS    Function value: 0.648599,    Step length: 1.
+        stx: 0., fx: 0.773446, dgx: -0.154432
+        sty: 0., fy: 0.773446, dgy: -0.154432
+  2 TAO,  Function value: 0.648599,  Residual: 3.22619 
+    0 LS    Function value: 0.648599,    Step length: 0.
+    1 LS    Function value: 0.865443,    Step length: 1.
+        stx: 0., fx: 0.648599, dgx: -0.340628
+        sty: 0., fy: 0.648599, dgy: -0.340628
+    2 LS    Function value: 0.560405,    Step length: 0.38269
+        stx: 0., fx: 0.648599, dgx: -0.340628
+        sty: 1., fy: 0.865443, dgy: 1.37753
+  3 TAO,  Function value: 0.560405,  Residual: 5.47111 
+    0 LS    Function value: 0.560405,    Step length: 0.
+    1 LS    Function value: 0.379185,    Step length: 1.
+        stx: 0., fx: 0.560405, dgx: -0.260357
+        sty: 0., fy: 0.560405, dgy: -0.260357
+  4 TAO,  Function value: 0.379185,  Residual: 3.01164 
+    0 LS    Function value: 0.379185,    Step length: 0.
+    1 LS    Function value: 0.280758,    Step length: 1.
+        stx: 0., fx: 0.379185, dgx: -0.125226
+        sty: 0., fy: 0.379185, dgy: -0.125226
+  5 TAO,  Function value: 0.280758,  Residual: 2.68639 
+    0 LS    Function value: 0.280758,    Step length: 0.
+    1 LS    Function value: 0.187321,    Step length: 1.
+        stx: 0., fx: 0.280758, dgx: -0.173338
+        sty: 0., fy: 0.280758, dgy: -0.173338
+  6 TAO,  Function value: 0.187321,  Residual: 3.78983 
+    0 LS    Function value: 0.187321,    Step length: 0.
+    1 LS    Function value: 51.7692,    Step length: 1.
+        stx: 0., fx: 0.187321, dgx: -0.878193
+        sty: 0., fy: 0.187321, dgy: -0.878193
+    2 LS    Function value: 0.129228,    Step length: 0.151133
+        stx: 0., fx: 0.187321, dgx: -0.878193
+        sty: 1., fy: 51.7692, dgy: 195.19
+  7 TAO,  Function value: 0.129228,  Residual: 6.25765 
+    0 LS    Function value: 0.129228,    Step length: 0.
+    1 LS    Function value: 0.109362,    Step length: 1.
+        stx: 0., fx: 0.129228, dgx: -0.05436
+        sty: 0., fy: 0.129228, dgy: -0.05436
+  8 TAO,  Function value: 0.109362,  Residual: 0.456988 
+    0 LS    Function value: 0.109362,    Step length: 0.
+    1 LS    Function value: 0.0850818,    Step length: 1.
+        stx: 0., fx: 0.109362, dgx: -0.0269832
+        sty: 0., fy: 0.109362, dgy: -0.0269832
+  9 TAO,  Function value: 0.0850818,  Residual: 0.947506 
+    0 LS    Function value: 0.0850818,    Step length: 0.
+    1 LS    Function value: 0.140264,    Step length: 1.
+        stx: 0., fx: 0.0850818, dgx: -0.091443
+        sty: 0., fy: 0.0850818, dgy: -0.091443
+    2 LS    Function value: 0.0601269,    Step length: 0.391355
+        stx: 0., fx: 0.0850818, dgx: -0.091443
+        sty: 1., fy: 0.140264, dgy: 0.37046
+ 10 TAO,  Function value: 0.0601269,  Residual: 3.23466 
+    0 LS    Function value: 0.0601269,    Step length: 0.
+    1 LS    Function value: 0.0406023,    Step length: 1.
+        stx: 0., fx: 0.0601269, dgx: -0.0273931
+        sty: 0., fy: 0.0601269, dgy: -0.0273931
+ 11 TAO,  Function value: 0.0406023,  Residual: 3.66996 
+    0 LS    Function value: 0.0406023,    Step length: 0.
+    1 LS    Function value: 0.0184967,    Step length: 1.
+        stx: 0., fx: 0.0406023, dgx: -0.0474778
+        sty: 0., fy: 0.0406023, dgy: -0.0474778
+ 12 TAO,  Function value: 0.0184967,  Residual: 1.74284 
+    0 LS    Function value: 0.0184967,    Step length: 0.
+    1 LS    Function value: 0.0131885,    Step length: 1.
+        stx: 0., fx: 0.0184967, dgx: -0.0275729
+        sty: 0., fy: 0.0184967, dgy: -0.0275729
+    2 LS    Function value: 0.00899069,    Step length: 0.424201
+        stx: 1., fx: 0.0131885, dgx: 0.0374267
+        sty: 0., fy: 0.0184967, dgy: -0.0275729
+ 13 TAO,  Function value: 0.00899069,  Residual: 0.107492 
+    0 LS    Function value: 0.00899069,    Step length: 0.
+    1 LS    Function value: 0.0141384,    Step length: 1.
+        stx: 0., fx: 0.00899069, dgx: -0.0135205
+        sty: 0., fy: 0.00899069, dgy: -0.0135205
+    2 LS    Function value: 0.00553656,    Step length: 0.409773
+        stx: 0., fx: 0.00899069, dgx: -0.0135205
+        sty: 1., fy: 0.0141384, dgy: 0.0362072
+ 14 TAO,  Function value: 0.00553656,  Residual: 1.48494 
+    0 LS    Function value: 0.00553656,    Step length: 0.
+    1 LS    Function value: 0.00353901,    Step length: 1.
+        stx: 0., fx: 0.00553656, dgx: -0.00246358
+        sty: 0., fy: 0.00553656, dgy: -0.00246358
+ 15 TAO,  Function value: 0.00353901,  Residual: 1.42655 
+    0 LS    Function value: 0.00353901,    Step length: 0.
+    1 LS    Function value: 0.000594822,    Step length: 1.
+        stx: 0., fx: 0.00353901, dgx: -0.00484465
+        sty: 0., fy: 0.00353901, dgy: -0.00484465
+ 16 TAO,  Function value: 0.000594822,  Residual: 0.176376 
+    0 LS    Function value: 0.000594822,    Step length: 0.
+    1 LS    Function value: 0.000129439,    Step length: 1.
+        stx: 0., fx: 0.000594822, dgx: -0.000852867
+        sty: 0., fy: 0.000594822, dgy: -0.000852867
+ 17 TAO,  Function value: 0.000129439,  Residual: 0.426449 
+    0 LS    Function value: 0.000129439,    Step length: 0.
+    1 LS    Function value: 5.14193e-06,    Step length: 1.
+        stx: 0., fx: 0.000129439, dgx: -0.000270621
+        sty: 0., fy: 0.000129439, dgy: -0.000270621
+ 18 TAO,  Function value: 5.14193e-06,  Residual: 0.0674659 
+    0 LS    Function value: 5.14193e-06,    Step length: 0.
+    1 LS    Function value: 3.35996e-08,    Step length: 1.
+        stx: 0., fx: 5.14193e-06, dgx: -1.09484e-05
+        sty: 0., fy: 5.14193e-06, dgy: -1.09484e-05
+ 19 TAO,  Function value: 3.35996e-08,  Residual: 0.00748038 
+    0 LS    Function value: 3.35996e-08,    Step length: 0.
+    1 LS    Function value: 6.88338e-11,    Step length: 1.
+        stx: 0., fx: 3.35996e-08, dgx: -6.76065e-08
+        sty: 0., fy: 3.35996e-08, dgy: -6.76065e-08
+ 20 TAO,  Function value: 6.88338e-11,  Residual: 0.000118289 
+    0 LS    Function value: 6.88338e-11,    Step length: 0.
+    1 LS    Function value: 6.39488e-13,    Step length: 1.
+        stx: 0., fx: 6.88338e-11, dgx: -1.27271e-10
+        sty: 0., fy: 6.88338e-11, dgy: -1.27271e-10
+ 21 TAO,  Function value: 6.39488e-13,  Residual: 2.54343e-05 

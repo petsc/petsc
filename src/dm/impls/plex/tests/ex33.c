@@ -60,7 +60,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
       options->transformData[1] = 2.0;
       ierr = PetscOptionsScalarArray("-transform_data", "Parameters for mesh transforms", "ex33.c", options->transformData, &n, NULL);CHKERRQ(ierr);
       break;
-    default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Unknown mesh transform %D", options->meshTransform);
+    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Unknown mesh transform %D", options->meshTransform);
   }
   ierr = PetscOptionsReal("-volume", "The analytical volume of the mesh", "ex33.c", options->volume, &options->volume, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tol", "The tolerance for the volume check", "ex33.c", options->tol, &options->tol, NULL);CHKERRQ(ierr);
@@ -204,7 +204,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
       ierr = PetscDSSetConstants(cds, 2, ctx->transformData);CHKERRQ(ierr);
       ierr = DMPlexRemapGeometry(*dm, 0.0, f0_shell);CHKERRQ(ierr);
       break;
-    default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Unknown mesh transform %D", ctx->meshTransform);
+    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Unknown mesh transform %D", ctx->meshTransform);
   }
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -256,7 +256,7 @@ static PetscErrorCode CheckVolume(DM dm, AppCtx *ctx)
   ierr = DMRestoreGlobalVector(dm, &u);CHKERRQ(ierr);
   ierr = PetscPrintf(PetscObjectComm((PetscObject) dm), "Volume: %g\n", (double) vol);CHKERRQ(ierr);
   if (ctx->volume > 0.0 && PetscAbsReal(ctx->volume - vol) > tol) {
-    SETERRQ4(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Calculated volume %g != %g actual volume (error %g > %g tol)", (double) vol, (double) ctx->volume, (double) PetscAbsReal(ctx->volume - vol), (double) tol);
+    SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_PLIB, "Calculated volume %g != %g actual volume (error %g > %g tol)", (double) vol, (double) ctx->volume, (double) PetscAbsReal(ctx->volume - vol), (double) tol);
   }
   PetscFunctionReturn(0);
 }

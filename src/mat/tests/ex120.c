@@ -27,7 +27,7 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   ierr = PetscOptionsHasName(NULL,NULL, "-test_zheevx", &flg);CHKERRQ(ierr);
   if (flg) {
@@ -101,7 +101,7 @@ int main(int argc,char **args)
     Mat Trans;
     ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Trans);CHKERRQ(ierr);
     ierr = MatEqual(A, Trans, &isSymmetric);CHKERRQ(ierr);
-    if (!isSymmetric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A must be symmetric");
+    PetscCheckFalse(!isSymmetric,PETSC_COMM_SELF,PETSC_ERR_USER,"A must be symmetric");
     ierr = MatDestroy(&Trans);CHKERRQ(ierr);
   }
 
@@ -132,7 +132,7 @@ int main(int argc,char **args)
   ierr = MatDenseGetArray(A_dense,&arrayA);CHKERRQ(ierr);
 
   if (TestZHEEV) { /* test zheev() */
-    ierr = PetscPrintf(PETSC_COMM_WORLD," LAPACKsyev: compute all %D eigensolutions...\n",m);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD," LAPACKsyev: compute all %" PetscInt_FMT " eigensolutions...\n",m);CHKERRQ(ierr);
     ierr = PetscMalloc1(3*n-2,&rwork);CHKERRQ(ierr);
     LAPACKsyev_("V","U",&bn,arrayA,&bn,evals,work,&lwork,rwork,&lierr);
     ierr = PetscFree(rwork);CHKERRQ(ierr);
@@ -159,7 +159,7 @@ int main(int argc,char **args)
     ierr = PetscFree(rwork);CHKERRQ(ierr);
   }
   if (TestZHEGV) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD," LAPACKsygv: compute all %D eigensolutions...\n",m);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD," LAPACKsygv: compute all %" PetscInt_FMT " eigensolutions...\n",m);CHKERRQ(ierr);
     ierr = PetscMalloc1(3*n+1,&rwork);CHKERRQ(ierr);
     ierr = MatDenseGetArray(B,&arrayB);CHKERRQ(ierr);
     LAPACKsygv_(&one,"V","U",&bn,arrayA,&bn,arrayB,&bn,evals,work,&lwork,rwork,&lierr);
@@ -186,13 +186,13 @@ int main(int argc,char **args)
     ierr = PetscFree(rwork);CHKERRQ(ierr);
   }
   ierr = MatDenseRestoreArray(A_dense,&arrayA);CHKERRQ(ierr);
-  if (nevs <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED, "nev=%d, no eigensolution has found", nevs);
+  PetscCheckFalse(nevs <= 0,PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED, "nev=%d, no eigensolution has found", nevs);
 
   /* View evals */
   ierr = PetscOptionsHasName(NULL,NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscPrintf(PETSC_COMM_WORLD," %d evals: \n",nevs);CHKERRQ(ierr);
-    for (i=0; i<nevs; i++) {ierr = PetscPrintf(PETSC_COMM_WORLD,"%D  %g\n",i+il,(double)evals[i]);CHKERRQ(ierr);}
+    for (i=0; i<nevs; i++) {ierr = PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT "  %g\n",i+il,(double)evals[i]);CHKERRQ(ierr);}
   }
 
   /* Check residuals and orthogonality */
@@ -264,7 +264,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
         if (rdot > dot_max) dot_max = rdot;
         if (rdot > tols[1]) {
           ierr = VecNorm(evec[i],NORM_INFINITY,&norm);CHKERRQ(ierr);
-          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%d,%d)|: %g, norm: %d\n",i,j,(double)rdot,(double)norm);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%" PetscInt_FMT ",%" PetscInt_FMT ")|: %g, norm: %g\n",i,j,(double)rdot,(double)norm);CHKERRQ(ierr);
         }
       }
     }
@@ -282,13 +282,13 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
       if (norm > norm_max) norm_max = norm;
       /* sniff, and bark if necessary */
       if (norm > tols[0]) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  residual violation: %d, resi: %g\n",i, norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"  residual violation: %" PetscInt_FMT ", resi: %g\n",i, norm);CHKERRQ(ierr);
       }
     }
     ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %g\n", (double)norm_max);CHKERRQ(ierr);
     break;
   default:
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%d is not supported \n",cklvl);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%" PetscInt_FMT " is not supported \n",cklvl);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&vt2);CHKERRQ(ierr);
   ierr = VecDestroy(&vt1);CHKERRQ(ierr);

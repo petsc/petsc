@@ -57,13 +57,13 @@ M*/
 /*@
    PetscDTAltVApply - Apply an a k-form (an alternating k-linear map) to a set of k N-dimensional vectors
 
-   Input Arguments:
+   Input Parameters:
 +  N - the dimension of the vector space, N >= 0
 .  k - the degree k of the k-form w, 0 <= k <= N
 .  w - a k-form, size [N choose k] (each degree of freedom of a k-form is associated with a subset of k coordinates of the N-dimensional vectors: the degrees of freedom are ordered lexicographically by their associated subsets)
 -  v - a set of k vectors of size N, size [k x N], each vector stored contiguously
 
-   Output Arguments:
+   Output Parameter:
 .  wv - w(v_1,...,v_k) = \sum_i w_i * det(V_i): the degree of freedom w_i is associated with coordinates [s_{i,1},...,s_{i,k}], and the square matrix V_i has entry (j,k) given by the s_{i,k}'th coordinate of v_j
 
    Level: intermediate
@@ -75,8 +75,8 @@ PetscErrorCode PetscDTAltVApply(PetscInt N, PetscInt k, const PetscReal *w, cons
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (N < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
-  if (k < 0 || k > N) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
+  PetscCheckFalse(N < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
+  PetscCheckFalse(k < 0 || k > N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
   if (N <= 3) {
     if (!k) {
       *wv = w[0];
@@ -133,14 +133,14 @@ PetscErrorCode PetscDTAltVApply(PetscInt N, PetscInt k, const PetscReal *w, cons
 /*@
    PetscDTAltVWedge - Compute the wedge product of a j-form and a k-form, giving a (j+k) form
 
-   Input Arguments:
+   Input Parameters:
 +  N - the dimension of the vector space, N >= 0
 .  j - the degree j of the j-form a, 0 <= j <= N
 .  k - the degree k of the k-form b, 0 <= k <= N and 0 <= j+k <= N
 .  a - a j-form, size [N choose j]
 -  b - a k-form, size [N choose k]
 
-   Output Arguments:
+   Output Parameter:
 .  awedgeb - the (j+k)-form a wedge b, size [N choose (j+k)]: (a wedge b)(v_1,...,v_{j+k}) = \sum_{s} sign(s) a(v_{s_1},...,v_{s_j}) b(v_{s_{j+1}},...,v_{s_{j+k}}),
              where the sum is over permutations s such that s_1 < s_2 < ... < s_j and s_{j+1} < s_{j+2} < ... < s_{j+k}.
 
@@ -154,9 +154,9 @@ PetscErrorCode PetscDTAltVWedge(PetscInt N, PetscInt j, PetscInt k, const PetscR
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (N < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
-  if (j < 0 || k < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "negative form degree");
-  if (j + k > N) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Wedge greater than dimension");
+  PetscCheckFalse(N < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
+  PetscCheckFalse(j < 0 || k < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "negative form degree");
+  PetscCheckFalse(j + k > N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Wedge greater than dimension");
   if (N <= 3) {
     PetscInt Njk;
 
@@ -214,13 +214,13 @@ PetscErrorCode PetscDTAltVWedge(PetscInt N, PetscInt j, PetscInt k, const PetscR
 /*@
    PetscDTAltVWedgeMatrix - Compute the matrix defined by the wedge product with a given j-form that maps k-forms to (j+k)-forms
 
-   Input Arguments:
+   Input Parameters:
 +  N - the dimension of the vector space, N >= 0
 .  j - the degree j of the j-form a, 0 <= j <= N
 .  k - the degree k of the k-forms that (a wedge) will be applied to, 0 <= k <= N and 0 <= j+k <= N
 -  a - a j-form, size [N choose j]
 
-   Output Arguments:
+   Output Parameter:
 .  awedge - (a wedge), an [(N choose j+k) x (N choose k)] matrix in row-major order, such that (a wedge) * b = a wedge b
 
    Level: intermediate
@@ -233,9 +233,9 @@ PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (N < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
-  if (j < 0 || k < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "negative form degree");
-  if (j + k > N) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Wedge greater than dimension");
+  PetscCheckFalse(N < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
+  PetscCheckFalse(j < 0 || k < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "negative form degree");
+  PetscCheckFalse(j + k > N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Wedge greater than dimension");
   if (N <= 3) {
     PetscInt Njk;
 
@@ -297,14 +297,14 @@ PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const 
 /*@
    PetscDTAltVPullback - Compute the pullback of a k-form under a linear transformation of the coordinate space
 
-   Input Arguments:
+   Input Parameters:
 +  N - the dimension of the origin vector space of the linear transformation, M >= 0
 .  M - the dimension of the image vector space of the linear transformation, N >= 0
 .  L - a linear transformation, an [M x N] matrix in row-major format
 .  k - the *signed* degree k of the |k|-form w, -(min(M,N)) <= k <= min(M,N).  A negative form degree indicates that the pullback should be conjugated by the Hodge star operator (see note).
 -  w - a |k|-form in the image space, size [M choose |k|]
 
-   Output Arguments:
+   Output Parameter:
 .  Lstarw - the pullback of w to a |k|-form in the origin space, size [N choose |k|]: (Lstarw)(v_1,...v_k) = w(L*v_1,...,L*v_k).
 
    Level: intermediate
@@ -321,8 +321,8 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  if (N < 0 || M < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimensions");
-  if (PetscAbsInt(k) > N || PetscAbsInt(k) > M) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
+  PetscCheckFalse(N < 0 || M < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimensions");
+  PetscCheckFalse(PetscAbsInt(k) > N || PetscAbsInt(k) > M,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
   if (N <= 3 && M <= 3) {
 
     ierr = PetscDTBinomialInt(M, PetscAbsInt(k), &Mk);CHKERRQ(ierr);
@@ -439,13 +439,13 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
 /*@
    PetscDTAltVPullbackMatrix - Compute the pullback matrix for k-forms under a linear transformation
 
-   Input Arguments:
+   Input Parameters:
 +  N - the dimension of the origin vector space of the linear transformation, N >= 0
 .  M - the dimension of the image vector space of the linear transformation, M >= 0
 .  L - a linear transformation, an [M x N] matrix in row-major format
 -  k - the *signed* degree k of the |k|-forms on which Lstar acts, -(min(M,N)) <= k <= min(M,N).  A negative form degree indicates that the pullback should be conjugated by the Hodge star operator (see note in PetscDTAltvPullback())
 
-   Output Arguments:
+   Output Parameter:
 .  Lstar - the pullback matrix, an [(N choose |k|) x (M choose |k|)] matrix in row-major format such that Lstar * w = L^* w
 
    Level: intermediate
@@ -462,8 +462,8 @@ PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (N < 0 || M < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimensions");
-  if (PetscAbsInt(k) > N || PetscAbsInt(k) > M) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
+  PetscCheckFalse(N < 0 || M < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimensions");
+  PetscCheckFalse(PetscAbsInt(k) > N || PetscAbsInt(k) > M,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
   if (N <= 3 && M <= 3) {
     PetscReal mult[3] = {1., -1., 1.};
 
@@ -555,13 +555,13 @@ PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal
 /*@
    PetscDTAltVInterior - Compute the interior product of a k-form with a vector
 
-   Input Arguments:
+   Input Parameters:
 +  N - the dimension of the vector space, N >= 0
 .  k - the degree k of the k-form w, 0 <= k <= N
 .  w - a k-form, size [N choose k]
 -  v - an N dimensional vector
 
-   Output Arguments:
+   Output Parameter:
 .  wIntv - the (k-1)-form (w int v), size [N choose (k-1)]: (w int v) is defined by its action on (k-1) vectors {v_1, ..., v_{k-1}} as (w inv v)(v_1, ..., v_{k-1}) = w(v, v_1, ..., v_{k-1}).
 
    Level: intermediate
@@ -574,7 +574,7 @@ PetscErrorCode PetscDTAltVInterior(PetscInt N, PetscInt k, const PetscReal *w, c
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (k <= 0 || k > N) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
+  PetscCheckFalse(k <= 0 || k > N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
   ierr = PetscDTBinomialInt(N, k,   &Nk);CHKERRQ(ierr);
   ierr = PetscDTBinomialInt(N, k-1, &Nkm);CHKERRQ(ierr);
   if (N <= 3) {
@@ -624,12 +624,12 @@ PetscErrorCode PetscDTAltVInterior(PetscInt N, PetscInt k, const PetscReal *w, c
 /*@
    PetscDTAltVInteriorMatrix - Compute the matrix of the linear transformation induced on a k-form by the interior product with a vector
 
-   Input Arguments:
+   Input Parameters:
 +  N - the dimension of the vector space, N >= 0
 .  k - the degree k of the k-forms on which intvMat acts, 0 <= k <= N
 -  v - an N dimensional vector
 
-   Output Arguments:
+   Output Parameter:
 .  intvMat - an [(N choose (k-1)) x (N choose k)] matrix, row-major: (intvMat) * w = (w int v)
 
    Level: intermediate
@@ -642,7 +642,7 @@ PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (k <= 0 || k > N) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
+  PetscCheckFalse(k <= 0 || k > N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
   ierr = PetscDTBinomialInt(N, k,   &Nk);CHKERRQ(ierr);
   ierr = PetscDTBinomialInt(N, k-1, &Nkm);CHKERRQ(ierr);
   if (N <= 3) {
@@ -685,11 +685,11 @@ PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal
 /*@
    PetscDTAltVInteriorPattern - compute the sparsity and sign pattern of the interior product matrix computed in PetscDTAltVInteriorMatrix()
 
-   Input Arguments:
+   Input Parameters:
 +  N - the dimension of the vector space, N >= 0
 -  k - the degree of the k-forms on which intvMat from PetscDTAltVInteriorMatrix() acts, 0 <= k <= N.
 
-   Output Arguments:
+   Output Parameter:
 .  indices - The interior product matrix intvMat has size [(N choose (k-1)) x (N choose k)] and has (N choose k) * k
              non-zeros.  indices[i][0] and indices[i][1] are the row and column of a non-zero, and its value is equal to the vector
              coordinate v[j] if indices[i][2] = j, or -v[j] if indices[i][2] = -(j+1)
@@ -706,7 +706,7 @@ PetscErrorCode PetscDTAltVInteriorPattern(PetscInt N, PetscInt k, PetscInt (*ind
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (k <= 0 || k > N) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
+  PetscCheckFalse(k <= 0 || k > N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
   ierr = PetscDTBinomialInt(N, k,   &Nk);CHKERRQ(ierr);
   ierr = PetscDTBinomialInt(N, k-1, &Nkm);CHKERRQ(ierr);
   if (N <= 3) {
@@ -761,13 +761,13 @@ PetscErrorCode PetscDTAltVInteriorPattern(PetscInt N, PetscInt k, PetscInt (*ind
 /*@
    PetscDTAltVStar - Apply a power of the Hodge star operator, which maps k-forms to (N-k) forms, to a k-form
 
-   Input Arguments:
+   Input Parameters:
 +  N - the dimension of the vector space, N >= 0
 .  k - the degree k of the k-form w, 0 <= k <= N
 .  pow - the number of times to apply the Hodge star operator: pow < 0 indicates that the inverse of the Hodge star operator should be applied |pow| times.
 -  w - a k-form, size [N choose k]
 
-   Output Arguments:
+   Output Parameter:
 .  starw = (star)^pow w.  Each degree of freedom of a k-form is associated with a subset S of k coordinates of the N dimensional vector space: the Hodge start operator (star) maps that degree of freedom to the degree of freedom associated with S', the complement of S, with a sign change if the permutation of coordinates {S[0], ... S[k-1], S'[0], ... S'[N-k- 1]} is an odd permutation.  This implies (star)^2 w = (-1)^{k(N-k)} w, and (star)^4 w = w.
 
    Level: intermediate
@@ -780,7 +780,7 @@ PetscErrorCode PetscDTAltVStar(PetscInt N, PetscInt k, PetscInt pow, const Petsc
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (k < 0 || k > N) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
+  PetscCheckFalse(k < 0 || k > N,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
   ierr = PetscDTBinomialInt(N, k, &Nk);CHKERRQ(ierr);
   pow = pow % 4;
   pow = (pow + 4) % 4; /* make non-negative */

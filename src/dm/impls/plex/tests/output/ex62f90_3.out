@@ -1,9 +1,9 @@
 DM Object: cubit(FourSquareT-large.exo): 12/02/2017: 09:20:39 1 MPI processes
   type: plex
 cubit(FourSquareT-large.exo): 12/02/2017: 09:20:39 in 2 dimensions:
-  0-cells: 61
-  1-cells: 156
-  2-cells: 96
+  Number of 0-cells per rank: 61
+  Number of 1-cells per rank: 156
+  Number of 2-cells per rank: 96
 Labels:
   celltype: 3 strata with value/size (0 (61), 3 (96), 1 (156))
   depth: 3 strata with value/size (0 (61), 1 (156), 2 (96))
@@ -23,9 +23,9 @@ PetscViewer Object: 1 MPI processes
 DM Object: cubit(FourSquareT-large.exo): 12/02/2017: 09:20:39 1 MPI processes
   type: plex
 cubit(FourSquareT-large.exo): 12/02/2017: 09:20:39 in 2 dimensions:
-  0-cells: 61
-  1-cells: 156
-  2-cells: 96
+  Number of 0-cells per rank: 61
+  Number of 1-cells per rank: 156
+  Number of 2-cells per rank: 96
 Labels:
   celltype: 3 strata with value/size (0 (61), 3 (96), 1 (156))
   depth: 3 strata with value/size (0 (61), 1 (156), 2 (96))

@@ -40,7 +40,7 @@ PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J)
   ierr = MatSetDM(A, dm);CHKERRQ(ierr); /* set DM reference */
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
-  if (!dmmoab->ltog_map) SETERRQ((((PetscObject)dm)->comm), PETSC_ERR_ORDER, "Cannot create a DMMoab Mat without calling DMSetUp first.");
+  PetscCheckFalse(!dmmoab->ltog_map,(((PetscObject)dm)->comm), PETSC_ERR_ORDER, "Cannot create a DMMoab Mat without calling DMSetUp first.");
   ierr = MatSetLocalToGlobalMapping(A, dmmoab->ltog_map, dmmoab->ltog_map);CHKERRQ(ierr);
 
   /* set preallocation based on different supported Mat types */
@@ -209,7 +209,7 @@ static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w, const PetscInt *fi
 
     Logically Collective on da
 
-    Input Parameter:
+    Input Parameters:
 +   dm - the DMMoab object
 .   dfill - the fill pattern in the diagonal block (may be NULL, means use dense block)
 -   ofill - the fill pattern in the off-diagonal blocks

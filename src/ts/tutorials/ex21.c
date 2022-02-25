@@ -321,7 +321,7 @@ PetscErrorCode SetBounds(Vec xl, Vec xu, PetscScalar ul, PetscScalar uh,AppCtx *
 
   ierr = MPI_Comm_rank(appctx->comm,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(appctx->comm,&size);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     l[0] = -PETSC_INFINITY;
     u[0] =  PETSC_INFINITY;
   }
@@ -528,7 +528,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
   */
   ierr = MPI_Comm_rank(appctx->comm,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(appctx->comm,&size);CHKERRMPI(ierr);
-  if (!rank) copyptr[0] = 1.0;
+  if (rank == 0) copyptr[0] = 1.0;
   if (rank == size-1) copyptr[localsize-1] = (t < .5) ? 2.0 : 0.0;
 
   /*

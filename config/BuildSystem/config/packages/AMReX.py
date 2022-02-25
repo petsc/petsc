@@ -14,7 +14,7 @@ class Configure(config.package.CMakePackage):
     self.hastests          = 1
     self.hastestsdatafiles = 1
     self.precisions        = ['double']
-    self.cxx               = 1
+    self.buildLanguages    = ['Cxx']
     self.minCxxVersion     = 'c++14'
     self.builtafterpetsc   = 1
     return
@@ -110,12 +110,6 @@ class Configure(config.package.CMakePackage):
     self.addMakeMacro('AMREX_LIB',' '.join(map(self.libraries.getLibArgument, self.lib_a)))
     self.addMakeMacro('AMREX_INCLUDE',self.include_a)
 
-    #  if installing as Superuser than want to return to regular user for clean and build
-    if self.installSudo:
-       newuser = self.installSudo+' -u $${SUDO_USER} '
-    else:
-       newuser = ''
-
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
        carg = 'PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH="" '
@@ -140,7 +134,7 @@ class Configure(config.package.CMakePackage):
     self.addMakeRule('amrexinstall','', \
                        ['@echo "*** Installing amrex ***"',\
                           '@(cd '+os.path.join(self.packageDir,'petsc-build')+' && \\\n\
-           '+newuser+'${OMAKE} install) >> ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/amrex.log 2>&1 || \\\n\
+           '+'${OMAKE} install) >> ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/amrex.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building amrex. Check ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/amrex.log" && \\\n\
              echo "********************************************************************" && \\\n\

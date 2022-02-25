@@ -96,7 +96,7 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp,PetscInt i
     if (ksp->reason) goto done;
     if (wnrm < hnrm) {
       refine = PETSC_TRUE;
-      ierr   = PetscInfo2(ksp,"Performing iterative refinement wnorm %g hnorm %g\n",(double)wnrm,(double)hnrm);CHKERRQ(ierr);
+      ierr   = PetscInfo(ksp,"Performing iterative refinement wnorm %g hnorm %g\n",(double)wnrm,(double)hnrm);CHKERRQ(ierr);
     }
   }
 

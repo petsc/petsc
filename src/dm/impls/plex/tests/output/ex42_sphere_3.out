@@ -1,9 +1,9 @@
 DM Object: sphere 1 MPI processes
   type: plex
 sphere in 2 dimensions:
-  0-cells: 386
-  1-cells: 768
-  2-cells: 384
+  Number of 0-cells per rank: 386
+  Number of 1-cells per rank: 768
+  Number of 2-cells per rank: 384
 Labels:
   celltype: 3 strata with value/size (0 (386), 1 (768), 4 (384))
   depth: 3 strata with value/size (0 (386), 1 (768), 2 (384))
@@ -15,9 +15,13 @@ Discrete System with 1 fields
       type: basic
       Basic Finite Element in 2 dimensions with 1 components
       PetscSpace Object: indicator 1 MPI processes
-        type: poly
+        type: tensor
         Space in 2 variables with 1 components, size 16
-        Tensor polynomial space of degree 3
+        Tensor space of 2 subspaces (all identical)
+          PetscSpace Object: tensor component (tensorcomp_) 1 MPI processes
+            type: poly
+            Space in 1 variables with 1 components, size 4
+            Polynomial space of degree 3
       PetscDualSpace Object: indicator 1 MPI processes
         type: lagrange
         Dual space with 1 components, size 16
@@ -25,5 +29,5 @@ Discrete System with 1 fields
         Quadrature of order 9 on 25 points (dim 2)
   Weak Form System with 1 fields
 Exact mesh surface area    :  12.566370614359
-Computed mesh surface area :  12.566370614359
+Computed mesh surface area :  12.566370614364
 Area verifies!

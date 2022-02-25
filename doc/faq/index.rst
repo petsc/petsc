@@ -56,7 +56,7 @@ batch system), run the following from ``$PETSC_DIR``:
 
 .. code-block:: console
 
-   > make streams [NPMAX=maximum_number_of_mpi_processes_you_plan_to_use]
+   $ make streams [NPMAX=maximum_number_of_mpi_processes_you_plan_to_use]
 
 
 This will provide a summary of the bandwidth with different number of MPI
@@ -64,12 +64,12 @@ processes and potential speedups. If you have a batch system:
 
 .. code-block:: console
 
-   > cd $PETSC_DIR/src/benchmarks/streams
-   > make MPIVersion
+   $ cd $PETSC_DIR/src/benchmarks/streams
+   $ make MPIVersion
    submit MPIVersion to the batch system a number of times with 1, 2, 3, etc MPI processes
    collecting all of the output from the runs into the single file scaling.log. Copy
    scaling.log into the src/benchmarks/streams directory.
-   > ./process.py createfile ; process.py
+   $ ./process.py createfile ; process.py
 
 Even if you have enough memory bandwidth if the OS switches processes between cores
 performance can degrade. Smart process to core/socket binding (this just means locking a
@@ -82,13 +82,13 @@ uses a different memory bus:
 
   .. code-block:: console
 
-     > mpiexec.hydra -n 4 --binding cpu:sockets
+     $ mpiexec.hydra -n 4 --binding cpu:sockets
 
 - `Open MPI binding <http://www.open-mpi.org/doc/v1.5/man1/mpiexec.1.php#sect8>`__
 
   .. code-block:: console
 
-     > mpiexec -n 4 --bysocket --bind-to-socket --report-bindings
+     $ mpiexec -n 4 --bysocket --bind-to-socket --report-bindings
 
 - ``taskset``, part of the `util-linux <https://github.com/karelzak/util-linux>`__ package
 
@@ -367,7 +367,7 @@ The PETSc distribution is SO Large. How can I reduce my disk space usage?
    contained in the PETSc directories ``$PETSC_DIR/src/*/tutorials/output`` and
    ``$PETSC_DIR/src/*/tests/output``. Once you have run the test examples, you may remove
    all of these directories to save some disk space. You can locate the largest with
-   e.g. ``find . -name output -type d | xargs du -sh | sort -hr`` on a unix-based system.
+   e.g. ``find . -name output -type d | xargs du -sh | sort -hr`` on a Unix-based system.
 
 #. The debugging versions of the libraries are larger than the optimized versions. In a
    pinch you can work with the optimized version, although we bid you good luck in
@@ -378,8 +378,8 @@ I want to use PETSc only for uniprocessor programs. Must I still install and use
 
 No, run ``configure`` with the option ``--with-mpi=0``
 
-Can I install PETSc to not use X windows (either under Unix or Windows with GCC)?
----------------------------------------------------------------------------------
+Can I install PETSc to not use X windows (either under Unix or Microsoft Windows with GCC)?
+-------------------------------------------------------------------------------------------
 
 Yes. Run ``configure`` with the additional flag ``--with-x=0``
 
@@ -445,8 +445,8 @@ from ``$PETSC_DIR``:
 
 .. code-block:: console
 
-   > make -f gmakefile PCC_FLAGS="-O1" $PETSC_ARCH/obj/src/mat/impls/baij/seq/baijsolvtrannat.o
-   > make all
+   $ make -f gmakefile PCC_FLAGS="-O1" $PETSC_ARCH/obj/src/mat/impls/baij/seq/baijsolvtrannat.o
+   $ make all
 
 How do I enable Python bindings (petsc4py) with PETSc?
 ------------------------------------------------------
@@ -473,7 +473,7 @@ How can I find the URL locations of the packages you install using ``--download-
 
 .. code-block:: console
 
-   > grep "self.download " $PETSC_DIR/config/BuildSystem/config/packages/*.py
+   $ grep "self.download " $PETSC_DIR/config/BuildSystem/config/packages/*.py
 
 How to fix the problem: PETSc was configured with one MPICH (or OpenMPI) ``mpi.h`` version but now appears to be compiling using a different MPICH (or OpenMPI) ``mpi.h`` version
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -486,8 +486,8 @@ This happens for generally one of two reasons:
 
   .. code-block:: console
 
-     > rm -rf $PETSC_DIR/$PETSC_ARCH
-     > ./configure --your-args
+     $ rm -rf $PETSC_DIR/$PETSC_ARCH
+     $ ./configure --your-args
 
 .. _mpi-network-misconfigure:
 
@@ -605,7 +605,7 @@ To change where all PETSc ``stdout`` and ``stderr`` go, (you can also reassign
 ``PetscVFPrintf()`` to handle ``stdout`` and ``stderr`` any way you like) write the
 following function:
 
-::
+.. code-block::
 
    PetscErrorCode mypetscvfprintf(FILE *fd, const char format[], va_list Argp)
    {
@@ -695,7 +695,7 @@ For example, assuming we have distributed a vector ``vecGlobal`` of size :math:`
 first :math:`n` (also assume :math:`n \leq m`) values from it's immediately superior neighbor
 :math:`r+1` (final rank will retrieve from rank 0).
 
-::
+.. code-block::
 
    Vec            vecLocal;
    IS             isLocal, isGlobal;
@@ -777,13 +777,13 @@ How do I collect all the values from a parallel PETSc Vec on the 0th rank?
 See FAQ entry on collecting to :ref:`an arbitrary processor <doc_faq_usage_alltoone>`, but
 replace
 
-::
+.. code-block::
 
    ierr = VecScatterCreateToAll(in_par, &ctx, &out_seq);CHKERRQ(ierr);
 
 with
 
-::
+.. code-block::
 
    ierr = VecScatterCreateToZero(in_par, &ctx, &out_seq);CHKERRQ(ierr);
 
@@ -801,7 +801,7 @@ with reading and writing. If you just want to convert ``MatrixMarket``, you can 
 
 .. code-block:: console
 
-   > python -m $PETSC_DIR/lib/petsc/bin/PetscBinaryIO convert matrix.mtx
+   $ python -m $PETSC_DIR/lib/petsc/bin/PetscBinaryIO convert matrix.mtx
 
 To produce ``matrix.petsc``.
 
@@ -835,7 +835,7 @@ does not reset parameters.
 as ``KSPGMRESSetRestart()``) ONLY work if the object is ALREADY of that type. For example,
 with
 
-::
+.. code-block::
 
    KSP            ksp;
    PetscErrorCode ierr;
@@ -849,7 +849,7 @@ those values take effect you should do one of the following:
 - Allow setting the type from the command line, if it is not on the command line then the
   default type is automatically set.
 
-::
+.. code-block::
 
    /* Create generic object */
    XXXCreate(..,&obj);
@@ -860,7 +860,7 @@ those values take effect you should do one of the following:
   ``XXXSetFromOptions()`` call. This essentially allows the user to customize what the
   "default" type to of the object.
 
-::
+.. code-block::
 
    /* Create generic object */
    XXXCreate(..,&obj);
@@ -873,19 +873,14 @@ How do I compile and link my own PETSc application codes and can I use my own ``
 --------------------------------------------------------------------------------------------------------------------------------------------
 
 See the :ref:`section <sec_writing_application_codes>` of the users manual on writing
-application codes with PETSc. This provides a simple makefile that can be used to compiler
-user code. You are free to modify this makefile or completely replace it with your own
-makefile.
+application codes with PETSc. 
 
 Can I use Cmake to build my own project that depends on PETSc?
 --------------------------------------------------------------
 
-Use `FindPkgConfig.cmake
-<https://cmake.org/cmake/help/latest/module/FindPkgConfig.html>`__, which is installed by
-default with CMake. PETSc installs ``$PETSC_DIR/$PETSC_ARCH/lib/pkgconfig/petsc.pc``,
-which can be be read by ``FindPkgConfig.cmake``. If you must use a very old version of
-CMake and/or PETSc, you can use the ``FindPETSc.cmake`` module from `this repository
-<https://github.com/jedbrown/cmake-modules/>`__.
+See the :ref:`section <sec_writing_application_codes>` of the users manual on writing
+application codes with PETSc. 
+
 
 How can I put carriage returns in PetscPrintf() statements from Fortran?
 ------------------------------------------------------------------------
@@ -1160,7 +1155,7 @@ process ranks so that each physical process shares the same part of the mesh wit
 ``DMDA`` and the ``MPI_Cart_create()``. The code to determine the new numbering was
 provided by Rolf Kuiper:
 
-::
+.. code-block::
 
    // the numbers of processors per direction are (int) x_procs, y_procs, z_procs respectively
    // (no parallelization in direction 'dir' means dir_procs = 1)
@@ -1270,14 +1265,14 @@ following options:
 
 .. code-block:: console
 
-   > ./configure --download-superlu_dist --download-parmetis --download-metis --with-openmp
+   $ ./configure --download-superlu_dist --download-parmetis --download-metis --with-openmp
 
 Your compiler must support OpenMP. To have the linear solver run in parallel run your
 program with
 
 .. code-block:: console
 
-   > OMP_NUM_THREADS=n ./myprog -pc_type lu -pc_factor_mat_solver superlu_dist
+   $ OMP_NUM_THREADS=n ./myprog -pc_type lu -pc_factor_mat_solver superlu_dist
 
 where ``n`` is the number of threads and should be less than or equal to the number of cores
 available.
@@ -1360,7 +1355,7 @@ How can one compute the nullspace of a sparse matrix with MUMPS?
 
 Assuming you have an existing matrix :math:`A` whose nullspace :math:`V` you want to find:
 
-::
+.. code-block::
 
    Mat            F, work, V;
    PetscInt       N, rows;
@@ -1534,9 +1529,9 @@ computing facility for more.
 
       .. code-block:: console
 
-         > export MPICH_MAX_THREAD_SAFETY=multiple
-         > export MPICH_ASYNC_PROGRESS=1
-         > export MPICH_NEMESIS_ASYNC_PROGRESS=1
+         $ export MPICH_MAX_THREAD_SAFETY=multiple
+         $ export MPICH_ASYNC_PROGRESS=1
+         $ export MPICH_NEMESIS_ASYNC_PROGRESS=1
 
    MPICH
     MPICH version 3.0 and later implements the MPI-3 standard and the default
@@ -1545,7 +1540,7 @@ computing facility for more.
 
     .. code-block:: console
 
-       > export MPICH_ASYNC_PROGRESS=1
+       $ export MPICH_ASYNC_PROGRESS=1
 
 When using PETSc in single precision mode (``--with-precision=single`` when running ``configure``) are the operations done in single or double precision?
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1634,7 +1629,7 @@ Here are some ways to help the Newton process if everything above checks out:
 
   .. code-block:: console
 
-     > ./configure --with-precision=__float128 --download-f2cblaslapack
+     $ ./configure --with-precision=__float128 --download-f2cblaslapack
 
   .. note::
 
@@ -1771,7 +1766,7 @@ Use the following code-snippet:
    !------------------------------------------------------------------------
 
    program test_snes
-   use iso_c_binding
+   use,intrinsic :: iso_c_binding
    use petsc
    use context_module
    implicit none
@@ -1816,7 +1811,7 @@ In C++ I get a crash on VecDestroy() (or some other PETSc object) at the end of 
 This can happen when the destructor for a C++ class is automatically called at the end of
 the program after ``PetscFinalize()``. Use the following code-snippet:
 
-::
+.. code-block::
 
    main()
    {
@@ -1860,7 +1855,7 @@ On newer Ubuntu linux machines - one has to disable ``ptrace_scope`` with
 
 .. code-block:: console
 
-   > sudo echo 0 > /proc/sys/kernel/yama/ptrace_scope
+   $ sudo echo 0 > /proc/sys/kernel/yama/ptrace_scope
 
 to get start in debugger working.
 
@@ -1927,9 +1922,9 @@ debugger since there is likely a way to have it catch exceptions.
 Error while loading shared libraries: libimf.so: cannot open shared object file: No such file or directory
 ----------------------------------------------------------------------------------------------------------
 
-The Intel compilers use shared libraries (like libimf) that cannot by default at run
+The Intel compilers use shared libraries (like libimf) that cannot be found, by default, at run
 time. When using the Intel compilers (and running the resulting code) you must make sure
-that the proper Intel initialization scripts are run. This is usually done by putting some
+that the proper Intel initialization scripts are run. This is usually done by adding some
 code into your ``.cshrc``, ``.bashrc``, ``.profile`` etc file. Sometimes on batch file
 systems that do now access your initialization files (like .cshrc) you must include the
 initialization calls in your batch file submission.
@@ -1957,7 +1952,7 @@ What does "Object Type Not Set: Argument # N" Mean?
 
 Many operations on PETSc objects require that the specific type of the object be set before the operations is performed. You must call ``XXXSetType()`` or ``XXXSetFromOptions()`` before you make the offending call. For example
 
-::
+.. code-block::
 
    Mat            A;
    PetscErrorCode ierr;
@@ -1967,7 +1962,7 @@ Many operations on PETSc objects require that the specific type of the object be
 
 will not work. You must add ``MatSetType()`` or ``MatSetFromOptions()`` before the call to ``MatSetValues()``. I.e.
 
-::
+.. code-block::
 
    Mat            A;
    PetscErrorCode ierr;
@@ -2030,14 +2025,14 @@ use `valgrind <http://valgrind.org>`__. Follow the below instructions:
 
    .. code-block:: console
 
-      > $PETSC_DIR/lib/petsc/bin/petscmpiexec -valgrind -n NPROC PETSCPROGRAMNAME PROGRAMOPTIONS
+      $ $PETSC_DIR/lib/petsc/bin/petscmpiexec -valgrind -n NPROC PETSCPROGRAMNAME PROGRAMOPTIONS
 
    or
 
    .. code-block:: console
 
-      > mpiexec -n NPROC valgrind --tool=memcheck -q --num-callers=20 \
-      --suppressions=$PETSC_DIR/lib/petsc/bin/maint/petsc-val.supp \
+      $ mpiexec -n NPROC valgrind --tool=memcheck -q --num-callers=20 \
+      --suppressions=$PETSC_DIR/share/petsc/valgrind/petsc-val.supp \
       --log-file=valgrind.log.%p PETSCPROGRAMNAME -malloc off PROGRAMOPTIONS
 
 .. note::
@@ -2229,7 +2224,7 @@ Git bisect can be done as follows:
 
    .. code-block:: console
 
-      > git clone https://gitlab.com/petsc/petsc.git
+      $ git clone https://gitlab.com/petsc/petsc.git
 
 #. Find the good and bad markers to start the bisection process. This can be done either
    by checking ``git log`` or ``gitk`` or https://gitlab.com/petsc/petsc or the web
@@ -2241,19 +2236,19 @@ Git bisect can be done as follows:
 
    .. code-block:: console
 
-      > git bisect start 21af4baa815c 5ae5ab319844
+      $ git bisect start 21af4baa815c 5ae5ab319844
 
    build/test, perhaps discover that this new state is bad
 
    .. code-block:: console
 
-      > git bisect bad
+      $ git bisect bad
 
    build/test, perhaps discover that this state is good
 
    .. code-block:: console
 
-      > git bisect good
+      $ git bisect good
 
    Now until done - keep bisecting, building PETSc, and testing your code with it and
    determine if the code is working or not. After something like 5-15 iterations, ``git
@@ -2275,7 +2270,7 @@ packages that use threads).
 
 .. code-block:: console
 
-   > export PMIX_MCA_gds=hash
+   $ export PMIX_MCA_gds=hash
 
 Should resolve the problem.
 
@@ -2293,7 +2288,7 @@ Yes. Use
 
 .. code-block:: console
 
-   > ./configure --with-shared-libraries
+   $ ./configure --with-shared-libraries
 
 Why should I use shared libraries?
 ----------------------------------
@@ -2326,8 +2321,5 @@ You would also need to have access to the shared libraries on this new machine. 
 alternative is to build the exeutable without shared libraries by first deleting the
 shared libraries, and then creating the executable.
 
-.. bibliography:: /../src/docs/tex/petsc.bib
-   :filter: docname in docnames
-
-.. bibliography:: /../src/docs/tex/petscapp.bib
+.. bibliography:: /petsc.bib
    :filter: docname in docnames

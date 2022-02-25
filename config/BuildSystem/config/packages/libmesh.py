@@ -27,13 +27,6 @@ class Configure(config.package.Package):
 
   def Install(self):
     import os
-
-    #  if installing as Superuser than want to return to regular user for clean and build
-    if self.installSudo:
-       newuser = self.installSudo+' -u $${SUDO_USER} '
-    else:
-       newuser = ''
-
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
     if self.argDB['prefix']:
        newdir = 'PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' '
@@ -58,7 +51,7 @@ class Configure(config.package.Package):
     self.addMakeRule('libmeshinstall','', \
                        ['@echo "*** Installing libmesh ***"',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+newuser+newdir+' make install ) >> ${PETSC_ARCH}/lib/petsc/conf/libmesh.log 2>&1 || \\\n\
+           '+newdir+' make install ) >> ${PETSC_ARCH}/lib/petsc/conf/libmesh.log 2>&1 || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building libmesh. Check ${PETSC_ARCH}/lib/petsc/conf/libmesh.log" && \\\n\
              echo "********************************************************************" && \\\n\

@@ -77,7 +77,7 @@ PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name)
 
   ierr = PetscSpaceRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(PetscSpaceList, name, &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscSpace type: %s", name);
+  PetscCheck(r,PetscObjectComm((PetscObject) sp), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscSpace type: %s", name);
 
   if (sp->ops->destroy) {
     ierr             = (*sp->ops->destroy)(sp);CHKERRQ(ierr);
@@ -146,7 +146,7 @@ PetscErrorCode  PetscSpaceViewFromOptions(PetscSpace A,PetscObject obj,const cha
 
   Collective on sp
 
-  Input Parameter:
+  Input Parameters:
 + sp - the PetscSpace object to view
 - v  - the viewer
 
@@ -355,7 +355,7 @@ PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
   Input Parameter:
 . sp - The PetscSpace
 
-  Output Parameter:
+  Output Parameters:
 + minDegree - The degree of the largest polynomial space contained in the space
 - maxDegree - The degree of the smallest polynomial space containing the space
 

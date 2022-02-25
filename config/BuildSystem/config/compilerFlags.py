@@ -97,7 +97,7 @@ class Configure(config.base.Configure):
     if not options:
       return
     options.saveLog()
-    for language, compiler in [('C', 'CC'), ('Cxx', 'CXX'), ('FC', 'FC'), ('CUDA', 'CUDAC'), ('HIP', 'HIPC'), ('SYCL', 'SYCLCXX')]:
+    for language, compiler in [('C', 'CC'), ('Cxx', 'CXX'), ('FC', 'FC'), ('CUDA', 'CUDAC'), ('HIP', 'HIPC'), ('SYCL', 'SYCLC')]:
       if not hasattr(self.setCompilers, compiler):
         continue
       self.setCompilers.pushLanguage(language)
@@ -127,8 +127,8 @@ class Configure(config.base.Configure):
         for testFlag in flags:
           if isinstance(testFlag,tuple):
             testFlag = ' '.join(testFlag)
+          self.logPrint('Trying '+language+' compiler flag '+testFlag)
           try:
-            self.logPrint('Trying '+language+' compiler flag '+testFlag)
             self.setCompilers.addCompilerFlag(testFlag)
           except RuntimeError:
             if userflags:
@@ -166,8 +166,8 @@ class Configure(config.base.Configure):
     '''The values will depends on the flags passed to the compiler'''
     self.outputCompilerMacros()
     if hasattr(self.setCompilers, 'CXX'):
-      self.pushLanguage('Cxx')
-      self.outputCompilerMacros()
+      with self.Language('Cxx'):
+        self.outputCompilerMacros()
     return
 
   def checkIntelHardwareSupport(self):

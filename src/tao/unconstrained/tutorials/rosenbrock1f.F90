@@ -10,9 +10,9 @@
 !!/*T
 !  Concepts: TAO^Solving an unconstrained minimization problem
 !  Routines: TaoCreate();
-!  Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
-!  Routines: TaoSetHessianRoutine();
-!  Routines: TaoSetInitialVector();
+!  Routines: TaoSetType(); TaoSetObjectiveAndGradient();
+!  Routines: TaoSetHessian();
+!  Routines: TaoSetSolution();
 !  Routines: TaoSetFromOptions();
 !  Routines: TaoSolve();
 !  Routines: TaoDestroy();
@@ -87,16 +87,16 @@
       CHKERRA(ierr)
 
 !  Set routines for function, gradient, and hessian evaluation
-      call TaoSetObjectiveAndGradientRoutine(tao,                       &
+      call TaoSetObjectiveAndGradient(tao,PETSC_NULL_VEC,                 &
      &      FormFunctionGradient,0,ierr)
       CHKERRA(ierr)
-      call TaoSetHessianRoutine(tao,H,H,FormHessian,                    &
+      call TaoSetHessian(tao,H,H,FormHessian,                             &
      &     0,ierr)
       CHKERRA(ierr)
 
 !  Optional: Set initial guess
       call VecSet(x, zero, ierr)
-      call TaoSetInitialVector(tao, x, ierr)
+      call TaoSetSolution(tao, x, ierr)
       CHKERRA(ierr)
 
 !  Check for TAO command line options

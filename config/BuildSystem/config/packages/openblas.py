@@ -19,7 +19,7 @@ class Configure(config.package.Package):
     self.functions              = ['openblas_get_config']
     self.liblist                = [['libopenblas.a']]
     self.precisions             = ['single','double']
-    self.fc                     = 1
+    self.buildLanguages         = ['C','FC']
     self.installwithbatch       = 1
     self.usespthreads           = 0
 
@@ -31,9 +31,9 @@ class Configure(config.package.Package):
   def setupHelp(self, help):
     config.package.Package.setupHelp(self,help)
     import nargs
-    help.addArgument('OpenBLAS', '-download-openblas-64-bit-blas-indices', nargs.ArgBool(None, 0, 'Use 64 bit integers for OpenBLAS (deprecated: use --with-64-bit-blas-indices'))
-    help.addArgument('OpenBLAS', '-download-openblas-use-pthreads', nargs.ArgBool(None, 0, 'Use pthreads for OpenBLAS'))
-    help.addArgument('OpenBLAS', '-download-openblas-make-options=<options>', nargs.Arg(None, None, 'additional options for building OpenBLAS'))
+    help.addArgument('OPENBLAS', '-download-openblas-64-bit-blas-indices', nargs.ArgBool(None, 0, 'Use 64 bit integers for OpenBLAS (deprecated: use --with-64-bit-blas-indices'))
+    help.addArgument('OPENBLAS', '-download-openblas-use-pthreads', nargs.ArgBool(None, 0, 'Use pthreads for OpenBLAS'))
+    help.addArgument('OPENBLAS', '-download-openblas-make-options=<options>', nargs.Arg(None, None, 'additional options for building OpenBLAS'))
     return
 
   def setupDependencies(self, framework):
@@ -122,8 +122,7 @@ class Configure(config.package.Package):
       raise RuntimeError('Error running make on '+blasDir)
     try:
       self.logPrintBox('Installing OpenBLAS')
-      self.installDirProvider.printSudoPasswordMessage()
-      output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && '+self.installSudo+' make PREFIX='+self.installDir+' '+cmdline+' install', timeout=60, log = self.log)
+      output2,err2,ret  = config.package.Package.executeShellCommand('cd '+blasDir+' && make PREFIX='+self.installDir+' '+cmdline+' install', timeout=60, log = self.log)
     except RuntimeError as e:
       self.logPrint('Error moving '+blasDir+' libraries: '+str(e))
       raise RuntimeError('Error moving '+blasDir+' libraries')

@@ -107,7 +107,7 @@ static PetscErrorCode IdentifyBadPoints (DM dm, Vec vec, PetscReal tol)
     ierr = VecGetValuesSection(vecLocal, section, p, &values);CHKERRQ(ierr);
     ierr = PetscSectionGetDof(section, p, &cSize);CHKERRQ(ierr);
     for (c = 0; c < cSize; c++) {
-      PetscReal absDiff = PetscAbsScalar(values[c]);CHKERRQ(ierr);
+      PetscReal absDiff = PetscAbsScalar(values[c]);
       if (absDiff > tol) {bad = PETSC_TRUE; break;}
     }
     if (!bad) continue;
@@ -128,7 +128,7 @@ static PetscErrorCode IdentifyBadPoints (DM dm, Vec vec, PetscReal tol)
     }
     ierr = DMPlexRestoreTransitiveClosure(dmplex, p, PETSC_TRUE, &closureSize, &closure);CHKERRQ(ierr);
     for (c = 0; c < cSize; c++) {
-      PetscReal absDiff = PetscAbsScalar(values[c]);CHKERRQ(ierr);
+      PetscReal absDiff = PetscAbsScalar(values[c]);
       if (absDiff > tol) {
         ierr = PetscPrintf(PETSC_COMM_SELF, "  Bad dof %D\n", c);CHKERRQ(ierr);
       }
@@ -322,7 +322,7 @@ int main(int argc, char **argv)
     if (!transfer_from_base[1]) {
       ierr = DMForestSetAdaptivityForest(postForest,NULL);CHKERRQ(ierr);
       ierr = PetscObjectGetReference((PetscObject)preForest,&postCount);CHKERRQ(ierr);
-      if (postCount != preCount) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Adaptation not memory neutral: reference count increase from %d to %d\n",preCount,postCount);
+      PetscCheckFalse(postCount != preCount,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Adaptation not memory neutral: reference count increase from %d to %d",preCount,postCount);
     }
 
     if (conv) {
@@ -481,7 +481,7 @@ int main(int argc, char **argv)
       TODO: not broken, but the 3D case below is broken, so I do not trust this one
       output_file: output/ex2_steps2.out
       suffix: p4est_2d_tfb_distributed_nc
-      args: -petscspace_degree 3 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -use_bcs 0 -coords -adapt_steps 2 -dm_distribute -petscpartitioner_type shell -petscpartitioner_shell_random
+      args: -petscspace_degree 3 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -use_bcs 0 -coords -adapt_steps 2 -petscpartitioner_type shell -petscpartitioner_shell_random
       nsize: 3
       requires: p4est !single
 
@@ -489,7 +489,7 @@ int main(int argc, char **argv)
       TODO: broken
       output_file: output/ex2_steps2.out
       suffix: p4est_3d_tfb_distributed_nc
-      args: -dm_plex_dim 3 -petscspace_degree 2 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -use_bcs 0 -coords -adapt_steps 2 -dm_distribute -petscpartitioner_type shell -petscpartitioner_shell_random
+      args: -dm_plex_dim 3 -petscspace_degree 2 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash -use_bcs 0 -coords -adapt_steps 2 -petscpartitioner_type shell -petscpartitioner_shell_random
       nsize: 3
       requires: p4est !single
 

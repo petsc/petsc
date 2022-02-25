@@ -2,11 +2,11 @@
        Abstract data structure and functions for graphics.
 */
 
-#if !defined(_DRAWIMPL_H)
-#define _DRAWIMPL_H
+#if !defined(PETSCDRAWIMPL_H)
+#define PETSCDRAWIMPL_H
 
-#include <petscdraw.h>
 #include <petsc/private/petscimpl.h>
+#include <petscdraw.h>
 
 PETSC_EXTERN PetscBool PetscDrawRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscDrawRegisterAll(void);
@@ -75,4 +75,76 @@ struct _p_PetscDraw {
   void                *data;
 };
 
-#endif
+/* Contains the data structure for plotting several line
+ * graphs in a window with an axis. This is intended for line
+ * graphs that change dynamically by adding more points onto
+ * the end of the X axis.
+ */
+struct _p_PetscDrawLG {
+  PETSCHEADER(int);
+  PetscErrorCode (*destroy)(PetscDrawLG);
+  PetscErrorCode (*view)(PetscDrawLG,PetscViewer);
+  int            len,loc;
+  PetscDraw      win;
+  PetscDrawAxis  axis;
+  PetscReal      xmin,xmax,ymin,ymax,*x,*y;
+  int            nopts,dim,*colors;
+  PetscBool      use_markers;
+  char           **legend;
+};
+#define PETSC_DRAW_LG_CHUNK_SIZE 100
+
+struct _p_PetscDrawAxis {
+  PETSCHEADER(int);
+  PetscReal      xlow,ylow,xhigh,yhigh;                    /* User - coord limits */
+  PetscErrorCode (*ylabelstr)(PetscReal,PetscReal,char**);/* routines to generate labels */
+  PetscErrorCode (*xlabelstr)(PetscReal,PetscReal,char**);
+  PetscErrorCode (*xticks)(PetscReal,PetscReal,int,int*,PetscReal*,int);
+  PetscErrorCode (*yticks)(PetscReal,PetscReal,int,int*,PetscReal*,int);
+                                           /* location and size of ticks */
+  PetscDraw win;
+  int       ac,tc,cc;                     /* axis,tick, character color */
+  char      *xlabel,*ylabel,*toplabel;
+  PetscBool hold;
+};
+
+PETSC_INTERN PetscErrorCode PetscADefTicks(PetscReal,PetscReal,int,int*,PetscReal*,int);
+PETSC_INTERN PetscErrorCode PetscADefLabel(PetscReal,PetscReal,char**);
+PETSC_INTERN PetscErrorCode PetscAGetNice(PetscReal,PetscReal,int,PetscReal*);
+PETSC_INTERN PetscErrorCode PetscAGetBase(PetscReal,PetscReal,int,PetscReal*,int*);
+
+PETSC_INTERN PetscErrorCode PetscStripe0(char*);
+PETSC_INTERN PetscErrorCode PetscStripAllZeros(char*);
+PETSC_INTERN PetscErrorCode PetscStripTrailingZeros(char*);
+PETSC_INTERN PetscErrorCode PetscStripInitialZero(char*);
+PETSC_INTERN PetscErrorCode PetscStripZeros(char*);
+PETSC_INTERN PetscErrorCode PetscStripZerosPlus(char*);
+
+struct _p_PetscDrawBar {
+  PETSCHEADER(int);
+  PetscErrorCode (*destroy)(PetscDrawSP);
+  PetscErrorCode (*view)(PetscDrawSP,PetscViewer);
+  PetscDraw      win;
+  PetscDrawAxis  axis;
+  PetscReal      ymin,ymax;
+  int            numBins;
+  PetscReal      *values;
+  int            color;
+  char           **labels;
+  PetscBool      sort;
+  PetscReal      sorttolerance;
+};
+
+struct _p_PetscDrawSP {
+  PETSCHEADER(int);
+  PetscErrorCode (*destroy)(PetscDrawSP);
+  PetscErrorCode (*view)(PetscDrawSP,PetscViewer);
+  int            len,loc;
+  PetscDraw      win;
+  PetscDrawAxis  axis;
+  PetscReal      xmin,xmax,ymin,ymax,*x,*y;
+  int            nopts,dim;
+};
+#define PETSC_DRAW_SP_CHUNK_SIZE 100
+
+#endif /* PETSCDRAWIMPL_H */

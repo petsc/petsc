@@ -3,7 +3,7 @@
 cdef extern from * nogil:
 
     ctypedef int PetscClassId
-
+    ctypedef int PetscObjectState
     int PetscObjectCreate(MPI_Comm,PetscObject*)
     int PetscObjectView(PetscObject,PetscViewer)
     int PetscObjectDestroy(PetscObject*)
@@ -12,6 +12,7 @@ cdef extern from * nogil:
     int PetscObjectDereference(PetscObject)
 
     int PetscObjectSetOptionsPrefix(PetscObject,char[])
+    int PetscObjectAppendOptionsPrefix(PetscObject,char[])
     int PetscObjectGetOptionsPrefix(PetscObject,char*[])
     int PetscObjectSetFromOptions(PetscObject)
     int PetscObjectViewFromOptions(PetscObject,PetscObject,char[])
@@ -24,7 +25,8 @@ cdef extern from * nogil:
     int PetscObjectGetName(PetscObject,char*[])
 
     int PetscObjectStateIncrease(PetscObject)
-
+    int PetscObjectStateSet(PetscObject,PetscObjectState)
+    int PetscObjectStateGet(PetscObject,PetscObjectState*)
     int PetscObjectTypeCompare(PetscObject,char[],PetscBool*)
     int PetscObjectCompose(PetscObject,char[],PetscObject)
     int PetscObjectQuery(PetscObject,char[],PetscObject*)

@@ -4,8 +4,8 @@
 #include <petscmat.h>
 
 #define CSRDataStructure(datatype)  \
-  int         *i; \
-  int         *j; \
+  PetscInt    *i; \
+  PetscInt    *j; \
   datatype    *a;\
   PetscInt    n;\
   PetscInt    ignorezeroentries;
@@ -17,24 +17,27 @@ typedef struct {
 struct _n_SplitCSRMat {
   PetscInt              cstart,cend,rstart,rend;
   PetscCSRDataStructure diag,offdiag;
-  int                   *colmap;
-  PetscInt              N;
+  PetscInt              *colmap;
+  PetscInt              M; // number of columns for out of bounds check
   PetscMPIInt           rank;
+  PetscBool             allocated_indices;
 };
 
 /* 64-bit floating-point version of atomicAdd() is only natively supported by
    CUDA devices of compute capability 6.x and higher. See also sfcuda.cu
 */
 #if defined(PETSC_USE_REAL_DOUBLE) && defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 600)
-  #define atomicAdd(x,y) do { \
-    double *address = x, val = y; \
-    unsigned long long *address_as_ull = (unsigned long long*)address; \
-    unsigned long long old = *address_as_ull, assumed; \
-    do { \
-      assumed = old; \
-      old     = atomicCAS(address_as_ull, assumed, __double_as_longlong(val + __longlong_as_double(assumed))); \
-    } while (assumed != old); \
-  } while (0)
+  __device__ double atomicAdd(double* x,double y) {
+    typedef unsigned long long int ullint;
+    double *address = x, val = y;
+    ullint *address_as_ull = (ullint*)address;
+    ullint old = *address_as_ull, assumed;
+    do {
+      assumed = old;
+      old     = atomicCAS(address_as_ull, assumed, __double_as_longlong(val + __longlong_as_double(assumed)));
+    } while (assumed != old);
+    return __longlong_as_double(old);
+  }
 #endif
 
 #if defined(KOKKOS_INLINE_FUNCTION)
@@ -51,7 +54,7 @@ struct _n_SplitCSRMat {
     #define PetscAtomicAdd(a,b) atomicAdd(a,b)
   #endif
 #else
-  /* TODO: support devices other than CUDA */
+  /* TODO: support devices other than CUDA and Kokkos */
   #define PetscAtomicAdd(a,b) *(a) += b
 #endif
 
@@ -103,14 +106,10 @@ struct _n_SplitCSRMat {
   }                                                                    \
 }
 
-#if defined(PETSC_USE_DEBUG)
-#define SETERR {                                                                                 \
-   printf("[%d] ERROR in %s() at %s:%d: Location (%ld,%ld) not found!\n",     \
-          d_mat->rank,__func__,__FILE__,__LINE__,(long int)im[i],(long int)in[j]); \
-   return PETSC_ERR_ARG_OUTOFRANGE;                                                              \
-}
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
+#define SETERR return(printf("[%d] ERROR in %s() at %s:%d: Location (%ld,%ld) not found!\n",d_mat->rank,__func__,__FILE__,__LINE__,(long int)im[i],(long int)in[j]),PETSC_ERR_ARG_OUTOFRANGE)
 #else
-#define SETERR { return PETSC_ERR_ARG_OUTOFRANGE; }
+#define SETERR return PETSC_ERR_ARG_OUTOFRANGE
 #endif
 
 #if defined(__CUDA_ARCH__)
@@ -142,14 +141,14 @@ static
 PetscErrorCode MatSetValuesDevice(PetscSplitCSRDataStructure d_mat, PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
   MatScalar       value;
-  const int       *rp1,*rp2 = NULL,*ai = d_mat->diag.i, *aj = d_mat->diag.j;
-  const int       *bi = d_mat->offdiag.i, *bj = d_mat->offdiag.j;
+  const PetscInt  *rp1,*rp2 = NULL,*ai = d_mat->diag.i, *aj = d_mat->diag.j;
+  const PetscInt  *bi = d_mat->offdiag.i, *bj = d_mat->offdiag.j;
   MatScalar       *ba = d_mat->offdiag.a, *aa = d_mat->diag.a;
-  int             nrow1,nrow2 = 0,_i,low1,high1,low2 = 0,high2 = 0,t,lastcol1,lastcol2 = 0,inserted;
+  PetscInt        nrow1,nrow2 = 0,_i,low1,high1,low2 = 0,high2 = 0,t,lastcol1,lastcol2 = 0,inserted;
   MatScalar       *ap1,*ap2 = NULL;
   PetscBool       roworiented = PETSC_TRUE;
-  int             i,j,row,col;
-  const PetscInt  rstart = d_mat->rstart,rend = d_mat->rend, cstart = d_mat->rstart,cend = d_mat->rend,N = d_mat->N;
+  PetscInt        i,j,row,col;
+  const PetscInt  rstart = d_mat->rstart,rend = d_mat->rend, cstart = d_mat->cstart,cend = d_mat->cend,M = d_mat->M;
 
   for (i=0; i<m; i++) {
     if (im[i] >= rstart && im[i] < rend) { // silently ignore off processor rows
@@ -173,14 +172,13 @@ PetscErrorCode MatSetValuesDevice(PetscSplitCSRDataStructure d_mat, PetscInt m,c
       for (j=0; j<n; j++) {
         value = roworiented ? v[i*n+j] : v[i+j*m];
         if (in[j] >= cstart && in[j] < cend) {
-          col = (int)(in[j] - cstart);
+          col = (in[j] - cstart);
           MatSetValues_SeqAIJ_A_Private(row,col,value,is);
           if (!inserted) SETERR;
-        } else if (in[j] < 0) {
+        } else if (in[j] < 0) { // silently ignore off processor rows
           continue;
-        } else if (in[j] >= N) {
-          continue;
-        } else {
+        } else if (in[j] >= M) SETERR;
+        else {
           col = d_mat->colmap[in[j]] - 1;
           if (col < 0) SETERR;
           MatSetValues_SeqAIJ_B_Private(row,col,value,is);

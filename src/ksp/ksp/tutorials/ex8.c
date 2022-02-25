@@ -92,11 +92,8 @@ int main(int argc,char **args)
   /*
      Create and set vectors
   */
-  ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
-  ierr = VecSetSizes(b,PETSC_DECIDE,m*n);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
-  ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
+  ierr = MatCreateVecs(A,&u,&b);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&x);CHKERRQ(ierr);
   ierr = VecSet(u,one);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
 
@@ -151,7 +148,7 @@ int main(int argc,char **args)
   if (!user_subdomains) { /* basic version */
     ierr = PCASMSetOverlap(pc,overlap);CHKERRQ(ierr);
   } else { /* advanced version */
-    if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PCASMCreateSubdomains2D() is currently a uniprocessor routine only!");
+    PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"PCASMCreateSubdomains2D() is currently a uniprocessor routine only!");
     ierr = PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is,&is_local);CHKERRQ(ierr);
     ierr = PCASMSetLocalSubdomains(pc,Nsub,is,is_local);CHKERRQ(ierr);
     flg  = PETSC_FALSE;
@@ -218,7 +215,7 @@ int main(int argc,char **args)
        Flag an error if PCTYPE is changed from the runtime options
      */
     ierr = PetscObjectTypeCompare((PetscObject)pc,PCASM,&isasm);CHKERRQ(ierr);
-    if (!isasm) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
+    PetscCheckFalse(!isasm,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
 
     /*
        Call KSPSetUp() to set the block Jacobi data structures (including

@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
   /* Test AOApplicationToPetsc */
   ierr = PetscMalloc1(n_loc,&ia);CHKERRQ(ierr);
   ierr = PetscMalloc1(n_loc,&ia0);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ia[0] = 0;
     ia[1] = -1;
     ia[2] = 1;
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
   ierr = AOApplicationToPetsc(app2petsc, n_loc, ia);CHKERRQ(ierr);
 
   for (i=0; i<n_loc; ++i) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"proc = %d : %D -> %D \n", rank, ia0[i], ia[i]);CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"proc = %d : %" PetscInt_FMT " -> %" PetscInt_FMT " \n", rank, ia0[i], ia[i]);CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
   ierr = AODestroy(&app2petsc);CHKERRQ(ierr);

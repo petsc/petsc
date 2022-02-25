@@ -37,9 +37,9 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(NULL,NULL,"-symmetric",&symmetric,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
-  if (size > 1 && m < 4) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be larger or equal 4 for parallel runs");
-  if (size == 1 && m < 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be larger or equal 2 for uniprocessor runs");
-  if (n < 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of cols should be larger or equal 2");
+  PetscCheckFalse(size > 1 && m < 4,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be larger or equal 4 for parallel runs");
+  PetscCheckFalse(size == 1 && m < 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be larger or equal 2 for uniprocessor runs");
+  PetscCheckFalse(n < 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of cols should be larger or equal 2");
   if (symmetric) m = n = PetscMax(m,n);
 
   /* create a MATIS matrix */
@@ -47,7 +47,9 @@ int main(int argc,char **args)
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetType(A,MATIS);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  /* This is not the proper setting for MATIS for finite elements, it is just used to test the routines */
+  /* This is not the proper setting for MATIS for finite elements, it is just used to test the routines
+     Here we use a one-to-one correspondence between local row/column spaces and global row/column spaces
+     Equivalent to passing NULL for the mapping */
   ierr = ISCreateStride(PETSC_COMM_WORLD,n,0,1,&is);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreateIS(is,&cmap);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
@@ -98,14 +100,14 @@ int main(int argc,char **args)
   }
   ierr = MatGetInfo(A,MAT_LOCAL,&info);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"Process  %2d: %D %D %D %D %D\n",PetscGlobalRank,(PetscInt)info.nz_used,
+  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"Process  %2d: %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",PetscGlobalRank,(PetscInt)info.nz_used,
                                             (PetscInt)info.nz_allocated,(PetscInt)info.nz_unneeded,(PetscInt)info.assemblies,(PetscInt)info.mallocs);CHKERRQ(ierr);
   ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatGetInfo(A,MAT_GLOBAL_MAX,&info);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"GlobalMax  : %D %D %D %D %D\n",(PetscInt)info.nz_used,
+  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"GlobalMax  : %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",(PetscInt)info.nz_used,
                                 (PetscInt)info.nz_allocated,(PetscInt)info.nz_unneeded,(PetscInt)info.assemblies,(PetscInt)info.mallocs);CHKERRQ(ierr);
   ierr = MatGetInfo(A,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"GlobalSum  : %D %D %D %D %D\n",(PetscInt)info.nz_used,
+  ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"GlobalSum  : %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",(PetscInt)info.nz_used,
                                 (PetscInt)info.nz_allocated,(PetscInt)info.nz_unneeded,(PetscInt)info.assemblies,(PetscInt)info.mallocs);CHKERRQ(ierr);
 
   /* test MatView */
@@ -191,7 +193,7 @@ int main(int argc,char **args)
             Mat  T,lT,T2;
             char testname[256];
 
-            ierr = PetscSNPrintf(testname,sizeof(testname),"MatConvert_IS_XAIJ special case (%D %D, bs %D %D)",ri,ci,rb,cb);CHKERRQ(ierr);
+            ierr = PetscSNPrintf(testname,sizeof(testname),"MatConvert_IS_XAIJ special case (%" PetscInt_FMT " %" PetscInt_FMT ", bs %" PetscInt_FMT " %" PetscInt_FMT ")",ri,ci,rb,cb);CHKERRQ(ierr);
             ierr = PetscPrintf(PETSC_COMM_WORLD,"Test %s\n",testname);CHKERRQ(ierr);
 
             ierr = ISCreateBlock(PETSC_COMM_SELF,cb,4,c,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
@@ -376,7 +378,7 @@ int main(int argc,char **args)
 
   /* test MatCreateSubMatrix */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatCreateSubMatrix\n");CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = ISCreateStride(PETSC_COMM_WORLD,1,1,1,&is);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_WORLD,2,0,1,&is2);CHKERRQ(ierr);
   } else if (rank == 1) {
@@ -418,7 +420,7 @@ int main(int argc,char **args)
 
   /* Create an IS required by MatZeroRows(): just rank zero provides the rows to be eliminated */
   if (size > 1) {
-    if (!rank) {
+    if (rank == 0) {
       PetscInt st,len;
 
       st   = (m+1)/2;
@@ -551,7 +553,7 @@ int main(int argc,char **args)
     for (diff = 0; diff < 3; diff++) {
       for (perm = 0; perm < 3; perm++) {
         for (bs = 1; bs < 4; bs++) {
-          ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatInvertBlockDiagonal blockdiag %D %D %D %D\n",n,diff,perm,bs);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatInvertBlockDiagonal blockdiag %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",n,diff,perm,bs);CHKERRQ(ierr);
           ierr = PetscMalloc1(bs*bs,&vals);CHKERRQ(ierr);
           ierr = MatGetOwnershipRanges(A,&sts);CHKERRQ(ierr);
           switch (diff) {
@@ -594,7 +596,7 @@ int main(int argc,char **args)
           ierr = ISRestoreIndices(is,&idxs);CHKERRQ(ierr);
           ierr = ISCreateBlock(PETSC_COMM_WORLD,bs,nl,idxs2,PETSC_OWN_POINTER,&bis);CHKERRQ(ierr);
           ierr = ISLocalToGlobalMappingCreateIS(bis,&map);CHKERRQ(ierr);
-          ierr = MatCreateIS(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,bs*n,bs*n,map,NULL,&Abd);CHKERRQ(ierr);
+          ierr = MatCreateIS(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,bs*n,bs*n,map,map,&Abd);CHKERRQ(ierr);
           ierr = ISLocalToGlobalMappingDestroy(&map);CHKERRQ(ierr);
           ierr = MatISSetPreallocation(Abd,bs,NULL,0,NULL);CHKERRQ(ierr);
           for (i=0;i<nl;i++) {
@@ -621,7 +623,7 @@ int main(int argc,char **args)
               for (b2=0;b2<bs;b2++) {
                 if (PetscAbsScalar(isbd[i*bs*bs+b1*bs + b2]-aijbd[i*bs*bs+b1*bs + b2]) > PETSC_SMALL) ok = PETSC_FALSE;
                 if (!ok) {
-                  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] ERROR block %d, entry %d %d: %g %g\n",rank,i,b1,b2,isbd[i*bs*bs+b1*bs + b2],aijbd[i*bs*bs+b1*bs + b2]);CHKERRQ(ierr);
+                  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] ERROR block %" PetscInt_FMT ", entry %" PetscInt_FMT " %" PetscInt_FMT ": %g %g\n",rank,i,b1,b2,(double)PetscAbsScalar(isbd[i*bs*bs+b1*bs + b2]),(double)PetscAbsScalar(aijbd[i*bs*bs+b1*bs + b2]));CHKERRQ(ierr);
                   break;
                 }
               }
@@ -690,7 +692,7 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char* func)
       ierr = MatGetLocalToGlobalMapping(A,&rl2g,&cl2g);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingView(rl2g,NULL);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingView(cl2g,NULL);CHKERRQ(ierr);
-      SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: %g",func,error);
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: %g",func,(double)error);
     }
     ierr = MatDestroy(&Bcheck);CHKERRQ(ierr);
   } else {
@@ -698,7 +700,7 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char* func)
 
     ierr = MatMultEqual(A,B,3,&ok);CHKERRQ(ierr);
     ierr = MatMultTransposeEqual(A,B,3,&okt);CHKERRQ(ierr);
-    if (!ok || !okt) SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: mult ok ?  %d, multtranspose ok ? %d",func,ok,okt);
+    PetscCheckFalse(!ok || !okt,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: mult ok ?  %d, multtranspose ok ? %d",func,ok,okt);
   }
   PetscFunctionReturn(0);
 }
@@ -777,7 +779,7 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
   if (squaretest && haszerorows) {
     ierr = VecAXPY(b2,-1.,b);CHKERRQ(ierr);
     ierr = VecNorm(b2,NORM_INFINITY,&error);CHKERRQ(ierr);
-    if (error > PETSC_SQRT_MACHINE_EPSILON) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR IN ZEROROWS ON B %g (diag %s)",error,diagstr);
+    PetscCheckFalse(error > PETSC_SQRT_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR IN ZEROROWS ON B %g (diag %s)",(double)error,diagstr);
   }
 
   /* test MatMissingDiagonal */
@@ -786,7 +788,7 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
   ierr = MatMissingDiagonal(B,&miss,&d);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(B,&rst,&ren);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD, "[%d] [%D,%D) Missing %d, row %D (diag %s)\n",rank,rst,ren,(int)miss,d,diagstr);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD, "[%d] [%" PetscInt_FMT ",%" PetscInt_FMT ") Missing %d, row %" PetscInt_FMT " (diag %s)\n",rank,rst,ren,(int)miss,d,diagstr);CHKERRQ(ierr);
   ierr = PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 

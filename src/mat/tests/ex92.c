@@ -97,15 +97,15 @@ int main(int argc,char **args)
   /* create a SeqSBAIJ matrix sA (= A) */
   ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
   if (vid >= 0 && vid < size) {
-    if (!rank) printf("A: \n");
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"A:\n");CHKERRQ(ierr);
     ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    if (!rank) printf("sA: \n");
+    ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"sA:\n");CHKERRQ(ierr);
     ierr = MatView(sA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /* Test sA==A through MatMult() */
   ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in MatConvert(): A != sA");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in MatConvert(): A != sA");
 
   /* Test MatIncreaseOverlap() */
   ierr = PetscMalloc1(nd,&is1);CHKERRQ(ierr);
@@ -124,7 +124,7 @@ int main(int argc,char **args)
       ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,PETSC_COPY_VALUES,is1+i);CHKERRQ(ierr);
       ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,PETSC_COPY_VALUES,is2+i);CHKERRQ(ierr);
       if (rank == vid) {
-        ierr = PetscPrintf(PETSC_COMM_SELF," [%d] IS sz[%d]: %d\n",rank,i,sz);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF," [%d] IS sz[%" PetscInt_FMT "]: %" PetscInt_FMT "\n",rank,i,sz);CHKERRQ(ierr);
         ierr = ISView(is2[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
     } else { /* Test all rows and columns */
@@ -135,7 +135,7 @@ int main(int argc,char **args)
       if (rank == vid) {
         PetscBool colflag;
         ierr = ISIdentity(is2[i],&colflag);CHKERRQ(ierr);
-        printf("[%d] is2[%d], colflag %d\n",rank,(int)i,(int)colflag);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] is2[%" PetscInt_FMT "], colflag %d\n",rank,i,colflag);CHKERRQ(ierr);
         ierr = ISView(is2[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
     }
@@ -155,22 +155,20 @@ int main(int argc,char **args)
     ierr = PetscLogStagePop();CHKERRQ(ierr);
 
     if (rank == vid) {
-      printf("\n[%d] IS from BAIJ:\n",rank);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"\n[%d] IS from BAIJ:\n",rank);CHKERRQ(ierr);
       ierr = ISView(is1[0],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-      printf("\n[%d] IS from SBAIJ:\n",rank);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"\n[%d] IS from SBAIJ:\n",rank);CHKERRQ(ierr);
       ierr = ISView(is2[0],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     }
 
     for (i=0; i<nd; ++i) {
       ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
       if (!flg) {
-        if (!rank) {
+        if (rank == 0) {
           ierr = ISSort(is1[i]);CHKERRQ(ierr);
-          /* ISView(is1[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
           ierr = ISSort(is2[i]);CHKERRQ(ierr);
-          /* ISView(is2[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
         }
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"i=%D, is1 != is2",i);
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"i=%" PetscInt_FMT ", is1 != is2",i);
       }
     }
   }
@@ -186,13 +184,13 @@ int main(int argc,char **args)
     ierr = MatCreateSubMatrices(sA,nd,is1,is1,MAT_INITIAL_MATRIX,&submatsA);CHKERRQ(ierr);
 
     ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A != sA");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A != sA");
 
     /* Now test MatCreateSubmatrices with MAT_REUSE_MATRIX option */
     ierr = MatCreateSubMatrices(A,nd,is1,is1,MAT_REUSE_MATRIX,&submatA);CHKERRQ(ierr);
     ierr = MatCreateSubMatrices(sA,nd,is1,is1,MAT_REUSE_MATRIX,&submatsA);CHKERRQ(ierr);
     ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"MatCreateSubmatrices(): A != sA");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"MatCreateSubmatrices(): A != sA");
 
     ierr = MatDestroySubMatrices(nd,&submatA);CHKERRQ(ierr);
     ierr = MatDestroySubMatrices(nd,&submatsA);CHKERRQ(ierr);

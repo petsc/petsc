@@ -75,6 +75,7 @@ struct _p_SNES {
   PetscErrorCode      (*monitordestroy[MAXSNESMONITORS])(void**);                 /* monitor context destroy routine */
   void                *monitorcontext[MAXSNESMONITORS];                           /* monitor context */
   PetscInt            numbermonitors;                                             /* number of monitors */
+  PetscBool           pauseFinal;                                                 /* pause all drawing monitor at the final iterate */
   void                *cnvP;                                                      /* convergence context */
   SNESConvergedReason reason;                                                     /* converged reason */
   PetscErrorCode      (*reasonview[MAXSNESREASONVIEWS])(SNES,void*);              /* snes converged reason view */
@@ -130,8 +131,8 @@ struct _p_SNES {
   PetscReal   *conv_hist;         /* If !0, stores function norm (or
                                     gradient norm) at each iteration */
   PetscInt    *conv_hist_its;     /* linear iterations for each Newton step */
-  PetscInt    conv_hist_len;      /* size of convergence history array */
-  PetscInt    conv_hist_max;      /* actual amount of data in conv_history */
+  size_t      conv_hist_len;      /* size of convergence history array */
+  size_t      conv_hist_max;      /* actual amount of data in conv_history */
   PetscBool   conv_hist_reset;    /* reset counter for each new SNES solve */
   PetscBool   conv_hist_alloc;
   PetscBool    counters_reset;    /* reset counter for each new SNES solve */
@@ -234,7 +235,7 @@ typedef struct {
   PetscReal norm_first;          /* function norm from the beginning of the first iteration. */
 } SNESKSPEW;
 
-PETSC_STATIC_INLINE PetscErrorCode SNESLogConvergenceHistory(SNES snes,PetscReal res,PetscInt its)
+static inline PetscErrorCode SNESLogConvergenceHistory(SNES snes,PetscReal res,PetscInt its)
 {
   PetscErrorCode ierr;
 
@@ -283,7 +284,7 @@ PETSC_INTERN const char SNESCitation[];
 */
 #define SNESCheckFunctionNorm(snes,beta) do { \
   if (PetscIsInfOrNanReal(beta)) {\
-    if (snes->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to Nan or Inf norm");\
+    PetscCheck(!snes->errorifnotconverged,PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to Nan or Inf norm");\
     else {\
       PetscBool domainerror;\
       PetscErrorCode ierr = MPIU_Allreduce(&snes->domainerror,&domainerror,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)snes));CHKERRMPI(ierr);\
@@ -301,7 +302,7 @@ PETSC_INTERN const char SNESCitation[];
     PetscErrorCode ierr = MPIU_Allreduce(&snes->jacobiandomainerror,&domainerror,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)snes));CHKERRMPI(ierr);\
     if (domainerror) {\
       snes->reason = SNES_DIVERGED_JACOBIAN_DOMAIN;\
-      if (snes->errorifnotconverged) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to Jacobian domain error");\
+      PetscCheck(!snes->errorifnotconverged,PetscObjectComm((PetscObject)snes),PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged due to Jacobian domain error");\
       PetscFunctionReturn(0);\
     }\
   } } while (0)
@@ -323,7 +324,7 @@ PETSC_INTERN const char SNESCitation[];
         PetscFunctionReturn(0);\
       } else {\
         if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {\
-          ierr         = PetscInfo3(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed %D, stopping solve\n",snes->iter,snes->numLinearSolveFailures,snes->maxLinearSolveFailures);CHKERRQ(ierr);\
+          ierr         = PetscInfo(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed %D, stopping solve\n",snes->iter,snes->numLinearSolveFailures,snes->maxLinearSolveFailures);CHKERRQ(ierr);\
           snes->reason = SNES_DIVERGED_LINEAR_SOLVE;\
           PetscFunctionReturn(0);\
         }\

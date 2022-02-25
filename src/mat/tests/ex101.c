@@ -16,7 +16,7 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
   /* Create MAIJ matrix, P */
   ierr = MatCreate(PETSC_COMM_SELF,&pA);CHKERRQ(ierr);
@@ -64,7 +64,7 @@ int main(int argc,char **argv)
 
   /* Check mC = C */
   ierr = MatEqual(C,mC,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"MatProduct C != mC");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"MatProduct C != mC");
   ierr = MatDestroy(&mC);CHKERRQ(ierr);
 
   /* User API */
@@ -73,7 +73,7 @@ int main(int argc,char **argv)
 
   /* Check mC = C */
   ierr = MatEqual(C,mC,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"MatPtAP C != mC");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"MatPtAP C != mC");
   ierr = MatDestroy(&mC);CHKERRQ(ierr);
 
   /* Cleanup */

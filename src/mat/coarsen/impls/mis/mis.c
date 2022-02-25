@@ -50,7 +50,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
     ierr   = MatCheckCompressedRow(mpimat->B,matB->nonzerorowcnt,&matB->compressedrow,matB->i,Gmat->rmap->n,-1.0);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectBaseTypeCompare((PetscObject)Gmat,MATSEQAIJ,&isAIJ);CHKERRQ(ierr);
-    if (!isAIJ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Require AIJ matrix.");
+    PetscCheckFalse(!isAIJ,PETSC_COMM_SELF,PETSC_ERR_USER,"Require AIJ matrix.");
     matA = (Mat_SeqAIJ*)Gmat->data;
   }
   ierr = MatGetOwnershipRange(Gmat,&my0,&Iend);CHKERRQ(ierr);
@@ -217,7 +217,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
     } else break; /* all done */
   } /* outer parallel MIS loop */
   ierr = ISRestoreIndices(perm,&perm_ix);CHKERRQ(ierr);
-  ierr = PetscInfo3(Gmat,"\t removed %D of %D vertices.  %D selected.\n",nremoved,nloc,nselected);CHKERRQ(ierr);
+  ierr = PetscInfo(Gmat,"\t removed %" PetscInt_FMT " of %" PetscInt_FMT " vertices.  %" PetscInt_FMT " selected.\n",nremoved,nloc,nselected);CHKERRQ(ierr);
 
   /* tell adj who my lid_parent_gid vertices belong to - fill in agg_lists selected ghost lists */
   if (strict_aggs && matB) {

@@ -24,23 +24,19 @@ static int OBJ=0;
 static int GRAD=1;
 static int OBJGRAD=2;
 static int OBJGTS=3;
-static int NFUNCS=4;
+static size_t NFUNCS=4;
 
 static PetscErrorCode ourtaolinesearchobjectiveroutine(TaoLineSearch ls, Vec x, PetscReal *f, void *ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (*)(TaoLineSearch*,Vec*,PetscReal*,void*,PetscErrorCode*))
-        (((PetscObject)ls)->fortran_func_pointers[OBJ]))(&ls,&x,f,ctx,&ierr);
-    CHKERRQ(ierr);
+    (*(void (*)(TaoLineSearch*,Vec*,PetscReal*,void*,PetscErrorCode*)) (((PetscObject)ls)->fortran_func_pointers[OBJ]))(&ls,&x,f,ctx,&ierr);CHKERRQ(ierr);
     return 0;
 }
 
 static PetscErrorCode ourtaolinesearchgradientroutine(TaoLineSearch ls, Vec x, Vec g, void *ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (*)(TaoLineSearch*,Vec*,Vec*,void*,PetscErrorCode*))
-       (((PetscObject)ls)->fortran_func_pointers[GRAD]))(&ls,&x,&g,ctx,&ierr);
-    CHKERRQ(ierr);
+    (*(void (*)(TaoLineSearch*,Vec*,Vec*,void*,PetscErrorCode*)) (((PetscObject)ls)->fortran_func_pointers[GRAD]))(&ls,&x,&g,ctx,&ierr);CHKERRQ(ierr);
     return 0;
 
 }
@@ -48,18 +44,14 @@ static PetscErrorCode ourtaolinesearchgradientroutine(TaoLineSearch ls, Vec x, V
 static PetscErrorCode ourtaolinesearchobjectiveandgradientroutine(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, void* ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (*)(TaoLineSearch*,Vec*,PetscReal*,Vec*,void*,PetscErrorCode*))
-     (((PetscObject)ls)->fortran_func_pointers[OBJGRAD]))(&ls,&x,f,&g,ctx,&ierr);
-    CHKERRQ(ierr);
+    (*(void (*)(TaoLineSearch*,Vec*,PetscReal*,Vec*,void*,PetscErrorCode*))(((PetscObject)ls)->fortran_func_pointers[OBJGRAD]))(&ls,&x,f,&g,ctx,&ierr);CHKERRQ(ierr);
     return 0;
 }
 
 static PetscErrorCode ourtaolinesearchobjectiveandgtsroutine(TaoLineSearch ls, Vec x, Vec s, PetscReal *f, PetscReal *gts, void* ctx)
 {
     PetscErrorCode ierr = 0;
-    (*(void (*)(TaoLineSearch*,Vec*,Vec*,PetscReal*,PetscReal*,void*,PetscErrorCode*))
-     (((PetscObject)ls)->fortran_func_pointers[OBJGTS]))(&ls,&x,&s,f,gts,ctx,&ierr);
-    CHKERRQ(ierr);
+    (*(void (*)(TaoLineSearch*,Vec*,Vec*,PetscReal*,PetscReal*,void*,PetscErrorCode*)) (((PetscObject)ls)->fortran_func_pointers[OBJGTS]))(&ls,&x,&s,f,gts,ctx,&ierr);CHKERRQ(ierr);
     return 0;
 }
 

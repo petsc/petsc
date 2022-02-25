@@ -13,7 +13,7 @@
   Input Parameter:
 . dmb  - The DMMoab object
 
-  Output Parameter:
+  Output Parameters:
 + nlevels   - The number of levels of refinement needed to generate the hierarchy
 - ldegrees  - The degree of refinement at each level in the hierarchy
 
@@ -89,7 +89,7 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
   Input Parameter:
 . dm  - The DMMoab object
 
-  Output Parameter:
+  Output Parameters:
 + nlevels   - The number of levels of refinement needed to generate the hierarchy
 - dmf  - The DM objects after successive refinement of the hierarchy
 
@@ -119,7 +119,7 @@ PETSC_EXTERN PetscErrorCode  DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM 
   Input Parameter:
 . dm  - The DMMoab object
 
-  Output Parameter:
+  Output Parameters:
 + nlevels   - The number of levels of refinement needed to generate the hierarchy
 - dmc  - The DM objects after successive coarsening of the hierarchy
 
@@ -149,11 +149,11 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt*, 
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm1  - The DMMoab object
 - dm2  - the second, finer DMMoab object
 
-  Output Parameter:
+  Output Parameters:
 + interpl  - The interpolation operator for transferring data between the levels
 - vec      - The scaling vector (optional)
 
@@ -185,7 +185,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
   // Columns = Parent DoFs ;  Rows = Child DoFs
   // Interpolation matrix: \sum_{i=1}^P Owned(Child) * (Owned(Parent) + Ghosted(Parent))
   // Size: nlsizc * nlghsizp
-  PetscInfo4(NULL, "Creating interpolation matrix %D X %D to apply transformation between levels %D -> %D.\n", ngsizc, nlghsizp, dmbp->hlevel, dmbc->hlevel);
+  PetscInfo(NULL, "Creating interpolation matrix %D X %D to apply transformation between levels %D -> %D.\n", ngsizc, nlghsizp, dmbp->hlevel, dmbc->hlevel);
 
   ierr = DMGetDimension(dmp, &dim);CHKERRQ(ierr);
 
@@ -243,7 +243,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
     nnz[tc] = std::min(nlsizp, nnz[tc]);
     onz[tc] = std::min(ngsizp - nlsizp, onz[tc]);
 
-    PetscInfo3(NULL, "  %d: NNZ = %d, ONZ = %d\n", tc, nnz[tc], onz[tc]);
+    PetscInfo(NULL, "  %d: NNZ = %d, ONZ = %d\n", tc, nnz[tc], onz[tc]);
 
     innz = (innz < nnz[tc] ? nnz[tc] : innz);
     ionz = (ionz < onz[tc] ? onz[tc] : ionz);
@@ -394,7 +394,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat* inte
   Input Parameter:
 . dmb  - The DMMoab object
 
-  Output Parameter:
+  Output Parameters:
 + nlevels   - The number of levels of refinement needed to generate the hierarchy
 - ldegrees  - The degree of refinement at each level in the hierarchy
 
@@ -427,8 +427,8 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
   PetscValidPointer(dmref, 4);
 
   if ((dmb->hlevel == dmb->nhlevels && refine) || (dmb->hlevel == 0 && !refine)) {
-    if (dmb->hlevel + 1 > dmb->nhlevels && refine) PetscInfo2(NULL, "Invalid multigrid refinement hierarchy level specified (%D). MOAB UMR max levels = %D. Creating a NULL object.\n", dmb->hlevel + 1, dmb->nhlevels);
-    if (dmb->hlevel - 1 < 0 && !refine) PetscInfo1(NULL, "Invalid multigrid coarsen hierarchy level specified (%D). Creating a NULL object.\n", dmb->hlevel - 1);
+    if (dmb->hlevel + 1 > dmb->nhlevels && refine) PetscInfo(NULL, "Invalid multigrid refinement hierarchy level specified (%D). MOAB UMR max levels = %D. Creating a NULL object.\n", dmb->hlevel + 1, dmb->nhlevels);
+    if (dmb->hlevel - 1 < 0 && !refine) PetscInfo(NULL, "Invalid multigrid coarsen hierarchy level specified (%D). Creating a NULL object.\n", dmb->hlevel - 1);
     *dmref = PETSC_NULL;
     PetscFunctionReturn(0);
   }
@@ -509,7 +509,7 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
 
   Collective on dm
 
-  Input Parameter:
+  Input Parameters:
 + dm  - The DMMoab object
 - comm - the communicator to contain the new DM object (or MPI_COMM_NULL)
 
@@ -539,7 +539,7 @@ PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM* dmf)
 
   Collective on dm
 
-  Input Parameter:
+  Input Parameters:
 + dm  - The DMMoab object
 - comm - the communicator to contain the new DM object (or MPI_COMM_NULL)
 

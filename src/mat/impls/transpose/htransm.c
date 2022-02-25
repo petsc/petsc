@@ -152,17 +152,24 @@ PetscErrorCode MatGetDiagonal_HT(Mat A,Vec v)
 PetscErrorCode MatConvert_HT(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat_HT         *Na = (Mat_HT*)A->data;
-  Mat            B;
   PetscErrorCode ierr;
+  PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = MatHermitianTranspose(Na->A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  if (reuse != MAT_INPLACE_MATRIX) {
-    ierr = MatConvert(B,newtype,reuse,newmat);CHKERRQ(ierr);
-    ierr = MatDestroy(&B);CHKERRQ(ierr);
-  } else {
-    ierr = MatConvert(B,newtype,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
-    ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+  ierr = MatHasOperation(Na->A,MATOP_HERMITIAN_TRANSPOSE,&flg);CHKERRQ(ierr);
+  if (flg) {
+    Mat B;
+
+    ierr = MatHermitianTranspose(Na->A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+    if (reuse != MAT_INPLACE_MATRIX) {
+      ierr = MatConvert(B,newtype,reuse,newmat);CHKERRQ(ierr);
+      ierr = MatDestroy(&B);CHKERRQ(ierr);
+    } else {
+      ierr = MatConvert(B,newtype,MAT_INPLACE_MATRIX,&B);CHKERRQ(ierr);
+      ierr = MatHeaderReplace(A,&B);CHKERRQ(ierr);
+    }
+  } else { /* use basic converter as fallback */
+    ierr = MatConvert_Basic(A,newtype,reuse,newmat);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -186,7 +193,6 @@ PetscErrorCode MatConvert_HT(Mat A,MatType newtype,MatReuse reuse,Mat *newmat)
           the original matrix
 
 .seealso: MatCreateNormal(), MatMult(), MatMultHermitianTranspose(), MatCreate()
-
 @*/
 PetscErrorCode  MatCreateHermitianTranspose(Mat A,Mat *N)
 {
@@ -213,6 +219,10 @@ PetscErrorCode  MatCreateHermitianTranspose(Mat A,Mat *N)
   (*N)->ops->multadd                   = MatMultAdd_HT;
   (*N)->ops->multhermitiantranspose    = MatMultHermitianTranspose_HT;
   (*N)->ops->multhermitiantransposeadd = MatMultHermitianTransposeAdd_HT;
+#if !defined(PETSC_USE_COMPLEX)
+  (*N)->ops->multtranspose             = MatMultHermitianTranspose_HT;
+  (*N)->ops->multtransposeadd          = MatMultHermitianTransposeAdd_HT;
+#endif
   (*N)->ops->duplicate                 = MatDuplicate_HT;
   (*N)->ops->getvecs                   = MatCreateVecs_HT;
   (*N)->ops->axpy                      = MatAXPY_HT;

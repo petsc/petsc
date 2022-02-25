@@ -1,0 +1,53 @@
+  0 KSP Residual norm 76.9968 
+  1 KSP Residual norm 8.08208 
+  2 KSP Residual norm 15.1105 
+  3 KSP Residual norm 6.17191 
+  4 KSP Residual norm 1.69055 
+  5 KSP Residual norm 0.839527 
+  6 KSP Residual norm 0.503547 
+  7 KSP Residual norm 0.22474 
+  8 KSP Residual norm 0.0980339 
+  9 KSP Residual norm 0.0489431 
+ 10 KSP Residual norm 0.0211883 
+ 11 KSP Residual norm 0.0172013 
+ 12 KSP Residual norm 0.0111598 
+ 13 KSP Residual norm 0.00568569 
+ 14 KSP Residual norm 0.00254207 
+ 15 KSP Residual norm 0.000942484 
+ 16 KSP Residual norm 0.000394248 
+KSP Object: 4 MPI processes
+  type: cg
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 4 MPI processes
+  type: hypre
+    HYPRE BoomerAMG preconditioning
+      Cycle type V
+      Maximum number of levels 25
+      Maximum number of iterations PER hypre call 1
+      Convergence tolerance PER hypre call 0.
+      Threshold for strong coupling 0.25
+      Interpolation truncation factor 0.
+      Interpolation: max elements per row 0
+      Number of levels of aggressive coarsening 0
+      Number of paths for aggressive coarsening 1
+      Maximum row sums 0.9
+      Sweeps down         1
+      Sweeps up           1
+      Sweeps on coarse    1
+      Relax down          l1scaled-Jacobi
+      Relax up            l1scaled-Jacobi
+      Relax on coarse     Gaussian-elimination
+      Relax weight  (all)      1.
+      Outer relax weight (all) 1.
+      Not using CF-relaxation
+      Not using more complex smoothers.
+      Measure type        local
+      Coarsen type        PMIS
+      Interpolation type  ext+i
+  linear system matrix = precond matrix:
+  Mat Object: 4 MPI processes
+    type: hypre
+    rows=1800, cols=1800, bs=2

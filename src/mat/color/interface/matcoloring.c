@@ -49,7 +49,7 @@ PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function
 .  mcptr - the new MatColoring context
 
    Options Database Keys:
-+   -mat_coloring_type - the type of coloring algorithm used
++   -mat_coloring_type - the type of coloring algorithm used. See MatColoringType.
 .   -mat_coloring_maxcolors - the maximum number of relevant colors, all nodes not in a color are in maxcolors+1
 .   -mat_coloring_distance - compute a distance 1,2,... coloring.
 .   -mat_coloring_view - print information about the coloring and the produced index sets
@@ -67,7 +67,7 @@ PetscErrorCode  MatColoringRegister(const char sname[],PetscErrorCode (*function
 
           Some coloring types only support distance two colorings
 
-.seealso: MatColoring, MatColoringApply(), MatFDColoringCreate(), DMCreateColoring()
+.seealso: MatColoring, MatColoringApply(), MatFDColoringCreate(), DMCreateColoring(), MatColoringType
 @*/
 PetscErrorCode MatColoringCreate(Mat m,MatColoring *mcptr)
 {
@@ -124,7 +124,7 @@ PetscErrorCode MatColoringDestroy(MatColoring *mc)
 
    Collective on MatColoring
 
-   Input Parameter:
+   Input Parameters:
 +  mc - the MatColoring context
 -  type - the type of coloring
 
@@ -148,7 +148,7 @@ PetscErrorCode MatColoringSetType(MatColoring mc,MatColoringType type)
   ierr = PetscObjectTypeCompare((PetscObject)mc,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
   ierr =  PetscFunctionListFind(MatColoringList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested MatColoring type %s",type);
+  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested MatColoring type %s",type);
   if (mc->ops->destroy) {
     ierr             = (*(mc)->ops->destroy)(mc);CHKERRQ(ierr);
     mc->ops->destroy = NULL;
@@ -168,11 +168,11 @@ PetscErrorCode MatColoringSetType(MatColoring mc,MatColoringType type)
 
    Collective on MatColoring
 
-   Input Parameters:
+   Input Parameter:
 .  mc - MatColoring context
 
    Options Database Keys:
-+   -mat_coloring_type - the type of coloring algorithm used
++   -mat_coloring_type - the type of coloring algorithm used. See MatColoringType.
 .   -mat_coloring_maxcolors - the maximum number of relevant colors, all nodes not in a color are in maxcolors+1
 .   -mat_coloring_distance - compute a distance 1,2,... coloring.
 .   -mat_coloring_view - print information about the coloring and the produced index sets
@@ -181,7 +181,7 @@ PetscErrorCode MatColoringSetType(MatColoring mc,MatColoringType type)
 
    Level: beginner
 
-.seealso: MatColoring, MatColoringApply(), MatColoringSetDistance(), SNESComputeJacobianDefaultColor()
+.seealso: MatColoring, MatColoringApply(), MatColoringSetDistance(), SNESComputeJacobianDefaultColor(), MatColoringType
 @*/
 PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
 {
@@ -277,7 +277,7 @@ PetscErrorCode MatColoringGetDistance(MatColoring mc,PetscInt *dist)
 
    Logically Collective on MatColoring
 
-   Input Parameter:
+   Input Parameters:
 +  mc - the MatColoring context
 -  maxcolors - the maximum number of colors to produce
 
@@ -350,6 +350,7 @@ PetscErrorCode MatColoringApply(MatColoring mc,ISColoring *coloring)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mc,MAT_COLORING_CLASSID,1);
+  PetscValidPointer(coloring,2);
   ierr = PetscLogEventBegin(MATCOLORING_Apply,mc,0,0,0);CHKERRQ(ierr);
   ierr = (*mc->ops->apply)(mc,coloring);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MATCOLORING_Apply,mc,0,0,0);CHKERRQ(ierr);
@@ -369,8 +370,8 @@ PetscErrorCode MatColoringApply(MatColoring mc,ISColoring *coloring)
     ierr = MatColoringView(mc,viewer);CHKERRQ(ierr);
     ierr = MatGetSize(mc->mat,NULL,&nc);CHKERRQ(ierr);
     ierr = ISColoringGetIS(*coloring,PETSC_USE_POINTER,&ncolors,NULL);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Number of colors %d\n",ncolors);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Number of total columns %d\n",nc);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Number of colors %" PetscInt_FMT "\n",ncolors);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Number of total columns %" PetscInt_FMT "\n",nc);CHKERRQ(ierr);
     if (nc <= 1000) {ierr = ISColoringView(*coloring,viewer);CHKERRQ(ierr);}
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -409,9 +410,9 @@ PetscErrorCode MatColoringView(MatColoring mc,PetscViewer viewer)
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)mc,viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Weight type: %s\n",MatColoringWeightTypes[mc->weight_type]);CHKERRQ(ierr);
     if (mc->maxcolors > 0) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Distance %D, Max. Colors %D\n",mc->dist,mc->maxcolors);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Distance %" PetscInt_FMT ", Max. Colors %" PetscInt_FMT "\n",mc->dist,mc->maxcolors);CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Distance %d\n",mc->dist);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Distance %" PetscInt_FMT "\n",mc->dist);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

@@ -5,6 +5,16 @@
 #include <petsc/private/matimpl.h>
 #include <petscctable.h>
 
+/* Operations provided by MATSEQAIJ and its subclasses */
+typedef struct {
+  PetscErrorCode (*getarray)(Mat,PetscScalar **);
+  PetscErrorCode (*restorearray)(Mat,PetscScalar **);
+  PetscErrorCode (*getarrayread)(Mat,const PetscScalar **);
+  PetscErrorCode (*restorearrayread)(Mat,const PetscScalar **);
+  PetscErrorCode (*getarraywrite)(Mat,PetscScalar **);
+  PetscErrorCode (*restorearraywrite)(Mat,PetscScalar **);
+} Mat_SeqAIJOps;
+
 /*
     Struct header shared by SeqAIJ, SeqBAIJ and SeqSBAIJ matrix formats
 */
@@ -38,7 +48,8 @@
   PetscBool         pivotinblocks;    /* pivot inside factorization of each diagonal block */ \
   Mat               parent;           /* set if this matrix was formed with MatDuplicate(...,MAT_SHARE_NONZERO_PATTERN,....); \
                                          means that this shares some data structures with the parent including diag, ilen, imax, i, j */\
-  Mat_SubSppt       *submatis1         /* used by MatCreateSubMatrices_MPIXAIJ_Local */
+  Mat_SubSppt       *submatis1;       /* used by MatCreateSubMatrices_MPIXAIJ_Local */    \
+  Mat_SeqAIJOps     ops[1]            /* operations for SeqAIJ and its subclasses */
 
 typedef struct {
   MatTransposeColoring matcoloring;
@@ -122,12 +133,18 @@ typedef struct {
   PetscBool   ibdiagvalid;                    /* inverses of block diagonals are valid. */
   PetscBool   diagonaldense;                  /* all entries along the diagonal have been set; i.e. no missing diagonal terms */
   PetscScalar fshift,omega;                   /* last used omega and fshift */
+
+  /* MatSetValuesCOO() related fields on host */
+  PetscCount  coo_n;  /* Number of entries in MatSetPreallocationCOO() */
+  PetscCount  Atot;   /* Total number of valid (i.e., w/ non-negative indices) entries in the COO array */
+  PetscCount  *jmap;  /* perm[jmap[i]..jmap[i+1]) give indices of entries in v[] associated with i-th nonzero of the matrix */
+  PetscCount  *perm;  /* The permutation array in sorting (i,j) by row and then by col */
 } Mat_SeqAIJ;
 
 /*
   Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */
-PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j,PetscInt **i)
+static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j,PetscInt **i)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *A = (Mat_SeqAIJ*) AA->data;
@@ -151,7 +168,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscI
     PetscInt CHUNKSIZE = 15,new_nz = AI[AM] + CHUNKSIZE,len,*new_i=NULL,*new_j=NULL; \
     datatype *new_a; \
  \
-    if (NONEW == -2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%D,%D) caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
+    PetscCheckFalse(NONEW == -2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
     /* malloc new storage space */ \
     ierr = PetscMalloc3(BS2*new_nz,&new_a,new_nz,&new_j,AM+1,&new_i);CHKERRQ(ierr); \
  \
@@ -183,7 +200,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscI
     /* there is no extra room in row, therefore enlarge */ \
     PetscInt CHUNKSIZE = 15,new_nz = AI[AM] + CHUNKSIZE,len,*new_i=NULL,*new_j=NULL; \
  \
-    if (NONEW == -2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%D,%D) caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
+    PetscCheckFalse(NONEW == -2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check",ROW,COL); \
     /* malloc new storage space */ \
     ierr = PetscMalloc1(new_nz,&new_j);CHKERRQ(ierr); \
     ierr = PetscMalloc1(AM+1,&new_i);CHKERRQ(ierr);\
@@ -209,6 +226,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscI
   } \
 
 PETSC_INTERN PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat,PetscInt,const PetscInt*);
+PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat,PetscCount,const PetscInt[],const PetscInt[]);
 PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat,Mat,IS,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat,Mat,IS,IS,const MatFactorInfo*);
 PETSC_INTERN PetscErrorCode MatILUFactorSymbolic_SeqAIJ_ilu0(Mat,Mat,IS,IS,const MatFactorInfo*);
@@ -501,7 +519,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm,PetscInt,Pet
   #define _MM_SCALE_8    8
   #endif
 
-PETSC_STATIC_INLINE void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum,const PetscScalar *x,const MatScalar *aa,const PetscInt *aj,PetscInt n)
+static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum,const PetscScalar *x,const MatScalar *aa,const PetscInt *aj,PetscInt n)
 {
   __m512d  vec_x,vec_y,vec_vals;
   __m256i  vec_idx;

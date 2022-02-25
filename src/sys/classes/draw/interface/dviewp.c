@@ -11,10 +11,15 @@
    Collective on PetscDraw
 
    Input Parameters:
-+  xl,yl,xr,yr - upper right and lower left corners of subwindow
-                 These numbers must always be between 0.0 and 1.0.
-                 Lower left corner is (0,0).
++  xl - the horizontal coordinate of the lower left corner of the subwindow.
+.  yl - the vertical coordinate of the lower left corner of the subwindow.
+.  xr - the horizontal coordinate of the upper right corner of the subwindow.
+.  yr - the vertical coordinate of the upper right corner of the subwindow.
 -  draw - the drawing context
+
+   Notes:
+   These numbers must always be between 0.0 and 1.0.
+   Lower left corner is (0,0).
 
    Level: advanced
 
@@ -25,7 +30,7 @@ PetscErrorCode  PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (xl < 0.0 || xr > 1.0 || yl < 0.0 || yr > 1.0 || xr <= xl || yr <= yl) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ViewPort values must be >= 0 and <= 1: Instead %g %g %g %g",(double)xl,(double)yl,(double)xr,(double)yr);
+  PetscCheck(xl >= 0.0 && xr <= 1.0 && yl >= 0.0 && yr <= 1.0 && xr > xl && yr > yl,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ViewPort values must be >= 0 and <= 1: Instead %g %g %g %g",(double)xl,(double)yl,(double)xr,(double)yr);
   draw->port_xl = xl; draw->port_yl = yl;
   draw->port_xr = xr; draw->port_yr = yr;
   if (draw->ops->setviewport) {
@@ -43,10 +48,15 @@ PetscErrorCode  PetscDrawSetViewPort(PetscDraw draw,PetscReal xl,PetscReal yl,Pe
    Input Parameter:
 .  draw - the drawing context
 
-   Output Parameter:
-.  xl,yl,xr,yr - upper right and lower left corners of subwindow
-                 These numbers must always be between 0.0 and 1.0.
-                 Lower left corner is (0,0).
+   Output Parameters:
++  xl - the horizontal coordinate of the lower left corner of the subwindow.
+.  yl - the vertical coordinate of the lower left corner of the subwindow.
+.  xr - the horizontal coordinate of the upper right corner of the subwindow.
+-  yr - the vertical coordinate of the upper right corner of the subwindow.
+
+   Notes:
+   These numbers must always be between 0.0 and 1.0.
+   Lower left corner is (0,0).
 
    Level: advanced
 
@@ -136,7 +146,7 @@ PetscErrorCode  PetscDrawSplitViewPort(PetscDraw draw)
 .  ports - a PetscDrawViewPorts context (C structure)
 
    Options Database:
-.  -draw_ports - display multiple fields in the same window with PetscDrawPorts instead of in separate windows
+.  -draw_ports - display multiple fields in the same window with PetscDrawPorts() instead of in separate windows
 
    Level: advanced
 
@@ -154,7 +164,7 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (nports < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Number of divisions must be positive: %d", nports);
+  PetscCheck(nports >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Number of divisions must be positive: %" PetscInt_FMT, nports);
   PetscValidPointer(newports,3);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
   if (isnull) {*newports = NULL; PetscFunctionReturn(0);}
@@ -185,7 +195,7 @@ PetscErrorCode  PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDra
     yl[i] = (i / n)*h;
     yr[i] = yl[i] + h;
 
-    if (!rank) {
+    if (rank == 0) {
       ierr = PetscDrawLine(draw,xl[i],yl[i],xl[i],yr[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
       ierr = PetscDrawLine(draw,xl[i],yr[i],xr[i],yr[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
       ierr = PetscDrawLine(draw,xr[i],yr[i],xr[i],yl[i],PETSC_DRAW_BLACK);CHKERRQ(ierr);
@@ -233,7 +243,7 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if ((nx < 1) || (ny < 1)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Number of divisions must be positive: %d x %d", nx, ny);
+  PetscCheck(nx >= 1 && ny >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Number of divisions must be positive: %" PetscInt_FMT " x %" PetscInt_FMT, nx, ny);
   PetscValidPointer(newports,4);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr);
   if (isnull) {*newports = NULL; PetscFunctionReturn(0);}
@@ -266,7 +276,7 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
       yl[k] = j*hy;
       yr[k] = yl[k] + hy;
 
-      if (!rank) {
+      if (rank == 0) {
         ierr = PetscDrawLine(draw,xl[k],yl[k],xl[k],yr[k],PETSC_DRAW_BLACK);CHKERRQ(ierr);
         ierr = PetscDrawLine(draw,xl[k],yr[k],xr[k],yr[k],PETSC_DRAW_BLACK);CHKERRQ(ierr);
         ierr = PetscDrawLine(draw,xr[k],yr[k],xr[k],yl[k],PETSC_DRAW_BLACK);CHKERRQ(ierr);
@@ -317,7 +327,7 @@ PetscErrorCode  PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 
    Logically Collective on PetscDraw inside PetscDrawViewPorts
 
-   Input Parameter:
+   Input Parameters:
 +  ports - the PetscDrawViewPorts object
 -  port - the port number, from 0 to nports-1
 
@@ -333,7 +343,7 @@ PetscErrorCode  PetscDrawViewPortsSet(PetscDrawViewPorts *ports,PetscInt port)
   PetscFunctionBegin;
   if (!ports) PetscFunctionReturn(0);
   PetscValidPointer(ports,1);
-  if (port < 0 || port > ports->nports-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Port is out of range requested %d from 0 to %d\n",port,ports->nports-1);
+  PetscCheck(port >= 0 && (port <= ports->nports-1),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Port is out of range requested %" PetscInt_FMT " from 0 to %" PetscInt_FMT,port,ports->nports-1);
   ierr = PetscDrawSetViewPort(ports->draw,ports->xl[port],ports->yl[port],ports->xr[port],ports->yr[port]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

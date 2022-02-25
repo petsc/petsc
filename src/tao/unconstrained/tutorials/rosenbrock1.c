@@ -13,9 +13,9 @@ or the chained Rosenbrock function:\n\
 /*T
    Concepts: TAO^Solving an unconstrained minimization problem
    Routines: TaoCreate();
-   Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
-   Routines: TaoSetHessianRoutine();
-   Routines: TaoSetInitialVector();
+   Routines: TaoSetType(); TaoSetObjectiveAndGradient();
+   Routines: TaoSetHessian();
+   Routines: TaoSetSolution();
    Routines: TaoSetFromOptions();
    Routines: TaoSolve();
    Routines: TaoDestroy();
@@ -56,7 +56,7 @@ int main(int argc,char **argv)
   /* Initialize TAO and PETSc */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size >1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Incorrect number of processors");
+  PetscCheckFalse(size >1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Incorrect number of processors");
 
   /* Initialize problem parameters */
   user.n = 2; user.alpha = 99.0; user.chained = PETSC_FALSE;
@@ -78,11 +78,11 @@ int main(int argc,char **argv)
 
   /* Set solution vec and an initial guess */
   ierr = VecSet(x, zero);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
 
   /* Set routines for function, gradient, hessian evaluation */
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,&user);CHKERRQ(ierr);
-  ierr = TaoSetHessianRoutine(tao,H,H,FormHessian,&user);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,&user);CHKERRQ(ierr);
+  ierr = TaoSetHessian(tao,H,H,FormHessian,&user);CHKERRQ(ierr);
 
   /* Test the LMVM matrix */
   if (test_lmvm) {

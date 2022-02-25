@@ -116,7 +116,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Gather(VecTagger tagger,Vec vec,
   ierr = VecScatterEnd(vScat,vec,gVec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&vScat);CHKERRQ(ierr);
   ierr = MPI_Comm_rank (PetscObjectComm((PetscObject)vec),&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = VecTaggerComputeBoxes_CDF_Serial(tagger,gVec,bs,boxes);CHKERRQ(ierr);
   }
   ierr = MPI_Bcast((PetscScalar *)boxes,2*bs,MPIU_SCALAR,0,PetscObjectComm((PetscObject)vec));CHKERRMPI(ierr);
@@ -362,7 +362,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Iterative(VecTagger tagger,Vec v
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecTaggerComputeBoxes_CDF(VecTagger tagger,Vec vec,PetscInt *numBoxes,VecTaggerBox **boxes)
+static PetscErrorCode VecTaggerComputeBoxes_CDF(VecTagger tagger,Vec vec,PetscInt *numBoxes,VecTaggerBox **boxes,PetscBool *listed)
 {
   VecTagger_CDF  *cuml = (VecTagger_CDF *)tagger->data;
   PetscMPIInt    size;
@@ -391,6 +391,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF(VecTagger tagger,Vec vec,PetscIn
     SETERRQ(PetscObjectComm((PetscObject)tagger),PETSC_ERR_SUP,"Unknown CDF calculation/estimation method.");
   }
   *boxes = bxs;
+  if (listed) *listed = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -409,7 +410,7 @@ static PetscErrorCode VecTaggerView_CDF(VecTagger tagger,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"CDF computation method: %s\n",VecTaggerCDFMethods[cuml->method]);CHKERRQ(ierr);
     if (cuml->method == VECTAGGER_CDF_ITERATIVE) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"max its: %D, abs tol: %g, rel tol %g\n",cuml->maxit,(double) cuml->atol,(double) cuml->rtol);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"max its: %" PetscInt_FMT ", abs tol: %g, rel tol %g\n",cuml->maxit,(double) cuml->atol,(double) cuml->rtol);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   }
@@ -520,7 +521,7 @@ PetscErrorCode VecTaggerCDFIterativeSetTolerances(VecTagger tagger, PetscInt max
 
   Logically Collective on VecTagger
 
-  Input Parameters:
+  Input Parameter:
 . tagger - the VecTagger context
 
   Output Parameters:
@@ -549,7 +550,7 @@ PetscErrorCode VecTaggerCDFIterativeGetTolerances(VecTagger tagger, PetscInt *ma
 
   Logically Collective
 
-  Input Arguments:
+  Input Parameters:
 + tagger - the VecTagger context
 - boxes - a blocksize array of VecTaggerBox boxes
 
@@ -571,10 +572,10 @@ PetscErrorCode VecTaggerCDFSetBox(VecTagger tagger,VecTaggerBox *box)
 
   Logically Collective
 
-  Input Arguments:
+  Input Parameter:
 . tagger - the VecTagger context
 
-  Output Arguments:
+  Output Parameter:
 . boxes - a blocksize array of VecTaggerBox boxes
 
   Level: advanced

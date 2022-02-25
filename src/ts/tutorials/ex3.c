@@ -105,7 +105,7 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
+  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   m    = 60;
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
@@ -255,7 +255,7 @@ int main(int argc,char **argv)
     ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,string,sizeof(string),&stringviewer);CHKERRQ(ierr);
     ierr = TSView(ts,stringviewer);CHKERRQ(ierr);
     ierr = PetscViewerStringGetStringRead(stringviewer,&outstring,NULL);CHKERRQ(ierr);
-    if ((char*)outstring != (char*)string) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"String returned from viewer does not equal original string");
+    PetscCheckFalse((char*)outstring != (char*)string,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"String returned from viewer does not equal original string");
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Output from string viewer:%s\n",outstring);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&stringviewer);CHKERRQ(ierr);
   }
@@ -596,6 +596,11 @@ PetscErrorCode IJacobianHeat(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal s,Mat A,
       requires: !single
       suffix: fischer_guess_2
       args: -nox -ts_type beuler -use_ifunc -ts_dt 0.0005 -ksp_guess_type fischer -ksp_guess_fischer_model 2,10 -pc_type none -ksp_converged_reason
+
+    test:
+      requires: !single
+      suffix: fischer_guess_3
+      args: -nox -ts_type beuler -use_ifunc -ts_dt 0.0005 -ksp_guess_type fischer -ksp_guess_fischer_model 3,10 -pc_type none -ksp_converged_reason
 
     test:
       requires: !single

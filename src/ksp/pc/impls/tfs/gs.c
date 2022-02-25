@@ -409,7 +409,7 @@ static PetscErrorCode gsi_via_bit_mask(PCTFS_gs_id *gs)
     for (i=0, t1=0; i<gs->num_local; i++, reduce++) {
       if ((PCTFS_ivec_binary_search(**reduce,gs->pw_elm_list,gs->len_pw_list)>=0) || PCTFS_ivec_binary_search(**reduce,gs->tree_map_in,gs->tree_map_sz)>=0) {
         t1++;
-        if (gs->num_local_reduce[i]<=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"nobody in list?");
+        PetscCheckFalse(gs->num_local_reduce[i]<=0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"nobody in list?");
         gs->num_local_reduce[i] *= -1;
       }
       **reduce=map[**reduce];
@@ -431,7 +431,7 @@ static PetscErrorCode gsi_via_bit_mask(PCTFS_gs_id *gs)
       gs->num_gop_local_reduce = gs->num_local_reduce;
 
       for (i=0; i<t1; i++) {
-        if (gs->num_gop_local_reduce[i]>=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"they aren't negative?");
+        PetscCheckFalse(gs->num_gop_local_reduce[i]>=0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"they aren't negative?");
         gs->num_gop_local_reduce[i] *= -1;
         gs->local_reduce++;
         gs->num_local_reduce++;
@@ -527,7 +527,7 @@ static PetscErrorCode get_ngh_buf(PCTFS_gs_id *gs)
   buf_size = PetscMin(msg_buf,i);
 
   /* can we do it? */
-  if (p_mask_size>buf_size) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"get_ngh_buf() :: buf<pms :: %d>%d\n",p_mask_size,buf_size);
+  PetscCheckFalse(p_mask_size>buf_size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"get_ngh_buf() :: buf<pms :: %d>%d",p_mask_size,buf_size);
 
   /* get PCTFS_giop buf space ... make *only* one malloc */
   buf1 = (PetscInt*) malloc(buf_size<<1);
@@ -962,7 +962,7 @@ PetscErrorCode PCTFS_gs_gop_vec(PCTFS_gs_id *gs,  PetscScalar *vals,  const char
     PCTFS_gs_gop_vec_plus(gs,vals,step);
     break;
   default:
-    ierr = PetscInfo1(0,"PCTFS_gs_gop_vec() :: %c is not a valid op\n",op[0]);CHKERRQ(ierr);
+    ierr = PetscInfo(0,"PCTFS_gs_gop_vec() :: %c is not a valid op\n",op[0]);CHKERRQ(ierr);
     ierr = PetscInfo(0,"PCTFS_gs_gop_vec() :: default :: plus\n");CHKERRQ(ierr);
     PCTFS_gs_gop_vec_plus(gs,vals,step);
     break;
@@ -974,7 +974,7 @@ PetscErrorCode PCTFS_gs_gop_vec(PCTFS_gs_id *gs,  PetscScalar *vals,  const char
 static PetscErrorCode PCTFS_gs_gop_vec_plus(PCTFS_gs_id *gs,  PetscScalar *vals,  PetscInt step)
 {
   PetscFunctionBegin;
-  if (!gs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_gs_gop_vec() passed NULL gs handle!!!");
+  PetscCheckFalse(!gs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_gs_gop_vec() passed NULL gs handle!!!");
 
   /* local only operations!!! */
   if (gs->num_local) PCTFS_gs_gop_vec_local_plus(gs,vals,step);
@@ -1256,7 +1256,7 @@ PetscErrorCode PCTFS_gs_gop_hc(PCTFS_gs_id *gs,  PetscScalar *vals,  const char 
     PCTFS_gs_gop_plus_hc(gs,vals,dim);
     break;
   default:
-    ierr = PetscInfo1(0,"PCTFS_gs_gop_hc() :: %c is not a valid op\n",op[0]);CHKERRQ(ierr);
+    ierr = PetscInfo(0,"PCTFS_gs_gop_hc() :: %c is not a valid op\n",op[0]);CHKERRQ(ierr);
     ierr = PetscInfo(0,"PCTFS_gs_gop_hc() :: default :: plus\n");CHKERRQ(ierr);
     PCTFS_gs_gop_plus_hc(gs,vals,dim);
     break;

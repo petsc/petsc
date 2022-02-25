@@ -53,7 +53,7 @@ DM Object: 4 MPI processes
        edge 6: 7 ----> 1
        edge 7: 7 ----> 8
   [2] nEdges: 4; nVertices: 6; nSharedVertices: 1
-     Subnet 0: nEdges 1, nVertices(include shared vertices) 3
+     Subnet 0: nEdges 1, nVertices(include shared vertices) 2
        edge 8: 8 ----> 3
      Subnet 1: nEdges 3, nVertices(include shared vertices) 4
        edge 9: 4 ----> 9

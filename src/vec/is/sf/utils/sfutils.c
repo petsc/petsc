@@ -6,17 +6,21 @@
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  sf - star forest
 .  layout - PetscLayout defining the global space for roots
 .  nleaves - number of leaf vertices on the current process, each of these references a root on any process
 .  ilocal - locations of leaves in leafdata buffers, pass NULL for contiguous storage
 .  localmode - copy mode for ilocal
--  iremote - remote locations (in global indices) of root vertices for each leaf on the current process
+-  iremote - root vertices in global numbering corresponding to leaves in ilocal
 
    Level: intermediate
 
-   Developers Note: Local indices which are the identity permutation in the range [0,nleaves) are discarded as they
+   Notes:
+   Global indices must lie in [0, N) where N is the global size of layout.
+
+   Developers Note:
+   Local indices which are the identity permutation in the range [0,nleaves) are discarded as they
    encode contiguous storage. In such case, if localmode is PETSC_OWN_POINTER, the memory is deallocated as it is not
    needed
 
@@ -95,7 +99,7 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
 
     ierr = PetscSectionGetDof(globalSection, p, &gdof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(globalSection, p, &gcdof);CHKERRQ(ierr);
-    if (gcdof > (gdof < 0 ? -(gdof+1) : gdof)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D has %D constraints > %D dof", p, gcdof, (gdof < 0 ? -(gdof+1) : gdof));
+    PetscCheckFalse(gcdof > (gdof < 0 ? -(gdof+1) : gdof),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " has %" PetscInt_FMT " constraints > %" PetscInt_FMT " dof", p, gcdof, (gdof < 0 ? -(gdof+1) : gdof));
     nleaves += gdof < 0 ? -(gdof+1)-gcdof : gdof-gcdof;
   }
   ierr = PetscMalloc1(nleaves, &local);CHKERRQ(ierr);
@@ -114,21 +118,21 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
     if (!gdof) continue; /* Censored point */
     gsize = gdof < 0 ? -(gdof+1)-gcdof : gdof-gcdof;
     if (gsize != dof-cdof) {
-      if (gsize != dof) SETERRQ4(comm, PETSC_ERR_ARG_WRONG, "Global dof %D for point %D is neither the constrained size %D, nor the unconstrained %D", gsize, p, dof-cdof, dof);
+      PetscCheckFalse(gsize != dof,comm, PETSC_ERR_ARG_WRONG, "Global dof %" PetscInt_FMT " for point %" PetscInt_FMT " is neither the constrained size %" PetscInt_FMT ", nor the unconstrained %" PetscInt_FMT, gsize, p, dof-cdof, dof);
       cdof = 0; /* Ignore constraints */
     }
     for (d = 0, c = 0; d < dof; ++d) {
       if ((c < cdof) && (cind[c] == d)) {++c; continue;}
       local[l+d-c] = off+d;
     }
-    if (d-c != gsize) SETERRQ3(comm, PETSC_ERR_ARG_WRONG, "Point %D: Global dof %D != %D size - number of constraints", p, gsize, d-c);
+    PetscCheckFalse(d-c != gsize,comm, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT ": Global dof %" PetscInt_FMT " != %" PetscInt_FMT " size - number of constraints", p, gsize, d-c);
     if (gdof < 0) {
       for (d = 0; d < gsize; ++d, ++l) {
         PetscInt offset = -(goff+1) + d, r;
 
         ierr = PetscFindInt(offset,size+1,ranges,&r);CHKERRQ(ierr);
         if (r < 0) r = -(r+2);
-        if ((r < 0) || (r >= size)) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D mapped to invalid process %D (%D, %D)", p, r, gdof, goff);
+        PetscCheckFalse((r < 0) || (r >= size),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " mapped to invalid process %" PetscInt_FMT " (%" PetscInt_FMT ", %" PetscInt_FMT ")", p, r, gdof, goff);
         remote[l].rank  = r;
         remote[l].index = offset - ranges[r];
       }
@@ -139,7 +143,7 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
       }
     }
   }
-  if (l != nleaves) SETERRQ2(comm, PETSC_ERR_PLIB, "Iteration error, l %D != nleaves %D", l, nleaves);
+  PetscCheckFalse(l != nleaves,comm, PETSC_ERR_PLIB, "Iteration error, l %" PetscInt_FMT " != nleaves %" PetscInt_FMT, l, nleaves);
   ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
   ierr = PetscSFSetGraph(sf, nroots, nleaves, local, PETSC_OWN_POINTER, remote, PETSC_OWN_POINTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -419,7 +423,7 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
       }
     }
   }
-  if (numIndices != ind) SETERRQ2(comm, PETSC_ERR_PLIB, "Inconsistency in indices, %D should be %D", ind, numIndices);
+  PetscCheckFalse(numIndices != ind,comm, PETSC_ERR_PLIB, "Inconsistency in indices, %" PetscInt_FMT " should be %" PetscInt_FMT, ind, numIndices);
   ierr = PetscSFSetGraph(*sectionSF, numSectionRoots, numIndices, localIndices, PETSC_OWN_POINTER, remoteIndices, PETSC_OWN_POINTER);CHKERRQ(ierr);
   ierr = PetscSFSetUp(*sectionSF);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PETSCSF_SectSF,sf,0,0,0);CHKERRQ(ierr);
@@ -431,11 +435,11 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  rmap - PetscLayout defining the global root space
 -  lmap - PetscLayout defining the global leaf space
 
-   Output Arguments:
+   Output Parameter:
 .  sf - The parallel star forest
 
    Level: intermediate
@@ -455,10 +459,10 @@ PetscErrorCode PetscSFCreateFromLayouts(PetscLayout rmap, PetscLayout lmap, Pets
 
   PetscFunctionBegin;
   PetscValidPointer(sf,3);
-  if (!rmap->setupcalled) SETERRQ(rcomm,PETSC_ERR_ARG_WRONGSTATE,"Root layout not setup");
-  if (!lmap->setupcalled) SETERRQ(lcomm,PETSC_ERR_ARG_WRONGSTATE,"Leaf layout not setup");
+  PetscCheckFalse(!rmap->setupcalled,rcomm,PETSC_ERR_ARG_WRONGSTATE,"Root layout not setup");
+  PetscCheckFalse(!lmap->setupcalled,lcomm,PETSC_ERR_ARG_WRONGSTATE,"Leaf layout not setup");
   ierr = MPI_Comm_compare(rcomm,lcomm,&flg);CHKERRMPI(ierr);
-  if (flg != MPI_CONGRUENT && flg != MPI_IDENT) SETERRQ(rcomm,PETSC_ERR_SUP,"cannot map two layouts with non-matching communicators");
+  PetscCheckFalse(flg != MPI_CONGRUENT && flg != MPI_IDENT,rcomm,PETSC_ERR_SUP,"cannot map two layouts with non-matching communicators");
   ierr = PetscSFCreate(rcomm,sf);CHKERRQ(ierr);
   ierr = PetscLayoutGetLocalSize(rmap,&nroots);CHKERRQ(ierr);
   ierr = PetscLayoutGetSize(rmap,&rN);CHKERRQ(ierr);
@@ -498,7 +502,7 @@ PetscErrorCode PetscLayoutMapLocal(PetscLayout map,PetscInt N,const PetscInt idx
   ierr = PetscMalloc1(N,&ridxs);CHKERRQ(ierr);
   for (r = 0; r < N; ++r) {
     const PetscInt idx = idxs[r];
-    if (idx < 0 || map->N <= idx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D out of range [0,%D)",idx,map->N);
+    PetscCheckFalse(idx < 0 || map->N <= idx,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")",idx,map->N);
     if (idx < owners[p] || owners[p+1] <= idx) { /* short-circuit the search if the last p owns this idx too */
       ierr = PetscLayoutFindOwner(map,idx,&p);CHKERRQ(ierr);
     }
@@ -552,7 +556,7 @@ PetscErrorCode PetscLayoutMapLocal(PetscLayout map,PetscInt N,const PetscInt idx
 . leafLocalIndices - leaf local index permutation (NULL if no permutation)
 - leafLocalOffset - offset to be added to leaf local indices
 
-  Output Parameter:
+  Output Parameters:
 + sfA - star forest representing the communication pattern from the layout space to the leaf space (NULL if not needed)
 - sf - star forest representing the communication pattern from the root space to the leaf space
 
@@ -565,7 +569,7 @@ $  layout           : [0 1]        [2]          [3]
 $  leafIndices      : [0]          [2]          [0 3]
 $  leafLocalOffset  : 400          500          600
 $
-would build the following SF:
+would build the following SF
 $
 $  [0] 400 <- (0,101)
 $  [1] 500 <- (0,102)
@@ -581,7 +585,7 @@ $  layout           : [0 1]           [2]             [3]
 $  leafIndices      : rootIndices     rootIndices     rootIndices
 $  leafLocalOffset  : rootLocalOffset rootLocalOffset rootLocalOffset
 $
-would build the following SF:
+would build the following SF
 $
 $  [1] 200 <- (2,300)
 $
@@ -598,7 +602,7 @@ $  numLeafIndices   : 1            1            2
 $  leafIndices      : [0]          [2]          [0 3]
 $  leafLocalOffset  : 400          500          600
 $
-would build the following SF:
+would build the following SF
 $
 $  [0] 400 <- (0,100)
 $  [1] 500 <- (0,101)
@@ -653,8 +657,8 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   if (leafLocalIndices) PetscValidIntPointer(leafLocalIndices,8);
   if (sfA)              PetscValidPointer(sfA,10);
   PetscValidPointer(sf,11);
-  if (numRootIndices < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numRootIndices (%D) must be non-negative", numRootIndices);
-  if (numLeafIndices < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numLeafIndices (%D) must be non-negative", numLeafIndices);
+  PetscCheckFalse(numRootIndices < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numRootIndices (%" PetscInt_FMT ") must be non-negative", numRootIndices);
+  PetscCheckFalse(numLeafIndices < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "numLeafIndices (%" PetscInt_FMT ") must be non-negative", numLeafIndices);
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
   ierr = PetscLayoutSetUp(layout);CHKERRQ(ierr);
@@ -662,17 +666,17 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   ierr = PetscLayoutGetLocalSize(layout, &n);CHKERRQ(ierr);
   flag = (PetscBool)(leafIndices == rootIndices);
   ierr = MPIU_Allreduce(MPI_IN_PLACE, &flag, 1, MPIU_BOOL, MPI_LAND, comm);CHKERRMPI(ierr);
-  if (flag && numLeafIndices != numRootIndices) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "leafIndices == rootIndices, but numLeafIndices (%D) != numRootIndices(%D)", numLeafIndices, numRootIndices);
+  PetscCheckFalse(flag && numLeafIndices != numRootIndices,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "leafIndices == rootIndices, but numLeafIndices (%" PetscInt_FMT ") != numRootIndices(%" PetscInt_FMT ")", numLeafIndices, numRootIndices);
 #if defined(PETSC_USE_DEBUG)
   N1 = PETSC_MIN_INT;
   for (i = 0; i < numRootIndices; i++) if (rootIndices[i] > N1) N1 = rootIndices[i];
   ierr = MPI_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm);CHKERRMPI(ierr);
-  if (N1 >= N) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. root index (%D) out of layout range [0,%D)", N1, N);
+  PetscCheckFalse(N1 >= N,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. root index (%" PetscInt_FMT ") out of layout range [0,%" PetscInt_FMT ")", N1, N);
   if (!flag) {
     N1 = PETSC_MIN_INT;
     for (i = 0; i < numLeafIndices; i++) if (leafIndices[i] > N1) N1 = leafIndices[i];
     ierr = MPI_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm);CHKERRMPI(ierr);
-    if (N1 >= N) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. leaf index (%D) out of layout range [0,%D)", N1, N);
+    PetscCheckFalse(N1 >= N,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. leaf index (%" PetscInt_FMT ") out of layout range [0,%" PetscInt_FMT ")", N1, N);
   }
 #endif
   /* Reduce: owners -> buffer */
@@ -700,7 +704,7 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   }
   ierr = PetscSFBcastBegin(sf1, MPIU_2INT, buffer, owners, MPI_REPLACE);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(sf1, MPIU_2INT, buffer, owners, MPI_REPLACE);CHKERRQ(ierr);
-  for (i = 0; i < numLeafIndices; ++i) if (owners[i].rank < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global point %D was unclaimed", leafIndices[i]);
+  for (i = 0; i < numLeafIndices; ++i) PetscCheckFalse(owners[i].rank < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Global point %" PetscInt_FMT " was unclaimed", leafIndices[i]);
   ierr = PetscFree(buffer);CHKERRQ(ierr);
   if (sfA) {*sfA = sf1;}
   else     {ierr = PetscSFDestroy(&sf1);CHKERRQ(ierr);}

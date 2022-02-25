@@ -281,10 +281,10 @@ static PetscErrorCode TSSetUp_BasicSymplectic(TS ts)
   PetscFunctionBegin;
   ierr = TSRHSSplitGetIS(ts,"position",&bsymp->is_q);CHKERRQ(ierr);
   ierr = TSRHSSplitGetIS(ts,"momentum",&bsymp->is_p);CHKERRQ(ierr);
-  if (!bsymp->is_q || !bsymp->is_p) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names positon and momentum respectively in order to use -ts_type basicsymplectic");
+  PetscCheckFalse(!bsymp->is_q || !bsymp->is_p,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up RHSSplits with TSRHSSplitSetIS() using split names positon and momentum respectively in order to use -ts_type basicsymplectic");
   ierr = TSRHSSplitGetSubTS(ts,"position",&bsymp->subts_q);CHKERRQ(ierr);
   ierr = TSRHSSplitGetSubTS(ts,"momentum",&bsymp->subts_p);CHKERRQ(ierr);
-  if (!bsymp->subts_q || !bsymp->subts_p) SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up the RHSFunctions for position and momentum using TSRHSSplitSetRHSFunction() or calling TSSetRHSFunction() for each sub-TS");
+  PetscCheckFalse(!bsymp->subts_q || !bsymp->subts_p,PetscObjectComm((PetscObject)ts),PETSC_ERR_USER,"Must set up the RHSFunctions for position and momentum using TSRHSSplitSetRHSFunction() or calling TSSetRHSFunction() for each sub-TS");
 
   ierr = VecDuplicate(ts->vec_sol,&bsymp->update);CHKERRQ(ierr);
 
@@ -374,7 +374,7 @@ static PetscErrorCode TSComputeLinearStability_BasicSymplectic(TS ts,PetscReal x
 
   Logically Collective on TS
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  bsymptype - type of the symplectic scheme
 
@@ -401,7 +401,7 @@ PetscErrorCode TSBasicSymplecticSetType(TS ts,TSBasicSymplecticType bsymptype)
 
   Logically Collective on TS
 
-  Input Parameter:
+  Input Parameters:
 +  ts - timestepping context
 -  bsymptype - type of the basic symplectic scheme
 
@@ -436,7 +436,7 @@ static PetscErrorCode TSBasicSymplecticSetType_BasicSymplectic(TS ts,TSBasicSymp
       PetscFunctionReturn(0);
     }
   }
-  SETERRQ1(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",bsymptype);
+  SETERRQ(PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",bsymptype);
 }
 
 static PetscErrorCode  TSBasicSymplecticGetType_BasicSymplectic(TS ts,TSBasicSymplecticType *bsymptype)

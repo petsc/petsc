@@ -104,7 +104,7 @@ PetscErrorCode  PetscDrawHGCreate(PetscDraw draw,int bins,PetscDrawHG *hist)
 
    Logically Collective on PetscDrawHG
 
-   Input Parameter:
+   Input Parameters:
 +  hist - The histogram context.
 -  bins  - The number of bins.
 
@@ -314,12 +314,12 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
       if (numValues > 1) var = (var - numValues*mean*mean) / (numValues-1);
       else var = 0.0;
       ierr = PetscSNPrintf(title, 256, "Mean: %g  Var: %g", (double)mean, (double)var);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(xlabel,256, "Total: %D", numValues);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(xlabel,256, "Total: %" PetscInt_FMT, numValues);CHKERRQ(ierr);
       ierr = PetscDrawAxisSetLabels(hist->axis, title, xlabel, NULL);CHKERRQ(ierr);
     }
     ierr = PetscDrawAxisDraw(hist->axis);CHKERRQ(ierr);
     ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-    if (!rank) { /* Draw bins */
+    if (rank == 0) { /* Draw bins */
       binLeft  = xmin;
       binRight = xmax;
       ierr = PetscDrawRectangle(draw,binLeft,ymin,binRight,bins[0],bcolor,bcolor,bcolor,bcolor);CHKERRQ(ierr);
@@ -367,12 +367,12 @@ PetscErrorCode  PetscDrawHGDraw(PetscDrawHG hist)
       if (numValues > 1) var = (var - numValues*mean*mean) / (numValues-1);
       else var = 0.0;
       ierr = PetscSNPrintf(title, 256,"Mean: %g  Var: %g", (double)mean, (double)var);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(xlabel,256, "Total: %D", numValues);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(xlabel,256, "Total: %" PetscInt_FMT, numValues);CHKERRQ(ierr);
       ierr = PetscDrawAxisSetLabels(hist->axis, title, xlabel, NULL);CHKERRQ(ierr);
     }
     ierr = PetscDrawAxisDraw(hist->axis);CHKERRQ(ierr);
     ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
-    if (!rank) { /* Draw bins */
+    if (rank == 0) { /* Draw bins */
       for (i = 0; i < numBins; i++) {
         binLeft  = xmin + binSize*i;
         binRight = xmin + binSize*(i+1);
@@ -504,7 +504,7 @@ PetscErrorCode  PetscDrawHGView(PetscDrawHG hist,PetscViewer viewer)
     if (numValues > 1) var = (var - numValues*mean*mean) / (numValues-1);
     else var = 0.0;
     ierr = PetscViewerASCIIPrintf(viewer, "Mean: %g  Var: %g\n", (double)mean, (double)var);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Total: %D\n", numValues);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Total: %" PetscInt_FMT "\n", numValues);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

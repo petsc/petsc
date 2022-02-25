@@ -187,8 +187,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerASCIIGetPointer(PetscViewer,FILE**);
 PETSC_EXTERN PetscErrorCode PetscViewerFileGetMode(PetscViewer,PetscFileMode*);
 PETSC_EXTERN PetscErrorCode PetscViewerFileSetMode(PetscViewer,PetscFileMode);
 PETSC_EXTERN PetscErrorCode PetscViewerRead(PetscViewer,void*,PetscInt,PetscInt*,PetscDataType);
-PETSC_EXTERN PetscErrorCode PetscViewerASCIIPrintf(PetscViewer,const char[],...);
-PETSC_EXTERN PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer,const char[],...);
+PETSC_EXTERN PetscErrorCode PetscViewerASCIIPrintf(PetscViewer,const char[],...) PETSC_ATTRIBUTE_FORMAT(2,3);
+PETSC_EXTERN PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer,const char[],...) PETSC_ATTRIBUTE_FORMAT(2,3);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIPushSynchronized(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIPopSynchronized(PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscViewerASCIIPushTab(PetscViewer);
@@ -205,7 +205,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerBinaryRead(PetscViewer,void*,PetscInt,Pet
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryWrite(PetscViewer,const void*,PetscInt,PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryReadAll(PetscViewer,void*,PetscInt,PetscInt,PetscInt,PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer,const void*,PetscInt,PetscInt,PetscInt,PetscDataType);
-PETSC_EXTERN PetscErrorCode PetscViewerStringSPrintf(PetscViewer,const char[],...);
+PETSC_EXTERN PetscErrorCode PetscViewerStringSPrintf(PetscViewer,const char[],...) PETSC_ATTRIBUTE_FORMAT(2,3);
 PETSC_EXTERN PetscErrorCode PetscViewerStringSetString(PetscViewer,char[],size_t);
 PETSC_EXTERN PetscErrorCode PetscViewerStringGetStringRead(PetscViewer,const char*[],size_t*);
 PETSC_EXTERN PetscErrorCode PetscViewerStringSetOwnString(PetscViewer);
@@ -235,7 +235,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerFileGetName(PetscViewer,const char**);
 PETSC_EXTERN PetscErrorCode PetscViewerVUGetPointer(PetscViewer, FILE**);
 PETSC_EXTERN PetscErrorCode PetscViewerVUSetVecSeen(PetscViewer, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer, PetscBool  *);
-PETSC_EXTERN PetscErrorCode PetscViewerVUPrintDeferred(PetscViewer, const char [], ...);
+PETSC_EXTERN PetscErrorCode PetscViewerVUPrintDeferred(PetscViewer, const char [], ...) PETSC_ATTRIBUTE_FORMAT(2,3);
 PETSC_EXTERN PetscErrorCode PetscViewerVUFlushDeferred(PetscViewer);
 
 /*@C
@@ -254,7 +254,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerVUFlushDeferred(PetscViewer);
 
 .seealso: PetscViewerFileSetMode()
 @*/
-PETSC_DEPRECATED_FUNCTION("Use PetscViewerFileSetMode (since v3.15)") PETSC_STATIC_INLINE PetscErrorCode PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode) {return PetscViewerFileSetMode(viewer, mode);}
+PETSC_DEPRECATED_FUNCTION("Use PetscViewerFileSetMode (since v3.15)") static inline PetscErrorCode PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode) {return PetscViewerFileSetMode(viewer, mode);}
 
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscViewerMathematicaFinalizePackage(void);
@@ -382,8 +382,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerFlowControlStepMain(PetscViewer,PetscInt,
 PETSC_EXTERN PetscErrorCode PetscViewerFlowControlEndMain(PetscViewer,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer,PetscMPIInt,PetscInt*);
 PETSC_EXTERN PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer,PetscInt*);
-PETSC_DEPRECATED_FUNCTION("Use PetscViewerFlowControlStepMaster (since v3.15)") PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer viewer,PetscInt i,PetscInt *mcnt,PetscInt cnt) {return PetscViewerFlowControlStepMain(viewer,i,mcnt,cnt);}
-PETSC_DEPRECATED_FUNCTION("Use PetscViewerFlowControlEndMaster (since v3.15)") PETSC_STATIC_INLINE PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer viewer, PetscInt *mcnt) {return PetscViewerFlowControlEndMain(viewer,mcnt);}
+PETSC_DEPRECATED_FUNCTION("Use PetscViewerFlowControlStepMaster (since v3.15)") static inline PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer viewer,PetscInt i,PetscInt *mcnt,PetscInt cnt) {return PetscViewerFlowControlStepMain(viewer,i,mcnt,cnt);}
+PETSC_DEPRECATED_FUNCTION("Use PetscViewerFlowControlEndMaster (since v3.15)") static inline PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer viewer, PetscInt *mcnt) {return PetscViewerFlowControlEndMain(viewer,mcnt);}
 
 /*
    PetscViewer writes to MATLAB .mat file

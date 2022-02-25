@@ -1,0 +1,34 @@
+DM Object: box_surface 4 MPI processes
+  type: plex
+box_surface in 2 dimensions:
+  Number of 0-cells per rank: 40 40 40 40
+  Number of 1-cells per rank: 62 62 62 62
+  Number of 2-cells per rank: 24 24 24 24
+Labels:
+  celltype: 3 strata with value/size (0 (40), 1 (62), 4 (24))
+  depth: 3 strata with value/size (0 (40), 1 (62), 2 (24))
+  marker: 1 strata with value/size (1 (83))
+libCEED Backend: /cpu/self/avx/blocked
+Discrete System with 1 fields
+    cell total dim 16 total comp 1
+  Field indicator FEM 1 component  (implicit) (Nq 25 Nqc 1) 1-jet
+    PetscFE Object: indicator 1 MPI processes
+      type: basic
+      Basic Finite Element in 2 dimensions with 1 components
+      PetscSpace Object: indicator 1 MPI processes
+        type: tensor
+        Space in 2 variables with 1 components, size 16
+        Tensor space of 2 subspaces (all identical)
+          PetscSpace Object: tensor component (tensorcomp_) 1 MPI processes
+            type: poly
+            Space in 1 variables with 1 components, size 4
+            Polynomial space of degree 3
+      PetscDualSpace Object: indicator 1 MPI processes
+        type: lagrange
+        Dual space with 1 components, size 16
+        Continuous tensor Lagrange dual space
+        Quadrature of order 9 on 25 points (dim 2)
+  Weak Form System with 1 fields
+Exact mesh surface area    :  6.0
+Computed mesh surface area :  6.0
+Area verifies!

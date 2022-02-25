@@ -16,7 +16,7 @@ static PetscErrorCode PetscFEDestroy_OpenCL(PetscFE fem)
   PetscFunctionReturn(0);
 }
 
-#define CHKSTRINGERROR(MSG) do {CHKERRQ(ierr); string_tail += count; if (string_tail == end_of_buffer) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, MSG);} while (0)
+#define CHKERRSTR(err) do {CHKERRQ(err); string_tail += count; PetscCheckFalse(string_tail == end_of_buffer,PETSC_COMM_SELF, PETSC_ERR_PLIB,"Buffer overflow");} while (0)
 enum {LAPLACIAN = 0, ELASTICITY = 1};
 
 /* NOTE: This is now broken for vector problems. Must redo loops to respect vector basis elements */
@@ -61,7 +61,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
   ierr = PetscFEGetNumComponents(fem, &N_c);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fem, &q);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(q, NULL, &qNc, &N_q, &points, &weights);CHKERRQ(ierr);
-  if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
+  PetscCheckFalse(qNc != 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components", qNc);
   N_t  = N_b * N_c * N_q * N_bl;
   /* Enable device extension for double precision */
   if (ocl->realType == PETSC_DOUBLE) {
@@ -71,7 +71,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
 "#elif defined(cl_amd_fp64)\n"
 "#  pragma OPENCL EXTENSION cl_amd_fp64: enable\n"
 "#endif\n",
-                              &count);CHKSTRINGERROR("Message to short");
+                              &count);CHKERRSTR(ierr);
     numeric_str  = &(double_str[0]);
   }
   /* Kernel API */
@@ -79,65 +79,65 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
 "\n"
 "__kernel void integrateElementQuadrature(int N_cb, __global %s *coefficients, __global %s *coefficientsAux, __global %s *jacobianInverses, __global %s *jacobianDeterminants, __global %s *elemVec)\n"
 "{\n",
-                       &count, numeric_str, numeric_str, numeric_str, numeric_str, numeric_str);CHKSTRINGERROR("Message to short");
+                       &count, numeric_str, numeric_str, numeric_str, numeric_str, numeric_str);CHKERRSTR(ierr);
   /* Quadrature */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  /* Quadrature points\n"
 "   - (x1,y1,x2,y2,...) */\n"
 "  const %s points[%d] = {\n",
-                       &count, numeric_str, N_q*dim);CHKSTRINGERROR("Message to short");
+                       &count, numeric_str, N_q*dim);CHKERRSTR(ierr);
   for (p = 0; p < N_q; ++p) {
     for (d = 0; d < dim; ++d) {
-      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, points[p*dim+d]);CHKSTRINGERROR("Message to short");
+      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, points[p*dim+d]);CHKERRSTR(ierr);
     }
   }
-  ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count);CHKSTRINGERROR("Message to short");
+  ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count);CHKERRSTR(ierr);
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  /* Quadrature weights\n"
 "   - (v1,v2,...) */\n"
 "  const %s weights[%d] = {\n",
-                       &count, numeric_str, N_q);CHKSTRINGERROR("Message to short");
+                       &count, numeric_str, N_q);CHKERRSTR(ierr);
   for (p = 0; p < N_q; ++p) {
-    ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, weights[p]);CHKSTRINGERROR("Message to short");
+    ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, weights[p]);CHKERRSTR(ierr);
   }
-  ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count);CHKSTRINGERROR("Message to short");
+  ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count);CHKERRSTR(ierr);
   /* Basis Functions */
   ierr = PetscFEGetCellTabulation(fem, 1, &T);CHKERRQ(ierr);
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  /* Nodal basis function evaluations\n"
 "    - basis component is fastest varying, the basis function, then point */\n"
 "  const %s Basis[%d] = {\n",
-                       &count, numeric_str, N_q*N_b*N_c);CHKSTRINGERROR("Message to short");
+                       &count, numeric_str, N_q*N_b*N_c);CHKERRSTR(ierr);
   for (p = 0; p < N_q; ++p) {
     for (b = 0; b < N_b; ++b) {
       for (c = 0; c < N_c; ++c) {
-        ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, T->T[0][(p*N_b + b)*N_c + c]);CHKSTRINGERROR("Message to short");
+        ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g,\n", &count, T->T[0][(p*N_b + b)*N_c + c]);CHKERRSTR(ierr);
       }
     }
   }
-  ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count);CHKSTRINGERROR("Message to short");
+  ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count);CHKERRSTR(ierr);
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "\n"
 "  /* Nodal basis function derivative evaluations,\n"
 "      - derivative direction is fastest varying, then basis component, then basis function, then point */\n"
 "  const %s%d BasisDerivatives[%d] = {\n",
-                       &count, numeric_str, dim, N_q*N_b*N_c);CHKSTRINGERROR("Message to short");
+                       &count, numeric_str, dim, N_q*N_b*N_c);CHKERRSTR(ierr);
   for (p = 0; p < N_q; ++p) {
     for (b = 0; b < N_b; ++b) {
       for (c = 0; c < N_c; ++c) {
-        ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "(%s%d)(", &count, numeric_str, dim);CHKSTRINGERROR("Message to short");
+        ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "(%s%d)(", &count, numeric_str, dim);CHKERRSTR(ierr);
         for (d = 0; d < dim; ++d) {
           if (d > 0) {
-            ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, ", %g", &count, T->T[1][((p*N_b + b)*dim + d)*N_c + c]);CHKSTRINGERROR("Message to short");
+            ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, ", %g", &count, T->T[1][((p*N_b + b)*dim + d)*N_c + c]);CHKERRSTR(ierr);
           } else {
-            ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g", &count, T->T[1][((p*N_b + b)*dim + d)*N_c + c]);CHKSTRINGERROR("Message to short");
+            ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "%g", &count, T->T[1][((p*N_b + b)*dim + d)*N_c + c]);CHKERRSTR(ierr);
           }
         }
-        ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "),\n", &count);CHKSTRINGERROR("Message to short");
+        ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "),\n", &count);CHKERRSTR(ierr);
       }
     }
   }
-  ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count);CHKSTRINGERROR("Message to short");
+  ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "};\n", &count);CHKERRSTR(ierr);
   /* Sizes */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  const int dim    = %d;                           // The spatial dimension\n"
@@ -164,7 +164,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
 "  const int blqidx  = tidx %% N_b + blidx*N_b;        // Cell mapped to this thread in the quadrature phase\n"
 "  const int gidx    = get_group_id(1)*get_num_groups(0) + get_group_id(0);\n"
 "  const int Goffset = gidx*N_cb*N_bc;\n",
-                            &count, dim, N_bl, N_b, N_c, N_q);CHKSTRINGERROR("Message to short");
+                            &count, dim, N_bl, N_b, N_c, N_q);CHKERRSTR(ierr);
   /* Local memory */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "\n"
@@ -176,32 +176,32 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
 "  __local %s        detJ[%d]; //[N_t];           // $|J(x_q)|$, Jacobian determinant at $x_q$\n"
 "  __local %s        invJ[%d];//[N_t*dim*dim];   // $J^{-1}(x_q)$, Jacobian inverse at $x_q$\n",
                             &count, numeric_str, numeric_str, N_b*N_c*N_q, numeric_str, dim, N_b*N_c*N_q, numeric_str, N_t,
-                            numeric_str, N_t*dim*dim, numeric_str, N_t*N_b*N_c);CHKSTRINGERROR("Message to short");
+                            numeric_str, N_t*dim*dim, numeric_str, N_t*N_b*N_c);CHKERRSTR(ierr);
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  /* FEM data */\n"
 "  __local %s        u_i[%d]; //[N_t*N_bt];       // Coefficients $u_i$ of the field $u|_{\\mathcal{T}} = \\sum_i u_i \\phi_i$\n",
-                            &count, numeric_str, N_t*N_b*N_c);CHKSTRINGERROR("Message to short");
+                            &count, numeric_str, N_t*N_b*N_c);CHKERRSTR(ierr);
   if (useAux) {
     ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  __local %s        a_i[%d]; //[N_t];            // Coefficients $a_i$ of the auxiliary field $a|_{\\mathcal{T}} = \\sum_i a_i \\phi^R_i$\n",
-                            &count, numeric_str, N_t);CHKSTRINGERROR("Message to short");
+                            &count, numeric_str, N_t);CHKERRSTR(ierr);
   }
   if (useF0) {
     ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  /* Intermediate calculations */\n"
 "  __local %s         f_0[%d]; //[N_t*N_sqc];      // $f_0(u(x_q), \\nabla u(x_q)) |J(x_q)| w_q$\n",
-                              &count, numeric_str, N_t*N_q);CHKSTRINGERROR("Message to short");
+                              &count, numeric_str, N_t*N_q);CHKERRSTR(ierr);
   }
   if (useF1) {
     ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  __local %s%d       f_1[%d]; //[N_t*N_sqc];      // $f_1(u(x_q), \\nabla u(x_q)) |J(x_q)| w_q$\n",
-                              &count, numeric_str, dim, N_t*N_q);CHKSTRINGERROR("Message to short");
+                              &count, numeric_str, dim, N_t*N_q);CHKERRSTR(ierr);
   }
   /* TODO: If using elasticity, put in mu/lambda coefficients */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  /* Output data */\n"
 "  %s                e_i;                 // Coefficient $e_i$ of the residual\n\n",
-                            &count, numeric_str);CHKSTRINGERROR("Message to short");
+                            &count, numeric_str);CHKERRSTR(ierr);
   /* One-time loads */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  /* These should be generated inline */\n"
@@ -212,7 +212,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
 "    phi_i[tidx]    = Basis[tidx];\n"
 "    phiDer_i[tidx] = BasisDerivatives[tidx];\n"
 "  }\n\n",
-                       &count);CHKSTRINGERROR("Message to short");
+                       &count);CHKERRSTR(ierr);
   /* Batch loads */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "  for (int batch = 0; batch < N_cb; ++batch) {\n"
@@ -227,13 +227,13 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
 "      const int offset = n*N_t;\n"
 "      u_i[offset+tidx] = coefficients[(Goffset*N_bt)+batch*N_t*N_b+offset+tidx];\n"
 "    }\n",
-                       &count);CHKSTRINGERROR("Message to short");
+                       &count);CHKERRSTR(ierr);
   if (useAux) {
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "    /* Load coefficients a_i for this cell */\n"
 "    /* TODO: This should not be N_t here, it should be N_bc*N_comp_aux */\n"
 "    a_i[tidx] = coefficientsAux[Goffset+batch*N_t+tidx];\n",
-                            &count);CHKSTRINGERROR("Message to short");
+                            &count);CHKERRSTR(ierr);
   }
   /* Quadrature phase */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
@@ -243,56 +243,56 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
 "    for (int c = 0; c < N_sqc; ++c) {\n"
 "      const int cell          = c*N_bl*N_b + blqidx;\n"
 "      const int fidx          = (cell*N_q + qidx)*N_comp + cidx;\n",
-                       &count);CHKSTRINGERROR("Message to short");
+                       &count);CHKERRSTR(ierr);
   if (useField) {
     ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "      %s  u[%d]; //[N_comp];     // $u(x_q)$, Value of the field at $x_q$\n",
-                              &count, numeric_str, N_c);CHKSTRINGERROR("Message to short");
+                              &count, numeric_str, N_c);CHKERRSTR(ierr);
   }
   if (useFieldDer) {
     ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "      %s%d   gradU[%d]; //[N_comp]; // $\\nabla u(x_q)$, Value of the field gradient at $x_q$\n",
-                              &count, numeric_str, dim, N_c);CHKSTRINGERROR("Message to short");
+                              &count, numeric_str, dim, N_c);CHKERRSTR(ierr);
   }
   if (useFieldAux) {
     ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "      %s  a[%d]; //[1];     // $a(x_q)$, Value of the auxiliary fields at $x_q$\n",
-                              &count, numeric_str, 1);CHKSTRINGERROR("Message to short");
+                              &count, numeric_str, 1);CHKERRSTR(ierr);
   }
   if (useFieldDerAux) {
     ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "      %s%d   gradA[%d]; //[1]; // $\\nabla a(x_q)$, Value of the auxiliary field gradient at $x_q$\n",
-                              &count, numeric_str, dim, 1);CHKSTRINGERROR("Message to short");
+                              &count, numeric_str, dim, 1);CHKERRSTR(ierr);
   }
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "\n"
 "      for (int comp = 0; comp < N_comp; ++comp) {\n",
-                            &count);CHKSTRINGERROR("Message to short");
-  if (useField) {ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "        u[comp] = 0.0;\n", &count);CHKSTRINGERROR("Message to short");}
+                            &count);CHKERRSTR(ierr);
+  if (useField) {ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "        u[comp] = 0.0;\n", &count);CHKERRSTR(ierr);}
   if (useFieldDer) {
     switch (dim) {
     case 1:
-      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "        gradU[comp].x = 0.0;\n", &count);CHKSTRINGERROR("Message to short");break;
+      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "        gradU[comp].x = 0.0;\n", &count);CHKERRSTR(ierr);break;
     case 2:
-      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "        gradU[comp].x = 0.0; gradU[comp].y = 0.0;\n", &count);CHKSTRINGERROR("Message to short");break;
+      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "        gradU[comp].x = 0.0; gradU[comp].y = 0.0;\n", &count);CHKERRSTR(ierr);break;
     case 3:
-      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "        gradU[comp].x = 0.0; gradU[comp].y = 0.0; gradU[comp].z = 0.0;\n", &count);CHKSTRINGERROR("Message to short");break;
+      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "        gradU[comp].x = 0.0; gradU[comp].y = 0.0; gradU[comp].z = 0.0;\n", &count);CHKERRSTR(ierr);break;
     }
   }
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "      }\n",
-                            &count);CHKSTRINGERROR("Message to short");
+                            &count);CHKERRSTR(ierr);
   if (useFieldAux) {
-    ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      a[0] = 0.0;\n", &count);CHKSTRINGERROR("Message to short");
+    ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      a[0] = 0.0;\n", &count);CHKERRSTR(ierr);
   }
   if (useFieldDerAux) {
     switch (dim) {
     case 1:
-      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      gradA[0].x = 0.0;\n", &count);CHKSTRINGERROR("Message to short");break;
+      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      gradA[0].x = 0.0;\n", &count);CHKERRSTR(ierr);break;
     case 2:
-      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      gradA[0].x = 0.0; gradA[0].y = 0.0;\n", &count);CHKSTRINGERROR("Message to short");break;
+      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      gradA[0].x = 0.0; gradA[0].y = 0.0;\n", &count);CHKERRSTR(ierr);break;
     case 3:
-      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      gradA[0].x = 0.0; gradA[0].y = 0.0; gradA[0].z = 0.0;\n", &count);CHKSTRINGERROR("Message to short");break;
+      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      gradA[0].x = 0.0; gradA[0].y = 0.0; gradA[0].z = 0.0;\n", &count);CHKERRSTR(ierr);break;
     }
   }
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
@@ -303,8 +303,8 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
 "          const int pidx = qidx*N_bt + b;\n"
 "          const int uidx = cell*N_bt + b;\n"
 "          %s%d   realSpaceDer;\n\n",
-                            &count, numeric_str, dim);CHKSTRINGERROR("Message to short");
-  if (useField) {ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,"          u[comp] += u_i[uidx]*phi_i[pidx];\n", &count);CHKSTRINGERROR("Message to short");}
+                            &count, numeric_str, dim);CHKERRSTR(ierr);
+  if (useField) {ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,"          u[comp] += u_i[uidx]*phi_i[pidx];\n", &count);CHKERRSTR(ierr);}
   if (useFieldDer) {
     switch (dim) {
     case 2:
@@ -313,7 +313,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
 "          gradU[comp].x += u_i[uidx]*realSpaceDer.x;\n"
 "          realSpaceDer.y = invJ[cell*dim*dim+0*dim+1]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+1]*phiDer_i[pidx].y;\n"
 "          gradU[comp].y += u_i[uidx]*realSpaceDer.y;\n",
-                           &count);CHKSTRINGERROR("Message to short");break;
+                           &count);CHKERRSTR(ierr);break;
     case 3:
       ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "          realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+0]*phiDer_i[pidx].z;\n"
@@ -322,30 +322,30 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
 "          gradU[comp].y += u_i[uidx]*realSpaceDer.y;\n"
 "          realSpaceDer.z = invJ[cell*dim*dim+0*dim+2]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+2]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+2]*phiDer_i[pidx].z;\n"
 "          gradU[comp].z += u_i[uidx]*realSpaceDer.z;\n",
-                           &count);CHKSTRINGERROR("Message to short");break;
+                           &count);CHKERRSTR(ierr);break;
     }
   }
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "        }\n"
 "      }\n",
-                            &count);CHKSTRINGERROR("Message to short");
+                            &count);CHKERRSTR(ierr);
   if (useFieldAux) {
-    ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,"          a[0] += a_i[cell];\n", &count);CHKSTRINGERROR("Message to short");
+    ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,"          a[0] += a_i[cell];\n", &count);CHKERRSTR(ierr);
   }
   /* Calculate residual at quadrature points: Should be generated by an weak form egine */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "      /* Process values at quadrature points */\n",
-                            &count);CHKSTRINGERROR("Message to short");
+                            &count);CHKERRSTR(ierr);
   switch (op) {
   case LAPLACIAN:
-    if (useF0) {ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_0[fidx] = 4.0;\n", &count);CHKSTRINGERROR("Message to short");}
+    if (useF0) {ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_0[fidx] = 4.0;\n", &count);CHKERRSTR(ierr);}
     if (useF1) {
-      if (useAux) {ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_1[fidx] = a[0]*gradU[cidx];\n", &count);CHKSTRINGERROR("Message to short");}
-      else        {ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_1[fidx] = gradU[cidx];\n", &count);CHKSTRINGERROR("Message to short");}
+      if (useAux) {ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_1[fidx] = a[0]*gradU[cidx];\n", &count);CHKERRSTR(ierr);}
+      else        {ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_1[fidx] = gradU[cidx];\n", &count);CHKERRSTR(ierr);}
     }
     break;
   case ELASTICITY:
-    if (useF0) {ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_0[fidx] = 4.0;\n", &count);CHKSTRINGERROR("Message to short");}
+    if (useF0) {ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_0[fidx] = 4.0;\n", &count);CHKERRSTR(ierr);}
     if (useF1) {
     switch (dim) {
     case 2:
@@ -359,7 +359,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
 "        f_1[fidx].x = lambda*(gradU[0].x + gradU[1].y) + mu*(gradU[1].x + gradU[0].y);\n"
 "        f_1[fidx].y = lambda*(gradU[0].x + gradU[1].y) + mu*(gradU[1].y + gradU[1].y);\n"
 "      }\n",
-                           &count);CHKSTRINGERROR("Message to short");break;
+                           &count);CHKERRSTR(ierr);break;
     case 3:
       ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "      switch (cidx) {\n"
@@ -378,21 +378,21 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
 "        f_1[fidx].y = lambda*(gradU[0].x + gradU[1].y + gradU[2].z) + mu*(gradU[2].y + gradU[1].z);\n"
 "        f_1[fidx].z = lambda*(gradU[0].x + gradU[1].y + gradU[2].z) + mu*(gradU[2].y + gradU[2].z);\n"
 "      }\n",
-                           &count);CHKSTRINGERROR("Message to short");break;
+                           &count);CHKERRSTR(ierr);break;
     }}
     break;
   default:
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "PDE operator %d is not supported", op);
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "PDE operator %d is not supported", op);
   }
-  if (useF0) {ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,"      f_0[fidx] *= detJ[cell]*w;\n", &count);CHKSTRINGERROR("Message to short");}
+  if (useF0) {ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,"      f_0[fidx] *= detJ[cell]*w;\n", &count);CHKERRSTR(ierr);}
   if (useF1) {
     switch (dim) {
     case 1:
-      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,"      f_1[fidx].x *= detJ[cell]*w;\n", &count);CHKSTRINGERROR("Message to short");break;
+      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,"      f_1[fidx].x *= detJ[cell]*w;\n", &count);CHKERRSTR(ierr);break;
     case 2:
-      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,"      f_1[fidx].x *= detJ[cell]*w; f_1[fidx].y *= detJ[cell]*w;\n", &count);CHKSTRINGERROR("Message to short");break;
+      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,"      f_1[fidx].x *= detJ[cell]*w; f_1[fidx].y *= detJ[cell]*w;\n", &count);CHKERRSTR(ierr);break;
     case 3:
-      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,"      f_1[fidx].x *= detJ[cell]*w; f_1[fidx].y *= detJ[cell]*w; f_1[fidx].z *= detJ[cell]*w;\n", &count);CHKSTRINGERROR("Message to short");break;
+      ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,"      f_1[fidx].x *= detJ[cell]*w; f_1[fidx].y *= detJ[cell]*w; f_1[fidx].z *= detJ[cell]*w;\n", &count);CHKERRSTR(ierr);break;
     }
   }
   /* Thread transpose */
@@ -400,7 +400,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
 "    }\n\n"
 "    /* ==== TRANSPOSE THREADS ==== */\n"
 "    barrier(CLK_LOCAL_MEM_FENCE);\n\n",
-                       &count);CHKSTRINGERROR("Message to short");
+                       &count);CHKERRSTR(ierr);
   /* Basis phase */
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "    /* Map values at quadrature points to coefficients */\n"
@@ -412,9 +412,9 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
 "        const int pidx = q*N_bt + bidx;\n"
 "        const int fidx = (cell*N_q + q)*N_comp + cidx;\n"
 "        %s%d   realSpaceDer;\n\n",
-                       &count, numeric_str, dim);CHKSTRINGERROR("Message to short");
+                       &count, numeric_str, dim);CHKERRSTR(ierr);
 
-  if (useF0) {ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,"        e_i += phi_i[pidx]*f_0[fidx];\n", &count);CHKSTRINGERROR("Message to short");}
+  if (useF0) {ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,"        e_i += phi_i[pidx]*f_0[fidx];\n", &count);CHKERRSTR(ierr);}
   if (useF1) {
     switch (dim) {
     case 2:
@@ -423,7 +423,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
 "        e_i           += realSpaceDer.x*f_1[fidx].x;\n"
 "        realSpaceDer.y = invJ[cell*dim*dim+0*dim+1]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+1]*phiDer_i[pidx].y;\n"
 "        e_i           += realSpaceDer.y*f_1[fidx].y;\n",
-                           &count);CHKSTRINGERROR("Message to short");break;
+                           &count);CHKERRSTR(ierr);break;
     case 3:
       ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
 "        realSpaceDer.x = invJ[cell*dim*dim+0*dim+0]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+0]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+0]*phiDer_i[pidx].z;\n"
@@ -432,7 +432,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
 "        e_i           += realSpaceDer.y*f_1[fidx].y;\n"
 "        realSpaceDer.z = invJ[cell*dim*dim+0*dim+2]*phiDer_i[pidx].x + invJ[cell*dim*dim+1*dim+2]*phiDer_i[pidx].y + invJ[cell*dim*dim+2*dim+2]*phiDer_i[pidx].z;\n"
 "        e_i           += realSpaceDer.z*f_1[fidx].z;\n",
-                           &count);CHKSTRINGERROR("Message to short");break;
+                           &count);CHKERRSTR(ierr);break;
     }
   }
   ierr = PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
@@ -444,7 +444,7 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
 "  }\n"
 "  return;\n"
 "}\n",
-                       &count);CHKSTRINGERROR("Message to short");
+                       &count);CHKERRSTR(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -470,11 +470,11 @@ static PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, PetscBool u
   *ocl_prog = clCreateProgramWithSource(ocl->ctx_id, 1, (const char **) &buffer, &len, &err);CHKERRQ(err);
   err = clBuildProgram(*ocl_prog, 0, NULL, NULL, NULL, NULL);
   if (err != CL_SUCCESS) {
-    err = clGetProgramBuildInfo(*ocl_prog, ocl->dev_id, CL_PROGRAM_BUILD_LOG, 8192*sizeof(char), &errMsg, NULL);CHKERRQ(ierr);
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Build failed! Log:\n %s", errMsg);
+    err = clGetProgramBuildInfo(*ocl_prog, ocl->dev_id, CL_PROGRAM_BUILD_LOG, 8192*sizeof(char), &errMsg, NULL);
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Build failed! Log:\n %s", errMsg);
   }
   ierr = PetscFree(buffer);CHKERRQ(ierr);
-  *ocl_kernel = clCreateKernel(*ocl_prog, "integrateElementQuadrature", &ierr);CHKERRQ(ierr);
+  *ocl_kernel = clCreateKernel(*ocl_prog, "integrateElementQuadrature", &ierr);
   PetscFunctionReturn(0);
 }
 
@@ -483,14 +483,14 @@ static PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscI
   const PetscInt Nblocks = N/blockSize;
 
   PetscFunctionBegin;
-  if (N % blockSize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid block size %d for %d elements", blockSize, N);
+  PetscCheckFalse(N % blockSize,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid block size %d for %d elements", blockSize, N);
   *z = 1;
   *y = 1;
   for (*x = (size_t) (PetscSqrtReal(Nblocks) + 0.5); *x > 0; --*x) {
     *y = Nblocks / *x;
     if (*x * *y == (size_t)Nblocks) break;
   }
-  if (*x * *y != (size_t)Nblocks) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Could not find partition for %D with block size %D", N, blockSize);
+  PetscCheckFalse(*x * *y != (size_t)Nblocks,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Could not find partition for %D with block size %D", N, blockSize);
   PetscFunctionReturn(0);
 }
 
@@ -563,7 +563,7 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
   ierr = PetscFEGetSpatialDimension(fem, &dim);CHKERRQ(ierr);
   ierr = PetscFEGetQuadrature(fem, &q);CHKERRQ(ierr);
   ierr = PetscQuadratureGetData(q, NULL, &qNc, &N_q, &points, &weights);CHKERRQ(ierr);
-  if (qNc != 1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components\n", qNc);
+  PetscCheckFalse(qNc != 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supports scalar quadrature, not %D components", qNc);
   ierr = PetscFEGetDimension(fem, &N_b);CHKERRQ(ierr);
   ierr = PetscFEGetNumComponents(fem, &N_comp);CHKERRQ(ierr);
   ierr = PetscDSGetResidual(prob, field, &f0_func, &f1_func);CHKERRQ(ierr);
@@ -571,7 +571,7 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
   N_bt  = N_b*N_comp;
   N_bst = N_bt*N_q;
   N_t   = N_bst*N_bl;
-  if (N_bc*N_comp != N_t) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of threads %d should be %d * %d", N_t, N_bc, N_comp);
+  PetscCheckFalse(N_bc*N_comp != N_t,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of threads %d should be %d * %d", N_t, N_bc, N_comp);
   /* Calculate layout */
   if (Ne % (N_cb*N_bc)) { /* Remainder cells */
     ierr = PetscFEIntegrateResidual_Basic(prob, key, Ne, cgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, elemVec);CHKERRQ(ierr);
@@ -584,8 +584,8 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
   global_work_size[0] = x * local_work_size[0];
   global_work_size[1] = y * local_work_size[1];
   global_work_size[2] = z * local_work_size[2];
-  ierr = PetscInfo7(fem, "GPU layout grid(%d,%d,%d) block(%d,%d,%d) with %d batches\n", x, y, z, local_work_size[0], local_work_size[1], local_work_size[2], N_cb);CHKERRQ(ierr);
-  ierr = PetscInfo2(fem, " N_t: %d, N_cb: %d\n", N_t, N_cb);CHKERRQ(ierr);
+  ierr = PetscInfo(fem, "GPU layout grid(%d,%d,%d) block(%d,%d,%d) with %d batches\n", x, y, z, local_work_size[0], local_work_size[1], local_work_size[2], N_cb);CHKERRQ(ierr);
+  ierr = PetscInfo(fem, " N_t: %d, N_cb: %d\n", N_t, N_cb);CHKERRQ(ierr);
   /* Generate code */
   if (probAux) {
     PetscSpace P;
@@ -598,13 +598,13 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
       ierr = PetscDSGetDiscretization(probAux, f, (PetscObject *) &feAux);CHKERRQ(ierr);
       ierr = PetscFEGetBasisSpace(feAux, &P);CHKERRQ(ierr);
       ierr = PetscSpaceGetDegree(P, &order, NULL);CHKERRQ(ierr);
-      if (order > 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Can only handle P0 coefficient fields");
+      PetscCheckFalse(order > 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Can only handle P0 coefficient fields");
     }
   }
   ierr = PetscFEOpenCLGetIntegrationKernel(fem, useAux, &ocl_prog, &ocl_kernel);CHKERRQ(ierr);
   /* Create buffers on the device and send data over */
   ierr = PetscDataTypeGetSize(ocl->realType, &realSize);CHKERRQ(ierr);
-  if (cgeom->numPoints > 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support affine geometry for OpenCL integration right now");
+  PetscCheckFalse(cgeom->numPoints > 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support affine geometry for OpenCL integration right now");
   if (sizeof(PetscReal) != realSize) {
     switch (ocl->realType) {
     case PETSC_FLOAT:
@@ -666,7 +666,7 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
     }
     break;
     default:
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported PETSc type %d", ocl->realType);
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported PETSc type %d", ocl->realType);
     }
   } else {
     PetscInt c, d;
@@ -683,15 +683,15 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
     oclInvJ     = (void *) r_invJ;
     oclDetJ     = (void *) r_detJ;
   }
-  o_coefficients         = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Ne*N_bt    * realSize, oclCoeff,    &ierr);CHKERRQ(ierr);
+  o_coefficients         = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Ne*N_bt    * realSize, oclCoeff,    &ierr);
   if (coefficientsAux) {
-    o_coefficientsAux    = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Ne         * realSize, oclCoeffAux, &ierr);CHKERRQ(ierr);
+    o_coefficientsAux    = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Ne         * realSize, oclCoeffAux, &ierr);
   } else {
-    o_coefficientsAux    = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY,                        Ne         * realSize, oclCoeffAux, &ierr);CHKERRQ(ierr);
+    o_coefficientsAux    = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY,                        Ne         * realSize, oclCoeffAux, &ierr);
   }
-  o_jacobianInverses     = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Ne*dim*dim * realSize, oclInvJ,     &ierr);CHKERRQ(ierr);
-  o_jacobianDeterminants = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Ne         * realSize, oclDetJ,     &ierr);CHKERRQ(ierr);
-  o_elemVec              = clCreateBuffer(ocl->ctx_id, CL_MEM_WRITE_ONLY,                       Ne*N_bt    * realSize, NULL,        &ierr);CHKERRQ(ierr);
+  o_jacobianInverses     = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Ne*dim*dim * realSize, oclInvJ,     &ierr);
+  o_jacobianDeterminants = clCreateBuffer(ocl->ctx_id, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, Ne         * realSize, oclDetJ,     &ierr);
+  o_elemVec              = clCreateBuffer(ocl->ctx_id, CL_MEM_WRITE_ONLY,                       Ne*N_bt    * realSize, NULL,        &ierr);
   /* Kernel launch */
   ierr = clSetKernelArg(ocl_kernel, 0, sizeof(cl_int), (void*) &N_cb);CHKERRQ(ierr);
   ierr = clSetKernelArg(ocl_kernel, 1, sizeof(cl_mem), (void*) &o_coefficients);CHKERRQ(ierr);
@@ -736,7 +736,7 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
     }
     break;
     default:
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported PETSc type %d", ocl->realType);
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported PETSc type %d", ocl->realType);
     }
   } else {
     ierr = PetscFree2(r_invJ,r_detJ);CHKERRQ(ierr);
@@ -817,11 +817,11 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem)
 
   /* Init Platform */
   ierr = clGetPlatformIDs(42, platform_ids, &num_platforms);CHKERRQ(ierr);
-  if (!num_platforms) SETERRQ(PetscObjectComm((PetscObject) fem), PETSC_ERR_SUP, "No OpenCL platform found.");
+  PetscCheckFalse(!num_platforms,PetscObjectComm((PetscObject) fem), PETSC_ERR_SUP, "No OpenCL platform found.");
   ocl->pf_id = platform_ids[0];
   /* Init Device */
   ierr = clGetDeviceIDs(ocl->pf_id, CL_DEVICE_TYPE_ALL, 42, device_ids, &num_devices);CHKERRQ(ierr);
-  if (!num_devices) SETERRQ(PetscObjectComm((PetscObject) fem), PETSC_ERR_SUP, "No OpenCL device found.");
+  PetscCheckFalse(!num_devices,PetscObjectComm((PetscObject) fem), PETSC_ERR_SUP, "No OpenCL device found.");
   ocl->dev_id = device_ids[0];
   /* Create context with one command queue */
   ocl->ctx_id   = clCreateContext(0, 1, &(ocl->dev_id), NULL, NULL, &err);CHKERRQ(err);

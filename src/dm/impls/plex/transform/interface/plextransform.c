@@ -8,7 +8,7 @@ PetscFunctionList DMPlexTransformList = NULL;
 PetscBool         DMPlexTransformRegisterAllCalled = PETSC_FALSE;
 
 /* Construct cell type order since we must loop over cell types in depth order */
-PetscErrorCode DMPlexCreateCellTypeOrder_Internal(DMPolytopeType ctCell, PetscInt *ctOrder[], PetscInt *ctOrderInv[])
+static PetscErrorCode DMPlexCreateCellTypeOrder_Internal(PetscInt dim, PetscInt *ctOrder[], PetscInt *ctOrderInv[])
 {
   PetscInt      *ctO, *ctOInv;
   PetscInt       c, d, off = 0;
@@ -16,19 +16,19 @@ PetscErrorCode DMPlexCreateCellTypeOrder_Internal(DMPolytopeType ctCell, PetscIn
 
   PetscFunctionBegin;
   ierr = PetscCalloc2(DM_NUM_POLYTOPES+1, &ctO, DM_NUM_POLYTOPES+1, &ctOInv);CHKERRQ(ierr);
-  for (d = 3; d >= DMPolytopeTypeGetDim(ctCell); --d) {
+  for (d = 3; d >= dim; --d) {
     for (c = 0; c <= DM_NUM_POLYTOPES; ++c) {
       if (DMPolytopeTypeGetDim((DMPolytopeType) c) != d) continue;
       ctO[off++] = c;
     }
   }
-  if (DMPolytopeTypeGetDim(ctCell) != 0) {
+  if (dim != 0) {
     for (c = 0; c <= DM_NUM_POLYTOPES; ++c) {
       if (DMPolytopeTypeGetDim((DMPolytopeType) c) != 0) continue;
       ctO[off++] = c;
     }
   }
-  for (d = DMPolytopeTypeGetDim(ctCell)-1; d > 0; --d) {
+  for (d = dim-1; d > 0; --d) {
     for (c = 0; c <= DM_NUM_POLYTOPES; ++c) {
       if (DMPolytopeTypeGetDim((DMPolytopeType) c) != d) continue;
       ctO[off++] = c;
@@ -38,7 +38,7 @@ PetscErrorCode DMPlexCreateCellTypeOrder_Internal(DMPolytopeType ctCell, PetscIn
     if (DMPolytopeTypeGetDim((DMPolytopeType) c) >= 0) continue;
     ctO[off++] = c;
   }
-  if (off != DM_NUM_POLYTOPES+1) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid offset %D for cell type order", off);
+  PetscCheckFalse(off != DM_NUM_POLYTOPES+1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid offset %D for cell type order", off);
   for (c = 0; c <= DM_NUM_POLYTOPES; ++c) {
     ctOInv[ctO[c]] = c;
   }
@@ -94,6 +94,8 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_ToBox(DMPlexTransform);
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Alfeld(DMPlexTransform);
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_SBR(DMPlexTransform);
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_BL(DMPlexTransform);
+PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_1D(DMPlexTransform);
+PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Extrude(DMPlexTransform);
 
 /*@C
   DMPlexTransformRegisterAll - Registers all of the transform components in the DM package.
@@ -118,6 +120,8 @@ PetscErrorCode DMPlexTransformRegisterAll(void)
   ierr = DMPlexTransformRegister(DMPLEXREFINEALFELD,        DMPlexTransformCreate_Alfeld);CHKERRQ(ierr);
   ierr = DMPlexTransformRegister(DMPLEXREFINEBOUNDARYLAYER, DMPlexTransformCreate_BL);CHKERRQ(ierr);
   ierr = DMPlexTransformRegister(DMPLEXREFINESBR,           DMPlexTransformCreate_SBR);CHKERRQ(ierr);
+  ierr = DMPlexTransformRegister(DMPLEXREFINE1D,            DMPlexTransformCreate_1D);CHKERRQ(ierr);
+  ierr = DMPlexTransformRegister(DMPLEXEXTRUDE,             DMPlexTransformCreate_Extrude);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -202,7 +206,7 @@ PetscErrorCode DMPlexTransformSetType(DMPlexTransform tr, DMPlexTransformType me
 
   ierr = DMPlexTransformRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(DMPlexTransformList, method, &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DMPlexTransform type: %s", method);
+  PetscCheckFalse(!r,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DMPlexTransform type: %s", method);
 
   if (tr->ops->destroy) {ierr = (*tr->ops->destroy)(tr);CHKERRQ(ierr);}
   ierr = PetscMemzero(tr->ops, sizeof(*tr->ops));CHKERRQ(ierr);
@@ -337,14 +341,12 @@ PetscErrorCode DMPlexTransformView(DMPlexTransform tr, PetscViewer v)
 PetscErrorCode DMPlexTransformSetFromOptions(DMPlexTransform tr)
 {
   char           typeName[1024];
-  const char    *defName;
+  const char    *defName = DMPLEXREFINEREGULAR;
   PetscBool      flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr,DMPLEXTRANSFORM_CLASSID,1);
-  ierr = DMPlexTransformGetType(tr, &defName);CHKERRQ(ierr);
-  if (!defName) defName = DMPLEXREFINEREGULAR;
   ierr = PetscObjectOptionsBegin((PetscObject)tr);CHKERRQ(ierr);
   ierr = PetscOptionsFList("-dm_plex_transform_type", "DMPlexTransform", "DMPlexTransformSetType", DMPlexTransformList, defName, typeName, 1024, &flg);CHKERRQ(ierr);
   if (flg) {ierr = DMPlexTransformSetType(tr, typeName);CHKERRQ(ierr);}
@@ -384,7 +386,8 @@ PetscErrorCode DMPlexTransformDestroy(DMPlexTransform *tr)
   ierr = DMDestroy(&(*tr)->dm);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&(*tr)->active);CHKERRQ(ierr);
   ierr = DMLabelDestroy(&(*tr)->trType);CHKERRQ(ierr);
-  ierr = PetscFree2((*tr)->ctOrder, (*tr)->ctOrderInv);CHKERRQ(ierr);
+  ierr = PetscFree2((*tr)->ctOrderOld, (*tr)->ctOrderInvOld);CHKERRQ(ierr);
+  ierr = PetscFree2((*tr)->ctOrderNew, (*tr)->ctOrderInvNew);CHKERRQ(ierr);
   ierr = PetscFree2((*tr)->ctStart, (*tr)->ctStartNew);CHKERRQ(ierr);
   ierr = PetscFree((*tr)->offset);CHKERRQ(ierr);
   for (c = 0; c < DM_NUM_POLYTOPES; ++c) {
@@ -416,7 +419,7 @@ PetscErrorCode DMPlexTransformDestroy(DMPlexTransform *tr)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformCreateOffset_Internal(DMPlexTransform tr, PetscInt ctOrder[], PetscInt ctStart[], PetscInt **offset)
+static PetscErrorCode DMPlexTransformCreateOffset_Internal(DMPlexTransform tr, PetscInt ctOrderOld[], PetscInt ctStart[], PetscInt **offset)
 {
   DMLabel        trType = tr->trType;
   PetscInt       c, cN, *off;
@@ -467,7 +470,7 @@ static PetscErrorCode DMPlexTransformCreateOffset_Internal(DMPlexTransform tr, P
           ierr = ISDestroy(&rtIS);CHKERRQ(ierr);
           ierr = DMPlexGetCellType(dm, q, &sct);CHKERRQ(ierr);
           ierr = DMPlexTransformCellTransform(tr, sct, q, &qrt, &Nct, &rct, &rsize, &cone, &ornt);CHKERRQ(ierr);
-          if (st != qrt) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Refine type %D of point %D does not match predicted type %D", qrt, q, st);
+          PetscCheckFalse(st != qrt,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Refine type %D of point %D does not match predicted type %D", qrt, q, st);
           if (st == rt) {
             for (n = 0; n < Nct; ++n) if (rct[n] == ctNew) break;
             if (n == Nct) off[r*DM_NUM_POLYTOPES+ctNew] = -1;
@@ -499,8 +502,8 @@ static PetscErrorCode DMPlexTransformCreateOffset_Internal(DMPlexTransform tr, P
         if (DMPolytopeTypeGetDim(ct) < 0 || DMPolytopeTypeGetDim(ctNew) < 0) {off[ct*DM_NUM_POLYTOPES+ctNew] = -1; continue;}
         off[ct*DM_NUM_POLYTOPES+ctNew] = 0;
         for (i = DM_POLYTOPE_POINT; i < DM_NUM_POLYTOPES; ++i) {
-          const DMPolytopeType ict  = (DMPolytopeType) ctOrder[i];
-          const DMPolytopeType ictn = (DMPolytopeType) ctOrder[i+1];
+          const DMPolytopeType ict  = (DMPolytopeType) ctOrderOld[i];
+          const DMPolytopeType ictn = (DMPolytopeType) ctOrderOld[i+1];
 
           ierr = DMPlexTransformCellTransform(tr, ict, PETSC_DETERMINE, NULL, &Nct, &rct, &rsize, &cone, &ornt);CHKERRQ(ierr);
           if (ict == ct) {
@@ -521,7 +524,7 @@ PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr)
 {
   DM             dm;
   DMPolytopeType ctCell;
-  PetscInt       pStart, pEnd, p, c;
+  PetscInt       pStart, pEnd, p, c, celldim = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -544,7 +547,19 @@ PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr)
       default: ctCell = DM_POLYTOPE_UNKNOWN;
     }
   }
-  ierr = DMPlexCreateCellTypeOrder_Internal(ctCell, &tr->ctOrder, &tr->ctOrderInv);CHKERRQ(ierr);
+  ierr = DMPlexCreateCellTypeOrder_Internal(DMPolytopeTypeGetDim(ctCell), &tr->ctOrderOld, &tr->ctOrderInvOld);CHKERRQ(ierr);
+  for (p = pStart; p < pEnd; ++p) {
+    DMPolytopeType  ct;
+    DMPolytopeType *rct;
+    PetscInt       *rsize, *cone, *ornt;
+    PetscInt        Nct, n;
+
+    ierr = DMPlexGetCellType(dm, p, &ct);CHKERRQ(ierr);
+    PetscCheckFalse(ct == DM_POLYTOPE_UNKNOWN,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No cell type for point %D", p);
+    ierr = DMPlexTransformCellTransform(tr, ct, p, NULL, &Nct, &rct, &rsize, &cone, &ornt);CHKERRQ(ierr);
+    for (n = 0; n < Nct; ++n) celldim = PetscMax(celldim, DMPolytopeTypeGetDim(rct[n]));
+  }
+  ierr = DMPlexCreateCellTypeOrder_Internal(celldim, &tr->ctOrderNew, &tr->ctOrderInvNew);CHKERRQ(ierr);
   /* Construct sizes and offsets for each cell type */
   if (!tr->ctStart) {
     PetscInt *ctS, *ctSN, *ctC, *ctCN;
@@ -558,23 +573,25 @@ PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr)
       PetscInt        Nct, n;
 
       ierr = DMPlexGetCellType(dm, p, &ct);CHKERRQ(ierr);
-      if (ct == DM_POLYTOPE_UNKNOWN) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No cell type for point %D", p);
+      PetscCheckFalse(ct == DM_POLYTOPE_UNKNOWN,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No cell type for point %D", p);
       ++ctC[ct];
       ierr = DMPlexTransformCellTransform(tr, ct, p, NULL, &Nct, &rct, &rsize, &cone, &ornt);CHKERRQ(ierr);
       for (n = 0; n < Nct; ++n) ctCN[rct[n]] += rsize[n];
     }
     for (c = 0; c < DM_NUM_POLYTOPES; ++c) {
-      const PetscInt ct  = tr->ctOrder[c];
-      const PetscInt ctn = tr->ctOrder[c+1];
+      const PetscInt cto  = tr->ctOrderOld[c];
+      const PetscInt cton = tr->ctOrderOld[c+1];
+      const PetscInt ctn  = tr->ctOrderNew[c];
+      const PetscInt ctnn = tr->ctOrderNew[c+1];
 
-      ctS[ctn]  = ctS[ct]  + ctC[ct];
-      ctSN[ctn] = ctSN[ct] + ctCN[ct];
+      ctS[cton]  = ctS[cto]  + ctC[cto];
+      ctSN[ctnn] = ctSN[ctn] + ctCN[ctn];
     }
     ierr = PetscFree2(ctC, ctCN);CHKERRQ(ierr);
     tr->ctStart    = ctS;
     tr->ctStartNew = ctSN;
   }
-  ierr = DMPlexTransformCreateOffset_Internal(tr, tr->ctOrder, tr->ctStart, &tr->offset);CHKERRQ(ierr);
+  ierr = DMPlexTransformCreateOffset_Internal(tr, tr->ctOrderOld, tr->ctStart, &tr->offset);CHKERRQ(ierr);
   tr->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -638,7 +655,7 @@ static PetscErrorCode DMPlexTransformGetCoordinateFE(DMPlexTransform tr, DMPolyt
       case DM_POLYTOPE_QUADRILATERAL: dim = 2; isSimplex = PETSC_FALSE; break;
       case DM_POLYTOPE_TETRAHEDRON:   dim = 3; isSimplex = PETSC_TRUE;  break;
       case DM_POLYTOPE_HEXAHEDRON:    dim = 3; isSimplex = PETSC_FALSE; break;
-      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "No coordinate FE for cell type %s", DMPolytopeTypes[ct]);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No coordinate FE for cell type %s", DMPolytopeTypes[ct]);
     }
     ierr = DMGetCoordinateDim(tr->dm, &cdim);CHKERRQ(ierr);
     ierr = PetscFECreateLagrange(PETSC_COMM_SELF, dim, cdim, isSimplex, 1, PETSC_DETERMINE, &tr->coordFE[ct]);CHKERRQ(ierr);
@@ -673,6 +690,38 @@ static PetscErrorCode DMPlexTransformGetCoordinateFE(DMPlexTransform tr, DMPolyt
 }
 
 /*@
+  DMPlexTransformSetDimensions - Set the dimensions for the transformed DM
+
+  Input Parameters:
++ tr - The DMPlexTransform object
+- dm - The original DM
+
+  Output Parameter:
+. tdm - The transformed DM
+
+  Level: advanced
+
+.seealso: DMPlexTransformApply(), DMPlexTransformCreate()
+@*/
+PetscErrorCode DMPlexTransformSetDimensions(DMPlexTransform tr, DM dm, DM tdm)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (tr->ops->setdimensions) {
+    ierr = (*tr->ops->setdimensions)(tr, dm, tdm);CHKERRQ(ierr);
+  } else {
+    PetscInt dim, cdim;
+
+    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+    ierr = DMSetDimension(tdm, dim);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+    ierr = DMSetCoordinateDim(tdm, cdim);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
   DMPlexTransformGetTargetPoint - Get the number of a point in the transformed mesh based on information from the original mesh.
 
   Not collective
@@ -697,55 +746,74 @@ PetscErrorCode DMPlexTransformGetTargetPoint(DMPlexTransform tr, DMPolytopeType 
   PetscInt       *rsize, *cone, *ornt;
   PetscInt       rt, Nct, n, off, rp;
   DMLabel        trType = tr->trType;
-  PetscInt       ctS  = tr->ctStart[ct],       ctE  = tr->ctStart[tr->ctOrder[tr->ctOrderInv[ct]+1]];
-  PetscInt       ctSN = tr->ctStartNew[ctNew], ctEN = tr->ctStartNew[tr->ctOrder[tr->ctOrderInv[ctNew]+1]];
+  PetscInt       ctS  = tr->ctStart[ct],       ctE  = tr->ctStart[tr->ctOrderOld[tr->ctOrderInvOld[ct]+1]];
+  PetscInt       ctSN = tr->ctStartNew[ctNew], ctEN = tr->ctStartNew[tr->ctOrderNew[tr->ctOrderInvNew[ctNew]+1]];
   PetscInt       newp = ctSN, cind;
   PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
-  if ((p < ctS) || (p >= ctE)) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D is not a %s [%D, %D)", p, DMPolytopeTypes[ct], ctS, ctE);
+  PetscCheckFalse((p < ctS) || (p >= ctE),PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D is not a %s [%D, %D)", p, DMPolytopeTypes[ct], ctS, ctE);
   ierr = DMPlexTransformCellTransform(tr, ct, p, &rt, &Nct, &rct, &rsize, &cone, &ornt);CHKERRQ(ierr);
   if (trType) {
     ierr = DMLabelGetValueIndex(trType, rt, &cind);CHKERRQ(ierr);
     ierr = DMLabelGetStratumPointIndex(trType, rt, p, &rp);CHKERRQ(ierr);
-    if (rp < 0) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s point %D does not have refine type %D", DMPolytopeTypes[ct], p, rt);
+    PetscCheckFalse(rp < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s point %D does not have refine type %D", DMPolytopeTypes[ct], p, rt);
   } else {
     cind = ct;
     rp   = p - ctS;
   }
   off = tr->offset[cind*DM_NUM_POLYTOPES + ctNew];
-  if (off < 0) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s (%D) of point %D does not produce type %s for transform %s", DMPolytopeTypes[ct], rt, p, DMPolytopeTypes[ctNew], tr->hdr.type_name);
+  PetscCheckFalse(off < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s (%D) of point %D does not produce type %s for transform %s", DMPolytopeTypes[ct], rt, p, DMPolytopeTypes[ctNew], tr->hdr.type_name);
   newp += off;
   for (n = 0; n < Nct; ++n) {
     if (rct[n] == ctNew) {
       if (rsize[n] && r >= rsize[n])
-        SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Replica number %D should be in [0, %D) for subcell type %s in cell type %s", r, rsize[n], DMPolytopeTypes[rct[n]], DMPolytopeTypes[ct]);
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Replica number %D should be in [0, %D) for subcell type %s in cell type %s", r, rsize[n], DMPolytopeTypes[rct[n]], DMPolytopeTypes[ct]);
       newp += rp * rsize[n] + r;
       break;
     }
   }
 
-  if ((newp < ctSN) || (newp >= ctEN)) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "New point %D is not a %s [%D, %D)", newp, DMPolytopeTypes[ctNew], ctSN, ctEN);
+  PetscCheckFalse((newp < ctSN) || (newp >= ctEN),PETSC_COMM_SELF, PETSC_ERR_PLIB, "New point %D is not a %s [%D, %D)", newp, DMPolytopeTypes[ctNew], ctSN, ctEN);
   *pNew = newp;
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMPlexTransformGetSourcePoint - Get the number of a point in the original mesh based on information from the transformed mesh.
+
+  Not collective
+
+  Input Parameters:
++ tr    - The DMPlexTransform
+- pNew  - The new point number
+
+  Output Parameters:
++ ct    - The type of the original point which produces the new point
+. ctNew - The type of the new point
+. p     - The original point which produces the new point
+- r     - The replica number of the new point, meaning it is the rth point of type ctNew produced from p
+
+  Level: developer
+
+.seealso: DMPlexTransformGetTargetPoint(), DMPlexTransformCellTransform()
+@*/
 PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform tr, PetscInt pNew, DMPolytopeType *ct, DMPolytopeType *ctNew, PetscInt *p, PetscInt *r)
 {
   DMLabel         trType = tr->trType;
   DMPolytopeType *rct;
   PetscInt       *rsize, *cone, *ornt;
   PetscInt        rt, Nct, n, rp = 0, rO = 0, pO;
-  PetscInt        offset = -1, ctS, ctE, ctO, ctN, ctTmp;
+  PetscInt        offset = -1, ctS, ctE, ctO = 0, ctN, ctTmp;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   for (ctN = 0; ctN < DM_NUM_POLYTOPES; ++ctN) {
-    PetscInt ctSN = tr->ctStartNew[ctN], ctEN = tr->ctStartNew[tr->ctOrder[tr->ctOrderInv[ctN]+1]];
+    PetscInt ctSN = tr->ctStartNew[ctN], ctEN = tr->ctStartNew[tr->ctOrderNew[tr->ctOrderInvNew[ctN]+1]];
 
     if ((pNew >= ctSN) && (pNew < ctEN)) break;
   }
-  if (ctN == DM_NUM_POLYTOPES) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cell type for target point %D could be not found", pNew);
+  PetscCheckFalse(ctN == DM_NUM_POLYTOPES,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cell type for target point %D could be not found", pNew);
   if (trType) {
     DM              dm;
     IS              rtIS;
@@ -766,32 +834,32 @@ PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform tr, PetscInt pNew, 
     }
     ierr = ISRestoreIndices(rtIS, &reftypes);CHKERRQ(ierr);
     ierr = ISDestroy(&rtIS);CHKERRQ(ierr);
-    if (offset < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Source cell type for target point %D could be not found", pNew);
+    PetscCheckFalse(offset < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Source cell type for target point %D could be not found", pNew);
     /* TODO Map refinement types to cell types */
     ierr = DMLabelGetStratumBounds(trType, rt, &rtStart, NULL);CHKERRQ(ierr);
-    if (rtStart < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Refinement type %D has no source points", rt);
+    PetscCheckFalse(rtStart < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Refinement type %D has no source points", rt);
     for (ctO = 0; ctO < DM_NUM_POLYTOPES; ++ctO) {
-      PetscInt ctS = tr->ctStart[ctO], ctE = tr->ctStart[tr->ctOrder[tr->ctOrderInv[ctO]+1]];
+      PetscInt ctS = tr->ctStart[ctO], ctE = tr->ctStart[tr->ctOrderOld[tr->ctOrderInvOld[ctO]+1]];
 
       if ((rtStart >= ctS) && (rtStart < ctE)) break;
     }
-    if (ctO == DM_NUM_POLYTOPES) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine a cell type for refinement type %D", rt);
+    PetscCheckFalse(ctO == DM_NUM_POLYTOPES,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Could not determine a cell type for refinement type %D", rt);
   } else {
     for (ctTmp = 0; ctTmp < DM_NUM_POLYTOPES; ++ctTmp) {
       const PetscInt off = tr->offset[ctTmp*DM_NUM_POLYTOPES + ctN];
 
       if (tr->ctStartNew[ctN] + off > pNew) continue;
-      if (tr->ctStart[tr->ctOrder[tr->ctOrderInv[ctTmp]+1]] <= tr->ctStart[ctTmp]) continue;
+      if (tr->ctStart[tr->ctOrderOld[tr->ctOrderInvOld[ctTmp]+1]] <= tr->ctStart[ctTmp]) continue;
       /* TODO Actually keep track of the number produced here instead */
       if (off > offset) {ctO = ctTmp; offset = off;}
     }
-    if (offset < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Source cell type for target point %D could be not found", pNew);
+    PetscCheckFalse(offset < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Source cell type for target point %D could be not found", pNew);
   }
   ctS = tr->ctStart[ctO];
-  ctE = tr->ctStart[tr->ctOrder[tr->ctOrderInv[ctO]+1]];
+  ctE = tr->ctStart[tr->ctOrderOld[tr->ctOrderInvOld[ctO]+1]];
   ierr = DMPlexTransformCellTransform(tr, (DMPolytopeType) ctO, ctS, &rt, &Nct, &rct, &rsize, &cone, &ornt);CHKERRQ(ierr);
   for (n = 0; n < Nct; ++n) {
-    if (rct[n] == ctN) {
+    if ((PetscInt) rct[n] == ctN) {
       PetscInt tmp = pNew - tr->ctStartNew[ctN] - offset;
 
       rp = tmp / rsize[n];
@@ -799,9 +867,9 @@ PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform tr, PetscInt pNew, 
       break;
     }
   }
-  if (n == Nct) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Replica number for target point %D could be not found", pNew);
+  PetscCheckFalse(n == Nct,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Replica number for target point %D could be not found", pNew);
   pO = rp + ctS;
-  if ((pO < ctS) || (pO >= ctE)) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Source point %D is not a %s [%D, %D)", pO, DMPolytopeTypes[ctO], ctS, ctE);
+  PetscCheckFalse((pO < ctS) || (pO >= ctE),PETSC_COMM_SELF, PETSC_ERR_PLIB, "Source point %D is not a %s [%D, %D)", pO, DMPolytopeTypes[ctO], ctS, ctE);
   if (ct)    *ct    = (DMPolytopeType) ctO;
   if (ctNew) *ctNew = (DMPolytopeType) ctN;
   if (p)     *p     = pO;
@@ -931,7 +999,7 @@ PetscErrorCode DMPlexTransformCellTransformIdentity(DMPlexTransform tr, DMPolyto
     case DM_POLYTOPE_TRI_PRISM_TENSOR:   *Nt = 1; *target = ttripT;  *size = ttripS;  *cone = ttripC;  *ornt = ttripO;  break;
     case DM_POLYTOPE_QUAD_PRISM_TENSOR:  *Nt = 1; *target = tquadpT; *size = tquadpS; *cone = tquadpC; *ornt = tquadpO; break;
     case DM_POLYTOPE_PYRAMID:            *Nt = 1; *target = pyrT;    *size = pyrS;    *cone = pyrC;    *ornt = pyrO;    break;
-    default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
+    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
   }
   PetscFunctionReturn(0);
 }
@@ -1015,11 +1083,11 @@ static PetscErrorCode DMPlexTransformGetConeSize(DMPlexTransform tr, PetscInt q,
   PetscValidPointer(coneSize, 3);
   /* TODO Can do bisection since everything is sorted */
   for (ctNew = DM_POLYTOPE_POINT; ctNew < DM_NUM_POLYTOPES; ++ctNew) {
-    PetscInt ctSN = tr->ctStartNew[ctNew], ctEN = tr->ctStartNew[tr->ctOrder[tr->ctOrderInv[ctNew]+1]];
+    PetscInt ctSN = tr->ctStartNew[ctNew], ctEN = tr->ctStartNew[tr->ctOrderNew[tr->ctOrderInvNew[ctNew]+1]];
 
     if (q >= ctSN && q < ctEN) break;
   }
-  if (ctNew >= DM_NUM_POLYTOPES) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D cannot be located in the transformed mesh", q);
+  PetscCheckFalse(ctNew >= DM_NUM_POLYTOPES,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %D cannot be located in the transformed mesh", q);
   *coneSize = DMPolytopeTypeGetConeSize((DMPolytopeType) ctNew);
   PetscFunctionReturn(0);
 }
@@ -1252,7 +1320,7 @@ static PetscErrorCode DMPlexTransformCreateCellVertices_Internal(DMPlexTransform
     tr->trNv[ct] = vEnd - vStart;
     ierr = DMGetCoordinatesLocal(trdm, &coordinates);CHKERRQ(ierr);
     ierr = VecGetLocalSize(coordinates, &Nc);CHKERRQ(ierr);
-    if (tr->trNv[ct] * DMPolytopeTypeGetDim(ct) != Nc) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell type %s, transformed coordinate size %D != %D size of coordinate storage", DMPolytopeTypes[ct], tr->trNv[ct] * DMPolytopeTypeGetDim(ct), Nc);
+    PetscCheckFalse(tr->trNv[ct] * DMPolytopeTypeGetDim(ct) != Nc,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell type %s, transformed coordinate size %D != %D size of coordinate storage", DMPolytopeTypes[ct], tr->trNv[ct] * DMPolytopeTypeGetDim(ct), Nc);
     ierr = PetscCalloc1(Nc, &tr->trVerts[ct]);CHKERRQ(ierr);
     ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
     ierr = PetscArraycpy(tr->trVerts[ct], coords, Nc);CHKERRQ(ierr);
@@ -1278,7 +1346,7 @@ static PetscErrorCode DMPlexTransformCreateCellVertices_Internal(DMPlexTransform
           if ((sv >= vStart) && (sv < vEnd)) tr->trSubVerts[ct][rct[n]][r][Nv++] = sv - vStart;
         }
         ierr = DMPlexRestoreTransitiveClosure(trdm, pNew, PETSC_TRUE, &clSize, &closure);CHKERRQ(ierr);
-        if (Nv != DMPolytopeTypeGetNumVertices(rct[n])) SETERRQ5(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of vertices %D != %D for %s subcell %D from cell %s", Nv, DMPolytopeTypeGetNumVertices(rct[n]), DMPolytopeTypes[rct[n]], r, DMPolytopeTypes[ct]);
+        PetscCheckFalse(Nv != DMPolytopeTypeGetNumVertices(rct[n]),PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of vertices %D != %D for %s subcell %D from cell %s", Nv, DMPolytopeTypeGetNumVertices(rct[n]), DMPolytopeTypes[rct[n]], r, DMPolytopeTypes[ct]);
       }
     }
     if (debug) {
@@ -1361,18 +1429,18 @@ PetscErrorCode DMPlexTransformGetSubcellVertices(DMPlexTransform tr, DMPolytopeT
 
   PetscFunctionBegin;
   if (!tr->trNv) {ierr = DMPlexTransformCreateCellVertices_Internal(tr);CHKERRQ(ierr);}
-  if (!tr->trSubVerts[ct][rct]) SETERRQ2(PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_WRONG, "Cell type %s does not produce %s", DMPolytopeTypes[ct], DMPolytopeTypes[rct]);
+  PetscCheckFalse(!tr->trSubVerts[ct][rct],PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_WRONG, "Cell type %s does not produce %s", DMPolytopeTypes[ct], DMPolytopeTypes[rct]);
   if (subVerts) *subVerts = tr->trSubVerts[ct][rct][r];
   PetscFunctionReturn(0);
 }
 
 /* Computes new vertex as the barycenter, or centroid */
-PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
+PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
 {
   PetscInt v,d;
 
   PetscFunctionBeginHot;
-  if (ct != DM_POLYTOPE_POINT) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for refined point type %s",DMPolytopeTypes[ct]);
+  PetscCheckFalse(ct != DM_POLYTOPE_POINT,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not for refined point type %s",DMPolytopeTypes[ct]);
   for (d = 0; d < dE; ++d) out[d] = 0.0;
   for (v = 0; v < Nv; ++v) for (d = 0; d < dE; ++d) out[d] += in[v*dE+d];
   for (d = 0; d < dE; ++d) out[d] /= Nv;
@@ -1385,6 +1453,7 @@ PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform 
 + cr   - The DMPlexCellRefiner
 . pct  - The cell type of the parent, from whom the new cell is being produced
 . ct   - The type being produced
+. p    - The original point
 . r    - The replica number requested for the produced cell type
 . Nv   - Number of vertices in the closure of the parent cell
 . dE   - Spatial dimension
@@ -1392,13 +1461,15 @@ PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform 
 
   Output Parameters:
 . out - The coordinates of the new vertices
+
+  Level: intermediate
 @*/
-PetscErrorCode DMPlexTransformMapCoordinates(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
+PetscErrorCode DMPlexTransformMapCoordinates(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBeginHot;
-  ierr = (*tr->ops->mapcoordinates)(tr, pct, ct, r, Nv, dE, in, out);CHKERRQ(ierr);
+  ierr = (*tr->ops->mapcoordinates)(tr, pct, ct, p, r, Nv, dE, in, out);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1636,7 +1707,7 @@ static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm)
     ierr = PetscMalloc1(numLeavesNew, &lp);CHKERRQ(ierr);
     ierr = PetscMalloc1(numLeavesNew, &rp);CHKERRQ(ierr);
     for (i = 0; i < numLeavesNew; ++i) {
-      if ((localPointsNew[i] < pStartNew) || (localPointsNew[i] >= pEndNew)) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local SF point %D (%D) not in [%D, %D)", localPointsNew[i], i, pStartNew, pEndNew);
+      PetscCheckFalse((localPointsNew[i] < pStartNew) || (localPointsNew[i] >= pEndNew),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local SF point %D (%D) not in [%D, %D)", localPointsNew[i], i, pStartNew, pEndNew);
       idx[i] = i;
     }
     ierr = PetscSortIntWithPermutation(numLeavesNew, localPointsNew, idx);CHKERRQ(ierr);
@@ -1701,7 +1772,7 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
   const DMBoundaryType *bd;
   const PetscReal      *maxCell, *L;
   PetscBool             isperiodic, localizeVertices = PETSC_FALSE, localizeCells = PETSC_FALSE;
-  PetscInt              dE, d, cStart, cEnd, c, vStartNew, vEndNew, v, pStart, pEnd, p, ocStart, ocEnd;
+  PetscInt              dE, dEo, d, cStart, cEnd, c, vStartNew, vEndNew, v, pStart, pEnd, p, ocStart, ocEnd;
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
@@ -1714,22 +1785,23 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
     if (!maxCell) {
       PetscBool localized;
       ierr = DMGetCoordinatesLocalized(dm, &localized);CHKERRQ(ierr);
-      if (!localized) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_USER, "Cannot refine a periodic mesh if coordinates have not been localized");
+      PetscCheckFalse(!localized,PetscObjectComm((PetscObject) dm), PETSC_ERR_USER, "Cannot refine a periodic mesh if coordinates have not been localized");
       localizeCells = PETSC_TRUE;
     }
   }
 
   ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionGetFieldComponents(coordSection, 0, &dE);CHKERRQ(ierr);
+  ierr = PetscSectionGetFieldComponents(coordSection, 0, &dEo);CHKERRQ(ierr);
   if (maxCell) {
     PetscReal maxCellNew[3];
 
-    for (d = 0; d < dE; ++d) maxCellNew[d] = maxCell[d]/2.0;
+    for (d = 0; d < dEo; ++d) maxCellNew[d] = maxCell[d]/2.0;
     ierr = DMSetPeriodicity(rdm, isperiodic, maxCellNew, L, bd);CHKERRQ(ierr);
   } else {
     ierr = DMSetPeriodicity(rdm, isperiodic, maxCell, L, bd);CHKERRQ(ierr);
   }
-  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) dm), &coordSectionNew);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(rdm, &dE);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(PetscObjectComm((PetscObject) rdm), &coordSectionNew);CHKERRQ(ierr);
   ierr = PetscSectionSetNumFields(coordSectionNew, 1);CHKERRQ(ierr);
   ierr = PetscSectionSetFieldComponents(coordSectionNew, 0, dE);CHKERRQ(ierr);
   ierr = DMPlexGetDepthStratum(rdm, 0, &vStartNew, &vEndNew);CHKERRQ(ierr);
@@ -1791,7 +1863,7 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
     ierr = PetscObjectGetName((PetscObject) coordsLocal, &name);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) coordsLocalNew, name);CHKERRQ(ierr);
     ierr = VecGetBlockSize(coordsLocal, &bs);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(coordsLocalNew, bs);CHKERRQ(ierr);
+    ierr = VecSetBlockSize(coordsLocalNew, dEo == dE ? bs : dE);CHKERRQ(ierr);
     ierr = VecGetType(coordsLocal, &vtype);CHKERRQ(ierr);
     ierr = VecSetType(coordsLocalNew, vtype);CHKERRQ(ierr);
   }
@@ -1825,17 +1897,17 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
       ierr = DMPlexVecGetClosure(dm, coordSection, coordsLocal, p, &Nc, &pcoords);CHKERRQ(ierr);
 
       icoords = pcoords;
-      Nv      = Nc/dE;
+      Nv      = Nc/dEo;
       if (ct != DM_POLYTOPE_POINT) {
         if (localizeVertices) {
           PetscScalar anchor[3];
 
-          for (d = 0; d < dE; ++d) anchor[d] = pcoords[d];
+          for (d = 0; d < dEo; ++d) anchor[d] = pcoords[d];
           if (!isLocalized) {
-            for (v = 0; v < Nv; ++v) {ierr = DMLocalizeCoordinate_Internal(dm, dE, anchor, &pcoords[v*dE], &pcoords[v*dE]);CHKERRQ(ierr);}
+            for (v = 0; v < Nv; ++v) {ierr = DMLocalizeCoordinate_Internal(dm, dEo, anchor, &pcoords[v*dEo], &pcoords[v*dEo]);CHKERRQ(ierr);}
           } else {
-            Nv = Nc/(2*dE);
-            for (v = Nv; v < Nv*2; ++v) {ierr = DMLocalizeCoordinate_Internal(dm, dE, anchor, &pcoords[v*dE], &pcoords[v*dE]);CHKERRQ(ierr);}
+            Nv = Nc/(2*dEo);
+            for (v = Nv; v < Nv*2; ++v) {ierr = DMLocalizeCoordinate_Internal(dm, dEo, anchor, &pcoords[v*dEo], &pcoords[v*dEo]);CHKERRQ(ierr);}
           }
         }
       }
@@ -1847,8 +1919,8 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
 
           ierr = DMPlexTransformGetTargetPoint(tr, ct, rct[n], p, r, &vNew);CHKERRQ(ierr);
           ierr = PetscSectionGetOffset(coordSectionNew, vNew, &off);CHKERRQ(ierr);
-          ierr = DMPlexTransformMapCoordinates(tr, ct, rct[n], r, Nv, dE, icoords, vcoords);CHKERRQ(ierr);
-          ierr = DMPlexSnapToGeomModel(dm, p, vcoords, &coordsNew[off]);CHKERRQ(ierr);
+          ierr = DMPlexTransformMapCoordinates(tr, ct, rct[n], p, r, Nv, dEo, icoords, vcoords);CHKERRQ(ierr);
+          ierr = DMPlexSnapToGeomModel(dm, p, dE, vcoords, &coordsNew[off]);CHKERRQ(ierr);
         }
       }
       ierr = DMPlexVecRestoreClosure(dm, coordSection, coordsLocal, p, &Nc, &pcoords);CHKERRQ(ierr);
@@ -1904,7 +1976,6 @@ PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
 {
   DM                     rdm;
   DMPlexInterpolatedFlag interp;
-  PetscInt               dim, embedDim;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -1915,15 +1986,12 @@ PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
 
   ierr = DMCreate(PetscObjectComm((PetscObject)dm), &rdm);CHKERRQ(ierr);
   ierr = DMSetType(rdm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
-  ierr = DMSetDimension(rdm, dim);CHKERRQ(ierr);
-  ierr = DMGetCoordinateDim(dm, &embedDim);CHKERRQ(ierr);
-  ierr = DMSetCoordinateDim(rdm, embedDim);CHKERRQ(ierr);
+  ierr = DMPlexTransformSetDimensions(tr, dm, rdm);CHKERRQ(ierr);
   /* Calculate number of new points of each depth */
   ierr = DMPlexIsInterpolated(dm, &interp);CHKERRQ(ierr);
-  if (interp != DMPLEX_INTERPOLATED_FULL) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Mesh must be fully interpolated for regular refinement");
+  PetscCheckFalse(interp != DMPLEX_INTERPOLATED_FULL,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Mesh must be fully interpolated for regular refinement");
   /* Step 1: Set chart */
-  ierr = DMPlexSetChart(rdm, 0, tr->ctStartNew[tr->ctOrder[DM_NUM_POLYTOPES]]);CHKERRQ(ierr);
+  ierr = DMPlexSetChart(rdm, 0, tr->ctStartNew[tr->ctOrderNew[DM_NUM_POLYTOPES]]);CHKERRQ(ierr);
   /* Step 2: Set cone/support sizes (automatically stratifies) */
   ierr = DMPlexTransformSetConeSizes(tr, rdm);CHKERRQ(ierr);
   /* Step 3: Setup refined DM */
@@ -1936,11 +2004,12 @@ PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
   ierr = DMPlexTransformCreateLabels(tr, rdm);CHKERRQ(ierr);
   /* Step 7: Set coordinates */
   ierr = DMPlexTransformSetCoordinates(tr, rdm);CHKERRQ(ierr);
+  ierr = DMPlexCopy_Internal(dm, PETSC_TRUE, rdm);CHKERRQ(ierr);
   *tdm = rdm;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexTransformAdaptLabel(DM dm, DMLabel adaptLabel, DM *rdm)
+PetscErrorCode DMPlexTransformAdaptLabel(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, PETSC_UNUSED DMLabel rgLabel, DM *rdm)
 {
   DMPlexTransform tr;
   DM              cdm, rcdm;
@@ -1964,5 +2033,6 @@ PetscErrorCode DMPlexTransformAdaptLabel(DM dm, DMLabel adaptLabel, DM *rdm)
   ierr = DMPlexTransformCreateDiscLabels(tr, *rdm);CHKERRQ(ierr);
   ierr = DMCopyDisc(dm, *rdm);CHKERRQ(ierr);
   ierr = DMPlexTransformDestroy(&tr);CHKERRQ(ierr);
+  ((DM_Plex *) (*rdm)->data)->useHashLocation = ((DM_Plex *) dm->data)->useHashLocation;
   PetscFunctionReturn(0);
 }

@@ -65,13 +65,13 @@ Tao Object: 1 MPI processes
     total number of gradient evaluations=0
     total number of function/gradient evaluations=1
     Termination reason: 1
-  KSP Object: (unused) 1 MPI processes
+  KSP Object: 1 MPI processes
     type: stcg
     maximum iterations=10000, initial guess is zero
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
     left preconditioning
     using DEFAULT norm type for convergence test
-  PC Object: (unused) 1 MPI processes
+  PC Object: 1 MPI processes
     type: lmvm
     PC has not been set up so information may be incomplete
     Mat Object: (tao_bqnls_) 1 MPI processes
@@ -103,7 +103,7 @@ Tao Object: 1 MPI processes
   Residual in Function/Gradient:=8.34439e-09
   Objective value=1.24426e-09
   total number of iterations=19,                          (max: 50)
-  total number of function/gradient evaluations=20,      (max: 10000)
+  total number of function/gradient evaluations=20,      (max: -1)
   Solution converged:    ||g(X)|| <= gatol
 Vec Object: 1 MPI processes
   type: seq

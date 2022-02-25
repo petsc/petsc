@@ -242,14 +242,14 @@ int main(int argc,char ** argv)
   PetscInt          componentkey[2];
   Node              *node;
   Branch            *branch;
-  PetscInt          nV[1],nE[1];
+  PetscInt          nE[1];
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
 
   /* "Read" data only for processor 0 */
-  if (!rank) {
+  if (rank == 0) {
     ierr = read_data(&nnode, &nbranch, &node, &branch, &edgelist);CHKERRQ(ierr);
   }
 
@@ -258,15 +258,15 @@ int main(int argc,char ** argv)
   ierr = DMNetworkRegisterComponent(dmnetwork,"bsrt",sizeof(Branch),&componentkey[1]);CHKERRQ(ierr);
 
   /* Set local number of nodes/edges, add edge connectivity */
-  nV[0] = nnode; nE[0] = nbranch;
+  nE[0] = nbranch;
   ierr = DMNetworkSetNumSubNetworks(dmnetwork,PETSC_DECIDE,1);CHKERRQ(ierr);
-  ierr = DMNetworkAddSubnetwork(dmnetwork,"",nV[0],nE[0],edgelist,NULL);CHKERRQ(ierr);
+  ierr = DMNetworkAddSubnetwork(dmnetwork,"",nE[0],edgelist,NULL);CHKERRQ(ierr);
 
   /* Set up the network layout */
   ierr = DMNetworkLayoutSetUp(dmnetwork);CHKERRQ(ierr);
 
   /* Add network components (physical parameters of nodes and branches) and num of variables */
-  if (!rank) {
+  if (rank == 0) {
     ierr = DMNetworkGetEdgeRange(dmnetwork,&eStart,&eEnd);CHKERRQ(ierr);
     for (i = eStart; i < eEnd; i++) {
       ierr = DMNetworkAddComponent(dmnetwork,i,componentkey[1],&branch[i-eStart],1);CHKERRQ(ierr);
@@ -283,7 +283,7 @@ int main(int argc,char ** argv)
   ierr = DMNetworkDistribute(&dmnetwork,0);CHKERRQ(ierr);
 
   /* We do not use these data structures anymore since they have been copied to dmnetwork */
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscFree(edgelist);CHKERRQ(ierr);
     ierr = PetscFree2(node,branch);CHKERRQ(ierr);
   }

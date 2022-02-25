@@ -1,15 +1,15 @@
 DM Object: Mesh 1 MPI processes
   type: plex
 Mesh in 2 dimensions:
-  0-cells: 9
-  1-cells: 16
-  2-cells: 8
+  Number of 0-cells per rank: 9
+  Number of 1-cells per rank: 16
+  Number of 2-cells per rank: 8
 Labels:
   celltype: 3 strata with value/size (0 (9), 3 (8), 1 (16))
   depth: 3 strata with value/size (0 (9), 1 (16), 2 (8))
   marker: 1 strata with value/size (1 (16))
   Face Sets: 1 strata with value/size (1 (8))
 Petsc FE Residual Integration: 8 integrals 1 chunks 1 reps
-  Cell rate: 122142.77/s flop rate: 11.73 MF/s
+  Cell rate: 500000.00/s flop rate: 0.00 MF/s
 DMPlex Residual Integration: 8 integrals 1 reps
-  Cell rate: 5362.29/s flop rate: 0.85 MF/s
+  Cell rate: 23054.76/s flop rate: 7.93 MF/s

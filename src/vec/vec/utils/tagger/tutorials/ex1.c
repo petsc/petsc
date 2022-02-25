@@ -37,6 +37,7 @@ int main(int argc, char **argv)
   VecTaggerBox   *boxes;
   IS             is, isBlockGlobal, isComp;
   PetscErrorCode ierr;
+  PetscBool      listed;
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   n    = 10.;
@@ -87,9 +88,8 @@ int main(int argc, char **argv)
   ierr = PetscObjectViewFromOptions((PetscObject)tagger,NULL,"-vec_tagger_view");CHKERRQ(ierr);
   ierr = VecTaggerGetBlockSize(tagger,&bs);CHKERRQ(ierr);
 
-  ierr = VecTaggerComputeBoxes(tagger,vec,&nint,&boxes);
-  if (ierr && ierr != PETSC_ERR_SUP) CHKERRQ(ierr);
-  else {
+  ierr = VecTaggerComputeBoxes(tagger,vec,&nint,&boxes,&listed);CHKERRQ(ierr);
+  if (listed) {
     PetscViewer viewer = NULL;
 
     ierr = PetscOptionsGetViewer(comm,NULL,NULL,"-vec_tagger_boxes_view",&viewer,NULL,NULL);CHKERRQ(ierr);
@@ -98,10 +98,10 @@ int main(int argc, char **argv)
 
       ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
       if (iascii) {
-        ierr = PetscViewerASCIIPrintf(viewer,"Num boxes: %D\n",nint);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Num boxes: %" PetscInt_FMT "\n",nint);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         for (i = 0, k = 0; i < nint; i++) {
-          ierr = PetscViewerASCIIPrintf(viewer,"%D: ",i);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%" PetscInt_FMT ": ",i);CHKERRQ(ierr);
           for (j = 0; j < bs; j++, k++) {
             if (j) {ierr = PetscViewerASCIIPrintf(viewer," x ");CHKERRQ(ierr);}
 #if !defined(PETSC_USE_COMPLEX)
@@ -119,7 +119,7 @@ int main(int argc, char **argv)
     ierr = PetscFree(boxes);CHKERRQ(ierr);
   }
 
-  ierr = VecTaggerComputeIS(tagger,vec,&is);CHKERRQ(ierr);
+  ierr = VecTaggerComputeIS(tagger,vec,&is,&listed);CHKERRQ(ierr);
   ierr = ISGetBlockGlobalIS(is,vec,bs,&isBlockGlobal);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)isBlockGlobal,"Tagged IS (block global)");CHKERRQ(ierr);
   ierr = ISViewFromOptions(isBlockGlobal,NULL,"-tagged_is_view");CHKERRQ(ierr);

@@ -22,7 +22,7 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-mbs",&mbs,NULL);CHKERRQ(ierr);
 
@@ -75,7 +75,7 @@ int main(int argc,char **args)
 
     } else if (prob == 2) { /* matrix for the five point stencil */
       n1 = (PetscInt) (PetscSqrtReal((PetscReal)n) + 0.001);
-      if (n1*n1 - n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive integer!");
+      PetscCheckFalse(n1*n1 - n,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive integer!");
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {
           Ii = j + n1*i;
@@ -163,26 +163,26 @@ int main(int argc,char **args)
   ierr = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRQ(ierr);
   ierr = MatDuplicate(sA,MAT_COPY_VALUES,&sB);CHKERRQ(ierr);
   ierr = MatEqual(sA,sB,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDuplicate()");
+  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDuplicate()");
 
   /* Test MatNorm() */
   ierr  = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRQ(ierr);
   ierr  = MatNorm(sB,NORM_FROBENIUS,&norm2);CHKERRQ(ierr);
   rnorm = PetscAbsReal(norm1-norm2)/norm2;
   if (rnorm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS, NormA=%16.14e NormsB=%16.14e\n",norm1,norm2);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS, NormA=%16.14e NormsB=%16.14e\n",(double)norm1,(double)norm2);CHKERRQ(ierr);
   }
   ierr  = MatNorm(A,NORM_INFINITY,&norm1);CHKERRQ(ierr);
   ierr  = MatNorm(sB,NORM_INFINITY,&norm2);CHKERRQ(ierr);
   rnorm = PetscAbsReal(norm1-norm2)/norm2;
   if (rnorm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n",norm1,norm2);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n",(double)norm1,(double)norm2);CHKERRQ(ierr);
   }
   ierr  = MatNorm(A,NORM_1,&norm1);CHKERRQ(ierr);
   ierr  = MatNorm(sB,NORM_1,&norm2);CHKERRQ(ierr);
   rnorm = PetscAbsReal(norm1-norm2)/norm2;
   if (rnorm > tol) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n",norm1,norm2);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_INFINITY(), NormA=%16.14e NormsB=%16.14e\n",(double)norm1,(double)norm2);CHKERRQ(ierr);
   }
 
   /* Test MatGetInfo(), MatGetSize(), MatGetBlockSize() */
@@ -199,7 +199,7 @@ int main(int argc,char **args)
   ierr = MatGetSize(A,&Ii,&J);CHKERRQ(ierr);
   ierr = MatGetSize(sB,&i,&j);CHKERRQ(ierr);
   if (i-Ii || j-J) {
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatGetSize()\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetSize()\n");CHKERRQ(ierr);
   }
 
   ierr = MatGetBlockSize(A, &Ii);CHKERRQ(ierr);
@@ -224,7 +224,7 @@ int main(int argc,char **args)
   ierr = MatDiagonalScale(A,x,x);CHKERRQ(ierr);
   ierr = MatDiagonalScale(sB,x,x);CHKERRQ(ierr);
   ierr = MatMultEqual(A,sB,10,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
+  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
 
   ierr = MatGetDiagonal(A,s1);CHKERRQ(ierr);
   ierr = MatGetDiagonal(sB,s2);CHKERRQ(ierr);
@@ -283,7 +283,7 @@ int main(int argc,char **args)
   ierr = MatSetRandom(B,rdm);CHKERRQ(ierr);
   ierr = MatMatMult(sA,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C);CHKERRQ(ierr);
   ierr = MatMatMultEqual(sA,B,C,5*n,&equal);CHKERRQ(ierr);
-  if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()");
+  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()");
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
 
@@ -331,7 +331,7 @@ int main(int argc,char **args)
       ierr = VecAXPY(s2,neg_one,x);CHKERRQ(ierr);
       ierr = VecNorm(s2,NORM_2,&norm2);CHKERRQ(ierr);
       if (10*norm1 < norm2) {
-        ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%g, bs=%D\n",(double)norm2,bs);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%g, bs=%" PetscInt_FMT "\n",(double)norm2,bs);CHKERRQ(ierr);
       }
     }
 
@@ -342,7 +342,7 @@ int main(int argc,char **args)
     ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
     if (10*norm1 < norm2 && lf-inc != -1) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%D, %D, Norm of error=%g, %g\n",lf-inc,lf,(double)norm1,(double)norm2);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"lf=%" PetscInt_FMT ", %" PetscInt_FMT ", Norm of error=%g, %g\n",lf-inc,lf,(double)norm1,(double)norm2);CHKERRQ(ierr);
     }
     norm1 = norm2;
     if (norm2 < tol && lf != -1) break;

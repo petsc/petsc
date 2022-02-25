@@ -90,7 +90,7 @@ static PetscErrorCode  MatMFFDSetType_MFFD(Mat mat,MatMFFDType ftype)
   }
 
   ierr =  PetscFunctionListFind(MatMFFDList,ftype,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown MatMFFD type %s given",ftype);
+  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown MatMFFD type %s given",ftype);
   ierr = (*r)(ctx);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)ctx,ftype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -330,7 +330,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
-  if (!ctx->current_u) SETERRQ(PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"MatMFFDSetBase() has not been called, this is often caused by forgetting to call \n\t\tMatAssemblyBegin/End on the first Mat in the SNES compute function");
+  PetscCheckFalse(!ctx->current_u,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"MatMFFDSetBase() has not been called, this is often caused by forgetting to call \n\t\tMatAssemblyBegin/End on the first Mat in the SNES compute function");
   /* We log matrix-free matrix-vector products separately, so that we can
      separate the performance monitoring from the cases that use conventional
      storage.  We may eventually modify event logging to associate events
@@ -353,7 +353,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
     PetscFunctionReturn(0);
   }
 
-  if (mat->erroriffailure && PetscIsInfOrNanScalar(h)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Computed Nan differencing parameter h");
+  PetscCheckFalse(mat->erroriffailure && PetscIsInfOrNanScalar(h),PETSC_COMM_SELF,PETSC_ERR_PLIB,"Computed Nan differencing parameter h");
   if (ctx->checkh) {
     ierr = (*ctx->checkh)(ctx->checkhctx,U,a,&h);CHKERRQ(ierr);
   }
@@ -361,9 +361,9 @@ static PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   /* keep a record of the current differencing parameter h */
   ctx->currenth = h;
 #if defined(PETSC_USE_COMPLEX)
-  ierr = PetscInfo2(mat,"Current differencing parameter: %g + %g i\n",(double)PetscRealPart(h),(double)PetscImaginaryPart(h));CHKERRQ(ierr);
+  ierr = PetscInfo(mat,"Current differencing parameter: %g + %g i\n",(double)PetscRealPart(h),(double)PetscImaginaryPart(h));CHKERRQ(ierr);
 #else
-  ierr = PetscInfo1(mat,"Current differencing parameter: %15.12e\n",h);CHKERRQ(ierr);
+  ierr = PetscInfo(mat,"Current differencing parameter: %15.12e\n",(double)PetscRealPart(h));CHKERRQ(ierr);
 #endif
   if (ctx->historyh && ctx->ncurrenth < ctx->maxcurrenth) {
     ctx->historyh[ctx->ncurrenth] = h;
@@ -419,8 +419,8 @@ PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
-  if (!ctx->func) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Requires calling MatMFFDSetFunction() first");
-  if (!ctx->funci) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Requires calling MatMFFDSetFunctioni() first");
+  PetscCheckFalse(!ctx->func,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Requires calling MatMFFDSetFunction() first");
+  PetscCheckFalse(!ctx->funci,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Requires calling MatMFFDSetFunctioni() first");
   w    = ctx->w;
   U    = ctx->current_u;
   ierr = (*ctx->func)(ctx->funcctx,U,a);CHKERRQ(ierr);
@@ -502,7 +502,7 @@ static PetscErrorCode  MatMFFDSetCheckh_MFFD(Mat J,FCN3 fun,void *ectx)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +  A - the Mat context
 -  prefix - the prefix to prepend to all option names
 
@@ -1126,7 +1126,7 @@ PetscErrorCode  MatMFFDCheckPositivity(void *dummy,Vec U,Vec a,PetscScalar *h)
   ierr = VecRestoreArray(a,&a_vec);CHKERRQ(ierr);
   ierr = MPIU_Allreduce(&minval,&val,1,MPIU_REAL,MPIU_MIN,comm);CHKERRMPI(ierr);
   if (val <= PetscAbsScalar(*h)) {
-    ierr = PetscInfo2(U,"Scaling back h from %g to %g\n",(double)PetscRealPart(*h),(double)(.99*val));CHKERRQ(ierr);
+    ierr = PetscInfo(U,"Scaling back h from %g to %g\n",(double)PetscRealPart(*h),(double)(.99*val));CHKERRQ(ierr);
     if (PetscRealPart(*h) > 0.0) *h =  0.99*val;
     else                         *h = -0.99*val;
   }

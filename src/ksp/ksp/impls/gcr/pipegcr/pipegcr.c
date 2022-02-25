@@ -80,7 +80,7 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
   PetscFunctionBegin;
   /* !!PS We have not checked these routines for use with complex numbers. The inner products
      are likely not defined correctly for that case */
-  if (PetscDefined(USE_COMPLEX) && !PetscDefined(SKIP_COMPLEX)) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
+  PetscCheckFalse(PetscDefined(USE_COMPLEX) && !PetscDefined(SKIP_COMPLEX),PETSC_COMM_WORLD,PETSC_ERR_SUP,"PIPEFGMRES has not been implemented for use with complex scalars");
 
   ierr = KSPGetOperators(ksp, &A, &B);CHKERRQ(ierr);
   x = ksp->vec_sol;
@@ -222,14 +222,14 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
     case KSP_NORM_NONE:
       rnorm = 0.0;
       break;
-    default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
+    default: SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
     }
 
     /* Check for convergence */
     ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->rnorm = rnorm;
     ierr = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
-    KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
+    ierr = KSPLogResidualHistory(ksp,rnorm);CHKERRQ(ierr);
     ierr = KSPMonitor(ksp,ksp->its,rnorm);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,ksp->its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) PetscFunctionReturn(0);
@@ -247,7 +247,7 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
     /* check breakdown of eta = (s,s) */
     if (*eta < 0.) {
       pipegcr->norm_breakdown = PETSC_TRUE;
-      ierr = PetscInfo1(ksp,"Restart due to square root breakdown at it = \n",ksp->its);CHKERRQ(ierr);
+      ierr = PetscInfo(ksp,"Restart due to square root breakdown at it = \n",ksp->its);CHKERRQ(ierr);
       break;
     } else {
       alpha= gamma/(*eta);                                  /* alpha = gamma/etai */
@@ -316,7 +316,7 @@ static PetscErrorCode KSPSolve_PIPEGCR(KSP ksp)
     case KSP_NORM_NONE:
       rnorm = 0.0;
       break;
-    default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
+    default: SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
   }
 
   /* Is A symmetric? */
@@ -387,7 +387,7 @@ static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   ierr = KSPGetOperators(ksp, &A, NULL);CHKERRQ(ierr);
 
@@ -404,7 +404,7 @@ static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
   ierr = PetscMalloc3(pipegcr->mmax+2,&(pipegcr->dots),pipegcr->mmax+1,&(pipegcr->etas),pipegcr->mmax+2,&(pipegcr->redux));CHKERRQ(ierr);
   /* If the requested number of preallocated vectors is greater than mmax reduce nprealloc */
   if (pipegcr->nprealloc > pipegcr->mmax+1) {
-    ierr = PetscInfo2(NULL,"Requested nprealloc=%d is greater than m_max+1=%d. Resetting nprealloc = m_max+1.\n",pipegcr->nprealloc, pipegcr->mmax+1);CHKERRQ(ierr);
+    ierr = PetscInfo(NULL,"Requested nprealloc=%d is greater than m_max+1=%d. Resetting nprealloc = m_max+1.\n",pipegcr->nprealloc, pipegcr->mmax+1);CHKERRQ(ierr);
   }
 
   /* Preallocate additional work vectors */
@@ -710,9 +710,9 @@ static PetscErrorCode KSPSetFromOptions_PIPEGCR(PetscOptionItems *PetscOptionsOb
   PetscFunctionBegin;
   ierr = PetscOptionsHead(PetscOptionsObject,"KSP PIPEGCR options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_pipegcr_mmax","Number of search directions to storue","KSPPIPEGCRSetMmax",pipegcr->mmax,&mmax,&flg);CHKERRQ(ierr);
-  if (flg) ierr = KSPPIPEGCRSetMmax(ksp,mmax);CHKERRQ(ierr);
+  if (flg) {ierr = KSPPIPEGCRSetMmax(ksp,mmax);CHKERRQ(ierr);}
   ierr = PetscOptionsInt("-ksp_pipegcr_nprealloc","Number of directions to preallocate","KSPPIPEGCRSetNprealloc",pipegcr->nprealloc,&nprealloc,&flg);CHKERRQ(ierr);
-  if (flg) { ierr = KSPPIPEGCRSetNprealloc(ksp,nprealloc);CHKERRQ(ierr); }
+  if (flg) {ierr = KSPPIPEGCRSetNprealloc(ksp,nprealloc);CHKERRQ(ierr);}
   ierr = PetscOptionsEnum("-ksp_pipegcr_truncation_type","Truncation approach for directions","KSPFCGSetTruncationType",KSPFCDTruncationTypes,(PetscEnum)pipegcr->truncstrat,(PetscEnum*)&pipegcr->truncstrat,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_pipegcr_unroll_w","Use unrolling of w","KSPPIPEGCRSetUnrollW",pipegcr->unroll_w,&pipegcr->unroll_w,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);

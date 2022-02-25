@@ -54,7 +54,7 @@ int main(int argc, char** argv)
   ierr = MatSetValues(A,nrows,rows,ncols,cols,v,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  //ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%D] local nrows %D, ncols %D\n",rank,nrows,ncols);CHKERRQ(ierr);
+  //ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%" PetscInt_FMT "] local nrows %" PetscInt_FMT ", ncols %" PetscInt_FMT "\n",rank,nrows,ncols);CHKERRQ(ierr);
   //ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   /* Test MatSetValues() by converting A to A_elemental */
@@ -72,13 +72,13 @@ int main(int argc, char** argv)
     ierr = MatConvert(A, MATELEMENTAL, MAT_INITIAL_MATRIX, &A_elemental);CHKERRQ(ierr);
     ierr = MatComputeOperator(A_elemental,isAIJ ? MATAIJ : MATDENSE,&Aexplicit);CHKERRQ(ierr);
     ierr = MatMultEqual(Aexplicit,A_elemental,5,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Aexplicit != A_elemental.");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Aexplicit != A_elemental.");
     ierr = MatDestroy(&Aexplicit);CHKERRQ(ierr);
 
     /* Test MAT_REUSE_MATRIX which is only supported for inplace conversion */
     ierr = MatConvert(A, MATELEMENTAL, MAT_INPLACE_MATRIX, &A);CHKERRQ(ierr);
     ierr = MatMultEqual(A_elemental,A,5,&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"A_elemental != A.");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A_elemental != A.");
     ierr = MatDestroy(&A_elemental);CHKERRQ(ierr);
   }
 

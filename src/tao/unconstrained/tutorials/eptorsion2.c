@@ -45,9 +45,9 @@ The command line options are:\n\
 /*T
    Concepts: TAO^Solving an unconstrained minimization problem
    Routines: TaoCreate(); TaoSetType();
-   Routines: TaoSetInitialVector();
-   Routines: TaoSetObjectiveAndGradientRoutine();
-   Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
+   Routines: TaoSetSolution();
+   Routines: TaoSetObjectiveAndGradient();
+   Routines: TaoSetHessian(); TaoSetFromOptions();
    Routines: TaoSolve();
    Routines: TaoDestroy();
    Processors: n
@@ -120,12 +120,12 @@ int main(int argc, char **argv)
 
     /* Set initial solution guess */
     ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
-    ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
+    ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
 
     /* Set routine for function and gradient evaluation */
-    ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user);CHKERRQ(ierr);
+    ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void *)&user);CHKERRQ(ierr);
 
-    ierr = TaoSetHessianRoutine(tao,H,H,FormHessian,(void*)&user);CHKERRQ(ierr);
+    ierr = TaoSetHessian(tao,H,H,FormHessian,(void*)&user);CHKERRQ(ierr);
 
     /* Check for any TAO command line options */
     ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
@@ -199,7 +199,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
    Input Parameters:
    tao - the Tao context
    X   - the input vector
-   ptr - optional user-defined context, as set by TaoSetObjectiveAndGradientRoutine()
+   ptr - optional user-defined context, as set by TaoSetObjectiveAndGradient()
 
    Output Parameters:
    f   - the newly evaluated function
@@ -323,11 +323,10 @@ PetscErrorCode FormFunctionGradient(Tao tao,Vec X,PetscReal *f,Vec G,void *ptr)
   floc = area * (p5 * fquad + flin);
   ierr = VecScale(G, area);CHKERRQ(ierr);
 
-  /* Sum function contributions from all processes */
+  /* Sum function contributions from all processes */  /* TODO: Change to CHKERRMPI() */
   ierr = (PetscErrorCode)MPI_Allreduce((void*)&floc,(void*)f,1,MPIU_REAL,MPIU_SUM,MPI_COMM_WORLD);CHKERRQ(ierr);
 
   ierr = PetscLogFlops((ye-ysm)*(xe-xsm)*20+(xep-xs)*(yep-ys)*16);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

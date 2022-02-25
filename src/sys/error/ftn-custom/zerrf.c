@@ -85,7 +85,7 @@ PETSC_EXTERN void petscerror_(MPI_Fint *comm,PetscErrorCode *number,PetscErrorTy
   PetscErrorCode nierr,*ierr = &nierr;
   char *t1;
   FIXCHAR(message,len,t1);
-  nierr = PetscError(MPI_Comm_f2c(*(comm)),0,NULL,NULL,*number,*p,t1);
+  nierr = PetscError(MPI_Comm_f2c(*(comm)),0,NULL,NULL,*number,*p,"%s",t1);
   FREECHAR(message,t1);
 }
 

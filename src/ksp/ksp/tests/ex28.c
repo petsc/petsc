@@ -104,7 +104,7 @@ int main(int argc,char **args)
     ierr = PCSetType(pc,PCREDUNDANT);CHKERRQ(ierr);
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
-    if (size < 3) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Num of processes %d must greater than 2",size);
+    PetscCheckFalse(size < 3,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Num of processes %d must greater than 2",size);
     ierr = PCRedundantSetNumber(pc,size-2);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
@@ -115,7 +115,7 @@ int main(int argc,char **args)
     ierr = PCGetOperators(innerpc,NULL,&A_redundant);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)A_redundant,&subcomm);CHKERRQ(ierr);
     ierr = MPI_Comm_size(subcomm,&subsize);CHKERRMPI(ierr);
-    if (subsize==1 && !rank) {
+    if (subsize==1 && rank == 0) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"A_redundant:\n");CHKERRQ(ierr);
       ierr = MatView(A_redundant,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     }

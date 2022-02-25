@@ -448,7 +448,7 @@ static PetscErrorCode DMPlexTransformCellTransform_BL(DMPlexTransform tr, DMPoly
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformMapCoordinates_BL(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
+static PetscErrorCode DMPlexTransformMapCoordinates_BL(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
 {
   DMPlexRefine_BL *bl = (DMPlexRefine_BL *) tr->data;
   PetscInt         d;
@@ -457,12 +457,12 @@ static PetscErrorCode DMPlexTransformMapCoordinates_BL(DMPlexTransform tr, DMPol
   PetscFunctionBeginHot;
   switch (pct) {
     case DM_POLYTOPE_POINT_PRISM_TENSOR:
-      if (ct != DM_POLYTOPE_POINT) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not for target point type %s", DMPolytopeTypes[ct]);
-      if (Nv != 2) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP, "Number of parent vertices %D != 2", Nv);
-      if (r >= bl->n || r < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_SUP, "Invalid replica %D, must be in [0, %D)", r, bl->n);
+      PetscCheckFalse(ct != DM_POLYTOPE_POINT,PETSC_COMM_SELF, PETSC_ERR_SUP, "Not for target point type %s", DMPolytopeTypes[ct]);
+      PetscCheckFalse(Nv != 2,PETSC_COMM_SELF, PETSC_ERR_SUP, "Number of parent vertices %D != 2", Nv);
+      PetscCheckFalse(r >= bl->n || r < 0,PETSC_COMM_SELF, PETSC_ERR_SUP, "Invalid replica %D, must be in [0, %D)", r, bl->n);
       for (d = 0; d < dE; ++d) out[d] = in[d] + bl->h[r] * (in[d + dE] - in[d]);
       break;
-    default: ierr = DMPlexTransformMapCoordinatesBarycenter_Internal(tr, pct, ct, r, Nv, dE, in, out);CHKERRQ(ierr);
+    default: ierr = DMPlexTransformMapCoordinatesBarycenter_Internal(tr, pct, ct, p, r, Nv, dE, in, out);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -476,7 +476,7 @@ static PetscErrorCode DMPlexTransformSetFromOptions_BL(PetscOptionItems *PetscOp
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 2);
-  ierr = PetscOptionsHead(PetscOptionsObject,"DMPlex Options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead(PetscOptionsObject,"DMPlexTransform Boundary Layer Options");CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-dm_plex_transform_bl_splits", "Number of divisions of a cell", "", bl->n, &bl->n, NULL, 1);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-dm_plex_transform_bl_height_factor", "Factor increase for height at each division", "", bl->r, &bl->r, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsIntArray("-dm_plex_transform_bl_ref_cell", "Mark cells for refinement", "", cells, &n, &flg);CHKERRQ(ierr);
@@ -512,7 +512,7 @@ static PetscErrorCode DMPlexTransformView_BL(DMPlexTransform tr, PetscViewer vie
       ierr = DMLabelView(tr->trType, viewer);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
+    SETERRQ(PetscObjectComm((PetscObject) tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject) viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

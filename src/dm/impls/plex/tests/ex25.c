@@ -226,7 +226,7 @@ int main(int argc, char **argv)
     case 6: ierr = test6(dm, &options);CHKERRQ(ierr); break;
     case 7: ierr = test7(dm, &options);CHKERRQ(ierr); break;
     case 8: ierr = test8(dm, &options);CHKERRQ(ierr); break;
-    default: SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No such test: %D", options.test);
+    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No such test: %D", options.test);
   }
 
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
@@ -279,21 +279,21 @@ int main(int argc, char **argv)
       suffix: 9
       requires: ctetgen
       nsize: 2
-      args: -dm_distribute -test 1
+      args: -test 1
     test:
       suffix: 10
       requires: ctetgen
       nsize: 2
-      args: -dm_distribute -test 2
+      args: -test 2
     test:
       suffix: 11
       requires: ctetgen
       nsize: 2
-      args: -dm_distribute -test 3
+      args: -test 3
     test:
       suffix: 12
       requires: ctetgen
       nsize: 2
-      args: -dm_distribute -test 4
+      args: -test 4
 
 TEST*/

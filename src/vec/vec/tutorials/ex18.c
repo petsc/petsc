@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   ierr   = VecSet(x,result);CHKERRQ(ierr);
   ierr   = VecDuplicate(x,&xend);CHKERRQ(ierr);
   result = 0.5;
-  if (!rank) {
+  if (rank == 0) {
     i    = 0;
     ierr = VecSetValues(xend,1,&i,&result,INSERT_VALUES);CHKERRQ(ierr);
   }

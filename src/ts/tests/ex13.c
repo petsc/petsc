@@ -70,8 +70,8 @@ int main(int argc,char **argv)
     derr = PetscAbsScalar(dfunc(p,testtime)-aWdot[0]);
     ierr = VecRestoreArrayRead(W,&aW);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(Wdot,&aWdot);CHKERRQ(ierr);
-    if (check && serr > tol) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state %g > %g",(double)serr,(double)tol);
-    if (check && derr > tol) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state derivative %g > %g",(double)derr,(double)tol);
+    PetscCheckFalse(check && serr > tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state %g > %g",(double)serr,(double)tol);
+    PetscCheckFalse(check && derr > tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state derivative %g > %g",(double)derr,(double)tol);
   }
   for (i = Nt-1; i >= 0; i--) {
     PetscReal         testtime = times[i], serr;
@@ -82,7 +82,7 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD," f(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(func(p,testtime)),(double)PetscRealPart(aW[0]));CHKERRQ(ierr);
     serr = PetscAbsScalar(func(p,testtime)-aW[0]);
     ierr = VecRestoreArrayRead(W,&aW);CHKERRQ(ierr);
-    if (check && serr > tol) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state %g > %g",(double)serr,(double)tol);
+    PetscCheckFalse(check && serr > tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state %g > %g",(double)serr,(double)tol);
   }
   for (i = Nt-1; i >= 0; i--) {
     PetscReal         testtime = times[i], derr;
@@ -93,7 +93,7 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"df(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(dfunc(p,testtime)),(double)PetscRealPart(aWdot[0]));CHKERRQ(ierr);
     derr = PetscAbsScalar(dfunc(p,testtime)-aWdot[0]);
     ierr = VecRestoreArrayRead(Wdot,&aWdot);CHKERRQ(ierr);
-    if (check && derr > tol) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state derivative %g > %g",(double)derr,(double)tol);
+    PetscCheckFalse(check && derr > tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state derivative %g > %g",(double)derr,(double)tol);
   }
   for (i = 0; i < Nt; i++) {
     PetscReal         testtime = times[i], serr, derr;
@@ -110,8 +110,8 @@ int main(int argc,char **argv)
     ierr = VecRestoreArrayRead(hW,&aW);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(hWdot,&aWdot);CHKERRQ(ierr);
     ierr = TSTrajectoryRestoreUpdatedHistoryVecs(tj,&hW,&hWdot);CHKERRQ(ierr);
-    if (check && serr > tol) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state %g > %g",(double)serr,(double)tol);
-    if (check && derr > tol) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state derivative %g > %g",(double)derr,(double)tol);
+    PetscCheckFalse(check && serr > tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state %g > %g",(double)serr,(double)tol);
+    PetscCheckFalse(check && derr > tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state derivative %g > %g",(double)derr,(double)tol);
   }
 
   /* Test on-the-fly reconstruction */
@@ -146,18 +146,19 @@ int main(int argc,char **argv)
         ierr = PetscPrintf(PETSC_COMM_WORLD," f(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(func(p,testtime)),(double)PetscRealPart(aW[0]));CHKERRQ(ierr);
         serr = PetscAbsScalar(func(p,testtime)-aW[0]);
         ierr = VecRestoreArrayRead(hW,&aW);CHKERRQ(ierr);
-        if (check && serr > tol) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state %g > %g",(double)serr,(double)tol);
+        PetscCheckFalse(check && serr > tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state %g > %g",(double)serr,(double)tol);
       }
       if (use2) {
         ierr = VecGetArrayRead(hWdot,&aWdot);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD,"df(%g) = %g (reconstructed %g)\n",(double)testtime,(double)PetscRealPart(dfunc(p,testtime)),(double)PetscRealPart(aWdot[0]));CHKERRQ(ierr);
         derr = PetscAbsScalar(dfunc(p,testtime)-aWdot[0]);
         ierr = VecRestoreArrayRead(hWdot,&aWdot);CHKERRQ(ierr);
-        if (check && i >= p && derr > tol) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state derivative %g > %g",(double)derr,(double)tol);
+        PetscCheckFalse(check && i >= p && derr > tol,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in state derivative %g > %g",(double)derr,(double)tol);
       }
       ierr = TSTrajectoryRestoreUpdatedHistoryVecs(tj,use1 ? &hW : NULL,use2 ? &hWdot : NULL);CHKERRQ(ierr);
     }
   }
+  ierr = TSRemoveTrajectory(ts);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = VecDestroy(&W);CHKERRQ(ierr);
   ierr = VecDestroy(&W2);CHKERRQ(ierr);

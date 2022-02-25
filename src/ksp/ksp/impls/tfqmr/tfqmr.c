@@ -6,7 +6,7 @@ static PetscErrorCode KSPSetUp_TFQMR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no symmetric preconditioning for KSPTFQMR");
+  PetscCheckFalse(ksp->pc_side == PC_SYMMETRIC,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"no symmetric preconditioning for KSPTFQMR");
   ierr = KSPSetWorkVecs(ksp,9);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -92,7 +92,7 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
       }
       ierr = VecAXPY(X,eta,D);CHKERRQ(ierr);
 
-      dpest = PetscSqrtReal(m + 1.0) * tau;
+      dpest = PetscSqrtReal(2*i + m + 2.0) * tau;
       ierr  = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
       if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = dpest;
       else ksp->rnorm = 0.0;

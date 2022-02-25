@@ -41,7 +41,7 @@ PetscErrorCode MatMult_SeqCUFFT(Mat A, Vec x, Vec y)
       result = cufftPlan3d(&cufft->p_forward, dim[0], dim[1], dim[2], CUFFT_C2C);CHKERRCUFFT(result);
       break;
     default:
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot create plan for %d-dimensional transform", ndim);
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot create plan for %d-dimensional transform", ndim);
     }
   }
   /* transfer to GPU memory */
@@ -81,7 +81,7 @@ PetscErrorCode MatMultTranspose_SeqCUFFT(Mat A, Vec x, Vec y)
       result = cufftPlan3d(&cufft->p_backward, dim[0], dim[1], dim[2], CUFFT_C2C);CHKERRCUFFT(result);
       break;
     default:
-      SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot create plan for %d-dimensional transform", ndim);
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot create plan for %d-dimensional transform", ndim);
     }
   }
   /* transfer to GPU memory */
@@ -138,11 +138,11 @@ PetscErrorCode  MatCreateSeqCUFFT(MPI_Comm comm, PetscInt ndim, const PetscInt d
   cudaError_t    cerr;
 
   PetscFunctionBegin;
-  if (ndim < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER, "ndim %d must be > 0", ndim);
+  PetscCheckFalse(ndim < 0,PETSC_COMM_SELF, PETSC_ERR_USER, "ndim %d must be > 0", ndim);
   ierr = MatCreate(comm, A);CHKERRQ(ierr);
   m    = 1;
   for (d = 0; d < ndim; ++d) {
-    if (dim[d] < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_USER, "dim[%d]=%d must be > 0", d, dim[d]);
+    PetscCheckFalse(dim[d] < 0,PETSC_COMM_SELF, PETSC_ERR_USER, "dim[%d]=%d must be > 0", d, dim[d]);
     m *= dim[d];
   }
   ierr = MatSetSizes(*A, m, m, m, m);CHKERRQ(ierr);

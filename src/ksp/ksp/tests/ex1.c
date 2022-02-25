@@ -80,21 +80,21 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"convergence test: %s\n",convtestname);CHKERRQ(ierr);
     ierr = KSPSetType(ksp,KSPLSQR);CHKERRQ(ierr);
     ierr = KSPGetConvergenceTest(ksp,&converged1,&ctx1,&destroy1);CHKERRQ(ierr);
-    if (converged1 != KSPLSQRConvergedDefault)  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test should be KSPLSQRConvergedDefault");
-    if (destroy1 != KSPConvergedDefaultDestroy) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test destroy function should be KSPConvergedDefaultDestroy");
+    PetscCheckFalse(converged1 != KSPLSQRConvergedDefault,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test should be KSPLSQRConvergedDefault");
+    PetscCheckFalse(destroy1 != KSPConvergedDefaultDestroy,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test destroy function should be KSPConvergedDefaultDestroy");
     if (islsqr) {
-      if (converged1 != converged) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test should be kept");
-      if (destroy1 != destroy)     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test destroy function should be kept");
-      if (ctx1 != ctx)             SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test context should be kept");
+      PetscCheckFalse(converged1 != converged,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test should be kept");
+      PetscCheckFalse(destroy1 != destroy,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test destroy function should be kept");
+      PetscCheckFalse(ctx1 != ctx,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test context should be kept");
     }
     ierr = GetConvergenceTestName(converged1,convtestname,16);CHKERRQ(ierr);
     ierr = KSPViewFromOptions(ksp,NULL,"-ksp1_view");CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"convergence test: %s\n",convtestname);CHKERRQ(ierr);
     ierr = KSPSetType(ksp,type);CHKERRQ(ierr);
     ierr = KSPGetConvergenceTest(ksp,&converged1,&ctx1,&destroy1);CHKERRQ(ierr);
-    if (converged1 != converged) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test not reverted properly");
-    if (destroy1 != destroy)     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test destroy function not reverted properly");
-    if (ctx1 != ctx)             SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test context not reverted properly");
+    PetscCheckFalse(converged1 != converged,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test not reverted properly");
+    PetscCheckFalse(destroy1 != destroy,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test destroy function not reverted properly");
+    PetscCheckFalse(ctx1 != ctx,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"convergence test context not reverted properly");
     ierr = GetConvergenceTestName(converged1,convtestname,16);CHKERRQ(ierr);
     ierr = KSPViewFromOptions(ksp,NULL,"-ksp2_view");CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"convergence test: %s\n",convtestname);CHKERRQ(ierr);

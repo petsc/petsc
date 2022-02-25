@@ -62,7 +62,6 @@ PetscErrorCode private_PetscViewerDestroy_XDMF(PetscViewer *v)
     ierr = PetscFree(bytes);CHKERRQ(ierr);
     ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
   }
-
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   *v = NULL;
   PetscFunctionReturn(0);
@@ -85,7 +84,6 @@ PetscErrorCode private_CreateDataFileNameXDMF(const char filename[],char dfilena
     ierr = PetscStrncpy(viewername_minus_ext,filename,len-2);CHKERRQ(ierr);
     ierr = PetscSNPrintf(dfilename,PETSC_MAX_PATH_LEN-1,"%s_swarm_fields.pbin",viewername_minus_ext);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"File extension must by .xmf");
-
   PetscFunctionReturn(0);
 }
 
@@ -110,7 +108,7 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm,PetscViewer viewer)
   } else SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Valid to find attached data XDMFViewerContext");
 
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMSWARM,&isswarm);CHKERRQ(ierr);
-  if (!isswarm) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Only valid for DMSwarm");
+  PetscCheckFalse(!isswarm,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Only valid for DMSwarm");
 
   ierr = PetscObjectCompose((PetscObject)viewer,"DMSwarm",(PetscObject)dm);CHKERRQ(ierr);
 
@@ -194,7 +192,6 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm,PetscViewer viewer)
   bytes[0] += sizeof(PetscReal) * ng * dim;
 
   ierr = PetscViewerDestroy(&fviewer);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -213,10 +210,8 @@ PetscErrorCode private_VecView_Swarm_XDMF(Vec x,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)viewer,"XDMFViewerContext",(PetscObject*)&container);CHKERRQ(ierr);
-  if (container) {
-    ierr = PetscContainerGetPointer(container,(void**)&bytes);CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Valid to find attached data XDMFViewerContext");
-
+  PetscCheckFalse(!container,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unable to find attached data XDMFViewerContext");
+  ierr = PetscContainerGetPointer(container,(void**)&bytes);CHKERRQ(ierr);
   ierr = PetscViewerFileGetName(viewer,&viewername);CHKERRQ(ierr);
   ierr = private_CreateDataFileNameXDMF(viewername,datafile);CHKERRQ(ierr);
 
@@ -262,7 +257,6 @@ PetscErrorCode private_VecView_Swarm_XDMF(Vec x,PetscViewer viewer)
   bytes[0] += sizeof(PetscReal) * N * bs;
 
   ierr = PetscViewerDestroy(&fviewer);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -281,10 +275,8 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)viewer,"XDMFViewerContext",(PetscObject*)&container);CHKERRQ(ierr);
-  if (container) {
-    ierr = PetscContainerGetPointer(container,(void**)&bytes);CHKERRQ(ierr);
-  } else SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Valid to find attached data XDMFViewerContext");
-
+  PetscCheckFalse(!container,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unable to find attached data XDMFViewerContext");
+  ierr = PetscContainerGetPointer(container,(void**)&bytes);CHKERRQ(ierr);
   ierr = PetscViewerFileGetName(viewer,&viewername);CHKERRQ(ierr);
   ierr = private_CreateDataFileNameXDMF(viewername,datafile);CHKERRQ(ierr);
 
@@ -330,7 +322,6 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is,PetscViewer viewer)
   bytes[0] += sizeof(PetscInt) * N * bs;
 
   ierr = PetscViewerDestroy(&fviewer);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -369,7 +360,6 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm,const char filename[],Pe
 
     ierr = DMSwarmGetField(dm,field_name_list[f],NULL,&type,&data);CHKERRQ(ierr);
     ierr = DMSwarmRestoreField(dm,field_name_list[f],NULL,&type,&data);CHKERRQ(ierr);
-
     if (type == PETSC_DOUBLE) {
       ierr = DMSwarmCreateGlobalVectorFromField(dm,field_name_list[f],&dvec);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject)dvec,field_name_list[f]);CHKERRQ(ierr);
@@ -406,7 +396,10 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm,const char filename[],Pe
    Level: beginner
 
    Notes:
-   Only fields user registered with data type PETSC_DOUBLE or PETSC_INT will be written into the file
+     Only fields user registered with data type PETSC_DOUBLE or PETSC_INT will be written into the file
+
+   Developer Notes:
+     This should be removed and replaced with the standard use of PetscViewer
 
 .seealso: DMSwarmViewFieldsXDMF()
 @*/

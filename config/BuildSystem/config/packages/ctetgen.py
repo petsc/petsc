@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.gitcommit         = 'ctetgen-0.9'
+    self.gitcommit         = 'ctetgen-0.10'
     self.download          = ['git://https://bitbucket.org/petsc/ctetgen','https://bitbucket.org/petsc/ctetgen/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['ctetgen','petsc-ctetgen']
     self.functions         = []
@@ -58,9 +58,7 @@ class Configure(config.package.GNUPackage):
       output,err,ret  = config.package.GNUPackage.executeShellCommand(self.make.make+' PETSC_DIR='+self.petscdir.dir+' clean lib PCC_FLAGS="'+cflags+'"',timeout=1000, log = self.log, cwd=self.packageDir)
       self.log.write(output+err)
       self.logPrintBox('Installing Ctetgen; this may take several minutes')
-      # TODO: This message should not be printed if ctetgen is install in PETSc arch directory; need self.printSudoPasswordMessage() defined in package.py
-      self.installDirProvider.printSudoPasswordMessage(1)
-      output,err,ret  = config.package.GNUPackage.executeShellCommand(self.installSudo+self.make.make+' PETSC_DIR='+self.petscdir.dir+' prefix='+self.installDir+' install-ctetgen',timeout=1000, log = self.log, cwd=self.packageDir)
+      output,err,ret  = config.package.GNUPackage.executeShellCommand(self.make.make+' PETSC_DIR='+self.petscdir.dir+' prefix='+self.installDir+' install-ctetgen',timeout=1000, log = self.log, cwd=self.packageDir)
       self.log.write(output+err)
     except RuntimeError as e:
       raise RuntimeError('Error running make on Ctetgen: '+str(e))

@@ -262,9 +262,9 @@ int main(int argc,char **argv)
   ierr = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(ierr);
   ierr = TaoSetMonitor(tao,MonitorError,&appctx,MonitorDestroy);CHKERRQ(ierr);
   ierr = TaoSetType(tao,TAOBQNLS);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao,appctx.dat.ic);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,appctx.dat.ic);CHKERRQ(ierr);
   /* Set routine for function and gradient evaluation  */
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&appctx);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void *)&appctx);CHKERRQ(ierr);
   /* Check for any TAO command line options  */
   ierr = TaoSetTolerances(tao,1e-8,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   ierr = TaoSetFromOptions(tao);CHKERRQ(ierr);
@@ -492,7 +492,7 @@ PetscErrorCode RHSLaplacian(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
 
-  if (appctx->param.N-1 < 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Polynomial order must be at least 2");
+  PetscCheckFalse(appctx->param.N-1 < 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Polynomial order must be at least 2");
   xs   = xs/(appctx->param.N-1);
   xn   = xn/(appctx->param.N-1);
 
@@ -546,7 +546,7 @@ PetscErrorCode RHSAdvection(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
 
-  if (appctx->param.N-1 < 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Polynomial order must be at least 2");
+  PetscCheckFalse(appctx->param.N-1 < 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Polynomial order must be at least 2");
   xs   = xs/(appctx->param.N-1);
   xn   = xn/(appctx->param.N-1);
 
@@ -578,7 +578,7 @@ PetscErrorCode RHSAdvection(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
    Input Parameters:
    tao - the Tao context
    ic   - the input vector
-   ctx - optional user-defined context, as set when calling TaoSetObjectiveAndGradientRoutine()
+   ctx - optional user-defined context, as set when calling TaoSetObjectiveAndGradient()
 
    Output Parameters:
    f   - the newly evaluated function
@@ -653,13 +653,13 @@ PetscErrorCode MonitorError(Tao tao,void *ctx)
   ierr  = VecPointwiseMult(temp,temp,temp);CHKERRQ(ierr);
   ierr  = VecDot(temp,appctx->SEMop.mass,&nrm);CHKERRQ(ierr);
   nrm   = PetscSqrtReal(nrm);
-  ierr  = TaoGetGradientVector(tao,&grad);CHKERRQ(ierr);
+  ierr  = TaoGetGradient(tao,&grad,NULL,NULL);CHKERRQ(ierr);
   ierr  = VecPointwiseMult(temp,temp,temp);CHKERRQ(ierr);
   ierr  = VecDot(temp,appctx->SEMop.mass,&gnorm);CHKERRQ(ierr);
   gnorm = PetscSqrtReal(gnorm);
   ierr  = VecDestroy(&temp);CHKERRQ(ierr);
   ierr  = TaoGetIterationNumber(tao,&its);CHKERRQ(ierr);
-  ierr  = TaoGetObjective(tao,&fct);CHKERRQ(ierr);
+  ierr  = TaoGetSolutionStatus(tao,NULL,&fct,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
   if (!its) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"%% Iteration Error Objective Gradient-norm\n");CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"history = [\n");CHKERRQ(ierr);

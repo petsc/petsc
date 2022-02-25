@@ -25,6 +25,7 @@ class KSPType(object):
     TCQMR      = S_(KSPTCQMR)
     BCGS       = S_(KSPBCGS)
     IBCGS      = S_(KSPIBCGS)
+    QMRCGS     = S_(KSPQMRCGS)
     FBCGS      = S_(KSPFBCGS)
     FBCGSR     = S_(KSPFBCGSR)
     BCGSL      = S_(KSPBCGSL)
@@ -145,6 +146,11 @@ cdef class KSP(Object):
         cdef const char *cval = NULL
         CHKERR( KSPGetOptionsPrefix(self.ksp, &cval) )
         return bytes2str(cval)
+
+    def appendOptionsPrefix(self, prefix):
+        cdef const char *cval = NULL
+        prefix = str2bytes(prefix, &cval)
+        CHKERR( KSPAppendOptionsPrefix(self.ksp, cval) )
 
     def setFromOptions(self):
         CHKERR( KSPSetFromOptions(self.ksp) )

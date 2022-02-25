@@ -20,11 +20,11 @@ PetscErrorCode DumpCSR(Mat A,PetscInt shift,PetscBool symmetric,PetscBool compre
   ierr = MatGetType(A,&type);CHKERRQ(ierr);
   ierr = MatGetRowIJ(A,shift,symmetric,compressed,&nr,&ia,&ja,&done);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"===========================================================\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"CSR for %s: shift %D symmetric %D compressed %D\n",type,shift,(PetscInt)symmetric,(PetscInt)compressed);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"CSR for %s: shift %" PetscInt_FMT " symmetric %" PetscInt_FMT " compressed %" PetscInt_FMT "\n",type,shift,(PetscInt)symmetric,(PetscInt)compressed);CHKERRQ(ierr);
   for (i=0;i<nr;i++) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"%D:",i+shift);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"%" PetscInt_FMT ":",i+shift);CHKERRQ(ierr);
     for (j=ia[i];j<ia[i+1];j++) {
-      ierr = PetscPrintf(PETSC_COMM_SELF," %D",ja[j-shift]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF," %" PetscInt_FMT,ja[j-shift]);CHKERRQ(ierr);
     }
     ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRQ(ierr);
   }
@@ -41,7 +41,7 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
+  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL);CHKERRQ(ierr);

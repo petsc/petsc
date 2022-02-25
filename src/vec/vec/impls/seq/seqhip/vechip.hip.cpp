@@ -107,7 +107,7 @@ PetscErrorCode VecDestroy_SeqHIP_Private(Vec v)
   PetscFunctionBegin;
   ierr = PetscObjectSAWsViewOff(v);CHKERRQ(ierr);
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)v,"Length=%D",v->map->n);
+  PetscLogObjectState((PetscObject)v,"Length=%" PetscInt_FMT,v->map->n);
 #endif
   if (vs) {
     if (vs->array_allocated) {
@@ -231,14 +231,11 @@ PetscErrorCode VecCreate_SeqHIP(Vec V)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscHIPInitializeCheck();CHKERRQ(ierr);
+  ierr = PetscDeviceInitialize(PETSC_DEVICE_HIP);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(V->map);CHKERRQ(ierr);
   ierr = VecHIPAllocateCheck(V);CHKERRQ(ierr);
   ierr = VecCreate_SeqHIP_Private(V,((Vec_HIP*)V->spptr)->GPUarray_allocated);CHKERRQ(ierr);
-  ierr = VecHIPAllocateCheckHost(V);CHKERRQ(ierr);
-  ierr = VecSet(V,0.0);CHKERRQ(ierr);
-  ierr = VecSet_Seq(V,0.0);CHKERRQ(ierr);
-  V->offloadmask = PETSC_OFFLOAD_BOTH;
+  ierr = VecSet_SeqHIP(V,0.0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -249,7 +246,7 @@ PetscErrorCode VecCreate_SeqHIP(Vec V)
 
    Collective
 
-   Input Parameter:
+   Input Parameters:
 +  comm - the communicator, should be PETSC_COMM_SELF
 .  bs - the block size
 .  n - the vector length
@@ -279,7 +276,7 @@ PetscErrorCode  VecCreateSeqHIPWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,co
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscHIPInitializeCheck();CHKERRQ(ierr);
+  ierr = PetscDeviceInitialize(PETSC_DEVICE_HIP);CHKERRQ(ierr);
   ierr = VecCreate(comm,V);CHKERRQ(ierr);
   ierr = VecSetSizes(*V,n,n);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*V,bs);CHKERRQ(ierr);
@@ -293,7 +290,7 @@ PetscErrorCode  VecCreateSeqHIPWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,co
 
    Collective
 
-   Input Parameter:
+   Input Parameters:
 +  comm - the communicator, should be PETSC_COMM_SELF
 .  bs - the block size
 .  n - the vector length
@@ -347,12 +344,8 @@ PetscErrorCode VecGetArray_SeqHIP(Vec v,PetscScalar **a)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (v->offloadmask == PETSC_OFFLOAD_GPU) {
-    ierr = VecHIPCopyFromGPU(v);CHKERRQ(ierr);
-  } else {
-    ierr = VecHIPAllocateCheckHost(v);CHKERRQ(ierr);
-  }
-  *a = *((PetscScalar**)v->data);
+  ierr = VecHIPCopyFromGPU(v);CHKERRQ(ierr);
+  *a   = *((PetscScalar**)v->data);
   PetscFunctionReturn(0);
 }
 
@@ -378,36 +371,38 @@ PetscErrorCode VecGetArrayAndMemType_SeqHIP(Vec v,PetscScalar** a,PetscMemType *
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (v->offloadmask & PETSC_OFFLOAD_GPU) { /* Prefer working on GPU when offloadmask is PETSC_OFFLOAD_BOTH */
-    *a = ((Vec_HIP*)v->spptr)->GPUarray;
-    v->offloadmask    = PETSC_OFFLOAD_GPU; /* Change the mask once GPU gets write access, don't wait until restore array */
-    if (mtype) *mtype = PETSC_MEMTYPE_HIP;
-  } else {
-    ierr = VecHIPAllocateCheckHost(v);CHKERRQ(ierr);
-    *a = *((PetscScalar**)v->data);
-    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
-  }
+  ierr = VecHIPCopyToGPU(v);CHKERRQ(ierr);
+  *a   = ((Vec_HIP*)v->spptr)->GPUarray;
+  if (mtype) *mtype = PETSC_MEMTYPE_HIP;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode VecRestoreArrayAndMemType_SeqHIP(Vec v,PetscScalar** a)
 {
   PetscFunctionBegin;
-  if (v->offloadmask & PETSC_OFFLOAD_GPU) {
-    v->offloadmask = PETSC_OFFLOAD_GPU;
-  } else {
-    v->offloadmask = PETSC_OFFLOAD_CPU;
-  }
+  v->offloadmask = PETSC_OFFLOAD_GPU;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecBindToCPU_SeqHIP(Vec V,PetscBool pin)
+PetscErrorCode VecGetArrayWriteAndMemType_SeqHIP(Vec v,PetscScalar** a,PetscMemType *mtype)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  V->boundtocpu = pin;
-  if (pin) {
+  /* Allocate memory (not zeroed) on device if not yet, but no need to sync data from host to device */
+  ierr = VecHIPAllocateCheck(v);CHKERRQ(ierr);
+  *a   = ((Vec_HIP*)v->spptr)->GPUarray;
+  if (mtype) *mtype = PETSC_MEMTYPE_HIP;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecBindToCPU_SeqHIP(Vec V,PetscBool bind)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  V->boundtocpu = bind;
+  if (bind) {
     ierr = VecHIPCopyFromGPU(V);CHKERRQ(ierr);
     V->offloadmask                 = PETSC_OFFLOAD_CPU; /* since the CPU code will likely change values in the vector */
     V->ops->dot                    = VecDot_Seq;
@@ -444,6 +439,9 @@ PetscErrorCode VecBindToCPU_SeqHIP(Vec V,PetscBool pin)
     V->ops->getlocalvectorread     = NULL;
     V->ops->restorelocalvectorread = NULL;
     V->ops->getarraywrite          = NULL;
+    V->ops->getarrayandmemtype     = NULL;
+    V->ops->restorearrayandmemtype = NULL;
+    V->ops->getarraywriteandmemtype= NULL;
     V->ops->max                    = VecMax_Seq;
     V->ops->min                    = VecMin_Seq;
     V->ops->reciprocal             = VecReciprocal_Default;
@@ -480,13 +478,14 @@ PetscErrorCode VecBindToCPU_SeqHIP(Vec V,PetscBool pin)
     V->ops->conjugate              = VecConjugate_SeqHIP;
     V->ops->getlocalvector         = VecGetLocalVector_SeqHIP;
     V->ops->restorelocalvector     = VecRestoreLocalVector_SeqHIP;
-    V->ops->getlocalvectorread     = VecGetLocalVector_SeqHIP;
-    V->ops->restorelocalvectorread = VecRestoreLocalVector_SeqHIP;
+    V->ops->getlocalvectorread     = VecGetLocalVectorRead_SeqHIP;
+    V->ops->restorelocalvectorread = VecRestoreLocalVectorRead_SeqHIP;
     V->ops->getarraywrite          = VecGetArrayWrite_SeqHIP;
     V->ops->getarray               = VecGetArray_SeqHIP;
     V->ops->restorearray           = VecRestoreArray_SeqHIP;
     V->ops->getarrayandmemtype     = VecGetArrayAndMemType_SeqHIP;
     V->ops->restorearrayandmemtype = VecRestoreArrayAndMemType_SeqHIP;
+    V->ops->getarraywriteandmemtype= VecGetArrayWriteAndMemType_SeqHIP;
     V->ops->max                    = VecMax_SeqHIP;
     V->ops->min                    = VecMin_SeqHIP;
     V->ops->reciprocal             = VecReciprocal_SeqHIP;
@@ -505,7 +504,7 @@ PetscErrorCode VecCreate_SeqHIP_Private(Vec V,const PetscScalar *array)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)V),&size);CHKERRMPI(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQHIP on more than one process");
+  PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQHIP on more than one process");
   ierr = VecCreate_Seq_Private(V,0);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQHIP);CHKERRQ(ierr);
   ierr = VecBindToCPU_SeqHIP(V,PETSC_FALSE);CHKERRQ(ierr);

@@ -898,7 +898,7 @@ PetscErrorCode printResultsReadable(float times[][NTIMES], const size_t bsize)
   j = 7;
   irate = 1.0E-06 * bytes_per_kernel[j]/mintime[j];
   ierr = MPI_Reduce(&irate,&rate,1,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
-  if (!rank) {
+  if (rank == 0) {
     FILE *fd;
     if (size == 1) {
       printf("%d %11.4f   Rate (MB/s)\n",size, rate);

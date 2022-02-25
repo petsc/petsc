@@ -81,13 +81,13 @@ PetscErrorCode  KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
 }
 
 /*@
-   KSPSetUseFischerGuess - Use the Paul Fischer algorithm
+   KSPSetUseFischerGuess - Use the Paul Fischer algorithm or its variants
 
    Logically Collective on ksp
 
    Input Parameters:
 +  ksp - the Krylov context
-.  model - use model 1, model 2 or any other number to turn it off
+.  model - use model 1, model 2, model 3, or any other number to turn it off
 -  size - size of subspace used to generate initial guess
 
     Options Database:
@@ -284,7 +284,7 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
 
    Collective on ksp
 
-   Input Parameters:
+   Input Parameter:
 .  ksp - the Krylov space context
 
    Options Database Keys:
@@ -323,6 +323,7 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
 .   -ksp_monitor_singular_value - monitor extreme singular values at each iteration
 .   -ksp_converged_reason - view the convergence state at the end of the solve
 .   -ksp_use_explicittranspose - transpose the system explicitly in KSPSolveTranspose
+.   -ksp_error_if_not_converged - stop the program as soon as an error is detected in a KSPSolve(), KSP_DIVERGED_ITS is not treated as an error on inner KSPSolves
 -   -ksp_converged_rate - view the convergence rate at the end of the solve
 
    Notes:
@@ -383,6 +384,10 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   ierr = KSPMonitorSetFromOptions(ksp, "-ksp_monitor_singular_value", "singular_value", ksp);CHKERRQ(ierr);
   ierr = KSPMonitorSetFromOptions(ksp, "-ksp_monitor_error", "error", ksp);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_monitor_pause_final", "Pauses all draw monitors at the final iterate", "KSPMonitorPauseFinal_Internal", PETSC_FALSE, &ksp->pauseFinal, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_initial_guess_nonzero","Use the contents of the solution vector for initial guess","KSPSetInitialNonzero",ksp->guess_zero ? PETSC_FALSE : PETSC_TRUE,&flag,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = KSPSetInitialGuessNonzero(ksp,flag);CHKERRQ(ierr);
+  }
 
   ierr = PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -435,10 +440,6 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   if (set && flag) {ierr = KSPConvergedDefaultSetUMIRNorm(ksp);CHKERRQ(ierr);}
   ierr = PetscOptionsBool("-ksp_converged_maxits","Declare convergence if the maximum number of iterations is reached","KSPConvergedDefaultSetConvergedMaxits",PETSC_FALSE,&flag,&set);CHKERRQ(ierr);
   if (set) {ierr = KSPConvergedDefaultSetConvergedMaxits(ksp,flag);CHKERRQ(ierr);}
-  ierr = PetscOptionsBool("-ksp_initial_guess_nonzero","Use the contents of the solution vector for initial guess","KSPSetInitialNonzero",ksp->guess_zero ? PETSC_FALSE : PETSC_TRUE,&flag,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = KSPSetInitialGuessNonzero(ksp,flag);CHKERRQ(ierr);
-  }
   ierr = KSPGetReusePreconditioner(ksp,&reuse);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-ksp_reuse_preconditioner","Use initial preconditioner and don't ever compute a new one","KSPReusePreconditioner",reuse,&reuse,NULL);CHKERRQ(ierr);
   ierr = KSPSetReusePreconditioner(ksp,reuse);CHKERRQ(ierr);
@@ -452,9 +453,9 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     ierr = KSPGuessSetFromOptions(ksp->guess);CHKERRQ(ierr);
   } else { /* old option for KSP */
     nmax = 2;
-    ierr = PetscOptionsIntArray("-ksp_fischer_guess","Use Paul Fischer's algorithm for initial guess","KSPSetUseFischerGuess",model,&nmax,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsIntArray("-ksp_fischer_guess","Use Paul Fischer's algorithm or its variants for initial guess","KSPSetUseFischerGuess",model,&nmax,&flag);CHKERRQ(ierr);
     if (flag) {
-      if (nmax != 2) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Must pass in model,size as arguments");
+      PetscCheckFalse(nmax != 2,comm,PETSC_ERR_ARG_OUTOFRANGE,"Must pass in model,size as arguments");
       ierr = KSPSetUseFischerGuess(ksp,model[0],model[1]);CHKERRQ(ierr);
     }
   }
@@ -514,8 +515,8 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   flg = PETSC_FALSE;
   if (ksp->pc) {
     ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCKSP,&flg);CHKERRQ(ierr);
-    if (!flg) ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCBJACOBI,&flg);CHKERRQ(ierr);
-    if (!flg) ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCDEFLATION,&flg);CHKERRQ(ierr);
+    if (!flg) {ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCBJACOBI,&flg);CHKERRQ(ierr);}
+    if (!flg) {ierr = PetscObjectTypeCompare((PetscObject)ksp->pc,PCDEFLATION,&flg);CHKERRQ(ierr);}
   }
 
   if (flg) {
@@ -663,7 +664,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
   }
 
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsBool("-ksp_use_explicittranspose","Explicitly tranpose the system in KSPSolveTranspose","KSPSetUseExplicitTranspose",ksp->transpose.use_explicittranspose,&flg,&set);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-ksp_use_explicittranspose","Explicitly transpose the system in KSPSolveTranspose","KSPSetUseExplicitTranspose",ksp->transpose.use_explicittranspose,&flg,&set);CHKERRQ(ierr);
   if (set) {
     ierr = KSPSetUseExplicitTranspose(ksp,flg);CHKERRQ(ierr);
   }

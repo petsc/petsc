@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   ierr = MatSetUp(A);CHKERRQ(ierr);
   ierr = MatSetOption(A,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
 
-  if (!rank) {
+  if (rank == 0) {
     ierr = MatSetValues(A,3,ij,3,ij,a,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -43,12 +43,12 @@ int main(int argc,char **argv)
   ierr = MatMatMult(B,A,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);   /* recompute C=B*A */
   ierr = MatSetOptionsPrefix(C,"C_");CHKERRQ(ierr);
   ierr = MatMatMultEqual(B,A,C,10,&isequal);CHKERRQ(ierr);
-  if (!isequal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatMult: C != B*A");
+  PetscCheckFalse(!isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatMult: C != B*A");
 
   ierr = MatMatMult(C,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); /* D = C*A = (A^T*A)*A */
   ierr = MatMatMult(C,A,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);
   ierr = MatMatMultEqual(C,A,D,10,&isequal);CHKERRQ(ierr);
-  if (!isequal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatMult: D != C*A");
+  PetscCheckFalse(!isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatMult: D != C*A");
 
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = MatDestroy(&C);CHKERRQ(ierr);
@@ -58,12 +58,12 @@ int main(int argc,char **argv)
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);      /* B = A */
   ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B^T*A*B */
   ierr = MatPtAPMultEqual(A,B,C,10,&isequal);CHKERRQ(ierr);
-  if (!isequal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatPtAP: C != B^T*A*B");
+  PetscCheckFalse(!isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatPtAP: C != B^T*A*B");
 
   /* Repeat MatPtAP to test symbolic/numeric separation for reuse of the symbolic product */
   ierr = MatPtAP(A,B,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
   ierr = MatPtAPMultEqual(A,B,C,10,&isequal);CHKERRQ(ierr);
-  if (!isequal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatPtAP(reuse): C != B^T*A*B");
+  PetscCheckFalse(!isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatPtAP(reuse): C != B^T*A*B");
 
   ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -77,7 +77,7 @@ int main(int argc,char **argv)
     ierr = MatScale(A,2.0);CHKERRQ(ierr);
     ierr = MatMatTransposeMult(A,A,MAT_REUSE_MATRIX,fill,&D);CHKERRQ(ierr);
     ierr = MatMatTransposeMultEqual(A,A,D,10,&isequal);CHKERRQ(ierr);
-    if (!isequal) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatTranspose: D != A*A^T");
+    PetscCheckFalse(!isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatTranspose: D != A*A^T");
   }
 
   ierr = MatDestroy(&A);CHKERRQ(ierr);
@@ -139,8 +139,7 @@ PetscErrorCode testPTAPRectangular(void)
   actualC = 0.0;
   for (int i=0; i<cols; i++) {
     for (int j=0; j<cols; j++) {
-      ierr = MatGetValues(C, 1, &i, 1, &j, &actualC(i,j));
-      CHKERRQ(ierr); ;
+      ierr = MatGetValues(C, 1, &i, 1, &j, &actualC(i,j));CHKERRQ(ierr);
     }
   }
   blitz::Array<double,2> expectedC(cols, cols);

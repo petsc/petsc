@@ -77,6 +77,9 @@ cdef extern from "petsc.h":
     struct _p_TAO "_p_Tao"
     ctypedef _p_TAO* PetscTAO "Tao"
 
+    struct _p_TAOLineSearch "_p_TaoLineSearch"
+    ctypedef _p_TAOLineSearch* PetscTAOLineSearch "TaoLineSearch"
+
     struct _p_AO
     ctypedef _p_AO* PetscAO "AO"
 
@@ -89,8 +92,6 @@ cdef extern from "petsc.h":
     struct _p_PetscPartitioner
     ctypedef _p_PetscPartitioner* PetscPartitioner "PetscPartitioner"
 
-    struct _p_TSAdapt
-    ctypedef _p_TSAdapt* PetscTSAdapt "TSAdapt"
 # --------------------------------------------------------------------
 
 ctypedef public api class Comm [
@@ -250,6 +251,7 @@ ctypedef public api class DMLabel(Object) [
     object PyPetscDMLabelObject,
     ]:
     cdef PetscDMLabel dmlabel
+
 # --------------------------------------------------------------------
 
 cdef MPI_Comm GetComm(object, MPI_Comm) except *

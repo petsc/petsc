@@ -119,7 +119,7 @@ PetscErrorCode ApplyOperator(Mat A,Vec in,Vec out)
   PetscFunctionBeginUser;
   ierr = MatGetDM(A,&dm);CHKERRQ(ierr);
   ierr = DMStagGetBoundaryTypes(dm,&boundaryType,NULL,NULL);CHKERRQ(ierr);
-  if (boundaryType != DM_BOUNDARY_GHOSTED) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Ghosted boundaries required");
+  PetscCheckFalse(boundaryType != DM_BOUNDARY_GHOSTED,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_INCOMP,"Ghosted boundaries required");
   ierr = DMGetLocalVector(dm,&inLocal);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dm,&outLocal);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(dm,in,INSERT_VALUES,inLocal);CHKERRQ(ierr);

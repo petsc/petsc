@@ -131,13 +131,13 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
           ierr = PetscFEGetDualSpace(fem,&sp);CHKERRQ(ierr);
           ierr = PetscDualSpaceGetType(sp,&spname);CHKERRQ(ierr);
           ierr = PetscStrcmp(spname,PETSCDUALSPACELAGRANGE,&islag);CHKERRQ(ierr);
-          if (!islag) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dual space");
+          PetscCheckFalse(!islag,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dual space");
           ierr = PetscDualSpaceLagrangeGetContinuity(sp,&continuous);CHKERRQ(ierr);
           ierr = PetscDualSpaceGetOrder(sp,&order);CHKERRQ(ierr);
           if (continuous && order > 0) { /* no support for high-order viz, still have to figure out the numbering */
             ierr = PetscSNPrintf(fec,64,"FiniteElementCollection: H1_%DD_P1",dim);CHKERRQ(ierr);
           } else {
-            if (!continuous && order) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Discontinuous space visualization currently unsupported for order %D",order);
+            PetscCheckFalse(!continuous && order,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Discontinuous space visualization currently unsupported for order %D",order);
             H1   = PETSC_FALSE;
             ierr = PetscSNPrintf(fec,64,"FiniteElementCollection: L2_%DD_P%D",dim,order);CHKERRQ(ierr);
           }
@@ -200,8 +200,8 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
             ierr = ISDestroy(&isfield);CHKERRQ(ierr);
             ctx->nf++;
           }
-        } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONG,"Unknown discretization type for field %D",f);
-      } else SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Missing discretization for field %D",f);
+        } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONG,"Unknown discretization type for field %D",f);
+      } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Missing discretization for field %D",f);
     }
   } else SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Needs a DS attached to the DM");
   ierr = PetscBTDestroy(&vown);CHKERRQ(ierr);
@@ -256,13 +256,13 @@ static PetscErrorCode DMPlexGetPointMFEMCellID_Internal(DM dm, DMLabel label, Pe
     *mid = *mid - minl + 1; /* MFEM does not like negative markers */
   } else *mid = 1;
   if (depth >=0 && dim != depth) { /* not interpolated, it assumes cell-vertex mesh */
-    if (dim < 0 || dim > 3) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D",dim);
-    if (csize > 8) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Found cone size %D for point %D",csize,p);
-    if (depth != 1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Found depth %D for point %D. You should interpolate the mesh first",depth,p);
+    PetscCheckFalse(dim < 0 || dim > 3,PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension %D",dim);
+    PetscCheckFalse(csize > 8,PETSC_COMM_SELF,PETSC_ERR_SUP,"Found cone size %D for point %D",csize,p);
+    PetscCheckFalse(depth != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Found depth %D for point %D. You should interpolate the mesh first",depth,p);
     *cid = mfem_table_cid_unint[dim][csize];
   } else {
-    if (csize > 6) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cone size %D for point %D",csize,p);
-    if (pdepth < 0 || pdepth > 3) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Depth %D for point %D",csize,p);
+    PetscCheckFalse(csize > 6,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cone size %D for point %D",csize,p);
+    PetscCheckFalse(pdepth < 0 || pdepth > 3,PETSC_COMM_SELF,PETSC_ERR_SUP,"Depth %D for point %D",csize,p);
     *cid = mfem_table_cid[pdepth][csize];
   }
   PetscFunctionReturn(0);
@@ -409,14 +409,14 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
-  if (!isascii) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer must be of type VIEWERASCII");
+  PetscCheckFalse(!isascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer must be of type VIEWERASCII");
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)viewer),&size);CHKERRMPI(ierr);
-  if (size > 1) SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Use single sequential viewers for parallel visualization");
+  PetscCheckFalse(size > 1,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Use single sequential viewers for parallel visualization");
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
 
   /* get container: determines if a process visualizes is portion of the data or not */
   ierr = PetscObjectQuery((PetscObject)viewer,"_glvis_info_container",(PetscObject*)&glvis_container);CHKERRQ(ierr);
-  if (!glvis_container) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing GLVis container");
+  PetscCheckFalse(!glvis_container,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing GLVis container");
   {
     PetscViewerGLVisInfo glvis_info;
     ierr    = PetscContainerGetPointer(glvis_container,(void**)&glvis_info);CHKERRQ(ierr);
@@ -467,11 +467,11 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   ierr = DMPlexGetDepthStratum(dm,0,&vStart,&vEnd);CHKERRQ(ierr);
   ierr = DMGetPeriodicity(dm,&periodic,NULL,NULL,NULL);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocalized(dm,&localized);CHKERRQ(ierr);
-  if (periodic && !localized && !hovec) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Coordinates need to be localized");
+  PetscCheckFalse(periodic && !localized && !hovec,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Coordinates need to be localized");
   ierr = DMGetCoordinateSection(dm,&coordSection);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm,&sdim);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dm,&coordinates);CHKERRQ(ierr);
-  if (!coordinates && !hovec) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Missing local coordinates vector");
+  PetscCheckFalse(!coordinates && !hovec,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Missing local coordinates vector");
 
   /*
      a couple of sections of the mesh specification are disabled
@@ -496,14 +496,14 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   if (enable_bmark) enable_boundary = PETSC_TRUE;
 
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size);CHKERRMPI(ierr);
-  if (enable_ncmesh && size > 1) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not supported in parallel");
+  PetscCheckFalse(enable_ncmesh && size > 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not supported in parallel");
   ierr = DMPlexGetDepth(dm,&depth);CHKERRQ(ierr);
-  if (enable_boundary && depth >= 0 && dim != depth) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated. "
+  PetscCheckFalse(enable_boundary && depth >= 0 && dim != depth,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated. "
                                                              "Alternatively, run with -viewer_glvis_dm_plex_enable_boundary 0");
-  if (enable_ncmesh && depth >= 0 && dim != depth) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated. "
+  PetscCheckFalse(enable_ncmesh && depth >= 0 && dim != depth,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mesh must be interpolated. "
                                                            "Alternatively, run with -viewer_glvis_dm_plex_enable_ncmesh 0");
   if (depth >=0 && dim != depth) { /* not interpolated, it assumes cell-vertex mesh */
-    if (depth != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported depth %D. You should interpolate the mesh first",depth);
+    PetscCheckFalse(depth != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported depth %D. You should interpolate the mesh first",depth);
     cellvertex = PETSC_TRUE;
   }
 
@@ -600,7 +600,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
                 dof = quadv;
                 break;
               default:
-                SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
+                SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
             }
             break;
           case 3:
@@ -610,17 +610,17 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
                 dof = tetv;
                 SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled tethraedral case");
               case 6:
-                if (cellvertex) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: vertices per cell %D",fpc);
+                PetscCheckFalse(cellvertex,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: vertices per cell %D",fpc);
                 vpc = 8;
                 dof = hexv;
                 break;
               case 8:
-                if (!cellvertex) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
+                PetscCheckFalse(!cellvertex,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
                 vpc = 8;
                 dof = hexv;
                 break;
               default:
-                SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
+                SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
             }
             break;
           default:
@@ -628,7 +628,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
         }
         ierr = DMPlexReorderCell(dm,cStart,vids);CHKERRQ(ierr);
       }
-      if (!dof) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing dofs");
+      PetscCheckFalse(!dof,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing dofs");
       ierr = VecCreateSeq(PETSC_COMM_SELF,(cEnd-cStart-novl)*vpc*sdim,&hovec);CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject)hovec,fec);CHKERRQ(ierr);
       ierr = VecGetArray(hovec,&array);CHKERRQ(ierr);
@@ -639,7 +639,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
 
         if (PetscUnlikely(pown && !PetscBTLookup(pown,p-cStart))) continue;
         ierr = DMPlexVecGetClosure(dm,coordSection,coordinates,p,&csize,&vals);CHKERRQ(ierr);
-        if (csize != vpc*sdim && csize != vpc*sdim*2) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported closure size %D (vpc %D, sdim %D)",csize,vpc,sdim);
+        PetscCheckFalse(csize != vpc*sdim && csize != vpc*sdim*2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unsupported closure size %D (vpc %D, sdim %D)",csize,vpc,sdim);
         for (v=0;v<vpc;v++) {
           for (d=0;d<sdim;d++) {
             ptr[sdim*dof[v]+d] = vals[sdim*vids[v]+d];
@@ -727,7 +727,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
           PetscScalar *vals = NULL;
 
           uvpc = DMPolytopeTypeGetNumVertices(cellType);
-          if (dof%sdim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Incompatible number of cell dofs %D and space dimension %D",dof,sdim);
+          PetscCheckFalse(dof%sdim,PETSC_COMM_SELF,PETSC_ERR_USER,"Incompatible number of cell dofs %D and space dimension %D",dof,sdim);
           ierr = DMPlexVecGetClosure(dm,coordSection,coordinates,p,&csize,&vals);CHKERRQ(ierr);
           ierr = DMPlexGetTransitiveClosure(dm,p,PETSC_TRUE,&cellClosureSize,&cellClosure);CHKERRQ(ierr);
           for (v=0;v<cellClosureSize;v++)
@@ -735,7 +735,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
               vidxs = cellClosure + 2*v;
               break;
             }
-          if (!vidxs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing vertices");
+          PetscCheckFalse(!vidxs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing vertices");
           for (v=0;v<uvpc;v++) {
             PetscInt s;
 
@@ -935,7 +935,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
         }
       }
     }
-    if (bf) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Remaining boundary faces %D",bf);
+    PetscCheckFalse(bf,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Remaining boundary faces %D",bf);
     ierr = PetscBTDestroy(&bfaces);CHKERRQ(ierr);
     ierr = PetscFree(fcells);CHKERRQ(ierr);
   }
@@ -1027,7 +1027,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
                       skip[i] = PETSC_TRUE;
                     }
                   }
-                  if (he == -1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Vertex %D support size %D: hanging edge not found",hv,hvsuppSize);
+                  PetscCheckFalse(he == -1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vertex %D support size %D: hanging edge not found",hv,hvsuppSize);
                   ierr    = DMPlexGetCone(dm,he,&cone);CHKERRQ(ierr);
                   vids[0] = (cone[0] == hv) ? cone[1] : cone[0];
                   ierr    = DMPlexGetSupportSize(dm,he,&hesuppSize);CHKERRQ(ierr);
@@ -1063,13 +1063,13 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
               }
               break;
             default:
-              SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Don't know how to deal with support size %D",ssize);
+              SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Don't know how to deal with support size %D",ssize);
           }
         }
       }
       ierr = PetscFree(skip);CHKERRQ(ierr);
     }
-    if (vp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected %D hanging vertices",vp);
+    PetscCheckFalse(vp,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected %D hanging vertices",vp);
   }
   ierr = PetscBTDestroy(&pown);CHKERRQ(ierr);
   ierr = PetscBTDestroy(&vown);CHKERRQ(ierr);
@@ -1089,10 +1089,10 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"Ordering: 1\n\n");CHKERRQ(ierr); /*Ordering::byVDIM*/
     ierr = VecGetArrayRead(hovec,&array);CHKERRQ(ierr);
     ierr = VecGetLocalSize(hovec,&n);CHKERRQ(ierr);
-    if (n%sdim) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Size of local coordinate vector %D incompatible with space dimension %D",n,sdim);
+    PetscCheckFalse(n%sdim,PETSC_COMM_SELF,PETSC_ERR_USER,"Size of local coordinate vector %D incompatible with space dimension %D",n,sdim);
     for (i=0;i<n/sdim;i++) {
       for (s=0;s<sdim;s++) {
-        ierr = PetscViewerASCIIPrintf(viewer,fmt,PetscRealPart(array[i*sdim+s]));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,fmt,(double) PetscRealPart(array[i*sdim+s]));CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
@@ -1108,7 +1108,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       for (s=0;s<sdim;s++) {
         PetscReal v = PetscRealPart(array[p*sdim+s]);
 
-        ierr = PetscViewerASCIIPrintf(viewer,fmt,PetscIsInfOrNanReal(v) ? 0.0 : v);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,fmt,PetscIsInfOrNanReal(v) ? 0.0 : (double) v);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }

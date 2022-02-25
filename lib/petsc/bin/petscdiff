@@ -120,6 +120,7 @@ if ${filter}; then
       filter_file "${file2}" "${filter_cmd}" 
       file2="${file2}${filter_suffix}"  # Will need to remove later
 fi
+result_file=${file1}
 if ${filter_output}; then
       filter_file "${file1}" "${filter_output_cmd}" 
       file1="${file1}${filter_suffix}"  # Will need to remove later
@@ -150,13 +151,13 @@ if [ "x${1}" = "x-" ]; then
 fi
 
 if ${mvfile} && test ${err} -gt 0; then
-  echo "mv'ing $file2 --> $file1"
-  mv "$file2" "$file1"
+  echo "mv'ing $file2 --> $result_file"
+  mv "$file2" "$result_file"
 fi
 if ${mvfile_ifalt} && test ${err} -gt 0; then
   if echo $file1 | grep '_alt.out'; then 
-    echo "mv'ing $file2 --> $file1"
-    mv "$file2" "$file1"
+    echo "mv'ing $file2 --> $result_file"
+    mv "$file2" "$result_file"
   fi
 fi
 

@@ -33,7 +33,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size != 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run example with two processors\n");
+  PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run example with two processors");
 
   /*
      Construct a two dimensional graph connecting nlocal degrees of
@@ -56,7 +56,7 @@ int main(int argc,char **argv)
 
   */
 
-  if (!rank) {
+  if (rank == 0) {
     ifrom[0] = 11; ifrom[1] = 6;
   } else {
     ifrom[0] = 0;  ifrom[1] = 5;
@@ -112,7 +112,7 @@ int main(int argc,char **argv)
   */
   ierr = VecGetArray(lx,&array);CHKERRQ(ierr);
   for (i=0; i<nlocal+nghost; i++) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%D %g\n",i,(double)PetscRealPart(array[i]));CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " %g\n",i,(double)PetscRealPart(array[i]));CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(lx,&array);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
@@ -120,7 +120,7 @@ int main(int argc,char **argv)
 
   /* Another test that sets ghost values and then accumulates onto the owning processors using MIN_VALUES */
   if (flg3) {
-    if (!rank){ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nTesting VecGhostUpdate with MIN_VALUES\n");CHKERRQ(ierr);}
+    if (rank == 0){ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nTesting VecGhostUpdate with MIN_VALUES\n");CHKERRQ(ierr);}
     ierr = VecGhostGetLocalForm(gx,&lx);CHKERRQ(ierr);
     ierr = VecGetArray(lx,&array);CHKERRQ(ierr);
     for (i=0; i<nghost; i++) array[nlocal+i] = rank ? (PetscScalar)4 : (PetscScalar)8;
@@ -134,7 +134,7 @@ int main(int argc,char **argv)
     ierr = VecGetArray(lx,&array);CHKERRQ(ierr);
 
     for (i=0; i<nlocal+nghost; i++) {
-      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%D %g\n",i,(double)PetscRealPart(array[i]));CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " %g\n",i,(double)PetscRealPart(array[i]));CHKERRQ(ierr);
     }
     ierr = VecRestoreArray(lx,&array);CHKERRQ(ierr);
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);

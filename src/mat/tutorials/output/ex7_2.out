@@ -1,5 +1,5 @@
 [0] PetscInfoSetFile(): Opened PetscInfo file ex7info.2.0
-[0] PetscInitialize(): PETSc successfully started: number of processors = 1
+[0] PetscInitialize_Common(): PETSc successfully started: number of processors = 1
 [0] main(): Mat info on PETSC_COMM_WORLD with no arguments
 [0] main(): Mat info on PETSC_COMM_WORLD with 1 argument equal to 1234: 1234
 [0] main(): Vec info on PETSC_COMM_WORLD with no arguments

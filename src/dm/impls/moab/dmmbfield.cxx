@@ -31,7 +31,7 @@ PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   dmmoab = (DM_Moab*)(dm)->data;
 
-  if ((ifield < 0) || (ifield >= dmmoab->numFields)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "The field %d should be positive and less than %d.", ifield, dmmoab->numFields);
+  PetscCheckFalse((ifield < 0) || (ifield >= dmmoab->numFields),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "The field %d should be positive and less than %d.", ifield, dmmoab->numFields);
 
   /* Create a tag in MOAB mesh to index and keep track of number of Petsc vec tags */
   merr = dmmoab->mbiface->tag_get_handle(dmmoab->fieldNames[ifield], 1, moab::MB_TYPE_DOUBLE, ntag,
@@ -193,7 +193,7 @@ PetscErrorCode DMMoabSetFieldNames(DM dm, PetscInt numFields, const char* fields
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm     - the discretization manager object
 - field - field number for the DMMoab (0, 1, ... dof-1), where dof indicates the
         number of degrees of freedom per node within the DMMoab
@@ -212,7 +212,7 @@ PetscErrorCode DMMoabGetFieldName(DM dm, PetscInt field, const char **fieldName)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   dmmoab = (DM_Moab*)(dm)->data;
-  if ((field < 0) || (field >= dmmoab->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "DM field %d should be in [%d, %d)", field, 0, dmmoab->numFields);
+  PetscCheckFalse((field < 0) || (field >= dmmoab->numFields),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "DM field %d should be in [%d, %d)", field, 0, dmmoab->numFields);
 
   *fieldName = dmmoab->fieldNames[field];
   PetscFunctionReturn(0);
@@ -244,7 +244,7 @@ PetscErrorCode DMMoabSetFieldName(DM dm, PetscInt field, const char *fieldName)
   PetscValidCharPointer(fieldName, 3);
 
   dmmoab = (DM_Moab*)(dm)->data;
-  if ((field < 0) || (field >= dmmoab->numFields)) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "DM field %d should be in [%d, %d)", field, 0, dmmoab->numFields);
+  PetscCheckFalse((field < 0) || (field >= dmmoab->numFields),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "DM field %d should be in [%d, %d)", field, 0, dmmoab->numFields);
 
   if (dmmoab->fieldNames[field]) {
     ierr = PetscFree(dmmoab->fieldNames[field]);CHKERRQ(ierr);

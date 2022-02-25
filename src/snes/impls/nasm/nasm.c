@@ -111,7 +111,7 @@ static PetscErrorCode SNESSetUp_NASM(SNES snes)
     if (dm) {
       nasm->usesdm = PETSC_TRUE;
       ierr         = DMCreateDomainDecomposition(dm,&nasm->n,NULL,NULL,NULL,&subdms);CHKERRQ(ierr);
-      if (!subdms) SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DM has no default decomposition defined.  Set subsolves manually with SNESNASMSetSubdomains().");
+      PetscCheckFalse(!subdms,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DM has no default decomposition defined.  Set subsolves manually with SNESNASMSetSubdomains().");
       ierr = DMCreateDomainDecompositionScatters(dm,nasm->n,subdms,&nasm->iscatter,&nasm->oscatter,&nasm->gscatter);CHKERRQ(ierr);
       ierr = PetscMalloc1(nasm->n, &nasm->oscatter_copy);CHKERRQ(ierr);
       for (i=0; i<nasm->n; i++) {
@@ -232,7 +232,7 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"  Use -%ssnes_view ::ascii_info_detail to display information for all blocks\n",prefix?prefix:"");CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-        if (!rank) {
+        if (rank == 0) {
           ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
           ierr = SNESView(nasm->subsnes[0],sviewer);CHKERRQ(ierr);
           ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -263,7 +263,7 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," blocks=%D,type=%s",N,SNESNASMTypes[nasm->type]);CHKERRQ(ierr);
     ierr = PetscViewerGetSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
-    if (nasm->subsnes && !rank) {ierr = SNESView(nasm->subsnes[0],sviewer);CHKERRQ(ierr);}
+    if (nasm->subsnes && rank == 0) {ierr = SNESView(nasm->subsnes[0],sviewer);CHKERRQ(ierr);}
     ierr = PetscViewerRestoreSubViewer(viewer,PETSC_COMM_SELF,&sviewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -298,7 +298,7 @@ static PetscErrorCode SNESNASMSetType_NASM(SNES snes,PCASMType type)
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
-  if (type != PC_ASM_BASIC && type != PC_ASM_RESTRICT) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"SNESNASM only supports basic and restrict types");
+  PetscCheckFalse(type != PC_ASM_BASIC && type != PC_ASM_RESTRICT,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"SNESNASM only supports basic and restrict types");
   nasm->type = type;
   PetscFunctionReturn(0);
 }
@@ -371,7 +371,7 @@ static PetscErrorCode SNESNASMSetSubdomains_NASM(SNES snes,PetscInt n,SNES subsn
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
-  if (snes->setupcalled) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"SNESNASMSetSubdomains() should be called before calling SNESSetUp().");
+  PetscCheckFalse(snes->setupcalled,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"SNESNASMSetSubdomains() should be called before calling SNESSetUp().");
 
   /* tear down the previously set things */
   ierr = SNESReset(snes);CHKERRQ(ierr);
@@ -421,7 +421,7 @@ static PetscErrorCode SNESNASMSetSubdomains_NASM(SNES snes,PetscInt n,SNES subsn
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  SNES - the SNES context
 
    Output Parameters:
@@ -464,7 +464,7 @@ static PetscErrorCode SNESNASMGetSubdomains_NASM(SNES snes,PetscInt *n,SNES *sub
 
    Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  SNES - the SNES context
 
    Output Parameters:
@@ -756,7 +756,7 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
 
   PetscFunctionBegin;
 
-  if (snes->xl || snes->xu || snes->ops->computevariablebounds) SETERRQ1(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
+  PetscCheckFalse(snes->xl || snes->xu || snes->ops->computevariablebounds,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
 
   ierr = PetscCitationsRegister(SNESCitation,&SNEScite);CHKERRQ(ierr);
   X = snes->vec_sol;
@@ -827,7 +827,7 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
   }
   if (normschedule == SNES_NORM_ALWAYS) {
     if (i == snes->max_its) {
-      ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",snes->max_its);CHKERRQ(ierr);
+      ierr = PetscInfo(snes,"Maximum number of iterations has been reached: %D\n",snes->max_its);CHKERRQ(ierr);
       if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
     }
   } else if (!snes->reason) snes->reason = SNES_CONVERGED_ITS; /* NASM is meant to be used as a preconditioner */
@@ -942,7 +942,7 @@ PetscErrorCode SNESNASMGetSNES(SNES snes,PetscInt i,SNES *subsnes)
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
-  if (i < 0 || i >= nasm->n) SETERRQ(PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"No such subsolver");
+  PetscCheckFalse(i < 0 || i >= nasm->n,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_OUTOFRANGE,"No such subsolver");
   *subsnes = nasm->subsnes[i];
   PetscFunctionReturn(0);
 }

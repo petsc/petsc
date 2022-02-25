@@ -846,7 +846,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X,Vec B,void *ptr)
     ierr = DMGlobalToLocalEnd(da,B,INSERT_VALUES,Bl);CHKERRQ(ierr);
   }
   ierr = DMDAVecGetArray(da,Xl,&x);CHKERRQ(ierr);
-  if (B) ierr = DMDAVecGetArray(da,Bl,&b);CHKERRQ(ierr);
+  if (B) {ierr = DMDAVecGetArray(da,Bl,&b);CHKERRQ(ierr);}
 
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(da,&C);CHKERRQ(ierr);

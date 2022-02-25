@@ -1,4 +1,4 @@
-
+#requiresdefine 'PETSC_HAVE_CXX'
 ALL: lib
 
 CFLAGS    =
@@ -9,7 +9,7 @@ SOURCEF	  =
 SOURCEH	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
-DIRS	  = interface impls
+DIRS	  = interface impls tests
 LOCDIR	  = src/sys/objects/device/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

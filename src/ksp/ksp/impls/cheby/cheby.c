@@ -77,7 +77,7 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
       } else {
         PetscBool change;
 
-        if (!ksp->vec_rhs) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Chebyshev must use a noisy right hand side to estimate the eigenvalues when no right hand side is available");
+        PetscCheckFalse(!ksp->vec_rhs,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Chebyshev must use a noisy right hand side to estimate the eigenvalues when no right hand side is available");
         ierr = PCPreSolveChangeRHS(ksp->pc,&change);CHKERRQ(ierr);
         if (change) {
           B = ksp->work[1];
@@ -102,12 +102,12 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
         }
         ierr = PCGetFailedReason(ksp->pc,&pcreason);CHKERRQ(ierr);
         ksp->reason = KSP_DIVERGED_PC_FAILED;
-        ierr = PetscInfo3(ksp,"Eigen estimator failed: %s %s at iteration %D",KSPConvergedReasons[reason],PCFailedReasons[pcreason],its);CHKERRQ(ierr);
+        ierr = PetscInfo(ksp,"Eigen estimator failed: %s %s at iteration %D",KSPConvergedReasons[reason],PCFailedReasons[pcreason],its);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       } else if (reason == KSP_CONVERGED_RTOL || reason == KSP_CONVERGED_ATOL) {
         ierr = PetscInfo(ksp,"Eigen estimator converged prematurely. Should not happen except for small or low rank problem\n");CHKERRQ(ierr);
       } else if (reason < 0) {
-        ierr = PetscInfo1(ksp,"Eigen estimator failed %s, using estimates anyway\n",KSPConvergedReasons[reason]);CHKERRQ(ierr);
+        ierr = PetscInfo(ksp,"Eigen estimator failed %s, using estimates anyway\n",KSPConvergedReasons[reason]);CHKERRQ(ierr);
       }
 
       ierr = KSPChebyshevComputeExtremeEigenvalues_Private(cheb->kspest,&min,&max);CHKERRQ(ierr);
@@ -133,8 +133,8 @@ static PetscErrorCode KSPChebyshevSetEigenvalues_Chebyshev(KSP ksp,PetscReal ema
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (emax <= emin) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"Maximum eigenvalue must be larger than minimum: max %g min %g",(double)emax,(double)emin);
-  if (emax*emin <= 0.0) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"Both eigenvalues must be of the same sign: max %g min %g",(double)emax,(double)emin);
+  PetscCheckFalse(emax <= emin,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"Maximum eigenvalue must be larger than minimum: max %g min %g",(double)emax,(double)emin);
+  PetscCheckFalse(emax*emin <= 0.0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"Both eigenvalues must be of the same sign: max %g min %g",(double)emax,(double)emin);
   chebyshevP->emax = emax;
   chebyshevP->emin = emin;
 
@@ -269,7 +269,7 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp,PetscReal a,PetscReal b,PetscReal c
 
    Logically Collective
 
-   Input Arguments:
+   Input Parameters:
 +  ksp - linear solver context
 -  use - PETSC_TRUE to use noisy
 
@@ -343,7 +343,7 @@ static PetscErrorCode KSPSetFromOptions_Chebyshev(PetscOptionItems *PetscOptions
   ierr = PetscOptionsInt("-ksp_chebyshev_esteig_steps","Number of est steps in Chebyshev","",cheb->eststeps,&cheb->eststeps,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsRealArray("-ksp_chebyshev_eigenvalues","extreme eigenvalues","KSPChebyshevSetEigenvalues",eminmax,&neigarg,&flgeig);CHKERRQ(ierr);
   if (flgeig) {
-    if (neigarg != 2) SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"-ksp_chebyshev_eigenvalues: must specify 2 parameters, min and max eigenvalues");
+    PetscCheckFalse(neigarg != 2,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"-ksp_chebyshev_eigenvalues: must specify 2 parameters, min and max eigenvalues");
     ierr = KSPChebyshevSetEigenvalues(ksp, eminmax[1], eminmax[0]);CHKERRQ(ierr);
   }
   ierr = PetscOptionsRealArray("-ksp_chebyshev_esteig","estimate eigenvalues using a Krylov method, then use this transform for Chebyshev eigenvalue bounds","KSPChebyshevEstEigSet",tform,&nestarg,&flgest);CHKERRQ(ierr);
@@ -388,7 +388,7 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
   ierr = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
@@ -434,7 +434,7 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
     case KSP_NORM_NATURAL:
       ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
       break;
-    default: SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
+    default: SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
     }
     ierr         = PetscObjectSAWsTakeAccess((PetscObject)ksp);CHKERRQ(ierr);
     ksp->rnorm   = rnorm;

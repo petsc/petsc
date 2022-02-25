@@ -362,8 +362,8 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
       PetscInt s;
       for (s = 0; s < indegree[p]; ++s, ++r) rootAdj[l+s] = remoteadj[r];
     }
-    if (r != radjsize) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %d != %d", r, radjsize);
-    if (l != adjSize)  SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %d != %d", l, adjSize);
+    PetscCheckFalse(r != radjsize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %d != %d", r, radjsize);
+    PetscCheckFalse(l != adjSize,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistency in communication %d != %d", l, adjSize);
     ierr = PetscFree(remoteadj);CHKERRQ(ierr);
   }
   ierr = PetscSFDestroy(&sfAdj);CHKERRQ(ierr);
@@ -558,7 +558,7 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
       for (q = 0; q < anDof; q++, i++) {
         cols[aoff+i] = anchorAdj[anOff + q];
       }
-      if (i != adof) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of entries %D != %D for dof %D (point %D)", i, adof, d, p);
+      PetscCheckFalse(i != adof,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of entries %D != %D for dof %D (point %D)", i, adof, d, p);
     }
   }
   ierr = PetscSectionDestroy(&anchorSectionAdj);CHKERRQ(ierr);
@@ -590,7 +590,7 @@ static PetscErrorCode DMPlexUpdateAllocation_Static(DM dm, PetscLayout rLayout, 
   PetscFunctionBegin;
   /* This loop needs to change to a loop over points, then field dofs, which means we need to look both sections */
   ierr = PetscLayoutGetRange(rLayout, &rStart, &rEnd);CHKERRQ(ierr);
-  if (rStart%bs || rEnd%bs) SETERRQ3(PetscObjectComm((PetscObject) rLayout), PETSC_ERR_ARG_WRONG, "Invalid layout [%d, %d) for matrix, must be divisible by block size %d", rStart, rEnd, bs);
+  PetscCheckFalse(rStart%bs || rEnd%bs,PetscObjectComm((PetscObject) rLayout), PETSC_ERR_ARG_WRONG, "Invalid layout [%d, %d) for matrix, must be divisible by block size %d", rStart, rEnd, bs);
   if (f >= 0 && bs == 1) {
     ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
@@ -690,7 +690,7 @@ static PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscI
 
   Collective
 
-  Input Arguments:
+  Input Parameters:
 + dm   - The DMPlex
 . bs   - The matrix blocksize
 . dnz  - An array to hold the number of nonzeros in the diagonal block
@@ -699,7 +699,7 @@ static PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscI
 . onzu - An array to hold the number of nonzeros in the upper triangle of the off-diagonal block
 - fillMatrix - If PETSC_TRUE, fill the matrix with zeros
 
-  Output Argument:
+  Output Parameter:
 . A - The preallocated matrix
 
   Level: advanced
@@ -726,8 +726,10 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(A, MAT_CLASSID, 7);
-  if (dnz)  PetscValidPointer(dnz,3);  if (onz)  PetscValidPointer(onz,4);
-  if (dnzu) PetscValidPointer(dnzu,5); if (onzu) PetscValidPointer(onzu,6);
+  if (dnz) PetscValidPointer(dnz,3);
+  if (onz) PetscValidPointer(onz,4);
+  if (dnzu) PetscValidPointer(dnzu,5);
+  if (onzu) PetscValidPointer(onzu,6);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = DMGetPointSF(dm, &sf);CHKERRQ(ierr);
   ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);

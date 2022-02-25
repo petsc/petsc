@@ -47,7 +47,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsInt("-m","Number of elements in each direction","None",m,&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-p","Order of each element (tensor product basis)","None",p,&p,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (p <=0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Option -p value should be greater than zero");
+  PetscCheckFalse(p <=0,PETSC_COMM_SELF,PETSC_ERR_USER,"Option -p value should be greater than zero");
   N    = (p*m+1)*(p*m+1); /* dimension of matrix */
   M    = m*m; /* number of elements */
   h    = 1.0/m; /* mesh width */

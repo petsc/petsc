@@ -34,7 +34,7 @@ PetscErrorCode UserMonitor(SNES snes,PetscInt its,PetscReal fnorm ,void *appctx)
   ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
 #if 0
-  if (!rank) {
+  if (rank == 0) {
     PetscInt       subsnes_id = user->subsnes_id;
     if (subsnes_id == 2) {
       ierr = PetscPrintf(PETSC_COMM_SELF," it %D, subsnes_id %D, fnorm %g\n",user->it,user->subsnes_id,(double)fnorm);CHKERRQ(ierr);
@@ -191,15 +191,15 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
       /* Verify the coupling vertex is a powernet load vertex or a water vertex */
       switch (k) {
       case 0:
-        if (key != appctx_power.compkey_bus || nvar != 2) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"key %D not a power bus vertex or nvar %D != 2",key,nvar);
+        PetscCheckFalse(key != appctx_power.compkey_bus || nvar != 2,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"key %D not a power bus vertex or nvar %D != 2",key,nvar);
         break;
       case 1:
-        if (key != appctx_power.compkey_load || nvar != 0 || goffset[1] != goffset[0]+2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a power load vertex");
+        PetscCheckFalse(key != appctx_power.compkey_load || nvar != 0 || goffset[1] != goffset[0]+2,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a power load vertex");
         break;
       case 2:
-        if (key != appctx_water.compkey_vtx || nvar != 1 || goffset[2] != goffset[1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
+        PetscCheckFalse(key != appctx_water.compkey_vtx || nvar != 1 || goffset[2] != goffset[1],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a water vertex");
         break;
-      default: SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "k %D is wrong",k);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "k %D is wrong",k);
       }
       /* printf("  [%d] coupling vertex[%D]: key %D; nvar %D, goffset %D\n",rank,v,key,nvar,goffset[k]); */
     }
@@ -218,7 +218,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
           /* printf("  connected edge[%D]=%D has keye=%D, is appctx_water.compkey_edge with EDGE_TYPE_PUMP\n",k,e,keye); */
         }
       } else { /* ower->compkey_branch */
-        if (keye != appctx_power.compkey_branch) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a power branch");
+        PetscCheckFalse(keye != appctx_power.compkey_branch,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not a power branch");
       }
     }
   }
@@ -229,7 +229,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *appctx)
   ierr = DMLocalToGlobalEnd(networkdm,localF,ADD_VALUES,F);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(networkdm,&localF);CHKERRQ(ierr);
 #if 0
-  if (!rank) printf("F:\n");
+  if (rank == 0) printf("F:\n");
   ierr = VecView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
@@ -351,7 +351,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetString(NULL,NULL,"-pfdata",pfdata_file,PETSC_MAX_PATH_LEN-1,NULL);CHKERRQ(ierr);
   ierr = PetscNew(&pfdata);CHKERRQ(ierr);
   ierr = PFReadMatPowerData(pfdata,pfdata_file);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ierr = PetscPrintf(PETSC_COMM_SELF,"Power network: nb = %D, ngen = %D, nload = %D, nbranch = %D\n",pfdata->nbus,pfdata->ngen,pfdata->nload,pfdata->nbranch);CHKERRQ(ierr);
   }
   Sbase = pfdata->sbase;
@@ -414,8 +414,8 @@ int main(int argc,char **argv)
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT);CHKERRQ(ierr);
 
   ierr = DMNetworkSetNumSubNetworks(networkdm,PETSC_DECIDE,Nsubnet);CHKERRQ(ierr);
-  ierr = DMNetworkAddSubnetwork(networkdm,"power",numVertices[0],numEdges[0],edgelist_power,&power_netnum);CHKERRQ(ierr);
-  ierr = DMNetworkAddSubnetwork(networkdm,"water",numVertices[1],numEdges[1],edgelist_water,&water_netnum);CHKERRQ(ierr);
+  ierr = DMNetworkAddSubnetwork(networkdm,"power",numEdges[0],edgelist_power,&power_netnum);CHKERRQ(ierr);
+  ierr = DMNetworkAddSubnetwork(networkdm,"water",numEdges[1],edgelist_water,&water_netnum);CHKERRQ(ierr);
 
   /* vertex subnet[0].4 shares with vertex subnet[1].0 */
   power_svtx = 4; water_svtx = 0;
@@ -464,14 +464,10 @@ int main(int argc,char **argv)
     ierr = DMNetworkAddComponent(networkdm,vtx[i],appctx_water->compkey_vtx,&waterdata->vertex[i],1);CHKERRQ(ierr);
   }
 
-  /* ADD VARIABLES AND COMPONENTS AT THE SHARED VERTEX: net[0].4 coupls with net[1].0 -- only the owner of the vertex does this */
+  /* ADD VARIABLES AND COMPONENTS AT THE SHARED VERTEX: net[0].4 coupls with net[1].0 -- owning and all ghost ranks of the vertex do this */
   /*----------------------------------------------------------------------------------------------------------------------------*/
   ierr = DMNetworkGetSharedVertices(networkdm,&nv,&vtx);CHKERRQ(ierr);
   for (i = 0; i < nv; i++) {
-    ierr = DMNetworkIsGhostVertex(networkdm,vtx[i],&ghost);CHKERRQ(ierr);
-    /* printf("[%d] coupling info: nv %d; sv[0] %d; ghost %d\n",rank,nv,vtx[0],ghost);CHKERRQ(ierr); */
-    if (ghost) continue;
-
     /* power */
     ierr = DMNetworkAddComponent(networkdm,vtx[i],appctx_power->compkey_bus,&pfdata->bus[4],2);CHKERRQ(ierr);
     /* bus[4] is a load, add its component */

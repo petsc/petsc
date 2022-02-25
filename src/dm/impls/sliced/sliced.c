@@ -179,7 +179,7 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs,const PetscInt *
 
     Logically Collective on dm
 
-    Input Parameter:
+    Input Parameters:
 +   sliced - the DM object
 .   dfill - the fill pattern in the diagonal block (may be NULL, means use dense block)
 -   ofill - the fill pattern in the off-diagonal blocks
@@ -239,7 +239,7 @@ static PetscErrorCode  DMGlobalToLocalBegin_Sliced(DM da,Vec g,InsertMode mode,V
 
   PetscFunctionBegin;
   ierr = VecGhostIsLocalForm(g,l,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Local vector is not local form of global vector");
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Local vector is not local form of global vector");
   ierr = VecGhostUpdateEnd(g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGhostUpdateBegin(g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -252,7 +252,7 @@ static PetscErrorCode  DMGlobalToLocalEnd_Sliced(DM da,Vec g,InsertMode mode,Vec
 
   PetscFunctionBegin;
   ierr = VecGhostIsLocalForm(g,l,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Local vector is not local form of global vector");
+  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Local vector is not local form of global vector");
   ierr = VecGhostUpdateEnd(g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -289,7 +289,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
 
     Collective
 
-    Input Parameter:
+    Input Parameters:
 +   comm - the processors that will share the global vector
 .   bs - the block size
 .   nlocal - number of vector entries on this process

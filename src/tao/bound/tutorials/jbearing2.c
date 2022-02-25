@@ -24,11 +24,11 @@ The command line options are:\n\
 /*T
    Concepts: TAO^Solving a bound constrained minimization problem
    Routines: TaoCreate();
-   Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
-   Routines: TaoSetHessianRoutine();
+   Routines: TaoSetType(); TaoSetObjectiveAndGradient();
+   Routines: TaoSetHessian();
    Routines: TaoSetVariableBounds();
    Routines: TaoSetMonitor(); TaoSetConvergenceTest();
-   Routines: TaoSetInitialVector();
+   Routines: TaoSetSolution();
    Routines: TaoSetFromOptions();
    Routines: TaoSolve();
    Routines: TaoDestroy();
@@ -134,12 +134,12 @@ int main(int argc, char **argv)
 
   /* Set the initial vector */
   ierr = VecSet(x, zero);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
 
   /* Set the user function, gradient, hessian evaluation routines and data structures */
-  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*) &user);CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradient(tao,NULL,FormFunctionGradient,(void*) &user);CHKERRQ(ierr);
 
-  ierr = TaoSetHessianRoutine(tao,user.A,user.A,FormHessian,(void*)&user);CHKERRQ(ierr);
+  ierr = TaoSetHessian(tao,user.A,user.A,FormHessian,(void*)&user);CHKERRQ(ierr);
 
   /* Set a routine that defines the bounds */
   ierr = VecDuplicate(x,&xl);CHKERRQ(ierr);
@@ -198,6 +198,7 @@ PetscErrorCode ComputeB(AppCtx* user)
   PetscReal      temp,*b;
   PetscReal      ecc=user->ecc;
 
+  PetscFunctionBegin;
   nx=user->nx;
   ny=user->ny;
   hx=two*pi/(nx+1.0);
@@ -221,8 +222,7 @@ PetscErrorCode ComputeB(AppCtx* user)
   }
   ierr = VecRestoreArray(user->B,&b);CHKERRQ(ierr);
   ierr = PetscLogFlops(5.0*xm*ym+3.0*xm);CHKERRQ(ierr);
-
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *ptr)
@@ -240,6 +240,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *p
   PetscReal      *x,*g,zero=0.0;
   Vec            localX;
 
+  PetscFunctionBegin;
   nx=user->nx;
   ny=user->ny;
   hx=two*pi/(nx+1.0);
@@ -323,7 +324,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn,Vec G,void *p
   *fcn = f1/2.0 + f2;
 
   ierr = PetscLogFlops((91 + 10.0*ym) * xm);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 
 }
 
@@ -345,6 +346,7 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat hes, Mat Hpre, void *ptr)
   PetscReal      vmiddle, vup, vdown, vleft, vright;
   PetscBool      assembled;
 
+  PetscFunctionBegin;
   nx=user->nx;
   ny=user->ny;
   hx=two*pi/(nx+1.0);
@@ -421,8 +423,7 @@ PetscErrorCode FormHessian(Tao tao,Vec X,Mat hes, Mat Hpre, void *ptr)
   ierr = MatSetOption(hes,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
 
   ierr = PetscLogFlops(9.0*xm*ym+49.0*xm);CHKERRQ(ierr);
-  ierr = MatNorm(hes,NORM_1,&hx);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode Monitor(Tao tao, void *ctx)
@@ -554,4 +555,18 @@ PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
      args: -tao_smonitor -mx 8 -my 12 -tao_gatol 1e-4 -tao_type bqnls -tao_bqnls_mat_lmvm_scale_type none -tao_view
      requires: !single
 
+   test:
+     suffix: 19
+     args: -tao_smonitor -mx 8 -my 12 -tao_type bnls -tao_gatol 1e-5 -tao_mf_hessian
+     requires: !single
+
+   test:
+      suffix: 20
+      args: -tao_smonitor -mx 8 -my 12 -tao_type bntr -tao_gatol 1e-5 -tao_mf_hessian
+      requires: !single
+
+   test:
+      suffix: 21
+      args: -tao_smonitor -mx 8 -my 12 -tao_type bntl -tao_gatol 1e-5 -tao_mf_hessian
+      requires: !single
 TEST*/

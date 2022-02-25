@@ -26,6 +26,8 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscScalar    value;
   const PetscInt vidx[] = {1,2},sidx[] = {1,0};
+  PetscInt       miidx[2];
+  PetscReal      mvidx[2];
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
@@ -77,6 +79,9 @@ int main(int argc,char **argv)
   ierr = VecStrideSubSetScatter(s,2,sidx,vidx,v,ADD_VALUES);CHKERRQ(ierr);
   ierr = VecView(v,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
+  ierr = VecStrideMax(v,1,&miidx[0],&mvidx[0]);CHKERRQ(ierr);
+  ierr = VecStrideMin(v,1,&miidx[1],&mvidx[1]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Min/Max: %" PetscInt_FMT " %g, %" PetscInt_FMT " %g\n",miidx[0],(double)mvidx[0],miidx[1],(double)mvidx[1]);CHKERRQ(ierr);
   /*
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
@@ -90,6 +95,16 @@ int main(int argc,char **argv)
 /*TEST
 
    test:
+      filter: grep -v type | grep -v "MPI processes" | grep -v Process
+      diff_args: -j
       nsize: 2
+
+   test:
+      filter: grep -v type | grep -v "MPI processes" | grep -v Process
+      output_file: output/ex45_1.out
+      diff_args: -j
+      suffix: 2
+      nsize: 1
+      args: -vec_type {{seq mpi}}
 
 TEST*/

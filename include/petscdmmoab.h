@@ -15,10 +15,10 @@
 /* The MBERR macro is used to save typing. It checks a MOAB error code
  * (rval) and calls SETERRQ if not MB_SUCCESS. A message (msg) can
  * also be passed in. */
-#define MBERR(msg,rval) do{if (rval != moab::MB_SUCCESS) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s",(PetscErrorCode)rval,msg);} while (0)
-#define MBERRNM(rval) do{if (rval != moab::MB_SUCCESS) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i)",rval);} while (0)
-#define MBERRV(mbif,rval) do{if (rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s",(PetscErrorCode)rval,emsg.c_str());} } while (0)
-#define MBERRVM(mbif,msg,rval) do{if (rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s :: %s",(PetscErrorCode)rval,msg,emsg.c_str());} } while (0)
+#define MBERR(msg,rval) PetscCheck(rval == moab::MB_SUCCESS,PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s",(PetscErrorCode)rval,msg)
+#define MBERRNM(rval) PetscCheck(rval == moab::MB_SUCCESS,PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i)",rval)
+#define MBERRV(mbif,rval) do{if (rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s",(PetscErrorCode)rval,emsg.c_str());} } while (0)
+#define MBERRVM(mbif,msg,rval) do{if (rval != moab::MB_SUCCESS) { std::string emsg; mbif->get_last_error(emsg); SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"MOAB ERROR (%i): %s :: %s",(PetscErrorCode)rval,msg,emsg.c_str());} } while (0)
 
 /* define enums for options to read and write MOAB files in parallel */
 typedef enum {READ_PART, READ_DELETE, BCAST_DELETE} MoabReadMode;

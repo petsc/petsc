@@ -9,7 +9,7 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.minversion        = '1.1.26'
-    self.gitcommit         = 'v'+self.minversion+'-p2'
+    self.gitcommit         = 'v'+self.minversion+'-p3'
     self.download          = ['git://https://bitbucket.org/petsc/pkg-sowing.git','https://bitbucket.org/petsc/pkg-sowing/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['petsc-pkg-sowing']
     self.complex           = 1
@@ -132,7 +132,7 @@ and run configure again\n')
         self.logPrintBox('Batch build that could not generate bfort, skipping generating Fortran stubs\n \
                           you will need to copy them from some other system (src/fortran/auto)')
       else:
-        self.logWrite('           Running '+self.bfort+' to generate fortran stubs\n')
+        self.logPrintBox('Running '+self.bfort+' to generate fortran stubs')
         try:
           import os,sys
           sys.path.insert(0, os.path.abspath(os.path.join('lib','petsc','bin','maint')))

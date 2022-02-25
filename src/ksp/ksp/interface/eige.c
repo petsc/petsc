@@ -38,7 +38,7 @@ static PetscErrorCode MatMult_KSP(Mat A,Vec X,Vec Y)
 
     Collective on ksp
 
-    Input Parameter:
+    Input Parameters:
 +   ksp - the Krylov subspace context
 -   mattype - the matrix type to be used
 
@@ -86,7 +86,7 @@ PetscErrorCode  KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
 
    Collective on ksp
 
-   Input Parameter:
+   Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
 -  n - size of arrays r and c
 
@@ -133,7 +133,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
   ierr = MatGetSize(BA,&n,&n);CHKERRQ(ierr);
   if (size > 1) { /* assemble matrix on first processor */
     ierr = MatCreate(PetscObjectComm((PetscObject)ksp),&A);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
       ierr = MatSetSizes(A,n,n,n,n);CHKERRQ(ierr);
     } else {
       ierr = MatSetSizes(A,0,0,n,n);CHKERRQ(ierr);
@@ -159,7 +159,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
   }
 
 #if !defined(PETSC_USE_COMPLEX)
-  if (!rank) {
+  if (rank == 0) {
     PetscScalar  *work;
     PetscReal    *realpart,*imagpart;
     PetscBLASInt idummy,lwork;
@@ -177,7 +177,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
       ierr = PetscBLASIntCast(n,&bn);CHKERRQ(ierr);
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_("N","N",&bn,array,&bn,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr));
-      if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
+      PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
     }
     ierr = PetscFree(work);CHKERRQ(ierr);
@@ -193,7 +193,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
     ierr = PetscFree2(realpart,imagpart);CHKERRQ(ierr);
   }
 #else
-  if (!rank) {
+  if (rank == 0) {
     PetscScalar  *work,*eigs;
     PetscReal    *rwork;
     PetscBLASInt idummy,lwork;
@@ -211,7 +211,7 @@ PetscErrorCode  KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal 
       ierr = PetscBLASIntCast(n,&nb);CHKERRQ(ierr);
       ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
       PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_("N","N",&nb,array,&nb,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&lierr));
-      if (lierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
+      PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
       ierr = PetscFPTrapPop();CHKERRQ(ierr);
     }
     ierr = PetscFree(work);CHKERRQ(ierr);

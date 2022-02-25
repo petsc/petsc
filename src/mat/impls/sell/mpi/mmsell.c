@@ -194,6 +194,7 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
 
   /* generate the scatter context */
   ierr = VecScatterCreate(gvec,from,sell->lvec,to,&sell->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterViewFromOptions(sell->Mvctx,(PetscObject)mat,"-matmult_vecscatter_view");CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)sell->Mvctx);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)sell->lvec);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject)mat,(PetscObject)from);CHKERRQ(ierr);
@@ -230,7 +231,7 @@ PetscErrorCode MatMPISELLDiagonalScaleLocalSetUp(Mat inA,Vec scale)
       r_rmapd[i] = inA->rmap->mapping->indices[i] + 1;
     }
   }
-  if (nt != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt %D n %D",nt,n);
+  PetscCheckFalse(nt != n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt %" PetscInt_FMT " n %" PetscInt_FMT,nt,n);
   ierr = PetscMalloc1(n+1,&auglyrmapd);CHKERRQ(ierr);
   for (i=0; i<inA->rmap->mapping->n; i++) {
     if (r_rmapd[i]) {
@@ -252,7 +253,7 @@ PetscErrorCode MatMPISELLDiagonalScaleLocalSetUp(Mat inA,Vec scale)
       r_rmapo[i] = lindices[inA->rmap->mapping->indices[i]];
     }
   }
-  if (nt > no) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt %D no %D",nt,n);
+  PetscCheckFalse(nt > no,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Hmm nt %" PetscInt_FMT " no %" PetscInt_FMT,nt,n);
   ierr = PetscFree(lindices);CHKERRQ(ierr);
   ierr = PetscMalloc1(nt+1,&auglyrmapo);CHKERRQ(ierr);
   for (i=0; i<inA->rmap->mapping->n; i++) {

@@ -177,12 +177,12 @@ static PetscErrorCode MatDestroy_LocalRef(Mat B)
 
    Not Collective
 
-   Input Arguments:
+   Input Parameters:
 + A - Full matrix, generally parallel
 . isrow - Local index set for the rows
 - iscol - Local index set for the columns
 
-   Output Arguments:
+   Output Parameter:
 . newmat - New serial Mat
 
    Level: developer
@@ -209,7 +209,7 @@ PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
   PetscValidHeaderSpecific(isrow,IS_CLASSID,2);
   PetscValidHeaderSpecific(iscol,IS_CLASSID,3);
   PetscValidPointer(newmat,4);
-  if (!A->rmap->mapping) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Matrix must have local to global mapping provided before this call");
+  PetscCheckFalse(!A->rmap->mapping,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Matrix must have local to global mapping provided before this call");
   *newmat = NULL;
 
   ierr = MatCreate(PETSC_COMM_SELF,&B);CHKERRQ(ierr);

@@ -2,7 +2,7 @@
 #define __CUDAVECIMPL
 
 #include <petscvec.h>
-#include <petscdevice.h>
+#include <petsc/private/deviceimpl.h>
 #include <petsc/private/vecimpl.h>
 
 typedef struct {
@@ -47,11 +47,14 @@ PETSC_INTERN PetscErrorCode VecAYPX_SeqCUDA(Vec,PetscScalar,Vec);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqCUDA(Vec,PetscRandom);
 PETSC_INTERN PetscErrorCode VecGetLocalVector_SeqCUDA(Vec,Vec);
 PETSC_INTERN PetscErrorCode VecRestoreLocalVector_SeqCUDA(Vec,Vec);
+PETSC_INTERN PetscErrorCode VecGetLocalVectorRead_SeqCUDA(Vec,Vec);
+PETSC_INTERN PetscErrorCode VecRestoreLocalVectorRead_SeqCUDA(Vec,Vec);
 PETSC_INTERN PetscErrorCode VecGetArrayWrite_SeqCUDA(Vec,PetscScalar**);
 PETSC_INTERN PetscErrorCode VecGetArray_SeqCUDA(Vec,PetscScalar**);
 PETSC_INTERN PetscErrorCode VecRestoreArray_SeqCUDA(Vec,PetscScalar**);
 PETSC_INTERN PetscErrorCode VecGetArrayAndMemType_SeqCUDA(Vec,PetscScalar**,PetscMemType*);
 PETSC_INTERN PetscErrorCode VecRestoreArrayAndMemType_SeqCUDA(Vec,PetscScalar**);
+PETSC_INTERN PetscErrorCode VecGetArrayWriteAndMemType_SeqCUDA(Vec,PetscScalar**,PetscMemType*);
 PETSC_INTERN PetscErrorCode VecCopy_SeqCUDA_Private(Vec,Vec);
 PETSC_INTERN PetscErrorCode VecDestroy_SeqCUDA_Private(Vec);
 PETSC_INTERN PetscErrorCode VecResetArray_SeqCUDA_Private(Vec);

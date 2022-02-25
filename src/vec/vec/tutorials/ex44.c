@@ -37,7 +37,7 @@ int main(int argc,char **args)
     ierr = VecAssemblyBegin(x[i]);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(x[i]);CHKERRQ(ierr);
     ierr = PetscFree2(idx, vals);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Original X[%i] vector\n", i);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Original X[%" PetscInt_FMT "] vector\n", i);CHKERRQ(ierr);
     ierr = VecView(x[i], PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = VecCreate(PETSC_COMM_WORLD, &y);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ int main(int argc,char **args)
   /* ---------- using index sets on expected Y instead of concatenated Y ----------- */
   for (i=0; i<nx; i++) {
     ierr = VecGetSubVector(y, x_is[i], &x_test);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Testing index set for X[%i] component\n", i);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Testing index set for X[%" PetscInt_FMT "] component\n", i);CHKERRQ(ierr);
     ierr = VecView(x_test, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     x_equal = PETSC_FALSE;
     ierr = VecEqual(x_test, x[i], &x_equal);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ int main(int argc,char **args)
     ierr = VecScatterBegin(y_to_x, y, x_test, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(y_to_x, y, x_test, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&y_to_x);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Testing VecScatter for Y -> X[%i]\n", i);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Testing VecScatter for Y -> X[%" PetscInt_FMT "]\n", i);CHKERRQ(ierr);
     ierr = VecView(x_test, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     x_equal = PETSC_FALSE;
     ierr = VecEqual(x_test, x[i], &x_equal);CHKERRQ(ierr);

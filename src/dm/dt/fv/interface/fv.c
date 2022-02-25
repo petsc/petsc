@@ -86,7 +86,7 @@ PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name)
 
   ierr = PetscLimiterRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(PetscLimiterList, name, &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PetscObjectComm((PetscObject) lim), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscLimiter type: %s", name);
+  PetscCheckFalse(!r,PetscObjectComm((PetscObject) lim), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscLimiter type: %s", name);
 
   if (lim->ops->destroy) {
     ierr              = (*lim->ops->destroy)(lim);CHKERRQ(ierr);
@@ -152,7 +152,7 @@ PetscErrorCode  PetscLimiterViewFromOptions(PetscLimiter A,PetscObject obj,const
 
   Collective on lim
 
-  Input Parameter:
+  Input Parameters:
 + lim - the PetscLimiter object to view
 - v   - the viewer
 
@@ -1004,7 +1004,7 @@ PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name)
 
   ierr = PetscFVRegisterAll();CHKERRQ(ierr);
   ierr = PetscFunctionListFind(PetscFVList, name, &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PetscObjectComm((PetscObject) fvm), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscFV type: %s", name);
+  PetscCheckFalse(!r,PetscObjectComm((PetscObject) fvm), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscFV type: %s", name);
 
   if (fvm->ops->destroy) {
     ierr              = (*fvm->ops->destroy)(fvm);CHKERRQ(ierr);
@@ -1070,7 +1070,7 @@ PetscErrorCode  PetscFVViewFromOptions(PetscFV A,PetscObject obj,const char name
 
   Collective on fvm
 
-  Input Parameter:
+  Input Parameters:
 + fvm - the PetscFV object to view
 - v   - the viewer
 
@@ -1754,7 +1754,7 @@ PetscErrorCode PetscFVComputeGradient(PetscFV fvm, PetscInt numFaces, PetscScala
 . uL           - The state from the cell on the left
 - uR           - The state from the cell on the right
 
-  Output Parameter:
+  Output Parameters:
 + fluxL        - the left fluxes for each face
 - fluxR        - the right fluxes for each face
 
@@ -2034,7 +2034,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscIn
   ierr = PetscFPTrapPush(PETSC_FP_TRAP_OFF);CHKERRQ(ierr);
   PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info));
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
-  if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRF error");
+  PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRF error");
   R = A; /* Upper triangular part of A now contains R, the rest contains the elementary reflectors */
 
   /* Extract an explicit representation of Q */
@@ -2042,7 +2042,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscIn
   ierr = PetscArraycpy(Q,A,mstride*n);CHKERRQ(ierr);
   K    = N;                     /* full rank */
   PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&M,&N,&K,Q,&lda,tau,work,&ldwork,&info));
-  if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR/xUNGQR error");
+  PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR/xUNGQR error");
 
   /* Compute A^{-T} = (R^{-1} Q^T)^T = Q R^{-T} */
   Alpha = 1.0;
@@ -2111,9 +2111,9 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
   PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,&info));
   ierr = PetscFPTrapPop();CHKERRQ(ierr);
 #endif
-  if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGELSS error");
+  PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xGELSS error");
   /* The following check should be turned into a diagnostic as soon as someone wants to do this intentionally */
-  if (irank < PetscMin(M,N)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Rank deficient least squares fit, indicates an isolated cell with two colinear points");
+  PetscCheckFalse(irank < PetscMin(M,N),PETSC_COMM_SELF,PETSC_ERR_USER,"Rank deficient least squares fit, indicates an isolated cell with two colinear points");
   PetscFunctionReturn(0);
 }
 
@@ -2145,7 +2145,7 @@ static PetscErrorCode PetscFVLeastSquaresDebugCell_Static(PetscFV fvm, PetscInt 
       grad[1] += fg->grad[!i][1] * du;
     }
   }
-  PetscPrintf(PETSC_COMM_SELF, "cell[%d] grad (%g, %g)\n", cell, grad[0], grad[1]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF, "cell[%d] grad (%g, %g)\n", cell, grad[0], grad[1]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
@@ -2172,8 +2172,8 @@ static PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt 
 
   PetscFunctionBegin;
   if (numFaces > maxFaces) {
-    if (maxFaces < 0) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Reconstruction has not been initialized, call PetscFVLeastSquaresSetMaxFaces()");
-    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of input faces %D > %D maxfaces", numFaces, maxFaces);
+    PetscCheckFalse(maxFaces < 0,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Reconstruction has not been initialized, call PetscFVLeastSquaresSetMaxFaces()");
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of input faces %D > %D maxfaces", numFaces, maxFaces);
   }
   ierr = PetscFVGetSpatialDimension(fvm, &dim);CHKERRQ(ierr);
   for (f = 0; f < numFaces; ++f) {

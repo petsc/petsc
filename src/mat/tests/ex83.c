@@ -31,12 +31,12 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
-  if (size != 4) SETERRQ(comm,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 4 processors \n");
+  PetscCheckFalse(size != 4,comm,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 4 processors ");
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
   /*set a small matrix */
   ierr = PetscMalloc1(5,&ia);CHKERRQ(ierr);
   ierr = PetscMalloc1(16,&ja);CHKERRQ(ierr);
-  if (!rank) {
+  if (rank == 0) {
     ja[0] = 1; ja[1] = 4; ja[2] = 0; ja[3] = 2; ja[4] = 5; ja[5] = 1; ja[6] = 3; ja[7] = 6;
     ja[8] = 2; ja[9] = 7;
     ia[0] = 0; ia[1] = 2; ia[2] = 5; ia[3] = 8; ia[4] = 10;

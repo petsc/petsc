@@ -133,7 +133,7 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
 
   Level: developer
 
-.seealso: DMPlexComputeJacobianActionFEM()
+.seealso: DMPlexTSComputeIFunctionFEM(), DMPlexTSComputeRHSFunctionFEM()
 @*/
 PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, void *user)
 {
@@ -190,7 +190,7 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
 
   Level: developer
 
-.seealso: DMPlexComputeJacobianActionFEM()
+.seealso: DMPlexTSComputeIFunctionFEM(), DMPlexTSComputeRHSFunctionFEM()
 @*/
 PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user)
 {
@@ -238,6 +238,61 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
   PetscFunctionReturn(0);
 }
 
+/*@
+  DMPlexTSComputeRHSFunctionFEM - Form the local residual G from the local input X using pointwise functions specified by the user
+
+  Input Parameters:
++ dm - The mesh
+. t - The time
+. locX  - Local solution
+- user - The user context
+
+  Output Parameter:
+. locG  - Local output vector
+
+  Level: developer
+
+.seealso: DMPlexTSComputeIFunctionFEM(), DMPlexTSComputeIJacobianFEM()
+@*/
+PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locG, void *user)
+{
+  DM             plex;
+  IS             allcellIS;
+  PetscInt       Nds, s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMTSConvertPlex(dm, &plex, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = DMPlexGetAllCells_Internal(plex, &allcellIS);CHKERRQ(ierr);
+  ierr = DMGetNumDS(dm, &Nds);CHKERRQ(ierr);
+  for (s = 0; s < Nds; ++s) {
+    PetscDS          ds;
+    IS               cellIS;
+    PetscFormKey key;
+
+    ierr = DMGetRegionNumDS(dm, s, &key.label, NULL, &ds);CHKERRQ(ierr);
+    key.value = 0;
+    key.field = 0;
+    key.part  = 100;
+    if (!key.label) {
+      ierr = PetscObjectReference((PetscObject) allcellIS);CHKERRQ(ierr);
+      cellIS = allcellIS;
+    } else {
+      IS pointIS;
+
+      key.value = 1;
+      ierr = DMLabelGetStratumIS(key.label, key.value, &pointIS);CHKERRQ(ierr);
+      ierr = ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS);CHKERRQ(ierr);
+      ierr = ISDestroy(&pointIS);CHKERRQ(ierr);
+    }
+    ierr = DMPlexComputeResidual_Internal(plex, key, cellIS, time, locX, NULL, time, locG, user);CHKERRQ(ierr);
+    ierr = ISDestroy(&cellIS);CHKERRQ(ierr);
+  }
+  ierr = ISDestroy(&allcellIS);CHKERRQ(ierr);
+  ierr = DMDestroy(&plex);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*@C
   DMTSCheckResidual - Check the residual of the exact solution
 
@@ -274,7 +329,7 @@ PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   ierr = TSComputeIFunction(ts, t, u, u_t, r, PETSC_FALSE);CHKERRQ(ierr);
   ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
   if (tol >= 0.0) {
-    if (res > tol) SETERRQ2(comm, PETSC_ERR_ARG_WRONG, "L_2 Residual %g exceeds tolerance %g", (double) res, (double) tol);
+    PetscCheckFalse(res > tol,comm, PETSC_ERR_ARG_WRONG, "L_2 Residual %g exceeds tolerance %g", (double) res, (double) tol);
   } else if (residual) {
     *residual = res;
   } else {
@@ -352,7 +407,7 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   if (nullspace) {
     PetscBool isNull;
     ierr = MatNullSpaceTest(nullspace, J, &isNull);CHKERRQ(ierr);
-    if (!isNull) SETERRQ(comm, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
+    PetscCheckFalse(!isNull,comm, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
   }
   /* Taylor test */
   {
@@ -405,7 +460,7 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
     ierr = PetscFree3(es, hs, errors);CHKERRQ(ierr);
     /* Slope should be about 2 */
     if (tol >= 0) {
-      if (!isLin && PetscAbsReal(2 - slope) > tol) SETERRQ1(comm, PETSC_ERR_ARG_WRONG, "Taylor approximation convergence rate should be 2, not %0.2f", (double) slope);
+      PetscCheckFalse(!isLin && PetscAbsReal(2 - slope) > tol,comm, PETSC_ERR_ARG_WRONG, "Taylor approximation convergence rate should be 2, not %0.2f", (double) slope);
     } else if (isLinear || convRate) {
       if (isLinear) *isLinear = isLin;
       if (convRate) *convRate = slope;

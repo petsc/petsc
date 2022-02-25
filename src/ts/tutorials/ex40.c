@@ -177,7 +177,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
+  PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
 
   app.nbounces = 0;
   app.maxbounces = 10;
@@ -371,4 +371,9 @@ int main(int argc,char **argv)
       args: -ts_dt 0.25 -ts_adapt_type basic -ts_adapt_wnormtype INFINITY -ts_adapt_monitor
       args: -ts_max_steps 1 -ts_max_reject {{0 1 2}separate_output} -ts_error_if_step_fails false
 
+    test:
+      requires: !single
+      suffix: o
+      args: -rhs-form -ts_type rk -ts_rk_type 2b -ts_trajectory_dirname ex40_o_dir
+      output_file: output/ex40.out
 TEST*/

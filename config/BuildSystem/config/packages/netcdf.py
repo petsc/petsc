@@ -12,7 +12,6 @@ class Configure(config.package.GNUPackage):
     self.functions        = ['nccreate']
     self.includes         = ['netcdf.h']
     self.liblist          = [['libnetcdf.a']]
-    self.cxx              = 1
     self.useddirectly     = 0
     self.installwithbatch = 0
     return

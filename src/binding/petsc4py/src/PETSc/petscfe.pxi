@@ -8,7 +8,8 @@ cdef extern from * nogil:
     PetscFEType PETSCFECOMPOSITE
 
     int PetscFECreate(MPI_Comm, PetscFE*)
-    int PetscFECreateDefault(MPI_Comm, PetscInt, PetscInt, PetscBool, const char [], PetscInt, PetscFE*) 
+    int PetscFECreateDefault(MPI_Comm, PetscInt, PetscInt, PetscBool, const char [], PetscInt, PetscFE*)
+    int PetscFECreateLagrange(MPI_Comm, PetscInt, PetscInt, PetscBool, PetscInt, PetscInt, PetscFE*)
     int PetscFESetType(PetscFE, PetscFEType)
     int PetscFEGetQuadrature(PetscFE, PetscQuadrature*)
     int PetscFEGetFaceQuadrature(PetscFE, PetscQuadrature*)

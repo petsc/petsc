@@ -78,7 +78,7 @@ static PetscErrorCode DMView_DA_2d(DM da,PetscViewer viewer)
 
     ierr = PetscDrawCollectiveBegin(draw);CHKERRQ(ierr);
     /* first processor draw all node lines */
-    if (!rank) {
+    if (rank == 0) {
       ymin = 0.0; ymax = dd->N - 1;
       for (xmin=0; xmin<dd->M; xmin++) {
         ierr = PetscDrawLine(draw,xmin,ymin,xmin,ymax,PETSC_DRAW_BLACK);CHKERRQ(ierr);
@@ -213,10 +213,10 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  if (stencil_type == DMDA_STENCIL_BOX && (bx == DM_BOUNDARY_MIRROR || by == DM_BOUNDARY_MIRROR)) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Mirror boundary and box stencil");
+  PetscCheckFalse(stencil_type == DMDA_STENCIL_BOX && (bx == DM_BOUNDARY_MIRROR || by == DM_BOUNDARY_MIRROR),PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Mirror boundary and box stencil");
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 #if !defined(PETSC_USE_64BIT_INDICES)
-  if (((PetscInt64) M)*((PetscInt64) N)*((PetscInt64) dof) > (PetscInt64) PETSC_MPI_INT_MAX) SETERRQ3(comm,PETSC_ERR_INT_OVERFLOW,"Mesh of %D by %D by %D (dof) is too large for 32 bit indices",M,N,dof);
+  PetscCheckFalse(((PetscInt64) M)*((PetscInt64) N)*((PetscInt64) dof) > (PetscInt64) PETSC_MPI_INT_MAX,comm,PETSC_ERR_INT_OVERFLOW,"Mesh of %D by %D by %D (dof) is too large for 32 bit indices",M,N,dof);
 #endif
 
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
@@ -224,12 +224,12 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 
   dd->p = 1;
   if (m != PETSC_DECIDE) {
-    if (m < 1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);
-    else if (m > size) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %D %d",m,size);
+    PetscCheckFalse(m < 1,comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in X direction: %D",m);
+    else PetscCheckFalse(m > size,comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in X direction: %D %d",m,size);
   }
   if (n != PETSC_DECIDE) {
-    if (n < 1) SETERRQ1(comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %D",n);
-    else if (n > size) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %D %d",n,size);
+    PetscCheckFalse(n < 1,comm,PETSC_ERR_ARG_OUTOFRANGE,"Non-positive number of processors in Y direction: %D",n);
+    else PetscCheckFalse(n > size,comm,PETSC_ERR_ARG_OUTOFRANGE,"Too many processors in Y direction: %D %d",n,size);
   }
 
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
@@ -248,11 +248,11 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
       }
       if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
     }
-    if (m*n != size) SETERRQ(comm,PETSC_ERR_PLIB,"Unable to create partition, check the size of the communicator and input m and n ");
-  } else if (m*n != size) SETERRQ(comm,PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition");
+    PetscCheckFalse(m*n != size,comm,PETSC_ERR_PLIB,"Unable to create partition, check the size of the communicator and input m and n ");
+  } else PetscCheckFalse(m*n != size,comm,PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition");
 
-  if (M < m) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
-  if (N < n) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
+  PetscCheckFalse(M < m,comm,PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
+  PetscCheckFalse(N < n,comm,PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
 
   /*
      Determine locally owned region
@@ -275,7 +275,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     for (i=(rank % m); i<m; i++) {
       left += lx[i];
     }
-    if (left != M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M: %D %D",left,M);
+    PetscCheckFalse(left != M,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M: %D %D",left,M);
   }
 
   /*
@@ -299,15 +299,15 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
     for (i=(rank/m); i<n; i++) {
       left += ly[i];
     }
-    if (left != N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of ly across processors not equal to N: %D %D",left,N);
+    PetscCheckFalse(left != N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of ly across processors not equal to N: %D %D",left,N);
   }
 
   /*
    check if the scatter requires more than one process neighbor or wraps around
    the domain more than once
   */
-  if ((x < s) && ((m > 1) || (bx == DM_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
-  if ((y < s) && ((n > 1) || (by == DM_BOUNDARY_PERIODIC))) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %D is smaller than stencil width s %D",y,s);
+  PetscCheckFalse((x < s) && ((m > 1) || (bx == DM_BOUNDARY_PERIODIC)),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
+  PetscCheckFalse((y < s) && ((n > 1) || (by == DM_BOUNDARY_PERIODIC)),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %D is smaller than stencil width s %D",y,s);
   xe = xs + x;
   ye = ys + y;
 

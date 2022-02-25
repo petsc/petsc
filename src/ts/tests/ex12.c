@@ -190,7 +190,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = PetscObjectGetOptions((PetscObject)ts,&optionscopy);CHKERRQ(ierr);
-  if (options != optionscopy) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"PetscObjectGetOptions() failed");
+  PetscCheckFalse(options != optionscopy,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"PetscObjectGetOptions() failed");
 
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);
@@ -378,7 +378,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
   */
   ierr = MPI_Comm_rank(appctx->comm,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(appctx->comm,&size);CHKERRMPI(ierr);
-  if (!rank)          copyptr[0]           = 1.0;
+  if (rank == 0)          copyptr[0]           = 1.0;
   if (rank == size-1) copyptr[localsize-1] = 2.0;
 
   /*

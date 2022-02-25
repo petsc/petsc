@@ -1,10 +1,12 @@
-=======
-Changes
-=======
+========================
+Changes for each release
+========================
 
 We will continually add new features and enhanced functionality in
 upcoming releases; **small changes in usage and calling sequences of
-PETSc routines will continue to occur**. Although keeping one's code
+PETSc routines will continue to occur**. We use the C/C++ deprecation
+feature (which prints deprecation warnings) to allow users to continue
+to use older interfaces until they update their codes. Although keeping one's code
 accordingly up-to-date can be annoying, all PETSc users will be
 rewarded in the long run with a cleaner, better designed, and
 easier-to-use interface.
@@ -28,6 +30,7 @@ Releases of PETSc
   :maxdepth: 1
 
    main - PETSc development version <dev>
+   3.16 - Public Release, Sep 29, 2021 <316>
    3.15 - Public Release, Mar 30, 2021 <315>
    3.14 - Public Release, Sep 29, 2020 <314>
    3.13  - Public Release, Mar 30, 2020 <313>

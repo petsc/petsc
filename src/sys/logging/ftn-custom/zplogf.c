@@ -1,4 +1,3 @@
-
 #include <petsc/private/fortranimpl.h>
 #include <petscviewer.h>
 
@@ -17,7 +16,6 @@
 #define petsclogstagegetid_       PETSCLOGSTAGEGETID
 #define petsclogeventbegin_       PETSCLOGEVENTBEGIN
 #define petsclogeventend_         PETSCLOGEVENTEND
-#define petsclogflops_            PETSCLOGFLOPS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petsclogview_             petsclogview
 #define petsclogallbegin_         petsclogallbegin
@@ -33,7 +31,6 @@
 #define petsclogstagegetid_       petsclogstagegetid
 #define petsclogeventbegin_       petsclogeventbegin
 #define petsclogeventend_         petsclogeventend
-#define petsclogflops_            petsclogflops
 #endif
 
 PETSC_EXTERN void petsclogeventbegin_(PetscLogEvent *e,PetscErrorCode *ierr)
@@ -44,11 +41,6 @@ PETSC_EXTERN void petsclogeventbegin_(PetscLogEvent *e,PetscErrorCode *ierr)
 PETSC_EXTERN void petsclogeventend_(PetscLogEvent *e,PetscErrorCode *ierr)
 {
   *ierr = PetscLogEventEnd(*e,0,0,0,0);
-}
-
-PETSC_EXTERN void petsclogflops_(PetscLogDouble *f,PetscErrorCode *ierr)
-{
-  *ierr = PetscLogFlops(*f);
 }
 
 PETSC_EXTERN void petsclogview_(PetscViewer *viewer,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)

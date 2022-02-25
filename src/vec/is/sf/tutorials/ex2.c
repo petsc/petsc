@@ -24,7 +24,7 @@ int main(int argc, char **argv)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
 
-  if (size != 2) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for two MPI processes\n");
+  PetscCheckFalse(size != 2,PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for two MPI processes");
 
   ierr = PetscSFCreate(PETSC_COMM_WORLD,&sf);CHKERRQ(ierr);
   ierr = PetscSFSetFromOptions(sf);CHKERRQ(ierr);

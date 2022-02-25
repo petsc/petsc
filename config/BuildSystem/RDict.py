@@ -387,14 +387,14 @@ Arg class, which wraps the usual value.'''
     import RDict # Need this to locate server script
     import sys
     import time
-    import distutils.sysconfig
+    import sysconfig
 
     self.writeLogLine('CLIENT: Spawning a new server with lock file '+os.path.abspath(addrFilename))
     if os.path.exists(addrFilename):
       os.remove(addrFilename)
     oldDir      = os.getcwd()
     source      = os.path.join(os.path.dirname(os.path.abspath(sys.modules['RDict'].__file__)), 'RDict.py')
-    interpreter = os.path.join(distutils.sysconfig.get_config_var('BINDIR'), distutils.sysconfig.get_config_var('PYTHON'))
+    interpreter = os.path.join(sysconfig.get_config_var('BINDIR'), sysconfig.get_config_var('PYTHON'))
     if not os.path.isfile(interpreter):
       interpreter = 'python'
     os.chdir(os.path.dirname(addrFilename))

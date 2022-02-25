@@ -168,7 +168,7 @@ PetscErrorCode  ISColoringView(ISColoring iscoloring,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"ISColoring Object: %d MPI processes\n",size);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"ISColoringType: %s\n",ISColoringTypes[iscoloring->ctype]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushSynchronized(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of colors %d\n",rank,iscoloring->n);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number of colors %" PetscInt_FMT "\n",rank,iscoloring->n);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopSynchronized(viewer);CHKERRQ(ierr);
   }
@@ -214,7 +214,7 @@ PetscErrorCode  ISColoringGetColors(ISColoring iscoloring,PetscInt *n,PetscInt *
 
    Collective on ISColoring
 
-   Input Parameter:
+   Input Parameters:
 +  iscoloring - the coloring context
 -  mode - if this value is PETSC_OWN_POINTER then the caller owns the pointer and must free the array of IS and each IS in the array
 
@@ -242,7 +242,7 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscCopyMode mode, PetscI
 
       if (PetscDefined(USE_DEBUG)) {
         for (i=0; i<n; i++) {
-          if (((PetscInt)colors[i]) >= nc) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coloring is our of range index %d value %d number colors %d",(int)i,(int)colors[i],(int)nc);
+          PetscCheckFalse(((PetscInt)colors[i]) >= nc,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coloring is our of range index %d value %d number colors %d",(int)i,(int)colors[i],(int)nc);
         }
       }
 
@@ -285,7 +285,7 @@ PetscErrorCode  ISColoringGetIS(ISColoring iscoloring,PetscCopyMode mode, PetscI
 
    Collective on ISColoring
 
-   Input Parameter:
+   Input Parameters:
 +  iscoloring - the coloring context
 .  mode - who retains ownership of the is
 -  is - array of index sets
@@ -340,8 +340,8 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
 
   PetscFunctionBegin;
   if (ncolors != PETSC_DECIDE && ncolors > IS_COLORING_MAX) {
-    if (ncolors > PETSC_MAX_UINT16) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Max color value exceeds %d limit. This number is unrealistic. Perhaps a bug in code?\nCurrent max: %d user requested: %D",PETSC_MAX_UINT16,PETSC_IS_COLORING_MAX,ncolors);
-    else                 SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Max color value exceeds limit. Perhaps reconfigure PETSc with --with-is-color-value-type=short?\n Current max: %d user requested: %D",PETSC_IS_COLORING_MAX,ncolors);
+    PetscCheckFalse(ncolors > PETSC_MAX_UINT16,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Max color value exceeds %d limit. This number is unrealistic. Perhaps a bug in code?\nCurrent max: %d user requested: %" PetscInt_FMT,PETSC_MAX_UINT16,PETSC_IS_COLORING_MAX,ncolors);
+    else                 SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Max color value exceeds limit. Perhaps reconfigure PETSc with --with-is-color-value-type=short?\n Current max: %d user requested: %" PetscInt_FMT,PETSC_IS_COLORING_MAX,ncolors);
   }
   ierr = PetscNew(iscoloring);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);
@@ -352,7 +352,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
 
   /* should use MPI_Scan() */
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     base = 0;
     top  = n;
   } else {
@@ -370,7 +370,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
   }
   ncwork++;
   ierr = MPIU_Allreduce(&ncwork,&nc,1,MPIU_INT,MPI_MAX,comm);CHKERRMPI(ierr);
-  if (nc > ncolors) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of colors passed in %D is less then the actual number of colors in array %D",ncolors,nc);
+  PetscCheckFalse(nc > ncolors,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Number of colors passed in %" PetscInt_FMT " is less then the actual number of colors in array %" PetscInt_FMT,ncolors,nc);
   (*iscoloring)->n      = nc;
   (*iscoloring)->is     = NULL;
   (*iscoloring)->N      = n;
@@ -389,7 +389,7 @@ PetscErrorCode  ISColoringCreate(MPI_Comm comm,PetscInt ncolors,PetscInt n,const
     (*iscoloring)->allocated = PETSC_FALSE;
   }
   ierr = ISColoringViewFromOptions(*iscoloring,NULL,"-is_coloring_view");CHKERRQ(ierr);
-  ierr = PetscInfo1(0,"Number of colors %D\n",nc);CHKERRQ(ierr);
+  ierr = PetscInfo(0,"Number of colors %" PetscInt_FMT "\n",nc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -427,14 +427,13 @@ PetscErrorCode  ISBuildTwoSided(IS ito,IS toindx, IS *rows)
    ierr = PetscObjectGetComm((PetscObject)ito,&comm);CHKERRQ(ierr);
    ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
    ierr = ISGetLocalSize(ito,&ito_ln);CHKERRQ(ierr);
-   /* why we do not have ISGetLayout? */
-   isrmap = ito->map;
+   ierr = ISGetLayout(ito,&isrmap);CHKERRQ(ierr);
    ierr = PetscLayoutGetRange(isrmap,&rstart,NULL);CHKERRQ(ierr);
    ierr = ISGetIndices(ito,&ito_indices);CHKERRQ(ierr);
    ierr = PetscCalloc2(size,&tosizes_tmp,size+1,&tooffsets_tmp);CHKERRQ(ierr);
    for (i=0; i<ito_ln; i++) {
      if (ito_indices[i]<0) continue;
-     if (ito_indices[i]>=size) SETERRQ2(comm,PETSC_ERR_ARG_OUTOFRANGE,"target rank %d is larger than communicator size %d ",ito_indices[i],size);
+     else PetscCheckFalse(ito_indices[i]>=size,comm,PETSC_ERR_ARG_OUTOFRANGE,"target rank %" PetscInt_FMT " is larger than communicator size %d ",ito_indices[i],size);
      tosizes_tmp[ito_indices[i]]++;
    }
    nto = 0;
@@ -637,7 +636,7 @@ PetscErrorCode  ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
     for (i=0; i<n; i++) np = PetscMax(np,indices[i]);
     ierr = MPIU_Allreduce(&np,&npt,1,MPIU_INT,MPI_MAX,comm);CHKERRMPI(ierr);
     np   = npt+1; /* so that it looks like a MPI_Comm_size output */
-    if (np > len) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Length of count array %D is less than number of partitions %D",len,np);
+    PetscCheckFalse(np > len,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Length of count array %" PetscInt_FMT " is less than number of partitions %" PetscInt_FMT,len,np);
   }
 
   /*
@@ -733,12 +732,12 @@ PetscErrorCode  ISAllGather(IS is,IS *isout)
 
     Collective
 
-    Input Parameter:
+    Input Parameters:
 +   comm - communicator to share the indices
 .   n - local size of set
 -   lindices - local colors
 
-    Output Parameter:
+    Output Parameters:
 +   outN - total number of indices
 -   outindices - all of the colors
 
@@ -780,7 +779,7 @@ PetscErrorCode  ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lind
 
     Collective on IS
 
-    Input Parameter:
+    Input Parameters:
 +   is - the index set
 .   nmin - the first index desired in the local part of the complement
 -   nmax - the largest index desired in the local part of the complement (note that all indices in is must be greater or equal to nmin and less than nmax)
@@ -810,17 +809,17 @@ PetscErrorCode  ISComplement(IS is,PetscInt nmin,PetscInt nmax,IS *isout)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(isout,4);
-  if (nmin < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nmin %D cannot be negative",nmin);
-  if (nmin > nmax) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nmin %D cannot be greater than nmax %D",nmin,nmax);
+  PetscCheckFalse(nmin < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nmin %" PetscInt_FMT " cannot be negative",nmin);
+  PetscCheckFalse(nmin > nmax,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"nmin %" PetscInt_FMT " cannot be greater than nmax %" PetscInt_FMT,nmin,nmax);
   ierr = ISSorted(is,&sorted);CHKERRQ(ierr);
-  if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Index set must be sorted");
+  PetscCheckFalse(!sorted,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Index set must be sorted");
 
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
   if (PetscDefined(USE_DEBUG)) {
     for (i=0; i<n; i++) {
-      if (indices[i] <  nmin) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D's value %D is smaller than minimum given %D",i,indices[i],nmin);
-      if (indices[i] >= nmax) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D's value %D is larger than maximum given %D",i,indices[i],nmax);
+      PetscCheckFalse(indices[i] <  nmin,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %" PetscInt_FMT "'s value %" PetscInt_FMT " is smaller than minimum given %" PetscInt_FMT,i,indices[i],nmin);
+      PetscCheckFalse(indices[i] >= nmax,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %" PetscInt_FMT "'s value %" PetscInt_FMT " is larger than maximum given %" PetscInt_FMT,i,indices[i],nmax);
     }
   }
   /* Count number of unique entries */
@@ -834,7 +833,7 @@ PetscErrorCode  ISComplement(IS is,PetscInt nmin,PetscInt nmax,IS *isout)
     if (j<n && i==indices[j]) do { j++; } while (j<n && i==indices[j]);
     else nindices[cnt++] = i;
   }
-  if (cnt != nmax-nmin-unique) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of entries found in complement %D does not match expected %D",cnt,nmax-nmin-unique);
+  PetscCheckFalse(cnt != nmax-nmin-unique,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of entries found in complement %" PetscInt_FMT " does not match expected %" PetscInt_FMT,cnt,nmax-nmin-unique);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is),cnt,nindices,PETSC_OWN_POINTER,isout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
   PetscFunctionReturn(0);

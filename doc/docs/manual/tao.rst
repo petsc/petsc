@@ -3,241 +3,35 @@
 TAO: Optimization Solvers
 =========================
 
-
-  The TAO manual has been migrated to Sphinx, and is now part of PETSc manual `at <https://petsc.org/release/documentation/manual/>`__.
-
-Preface
--------
-
-The Toolkit for Advanced Optimization (TAO) focuses on the development
-of algorithms and software for the solution of large-scale optimization
-problems on high-performance architectures. Areas of interest include
-unconstrained and bound-constrained optimization, nonlinear least
-squares problems, optimization problems with partial differential
-equation constraints, and variational inequalities and complementarity
-constraints.
-
-The development of TAO was motivated by the scattered support for
-parallel computations and the lack of reuse of external toolkits in
-current optimization software. Our aim is to produce high-quality
-optimization software for computing environments ranging from
-workstations and laptops to massively parallel high-performance
-architectures. Our design decisions are strongly motivated by the
-challenges inherent in the use of large-scale distributed memory
-architectures and the reality of working with large, often poorly
-structured legacy codes for specific applications.
-
-Changes in Version 3.5
-----------------------
-
-TAO is now included in the PETSc distribution and the PETSc repository,
-thus it versions will always match the PETSc version. The TaoSolver
-object is now simply Tao and there is no TaoInitialize() or
-TaoFinalize(). Numerious changes have been made to make the source code
-more PETSc-like. All future changes will be listed in the PETSc changes
-documentation.
-
-Changes in Version 2.0
-----------------------
-
-TAO version numbers will now adhere to the new PETSc standard of
-Major-Minor-Patch. Any patch-level changes will have an attempt to keep
-the applicatin programming interface (API) untouched, but in any case
-backward compatibility with previous version of the minor version will
-be maintained.
-
-Many new features and interface changes were introduced in TAO version
-2.0 (and continue to be used in version 2.2.0). TAO applications created
-for previous versions will need to be updated to work with the new
-version. We apologize for any inconvenience this situation may cause;
-these changes were needed to keep the interface clean, clear, and easy
-to use. Some of the most important changes are highlighted below.
-
-**Elimination of the TaoApplication Object**. The largest change to the
-TAO programming interface was the elimination of the TaoApplication data
-structure. In previous versions of TAO, this structure was created by
-the application programmer for application-specific data and routines.
-In order to more closely follow PETSc design principles, this
-information is now directly attached to a Tao object instead. See
-:any:`sec_tao_solvers` for a listing of what
-the most common TAO routines now look like without the TaoApplication
-object.
-
-**New Algorithms**. TAO has a new algorithm for solving derivative-free
-nonlinear least squares problems, POUNDerS, that can efficiently solve
-parameter optimization problems when no derivatives are available and
-function evaluations are expensive. See
-:any:`sec_pounders` for more information on the details of
-the algorithm and :any:`sec_leastsquares` for how to use it.
-TAO now also provides a new algorithm for the solution of optimization
-problems with partial differential equation (PDE) constraints based on a
-linearly constrained augmented Lagrangian (LCL) method. More information
-on PDE-constrained optimization and LCL can be found in
-:any:`sec_lcl`.
-
-**TaoLineSearch Object**. TAO has promoted the line search to a full
-object. Any of the available TAO line search algorithms (Armijo,
-Moré-Thuente, GPCG, and unit) can now be selected regardless of the
-overlying TAO algorithm. Users can also create new line search
-algorithms that may be more suitable for their applications. More
-information is available in
-:any:`sec_taolinesearch`.
-
-**Better Adherence to PETSc Style**. TAO now features a tighter
-association with PETSc standards and practices. All TAO constructs now
-follow PETSc conventions and are written in C. There is no longer a
-separate abstract class for vectors, matrices, and linear solvers. TAO
-now uses these PETSc objects directly. We believe these changes make TAO
-applications much easier to create and maintain for users already
-familiar with PETSc programming. These changes also allow TAO to relax
-some of the previously imposed requirements on the PETSc configuration.
-TAO now works with PETSc configured with single-precision and
-quad-precision arithmetic when using GNU compilers and no longer
-requires a C++ compiler. However, TAO is not compatible with PETSc
-installations using complex data types.
-
-Acknowledgments
----------------
-
-We especially thank Jorge Moré for his leadership, vision, and effort on
-previous versions of TAO.
-
-TAO relies on PETSc for the linear algebra required to solve
-optimization problems, and we have benefited from the PETSc team’s
-experience, tools, software, and advice. In many ways, TAO is a natural
-outcome of the PETSc development.
-
-TAO has benefited from the work of various researchers who have provided
-solvers, test problems, and interfaces. In particular, we acknowledge
-Lisa Grignon, Elizabeth Dolan, Boyana Norris, Gabriel Lopez-Calva, Yurii
-Zinchenko, Michael Gertz, Jarek Nieplocha, Limin Zhang, Manojkumar
-Krishnan, and Evan Gawlik. We also thank all TAO users for their
-comments, bug reports, and encouragement.
-
-The development of TAO is supported by the Office of Advanced Scientific
-Computing Research, Office of Science, U.S. Department of Energy, under
-Contract DE-AC02-06CH11357. We also thank the Argonne Laboratory
-Computing Resource Center and the National Energy Research Scientific
-Computing Center for allowing us to test and run TAO applications on
-their machines.
-
-.. _sec_tao_introduction:
-
-Introduction
-------------
-
-The Toolkit for Advanced Optimization (TAO) focuses on the design and
-implementation of optimization software for solving large-scale
-optimization applications on high-performance architectures. Our
-approach is motivated by the scattered support for parallel computations
-and lack of reuse of linear algebra software in currently available
-optimization software. The TAO design allows the reuse of toolkits that
-provide lower-level support (parallel sparse matrix data structures,
-preconditioners, solvers), and thus we are able to build on top of these
-toolkits instead of having to redevelop code. The advantages in terms of
-efficiency and development time are significant. This section provides a
-short introduction to our design philosophy and the importance of this
-design.
-
-The TAO design philosophy place strong emphasis on the reuse of external
-tools where appropriate. Our design enables bidirectional connection to
-lower-level linear algebra support (e.g., parallel sparse matrix data
-structures) provided in toolkits such as PETSc
-as well as
-higher-level application frameworks. Our design decisions are strongly
-motivated by the challenges inherent in the use of large-scale
-distributed memory architectures and the reality of working with large
-and often poorly structured legacy codes for specific applications.
-:numref:`fig_tao_design` illustrates how the TAO software
-works with external libraries and application code.
-
-
-.. figure:: images/taofig.svg
-  :name: fig_tao_design
-
-  TAO Design
-
-The TAO solvers use fundamental PETSc objects to define and solve
-optimization problems: vectors, matrices, index sets, and linear
-solvers. The concepts of vectors and matrices are standard, while an
-index set refers to a set of integers used to identify particular
-elements of vectors or matrices. An optimization algorithm is a sequence
-of well-defined operations on these objects. These operations include
-vector sums, inner products, and matrix-vector multiplication.
-
-With sufficiently flexible abstract interfaces, PETSc can support a
-variety of implementations of data structures and algorithms. These
-abstractions allow us to more easily experiment with a range of
-algorithmic and data structure options for realistic problems. Such
-capabilities are critical for making high-performance optimization
-software adaptable to the continual evolution of parallel and
-distributed architectures and the research community’s discovery of new
-algorithms that exploit their features.
+The Toolkit for Advanced Optimization (TAO) focuses on algorithms for the
+solution of large-scale optimization problems on high-performance
+architectures.  Methods are available for unconstrained, bound-constrained and
+generally constrained optimization, nonlinear least squares problems,
+variational inequalities and complementarity constraints.
 
 .. _sec_tao_getting_started:
 
-Getting Started
----------------
-
-TAO can be used on a personal computer with a single processor or within
-a parallel environment. Its basic usage involves only a few commands,
-but fully understanding its usage requires time. Application programmers
-can easily begin to use TAO by working with the examples provided and
-then gradually learn more details according to their needs. The current
-version of TAO and the most recent help concerning installation and
-usage can be found at https://www.petsc.org .
-
-See :doc:`/docs/manual/index` and :doc:`/install/index` for how to
-install and start using PETSc/TAO.
-
-Writing Application Codes with TAO
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Examples throughout the library demonstrate the software usage and can
-serve as templates for developing custom applications. We suggest that
-new TAO users examine programs in ``${PETSC_DIR}/src/tao/<unconstrained,bound,..>/tutorials``
-
-The :doc:`manual pages </docs/manualpages/index>`
-provide indices (organized by both routine names and concepts) to the
-tutorial examples.
-
-We suggest the following procedure for writing a new application program
-using TAO:
-
-#. Install PETSc/TAO according to the instructions at
-   :doc:`/install/index`.
-
-#. Copy an example and makefile from the directories ``${PETSC_DIR}/src/tao/<unconstrained,bound,..>/tutorials``.
-
-   compile the example, and run the program.
-
-#. Select the example program matching the application most closely, and
-   use it as a starting point for developing a customized code.
-
-.. _sec_tao_simple:
-
-A Simple TAO Example
-~~~~~~~~~~~~~~~~~~~~
+Getting Started: A Simple TAO Example
+-------------------------------------
 
 To help the user start using TAO immediately, we introduce here a simple
-uniprocessor example. Please read :any:`sec_tao_solver`
+uniprocessor example. Please read :any:`sec_tao_solvers`
 for a more in-depth discussion on using the TAO solvers. The code
-presented `below <#tao-example1>`_ minimizes the
+presented :any:`below <tao-example1>` minimizes the
 extended Rosenbrock function :math:`f: \mathbb R^n \to \mathbb R`
 defined by
 
 .. math::
 
-   f(x) = 
-    \sum_{i=0}^{m-1} \left( \alpha(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 \right),
+   f(x) = \sum_{i=0}^{m-1} \left( \alpha(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 \right),
 
 where :math:`n = 2m` is the number of variables. Note that while we use
 the C language to introduce the TAO software, the package is fully
-usable from C++ and Fortran77/90.
+usable from C++ and Fortran 77/90.
 :any:`chapter_fortran` discusses additional
 issues concerning Fortran usage.
 
-The code in `the example <#tao-example1>`_ contains many of
+The code in :any:`the example <tao-example1>` contains many of
 the components needed to write most TAO programs and thus is
 illustrative of the features present in complex optimization problems.
 Note that for display purposes we have omitted some nonessential lines
@@ -247,10 +41,10 @@ the code for ``FormHessian``, which evaluates the Hessian matrix for
 Rosenbrock’s function. The complete code is available in
 `$TAO_DIR/src/unconstrained/tutorials/rosenbrock1.c <../../src/tao/unconstrained/tutorials/rosenbrock1.c.html>`__.
 The following sections annotate the lines of code in
-`the example <#tao-example1>`_.
+:any:`the example <tao-example1>`.
 
+.. _tao-example1:
 .. admonition:: Listing: ``src/tao/unconstrained/tutorials/rosenbrock1.c``
-   :name: tao-example1
 
    .. literalinclude:: /../src/tao/unconstrained/tutorials/rosenbrock1.c
       :prepend: #include <petsctao.h>
@@ -258,23 +52,10 @@ The following sections annotate the lines of code in
       :end-at: PetscFinalize
       :append: return ierr;}
 
-Include Files
-~~~~~~~~~~~~~
+.. _sec_tao_workflow:
 
-The include file for TAO should be used via the statement
-
-.. code::
-
-      #include <petsctao.h>
-
-The required lower-level include files are automatically included within
-this high-level file.
-
-
-.. _sec_tao_solvers:
-
-TAO Solvers
-~~~~~~~~~~~
+TAO Workflow
+------------
 
 Many TAO applications will follow an ordered set of procedures for
 solving an optimization problem: The user creates a ``Tao`` context and
@@ -284,18 +65,17 @@ call-back routines will be used for evaluating the objective function,
 gradient, and perhaps the Hessian matrix. The user then invokes TAO to
 solve the optimization problem and finally destroys the ``Tao`` context.
 A list of the necessary functions for performing these steps using TAO
-is show below. Details
-of these commands are presented in :any:`sec_tao_solver`.
+is shown below.
 
 .. code::
 
-      TaoCreate(MPI_Comm comm, Tao *tao); 
+      TaoCreate(MPI_Comm comm, Tao *tao);
       TaoSetType(Tao tao, TaoType type);
-      TaoSetInitialVector(Tao tao, Vec x);
-      TaoSetObjectiveAndGradientRoutine(Tao tao, 
-           PetscErrorCode (*FormFGradient)(Tao,Vec,PetscReal*,Vec,void*), 
+      TaoSetSolution(Tao tao, Vec x);
+      TaoSetObjectiveAndGradient(Tao tao, Vec g,
+           PetscErrorCode (*FormFGradient)(Tao,Vec,PetscReal*,Vec,void*),
            void *user);
-      TaoSetHessianRoutine(Tao tao, Mat H, Mat Hpre,
+      TaoSetHessian(Tao tao, Mat H, Mat Hpre,
            PetscErrorCode (*FormHessian)(Tao,Vec,Mat,Mat,
            void*), void *user);
       TaoSolve(Tao tao);
@@ -308,218 +88,8 @@ minimization method (e.g., limited-memory variable metric, conjugate
 gradient, Newton with line search or trust region) but also can
 prescribe the convergence tolerance, set various monitoring routines,
 set iterative methods and preconditions for solving the linear systems,
-and so forth. See :any:`sec_tao_solver` for more
+and so forth. See :any:`sec_tao_solvers` for more
 information on the solver methods available in TAO.
-
-Function Evaluations
-~~~~~~~~~~~~~~~~~~~~
-
-Users of TAO are required to provide routines that perform function
-evaluations. Depending on the solver chosen, they may also have to write
-routines that evaluate the gradient vector and Hessian matrix.
-
-.. _sec_tao_programming:
-
-Programming with PETSc
-~~~~~~~~~~~~~~~~~~~~~~
-
-TAO relies heavily on PETSc not only for its vectors, matrices, and
-linear solvers but also for its programming utilities such as command
-line option handling, error handling, and compiling system. We provide
-here a quick overview of some of these PETSc features. Please refer to
-the :doc:`/docs/manual/index` for a more in-depth
-discussion of PETSc.
-
-Vectors
-^^^^^^^
-
-In `the example above <#tao-example1>`_ the vector
-data structure (``Vec``) is used to store the solution and gradient for
-the TAO unconstrained minimization solvers. A new parallel or sequential
-vector ``x`` of global dimension ``M`` is created with the command
-
-.. code::
-
-      info = VecCreate(MPI_Comm comm,int m,int M,Vec *x);
-
-where ``comm`` denotes the MPI communicator. The type of storage for the
-vector may be set with calls either to ``VecSetType()`` or to
-``VecSetFromOptions()``. Additional vectors of the same type can be
-formed with
-
-.. code::
-
-      info = VecDuplicate(Vec old,Vec *new);
-
-The commands
-
-.. code::
-
-      info = VecSet(Vec X,PetscScalar value);
-      info = VecSetValues(Vec x,int n,int *indices,
-                          Scalar *values,INSERT_VALUES);
-
-respectively set all the components of a vector to a particular scalar
-value and assign a different value to each component. More detailed
-information about PETSc vectors, including their basic operations,
-scattering/gathering, index sets, and distributed arrays, may be found
-in the :doc:`/docs/manual/index`.
-
-Matrices
-^^^^^^^^
-
-Usage of matrices and vectors is similar. The user can create a new
-parallel or sequential matrix ``H`` with ``M`` global rows and ``N``
-global columns, with the routines
-
-.. code::
-
-      ierr = MatCreate(MPI_Comm comm,Mat *H);
-      ierr = MatSetSizes(H,PETSC_DECIDE,PETSC_DECIDE,M,N);
-
-where the matrix format can be specified at runtime. The user could
-alternatively specify each processes’s number of local rows and columns
-using ``m`` and ``n`` instead of ``PETSC_DECIDE``. ``H`` can then be
-used to store the Hessian matrix, as indicated by the call to
-``TaoSetHessianMat()``. Matrix entries can be set with the command
-
-.. code::
-
-      ierr = MatSetValues(Mat H,PetscInt m,PetscInt *im, PetscInt n,
-                          PetscInt *in, PetscScalar *values,INSERT_VALUES);
-
-After all elements have been inserted into the matrix, it must be
-processed with the pair of commands
-
-.. code::
-
-      ierr = MatAssemblyBegin(Mat H,MAT_FINAL_ASSEMBLY);
-      ierr = MatAssemblyEnd(Mat H,MAT_FINAL_ASSEMBLY);
-
-The :doc:`/docs/manual/index` discusses
-various matrix formats as well as the details of some basic matrix
-manipulation routines.
-
-.. _sec_tao_options:
-
-The Options Database
-^^^^^^^^^^^^^^^^^^^^
-
-A TAO application can access the command line options presented at
-runtime through the PETSc options database. This database gives the
-application author the ability to set and change application parameters
-without the need to recompile the application. For example, an
-application may have a grid discretization parameter ``nx`` that can be
-set with the command line option ``-nx <integer>``. The application can
-read this option with the following line of code:
-
-.. code::
-
-      PetscOptionsGetInt(NULL,NULL, "-nx", &nx, &flg);
-
-If the command line option is present, the variable ``nx`` is set
-accordingly; otherwise, ``nx`` remains unchanged. A complete description
-of the options database may be found in the :doc:`/docs/manual/index`.
-
-
-Error Checking
-^^^^^^^^^^^^^^
-
-All TAO commands begin with the ``Tao`` prefix and return an integer
-indicating whether an error has occurred during the call. The error code
-equals zero after the successful completion of the routine and is set to
-a nonzero value if an error has been detected. The macro
-``CHKERRQ(ierr)`` checks the value of ``ierr`` and calls an error
-handler upon error detection. ``CHKERRQ()`` should be used after all
-subroutines to enable a complete error traceback.
-
-Below, we indicate a traceback
-generated by error detection within a sample program. The error occurred
-on line 2110 of the file ``${PETSC_DIR}/src/mat/interface/matrix.c`` in
-the routine ``MatMult()`` and was caused by failure to assemble the
-matrix in the Hessian evaluation routine. The ``MatMult()`` routine was
-called from the ``TaoSolve_NLS()`` routine, which was in turn called on
-line 154 of ``TaoSolve()`` from the ``main()`` routine in the program
-``rosenbrock1.c``. The :doc:`/docs/manual/index` provides further details regarding
-error checking, including information about error handling in Fortran.
-
-.. code-block:: console
-
-   > rosenbrock1 -tao_type nls
-   [0]PETSC ERROR: --------------------- Error Message ------------------------------------
-   [0]PETSC ERROR: Object is in wrong state!
-   [0]PETSC ERROR: Not for unassembled matrix!
-   [0]PETSC ERROR: ------------------------------------------------------------------------
-   [0]PETSC ERROR: Petsc Development HG revision: b95ffff514b66a703d96e6ae8e78ea266ad2ca19
-   [0]PETSC ERROR: See docs/changes/index.html for recent updates.
-   [0]PETSC ERROR: See docs/faq.html for hints about trouble shooting.
-   [0]PETSC ERROR: See docs/index.html for manual pages.
-   [0]PETSC ERROR: ------------------------------------------------------------------------
-   [0]PETSC ERROR: Libraries linked from petsc/arch-linux2-c-debug/lib
-   [0]PETSC ERROR: Configure run at Tue Jul 19 14:13:14 2011
-   [0]PETSC ERROR: Configure options --with-shared-libraries --with-dynamic-loading
-   [0]PETSC ERROR: ------------------------------------------------------------------------
-   [0]PETSC ERROR: MatMult() line 2110 in petsc/src/mat/interface/matrix.c
-   [0]PETSC ERROR: TaoSolve_NLS() line 291 in src/unconstrained/impls/nls/nls.c
-   [0]PETSC ERROR: TaoSolve() line 154 in src/interface/tao.c
-   [0]PETSC ERROR: main() line 94 in src/unconstrained/tutorials/rosenbrock1.c
-   application called MPI_Abort(MPI_COMM_WORLD, 73) - process 0
-
-When running the debugging version of the TAO software (PETSc configured
-with the (default) ``–with-debugging`` option), checking is performed
-for memory corruption (writing outside of array bounds, etc). The macros
-``CHKMEMQ`` and ``CHKMEMA`` can be called anywhere in the code and, when
-used together with the command line option ``-malloc_debug``, check the
-current status of the memory for corruption. By putting several (or
-many) of these macros into an application code, one can usually track
-down the code segment where corruption has occurred.
-
-Parallel Programming
-^^^^^^^^^^^^^^^^^^^^
-
-Since TAO uses the message-passing model for parallel programming and
-employs MPI for all interprocessor communication, the user is free to
-employ MPI routines as needed throughout an application code. By
-default, however, the user is shielded from many of the details of
-message passing within TAO, since these are hidden within parallel
-objects, such as vectors, matrices, and solvers. In addition, TAO users
-can interface to external tools, such as the generalized vector
-scatters/gathers and distributed arrays within PETSc, for assistance in
-managing parallel data.
-
-The user must specify a communicator upon creation of any PETSc or TAO
-object (such as a vector, matrix, or solver) to indicate the processors
-over which the object is to be distributed. For example, some commands
-for matrix, vector, and solver creation are as follows.
-
-.. code::
-
-      ierr = MatCreate(MPI_Comm comm,Mat *H);
-      ierr = VecCreate(MPI_Comm comm,Vec *x);
-      ierr = TaoCreate(MPI_Comm comm,Tao *tao); 
-
-In most cases, the value for ``comm`` will be either ``PETSC_COMM_SELF``
-for single-process objects or ``PETSC_COMM_WORLD`` for objects
-distributed over all processors. The creation routines are collective
-over all processors in the communicator; thus, all processors in the
-communicator *must* call the creation routine. In addition, if a
-sequence of collective routines is being used, the routines *must* be
-called in the same order on each processor.
-
-.. _sec_tao_solver:
-
-Using TAO Solvers
------------------
-
-TAO contains unconstrained minimization, bound-constrained minimization,
-nonlinear complementarity, nonlinear least squares solvers, and solvers
-for optimization problems with partial differential equation
-constraints. The structure of these problems can differ significantly,
-but TAO has a similar interface to all its solvers. Routines that most
-solvers have in common are discussed in this section. A complete list of
-options can be found by consulting the manual pages. Many of the options
-can also be set at the command line. These options can also be found by
-running a program with the ``-help`` option.
 
 Header File
 ~~~~~~~~~~~
@@ -539,7 +109,7 @@ A TAO solver can be created by calling the
 
 .. code::
 
-      TaoCreate(MPI_Comm comm,Tao *newsolver);
+      TaoCreate(MPI_Comm, Tao*);
 
 routine. Much like creating PETSc vector and matrix objects, the first
 argument is an MPI *communicator*. An MPI [#mpi]_
@@ -557,7 +127,7 @@ The routine
 
 .. code::
 
-      TaoSetType(Tao tao,TaoType type);
+      TaoSetType(Tao, TaoType);
 
 can be used to set the algorithm TAO uses to solve the application. The
 various types of TAO solvers and the flags that identify them will be
@@ -568,11 +138,11 @@ solvers acknowledge constraints in the problem and handle them
 accordingly. The user must also be aware of the derivative information
 that is available. Some solvers require second-order information, while
 other solvers require only gradient or function information. The command
-line option ``-tao_method`` (or equivalently ``-tao_type``) followed by
+line option ``-tao_type`` followed by
 a TAO method will override any method specified by the second argument.
-The command line option ``-tao_method tao_lmvm``, for instance, will
-specify the limited-memory, variable metric method for unconstrained
-optimization. Note that the ``TaoType`` variable is a string that
+The command line option ``-tao_type bqnls``, for instance, will
+specify the limited-memory quasi-Newton line search method for
+bound-constrained problems. Note that the ``TaoType`` variable is a string that
 requires quotation marks in an application program, but quotation marks
 are not required at the command line.
 
@@ -586,32 +156,27 @@ the
 command. This routine frees the internal data structures used by the
 solver.
 
-.. _sec_taoapplication:
+Command-line Options
+~~~~~~~~~~~~~~~~~~~~
 
-TAO Applications
-~~~~~~~~~~~~~~~~
+Additional options for the TAO solver can be be set from the command
+line by using the
 
-The solvers in TAO address applications that have a set of variables, an
-objective function, and possibly constraints on the variables. Many
-solvers also require derivatives of the objective and constraint
-functions. To use the TAO solvers, the application developer must define
-a set of variables, implement routines that evaluate the objective
-function and constraint functions, and pass this information to a TAO
-application object.
+.. code::
 
-TAO uses vector and matrix objects to pass this information from the
-application to the solver. The set of variables, for instance, is
-represented in a vector. The gradient of an objective function
-:math:`f: \, \mathbb R^n \to \mathbb R`, evaluated at a point, is also
-represented as a vector. Matrices, on the other hand, can be used to
-represent the Hessian of :math:`f` or the Jacobian of a constraint
-function :math:`c: \, \mathbb R^n \to \mathbb R^m`. The TAO solvers use
-these objects to compute a solution to the application.
+      TaoSetFromOptions(Tao)
+
+routine. This command also provides information about runtime options
+when the user includes the ``-help`` option on the command line.
+
+In addition to common command line options shared by all TAO solvers, each TAO
+method also implements its own specialized options. Please refer to the
+documentation for individual methods for more details.
 
 Defining Variables
-^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~
 
-In all the optimization solvers, the application must provide a **Vec**
+In all the optimization solvers, the application must provide a ``Vec``
 object of appropriate dimension to represent the variables. This vector
 will be cloned by the solvers to create additional work space within the
 solver. If this vector is distributed over multiple processors, it
@@ -621,7 +186,7 @@ the application object by using the
 
 .. code::
 
-      TaoSetInitialVector(Tao,Vec);
+      TaoSetSolution(Tao, Vec);
 
 routine. When using this routine, the application should initialize the
 vector with an approximate solution of the optimization problem before
@@ -631,10 +196,17 @@ can be retrieved from the application object by using the
 
 .. code::
 
-      TaoGetSolutionVector(Tao,Vec *);
+      TaoGetSolution(Tao, Vec*);
 
 routine. This routine takes the address of a ``Vec`` in the second
 argument and sets it to the solution vector used in the application.
+
+User Defined Call-back Routines
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Users of TAO are required to provide routines that perform function
+evaluations. Depending on the solver chosen, they may also have to write
+routines that evaluate the gradient vector and Hessian matrix.
 
 Application Context
 ^^^^^^^^^^^^^^^^^^^
@@ -678,7 +250,7 @@ Routines should follow the form
 
 .. code::
 
-      PetscErrorCode EvaluateObjective(Tao,Vec,PetscReal*,void*);
+      PetscErrorCode EvaluateObjective(Tao, Vec, PetscReal*, void*);
 
 in order to evaluate an objective function
 :math:`f: \, \mathbb R^n \to \mathbb R`. The first argument is the TAO
@@ -693,9 +265,7 @@ application object by using the
 
 .. code::
 
-      TaoSetObjectiveRoutine(Tao,
-                        PetscErrorCode(*)(Tao,Vec,PetscReal*,void*),
-                        void*);
+      TaoSetObjective(Tao, PetscErrorCode(*)(Tao,Vec,PetscReal*,void*), void*);
 
 routine. The first argument in this routine is the TAO solver object,
 the second argument is a function pointer to the routine that evaluates
@@ -713,7 +283,7 @@ Routines that evaluate the gradient should have the calling sequence
 
 .. code::
 
-      PetscErrorCode EvaluateGradient(Tao,Vec,Vec,void*);
+      PetscErrorCode EvaluateGradient(Tao, Vec, Vec, void*);
 
 where the first argument is the TAO solver object, the second argument
 is the variable vector, the third argument is the gradient vector, and
@@ -727,12 +297,11 @@ be passed to the application object by using the
 
 .. code::
 
-      TaoSetGradientRoutine(Tao,
-                        PetscErrorCode (*)(Tao,Vec,Vec,void*),
-                        void *);
+      TaoSetGradient(Tao, Vec, PetscErrorCode (*)(Tao,Vec,Vec,void*), void*);
 
-routine. In this routine, the first argument is the Tao object, the
-second argument is the function pointer, and the third object is the
+routine. In this routine, the first argument is the Tao object, the second
+argument is the optional vector to hold the computed gradient, the
+third argument is the function pointer, and the fourth object is the
 application context, cast to ``(void*)``.
 
 Instead of evaluating the objective and its gradient in separate
@@ -743,8 +312,7 @@ routine. These routines should follow the form
 
 .. code::
 
-      PetscErrorCode EvaluateFunctionAndGradient(Tao,Vec,
-                        PetscReal*,Vec,void*);
+      PetscErrorCode EvaluateFunctionAndGradient(Tao, Vec, PetscReal*, Vec, void*);
 
 where the first argument is the TAO solver and the second argument
 points to the input vector for use in evaluating the function and
@@ -755,11 +323,10 @@ routine should be set with the call
 
 .. code::
 
-      TaoSetObjectiveAndGradientRoutine(Tao,
-                        PetscErrorCode (*)(Tao,Vec,PetscReal*,Vec,void*),
-                        void *);
+      TaoSetObjectiveAndGradient(Tao, Vec PetscErrorCode (*)(Tao,Vec,PetscReal*,Vec,void*), void*);
 
-where the arguments are the TAO application, a function name, and a
+where the arguments are the TAO application, the optional vector to be
+used to hold the computed gradient, a function pointer, and a
 pointer to a user-defined context.
 
 The TAO example problems demonstrate the use of these application
@@ -778,7 +345,7 @@ The routine that evaluates the Hessian should have the form
 
 .. code::
 
-      PetscErrorCode EvaluateHessian(Tao,Vec,Mat,Mat,void*);
+      PetscErrorCode EvaluateHessian(Tao, Vec, Mat, Mat, void*);
 
 where the first argument of this routine is a TAO solver object. The
 second argument is the point at which the Hessian should be evaluated.
@@ -795,9 +362,7 @@ One can set the Hessian evaluation routine by calling the
 
 .. code::
 
-      TaoSetHessianRoutine(Tao,Mat H, Mat Hpre,
-                        PetscErrorCode (*)(Tao,Vec,Mat,Mat,
-                        void*), void *);
+      TaoSetHessian(Tao, Mat, Mat, PetscErrorCode (*)(Tao,Vec,Mat,Mat,void*), void*);
 
 routine. The first argument is the TAO Solver object. The second and
 third arguments are, respectively, the Mat object where the Hessian will
@@ -824,8 +389,8 @@ and
 
       TaoDefaultComputeHessian(Tao, Vec, Mat*, Mat*,void*);
 
-respectively. They can be set by using ``TaoSetGradientRoutine()`` and
-``TaoSetHessianRoutine()`` or through the options database with the
+respectively. They can be set by using ``TaoSetGradient()`` and
+``TaoSetHessian()`` or through the options database with the
 options ``-tao_fdgrad`` and ``-tao_fd``, respectively.
 
 The efficiency of the finite-difference Hessian can be improved if the
@@ -836,10 +401,10 @@ routine to
 
 .. code::
 
-      TaoDefaultComputeHessianColor(Tao, Vec, Mat*, Mat*,void* );
+      TaoDefaultComputeHessianColor(Tao, Vec, Mat*, Mat*, void*);
 
 and using the ``MatFDColoring`` object as the last (``void *``) argument
-to ``TaoSetHessianRoutine()``.
+to ``TaoSetHessian()``.
 
 One also can use finite-difference approximations to directly check the
 correctness of the gradient and/or Hessian evaluation routines. This
@@ -863,12 +428,15 @@ are provided in the :doc:`/docs/manual/index`.
 
 .. _sec_bounds:
 
-Bounds on Variables
-^^^^^^^^^^^^^^^^^^^
+Constraints
+^^^^^^^^^^^
 
-Some optimization problems also impose constraints on the variables. The
-constraints may impose simple bounds on the variables or require that
-the variables satisfy a set of linear or nonlinear equations.
+Some optimization problems also impose constraints on the variables or
+intermediate application states. The user defines these constraints through
+the appropriate TAO interface functions and call-back routines where necessary.
+
+Variable Bounds
+"""""""""""""""
 
 The simplest type of constraint on an optimization problem puts lower or
 upper bounds on the variables. Vectors that represent lower and upper
@@ -876,37 +444,81 @@ bounds for each variable can be set with the
 
 .. code::
 
-      TaoSetVariableBounds(Tao,Vec,Vec);
+      TaoSetVariableBounds(Tao, Vec, Vec);
 
 command. The first vector and second vector should contain the lower and
 upper bounds, respectively. When no upper or lower bound exists for a
-variable, the bound may be set to ``TAO_INFINITY`` or ``TAO_NINFINITY``.
+variable, the bound may be set to ``PETSC_INFINITY`` or ``PETSC_NINFINITY``.
 After the two bound vectors have been set, they may be accessed with the
 command ``TaoGetVariableBounds()``.
-
-Alternatively, it may be more convenient for the user to designate a
-routine for computing these bounds that the solver will call before
-starting its algorithm. This routine will have the form
-
-.. code::
-
-      PetscErrorCode EvaluateBounds(Tao,Vec,Vec,void*);
-
-where the two vectors, representing the lower and upper bounds
-respectfully, will be computed.
-
-This routine can be set with the
-
-.. code::
-
-      TaoSetVariableBoundsRoutine(Tao
-                        PetscErrorCode (*)(Tao,Vec,Vec,void*),void*);
-
-command.
 
 Since not all solvers recognize the presence of bound constraints on
 variables, the user must be careful to select a solver that acknowledges
 these bounds.
+
+.. _sec_tao_programming:
+
+General Constraints
+"""""""""""""""""""
+
+Some TAO algorithms also support general constraints as a linear or nonlinear
+function of the optimization variables. These constraints can be imposed either
+as equalities or inequalities. TAO currently does not make any distinctions
+between linear and nonlinear constraints, and implements them through the
+same software interfaces.
+
+In the equality constrained case, TAO assumes that the constraints are
+formulated as :math:`c_e(x) = 0` and requires the user to implement a call-back
+routine for evaluating :math:`c_e(x)` at a given vector of optimization
+variables,
+
+.. code::
+
+      PetscErrorCode EvaluateEqualityConstraints(Tao, Vec, Vec, void*);
+
+As in the previous call-back routines, the first argument is the TAO solver
+object. The second and third arguments are the vector of optimization variables
+(input) and vector of equality constraints (output), respectively. The final
+argument is a pointer to the user-defined application context, cast into
+``(void*)``.
+
+Generally constrained TAO algorithms also require a second user call-back
+function to compute the constraint Jacobian matrix :math:`\nabla_x c_e(x)`,
+
+.. code::
+
+      PetscErrorCode EvaluateEqualityJacobian(Tao, Vec, Mat, Mat, void*);
+
+where the first and last arguments are the TAO solver object and the application
+context pointer as before. The second argument is the vector of optimization
+variables at which the computation takes place. The third and fourth arguments
+are the constraint Jacobian and its pseudo-inverse (optional), respectively. The
+pseudoinverse is optional, and if not available, the user can simply set it
+to the constraint Jacobian itself.
+
+These call-back functions are then given to the TAO solver using the
+interface functions
+
+.. code::
+
+      TaoSetEqualityConstraintsRoutine(Tao, Vec, PetscErrorCode (*)(Tao,Vec,Vec,void*), void*);
+
+and
+
+.. code::
+
+      TaoSetJacobianEqualityRoutine(Tao, Mat, Mat, PetscErrorCode (*)(Tao,Vec,Mat,Mat,void*), void*);
+
+Inequality constraints are assumed to be formulated as :math:`c_i(x) \leq 0`
+and follow the same workflow as equality constraints using the
+``TaoSetInequalityConstraintsRoutine()`` and ``TaoSetJacobianInequalityRoutine()``
+interfaces.
+
+Some TAO algorithms may adopt an alternative double-sided
+:math:`c_l \leq c_i(x) \leq c_u` formulation and require the lower and upper
+bounds :math:`c_l` and :math:`c_u` to be set using the
+``TaoSetInequalityBounds(Tao,Vec,Vec)`` interface. Please refer to the
+documentation for each TAO algorithm for further details.
 
 Solving
 ~~~~~~~
@@ -981,14 +593,14 @@ relevant statistics to the screen.
 
 The user also has access to information about the current solution. The
 current iteration number, objective function value, gradient norm,
-infeasibility norm, and step length can be retrieved with the follwing
+infeasibility norm, and step length can be retrieved with the following
 command.
 
 .. code::
 
-      TaoGetSolutionStatus(Tao tao, PetscInt *iterate, PetscReal *f,
-                        PetscReal *gnorm, PetscReal *cnorm, PetscReal *xdiff,
-                        TaoConvergedReason *reason)
+      TaoGetSolutionStatus(Tao tao, PetscInt* iterate, PetscReal* f,
+                        PetscReal* gnorm, PetscReal* cnorm, PetscReal* xdiff,
+                        TaoConvergedReason* reason)
 
 The last argument returns a code that indicates the reason that the
 solver terminated. Positive numbers indicate that a solution has been
@@ -998,45 +610,29 @@ be found in the manual page for ``TaoGetConvergedReason()``.
 Obtaining a Solution
 ^^^^^^^^^^^^^^^^^^^^
 
-After exiting the ``TaoSolve()`` function, the solution, gradient, and
-with the following routines.
+After exiting the ``TaoSolve()`` function, the solution and the gradient can be
+recovered with the following routines.
 
 .. code::
 
-      TaoGetSolutionVector(Tao, Vec *X);
-      TaoGetGradientVector(Tao, Vec *G);
-      TaoComputeDualVariables(Tao, Vec X, Vec Duals);
+      TaoGetSolution(Tao, Vec*);
+      TaoGetGradient(Tao, Vec*, NULL, NULL);
 
-Note that the ``Vec`` returned by ``TaoGetSolutionVector`` will be the
-same vector passed to ``TaoSetInitialVector``. This information can be
+Note that the ``Vec`` returned by ``TaoGetSolution()`` will be the
+same vector passed to ``TaoSetSolution()``. This information can be
 obtained during user-defined routines such as a function evaluation and
 customized monitoring routine or after the solver has terminated.
 
-Additional Options
-^^^^^^^^^^^^^^^^^^
-
-Additional options for the TAO solver can be be set from the command
-line by using the
-
-.. code::
-
-      TaoSetFromOptions(Tao)
-
-routine. This command also provides information about runtime options
-when the user includes the ``-help`` option on the command line.
-
-Special Problem Structures
+Special Problem structures
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Below we discuss how to exploit the special structures for three classes
-of problems that TAO solves.
+Certain special classes of problems solved with TAO utilize specialized
+code interfaces that are described below per problem type.
 
-.. _sec_pde_applications:
-
-PDE-Constrained Optimization
+PDE-constrained Optimization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TAO can solve PDE-constrained optimization applications of the form
+TAO solves PDE-constrained optimization problems of the form
 
 .. math::
 
@@ -1048,19 +644,20 @@ TAO can solve PDE-constrained optimization applications of the form
 where the state variable :math:`u` is the solution to the discretized
 partial differential equation defined by :math:`g` and parametrized by
 the design variable :math:`v`, and :math:`f` is an objective function.
-In this case, the user needs to set routines for computing the objective
-function and its gradient, the constraints, and the Jacobian of the
-constraints with respect to the state and design variables. TAO also
-needs to know which variables in the solution vector correspond to state
-variables and which to design variables.
+The Lagrange multipliers on the constraint are denoted by :math:`y`.
+This method is set by using the linearly constrained augmented
+Lagrangian TAO solver ``tao_lcl``.
 
-The objective and gradient routines are set as for other TAO
-applications, with ``TaoSetObjectiveRoutine()`` and
-``TaoSetGradientRoutine()``. The user can also provide a fused objective
-function and gradient evaluation with
-``TaoSetObjectiveAndGradientRoutine()``. The input and output vectors
-include the combined state and design variables. Index sets for the
-state and design variables must be passed to TAO by using the function
+We make two main assumptions when solving these problems: the objective
+function and PDE constraints have been discretized so that we can treat
+the optimization problem as finite dimensional and
+:math:`\nabla_u g(u,v)` is invertible for all :math:`u` and :math:`v`.
+
+Unlike other TAO solvers where the solution vector contains only the
+optimization variables, PDE-constrained problems solved with ``tao_lcl``
+combine the design and state variables together in a monolithic solution vector
+:math:`x^T = [u^T, v^T]`. Consequently, the user must provide index sets to
+separate the two,
 
 .. code::
 
@@ -1069,28 +666,26 @@ state and design variables must be passed to TAO by using the function
 where the first IS is a PETSc IndexSet containing the indices of the
 state variables and the second IS the design variables.
 
-Nonlinear equation constraints have the general form :math:`c(x) = 0`,
+PDE constraints have the general form :math:`g(x) = 0`,
 where :math:`c: \mathbb R^n \to \mathbb R^m`. These constraints should
 be specified in a routine, written by the user, that evaluates
-:math:`c(x)`. The routine that evaluates the constraint equations should
-have the form
+:math:`g(x)`. The routine that evaluates the constraint equations
+should have the form
 
 .. code::
 
-      PetscErrorCode EvaluateConstraints(Tao,Vec,Vec,void*);
+      PetscErrorCode EvaluateConstraints(Tao, Vec, Vec, void*);
 
 The first argument of this routine is a TAO solver object. The second
 argument is the variable vector at which the constraint function should
 be evaluated. The third argument is the vector of function values
-:math:`c(x)`, and the fourth argument is a pointer to a user-defined
+:math:`g(x)`, and the fourth argument is a pointer to a user-defined
 context. This routine and the user-defined context should be set in the
 TAO solver with the
 
 .. code::
 
-      TaoSetConstraintsRoutine(Tao,Vec,
-                        PetscErrorCode (*)(Tao,Vec,Vec,void*),
-                        void*);
+      TaoSetConstraintsRoutine(Tao, Vec, PetscErrorCode (*)(Tao,Vec,Vec,void*), void*);
 
 command. In this function, the first argument is the TAO solver object,
 the second argument a vector in which to store the constraints, the
@@ -1098,18 +693,18 @@ third argument is a function point to the routine for evaluating the
 constraints, and the fourth argument is a pointer to a user-defined
 context.
 
-The Jacobian of :math:`c(x)` is the matrix in
+The Jacobian of :math:`g(x)` is the matrix in
 :math:`\mathbb R^{m \times n}` such that each column contains the
-partial derivatives of :math:`c(x)` with respect to one variable. The
-evaluation of the Jacobian of :math:`c` should be performed by calling
+partial derivatives of :math:`g(x)` with respect to one variable. The
+evaluation of the Jacobian of :math:`g` should be performed by calling
 the
 
 .. code::
 
-      PetscErrorCode JacobianState(Tao,Vec,Mat,Mat,Mat,void*);
-      PetscErrorCode JacobianDesign(Tao,Vec,Mat*,void*);
+      PetscErrorCode JacobianState(Tao, Vec, Mat, Mat, Mat, void*);
+      PetscErrorCode JacobianDesign(Tao, Vec, Mat*, void*);
 
-routines. In these functions, The first arguemnt is the TAO solver
+routines. In these functions, The first argument is the TAO solver
 object. The second argument is the variable vector at which to evaluate
 the Jacobian matrix, the third argument is the Jacobian matrix, and the
 last argument is a pointer to a user-defined context. The fourth and
@@ -1122,12 +717,12 @@ routines should be registered with TAO by using the
 
 .. code::
 
-      TaoSetJacobianStateRoutine(Tao,Mat,Mat,Mat,
-                        PetscErrorCode (*)(Tao,Vec,Mat,Mat,
-                        void*), void*);
-      TaoSetJacobianDesignRoutine(Tao,Mat,
-                        PetscErrorCode (*)(Tao,Vec,Mat*,void*), 
-                        void*);
+      TaoSetJacobianStateRoutine(Tao, Mat, Mat, Mat,
+                              PetscErrorCode (*)(Tao,Vec,Mat,Mat,void*),
+                              void*);
+      TaoSetJacobianDesignRoutine(Tao, Mat,
+                              PetscErrorCode (*)(Tao,Vec,Mat*,void*),
+                              void*);
 
 routines. The first argument is the TAO solver object, and the second
 argument is the matrix in which the Jacobian information can be stored.
@@ -1156,14 +751,13 @@ vector of residuals, :math:`r(x)`, computed with a function of the form
 
 .. code::
 
-      PetscErrorCode EvaluateResidual(Tao,Vec,Vec,void*);
+      PetscErrorCode EvaluateResidual(Tao, Vec, Vec, void*);
 
 and set with the
 
 .. code::
 
-      TaoSetResidualRoutine(Tao, PetscErrorCode (*)(Tao,Vec,Vec,void*), 
-                            void *);
+      TaoSetResidualRoutine(Tao, PetscErrorCode (*)(Tao,Vec,Vec,void*), void*);
 
 routine. If required by the algorithm, the Jacobian of the residual,
 :math:`J = \partial r(x) / \partial x`, should be computed with a
@@ -1171,14 +765,13 @@ function of the form
 
 .. code::
 
-      PetscErrorCode EvaluateJacobian(Tao,Vec,Mat,void*);
+      PetscErrorCode EvaluateJacobian(Tao, Vec, Mat, void*);
 
 and set with the
 
 .. code::
 
-      TaoSetJacobianResidualRoutine(Tao, PetscErrorCode (*)(Tao,Vec,Mat,void*),
-                                    void *);
+      TaoSetJacobianResidualRoutine(Tao, PetscErrorCode (*)(Tao,Vec,Mat,void*), void *);
 
 routine.
 
@@ -1192,9 +785,9 @@ specified in a routine written by the user with the form
 
 .. code::
 
-      PetscErrorCode EqualityConstraints(Tao,Vec,Vec,void*);
+      PetscErrorCode EqualityConstraints(Tao, Vec, Vec, void*);
 
-that evaluates ``C(X)``. The first argument of this routine is a TAO
+that evaluates :math:`C(X)`. The first argument of this routine is a TAO
 Solver object. The second argument is the variable vector :math:`X` at
 which the constraint function should be evaluated. The third argument is
 the output vector of function values :math:`C(X)`, and the fourth
@@ -1205,9 +798,7 @@ using the
 
 .. code::
 
-      TaoSetConstraintRoutine(Tao, Vec,
-                        PetscErrorCode (*)(Tao,Vec,Vec,void*),
-                        void*);
+      TaoSetConstraintRoutine(Tao, Vec, PetscErrorCode (*)(Tao,Vec,Vec,void*), void*);
 
 command. In this command, the first argument is TAO Solver object, the
 second argument is vector in which to store the function values, the
@@ -1217,13 +808,13 @@ be passed back to the user.
 
 The Jacobian of the function is the matrix in
 :math:`\mathbb R^{m \times n}` such that each column contains the
-partial derivatives of ``f`` with respect to one variable. The
+partial derivatives of :math:`f` with respect to one variable. The
 evaluation of the Jacobian of :math:`C` should be performed in a routine
 of the form
 
 .. code::
 
-      PetscErrorCode EvaluateJacobian(Tao,Vec,Mat,Mat,void*);
+      PetscErrorCode EvaluateJacobian(Tao, Vec, Mat, Mat, void*);
 
 In this function, the first argument is the TAO Solver object and the
 second argument is the variable vector at which to evaluate the Jacobian
@@ -1240,9 +831,7 @@ This routine should be specified to TAO by using the
 
 .. code::
 
-      TaoSetJacobianRoutine(Tao,Mat J, Mat Jpre,
-                        PetscErrorCode (*)(Tao,Vec,Mat,Mat, 
-                        void*), void*);
+      TaoSetJacobianRoutine(Tao, Mat, Mat, PetscErrorCode (*)(Tao,Vec,Mat,Mat,void*), void*);
 
 command. The first argument is the TAO Solver object; the second and
 third arguments are the Mat objects in which the Jacobian will be stored
@@ -1252,10 +841,10 @@ and the fifth argument is an optional user-defined context. The Jacobian
 matrix should be created in a way such that the product of it and the
 variable vector can be stored in the constraint vector.
 
-.. _tao-solvers-1:
+.. _sec_tao_solvers:
 
-TAO Solvers
------------
+TAO Algorithms
+--------------
 
 TAO includes a variety of optimization algorithms for several classes of
 problems (unconstrained, bound-constrained, and PDE-constrained
@@ -1282,8 +871,9 @@ according to the amount of derivative information required:
    method (``tao_lmvm``) and nonlinear conjugate gradient method
    (``tao_cg``)
 
-#. Function, gradient, and Hessian evaluations – Newton line search
-   method (``tao_nls``) and Newton trust-region method (``tao_ntr``)
+#. Function, gradient, and Hessian evaluations – Newton Krylov methods:
+   Netwon line search (``tao_nls``), Newton trust-region (``tao_ntr``),
+   and Newton trust-region line-search (``tao_ntl``)
 
 The best method to use depends on the particular problem being solved
 and the accuracy required in the solution. If a Hessian evaluation
@@ -1297,129 +887,17 @@ Each solver has a set of options associated with it that can be set with
 command line arguments. These algorithms and the associated options are
 briefly discussed in this section.
 
-Nelder-Mead Method
-^^^^^^^^^^^^^^^^^^
+Newton-Krylov Methods
+^^^^^^^^^^^^^^^^^^^^^
 
-The Nelder-Mead algorithm :cite:`nelder.mead:simplex` is a
-direct search method for finding a local minimum of a function
-:math:`f(x)`. This algorithm does not require any gradient or Hessian
-information of :math:`f` and therefore has some expected advantages and
-disadvantages compared to the other TAO solvers. The obvious advantage
-is that it is easier to write an application when no derivatives need to
-be calculated. The downside is that this algorithm can be slow to
-converge or can even stagnate, and it performs poorly for large numbers
-of variables.
+TAO features three Newton-Krylov algorithms, separated by their globalization methods
+for unconstrained optimization: line search (NLS), trust region (NTR), and trust
+region with a line search (NTL). They are available via the TAO solvers
+``TAONLS``, ``TAONTR`` and ``TAONTL``, respectively, or the ``-tao_type``
+``nls``/``ntr``/``ntl`` flag.
 
-This solver keeps a set of :math:`N+1` sorted vectors
-:math:`{x_1,x_2,\ldots,x_{N+1}}` and their corresponding objective
-function values :math:`f_1 \leq f_2 \leq \ldots \leq f_{N+1}`. At each
-iteration, :math:`x_{N+1}` is removed from the set and replaced with
-
-.. math:: x(\mu) = (1+\mu) \frac{1}{N} \sum_{i=1}^N x_i - \mu x_{N+1},
-
-where :math:`\mu` can be one of
-:math:`{\mu_0,2\mu_0,\frac{1}{2}\mu_0,-\frac{1}{2}\mu_0}` depending on
-the values of each possible :math:`f(x(\mu))`.
-
-The algorithm terminates when the residual :math:`f_{N+1} - f_1` becomes
-sufficiently small. Because of the way new vectors can be added to the
-sorted set, the minimum function value and/or the residual may not be
-impacted at each iteration.
-
-Two options can be set specifically for the Nelder-Mead algorithm:
-
-``-tao_nm_lamda <value>``
-   sets the initial set of vectors (:math:`x_0` plus ``value`` in each
-   coordinate direction); the default value is :math:`1`.
-
-``-tao_nm_mu <value>``
-   sets the value of :math:`\mu_0`; the default is :math:`\mu_0=1`.
-
-Limited-Memory, Variable-Metric Method
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The limited-memory, variable-metric method computes a positive definite
-approximation to the Hessian matrix from a limited number of previous
-iterates and gradient evaluations. A direction is then obtained by
-solving the system of equations
-
-.. math:: H_k d_k = -\nabla f(x_k),
-
-where :math:`H_k` is the Hessian approximation obtained by using the
-BFGS update formula. The inverse of :math:`H_k` can readily be applied
-to obtain the direction :math:`d_k`. Having obtained the direction, a
-Moré-Thuente line search is applied to compute a step length,
-:math:`\tau_k`, that approximately solves the one-dimensional
-optimization problem
-
-.. math:: \min_\tau f(x_k + \tau d_k).
-
-The current iterate and Hessian approximation are updated, and the
-process is repeated until the method converges. This algorithm is the
-default unconstrained minimization solver and can be selected by using
-the TAO solver ``tao_lmvm``. For best efficiency, function and gradient
-evaluations should be performed simultaneously when using this
-algorithm.
-
-The primary factors determining the behavior of this algorithm are the
-type of Hessian approximation used, the number of vectors stored for the
-approximation and the initialization/scaling of the approximation. These
-options can be configured using the ``-tao_lmvm_mat_lmvm`` prefix. For
-further detail, we refer the reader to the ``MATLMVM`` matrix type
-definitions in the PETSc Manual.
-
-The LMVM algorithm also allows the user to define a custom initial
-Hessian matrix :math:`H_{0,k}` through the interface function
-``TaoLMVMSetH0()``. This user-provided initialization overrides any
-other scalar or diagonal initialization inherent to the LMVM
-approximation. The provided :math:`H_{0,k}` must be a PETSc ``Mat`` type
-object that represents a positive-definite matrix. The approximation
-prefers ``MatSolve()`` if the provided matrix has ``MATOP_SOLVE``
-implemented. Otherwise, ``MatMult()`` is used in a KSP solve to perform
-the inversion of the user-provided initial Hessian.
-
-In applications where ``TaoSolve()`` on the LMVM algorithm is repeatedly
-called to solve similar or related problems, ``-tao_lmvm_recycle`` flag
-can be used to prevent resetting the LMVM approximation between
-subsequent solutions. This recycling also avoids one extra function and
-gradient evalution, instead re-using the values already computed at the
-end of the previous solution.
-
-This algorithm will be deprecated in the next version and replaced by
-the bounded quasi-Newton Line Search (BQNLS) algorithm that can solve
-both bound constrained and unconstrained problems.
-
-Nonlinear Conjugate Gradient Method
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The nonlinear conjugate gradient method can be viewed as an extension of
-the conjugate gradient method for solving symmetric, positive-definite
-linear systems of equations. This algorithm requires only function and
-gradient evaluations as well as a line search. The TAO implementation
-uses a Moré-Thuente line search to obtain the step length. The nonlinear
-conjugate gradient method can be selected by using the TAO solver
-``tao_cg``. For the best efficiency, function and gradient evaluations
-should be performed simultaneously when using this algorithm.
-
-Five variations are currently supported by the TAO implementation: the
-Fletcher-Reeves method, the Polak-Ribiére method, the Polak-Ribiére-Plus
-method :cite:`NW99`, the Hestenes-Stiefel method, and the
-Dai-Yuan method. These conjugate gradient methods can be specified by
-using the command line argument ``-tao_cg_type <fr,pr,prp,hs,dy>``,
-respectively. The default value is ``prp``.
-
-The conjugate gradient method incorporates automatic restarts when
-successive gradients are not sufficiently orthogonal. TAO measures the
-orthogonality by dividing the inner product of the gradient at the
-current point and the gradient at the previous point by the square of
-the Euclidean norm of the gradient at the current point. When the
-absolute value of this ratio is greater than :math:`\eta`, the algorithm
-restarts using the gradient direction. The parameter :math:`\eta` can be
-set by using the command line argument ``-tao_cg_eta <real>``; 0.1 is
-the default value.
-
-Newton Line Search Method
-^^^^^^^^^^^^^^^^^^^^^^^^^
+Newton Line Search Method (NLS)
+"""""""""""""""""""""""""""""""
 
 The Newton line search method solves the symmetric system of equations
 
@@ -1840,11 +1318,11 @@ where
 initialization to compute a new value for the trust-region radius.
 
 This algorithm will be deprecated in the next version and replaced by
-the bounded Newton Line Search (BNLS) algorithm that can solve both
+the Bounded Newton Line Search (BNLS) algorithm that can solve both
 bound constrained and unconstrained problems.
 
-Newton Trust-Region Method
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Newton Trust-Region Method (NTR)
+""""""""""""""""""""""""""""""""
 
 The Newton trust-region method solves the constrained quadratic
 programming problem
@@ -2070,33 +1548,147 @@ where
 initialization to compute a new value for the trust-region radius.
 
 This algorithm will be deprecated in the next version and replaced by
-the bounded Newton Trust Region (BNTR) algorithm that can solve both
+the Bounded Newton Trust Region (BNTR) algorithm that can solve both
 bound constrained and unconstrained problems.
 
-BMRM
-^^^^
+Newton Trust Region with Line Search (NTL)
+""""""""""""""""""""""""""""""""""""""""""
 
-The Bundle Method for Regularized Risk Minimization
-(BMRM) is a numerical approach to optimizing an
-unconstrained objective in the form of
-:math:`f(x) + 0.5 * \lambda \| x \|^2`. Here :math:`f` is a convex
-function that is finite on the whole space. :math:`\lambda` is a
-positive weight parameter, and :math:`\| x \|` is the Euclidean norm of
-:math:`x`. The algorithm only requires a routine which, given an
-:math:`x`, returns the value of :math:`f(x)` and the gradient of
-:math:`f` at :math:`x`.
+NTL safeguards the trust-region globalization such that a line search
+is used in the event that the step is initially rejected by the
+predicted versus actual decrease comparison. If the line search fails to
+find a viable step length for the Newton step, it falls back onto a
+scaled gradient or a gradient descent step. The trust radius is then
+modified based on the line search step length.
 
-OWL-QN
-^^^^^^
+This algorithm will be deprecated in the next version and replaced by
+the Bounded Newton Trust Region with Line Search (BNTL) algorithm that
+can solve both bound constrained and unconstrained problems.
 
-The Orthant-Wise Limited-memory Quasi-Newton algorithm
-(OWL-QN) :cite:`owlqn` is a numerical approach to optimizing
-an unconstrained objective in the form of
-:math:`f(x) + \lambda \|x\|_1`. Here f is a convex and differentiable
-function, :math:`\lambda` is a positive weight parameter, and
-:math:`\| x \|_1` is the :math:`L1` norm of :math:`x`:
-:math:`\sum_i |x_i|`. The algorithm only requires evaluating the value
-of :math:`f` and its gradient.
+Limited-Memory Variable-Metric Method (LMVM)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The limited-memory, variable-metric method (LMVM) computes a positive definite
+approximation to the Hessian matrix from a limited number of previous
+iterates and gradient evaluations. A direction is then obtained by
+solving the system of equations
+
+.. math:: H_k d_k = -\nabla f(x_k),
+
+where :math:`H_k` is the Hessian approximation obtained by using the
+BFGS update formula. The inverse of :math:`H_k` can readily be applied
+to obtain the direction :math:`d_k`. Having obtained the direction, a
+Moré-Thuente line search is applied to compute a step length,
+:math:`\tau_k`, that approximately solves the one-dimensional
+optimization problem
+
+.. math:: \min_\tau f(x_k + \tau d_k).
+
+The current iterate and Hessian approximation are updated, and the
+process is repeated until the method converges. This algorithm is the
+default unconstrained minimization solver and can be selected by using
+the TAO solver ``tao_lmvm``. For best efficiency, function and gradient
+evaluations should be performed simultaneously when using this
+algorithm.
+
+The primary factors determining the behavior of this algorithm are the
+type of Hessian approximation used, the number of vectors stored for the
+approximation and the initialization/scaling of the approximation. These
+options can be configured using the ``-tao_lmvm_mat_lmvm`` prefix. For
+further detail, we refer the reader to the ``MATLMVM`` matrix type
+definitions in the PETSc Manual.
+
+The LMVM algorithm also allows the user to define a custom initial
+Hessian matrix :math:`H_{0,k}` through the interface function
+``TaoLMVMSetH0()``. This user-provided initialization overrides any
+other scalar or diagonal initialization inherent to the LMVM
+approximation. The provided :math:`H_{0,k}` must be a PETSc ``Mat`` type
+object that represents a positive-definite matrix. The approximation
+prefers ``MatSolve()`` if the provided matrix has ``MATOP_SOLVE``
+implemented. Otherwise, ``MatMult()`` is used in a KSP solve to perform
+the inversion of the user-provided initial Hessian.
+
+In applications where ``TaoSolve()`` on the LMVM algorithm is repeatedly
+called to solve similar or related problems, ``-tao_lmvm_recycle`` flag
+can be used to prevent resetting the LMVM approximation between
+subsequent solutions. This recycling also avoids one extra function and
+gradient evaluation, instead re-using the values already computed at the
+end of the previous solution.
+
+This algorithm will be deprecated in the next version and replaced by
+the Bounded Quasi-Newton Line Search (BQNLS) algorithm that can solve
+both bound constrained and unconstrained problems.
+
+Nonlinear Conjugate Gradient Method (CG)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The nonlinear conjugate gradient method can be viewed as an extension of
+the conjugate gradient method for solving symmetric, positive-definite
+linear systems of equations. This algorithm requires only function and
+gradient evaluations as well as a line search. The TAO implementation
+uses a Moré-Thuente line search to obtain the step length. The nonlinear
+conjugate gradient method can be selected by using the TAO solver
+``tao_cg``. For the best efficiency, function and gradient evaluations
+should be performed simultaneously when using this algorithm.
+
+Five variations are currently supported by the TAO implementation: the
+Fletcher-Reeves method, the Polak-Ribiére method, the Polak-Ribiére-Plus
+method :cite:`NW99`, the Hestenes-Stiefel method, and the
+Dai-Yuan method. These conjugate gradient methods can be specified by
+using the command line argument ``-tao_cg_type <fr,pr,prp,hs,dy>``,
+respectively. The default value is ``prp``.
+
+The conjugate gradient method incorporates automatic restarts when
+successive gradients are not sufficiently orthogonal. TAO measures the
+orthogonality by dividing the inner product of the gradient at the
+current point and the gradient at the previous point by the square of
+the Euclidean norm of the gradient at the current point. When the
+absolute value of this ratio is greater than :math:`\eta`, the algorithm
+restarts using the gradient direction. The parameter :math:`\eta` can be
+set by using the command line argument ``-tao_cg_eta <real>``; 0.1 is
+the default value.
+
+This algorithm will be deprecated in the next version and replaced by
+the Bounded Nonlinear Conjugate Gradient (BNCG) algorithm that can solve
+both bound constrained and unconstrained problems.
+
+Nelder-Mead Simplex Method (NM)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Nelder-Mead algorithm :cite:`nelder.mead:simplex` is a
+direct search method for finding a local minimum of a function
+:math:`f(x)`. This algorithm does not require any gradient or Hessian
+information of :math:`f` and therefore has some expected advantages and
+disadvantages compared to the other TAO solvers. The obvious advantage
+is that it is easier to write an application when no derivatives need to
+be calculated. The downside is that this algorithm can be slow to
+converge or can even stagnate, and it performs poorly for large numbers
+of variables.
+
+This solver keeps a set of :math:`N+1` sorted vectors
+:math:`{x_1,x_2,\ldots,x_{N+1}}` and their corresponding objective
+function values :math:`f_1 \leq f_2 \leq \ldots \leq f_{N+1}`. At each
+iteration, :math:`x_{N+1}` is removed from the set and replaced with
+
+.. math:: x(\mu) = (1+\mu) \frac{1}{N} \sum_{i=1}^N x_i - \mu x_{N+1},
+
+where :math:`\mu` can be one of
+:math:`{\mu_0,2\mu_0,\frac{1}{2}\mu_0,-\frac{1}{2}\mu_0}` depending on
+the values of each possible :math:`f(x(\mu))`.
+
+The algorithm terminates when the residual :math:`f_{N+1} - f_1` becomes
+sufficiently small. Because of the way new vectors can be added to the
+sorted set, the minimum function value and/or the residual may not be
+impacted at each iteration.
+
+Two options can be set specifically for the Nelder-Mead algorithm:
+
+``-tao_nm_lamda <value>``
+   sets the initial set of vectors (:math:`x_0` plus ``value`` in each
+   coordinate direction); the default value is :math:`1`.
+
+``-tao_nm_mu <value>``
+   sets the value of :math:`\mu_0`; the default is :math:`\mu_0=1`.
 
 .. _sec_tao_bound:
 
@@ -2232,7 +1824,7 @@ calculated using a perturbed system of equations,
 .. math:: (H_k + \rho_k I)p_k = -g_k,
 
 where :math:`\rho_k` is a dynamically adjusted positive constant. The
-step is globalized using a projected More-Thuente line search. If a
+step is globalized using a projected Moré-Thuente line search. If a
 trust-region conjugate gradient method is used for the Hessian
 inversion, the trust radius is modified based on the line search step
 length.
@@ -2251,8 +1843,8 @@ Newton step is accepted without modification.
 
 .. _sec_bntl:
 
-Bounded Newton Trust Region with Line Search Fall-back (BNTL)
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Bounded Newton Trust Region with Line Search (BNTL)
+"""""""""""""""""""""""""""""""""""""""""""""""""""
 
 BNTL safeguards the trust-region globalization such that a line search
 is used in the event that the step is initially rejected by the
@@ -2261,13 +1853,49 @@ find a viable step length for the Newton step, it falls back onto a
 scaled gradient or a gradient descent step. The trust radius is then
 modified based on the line search step length.
 
+.. _sec_bqnls:
+
+Bounded Quasi-Newton Line Search (BQNLS)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The BQNLS algorithm uses the BNLS infrastructure, but replaces the step
+calculation with a direct inverse application of the approximate Hessian
+based on quasi-Newton update formulas. No Krylov solver is used in the
+solution, and therefore the quasi-Newton method chosen must guarantee a
+positive-definite Hessian approximation. This algorithm is available via
+``tao_type bqnls``.
+
+.. _sec_bqnk:
+
+Bounded Quasi-Newton-Krylov
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+BQNK algorithms use the BNK infrastructure, but replace the exact
+Hessian with a quasi-Newton approximation. The matrix-free forward
+product operation based on quasi-Newton update formulas are used in
+conjunction with Krylov solvers to compute step directions. The
+quasi-Newton inverse application is used to precondition the Krylov
+solution, and typically helps converge to a step direction in
+:math:`\mathcal{O}(10)` iterations. This approach is most useful with
+quasi-Newton update types such as Symmetric Rank-1 that cannot strictly
+guarantee positive-definiteness. The BNLS framework with Hessian
+shifting, or the BNTR framework with trust region safeguards, can
+successfully compensate for the Hessian approximation becoming
+indefinite.
+
+Similar to the full Newton-Krylov counterpart, BQNK algorithms come in
+three forms separated by the globalization technique: line search
+(BQNKLS), trust region (BQNKTR) and trust region w/ line search
+fall-back (BQNKTL). These algorithms are available via
+``tao_type <bqnkls, bqnktr, bqnktl>``.
+
 .. _sec_bncg:
 
-Bounded Nonlinear Conjugate Gradient
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Bounded Nonlinear Conjugate Gradient (BNCG)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 BNCG extends the unconstrained nonlinear conjugate gradient algorithm to
-bound constraints via gradient projections and a bounded More-Thuente
+bound constraints via gradient projections and a bounded Moré-Thuente
 line search.
 
 Like its unconstrained counterpart, BNCG offers gradient descent and a
@@ -2302,7 +1930,7 @@ next. This is enabled by default, and is controlled by
 combination parameter, set with ``-tao_bncg_theta``. We have this as 1.0
 by default, i.e. it is by default the BFGS method. One can also
 individually tweak the BFGS and DFP contributions using the
-multiplicative constants ``-tao_bncg__scale``; both are set to :math:`1`
+multiplicative constants ``-tao_bncg_scale``; both are set to :math:`1`
 by default.
 
 All methods can be scaled using the parameter ``-tao_bncg_alpha``, which
@@ -2335,7 +1963,7 @@ example of similar usage, see ``tao/tutorials/ex3.c``.
 The active set estimation uses the Bertsekas-based method described in
 :any:`sec_bnk`, which can be deactivated using
 ``-tao_bncg_as_type none``, in which case the algorithm will use the
-current iterate to determine the bounded variables with no tolerancing
+current iterate to determine the bounded variables with no tolerances
 and no look-ahead step. As in the BNK algorithm, the initial bound
 tolerance and estimator step length used in the Bertsekas method can be
 set via ``-tao_bncg_as_tol`` and ``-tao_bncg_as_step``, respectively.
@@ -2343,7 +1971,7 @@ set via ``-tao_bncg_as_tol`` and ``-tao_bncg_as_step``, respectively.
 In addition to automatic scaled gradient descent restarts under certain
 local curvature conditions, we also employ restarts based on a check on
 descent direction such that
-:math:`\nabla f(x_k)^T d_k \in [-10^{11}, -1^{-9}]`. Furthermore, we
+:math:`\nabla f(x_k)^T d_k \in [-10^{11}, -10^{-9}]`. Furthermore, we
 allow for a variety of alternative restart strategies, all disabled by
 default. The ``-tao_bncg_unscaled_restart`` flag allows one to disable
 rescaling of the gradient for gradient descent steps. The
@@ -2357,85 +1985,197 @@ default since the CG solver usually does better in those cases anyway.
 The minimum number of quadratic-like steps before a restart is set using
 ``-tao_bncg_min_quad`` and is 6 by default.
 
-.. _sec_tron:
+Generally Constrained Solvers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Trust-Region Newton Method
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Constrained solvers solve optimization problems that incorporate either or both
+equality and inequality constraints, and may optionally include bounds on
+solution variables.
 
-The TRON :cite:`lin_c3` algorithm is an active-set method
-that uses a combination of gradient projections and a preconditioned
-conjugate gradient method to minimize an objective function. Each
-iteration of the TRON algorithm requires function, gradient, and Hessian
-evaluations. In each iteration, the algorithm first applies several
-conjugate gradient iterations. After these iterates, the TRON solver
-momentarily ignores the variables that equal one of its bounds and
-applies a preconditioned conjugate gradient method to a quadratic model
-of the remaining set of *free* variables.
+Alternating Direction Method of Multipliers (ADMM)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The TRON algorithm solves a reduced linear system defined by the rows
-and columns corresponding to the variables that lie between the upper
-and lower bounds. The TRON algorithm applies a trust region to the
-conjugate gradients to ensure convergence. The initial trust-region
-radius can be set by using the command
-``TaoSetInitialTrustRegionRadius()``, and the current trust region size
-can be found by using the command ``TaoGetCurrentTrustRegionRadius()``.
-The initial trust region can significantly alter the rate of convergence
-for the algorithm and should be tuned and adjusted for optimal
-performance.
+The TAOADMM algorithm is intended to blend the decomposability
+of dual ascent with the superior convergence properties of the method of
+multipliers. :cite:`boyd` The algorithm solves problems in
+the form
 
-.. _sec_blmvm:
+.. math::
 
-Bound-constrained Limited-Memory Variable-Metric Method
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   \begin{array}{ll}
+   \displaystyle \min_{x} & f(x) + g(z) \\
+   \text{subject to} & Ax + Bz = c
+   \end{array}
 
-BLMVM is a limited-memory, variable-metric method and is the
-bound-constrained variant of the LMVM method for unconstrained
-optimization. It uses projected gradients to approximate the Hessian,
-eliminating the need for Hessian evaluations. The method can be set by
-using the TAO solver ``tao_blmvm``. For more details, please see the
-LMVM section in the unconstrained algorithms as well as the LMVM matrix
-documentation in the PETSc manual.
+where :math:`x \in \mathbb R^n`, :math:`z \in \mathbb R^m`,
+:math:`A \in \mathbb R^{p \times n}`,
+:math:`B \in \mathbb R^{p \times m}`, and :math:`c \in \mathbb R^p`.
+Essentially, ADMM is a wrapper over two TAO solver, one for
+:math:`f(x)`, and one for :math:`g(z)`. With method of multipliers, one
+can form the augmented Lagrangian
 
-This algorithm will be deprecated in the next version in favor of the
-bounded quasi-Newton line search (BQNLS) algorithm.
+.. math:: L_{\rho}(x,z,y) = f(x) + g(z) + y^T(Ax+Bz-c) + (\rho/2)||Ax+Bz-c||_2^2
 
-.. _sec_bqnk:
+Then, ADMM consists of the iterations
 
-Bounded Quasi-Newton-Krylov
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. math:: x^{k+1} := \text{argmin}L_{\rho}(x,z^k,y^k)
 
-BQNK algorithms use the BNK infrastructure, but replace the exact
-Hessian with a quasi-Newton approximation. The matrix-free forward
-product operation based on quasi-Newton update formulas are used in
-conjunction with Krylov solvers to compute step directions. The
-quasi-Newton inverse application is used to precondition the Krylov
-solution, and typically helps converge to a step direction in
-:math:`\mathcal{O}(10)` iterations. This approach is most useful with
-quasi-Newton update types such as Symmetric Rank-1 that cannot strictly
-guarantee positive-definiteness. The BNLS framework with Hessian
-shifting, or the BNTR framework with trust region safeguards, can
-successfully compensate for the Hessian approximation becoming
-indefinite.
+.. math:: z^{k+1} := \text{argmin}L_{\rho}(x^{k+1},z,y^k)
 
-Similar to the full Newton-Krylov counterpart, BQNK algorithms come in
-three forms separated by the globalization technique: line search
-(BQNKLS), trust region (BQNKTR) and trust region w/ line search
-fall-back (BQNKTL). These algorithms are available via
-``tao_type <bqnkls, bqnktr, bqnktl>``.
+.. math:: y^{k+1} := y^k + \rho(Ax^{k+1}+Bz^{k+1}-c)
 
-.. _sec_bqnls:
+In certain formulation of ADMM, solution of :math:`z^{k+1}` may have
+closed-form solution. Currently ADMM provides one default implementation
+for :math:`z^{k+1}`, which is soft-threshold. It can be used with either
+``TaoADMMSetRegularizerType_ADMM()`` or
+``-tao_admm_regularizer_type <regularizer_soft_thresh>``. User can also
+pass spectral penalty value, :math:`\rho`, with either
+``TaoADMMSetSpectralPenalty()`` or ``-tao_admm_spectral_penalty``.
+Currently, user can use
 
-Bounded Quasi-Newton Line Search (BQNLS)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-  ``TaoADMMSetMisfitObjectiveAndGradientRoutine()``
 
-BQNLS algorithm uses the BNLS infrastructure, but replaces the step
-calculation with a direct inverse application of the approximate Hessian
-based on quasi-Newton update formulas. No Krylov solver is used in the
-solution, and therefore the quasi-Newton method chosen must guarantee a
-positive-definite Hessian approximation. This algorithm is available via
-``tao_type bqnls``.
+-  ``TaoADMMSetRegularizerObjectiveAndGradientRoutine()``
 
-.. _sec_lcl:
+-  ``TaoADMMSetMisfitHessianRoutine()``
+
+-  ``TaoADMMSetRegularizerHessianRoutine()``
+
+Any other combination of routines is currently not supported. Hessian
+matrices can either be constant or non-constant, of which fact can be
+set via ``TaoADMMSetMisfitHessianChangeStatus()``, and
+``TaoADMMSetRegularizerHessianChangeStatus()``. Also, it may appear in
+certain cases where augmented Lagrangian’s Hessian may become nearly
+singular depending on the :math:`\rho`, which may change in the case of
+``-tao_admm_dual_update <update_adaptive>, <update_adaptive_relaxed>``.
+This issue can be prevented by ``TaoADMMSetMinimumSpectralPenalty()``.
+
+Augmented Lagrangian Method of Multipliers (ALMM)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The TAOALMM method solves generally constrained problems of the form
+
+.. math::
+
+   \begin{array}{ll}
+   \displaystyle \min_{x} & f(x) \\
+   \text{subject to} & g(x) = 0\\
+                     & h(x) \geq 0 \\
+                     & l \leq x \leq u
+   \end{array}
+
+where :math:`g(x)` are equality constraints, :math:`h(x)` are inequality
+constraints and :math:`l` and :math:`u` are lower and upper bounds on
+the optimization variables, respectively.
+
+TAOALMM converts the above general constrained problem into a sequence
+of bound constrained problems at each outer iteration
+:math:`k = 1,2,\dots`
+
+.. math::
+
+   \begin{array}{ll}
+   \displaystyle \min_{x} & L(x, \lambda_k) \\
+   \text{subject to} & l \leq x \leq u
+   \end{array}
+
+where :math:`L(x, \lambda_k)` is the augmented Lagrangian merit function
+and :math:`\lambda_k` is the Lagrange multiplier estimates at outer
+iteration :math:`k`.
+
+TAOALMM offers two versions of the augmented Lagrangian formulation: the
+canonical Hestenes-Powell augmented
+Lagrangian :cite:`hestenes1969multiplier` :cite:`powell1969method`
+with inequality constrained converted to equality constraints via slack
+variables, and the slack-less Powell-Hestenes-Rockafellar
+formulation :cite:`rockafellar1974augmented` that utilizes a
+pointwise ``max()`` on the inequality constraints. For most
+applications, the canonical Hestenes-Powell formulation is likely to
+perform better. However, the PHR formulation may be desirable for
+problems featuring very large numbers of inequality constraints as it
+avoids inflating the dimension of the subproblem with slack variables.
+
+The inner subproblem is solved using a nested bound-constrained
+first-order TAO solver. By default, TAOALM uses a quasi-Newton-Krylov
+trust-region method (TAOBQNKTR). Other first-order methods such as
+TAOBNCG and TAOBQNLS are also appropriate, but a trust-region
+globalization is strongly recommended for most applications.
+
+Primal-Dual Interior-Point Method (PDIPM)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The TAOPDIPM method (``-tao_type pdipm``) implements a primal-dual interior
+point method for solving general nonlinear programming problems of the form
+
+.. math::
+   :label: eq_nlp_gen1
+
+   \begin{array}{ll}
+   \displaystyle \min_{x} & f(x) \\
+   \text{subject to} & g(x) = 0 \\
+                     & h(x) \geq 0 \\
+                     & x^- \leq x \leq x^+
+   \end{array}
+
+Here, :math:`f(x)` is the nonlinear objective function, :math:`g(x)`,
+:math:`h(x)` are the equality and inequality constraints, and
+:math:`x^-` and :math:`x^+` are the lower and upper bounds on decision
+variables :math:`x`.
+
+PDIPM converts the inequality constraints to equalities using slack variables
+:math:`z` and a log-barrier term, which transforms :eq:`eq_nlp_gen1` to
+
+.. math::
+   :label: eq_nlp_gen2
+
+   \begin{aligned}
+       \text{min}~&f(x) - \mu\sum_{i=1}^{nci}\ln z_i\\
+       \text{s.t.}& \\
+           &ce(x) = 0 \\
+           &ci(x) - z = 0 \\
+       \end{aligned}
+
+Here, :math:`ce(x)` is set of equality constraints that include
+:math:`g(x)` and fixed decision variables, i.e., :math:`x^- = x = x^+`.
+Similarly, :math:`ci(x)` are inequality constraints including
+:math:`h(x)` and lower/upper/box-constraints on :math:`x`. :math:`\mu`
+is a parameter that is driven to zero as the optimization progresses.
+
+The Lagrangian for :eq:`eq_nlp_gen2`) is
+
+.. math::
+   :label: eq_lagrangian
+
+   L_{\mu}(x,\lambda_{ce},\lambda_{ci},z) = f(x) + \lambda_{ce}^Tce(x) - \lambda_{ci}^T(ci(x) - z) - \mu\sum_{i=1}^{nci}\ln z_i
+
+where, :math:`\lambda_{ce}` and :math:`\lambda_{ci}` are the Lagrangian
+multipliers for the equality and inequality constraints, respectively.
+
+The first order KKT conditions for optimality are as follows
+
+.. math::
+   :label: eq_nlp_kkt
+
+   \nabla L_{\mu}(x,\lambda_{ce},\lambda_{ci},z)    =
+       \begin{bmatrix}
+           \nabla f(x) + \nabla ce(x)^T\lambda_{ce} -  \nabla ci(x)^T \lambda_{ci} \\
+           ce(x) \\
+           ci(x) - z \\
+           Z\Lambda_{ci}e - \mu e
+       \end{bmatrix}
+   = 0
+
+:eq:`eq_nlp_kkt` is solved iteratively using Newton’s
+method using PETSc’s SNES object. After each Newton iteration, a
+line-search is performed to update :math:`x` and enforce
+:math:`z,\lambda_{ci} \geq 0`. The barrier parameter :math:`\mu` is also
+updated after each Newton iteration. The Newton update is obtained by
+solving the second-order KKT system :math:`Hd = -\nabla L_{\mu}`.
+Here,\ :math:`H` is the Hessian matrix of the KKT system. For
+interior-point methods such as PDIPM, the Hessian matrix tends to be
+ill-conditioned, thus necessitating the use of a direct solver. We
+recommend using LU preconditioner ``-pc_type lu`` and using direct
+linear solver packages such ``SuperLU_Dist`` or ``MUMPS``.
 
 PDE-Constrained Optimization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2461,8 +2201,10 @@ function and PDE constraints have been discretized so that we can treat
 the optimization problem as finite dimensional and
 :math:`\nabla_u g(u,v)` is invertible for all :math:`u` and :math:`v`.
 
-Linearly-Constrained Augmented Lagrangian Method
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. _sec_lcl:
+
+Linearly-Constrained Augmented Lagrangian Method (LCL)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Given the current iterate :math:`(u_k, v_k, y_k)`, the linearly
 constrained augmented Lagrangian method approximately solves the
@@ -2668,16 +2410,72 @@ The nonlinear equations :math:`F` should be specified with the function
 
 .. _sec_pounders:
 
-POUNDerS
+Bound-constrained Regularized Gauss-Newton (BRGN)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The TAOBRGN algorithms is a Gauss-Newton method is used to iteratively solve nonlinear least
+squares problem with the iterations
+
+.. math:: x_{k+1} = x_k - \alpha_k(J_k^T J_k)^{-1} J_k^T r(x_k)
+
+where :math:`r(x)` is the least-squares residual vector,
+:math:`J_k = \partial r(x_k)/\partial x` is the Jacobian of the
+residual, and :math:`\alpha_k` is the step length parameter. In other
+words, the Gauss-Newton method approximates the Hessian of the objective
+as :math:`H_k \approx (J_k^T J_k)` and the gradient of the objective as
+:math:`g_k \approx -J_k r(x_k)`. The least-squares Jacobian, :math:`J`,
+should be provided to Tao using ``TaoSetJacobianResidual()`` routine.
+
+The BRGN (``-tao_type brgn``) implementation adds a regularization term :math:`\beta(x)` such
+that
+
+.. math:: \min_{x} \; \frac{1}{2}||R(x)||_2^2 + \lambda\beta(x),
+
+where :math:`\lambda` is the scalar weight of the regularizer. BRGN
+provides two default implementations for :math:`\beta(x)`:
+
+-  **L2-norm** - :math:`\beta(x) = \frac{1}{2}||x_k||_2^2`
+
+-  **L2-norm Proximal Point** -
+   :math:`\beta(x) = \frac{1}{2}||x_k - x_{k-1}||_2^2`
+
+-  **L1-norm with Dictionary** -
+   :math:`\beta(x) = ||Dx||_1 \approx \sum_{i} \sqrt{y_i^2 + \epsilon^2}-\epsilon`
+   where :math:`y = Dx` and :math:`\epsilon` is the smooth approximation
+   parameter.
+
+The regularizer weight can be controlled with either
+``TaoBRGNSetRegularizerWeight()`` or ``-tao_brgn_regularizer_weight``
+command line option, while the smooth approximation parameter can be set
+with either ``TaoBRGNSetL1SmoothEpsilon()`` or
+``-tao_brgn_l1_smooth_epsilon``. For the L1-norm term, the user can
+supply a dictionary matrix with ``TaoBRGNSetDictionaryMatrix()``. If no
+dictionary is provided, the dictionary is assumed to be an identity
+matrix and the regularizer reduces to a sparse solution term.
+
+The regularization selection can be made using the command line option
+``-tao_brgn_regularization_type <l2pure, l2prox, l1dict, user>`` where the ``user`` option allows
+the user to define a custom :math:`\mathcal{C}2`-continuous
+regularization term. This custom term can be defined by using the
+interface functions:
+
+-  ``TaoBRGNSetRegularizerObjectiveAndGradientRoutine()`` - Provide
+   user-call back for evaluating the function value and gradient
+   evaluation for the regularization term.
+
+-  ``TaoBRGNSetRegularizerHessianRoutine()`` - Provide user call-back
+   for evaluating the Hessian of the regularization term.
+
+POUNDERS
 ^^^^^^^^
 
 One algorithm for solving the least squares problem
 (:eq:`eq_nlsf`) when the Jacobian of the residual vector
-:math:`F` is unavailable is the model-based POUNDerS (Practical
+:math:`F` is unavailable is the model-based POUNDERS (Practical
 Optimization Using No Derivatives for sums of Squares) algorithm
-(``tao_pounders``). POUNDerS employs a derivative-free trust-region
+(``tao_pounders``). POUNDERS employs a derivative-free trust-region
 framework as described in :cite:`Dfobook` in order to
-converge to local minimizers. An example of this version of POUNDerS
+converge to local minimizers. An example of this version of POUNDERS
 applied to a practical least-squares problem can be found in
 :cite:`UNEDF0`.
 
@@ -2697,17 +2495,18 @@ trust-region subproblem
    :label: eq_poundersp
 
    \min\left\{
-    m_k(x) : 
-    \|x-x_k\|_{p} \leq \Delta_k, 
-    \right \}, 
+    m_k(x) :
+    \|x-x_k\|_{p} \leq \Delta_k,
+    \right \},
 
 where :math:`\Delta_k` is the current trust-region radius. By default we
 use a trust-region norm with :math:`p=\infty` and solve
 (:eq:`eq_poundersp`) with the BLMVM method described in
 :any:`sec_blmvm`. While the subproblem is a
 bound-constrained quadratic program, it may not be convex and the BQPIP
-and GPCG methods may not solve the subproblem. Therefore, either BLMVM
-(the default) or TRON should be used. Note: TRON uses its own internal
+and GPCG methods may not solve the subproblem. Therefore, a bounded
+Newton-Krylov Method should be used; the default is the BNTR
+algorithm.  Note: BNTR uses its own internal
 trust region that may interfere with the infinity-norm trust region used
 in the model problem (:eq:`eq_poundersp`).
 
@@ -2725,7 +2524,7 @@ approximation on the trust region is then used to update the iterate,
    x_+ & \text{if } \rho_k \geq \eta_1 \\
    x_+ & \text{if } 0<\rho_k <\eta_1  \text{ and \texttt{valid}=\texttt{true}}
    \\
-   x_k & \text{else}, 
+   x_k & \text{else},
    \end{array}
    \right.
 
@@ -2757,7 +2556,7 @@ is obtained as described next.
 Forming the Trust-Region Model
 """"""""""""""""""""""""""""""
 
-In each iteration, POUNDerS uses a subset of the available evaluated
+In each iteration, POUNDERS uses a subset of the available evaluated
 residual vectors :math:`\{ F(y_1), F(y_2), \cdots \}` to form an
 interpolatory quadratic model of each residual component. The :math:`m`
 quadratic models
@@ -2765,8 +2564,8 @@ quadratic models
 .. math::
    :label: eq_models
 
-   q_k^{(i)}(x) = 
-    F_i(x_k) + (x-x_k)^T g_k^{(i)} + \frac{1}{2} (x-x_k)^T H_k^{(i)} (x-x_k), 
+   q_k^{(i)}(x) =
+    F_i(x_k) + (x-x_k)^T g_k^{(i)} + \frac{1}{2} (x-x_k)^T H_k^{(i)} (x-x_k),
     \qquad i = 1, \ldots, m
 
 thus satisfy the interpolation conditions
@@ -2783,7 +2582,7 @@ model,
 .. math::
   :label: eq_newton2
 
-   m_k(x) = f(x_k) + 
+   m_k(x) = f(x_k) +
    2(x-x_k)^T \sum_{i=1}^{m} F_i(x_k) g_k^{(i)} +
    (x-x_k)^T \sum_{i=1}^{m}
    \left( g_k^{(i)} \left(g_k^{(i)}\right)^T +  F_i(x_k)
@@ -2795,7 +2594,7 @@ The process of forming these models also computes the indicator
 Parameters
 """"""""""
 
-POUNDerS supports the following parameters that can be set from the
+POUNDERS supports the following parameters that can be set from the
 command line or PETSc options file:
 
 ``-tao_pounders_delta <delta>``
@@ -2840,69 +2639,13 @@ values are expected to lie within the unit hypercube :math:`[0,1]^n`.
 Convergence Notes
 """""""""""""""""
 
-Because the gradient function is not provided to POUNDerS, the norm of
+Because the gradient function is not provided to POUNDERS, the norm of
 the gradient of the objective function is not available. Therefore, for
 convergence criteria, this norm is approximated by the norm of the model
 gradient and used only when the model gradient is deemed to be a
 reasonable approximation of the gradient of the objective. In practice,
 the typical grounds for termination for expensive derivative-free
 problems is the maximum number of function evaluations allowed.
-
-Bound-constrained Regularized Gauss-Newton
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The Gauss-Newton method is used to iteratively solve nonlinear least
-squares problem with the iterations
-
-.. math:: x_{k+1} = x_k - \alpha_k(J_k^T J_k)^{-1} J_k^T r(x_k)
-
-where :math:`r(x)` is the least-squares residual vector,
-:math:`J_k = \partial r(x_k)/\partial x` is the Jacobian of the
-residual, and :math:`\alpha_k` is the step length parameter. In other
-words, the Gauss-Newton method approximates the Hessian of the objective
-as :math:`H_k \approx (J_k^T J_k)` and the gradient of the objective as
-:math:`g_k \approx -J_k r(x_k)`. The least-squares Jacobian, :math:`J`,
-should be provided to Tao using ``TaoSetJacobianResidual()`` routine.
-
-The BRGN implementation adds a regularization term :math:`\beta(x)` such
-that
-
-.. math:: \min_{x} \; \frac{1}{2}||R(x)||_2^2 + \lambda\beta(x),
-
-where :math:`\lambda` is the scalar weight of the regularizer. BRGN
-provides two default implementations for :math:`\beta(x)`:
-
--  **L2-norm** - :math:`\beta(x) = \frac{1}{2}||x_k||_2^2`
-
--  **L2-norm Proximal Point** -
-   :math:`\beta(x) = \frac{1}{2}||x_k - x_{k-1}||_2^2`
-
--  **L1-norm with Dictionary** -
-   :math:`\beta(x) = ||Dx||_1 \approx \sum_{i} \sqrt{y_i^2 + \epsilon^2}-\epsilon`
-   where :math:`y = Dx` and :math:`\epsilon` is the smooth approximation
-   parameter.
-
-The regularizer weight can be controlled with either
-``TaoBRGNSetRegularizerWeight()`` or ``-tao_brgn_regularizer_weight``
-command line option, while the smooth approximation parameter can be set
-with either ``TaoBRGNSetL1SmoothEpsilon()`` or
-``-tao_brgn_l1_smooth_epsilon``. For the L1-norm term, the user can
-supply a dictionary matrix with ``TaoBRGNSetDictionaryMatrix()``. If no
-dictionary is provided, the dictionary is assumed to be an identity
-matrix and the regularizer reduces to a sparse solution term.
-
-The regularization selection can be made using the command line option
-``-tao_brgn_regularization_type <l2pure, l2prox, l1dict, user>`` where the ``user`` option allows
-the user to define a custom :math:`\mathcal{C}2`-continuous
-regularization term. This custom term can be defined by using the
-interface functions:
-
--  ``TaoBRGNSetRegularizerObjectiveAndGradientRoutine()`` - Provide
-   user-call back for evaluating the function value and gradient
-   evaluaton for the regularization term.
-
--  ``TaoBRGNSetRegularizerHessianRoutine()`` - Provide user call-back
-   for evaluating the Hessian of the regularization term.
 
 .. _sec_complementarity:
 
@@ -2916,7 +2659,7 @@ defined by a continuously differentiable function,
 :math:`\ell \in \{\mathbb R\cup \{-\infty\}\}^n` and
 :math:`u \in \{\mathbb R\cup \{\infty\}\}^n`, on the variables such that
 :math:`\ell \leq u`. Given this information,
-:math:`\text{\boldmath \(x\)}^* \in [\ell,u]` is a solution to
+:math:`\mathbf{x}^* \in [\ell,u]` is a solution to
 MCP(:math:`F`, :math:`\ell`, :math:`u`) if for each
 :math:`i \in \{1, \ldots, n\}` we have at least one of the following:
 
@@ -3056,6 +2799,23 @@ outside of the box, :math:`[\ell,u]`, perhaps because of the presence of
 :math:`\log` functions, the feasibility-enforcing version of the
 algorithm, ``tao_ssfls``, is a reasonable alternative.
 
+Active-Set Methods
+^^^^^^^^^^^^^^^^^^
+
+TAO also contained two active-set semismooth methods for solving
+complementarity problems.  These methods solve a reduced system
+constructed by block elimination of active constraints.  The
+subdifferential in these cases enables this block elimination.
+
+The first active-set semismooth algorithm available in TAO is not guaranteed to
+remain feasible with respect to the bounds, :math:`[\ell, u]`, and is
+termed an infeasible active-set semismooth method. This method can be
+specified by using the ``tao_asils`` solver.
+
+An alternative is to remain feasible with respect to the bounds by using
+a projected Armijo line search. This method can be specified by using
+the ``tao_asfls`` solver.
+
 Quadratic Solvers
 ~~~~~~~~~~~~~~~~~
 
@@ -3070,8 +2830,8 @@ Quadratic solvers solve optimization problems of the form
 
 where the gradient and the Hessian of the objective are both constant.
 
-Gradient Projection Conjugate Gradient Method
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Gradient Projection Conjugate Gradient Method (GPCG)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The GPCG :cite:`more-toraldo` algorithm is much like the
 TRON algorithm, discussed in Section :any:`sec_tron`, except that
@@ -3084,8 +2844,8 @@ options also apply to GPCG. It can be set by using the TAO solver
 
 .. _sec_bqpip:
 
-Interior-Point Newton’s Method
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Interior-Point Newton’s Method (BQPIP)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The BQPIP algorithm is an interior-point method for bound constrained
 quadratic optimization. It can be set by using the TAO solver of
@@ -3095,213 +2855,76 @@ gradient, and Hessian only once. This method also requires the solution
 of systems of linear equations, whose solver can be accessed and
 modified with the command ``TaoGetKSP()``.
 
-Constrained Solvers
-~~~~~~~~~~~~~~~~~~~
+Legacy and Contributed Solvers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Constrained solvers solve optimization problems of the form
+Bundle Method for Regularized Risk Minimization (BMRM)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. math::
+BMRM is a numerical approach to optimizing an
+unconstrained objective in the form of
+:math:`f(x) + 0.5 * \lambda \| x \|^2`. Here :math:`f` is a convex
+function that is finite on the whole space. :math:`\lambda` is a
+positive weight parameter, and :math:`\| x \|` is the Euclidean norm of
+:math:`x`. The algorithm only requires a routine which, given an
+:math:`x`, returns the value of :math:`f(x)` and the gradient of
+:math:`f` at :math:`x`.
 
-   \begin{array}{ll}
-   \displaystyle \min_{x} & f(x) \\
-   \text{subject to} & g(x) = c \\
-                     & l \leq x \leq u
-   \end{array}
+Orthant-Wise Limited-memory Quasi-Newton (OWLQN)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-where :math:`g_i(x) = c_i` for :math:`i = 1,...,n`. are equality
-constraints.
+OWLQN :cite:`owlqn` is a numerical approach to optimizing
+an unconstrained objective in the form of
+:math:`f(x) + \lambda \|x\|_1`. Here f is a convex and differentiable
+function, :math:`\lambda` is a positive weight parameter, and
+:math:`\| x \|_1` is the :math:`\ell_1` norm of :math:`x`:
+:math:`\sum_i |x_i|`. The algorithm only requires evaluating the value
+of :math:`f` and its gradient.
 
-Where applicable, TAO algorithms may convert inequality constraints to
-equality constraints via slack variables or penalty functions.
+.. _sec_tron:
 
-Augmented Lagrangian Multiplier Method
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Trust-Region Newton Method (TRON)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The TAOALMM method solves problems of the form
+The TRON :cite:`lin_c3` algorithm is an active-set method
+that uses a combination of gradient projections and a preconditioned
+conjugate gradient method to minimize an objective function. Each
+iteration of the TRON algorithm requires function, gradient, and Hessian
+evaluations. In each iteration, the algorithm first applies several
+conjugate gradient iterations. After these iterates, the TRON solver
+momentarily ignores the variables that equal one of its bounds and
+applies a preconditioned conjugate gradient method to a quadratic model
+of the remaining set of *free* variables.
 
-.. math::
+The TRON algorithm solves a reduced linear system defined by the rows
+and columns corresponding to the variables that lie between the upper
+and lower bounds. The TRON algorithm applies a trust region to the
+conjugate gradients to ensure convergence. The initial trust-region
+radius can be set by using the command
+``TaoSetInitialTrustRegionRadius()``, and the current trust region size
+can be found by using the command ``TaoGetCurrentTrustRegionRadius()``.
+The initial trust region can significantly alter the rate of convergence
+for the algorithm and should be tuned and adjusted for optimal
+performance.
 
-   \begin{array}{ll}
-   \displaystyle \min_{x} & f(x) \\
-   \text{subject to} & g(x) = 0\\
-                     & h(x) \geq 0 \\
-                     & l \leq x \leq u
-   \end{array}
+This algorithm will be deprecated in the next version in favor of the
+Bounded Newton Trust Region (BNTR) algorithm.
 
-where :math:`g(x)` are equality constraints, :math:`h(x)` are inequality
-constraints and :math:`l` and :math:`u` are lower and upper bounds on
-the optimization variables, respectively.
+.. _sec_blmvm:
 
-TAOALMM converts the above general constrained problem into a sequence
-of bound constrained problems at each outer iteration
-:math:`k = 1,2,\dots`
+Bound-constrained Limited-Memory Variable-Metric Method (BLMVM)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. math::
+BLMVM is a limited-memory, variable-metric method and is the
+bound-constrained variant of the LMVM method for unconstrained
+optimization. It uses projected gradients to approximate the Hessian,
+eliminating the need for Hessian evaluations. The method can be set by
+using the TAO solver ``tao_blmvm``. For more details, please see the
+LMVM section in the unconstrained algorithms as well as the LMVM matrix
+documentation in the PETSc manual.
 
-   \begin{array}{ll}
-   \displaystyle \min_{x} & L(x, \lambda_k) \\
-   \text{subject to} & l \leq x \leq u
-   \end{array}
-
-where :math:`L(x, \lambda_k)` is the augmented Lagrangian merit function
-and :math:`\lambda_k` is the Lagrange multiplier estimates at outer
-iteration :math:`k`.
-
-TAOALMM offers two versions of the augmented Lagrangian formulation: the
-canonical Hestenes-Powell augmented
-Lagrangian :cite:`hestenes1969multiplier` :cite:`powell1969method`
-with inequality constrained converted to equality constraints via slack
-variables, and the slack-less Powell-Hestenes-Rockafellar
-formulation :cite:`rockafellar1974augmented` that utilizes a
-pointwise ``max()`` on the inequality constraints. For most
-applications, the canonical Hestenes-Powell formulation is likely to
-perform better. However, the PHR formulation may be desirable for
-problems featuring very large numbers of inequality constraints as it
-avoids inflating the dimension of the subproblem with slack variables.
-
-The inner subproblem is solved using a nested bound-constrained
-first-order TAO solver. By default, TAOALM uses a quasi-Newton-Krylov
-trust-region method (TAOBQNKTR). Other first-order methods such as
-TAOBNCG and TAOBQNLS are also appropriate, but a trust-region
-globalization is strongly recommended for most applications.
-
-Alternating Direction Method of Multipliers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The ADMM is an algorithm that is intended to blend the decomposability
-of dual ascent with the superior convergence properties of the method of
-multipliers. :cite:`boyd` The algorithm solves problems in
-the form
-
-.. math::
-
-   \begin{array}{ll}
-   \displaystyle \min_{x} & f(x) + g(z) \\ 
-   \text{subject to} & Ax + Bz = c
-   \end{array}
-
-where :math:`x \in \mathbb R^n`, :math:`z \in \mathbb R^m`,
-:math:`A \in \mathbb R^{p \times n}`,
-:math:`B \in \mathbb R^{p \times m}`, and :math:`c \in \mathbb R^p`.
-Essentially, ADMM is a wrapper over two TAO solver, one for
-:math:`f(x)`, and one for :math:`g(z)`. With method of multipliers, one
-can form the augmented Lagrangian
-
-.. math:: L_{\rho}(x,z,y) = f(x) + g(z) + y^T(Ax+Bz-c) + (\rho/2)||Ax+Bz-c||_2^2
-
-Then, ADMM consists of the iterations
-
-.. math:: x^{k+1} := \text{argmin}L_{\rho}(x,z^k,y^k)
-
-.. math:: z^{k+1} := \text{argmin}L_{\rho}(x^{k+1},z,y^k)
-
-.. math:: y^{k+1} := y^k + \rho(Ax^{k+1}+Bz^{k+1}-c)
-
-In certain formulation of ADMM, solution of :math:`z^{k+1}` may have
-closed-form solution. Currently ADMM provides one default implementation
-for :math:`z^{k+1}`, which is soft-threshold. It can be used with either
-``TaoADMMSetRegularizerType_ADMM()`` or
-``-tao_admm_regularizer_type <regularizer_soft_thresh>``. User can also
-pass spectral penalty value, :math:`\rho`, with either
-``TaoADMMSetSpectralPenalty()`` or ``-tao_admm_spectral_penalty``.
-Currently, user can use
-
--  ``TaoADMMSetMisfitObjectiveAndGradientRoutine()``
-
--  ``TaoADMMSetRegularizerObjectiveAndGradientRoutine()``
-
--  ``TaoADMMSetMisfitHessianRoutine()``
-
--  ``TaoADMMSetRegularizerHessianRoutine()``
-
-Any other combination of routines is currently not supported. Hessian
-matrices can either be constant or non-constant, of which fact can be
-set via ``TaoADMMSetMisfitHessianChangeStatus()``, and
-``TaoADMMSetRegularizerHessianChangeStatus()``. Also, it may appear in
-certain cases where augmented Lagrangian’s Hessian may become nearly
-singular depending on the :math:`\rho`, which may change in the case of
-``-tao_admm_dual_update <update_adaptive>, <update_adaptive_relaxed>``.
-This issue can be prevented by ``TaoADMMSetMinimumSpectralPenalty()``.
-
-General Nonlinear Programming problems
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-General nonlinear programming problems are of the form
-
-.. math::
-   :label: eq_nlp_gen1
-
-   \begin{array}{ll}
-   \displaystyle \min_{x} & f(x) \\
-   \text{subject to} & g(x) = 0 \\
-                     & h(x) \geq 0 \\
-                     & x^- \leq x \leq x^+
-   \end{array}
-
-Here, :math:`f(x)` is the nonlinear objective function, :math:`g(x)`,
-:math:`h(x)` are the equality and inequality constraints, and
-:math:`x^-` and :math:`x^+` are the lower and upper bounds on decision
-variables :math:`x`.
-
-Interior-point Newton’s method
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The PDIPM (``-tao_type pdipm``) algorithm implements a primal-dual
-interior point method for solving general nonlinear programming
-problems. Using slack variables :math:`z` and a log-barrier term,
-:eq:`eq_nlp_gen1` is transformed to
-
-.. math::
-   :label: eq_nlp_gen2
-
-   \begin{aligned}
-       \text{min}~&f(x) - \mu\sum_{i=1}^{nci}\ln z_i\\
-       \text{s.t.}& \\
-           &ce(x) = 0 \\
-           &ci(x) - z = 0 \\
-       \end{aligned}
-
-Here, :math:`ce(x)` is set of equality constraints that include
-:math:`g(x)` and fixed decision variables, i.e., :math:`x^- = x = x^+`.
-Similarly, :math:`ci(x)` are inequality constraints including
-:math:`h(x)` and lower/upper/box-constraints on :math:`x`. :math:`\mu`
-is a parameter that is driven to zero as the optimization progresses.
-
-The Lagrangian for :eq:`eq_nlp_gen2`) is
-
-.. math::
-   :label: eq_lagrangian
-
-   L_{\mu}(x,\lambda_{ce},\lambda_{ci},z) = f(x) + \lambda_{ce}^Tce(x) - \lambda_{ci}^T(ci(x) - z) - \mu\sum_{i=1}^{nci}\ln z_i
-
-where, :math:`\lambda_{ce}` and :math:`\lambda_{ci}` are the lagrangian
-multipliers for the equality and inequality constraints, respectively.
-
-The first order KKT conditions for optimality are as follows
-
-.. math::
-   :label: eq_nlp_kkt
-
-   \nabla L_{\mu}(x,\lambda_{ce},\lambda_{ci},z)    =
-       \begin{bmatrix}
-           \nabla f(x) + \nabla ce(x)^T\lambda_{ce} -  \nabla ci(x)^T \lambda_{ci} \\
-           ce(x) \\
-           ci(x) - z \\
-           Z\Lambda_{ci}e - \mu e
-       \end{bmatrix}
-   = 0
-
-:eq:`eq_nlp_kkt` is solved iteratively using Newton’s
-method using PETSc’s SNES object. After each Newton iteration, a
-line-search is performed to update :math:`x` and enforce
-:math:`z,\lambda_{ci} \geq 0`. The barrier parameter :math:`\mu` is also
-updated after each Newton iteration. The Newton update is obtained by
-solving the second-order KKT system :math:`Hd = -\nabla L_{\mu}`.
-Here,\ :math:`H` is the Hessian matrix of the KKT system. For
-interior-point methods such as PDIPM, the Hessian matrix tends to be
-ill-conditioned, thus neccessitating the use of a direct solver. We
-recommend using LU preconditioner ``-pc_type lu`` and using direct
-linear solver packages such ``SuperLU_Dist`` or ``MUMPS``.
+This algorithm will be deprecated in the next version in favor of the
+Bounded Quasi-Newton Line Search (BQNLS) algorithm.
 
 Advanced Options
 ----------------
@@ -3322,7 +2945,7 @@ computation of the solution. Since linear equation solvers often have a
 wide variety of options associated with them, TAO allows the user to
 access the linear solver with the
 
-::
+.. code-block::
 
       TaoGetKSP(Tao, KSP *);
 
@@ -3336,11 +2959,9 @@ Monitors
 By default the TAO solvers run silently without displaying information
 about the iterations. The user can initiate monitoring with the command
 
-::
+.. code-block::
 
-      TaoSetMonitor(Tao,
-                        PetscErrorCode (*mon)(Tao,void*),
-                        void*);
+      TaoSetMonitor(Tao, PetscErrorCode (*mon)(Tao,void*), void*);
 
 The routine ``mon`` indicates a user-defined monitoring routine, and
 ``void*`` denotes an optional user-defined context for private data for
@@ -3364,7 +2985,7 @@ choices are not sufficient, the user can specify a customized test
 
 Users can set their own customized convergence tests of the form
 
-::
+.. code-block::
 
       PetscErrorCode  conv(Tao, void*);
 
@@ -3375,11 +2996,9 @@ routines such as ``TaoGetSolutionStatus()`` and ``TaoGetTolerances()``.
 
 To use this convergence test within a TAO solver, one uses the command
 
-::
+.. code-block::
 
-      TaoSetConvergenceTest(Tao,
-                        PetscErrorCode (*conv)(Tao,void*),
-                        void*);
+      TaoSetConvergenceTest(Tao, PetscErrorCode (*conv)(Tao,void*), void*);
 
 The second argument of this command is the convergence routine, and the
 final argument of the convergence test routine denotes an optional
@@ -3387,7 +3006,7 @@ user-defined context for private data. The convergence routine receives
 the TAO solver and this private data structure. The termination flag can
 be set by using the routine
 
-::
+.. code-block::
 
       TaoSetConvergedReason(Tao, TaoConvergedReason);
 
@@ -3496,7 +3115,7 @@ Header File
 TAO solver implementation files must include the TAO implementation file
 ``taoimpl.h``:
 
-::
+.. code-block::
 
       #include "petsc/private/taoimpl.h"
 
@@ -3516,7 +3135,7 @@ solver, setup appropriate data structures, and destroy these data
 structures. In order to implement the conjugate gradient algorithm, for
 example, the following structure is useful.
 
-::
+.. code-block::
 
    typedef struct{
 
@@ -3525,7 +3144,7 @@ example, the following structure is useful.
      PetscInt  ngradtseps;
      PetscInt  nresetsteps;
      Vec X_old;
-     Vec G_old; 
+     Vec G_old;
 
    } TAO_CG;
 
@@ -3545,7 +3164,7 @@ convergence monitoring. As an example, consider the following code that
 solves an unconstrained minimization problem using the conjugate
 gradient method.
 
-::
+.. code-block::
 
    PetscErrorCode TaoSolve_CG(Tao tao)
    {
@@ -3564,7 +3183,7 @@ gradient method.
      ierr = TaoComputeObjectiveAndGradient(tao,x,&f,g);CHKERRQ(ierr);
      ierr = VecNorm(g,NORM_2,&gnorm);  CHKERRQ(ierr);
 
-     ierr = VecSet(s,0); CHKERRQ(ierr); 
+     ierr = VecSet(s,0); CHKERRQ(ierr);
 
      cg->beta=0;
      gnormPrev = gnorm;
@@ -3579,13 +3198,13 @@ gradient method.
        cg->beta=(gnorm*gnorm)/(gnormPrev*gnormPrev);
        ierr = VecScale(s,cg->beta); CHKERRQ(ierr);
        ierr = VecAXPY(s,-1.0,g); CHKERRQ(ierr);
-       
+
        ierr = VecDot(s,g,&gdx); CHKERRQ(ierr);
        if (gdx>=0){     /* If not a descent direction, use gradient */
          ierr = VecCopy(g,s); CHKERRQ(ierr);
          ierr = VecScale(s,-1.0); CHKERRQ(ierr);
          gdx=-gnorm*gnorm;
-       } 
+       }
 
        /* Line Search */
        gnormPrev = gnorm;  step=1.0;
@@ -3595,7 +3214,7 @@ gradient method.
        ierr = VecNorm(g,NORM_2,&gnorm);CHKERRQ(ierr);
        iter++;
      }
-     
+
      PetscFunctionReturn(0);
    }
 
@@ -3616,7 +3235,7 @@ nonnegative and equals zero at the solution. The solver will pass this
 quantity, the current function value, the current iteration number, and
 a measure of infeasibility to TAO with the routine
 
-::
+.. code-block::
 
       PetscErrorCode TaoMonitor(Tao tao, PetscInt iter, PetscReal f,
                      PetscReal res, PetscReal cnorm, PetscReal steplength,
@@ -3648,10 +3267,10 @@ pages.
 Nonlinear conjugate gradient algorithms also require a line search. TAO
 provides several line searches and support for using them. The routine
 
-::
+.. code-block::
 
-      TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
-                             TaoVec *s, PetscReal *steplength, 
+      TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g,
+                             TaoVec *s, PetscReal *steplength,
                              TaoLineSearchConvergedReason *lsflag)
 
 passes the current solution, gradient, and objective value to the line
@@ -3675,7 +3294,7 @@ line search or linear solver if needed, and creates structures needed by
 this solver. For example, the routine that creates the nonlinear
 conjugate gradient algorithm shown above can be implemented as follows.
 
-::
+.. code-block::
 
    PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao)
    {
@@ -3737,7 +3356,7 @@ created by earlier routines. For the nonlinear conjugate gradient method
 discussed earlier, the following routine destroys the two work vectors
 and the ``TAO_CG`` structure.
 
-::
+.. code-block::
 
    PetscErrorCode TaoDestroy_CG(TAO_SOLVER tao)
    {
@@ -3770,7 +3389,7 @@ is optional, it is often provided to allocate the gradient vector, work
 vectors, and other data structures required by the solver. It should
 have the following form.
 
-::
+.. code-block::
 
    PetscErrorCode TaoSetUp_CG(Tao tao)
    {
@@ -3794,7 +3413,7 @@ algorithm-specific options set by the user and will be called when the
 application makes a call to ``TaoSetFromOptions()``. It should have the
 following form.
 
-::
+.. code-block::
 
    PetscErrorCode TaoSetFromOptions_CG(Tao tao, void *solver);
    {
@@ -3819,10 +3438,10 @@ called when the application makes a call to ``TaoView()`` or when the
 command line option ``-tao_view`` is used. It should have the following
 form.
 
-::
+.. code-block::
 
    PetscErrorCode TaoView_CG(Tao tao, PetscViewer viewer)
-   { 
+   {
      TAO_CG *cg = (TAO_CG*)tao->data;
      PetscErrorCode ierr;
 
@@ -3841,11 +3460,11 @@ Once a new solver is implemented, TAO needs to know the name of the
 solver and what function to use to create the solver. To this end, one
 can use the routine
 
-::
+.. code-block::
 
-     TaoRegister(const char *name, 
+     TaoRegister(const char *name,
                      const char *path,
-                     const char *cname, 
+                     const char *cname,
                      PetscErrorCode (*create) (Tao));
 
 where ``name`` is the name of the solver (i.e., ``tao_blmvm``), ``path``
@@ -3866,8 +3485,5 @@ either by using the ``TaoSetType()`` function or by using the
 
     <hr>
 
-.. bibliography:: /../src/docs/tao_tex/tao.bib
-   :filter: docname in docnames
-
-.. bibliography:: /../src/docs/tao_tex/manual/mathprog.bib
+.. bibliography:: /petsc.bib
    :filter: docname in docnames

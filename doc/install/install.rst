@@ -1,13 +1,12 @@
 .. _doc_config_faq:
 
-#####################
-Configuring PETSc FAQ
-#####################
+#################
+Configuring PETSc
+#################
 
 .. important::
 
-   Please obtain PETSc via the repository or download the latest patched tarball. See
-   :ref:`download documentation <doc_download>` for more information.
+   Obtain PETSc via the repository or download the latest tarball: :ref:`download documentation <doc_download>`.
 
    See :ref:`quick-start tutorial <tut_install>` for a step-by-step walk-through of the installation process.
 
@@ -27,7 +26,7 @@ Common Example Usages
 
    .. code-block:: console
 
-      > ./config/examples/arch-ci-osx-dbg.py
+      $ ./config/examples/arch-ci-osx-dbg.py
 
    If there is a system for which we do not yet have such a ``configure`` script and/or
    the script in the examples directory is outdated we welcome your feedback by submitting
@@ -39,13 +38,13 @@ Common Example Usages
 
   .. code-block:: console
 
-     > ./configure --with-cc=gcc --with-cxx=0 --with-fc=0 --download-f2cblaslapack --download-mpich
+     $ ./configure --with-cc=gcc --with-cxx=0 --with-fc=0 --download-f2cblaslapack --download-mpich
 
 * Same as above - but install in a user specified (prefix) location.
 
   .. code-block:: console
 
-     > ./configure --prefix=/home/user/soft/petsc-install --with-cc=gcc --with-cxx=0 --with-fc=0 --download-f2cblaslapack --download-mpich
+     $ ./configure --prefix=/home/user/soft/petsc-install --with-cc=gcc --with-cxx=0 --with-fc=0 --download-f2cblaslapack --download-mpich
 
 * If `BLAS/LAPACK`_, MPI sources (in "-devel" packages in most Linux distributions) are already
   installed in default system/compiler locations and ``mpicc``, ``mpif90``, mpiexec are available
@@ -53,31 +52,31 @@ Common Example Usages
 
   .. code-block:: console
 
-     > ./configure
+     $ ./configure
 
 * If `BLAS/LAPACK`_, MPI are already installed in known user location use:
 
   .. code-block:: console
 
-     > ./configure --with-blaslapack-dir=/usr/local/blaslapack --with-mpi-dir=/usr/local/mpich
+     $ ./configure --with-blaslapack-dir=/usr/local/blaslapack --with-mpi-dir=/usr/local/mpich
 
   or
 
   .. code-block:: console
 
-     > ./configure --with-blaslapack-dir=/usr/local/blaslapack --with-cc=/usr/local/mpich/bin/mpicc --with-mpi-f90=/usr/local/mpich/bin/mpif90 --with-mpiexec=/usr/local/mpich/bin/mpiexec
+     $ ./configure --with-blaslapack-dir=/usr/local/blaslapack --with-cc=/usr/local/mpich/bin/mpicc --with-mpi-f90=/usr/local/mpich/bin/mpif90 --with-mpiexec=/usr/local/mpich/bin/mpiexec
 
 .. admonition:: Note
    :class: yellow
 
    Do not specify ``--with-cc``, ``--with-fc`` etc for the above when using
-   ``--with-mpi-dir`` - so that ``mpicc``/ ``mpif90`` can be picked up from mpi-dir!
+   ``--with-mpi-dir`` - so that ``mpicc``/ ``mpif90`` will be picked up from mpi-dir!
 
 * Build Complex version of PETSc (using c++ compiler):
 
   .. code-block:: console
 
-     > ./configure --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --with-clanguage=cxx --download-fblaslapack --download-mpich --with-scalar-type=complex
+     $ ./configure --with-cc=gcc --with-fc=gfortran --with-cxx=g++ --with-clanguage=cxx --download-fblaslapack --download-mpich --with-scalar-type=complex
 
 * Install 2 variants of PETSc, one with gnu, the other with Intel compilers. Specify
   different ``$PETSC_ARCH`` for each build. See multiple PETSc install :ref:`documentation
@@ -85,10 +84,10 @@ Common Example Usages
 
   .. code-block:: console
 
-     > ./configure PETSC_ARCH=linux-gnu --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-mpich
-     > make PETSC_ARCH=linux-gnu all test
-     > ./configure PETSC_ARCH=linux-gnu-intel --with-cc=icc --with-cxx=icpc --with-fc=ifort --download-mpich --with-blaslapack-dir=/usr/local/mkl
-     > make PETSC_ARCH=linux-gnu-intel all test
+     $ ./configure PETSC_ARCH=linux-gnu --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-mpich
+     $ make PETSC_ARCH=linux-gnu all test
+     $ ./configure PETSC_ARCH=linux-gnu-intel --with-cc=icc --with-cxx=icpc --with-fc=ifort --download-mpich --with-blaslapack-dir=/usr/local/mkl
+     $ make PETSC_ARCH=linux-gnu-intel all test
 
 .. _doc_config_compilers:
 
@@ -109,36 +108,36 @@ Compilers
 
   .. code-block:: console
 
-     > ./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran
+     $ ./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran
 
 .. important::
 
    It's best to use MPI compilers as this will avoid the situation where MPI is compiled
-   with one set of compilers (like ``gcc``/``gfortran``) and user specified incompatible
+   with one set of compilers (like ``gcc``/``gfortran``) and the user specified incompatible
    compilers to PETSc (perhaps ``icc``/``ifort``). This can be done by either specifying
    ``--with-cc=mpicc`` or ``--with-mpi-dir`` (and not ``--with-cc=gcc``)
 
    .. code-block:: console
 
-      > ./configure --with-cc=mpicc --with-cxx=mpicxx --with-fc=mpif90
+      $ ./configure --with-cc=mpicc --with-cxx=mpicxx --with-fc=mpif90
 
    or the following (but **without** ``--with-cc=gcc``)
 
    .. code-block:: console
 
-      > ./configure --with-mpi-dir=/opt/mpich2-1.1
+      $ ./configure --with-mpi-dir=/opt/mpich2-1.1
 
 * If a fortran compiler is not available or not needed - disable using:
 
   .. code-block:: console
 
-     > ./configure --with-fc=0
+     $ ./configure --with-fc=0
 
 * If a c++ compiler is not available or not needed - disable using:
 
   .. code-block:: console
 
-     > ./configure --with-cxx=0
+     $ ./configure --with-cxx=0
 
 ``configure`` defaults to building PETSc in debug mode. One can switch to optimized
 mode with the ``configure`` option ``--with-debugging=0`` (we suggest using a different
@@ -153,7 +152,7 @@ corresponding optimization flags:
 
 .. code-block:: console
 
-   > ./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --with-debugging=0 COPTFLAGS='-O3 -march=native -mtune=native' CXXOPTFLAGS='-O3 -march=native -mtune=native' FOPTFLAGS='-O3 -march=native -mtune=native' --download-mpich
+   $ ./configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --with-debugging=0 COPTFLAGS='-O3 -march=native -mtune=native' CXXOPTFLAGS='-O3 -march=native -mtune=native' FOPTFLAGS='-O3 -march=native -mtune=native' --download-mpich
 
 .. warning::
 
@@ -162,7 +161,7 @@ corresponding optimization flags:
 
    .. code-block:: console
 
-      > ./configure --LIBS='-ldl /usr/lib/libm.a'
+      $ ./configure --LIBS='-ldl /usr/lib/libm.a'
 
 .. _doc_config_externalpack:
 
@@ -212,7 +211,7 @@ The following modes can be used to download/install :ref:`external packages
 
   .. code-block:: console
 
-     > ./configure --download-fblaslapack --download-mpich
+     $ ./configure --download-fblaslapack --download-mpich
 
 - ``--download-PACKAGENAME=/path/to/PACKAGENAME.tar.gz``: If ``configure`` cannot
   automatically download the package (due to network/firewall issues), one can download
@@ -223,7 +222,7 @@ The following modes can be used to download/install :ref:`external packages
 
   .. code-block:: console
 
-     > ./configure --download-mpich=/home/petsc/mpich2-1.0.4p1.tar.gz
+     $ ./configure --download-mpich=/home/petsc/mpich2-1.0.4p1.tar.gz
 
 - ``--with-PACKAGENAME-dir=/path/to/dir``: If the external package is already installed -
   specify its location to ``configure`` (it will attempt to detect and include relevant
@@ -232,7 +231,7 @@ The following modes can be used to download/install :ref:`external packages
 
   .. code-block:: console
 
-     > ./configure --with-mpi-dir=/home/petsc/software/mpich2-1.0.4p1
+     $ ./configure --with-mpi-dir=/home/petsc/software/mpich2-1.0.4p1
 
 
 - ``--with-PACKAGENAME-include=/path/to/include/dir`` and
@@ -242,19 +241,19 @@ The following modes can be used to download/install :ref:`external packages
 
   .. code-block:: console
 
-     > ./configure --with-superlu-include=/home/petsc/software/superlu/include --with-superlu-lib=/home/petsc/software/superlu/lib/libsuperlu.a
+     $ ./configure --with-superlu-include=/home/petsc/software/superlu/include --with-superlu-lib=/home/petsc/software/superlu/lib/libsuperlu.a
 
   or
 
   .. code-block:: console
 
-     > ./configure --with-parmetis-include=/sandbox/balay/parmetis/include --with-parmetis-lib="-L/sandbox/balay/parmetis/lib -lparmetis -lmetis"
+     $ ./configure --with-parmetis-include=/sandbox/balay/parmetis/include --with-parmetis-lib="-L/sandbox/balay/parmetis/lib -lparmetis -lmetis"
 
   or
 
   .. code-block:: console
 
-     > ./configure --with-parmetis-include=/sandbox/balay/parmetis/include --with-parmetis-lib=[/sandbox/balay/parmetis/lib/libparmetis.a,libmetis.a]
+     $ ./configure --with-parmetis-include=/sandbox/balay/parmetis/include --with-parmetis-lib=[/sandbox/balay/parmetis/lib/libparmetis.a,libmetis.a]
 
 .. note::
 
@@ -268,10 +267,6 @@ The following modes can be used to download/install :ref:`external packages
      ``--with-PACKAGENAME-dir``. Architectures like Microsoft Windows might have issues
      with these options. In these cases, ``--with-PACKAGENAME-include`` and
      ``--with-PACKAGENAME-lib`` options should be preferred.
-   - If you want to download a compatible external package manually, then the URL for this
-     package is listed in configure source for this package. For example, check
-     ``config/BuildSystem/config/packages/SuperLU.py`` for the url for download this
-     package.
 
 - ``--with-packages-build-dir=PATH``: By default, external packages will be unpacked and
   the build process is run in ``$PETSC_DIR/$PETSC_ARCH/externalpackages``. However one
@@ -295,21 +290,21 @@ automatically:
 
   .. code-block:: console
 
-     > ./configure --download-fblaslapack
+     $ ./configure --download-fblaslapack
 
 - Or when configuring without a Fortran compiler - i.e ``--with-fc=0``:
 
   .. code-block:: console
 
-     > ./configure --download-f2cblaslapack
+     $ ./configure --download-f2cblaslapack
 
 Alternatively one can use other options like one of the following:
 
 .. code-block:: console
 
-   > ./configure --with-blaslapack-lib=libsunperf.a
-   > ./configure --with-blas-lib=libblas.a --with-lapack-lib=liblapack.a
-   > ./configure --with-blaslapack-dir=/soft/com/packages/intel/13/079/mkl
+   $ ./configure --with-blaslapack-lib=libsunperf.a
+   $ ./configure --with-blas-lib=libblas.a --with-lapack-lib=liblapack.a
+   $ ./configure --with-blaslapack-dir=/soft/com/packages/intel/13/079/mkl
 
 Intel MKL
 ^^^^^^^^^
@@ -344,13 +339,13 @@ download/install MPI automatically:
 
   .. code-block:: console
 
-     > ./configure --download-mpich
+     $ ./configure --download-mpich
 
 - For `OpenMPI`_:
 
   .. code-block:: console
 
-     > ./configure --download-openmpi
+     $ ./configure --download-openmpi
 
 Using MPI Compilers
 ^^^^^^^^^^^^^^^^^^^
@@ -360,11 +355,11 @@ It's best to install PETSc with MPI compiler wrappers (often called ``mpicc``,
 build PETSc. See the section on :ref:`compilers <doc_config_compilers>` above for more
 details.
 
-- Vendor provided MPI might already be installed. IBM, SGI, Cray etc provide their own:
+- Vendor provided MPI might already be installed. IBM, Intel, NVIDIA, and Cray provide their own:
 
   .. code-block:: console
 
-     > ./configure --with-cc=vendor_mpicc --with-fc=vendor_mpif90
+     $ ./configure --with-cc=vendor_mpicc --with-fc=vendor_mpif90
 
 - If using `MPICH`_ which is already installed (perhaps using myrinet/gm) then use
   (without specifying ``--with-cc=gcc`` etc. so that ``configure`` picks up ``mpicc``
@@ -372,7 +367,7 @@ details.
 
   .. code-block:: console
 
-     >  ./configure --with-mpi-dir=/absolute/path/to/mpich/install
+     $  ./configure --with-mpi-dir=/absolute/path/to/mpich/install
 
 Installing Without MPI
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -381,7 +376,7 @@ You can build (sequential) PETSc without MPI. This is useful for quickly install
 
 .. code-block:: console
 
-   > ./configure --with-mpi=0
+   $ ./configure --with-mpi=0
 
 However - if there is any MPI code in user application, then its best to install a full
 MPI implementation - even if the usage is currently limited to uniprocessor mode:
@@ -432,7 +427,7 @@ To install the libraries and include files in another location use the ``--prefi
 
 .. code-block:: console
 
-   > ./configure --prefix=/home/userid/my-petsc-install --some-other-options
+   $ ./configure --prefix=/home/userid/my-petsc-install --some-other-options
 
 The libraries and include files will be located in ``/home/userid/my-petsc-install/lib``
 and ``/home/userid/my-petsc-install/include``.
@@ -451,21 +446,21 @@ and then do the PETSc install as a **regular/non-root** user:
 
 .. code-block:: console
 
-   > sudo mkdir /opt/petsc
-   > sudo chown user:group /opt/petsc
-   > cd /home/userid/petsc
-   > ./configure --prefix=/opt/petsc/my-root-petsc-install --some-other-options
-   > make
-   > make install
+   $ sudo mkdir /opt/petsc
+   $ sudo chown user:group /opt/petsc
+   $ cd /home/userid/petsc
+   $ ./configure --prefix=/opt/petsc/my-root-petsc-install --some-other-options
+   $ make
+   $ make install
 
 Installs For Package Managers: Using ``DESTDIR`` (Very uncommon)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: console
 
-   > ./configure --prefix=/opt/petsc/my-root-petsc-install
-   > make
-   > make install DESTDIR=/tmp/petsc-pkg
+   $ ./configure --prefix=/opt/petsc/my-root-petsc-install
+   $ make
+   $ make install DESTDIR=/tmp/petsc-pkg
 
 Package up ``/tmp/petsc-pkg``. The package should then be installed at
 ``/opt/petsc/my-root-petsc-install``
@@ -478,12 +473,12 @@ configure time. For example:
 
 .. code-block:: console
 
-   > ./configure --prefix=/opt/petsc/petsc-3.15.0-mpich --with-mpi-dir=/opt/mpich
-   > make
-   > make install [DESTDIR=/tmp/petsc-pkg]
-   > ./configure --prefix=/opt/petsc/petsc-3.15.0-openmpi --with-mpi-dir=/opt/openmpi
-   > make
-   > make install [DESTDIR=/tmp/petsc-pkg]
+   $ ./configure --prefix=/opt/petsc/petsc-3.16.0-mpich --with-mpi-dir=/opt/mpich
+   $ make
+   $ make install [DESTDIR=/tmp/petsc-pkg]
+   $ ./configure --prefix=/opt/petsc/petsc-3.16.0-openmpi --with-mpi-dir=/opt/openmpi
+   $ make
+   $ make install [DESTDIR=/tmp/petsc-pkg]
 
 In-place Installation
 ^^^^^^^^^^^^^^^^^^^^^
@@ -493,31 +488,31 @@ current directory ``$PETSC_ARCH`` which is either provided by the user with, for
 
 .. code-block:: console
 
-   > export PETSC_ARCH=arch-debug
-   > ./configure
-   > make
-   > export PETSC_ARCH=arch-opt
-   > ./configure --some-optimization-options
-   > make
+   $ export PETSC_ARCH=arch-debug
+   $ ./configure
+   $ make
+   $ export PETSC_ARCH=arch-opt
+   $ ./configure --some-optimization-options
+   $ make
 
 or
 
 .. code-block:: console
 
-   > ./configure PETSC_ARCH=arch-debug
-   > make
-   > ./configure --some-optimization-options PETSC_ARCH=arch-opt
-   > make
+   $ ./configure PETSC_ARCH=arch-debug
+   $ make
+   $ ./configure --some-optimization-options PETSC_ARCH=arch-opt
+   $ make
 
 If not provided ``configure`` will generate a unique value automatically (for in-place non
 ``--prefix`` configurations only).
 
 .. code-block:: console
 
-   > ./configure
-   > make
-   > ./configure --with-debugging=0
-   > make
+   $ ./configure
+   $ make
+   $ ./configure --with-debugging=0
+   $ make
 
 Produces the directories (on an Apple MacOS machine) ``$PETSC_DIR/arch-darwin-c-debug`` and
 ``$PETSC_DIR/arch-darwin-c-opt``.
@@ -555,8 +550,8 @@ Installing With TAU Instrumentation Package
 
 .. code-block:: console
 
-   > export TAU_MAKEFILE=/home/balay/soft/linux64/tau-2.20.3/x86_64/lib/Makefile.tau-mpi-pdt
-   > ./configure CC=/home/balay/soft/linux64/tau-2.20.3/x86_64/bin/tau_cc.sh --with-fc=0 PETSC_ARCH=arch-tau
+   $ export TAU_MAKEFILE=/home/balay/soft/linux64/tau-2.20.3/x86_64/lib/Makefile.tau-mpi-pdt
+   $ ./configure CC=/home/balay/soft/linux64/tau-2.20.3/x86_64/bin/tau_cc.sh --with-fc=0 PETSC_ARCH=arch-tau
 
 .. _doc_config_accel:
 
@@ -578,8 +573,8 @@ PETSc is able to take adavantage of GPU's and certain accelerator libraries, how
 On Linux - make sure you have compatible `NVIDIA driver
 <https://developer.nvidia.com/cuda-downloads>`__ installed.
 
-On Windows - Use either `Cygwin`_ or `WSL`_ the latter of which is entirely untested right
-now. If you have experience with `WSL`_ and/or have successfully built PETSc on windows
+On Microsoft Windows - Use either `Cygwin`_ or `WSL`_ the latter of which is entirely untested right
+now. If you have experience with `WSL`_ and/or have successfully built PETSc on Microsoft Windows
 for use with `CUDA`_ we welcome your input at petsc-maint@mcs.anl.gov. See the
 bug-reporting :ref:`documentation <doc_creepycrawly>` for more details.
 
@@ -698,10 +693,10 @@ OLCF - Oak Ridge National Laboratory - Summit machine - NVIDIA GPUs and IBM Powe
 
     .. code-block:: console
 
-       > module load cmake hdf5 cuda
-       > module load pgi
-       > module load essl netlib-lapack xl
-       > module load gcc
+       $ module load cmake hdf5 cuda
+       $ module load pgi
+       $ module load essl netlib-lapack xl
+       $ module load gcc
 
   - Use ``config/examples/arch-olcf-opt.py`` as a template for running ``configure``
   - You configure PETSc and build examples in your home directory, but launch them from
@@ -717,14 +712,14 @@ Installing PETSc on an iOS or Android platform
 ==============================================
 
 For iOS see ``$PETSC_DIR/systems/Apple/iOS/bin/makeall``. A thorough discussion of the
-installation procedure is given `here
+installation procedure is given in `Comparison of Migration Techniques for High-Performance Code to Android and iOS
 <https://www.researchgate.net/publication/308973080_Comparison_of_Migration_Techniques_for_High-Performance_Code_to_Android_and_iOS>`__.
 
 For Android, you must have your standalone bin folder in the path, so that the compilers
 are visible.
 
-Check ``config/examples/arch-arm64-opt.py`` for iOS and
-``config/examples/arch-armv7-opt.py`` for example usage.
+The installation process has not been tested for iOS or Android since 2017.
+
 
 .. _MPICH: https://www.mpich.org/
 .. _BLAS/LAPACK: https://www.netlib.org/lapack/lug/node11.html

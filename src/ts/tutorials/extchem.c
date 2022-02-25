@@ -59,7 +59,7 @@ static PetscErrorCode ComputeMassConservation(Vec,PetscReal*,void*);
 static PetscErrorCode MonitorMassConservation(TS,PetscInt,PetscReal,Vec,void*);
 static PetscErrorCode MonitorTempature(TS,PetscInt,PetscReal,Vec,void*);
 
-#define TCCHKERRQ(ierr) do {if (ierr) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TChem library, return code %d",ierr);} while (0)
+#define CHKERRTC(ierr) do {PetscCheckFalse(ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TChem library, return code %d",ierr);} while (0)
 
 int main(int argc,char **argv)
 {
@@ -83,10 +83,10 @@ int main(int argc,char **argv)
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");CHKERRQ(ierr);
   ierr = PetscOptionsString("-chem","CHEMKIN input file","",chemfile,chemfile,sizeof(chemfile),NULL);CHKERRQ(ierr);
   ierr = PetscFileRetrieve(PETSC_COMM_WORLD,chemfile,lchemfile,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
-  if (!found) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot download %s and no local version %s",chemfile,lchemfile);
+  PetscCheckFalse(!found,PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot download %s and no local version %s",chemfile,lchemfile);
   ierr = PetscOptionsString("-thermo","NASA thermo input file","",thermofile,thermofile,sizeof(thermofile),NULL);CHKERRQ(ierr);
   ierr = PetscFileRetrieve(PETSC_COMM_WORLD,thermofile,lthermofile,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
-  if (!found) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot download %s and no local version %s",thermofile,lthermofile);
+  PetscCheckFalse(!found,PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot download %s and no local version %s",thermofile,lthermofile);
   user.pressure = 1.01325e5;    /* Pascal */
   ierr = PetscOptionsReal("-pressure","Pressure of reaction [Pa]","",user.pressure,&user.pressure,NULL);CHKERRQ(ierr);
   user.Tini = 1000;             /* Kelvin */
@@ -97,9 +97,9 @@ int main(int argc,char **argv)
 
   /* tchem requires periodic table in current directory */
   ierr = PetscFileRetrieve(PETSC_COMM_WORLD,periodic,lperiodic,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
-  if (!found) SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot located required periodic table %s or local version %s",periodic,lperiodic);
+  PetscCheckFalse(!found,PETSC_COMM_WORLD,PETSC_ERR_FILE_OPEN,"Cannot located required periodic table %s or local version %s",periodic,lperiodic);
 
-  ierr = TC_initChem(lchemfile, lthermofile, 0, 1.0);TCCHKERRQ(ierr);
+  ierr = TC_initChem(lchemfile, lthermofile, 0, 1.0);CHKERRTC(ierr);
   TC_setThermoPres(user.pressure);
   user.Nspec = TC_getNspec();
   user.Nreac = TC_getNreac();
@@ -108,7 +108,7 @@ int main(int argc,char **argv)
   */
   ierr = PetscMalloc1((user.Nspec+1)*LENGTHOFSPECNAME,&names);CHKERRQ(ierr);
   ierr = PetscStrcpy(names,"Temp");CHKERRQ(ierr);
-  TC_getSnames(user.Nspec,names+LENGTHOFSPECNAME);CHKERRQ(ierr);
+  TC_getSnames(user.Nspec,names+LENGTHOFSPECNAME);
   ierr = PetscMalloc1((user.Nspec+2),&snames);CHKERRQ(ierr);
   for (i=0; i<user.Nspec+1; i++) snames[i] = names+i*LENGTHOFSPECNAME;
   snames[user.Nspec+1] = NULL;
@@ -238,7 +238,7 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 
   ierr = PetscArraycpy(user->tchemwork,x,user->Nspec+1);CHKERRQ(ierr);
   user->tchemwork[0] *= user->Tini; /* Dimensionalize */
-  ierr = TC_getSrc(user->tchemwork,user->Nspec+1,f);TCCHKERRQ(ierr);
+  ierr = TC_getSrc(user->tchemwork,user->Nspec+1,f);CHKERRTC(ierr);
   f[0] /= user->Tini;           /* Non-dimensionalize */
 
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
@@ -295,15 +295,15 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   x[0] = 1.0;  /* Non-dimensionalized by user->Tini */
 
   ierr = PetscOptionsGetStringArray(NULL,NULL,"-initial_species",names,&smax,&flg);CHKERRQ(ierr);
-  if (smax < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Must provide at least two initial species");
+  PetscCheckFalse(smax < 2,PETSC_COMM_SELF,PETSC_ERR_USER,"Must provide at least two initial species");
   ierr = PetscOptionsGetRealArray(NULL,NULL,"-initial_mole",molefracs,&mmax,&flg);CHKERRQ(ierr);
-  if (smax != mmax) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Must provide same number of initial species %D as initial moles %D",smax,mmax);
+  PetscCheckFalse(smax != mmax,PETSC_COMM_SELF,PETSC_ERR_USER,"Must provide same number of initial species %D as initial moles %D",smax,mmax);
   sum = 0;
   for (i=0; i<smax; i++) sum += molefracs[i];
   for (i=0; i<smax; i++) molefracs[i] = molefracs[i]/sum;
   for (i=0; i<smax; i++) {
     int ispec = TC_getSpos(names[i], strlen(names[i]));
-    if (ispec < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Could not find species %s",names[i]);
+    PetscCheckFalse(ispec < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"Could not find species %s",names[i]);
     ierr = PetscPrintf(PETSC_COMM_SELF,"Species %d: %s %g\n",i,names[i],molefracs[i]);CHKERRQ(ierr);
     x[1+ispec] = molefracs[i];
   }
@@ -311,7 +311,7 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
     ierr = PetscFree(names[i]);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-  /* PrintSpecies((User)ctx,X);CHKERRQ(ierr); */
+  /* ierr = PrintSpecies((User)ctx,X);CHKERRQ(ierr); */
   ierr = MoleFractionToMassFraction((User)ctx,X,&y);CHKERRQ(ierr);
   ierr = VecCopy(y,X);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);

@@ -2,9 +2,13 @@ PetscFE Object: P1 1 MPI processes
   type: basic
   Basic Finite Element in 1 dimensions with 2 components
   PetscSpace Object: P1 1 MPI processes
-    type: poly
+    type: sum
     Space in 1 variables with 2 components, size 4
-    Polynomial space of degree 1
+    Sum space of 2 concatenated subspaces (all identical)
+      PetscSpace Object: sum component (sumcomp_) 1 MPI processes
+        type: poly
+        Space in 1 variables with 1 components, size 2
+        Polynomial space of degree 1
   PetscDualSpace Object: P1 1 MPI processes
     type: lagrange
     Dual space with 2 components, size 4
@@ -14,9 +18,13 @@ PetscFE Object: P2 1 MPI processes
   type: basic
   Basic Finite Element in 1 dimensions with 2 components
   PetscSpace Object: P2 1 MPI processes
-    type: poly
+    type: sum
     Space in 1 variables with 2 components, size 6
-    Polynomial space of degree 2
+    Sum space of 2 concatenated subspaces (all identical)
+      PetscSpace Object: sum component (sumcomp_) 1 MPI processes
+        type: poly
+        Space in 1 variables with 1 components, size 3
+        Polynomial space of degree 2
   PetscDualSpace Object: P2 1 MPI processes
     type: lagrange
     Dual space with 2 components, size 6

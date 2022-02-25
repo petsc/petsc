@@ -50,7 +50,7 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must use -f filename to indicate a file containing a PETSc binary matrix");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must use -f filename to indicate a file containing a PETSc binary matrix");
   ierr = PetscOptionsGetInt(NULL,NULL,"-nd",&nd,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-ov",&ov,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-nested_dissection",&useND,NULL);CHKERRQ(ierr);
@@ -126,7 +126,7 @@ int main(int argc,char **args)
     if (!flg) {
       ierr = ISViewFromOptions(is1[i],NULL,"-err_view");CHKERRQ(ierr);
       ierr = ISViewFromOptions(is2[i],NULL,"-err_view");CHKERRQ(ierr);
-      SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"proc:[%d], i=%D, flg =%d\n",rank,i,(int)flg);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"proc:[%d], i=%" PetscInt_FMT ", flg =%d",rank,i,(int)flg);
     }
   }
 

@@ -36,7 +36,7 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRMPI(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  if (size>2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "A uniprocessor or two-processor example only.\n");
+  PetscCheckFalse(size>2,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "A uniprocessor or two-processor example only.");
 
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   if (size > 1) {
@@ -123,14 +123,14 @@ int main(int argc,char **args)
   inversions = 0;
   for (p = 0; p < size; ++p) {
     if (p == rank) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "[%D:%D]: Number of subdomains: %D:\n", rank, size, nsub);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF, "[%" PetscInt_FMT ":%" PetscInt_FMT "]: Number of subdomains: %" PetscInt_FMT ":\n", rank, size, nsub);CHKERRQ(ierr);
       for (l = 0; l < nsub; ++l) {
         PetscInt i0, i1;
-        ierr = PetscPrintf(PETSC_COMM_SELF, "[%D:%D]: Subdomain row IS %D:\n", rank, size, l);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "[%" PetscInt_FMT ":%" PetscInt_FMT "]: Subdomain row IS %" PetscInt_FMT ":\n", rank, size, l);CHKERRQ(ierr);
         ierr = ISView(rowis[l],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_SELF, "[%D:%D]: Subdomain col IS %D:\n", rank, size, l);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "[%" PetscInt_FMT ":%" PetscInt_FMT "]: Subdomain col IS %" PetscInt_FMT ":\n", rank, size, l);CHKERRQ(ierr);
         ierr = ISView(colis[l],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_SELF, "[%D:%D]: Submatrix %D:\n", rank, size, l);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF, "[%" PetscInt_FMT ":%" PetscInt_FMT "]: Submatrix %" PetscInt_FMT ":\n", rank, size, l);CHKERRQ(ierr);
         ierr = MatView(S[l],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
         if (show_inversions) {
           ierr = MatGetOwnershipRange(S[l], &i0,&i1);CHKERRQ(ierr);
@@ -138,7 +138,7 @@ int main(int argc,char **args)
             ierr = MatGetRow(S[l], i, &ncols, &cols, NULL);CHKERRQ(ierr);
             for (j = 1; j < ncols; ++j) {
               if (cols[j] < cols[j-1]) {
-                ierr = PetscPrintf(PETSC_COMM_SELF, "***Inversion in row %D: col[%D] = %D < %D = col[%D]\n", i, j, cols[j], cols[j-1], j-1);CHKERRQ(ierr);
+                ierr = PetscPrintf(PETSC_COMM_SELF, "***Inversion in row %" PetscInt_FMT ": col[%" PetscInt_FMT "] = %" PetscInt_FMT " < %" PetscInt_FMT " = col[%" PetscInt_FMT "]\n", i, j, cols[j], cols[j-1], j-1);CHKERRQ(ierr);
                 inversions++;
               }
             }
@@ -151,7 +151,7 @@ int main(int argc,char **args)
   }
   if (show_inversions) {
     ierr = MPI_Reduce(&inversions,&total_inversions,1,MPIU_INT, MPI_SUM,0,PETSC_COMM_WORLD);CHKERRMPI(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "*Total inversions: %D\n", total_inversions);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "*Total inversions: %" PetscInt_FMT "\n", total_inversions);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&A);CHKERRQ(ierr);
 

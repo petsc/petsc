@@ -6,7 +6,7 @@
 
 #define PetscMUMPSError do {                    \
     PetscFunctionBegin; \
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires MUMPS",PETSC_FUNCTION_NAME); \
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires MUMPS",PETSC_FUNCTION_NAME); \
     PetscFunctionReturn(PETSC_ERR_SUP);} while (0)
 
 PetscErrorCode MatMumpsSetIcntl(PETSC_UNUSED Mat F,PETSC_UNUSED PetscInt icntl,PETSC_UNUSED PetscInt ival){PetscMUMPSError;}

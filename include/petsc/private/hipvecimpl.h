@@ -2,7 +2,7 @@
 #define __HIPVECIMPL
 
 #include <petscvec.h>
-#include <petscdevice.h>
+#include <petsc/private/deviceimpl.h>
 #include <petsc/private/vecimpl.h>
 
 typedef struct {
@@ -46,11 +46,14 @@ PETSC_INTERN PetscErrorCode VecAYPX_SeqHIP(Vec,PetscScalar,Vec);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqHIP(Vec,PetscRandom);
 PETSC_INTERN PetscErrorCode VecGetLocalVector_SeqHIP(Vec,Vec);
 PETSC_INTERN PetscErrorCode VecRestoreLocalVector_SeqHIP(Vec,Vec);
+PETSC_INTERN PetscErrorCode VecGetLocalVectorRead_SeqHIP(Vec,Vec);
+PETSC_INTERN PetscErrorCode VecRestoreLocalVectorRead_SeqHIP(Vec,Vec);
 PETSC_INTERN PetscErrorCode VecGetArrayWrite_SeqHIP(Vec,PetscScalar**);
 PETSC_INTERN PetscErrorCode VecGetArray_SeqHIP(Vec,PetscScalar**);
 PETSC_INTERN PetscErrorCode VecRestoreArray_SeqHIP(Vec,PetscScalar**);
 PETSC_INTERN PetscErrorCode VecGetArrayAndMemType_SeqHIP(Vec,PetscScalar**,PetscMemType*);
 PETSC_INTERN PetscErrorCode VecRestoreArrayAndMemType_SeqHIP(Vec,PetscScalar**);
+PETSC_INTERN PetscErrorCode VecGetArrayWriteAndMemType_SeqHIP(Vec,PetscScalar**,PetscMemType*);
 PETSC_INTERN PetscErrorCode VecCopy_SeqHIP_Private(Vec,Vec);
 PETSC_INTERN PetscErrorCode VecDestroy_SeqHIP_Private(Vec);
 PETSC_INTERN PetscErrorCode VecResetArray_SeqHIP_Private(Vec);

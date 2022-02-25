@@ -10,6 +10,7 @@ PC Object: 8 MPI processes
     Use user-defined CSR: 0
     Use local mat graph: 1
     Connectivity graph topological dimension: 3
+    Corner selection: 1 (selected 1)
     Use vertices: 1 (vertex size 1)
     Use edges: 1
     Use faces: 0

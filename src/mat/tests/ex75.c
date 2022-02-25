@@ -130,20 +130,20 @@ int main(int argc,char **args)
   ierr  = MatNorm(A,NORM_FROBENIUS,&r1);CHKERRQ(ierr);
   ierr  = MatNorm(sA,NORM_FROBENIUS,&r2);CHKERRQ(ierr);
   rnorm = PetscAbsReal(r1-r2)/r2;
-  if (rnorm > tol && !rank) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS(), Anorm=%16.14e, sAnorm=%16.14e bs=%D\n",r1,r2,bs);CHKERRQ(ierr);
+  if (rnorm > tol && rank == 0) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm_FROBENIUS(), Anorm=%16.14e, sAnorm=%16.14e bs=%" PetscInt_FMT "\n",(double)r1,(double)r2,bs);CHKERRQ(ierr);
   }
   ierr  = MatNorm(A,NORM_INFINITY,&r1);CHKERRQ(ierr);
   ierr  = MatNorm(sA,NORM_INFINITY,&r2);CHKERRQ(ierr);
   rnorm = PetscAbsReal(r1-r2)/r2;
-  if (rnorm > tol && !rank) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: MatNorm_INFINITY(), Anorm=%16.14e, sAnorm=%16.14e bs=%D\n",r1,r2,bs);CHKERRQ(ierr);
+  if (rnorm > tol && rank == 0) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: MatNorm_INFINITY(), Anorm=%16.14e, sAnorm=%16.14e bs=%" PetscInt_FMT "\n",(double)r1,(double)r2,bs);CHKERRQ(ierr);
   }
   ierr  = MatNorm(A,NORM_1,&r1);CHKERRQ(ierr);
   ierr  = MatNorm(sA,NORM_1,&r2);CHKERRQ(ierr);
   rnorm = PetscAbsReal(r1-r2)/r2;
-  if (rnorm > tol && !rank) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: MatNorm_1(), Anorm=%16.14e, sAnorm=%16.14e bs=%D\n",r1,r2,bs);CHKERRQ(ierr);
+  if (rnorm > tol && rank == 0) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: MatNorm_1(), Anorm=%16.14e, sAnorm=%16.14e bs=%" PetscInt_FMT "\n",(double)r1,(double)r2,bs);CHKERRQ(ierr);
   }
 
   /* Test MatGetOwnershipRange() */
@@ -159,7 +159,7 @@ int main(int argc,char **args)
   ierr = MatDiagonalScale(A,x,x);CHKERRQ(ierr);
   ierr = MatDiagonalScale(sA,x,x);CHKERRQ(ierr);
   ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
 
   /* Test MatGetDiagonal(), MatScale() */
   ierr = MatGetDiagonal(A,s1);CHKERRQ(ierr);

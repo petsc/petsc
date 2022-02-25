@@ -43,6 +43,7 @@ typedef const char* DMType;
 PETSC_EXTERN const char *const DMBoundaryTypes[];
 PETSC_EXTERN const char *const DMBoundaryConditionTypes[];
 PETSC_EXTERN PetscFunctionList DMList;
+PETSC_EXTERN DMGeneratorFunctionList DMGenerateList;
 PETSC_EXTERN PetscErrorCode DMCreate(MPI_Comm,DM*);
 PETSC_EXTERN PetscErrorCode DMClone(DM,DM*);
 PETSC_EXTERN PetscErrorCode DMSetType(DM, DMType);
@@ -78,6 +79,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation(DM,DM,Mat*,Vec*);
 PETSC_EXTERN PetscErrorCode DMCreateRestriction(DM,DM,Mat*);
 PETSC_EXTERN PetscErrorCode DMCreateInjection(DM,DM,Mat*);
 PETSC_EXTERN PetscErrorCode DMCreateMassMatrix(DM,DM,Mat*);
+PETSC_EXTERN PetscErrorCode DMCreateMassMatrixLumped(DM,Vec*);
 PETSC_EXTERN PetscErrorCode DMGetWorkArray(DM,PetscInt,MPI_Datatype,void*);
 PETSC_EXTERN PetscErrorCode DMRestoreWorkArray(DM,PetscInt,MPI_Datatype,void*);
 PETSC_EXTERN PetscErrorCode DMRefine(DM,MPI_Comm,DM*);
@@ -95,11 +97,16 @@ PETSC_EXTERN PetscErrorCode DMRefineHookRemove(DM,PetscErrorCode (*)(DM,DM,void*
 PETSC_EXTERN PetscErrorCode DMRestrict(DM,Mat,Vec,Mat,DM);
 PETSC_EXTERN PetscErrorCode DMInterpolate(DM,Mat,DM);
 PETSC_EXTERN PetscErrorCode DMInterpolateSolution(DM,DM,Mat,Vec,Vec);
+PETSC_EXTERN PetscErrorCode DMExtrude(DM,PetscInt,DM*);
 PETSC_EXTERN PetscErrorCode DMSetFromOptions(DM);
 PETSC_EXTERN PetscErrorCode DMViewFromOptions(DM,PetscObject,const char[]);
 
+PETSC_EXTERN PetscErrorCode DMGenerate(DM, const char [], PetscBool , DM *);
+PETSC_EXTERN PetscErrorCode DMGenerateRegister(const char[],PetscErrorCode (*)(DM,PetscBool,DM*),PetscErrorCode (*)(DM,PetscReal*,DM*),PetscErrorCode (*)(DM,Vec,DMLabel,DMLabel,DM*),PetscInt);
+PETSC_EXTERN PetscErrorCode DMGenerateRegisterAll(void);
+PETSC_EXTERN PetscErrorCode DMGenerateRegisterDestroy(void);
 PETSC_EXTERN PetscErrorCode DMAdaptLabel(DM,DMLabel,DM*);
-PETSC_EXTERN PetscErrorCode DMAdaptMetric(DM, Vec, DMLabel, DM *);
+PETSC_EXTERN PetscErrorCode DMAdaptMetric(DM, Vec, DMLabel, DMLabel, DM *);
 
 PETSC_EXTERN PetscErrorCode DMSetUp(DM);
 PETSC_EXTERN PetscErrorCode DMCreateInterpolationScale(DM,DM,Mat,Vec*);
@@ -215,19 +222,21 @@ PETSC_EXTERN PetscErrorCode DMGetLocalSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMSetLocalSection(DM, PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetGlobalSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMSetGlobalSection(DM, PetscSection);
-PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMGetSection() (since v3.9)") PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *s) {return DMGetSection(dm,s);}
-PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMSetSection() (since v3.9)") PetscErrorCode DMSetDefaultSection(DM dm, PetscSection s) {return DMSetSection(dm,s);}
-PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMGetGlobalSection() (since v3.9)") PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *s) {return DMGetGlobalSection(dm,s);}
-PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMSetGlobalSection() (since v3.9)") PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection s) {return DMSetGlobalSection(dm,s);}
+static inline PETSC_DEPRECATED_FUNCTION("Use DMGetSection() (since v3.9)") PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *s) {return DMGetSection(dm,s);}
+static inline PETSC_DEPRECATED_FUNCTION("Use DMSetSection() (since v3.9)") PetscErrorCode DMSetDefaultSection(DM dm, PetscSection s) {return DMSetSection(dm,s);}
+static inline PETSC_DEPRECATED_FUNCTION("Use DMGetGlobalSection() (since v3.9)") PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *s) {return DMGetGlobalSection(dm,s);}
+static inline PETSC_DEPRECATED_FUNCTION("Use DMSetGlobalSection() (since v3.9)") PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection s) {return DMSetGlobalSection(dm,s);}
 
 PETSC_EXTERN PetscErrorCode DMGetSectionSF(DM, PetscSF*);
 PETSC_EXTERN PetscErrorCode DMSetSectionSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMCreateSectionSF(DM, PetscSection, PetscSection);
-PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMGetSectionSF() (since v3.12)") PetscErrorCode DMGetDefaultSF(DM dm, PetscSF *s) {return DMGetSectionSF(dm,s);}
-PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMSetSectionSF() (since v3.12)") PetscErrorCode DMSetDefaultSF(DM dm, PetscSF s) {return DMSetSectionSF(dm,s);}
-PETSC_STATIC_INLINE PETSC_DEPRECATED_FUNCTION("Use DMCreateSectionSF() (since v3.12)") PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection l, PetscSection g) {return DMCreateSectionSF(dm,l,g);}
+static inline PETSC_DEPRECATED_FUNCTION("Use DMGetSectionSF() (since v3.12)") PetscErrorCode DMGetDefaultSF(DM dm, PetscSF *s) {return DMGetSectionSF(dm,s);}
+static inline PETSC_DEPRECATED_FUNCTION("Use DMSetSectionSF() (since v3.12)") PetscErrorCode DMSetDefaultSF(DM dm, PetscSF s) {return DMSetSectionSF(dm,s);}
+static inline PETSC_DEPRECATED_FUNCTION("Use DMCreateSectionSF() (since v3.12)") PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection l, PetscSection g) {return DMCreateSectionSF(dm,l,g);}
 PETSC_EXTERN PetscErrorCode DMGetPointSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMSetPointSF(DM, PetscSF);
+PETSC_EXTERN PetscErrorCode DMGetNaturalSF(DM, PetscSF *);
+PETSC_EXTERN PetscErrorCode DMSetNaturalSF(DM, PetscSF);
 
 PETSC_EXTERN PetscErrorCode DMGetDefaultConstraints(DM, PetscSection *, Mat *);
 PETSC_EXTERN PetscErrorCode DMSetDefaultConstraints(DM, PetscSection, Mat);
@@ -324,6 +333,20 @@ PETSC_EXTERN PetscErrorCode DMSetStratumIS(DM, const char [], PetscInt, IS);
 PETSC_EXTERN PetscErrorCode DMClearLabelStratum(DM, const char[], PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetLabelOutput(DM, const char[], PetscBool *);
 PETSC_EXTERN PetscErrorCode DMSetLabelOutput(DM, const char[], PetscBool);
+PETSC_EXTERN PetscErrorCode DMGetFirstLabeledPoint(DM, DM, DMLabel, PetscInt, const PetscInt *, PetscInt, PetscInt *, PetscDS *);
+
+/*E
+   DMCopyLabelsMode - Determines how DMCopyLabels() behaves when there is a DMLabel in the source and destination DMs with the same name
+
+   Level: advanced
+
+$ DM_COPY_LABELS_REPLACE  - replace label in destination by label from source
+$ DM_COPY_LABELS_KEEP     - keep destination label
+$ DM_COPY_LABELS_FAIL     - throw error
+
+E*/
+typedef enum {DM_COPY_LABELS_REPLACE, DM_COPY_LABELS_KEEP, DM_COPY_LABELS_FAIL} DMCopyLabelsMode;
+PETSC_EXTERN const char *const DMCopyLabelsModes[];
 
 PETSC_EXTERN PetscErrorCode DMGetNumLabels(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMGetLabelName(DM, PetscInt, const char **);
@@ -334,7 +357,8 @@ PETSC_EXTERN PetscErrorCode DMGetLabelByNum(DM, PetscInt, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMAddLabel(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMRemoveLabel(DM, const char [], DMLabel *);
 PETSC_EXTERN PetscErrorCode DMRemoveLabelBySelf(DM, DMLabel *, PetscBool);
-PETSC_EXTERN PetscErrorCode DMCopyLabels(DM, DM, PetscCopyMode, PetscBool);
+PETSC_EXTERN PetscErrorCode DMCopyLabels(DM, DM, PetscCopyMode, PetscBool, DMCopyLabelsMode emode);
+PETSC_EXTERN PetscErrorCode DMCompareLabels(DM, DM, PetscBool *, char **);
 
 PETSC_EXTERN PetscErrorCode DMAddBoundary(DM, DMBoundaryConditionType, const char[], DMLabel, PetscInt, const PetscInt[], PetscInt, PetscInt, const PetscInt[], void (*)(void), void (*)(void), void *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMIsBoundaryPoint(DM, PetscInt, PetscBool *);
@@ -360,7 +384,7 @@ PETSC_EXTERN PetscErrorCode DMMonitorCancel(DM);
 PETSC_EXTERN PetscErrorCode DMMonitorSetFromOptions(DM, const char[], const char[], const char[], PetscErrorCode (*)(DM, void *), PetscErrorCode (*)(DM, PetscViewerAndFormat *), PetscBool *);
 PETSC_EXTERN PetscErrorCode DMMonitor(DM);
 
-PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct)
+static inline PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct)
 {
   switch (ct) {
     case DM_POLYTOPE_POINT:
@@ -383,7 +407,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct)
   }
 }
 
-PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetConeSize(DMPolytopeType ct)
+static inline PetscInt DMPolytopeTypeGetConeSize(DMPolytopeType ct)
 {
   switch (ct) {
     case DM_POLYTOPE_POINT:              return 0;
@@ -402,7 +426,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetConeSize(DMPolytopeType ct)
   }
 }
 
-PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetNumVertices(DMPolytopeType ct)
+static inline PetscInt DMPolytopeTypeGetNumVertices(DMPolytopeType ct)
 {
   switch (ct) {
     case DM_POLYTOPE_POINT:              return 1;
@@ -421,7 +445,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetNumVertices(DMPolytopeType ct)
   }
 }
 
-PETSC_STATIC_INLINE DMPolytopeType DMPolytopeTypeSimpleShape(PetscInt dim, PetscBool simplex)
+static inline DMPolytopeType DMPolytopeTypeSimpleShape(PetscInt dim, PetscBool simplex)
 {
   return dim == 0 ? DM_POLYTOPE_POINT :
         (dim == 1 ? DM_POLYTOPE_SEGMENT :
@@ -429,7 +453,7 @@ PETSC_STATIC_INLINE DMPolytopeType DMPolytopeTypeSimpleShape(PetscInt dim, Petsc
         (dim == 3 ? (simplex ? DM_POLYTOPE_TETRAHEDRON : DM_POLYTOPE_HEXAHEDRON) : DM_POLYTOPE_UNKNOWN)));
 }
 
-PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetNumArrangments(DMPolytopeType ct)
+static inline PetscInt DMPolytopeTypeGetNumArrangments(DMPolytopeType ct)
 {
   switch (ct) {
     case DM_POLYTOPE_POINT:              return 1;
@@ -449,7 +473,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeGetNumArrangments(DMPolytopeType ct)
 }
 
 /* An arrangement is a face order combined with an orientation for each face */
-PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType ct, PetscInt o)
+static inline const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType ct, PetscInt o)
 {
   static const PetscInt pntArr[1*2] = {0, 0};
   /* a: swap */
@@ -640,7 +664,7 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType c
 }
 
 /* A vertex arrangment is a vertex order */
-PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytopeType ct, PetscInt o)
+static inline const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytopeType ct, PetscInt o)
 {
   static const PetscInt pntVerts[1]    = {0};
   static const PetscInt segVerts[2*2]  = {
@@ -819,7 +843,7 @@ PETSC_STATIC_INLINE const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytope
 }
 
 /* This is orientation o1 acting on orientation o2 */
-PETSC_STATIC_INLINE PetscInt DMPolytopeTypeComposeOrientation(DMPolytopeType ct, PetscInt o1, PetscInt o2)
+static inline PetscInt DMPolytopeTypeComposeOrientation(DMPolytopeType ct, PetscInt o1, PetscInt o2)
 {
   static const PetscInt segMult[2*2] = {
      0, -1,
@@ -995,7 +1019,7 @@ PETSC_STATIC_INLINE PetscInt DMPolytopeTypeComposeOrientation(DMPolytopeType ct,
 }
 
 /* This is orientation o1 acting on orientation o2^{-1} */
-PETSC_STATIC_INLINE PetscInt DMPolytopeTypeComposeOrientationInv(DMPolytopeType ct, PetscInt o1, PetscInt o2)
+static inline PetscInt DMPolytopeTypeComposeOrientationInv(DMPolytopeType ct, PetscInt o1, PetscInt o2)
 {
   static const PetscInt triInv[6]    = {-3, -2, -1, 0, 2, 1};
   static const PetscInt quadInv[8]   = {-4, -3, -2, -1, 0, 3, 2, 1};

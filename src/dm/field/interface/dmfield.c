@@ -34,7 +34,7 @@ PETSC_INTERN PetscErrorCode DMFieldCreate(DM dm,PetscInt numComponents,DMFieldCo
 
    Collective
 
-   Input Arguments:
+   Input Parameter:
 .  field - address of DMField
 
    Level: advanced
@@ -60,7 +60,7 @@ PetscErrorCode DMFieldDestroy(DMField *field)
 
    Collective
 
-   Input Arguments:
+   Input Parameters:
 +  field - DMField
 -  viewer - viewer to display field, for example PETSC_VIEWER_STDOUT_WORLD
 
@@ -127,7 +127,7 @@ PetscErrorCode DMFieldSetType(DMField field,DMFieldType type)
   if (match) PetscFunctionReturn(0);
 
   ierr = PetscFunctionListFind(DMFieldList,type,&r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested DMField type %s",type);
+  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested DMField type %s",type);
   /* Destroy the previous private DMField context */
   if (field->ops->destroy) {
     ierr = (*(field)->ops->destroy)(field);CHKERRQ(ierr);
@@ -219,7 +219,7 @@ PetscErrorCode DMFieldGetDM(DMField field, DM *dm)
 
   Collective on points
 
-  Input Parameter:
+  Input Parameters:
 + field - The DMField object
 . points - The points at which to evaluate the field.  Should have size d x n,
            where d is the coordinate dimension of the manifold and n is the number
@@ -228,7 +228,7 @@ PetscErrorCode DMFieldGetDM(DMField field, DM *dm)
              If the field is complex and datatype is PETSC_REAL, the real part of the
              field is returned.
 
-  Output Parameter:
+  Output Parameters:
 + B - pointer to data of size c * n * sizeof(datatype), where c is the number of components in the field.
       If B is not NULL, the values of the field are written in this array, varying first by component,
       then by point.
@@ -255,7 +255,7 @@ PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype
   if (H) PetscValidPointer(H,6);
   if (field->ops->evaluate) {
     ierr = (*field->ops->evaluate) (field, points, datatype, B, D, H);CHKERRQ(ierr);
-  } else SETERRQ (PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented for this type");
+  } else SETERRQ(PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented for this type");
   PetscFunctionReturn(0);
 }
 
@@ -266,7 +266,7 @@ PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + field - The DMField object
 . cellIS - Index set for cells on which to evaluate the field
 . points - The quadature containing the points in the reference cell at which to evaluate the field.
@@ -274,7 +274,7 @@ PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype
              If the field is complex and datatype is PETSC_REAL, the real part of the
              field is returned.
 
-  Output Parameter:
+  Output Parameters:
 + B - pointer to data of size c * n * sizeof(datatype), where c is the number of components in the field.
       If B is not NULL, the values of the field are written in this array, varying first by component,
       then by point.
@@ -302,7 +302,7 @@ PetscErrorCode DMFieldEvaluateFE(DMField field, IS cellIS, PetscQuadrature point
   if (H) PetscValidPointer(H,7);
   if (field->ops->evaluateFE) {
     ierr = (*field->ops->evaluateFE) (field, cellIS, points, datatype, B, D, H);CHKERRQ(ierr);
-  } else SETERRQ (PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented for this type");
+  } else SETERRQ(PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented for this type");
   PetscFunctionReturn(0);
 }
 
@@ -311,14 +311,14 @@ PetscErrorCode DMFieldEvaluateFE(DMField field, IS cellIS, PetscQuadrature point
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + field - The DMField object
 . cellIS - Index set for cells on which to evaluate the field
 - datatype - The PetscDataType of the output arrays: either PETSC_REAL or PETSC_SCALAR.
              If the field is complex and datatype is PETSC_REAL, the real part of the
              field is returned.
 
-  Output Parameter:
+  Output Parameters:
 + B - pointer to data of size c * n * sizeof(datatype), where c is the number of components in the field.
       If B is not NULL, the values of the field are written in this array, varying first by component,
       then by point.
@@ -345,7 +345,7 @@ PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatyp
   if (H) PetscValidPointer(H,6);
   if (field->ops->evaluateFV) {
     ierr = (*field->ops->evaluateFV) (field, cellIS, datatype, B, D, H);CHKERRQ(ierr);
-  } else SETERRQ (PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented for this type");
+  } else SETERRQ(PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"Not implemented for this type");
   PetscFunctionReturn(0);
 }
 
@@ -355,11 +355,11 @@ PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatyp
 
   Not collective
 
-  Input Arguments:
+  Input Parameters:
 + field - the DMField object
 - cellIS - the index set of points over which we want know the invariance
 
-  Output Arguments:
+  Output Parameters:
 + minDegree - the degree of the largest polynomial space contained in the field on each element
 - maxDegree - the largest degree of the smallest polynomial space containing the field on any element
 
@@ -392,11 +392,11 @@ PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PetscInt *minDegree, P
 
   Not collective
 
-  Input Arguments:
+  Input Parameters:
 + field - the DMField object
 - pointIS - the index set of points over which we wish to integrate the field
 
-  Output Arguments:
+  Output Parameter:
 . quad - a PetscQuadrature object
 
   Level: developer
@@ -424,14 +424,14 @@ PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQu
 
   Not collective
 
-  Input Arguments:
+  Input Parameters:
 + field - the DMField object
 . pointIS - the index set of points over which we wish to integrate the field
 . quad - the quadrature points at which to evaluate the geometric factors
 - faceData - whether additional data for facets (the normal vectors and adjacent cells) should
   be calculated
 
-  Output Arguments:
+  Output Parameter:
 . geom - the geometric factors
 
   Level: developer
@@ -527,7 +527,7 @@ PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature qu
   ierr = DMFieldGetDegree(field,pointIS,NULL,&maxDegree);CHKERRQ(ierr);
   g->isAffine = (maxDegree <= 1) ? PETSC_TRUE : PETSC_FALSE;
   if (faceData) {
-    if (!field->ops->computeFaceData) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "DMField implementation does not compute face data\n");
+    PetscCheckFalse(!field->ops->computeFaceData,PETSC_COMM_SELF, PETSC_ERR_PLIB, "DMField implementation does not compute face data");
     ierr = (*field->ops->computeFaceData) (field, pointIS, quad, g);CHKERRQ(ierr);
   }
   *geom = g;

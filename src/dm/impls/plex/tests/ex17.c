@@ -17,35 +17,42 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 
 static PetscErrorCode TestLocation(DM dm)
 {
-  PetscInt       dim;
-  PetscInt       cStart, cEnd, c;
-  PetscErrorCode ierr;
+  Vec                points;
+  PetscSF            cellSF = NULL;
+  const PetscSFNode *cells;
+  PetscScalar       *a;
+  PetscInt           cdim, n;
+  PetscInt           cStart, cEnd, c;
+  PetscErrorCode     ierr;
 
   PetscFunctionBeginUser;
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   /* Locate all centroids */
+  ierr = VecCreateSeq(PETSC_COMM_SELF, (cEnd - cStart)*cdim, &points);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(points, cdim);CHKERRQ(ierr);
+  ierr = VecGetArray(points, &a);CHKERRQ(ierr);
   for (c = cStart; c < cEnd; ++c) {
-    Vec                v;
-    PetscSF            cellSF = NULL;
-    const PetscSFNode *cells;
-    PetscScalar       *a;
     PetscReal          centroid[3];
-    PetscInt           n, d;
+    PetscInt           off = (c - cStart)*cdim, d;
 
     ierr = DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF, dim, &v);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(v, dim);CHKERRQ(ierr);
-    ierr = VecGetArray(v, &a);CHKERRQ(ierr);
-    for (d = 0; d < dim; ++d) a[d] = centroid[d];
-    ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
-    ierr = DMLocatePoints(dm, v, DM_POINTLOCATION_NONE, &cellSF);CHKERRQ(ierr);
-    ierr = VecDestroy(&v);CHKERRQ(ierr);
-    ierr = PetscSFGetGraph(cellSF,NULL,&n,NULL,&cells);CHKERRQ(ierr);
-    if (n              != 1) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %D: Found %d cells instead of 1", c, n);
-    if (cells[0].index != c) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not locate centroid of cell %D, instead found %D", c, cells[0].index);
-    ierr = PetscSFDestroy(&cellSF);CHKERRQ(ierr);
+    for (d = 0; d < cdim; ++d) a[off+d] = centroid[d];
   }
+  ierr = VecRestoreArray(points, &a);CHKERRQ(ierr);
+  ierr = DMLocatePoints(dm, points, DM_POINTLOCATION_NONE, &cellSF);CHKERRQ(ierr);
+  ierr = VecDestroy(&points);CHKERRQ(ierr);
+  ierr = PetscSFGetGraph(cellSF, NULL, &n, NULL, &cells);CHKERRQ(ierr);
+  if (n != (cEnd - cStart)) {
+    for (c = 0; c < n; ++c) {
+      if (cells[c].index != c+cStart) {ierr = PetscPrintf(PETSC_COMM_SELF, "Could not locate centroid of cell %D, error %D\n", c+cStart, cells[c].index);CHKERRQ(ierr);}
+    }
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Located %D points instead of %D", n, cEnd - cStart);
+  }
+  for (c = cStart; c < cEnd; ++c) {
+    PetscCheckFalse(cells[c - cStart].index != c,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not locate centroid of cell %D, instead found %D", c, cells[c - cStart].index);
+  }
+  ierr = PetscSFDestroy(&cellSF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -64,26 +71,54 @@ int main(int argc, char **argv)
 
 /*TEST
 
-  test:
-    suffix: seg
+  testset:
     args: -dm_plex_dim 1 -dm_plex_box_faces 10
 
-  test:
-    suffix: tri
-    requires: triangle
-    args: -dm_coord_space 0 -dm_plex_box_faces 5,5
+    test:
+      suffix: seg
 
-  test:
-    suffix: quad
-    args: -dm_plex_simplex 0 -dm_plex_box_faces 5,5
+    test:
+      suffix: seg_hash
+      args: -dm_refine 2 -dm_plex_hash_location
 
-  test:
-    suffix: tet
-    requires: ctetgen
+  testset:
+    args: -dm_plex_box_faces 5,5
+
+    test:
+      suffix: tri
+      requires: triangle
+
+    test:
+      suffix: tri_hash
+      requires: triangle
+      args: -dm_refine 2 -dm_plex_hash_location
+
+    test:
+      suffix: quad
+      args: -dm_plex_simplex 0
+
+    test:
+      suffix: quad_hash
+      args: -dm_plex_simplex 0 -dm_refine 2 -dm_plex_hash_location
+
+  testset:
     args: -dm_plex_dim 3 -dm_plex_box_faces 3,3,3
 
-  test:
-    suffix: hex
-    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 3,3,3
+    test:
+      suffix: tet
+      requires: ctetgen
+
+    test:
+      suffix: tet_hash
+      requires: ctetgen
+      args: -dm_refine 1 -dm_plex_hash_location
+
+    test:
+      suffix: hex
+      args: -dm_plex_simplex 0
+
+    test:
+      suffix: hex_hash
+      args: -dm_plex_simplex 0 -dm_refine 1 -dm_plex_hash_location
 
 TEST*/

@@ -2,7 +2,109 @@
 #include <petsc/private/partitionerimpl.h>
 #include <petsc/private/hashseti.h>
 
-PETSC_STATIC_INLINE PetscInt DMPlex_GlobalID(PetscInt point) { return point >= 0 ? point : -(point+1); }
+const char * const DMPlexCSRAlgorithms[] = {"mat", "graph", "overlap", "DMPlexCSRAlgorithm", "DM_PLEX_CSR_",NULL};
+
+static inline PetscInt DMPlex_GlobalID(PetscInt point) { return point >= 0 ? point : -(point+1); }
+
+static PetscErrorCode DMPlexCreatePartitionerGraph_Overlap(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency, IS *globalNumbering)
+{
+  DM              ovdm;
+  PetscSF         sfPoint;
+  IS              cellNumbering;
+  const PetscInt *cellNum;
+  PetscInt       *adj = NULL, *vOffsets = NULL, *vAdj = NULL;
+  PetscBool       useCone, useClosure;
+  PetscInt        dim, depth, overlap, cStart, cEnd, c, v;
+  PetscMPIInt     rank, size;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRMPI(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRMPI(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMPlexGetDepth(dm, &depth);CHKERRQ(ierr);
+  if (dim != depth) {
+    /* We do not handle the uninterpolated case here */
+    ierr = DMPlexCreateNeighborCSR(dm, height, numVertices, offsets, adjacency);CHKERRQ(ierr);
+    /* DMPlexCreateNeighborCSR does not make a numbering */
+    if (globalNumbering) {ierr = DMPlexCreateCellNumbering_Internal(dm, PETSC_TRUE, globalNumbering);CHKERRQ(ierr);}
+    /* Different behavior for empty graphs */
+    if (!*numVertices) {
+      ierr = PetscMalloc1(1, offsets);CHKERRQ(ierr);
+      (*offsets)[0] = 0;
+    }
+    /* Broken in parallel */
+    PetscCheckFalse(rank && *numVertices,PETSC_COMM_SELF, PETSC_ERR_SUP, "Parallel partitioning of uninterpolated meshes not supported");
+    PetscFunctionReturn(0);
+  }
+  /* Always use FVM adjacency to create partitioner graph */
+  ierr = DMGetBasicAdjacency(dm, &useCone, &useClosure);CHKERRQ(ierr);
+  ierr = DMSetBasicAdjacency(dm, PETSC_TRUE, PETSC_FALSE);CHKERRQ(ierr);
+  /* Need overlap >= 1 */
+  ierr = DMPlexGetOverlap(dm, &overlap);CHKERRQ(ierr);
+  if (size && overlap < 1) {
+    ierr = DMPlexDistributeOverlap(dm, 1, NULL, &ovdm);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
+    ovdm = dm;
+  }
+  ierr = DMGetPointSF(ovdm, &sfPoint);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(ovdm, height, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexCreateNumbering_Plex(ovdm, cStart, cEnd, 0, NULL, sfPoint, &cellNumbering);CHKERRQ(ierr);
+  if (globalNumbering) {
+    ierr = PetscObjectReference((PetscObject) cellNumbering);CHKERRQ(ierr);
+    *globalNumbering = cellNumbering;
+  }
+  ierr = ISGetIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
+  /* Determine sizes */
+  for (*numVertices = 0, c = cStart; c < cEnd; ++c) {
+    /* Skip non-owned cells in parallel (ParMetis expects no overlap) */
+    if (cellNum[c] < 0) continue;
+    (*numVertices)++;
+  }
+  ierr = PetscCalloc1(*numVertices+1, &vOffsets);CHKERRQ(ierr);
+  for (c = cStart, v = 0; c < cEnd; ++c) {
+    PetscInt adjSize = PETSC_DETERMINE, a, vsize = 0;
+
+    if (cellNum[c] < 0) continue;
+    ierr = DMPlexGetAdjacency(ovdm, c, &adjSize, &adj);CHKERRQ(ierr);
+    for (a = 0; a < adjSize; ++a) {
+      const PetscInt point = adj[a];
+      if (point != c && cStart <= point && point < cEnd) ++vsize;
+    }
+    vOffsets[v+1] = vOffsets[v] + vsize;
+    ++v;
+  }
+  /* Determine adjacency */
+  ierr = PetscMalloc1(vOffsets[*numVertices], &vAdj);CHKERRQ(ierr);
+  for (c = cStart, v = 0; c < cEnd; ++c) {
+    PetscInt adjSize = PETSC_DETERMINE, a, off = vOffsets[v];
+
+    /* Skip non-owned cells in parallel (ParMetis expects no overlap) */
+    if (cellNum[c] < 0) continue;
+    ierr = DMPlexGetAdjacency(ovdm, c, &adjSize, &adj);CHKERRQ(ierr);
+    for (a = 0; a < adjSize; ++a) {
+      const PetscInt point = adj[a];
+      if (point != c && cStart <= point && point < cEnd) {
+        vAdj[off++] = DMPlex_GlobalID(cellNum[point]);
+      }
+    }
+    PetscCheckFalse(off != vOffsets[v+1],PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Offsets %D should be %D", off, vOffsets[v+1]);
+    /* Sort adjacencies (not strictly necessary) */
+    ierr = PetscSortInt(off-vOffsets[v], &vAdj[vOffsets[v]]);CHKERRQ(ierr);
+    ++v;
+  }
+  ierr = PetscFree(adj);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(cellNumbering, &cellNum);CHKERRQ(ierr);
+  ierr = ISDestroy(&cellNumbering);CHKERRQ(ierr);
+  ierr = DMSetBasicAdjacency(dm, useCone, useClosure);CHKERRQ(ierr);
+  ierr = DMDestroy(&ovdm);CHKERRQ(ierr);
+  if (offsets)   {*offsets = vOffsets;}
+  else           {ierr = PetscFree(vOffsets);CHKERRQ(ierr);}
+  if (adjacency) {*adjacency = vAdj;}
+  else           {ierr = PetscFree(vAdj);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
 
 static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency, IS *globalNumbering)
 {
@@ -35,7 +137,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
       (*offsets)[0] = 0;
     }
     /* Broken in parallel */
-    if (rank && *numVertices) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Parallel partitioning of uninterpolated meshes not supported");
+    PetscCheckFalse(rank && *numVertices,PETSC_COMM_SELF, PETSC_ERR_SUP, "Parallel partitioning of uninterpolated meshes not supported");
     PetscFunctionReturn(0);
   }
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
@@ -235,7 +337,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
       (*offsets)[0] = 0;
     }
     /* Broken in parallel */
-    if (rank && *numVertices) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Parallel partitioning of uninterpolated meshes not supported");
+    PetscCheckFalse(rank && *numVertices,PETSC_COMM_SELF, PETSC_ERR_SUP, "Parallel partitioning of uninterpolated meshes not supported");
     PetscFunctionReturn(0);
   }
   /* Interpolated and parallel case */
@@ -339,7 +441,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   ierr = MatMPIAIJGetLocalMat(CSR, MAT_INITIAL_MATRIX, &conn);CHKERRQ(ierr);
   ierr = MatDestroy(&CSR);CHKERRQ(ierr);
   ierr = MatGetRowIJ(conn, 0, PETSC_FALSE, PETSC_FALSE, &m, &ii, &jj, &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "No IJ format");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF, PETSC_ERR_PLIB, "No IJ format");
 
   /* get back requested output */
   if (numVertices) *numVertices = m;
@@ -359,7 +461,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
         idxs[c++] = jj[j];
       }
     }
-    if (c != ii[m] - m) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected %D != %D",c,ii[m]-m);
+    PetscCheckFalse(c != ii[m] - m,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected %D != %D",c,ii[m]-m);
     ierr = ISRestoreIndices(cis_own, &rows);CHKERRQ(ierr);
     *adjacency = idxs;
   }
@@ -367,7 +469,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   /* cleanup */
   ierr = ISDestroy(&cis_own);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(conn, 0, PETSC_FALSE, PETSC_FALSE, &m, &ii, &jj, &flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "No IJ format");
+  PetscCheckFalse(!flg,PETSC_COMM_SELF, PETSC_ERR_PLIB, "No IJ format");
   ierr = MatDestroy(&conn);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -379,7 +481,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
 + dm      - The mesh DM dm
 - height  - Height of the strata from which to construct the graph
 
-  Output Parameter:
+  Output Parameters:
 + numVertices     - Number of vertices in the graph
 . offsets         - Point offsets in the graph
 . adjacency       - Point connectivity in the graph
@@ -388,21 +490,27 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   The user can control the definition of adjacency for the mesh using DMSetAdjacency(). They should choose the combination appropriate for the function
   representation on the mesh. If requested, globalNumbering needs to be destroyed by the caller; offsets and adjacency need to be freed with PetscFree().
 
+  Options Database Keys:
+. -dm_plex_csr_alg <mat,graph,overlap> - Choose the algorithm for computing the CSR graph
+
   Level: developer
 
 .seealso: PetscPartitionerGetType(), PetscPartitionerCreate(), DMSetAdjacency()
 @*/
 PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency, IS *globalNumbering)
 {
-  PetscErrorCode ierr;
-  PetscBool      usemat = PETSC_FALSE;
+  DMPlexCSRAlgorithm alg = DM_PLEX_CSR_GRAPH;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-dm_plex_csr_via_mat", &usemat, NULL);CHKERRQ(ierr);
-  if (usemat) {
-    ierr = DMPlexCreatePartitionerGraph_ViaMat(dm, height, numVertices, offsets, adjacency, globalNumbering);CHKERRQ(ierr);
-  } else {
-    ierr = DMPlexCreatePartitionerGraph_Native(dm, height, numVertices, offsets, adjacency, globalNumbering);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-dm_plex_csr_alg", DMPlexCSRAlgorithms, (PetscEnum *) &alg, NULL);CHKERRQ(ierr);
+  switch (alg) {
+    case DM_PLEX_CSR_MAT:
+      ierr = DMPlexCreatePartitionerGraph_ViaMat(dm, height, numVertices, offsets, adjacency, globalNumbering);CHKERRQ(ierr);break;
+    case DM_PLEX_CSR_GRAPH:
+      ierr = DMPlexCreatePartitionerGraph_Native(dm, height, numVertices, offsets, adjacency, globalNumbering);CHKERRQ(ierr);break;
+    case DM_PLEX_CSR_OVERLAP:
+      ierr = DMPlexCreatePartitionerGraph_Overlap(dm, height, numVertices, offsets, adjacency, globalNumbering);CHKERRQ(ierr);break;
   }
   PetscFunctionReturn(0);
 }
@@ -412,11 +520,11 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
 
   Collective on DM
 
-  Input Arguments:
+  Input Parameters:
 + dm - The DMPlex
 - cellHeight - The height of mesh points to treat as cells (default should be 0)
 
-  Output Arguments:
+  Output Parameters:
 + numVertices - The number of local vertices in the graph, or cells in the mesh.
 . offsets     - The offset to the adjacency list for each cell
 - adjacency   - The adjacency list for all cells
@@ -497,7 +605,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
         }
       }
       if (PetscDefined(USE_DEBUG)) {
-        for (c = 0; c < cEnd-cStart; ++c) if (tmp[c] != off[c+1]) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Offset %d != %d for cell %d", tmp[c], off[c], c+cStart);
+        for (c = 0; c < cEnd-cStart; ++c) PetscCheckFalse(tmp[c] != off[c+1],PETSC_COMM_SELF, PETSC_ERR_PLIB, "Offset %d != %d for cell %d", tmp[c], off[c], c+cStart);
       }
       ierr = PetscFree(tmp);CHKERRQ(ierr);
     }
@@ -517,7 +625,7 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
       if (!cornersSeen[corners]) {
         PetscInt nFV;
 
-        if (numFaceCases >= maxFaceCases) SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Exceeded maximum number of face recognition cases");
+        PetscCheckFalse(numFaceCases >= maxFaceCases,PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Exceeded maximum number of face recognition cases");
         cornersSeen[corners] = 1;
 
         ierr = DMPlexGetNumFaceVertices(dm, cellDim, corners, &nFV);CHKERRQ(ierr);
@@ -642,7 +750,7 @@ PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, Pet
   PetscValidHeaderSpecific(partSection, PETSC_SECTION_CLASSID, 4);
   PetscValidPointer(partition, 5);
   ierr = PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isplex);CHKERRQ(ierr);
-  if (!isplex) SETERRQ1(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not for type %s",((PetscObject)dm)->type_name);
+  PetscCheckFalse(!isplex,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not for type %s",((PetscObject)dm)->type_name);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject) part), &size);CHKERRMPI(ierr);
   if (size == 1) {
     PetscInt *points;
@@ -717,7 +825,7 @@ PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, Pet
             dof += clDof;
           }
         }
-        if (!dof) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of dofs for point %D in the local section should be positive",p);
+        PetscCheckFalse(!dof,PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of dofs for point %D in the local section should be positive",p);
         ierr = PetscSectionSetDof(vertSection, v, dof);CHKERRQ(ierr);
         v++;
       }
@@ -759,7 +867,7 @@ PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, Pet
       ierr = ISDestroy(partition);CHKERRQ(ierr);
       *partition = newPartition;
     }
-  } else SETERRQ1(PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_OUTOFRANGE, "Invalid height %D for points to partition", part->height);
+  } else SETERRQ(PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_OUTOFRANGE, "Invalid height %D for points to partition", part->height);
   ierr = PetscSectionDestroy(&vertSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -942,7 +1050,7 @@ PetscErrorCode DMPlexClosurePoints_Private(DM dm, PetscInt numPoints, const Pets
   DM_Plex         *mesh = (DM_Plex *)dm->data;
   const PetscBool hasTree = (mesh->parentSection || mesh->childSection) ? PETSC_TRUE : PETSC_FALSE;
   PetscInt        nelems, *elems, off = 0, p;
-  PetscHSetI      ht;
+  PetscHSetI      ht = NULL;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
@@ -1441,7 +1549,7 @@ static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewri
           }
         }
       }
-      if (newNumber == -1) SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Couldn't find the new owner of vertex.");
+      PetscCheckFalse(newNumber == -1,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Couldn't find the new owner of vertex.");
 
       newOwners[oldNumber] = newOwner;
       newNumbers[oldNumber] = newNumber;
@@ -1772,13 +1880,13 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       if (viewer) { ierr = PetscViewerASCIIPrintf(viewer, "Using current distribution of points as initial guess.\n");CHKERRQ(ierr); }
       PetscStackPush("ParMETIS_V3_RefineKway");
       ierr = ParMETIS_V3_RefineKway((PetscInt*)cumSumVertices, xadj, adjncy, vtxwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
-      if (ierr != METIS_OK) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ParMETIS_V3_RefineKway()");
+      PetscCheckFalse(ierr != METIS_OK,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ParMETIS_V3_RefineKway()");
       PetscStackPop;
     } else {
       PetscStackPush("ParMETIS_V3_PartKway");
       ierr = ParMETIS_V3_PartKway((PetscInt*)cumSumVertices, xadj, adjncy, vtxwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgecut, part, &comm);
       PetscStackPop;
-      if (ierr != METIS_OK) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ParMETIS_V3_PartKway()");
+      PetscCheckFalse(ierr != METIS_OK,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ParMETIS_V3_PartKway()");
     }
     ierr = PetscFree(options);CHKERRQ(ierr);
   } else {
@@ -1795,7 +1903,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 
     ierr = MatGetSize(As, &numRows, NULL);CHKERRQ(ierr);
     ierr = PetscMalloc1(numRows, &partGlobal);CHKERRQ(ierr);
-    if (!rank) {
+    if (rank == 0) {
       PetscInt *adjncy_g, *xadj_g, *vtxwgt_g;
       lenadjncy = 0;
 
@@ -1830,12 +1938,12 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
       }
       ierr = PetscMalloc1(64, &options);CHKERRQ(ierr);
       ierr = METIS_SetDefaultOptions(options); /* initialize all defaults */
-      if (ierr != METIS_OK) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_SetDefaultOptions()");
+      PetscCheckFalse(ierr != METIS_OK,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_SetDefaultOptions()");
       options[METIS_OPTION_CONTIG] = 1;
       PetscStackPush("METIS_PartGraphKway");
       ierr = METIS_PartGraphKway(&numRows, &ncon, xadj_g, adjncy_g, vtxwgt_g, NULL, NULL, &nparts, tpwgts, ubvec, options, &edgecut, partGlobal);
       PetscStackPop;
-      if (ierr != METIS_OK) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_PartGraphKway()");
+      PetscCheckFalse(ierr != METIS_OK,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in METIS_PartGraphKway()");
       ierr = PetscFree(options);CHKERRQ(ierr);
       ierr = PetscFree(xadj_g);CHKERRQ(ierr);
       ierr = PetscFree(adjncy_g);CHKERRQ(ierr);

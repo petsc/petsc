@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&grank);CHKERRMPI(ierr);
 
-  if (nproc < 2) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"This test must have at least two processes to run");
+  PetscCheckFalse(nproc < 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"This test must have at least two processes to run");
 
   ierr = PetscOptionsGetBool(NULL,0,"-world2sub",&world2sub,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,0,"-sub2sub",&sub2sub,NULL);CHKERRQ(ierr);
@@ -454,6 +454,7 @@ int main(int argc,char **argv)
 
    build:
      requires: !defined(PETSC_HAVE_MPIUNI)
+
    testset:
      nsize: 7
 
@@ -464,6 +465,8 @@ int main(int argc,char **argv)
      test:
        suffix: 2
        args: -sub2sub
+       # deadlocks with NECMPI and INTELMPI (20210400300)
+       requires: !defined(PETSC_HAVE_NECMPI) !defined(PETSC_HAVE_I_MPI_NUMVERSION)
 
      test:
        suffix: 3
@@ -488,7 +491,8 @@ int main(int argc,char **argv)
        suffix: 7
        args: -world2sub -sf_type neighbor
        output_file: output/ex9_1.out
-       # OpenMPI has a bug wrt MPI_Neighbor_alltoallv etc (https://github.com/open-mpi/ompi/pull/6782). Once the patch is in, we can remove !defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
-       requires: defined(PETSC_HAVE_MPI_NEIGHBORHOOD_COLLECTIVES) !defined(PETSC_HAVE_OMPI_MAJOR_VERSION)
+       # OpenMPI has a bug wrt MPI_Neighbor_alltoallv etc (https://github.com/open-mpi/ompi/pull/6782). Once the patch is in, we can remove !define(PETSC_HAVE_OMPI_MAJOR_VERSION)
+       # segfaults with NECMPI
+       requires: defined(PETSC_HAVE_MPI_NEIGHBORHOOD_COLLECTIVES) !defined(PETSC_HAVE_OMPI_MAJOR_VERSION) !defined(PETSC_HAVE_NECMPI)
 TEST*/
 

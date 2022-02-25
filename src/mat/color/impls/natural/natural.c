@@ -33,7 +33,7 @@ static PetscErrorCode MatColoringApply_Natural(MatColoring mc,ISColoring *iscolo
   ierr = MatGetSize(mat_seq,&n,NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(mat_seq,&start,&end);CHKERRQ(ierr);
   n    = n/bs;
-  if (n > IS_COLORING_MAX-1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
+  PetscCheckFalse(n > IS_COLORING_MAX-1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Maximum color size exceeded");
 
   start = start/bs;
   end   = end/bs;
@@ -65,6 +65,13 @@ static PetscErrorCode MatColoringApply_Natural(MatColoring mc,ISColoring *iscolo
   PetscFunctionReturn(0);
 }
 
+/*MC
+  MATCOLORINGNATURAL - implements a trivial coloring routine with one color per column
+
+  Level: beginner
+
+.seealso: MatColoringCreate(), MatColoring, MatColoringSetType(), MatColoringType
+M*/
 PETSC_EXTERN PetscErrorCode MatColoringCreate_Natural(MatColoring mc)
 {
     PetscFunctionBegin;

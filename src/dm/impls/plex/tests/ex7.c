@@ -171,7 +171,7 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM dm)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     switch (testNum) {
     case 0:
     {
@@ -189,7 +189,7 @@ PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM dm)
     }
     break;
     default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
   } else {
     PetscInt numPoints[2] = {0, 0};
@@ -208,7 +208,7 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM dm)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     switch (testNum) {
     case 0:
     {
@@ -226,7 +226,7 @@ PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM dm)
     }
     break;
     default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
   } else {
     PetscInt numPoints[2] = {0, 0};
@@ -245,7 +245,7 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM dm)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     switch (testNum) {
     case 0:
     {
@@ -278,7 +278,7 @@ PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM dm)
     }
     break;
     default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
   } else {
     PetscInt numPoints[2] = {0, 0};
@@ -297,7 +297,7 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, DM dm)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     switch (testNum) {
     case 0:
     {
@@ -317,7 +317,7 @@ PetscErrorCode CreateHex_3D(MPI_Comm comm, DM dm)
     }
     break;
     default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %d", testNum);
     }
   } else {
     PetscInt numPoints[2] = {0, 0};
@@ -357,7 +357,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, PetscInt testNum, AppCtx *user, DM *dm)
       }
       break;
     default:
-      SETERRQ1(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %d", dim);
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %d", dim);
     }
   }
   ierr = DMSetFromOptions(*dm);CHKERRQ(ierr);
@@ -387,32 +387,32 @@ int main(int argc, char **argv)
     # Two cell test meshes 0-7
     test:
       suffix: 0
-      args: -dim 2 -dm_plex_interpolate -dm_view ascii::ascii_info_detail
+      args: -dim 2 -dm_view ascii::ascii_info_detail
     test:
       suffix: 1
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple -dim 2 -dm_view ascii::ascii_info_detail
+      args: -petscpartitioner_type simple -dim 2 -dm_view ascii::ascii_info_detail
     test:
       suffix: 2
       args: -dim 2 -simplex 0 -dm_view ascii::ascii_info_detail
     test:
       suffix: 3
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple -dim 2 -simplex 0 -dm_view ascii::ascii_info_detail
+      args: -petscpartitioner_type simple -dim 2 -simplex 0 -dm_view ascii::ascii_info_detail
     test:
       suffix: 4
       args: -dim 3 -dm_view ascii::ascii_info_detail
     test:
       suffix: 5
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple -dim 3 -dm_view ascii::ascii_info_detail
+      args: -petscpartitioner_type simple -dim 3 -dm_view ascii::ascii_info_detail
     test:
       suffix: 6
       args: -dim 3 -simplex 0 -dm_view ascii::ascii_info_detail
     test:
       suffix: 7
       nsize: 2
-      args: -dm_distribute -petscpartitioner_type simple -dim 3 -simplex 0 -dm_view ascii::ascii_info_detail
+      args: -petscpartitioner_type simple -dim 3 -simplex 0 -dm_view ascii::ascii_info_detail
     # 2D Hybrid Mesh 8
     test:
       suffix: 8

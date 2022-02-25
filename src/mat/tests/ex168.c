@@ -24,7 +24,7 @@ int main(int argc,char **args)
 
   /* Determine file from which we read the matrix A */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
 
   /* Load matrix A */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
@@ -34,7 +34,7 @@ int main(int argc,char **args)
   ierr = VecLoad(b,fd);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
+  PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
   ierr = MatNorm(A,NORM_INFINITY,&Anorm);CHKERRQ(ierr);
 
   /* Create vectors */
@@ -44,14 +44,14 @@ int main(int argc,char **args)
   /* Test Cholesky Factorization */
   ierr = MatGetOrdering(A,MATORDERINGNATURAL,&perm,&iperm);CHKERRQ(ierr);
 
-  if (!rank) printf(" Clique Cholesky:\n");
+  if (rank == 0) printf(" Clique Cholesky:\n");
   ierr = MatGetFactor(A,MATSOLVERCLIQUE,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
 
   info.fill = 5.0;
   ierr      = MatCholeskyFactorSymbolic(F,A,perm,&info);CHKERRQ(ierr);
 
   for (nfact = 0; nfact < 1; nfact++) {
-    if (!rank) printf(" %d-the Cholesky numfactorization \n",nfact);
+    if (rank == 0) printf(" %d-the Cholesky numfactorization \n",nfact);
     ierr = MatCholeskyFactorNumeric(F,A,&info);CHKERRQ(ierr);
 
     /* Test MatSolve() */
@@ -63,7 +63,7 @@ int main(int argc,char **args)
       ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
       ierr = VecNorm(u,NORM_INFINITY,&norm);CHKERRQ(ierr);
       /* if (norm > tol) { */
-      if (!rank) {
+      if (rank == 0) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"MatSolve: rel residual %g/%g = %g, LU numfact %d\n",norm,Anorm,norm/Anorm,nfact);CHKERRQ(ierr);
       }
       /*} */

@@ -1,7 +1,7 @@
 *                         @petsc/integrators
 
 /src/tao/                 @adener @tmunson
-/src/tao/constrained/impls/ipm/ @abhyshr @hongzhangsun @resundermann @adener
+/src/tao/constrained/impls/ipm/ @abhyshr @hongzhangsun @resundermann @adener @tmunson
 
 /src/ts/                  @caidao22 @jedbrown @emconsta @stefanozampini @BarrySmith
 src/ts/event/             @abhyshr @caidao22 @BarrySmith
@@ -19,7 +19,7 @@ src/ts/event/             @abhyshr @caidao22 @BarrySmith
 /src/ksp/pc/impls/hpddm/  @prj- @stefanozampini
 /src/ksp/ksp/impls/hpddm/ @prj- @stefanozampini
 
-/src/binding/petsc4py/    @dalcinl @wence @pefarrell @joseroman @jedbrown @knepley @psanan
+/src/binding/petsc4py/    @dalcinl @wence @pefarrell @joseroman @jedbrown @knepley @psanan @stefanozampini
 
 /src/sys/classes/viewer/  @petsc/integrators @haplav
 
@@ -28,7 +28,7 @@ src/ts/event/             @abhyshr @caidao22 @BarrySmith
 /src/vec/is/sf/           @jedbrown @jczhang07
 /src/vec/vscat/           @jczhang07 @BarrySmith
 
-/src/docs/                @psanan @sbalay @BarrySmith @knepley @jedbrown
+/doc/                     @psanan @sbalay @BarrySmith @knepley @jedbrown
 
 /config/*                 @krugers @knepley @sbalay @BarrySmith
 gmakefile*                @krugers @jedbrown @BarrySmith

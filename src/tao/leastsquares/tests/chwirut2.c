@@ -30,7 +30,7 @@ static char help[]="Finds the nonlinear least-squares solution to the model \n\
    Routines: TaoSetType();
    Routines: TaoSetResidualRoutine();
    Routines: TaoSetJacobianRoutine();
-   Routines: TaoSetInitialVector();
+   Routines: TaoSetSolution();
    Routines: TaoSetFromOptions();
    Routines: TaoSetConvergenceHistory(); TaoGetConvergenceHistory();
    Routines: TaoSolve();
@@ -104,7 +104,7 @@ int main(int argc,char **argv)
  /* Set the function and Jacobian routines. */
   ierr = InitializeData(&user);CHKERRQ(ierr);
   ierr = FormStartingPoint(x);CHKERRQ(ierr);
-  ierr = TaoSetInitialVector(tao,x);CHKERRQ(ierr);
+  ierr = TaoSetSolution(tao,x);CHKERRQ(ierr);
   ierr = TaoSetResidualRoutine(tao,f,EvaluateFunction,(void*)&user);CHKERRQ(ierr);
   if (wtype == 1) {
     ierr = TaoSetResidualWeights(tao,w,0,NULL,NULL,NULL);CHKERRQ(ierr);
@@ -198,7 +198,7 @@ PetscErrorCode FormStartingPoint(Vec X)
   x[0] = 1.19;
   x[1] = -1.86;
   x[2] = 1.08;
-  VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

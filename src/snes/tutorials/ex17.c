@@ -6,18 +6,28 @@ and eventually adaptivity.\n\n\n";
 
 /*
   https://en.wikipedia.org/wiki/Linear_elasticity
+
+  Converting elastic constants:
+    lambda = E nu / ((1 + nu) (1 - 2 nu))
+    mu     = E / (2 (1 + nu))
 */
 
 #include <petscdmplex.h>
 #include <petscsnes.h>
 #include <petscds.h>
+#include <petscbag.h>
 #include <petscconvest.h>
 
-typedef enum {SOL_VLAP_QUADRATIC, SOL_ELAS_QUADRATIC, SOL_VLAP_TRIG, SOL_ELAS_TRIG, SOL_ELAS_AXIAL_DISP, SOL_ELAS_UNIFORM_STRAIN, SOL_MASS_QUADRATIC, NUM_SOLUTION_TYPES} SolutionType;
-const char *solutionTypes[NUM_SOLUTION_TYPES+1] = {"vlap_quad", "elas_quad", "vlap_trig", "elas_trig", "elas_axial_disp", "elas_uniform_strain", "mass_quad", "unknown"};
+typedef enum {SOL_VLAP_QUADRATIC, SOL_ELAS_QUADRATIC, SOL_VLAP_TRIG, SOL_ELAS_TRIG, SOL_ELAS_AXIAL_DISP, SOL_ELAS_UNIFORM_STRAIN, SOL_ELAS_GE, SOL_MASS_QUADRATIC, NUM_SOLUTION_TYPES} SolutionType;
+const char *solutionTypes[NUM_SOLUTION_TYPES+1] = {"vlap_quad", "elas_quad", "vlap_trig", "elas_trig", "elas_axial_disp", "elas_uniform_strain", "elas_ge", "mass_quad", "unknown"};
 
 typedef enum {DEFORM_NONE, DEFORM_SHEAR, DEFORM_STEP, NUM_DEFORM_TYPES} DeformType;
 const char *deformTypes[NUM_DEFORM_TYPES+1] = {"none", "shear", "step", "unknown"};
+
+typedef struct {
+  PetscScalar mu;     /* shear modulus */
+  PetscScalar lambda; /* Lame's first parameter */
+} Parameter;
 
 typedef struct {
   /* Domain and mesh definition */
@@ -25,6 +35,7 @@ typedef struct {
   DeformType   deform;      /* Domain deformation type */
   /* Problem definition */
   SolutionType solType;     /* Type of exact solution */
+  PetscBag     bag;         /* Problem parameters */
   /* Solver definition */
   PetscBool    useNearNullspace; /* Use the rigid body modes as a near nullspace for AMG */
 } AppCtx;
@@ -33,6 +44,14 @@ static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], Pe
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) u[d] = 0.0;
+  return 0;
+}
+
+static PetscErrorCode ge_shift(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
+  PetscInt d;
+  u[0] = 0.1;
+  for (d = 1; d < dim; ++d) u[d] = 0.0;
   return 0;
 }
 
@@ -365,6 +384,37 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
+{
+  PetscBag       bag;
+  Parameter     *p;
+  PetscErrorCode ierr;
+
+  PetscFunctionBeginUser;
+  /* setup PETSc parameter bag */
+  ierr = PetscBagGetData(ctx->bag,(void**)&p);CHKERRQ(ierr);
+  ierr = PetscBagSetName(ctx->bag,"par","Elastic Parameters");CHKERRQ(ierr);
+  bag  = ctx->bag;
+  ierr = PetscBagRegisterScalar(bag, &p->mu,     1.0, "mu",     "Shear Modulus, Pa");CHKERRQ(ierr);
+  ierr = PetscBagRegisterScalar(bag, &p->lambda, 1.0, "lambda", "Lame's first parameter, Pa");CHKERRQ(ierr);
+  ierr = PetscBagSetFromOptions(bag);CHKERRQ(ierr);
+  {
+    PetscViewer       viewer;
+    PetscViewerFormat format;
+    PetscBool         flg;
+
+    ierr = PetscOptionsGetViewer(comm, NULL, NULL, "-param_view", &viewer, &format, &flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscViewerPushFormat(viewer, format);CHKERRQ(ierr);
+      ierr = PetscBagView(bag, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexDistortGeometry(DM dm)
 {
   DM             cdm;
@@ -409,7 +459,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     case DEFORM_NONE:  break;
     case DEFORM_SHEAR: ierr = DMPlexShearGeometry(*dm, DM_X, NULL);CHKERRQ(ierr);break;
     case DEFORM_STEP:  ierr = DMPlexDistortGeometry(*dm);CHKERRQ(ierr);break;
-    default: SETERRQ2(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid deformation type: %s (%D)", deformTypes[PetscMin(user->deform, NUM_DEFORM_TYPES)], user->deform);
+    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid deformation type: %s (%D)", deformTypes[PetscMin(user->deform, NUM_DEFORM_TYPES)], user->deform);
   }
   ierr = DMSetApplicationContext(*dm, user);CHKERRQ(ierr);
   ierr = DMViewFromOptions(*dm, NULL, "-dm_view");CHKERRQ(ierr);
@@ -419,17 +469,19 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 {
   PetscErrorCode (*exact)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
-  PetscDS        ds;
-  PetscWeakForm  wf;
-  DMLabel        label;
-  PetscInt       id, bd;
-  PetscInt       dim;
-  PetscErrorCode ierr;
+  Parameter       *param;
+  PetscDS          ds;
+  PetscWeakForm    wf;
+  DMLabel          label;
+  PetscInt         id, bd;
+  PetscInt         dim;
+  PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
   ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
   ierr = PetscDSGetWeakForm(ds, &wf);CHKERRQ(ierr);
   ierr = PetscDSGetSpatialDimension(ds, &dim);CHKERRQ(ierr);
+  ierr = PetscBagGetData(user->bag, (void **) &param);CHKERRQ(ierr);
   switch (user->solType) {
   case SOL_MASS_QUADRATIC:
     ierr = PetscDSSetResidual(ds, 0, f0_mass_u, NULL);CHKERRQ(ierr);
@@ -438,7 +490,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     switch (dim) {
     case 2: exact = quadratic_2d_u;break;
     case 3: exact = quadratic_3d_u;break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
+    default: SETERRQ(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
     }
     break;
   case SOL_VLAP_QUADRATIC:
@@ -447,7 +499,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     switch (dim) {
     case 2: exact = quadratic_2d_u;break;
     case 3: exact = quadratic_3d_u;break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
+    default: SETERRQ(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
     }
     break;
   case SOL_ELAS_QUADRATIC:
@@ -456,7 +508,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     switch (dim) {
     case 2: exact = quadratic_2d_u;break;
     case 3: exact = quadratic_3d_u;break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
+    default: SETERRQ(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
     }
     break;
   case SOL_VLAP_TRIG:
@@ -465,7 +517,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     switch (dim) {
     case 2: exact = trig_2d_u;break;
     case 3: exact = trig_3d_u;break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
+    default: SETERRQ(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
     }
     break;
   case SOL_ELAS_TRIG:
@@ -474,7 +526,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     switch (dim) {
     case 2: exact = trig_2d_u;break;
     case 3: exact = trig_3d_u;break;
-    default: SETERRQ1(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
+    default: SETERRQ(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid dimension: %D", dim);
     }
     break;
   case SOL_ELAS_AXIAL_DISP:
@@ -492,7 +544,12 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_elas_uu);CHKERRQ(ierr);
     exact = uniform_strain_u;
     break;
-  default: SETERRQ2(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%D)", solutionTypes[PetscMin(user->solType, NUM_SOLUTION_TYPES)], user->solType);
+  case SOL_ELAS_GE:
+    ierr = PetscDSSetResidual(ds, 0, NULL, f1_elas_u);CHKERRQ(ierr);
+    ierr = PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_elas_uu);CHKERRQ(ierr);
+    exact = zero; /* No exact solution available */
+    break;
+  default: SETERRQ(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%D)", solutionTypes[PetscMin(user->solType, NUM_SOLUTION_TYPES)], user->solType);
   }
   ierr = PetscDSSetExactSolution(ds, 0, exact, user);CHKERRQ(ierr);
   ierr = DMGetLabel(dm, "marker", &label);CHKERRQ(ierr);
@@ -510,9 +567,25 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
       id   = 3;
       ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "front",  label, 1, &id, 0, 1, &cmp, (void (*)(void)) zero, NULL, user, NULL);CHKERRQ(ierr);
     }
+  } else if (user->solType == SOL_ELAS_GE) {
+    PetscInt cmp;
+
+    id   = dim == 3 ? 6 : 4;
+    ierr = DMAddBoundary(dm,   DM_BC_ESSENTIAL, "left",   label, 1, &id, 0, 0, NULL, (void (*)(void)) zero, NULL, user, NULL);CHKERRQ(ierr);
+    id   = dim == 3 ? 5 : 2;
+    cmp  = 0;
+    ierr = DMAddBoundary(dm,   DM_BC_ESSENTIAL, "right",  label, 1, &id, 0, 1, &cmp, (void (*)(void)) ge_shift, NULL, user, NULL);CHKERRQ(ierr);
   } else {
     id = 1;
     ierr = DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) exact, NULL, user, NULL);CHKERRQ(ierr);
+  }
+  /* Setup constants */
+  {
+    PetscScalar constants[2];
+
+    constants[0] = param->mu;     /* shear modulus, Pa */
+    constants[1] = param->lambda; /* Lame's first parameter, Pa */
+    ierr = PetscDSSetConstants(ds, 2, constants);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -570,6 +643,8 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = ProcessOptions(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
+  ierr = PetscBagCreate(PETSC_COMM_SELF, sizeof(Parameter), &user.bag);CHKERRQ(ierr);
+  ierr = SetupParameters(PETSC_COMM_WORLD, &user);CHKERRQ(ierr);
   /* Primal system */
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
   ierr = CreateMesh(PETSC_COMM_WORLD, &user, &dm);CHKERRQ(ierr);
@@ -588,6 +663,7 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
+  ierr = PetscBagDestroy(&user.bag);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return ierr;
 }
@@ -857,5 +933,20 @@ int main(int argc, char **argv)
     test:
       suffix: 2d_q1_quad_mass_step
       args: -sol_type mass_quad
+
+  testset:
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_lower -5,-5,-0.25 -dm_plex_box_upper 5,5,0.25 \
+          -dm_plex_box_faces 5,5,2 -dm_plex_separate_marker -dm_refine 0 -petscpartitioner_type simple \
+          -sol_type elas_ge \
+          -snes_max_it 2 -snes_rtol 1.e-10 \
+          -ksp_type cg -ksp_rtol 1.e-10 -ksp_max_it 100 -ksp_norm_type unpreconditioned \
+          -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 \
+            -pc_gamg_coarse_eq_limit 10 -pc_gamg_reuse_interpolation true \
+            -pc_gamg_square_graph 1 -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 \
+            -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.1 -mg_levels_pc_type jacobi \
+            -matptap_via scalable
+    test:
+      suffix: ge_q1_0
+      args: -displacement_petscspace_degree 1
 
 TEST*/

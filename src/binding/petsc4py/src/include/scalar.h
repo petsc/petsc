@@ -4,7 +4,7 @@
 #include "Python.h"
 #include "petsc.h"
 
-PETSC_STATIC_INLINE
+static inline
 PyObject *PyPetscScalar_FromPetscScalar(PetscScalar s)
 {
 #if defined(PETSC_USE_COMPLEX)
@@ -16,7 +16,7 @@ PyObject *PyPetscScalar_FromPetscScalar(PetscScalar s)
 #endif
 }
 
-PETSC_STATIC_INLINE
+static inline
 PetscScalar PyPetscScalar_AsPetscScalar(PyObject *o)
 {
 #if defined(PETSC_USE_COMPLEX)

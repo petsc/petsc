@@ -21,7 +21,7 @@ PetscLogEvent TAOLINESEARCH_Eval;
    Level: intermediate
 .seealso:  TaoLineSearch, TaoLineSearchView, PetscObjectViewFromOptions(), TaoLineSearchCreate()
 @*/
-PetscErrorCode  TaoLineSearchViewFromOptions(TaoLineSearch A,PetscObject obj,const char name[])
+PetscErrorCode TaoLineSearchViewFromOptions(TaoLineSearch A,PetscObject obj,const char name[])
 {
   PetscErrorCode ierr;
 
@@ -281,6 +281,8 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
   if (--((PetscObject)*ls)->refct > 0) {*ls = NULL; PetscFunctionReturn(0);}
   ierr = VecDestroy(&(*ls)->stepdirection);CHKERRQ(ierr);
   ierr = VecDestroy(&(*ls)->start_x);CHKERRQ(ierr);
+  ierr = VecDestroy(&(*ls)->upper);CHKERRQ(ierr);
+  ierr = VecDestroy(&(*ls)->lower);CHKERRQ(ierr);
   if ((*ls)->ops->destroy) {
     ierr = (*(*ls)->ops->destroy)(*ls);CHKERRQ(ierr);
   }
@@ -298,18 +300,18 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
 
   Input Parameters:
 + ls - the Tao context
-. x - The current solution (on output x contains the new solution determined by the line search)
-. f - objective function value at current solution (on output contains the objective function value at new solution)
-. g - gradient evaluated at x (on output contains the gradient at new solution)
 - s - search direction
 
+  Input/Output Parameters:
++ x - The current solution (on output x contains the new solution determined by the line search)
+. f - objective function value at current solution (on output contains the objective function value at new solution)
+- g - gradient evaluated at x (on output contains the gradient at new solution)
+
   Output Parameters:
-+ x - new solution
-. f - objective function value at x
-. g - gradient vector at x
-. steplength - scalar multiplier of s used ( x = x0 + steplength * x)
++ steplength - scalar multiplier of s used ( x = x0 + steplength * x)
 - reason - reason why the line-search stopped
 
+  Notes:
   reason will be set to one of:
 
 + TAOLINESEARCH_FAILED_ASCENT - initial line search step * g is not descent direction
@@ -323,11 +325,9 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
 . TAOLINESEARCH_HALTED_OTHER - any other reason
 - TAOLINESEARCH_SUCCESS - successful line search
 
-  Note:
   The algorithm developer must set up the TaoLineSearch with calls to
   TaoLineSearchSetObjectiveRoutine() and TaoLineSearchSetGradientRoutine(), TaoLineSearchSetObjectiveAndGradientRoutine(), or TaoLineSearchUseTaoRoutines()
 
-  Note:
   You may or may not need to follow this with a call to
   TaoAddLineSearchCounts(), depending on whether you want these
   evaluations to count toward the total function/gradient evaluations.
@@ -343,7 +343,6 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
   PetscInt       low1,low2,low3,high1,high2,high3;
 
   PetscFunctionBegin;
-  *reason = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidRealPointer(f,3);
@@ -356,45 +355,46 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
   ierr = VecGetOwnershipRange(x, &low1, &high1);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(g, &low2, &high2);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(s, &low3, &high3);CHKERRQ(ierr);
-  if (low1!= low2 || low1!= low3 || high1!= high2 || high1!= high3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible vector local lengths");
+  PetscCheckFalse(low1 != low2 || low1 != low3 || high1 != high2 || high1 != high3,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible vector local lengths");
 
+  *reason = TAOLINESEARCH_CONTINUE_ITERATING;
   ierr = PetscObjectReference((PetscObject)s);CHKERRQ(ierr);
   ierr = VecDestroy(&ls->stepdirection);CHKERRQ(ierr);
   ls->stepdirection = s;
 
   ierr = TaoLineSearchSetUp(ls);CHKERRQ(ierr);
-  if (!ls->ops->apply) SETERRQ(PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_WRONGSTATE,"Line Search Object does not have 'apply' routine");
-  ls->nfeval=0;
-  ls->ngeval=0;
-  ls->nfgeval=0;
+  PetscCheckFalse(!ls->ops->apply,PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_WRONGSTATE,"Line Search Object does not have 'apply' routine");
+  ls->nfeval = 0;
+  ls->ngeval = 0;
+  ls->nfgeval = 0;
   /* Check parameter values */
   if (ls->ftol < 0.0) {
-    ierr = PetscInfo1(ls,"Bad Line Search Parameter: ftol (%g) < 0\n",(double)ls->ftol);CHKERRQ(ierr);
-    *reason=TAOLINESEARCH_FAILED_BADPARAMETER;
+    ierr = PetscInfo(ls,"Bad Line Search Parameter: ftol (%g) < 0\n",(double)ls->ftol);CHKERRQ(ierr);
+    *reason = TAOLINESEARCH_FAILED_BADPARAMETER;
   }
   if (ls->rtol < 0.0) {
-    ierr = PetscInfo1(ls,"Bad Line Search Parameter: rtol (%g) < 0\n",(double)ls->rtol);CHKERRQ(ierr);
-    *reason=TAOLINESEARCH_FAILED_BADPARAMETER;
+    ierr = PetscInfo(ls,"Bad Line Search Parameter: rtol (%g) < 0\n",(double)ls->rtol);CHKERRQ(ierr);
+    *reason = TAOLINESEARCH_FAILED_BADPARAMETER;
   }
   if (ls->gtol < 0.0) {
-    ierr = PetscInfo1(ls,"Bad Line Search Parameter: gtol (%g) < 0\n",(double)ls->gtol);CHKERRQ(ierr);
-    *reason=TAOLINESEARCH_FAILED_BADPARAMETER;
+    ierr = PetscInfo(ls,"Bad Line Search Parameter: gtol (%g) < 0\n",(double)ls->gtol);CHKERRQ(ierr);
+    *reason = TAOLINESEARCH_FAILED_BADPARAMETER;
   }
   if (ls->stepmin < 0.0) {
-    ierr = PetscInfo1(ls,"Bad Line Search Parameter: stepmin (%g) < 0\n",(double)ls->stepmin);CHKERRQ(ierr);
-    *reason=TAOLINESEARCH_FAILED_BADPARAMETER;
+    ierr = PetscInfo(ls,"Bad Line Search Parameter: stepmin (%g) < 0\n",(double)ls->stepmin);CHKERRQ(ierr);
+    *reason = TAOLINESEARCH_FAILED_BADPARAMETER;
   }
   if (ls->stepmax < ls->stepmin) {
-    ierr = PetscInfo2(ls,"Bad Line Search Parameter: stepmin (%g) > stepmax (%g)\n",(double)ls->stepmin,(double)ls->stepmax);CHKERRQ(ierr);
-    *reason=TAOLINESEARCH_FAILED_BADPARAMETER;
+    ierr = PetscInfo(ls,"Bad Line Search Parameter: stepmin (%g) > stepmax (%g)\n",(double)ls->stepmin,(double)ls->stepmax);CHKERRQ(ierr);
+    *reason = TAOLINESEARCH_FAILED_BADPARAMETER;
   }
   if (ls->max_funcs < 0) {
-    ierr = PetscInfo1(ls,"Bad Line Search Parameter: max_funcs (%D) < 0\n",ls->max_funcs);CHKERRQ(ierr);
-    *reason=TAOLINESEARCH_FAILED_BADPARAMETER;
+    ierr = PetscInfo(ls,"Bad Line Search Parameter: max_funcs (%" PetscInt_FMT ") < 0\n",ls->max_funcs);CHKERRQ(ierr);
+    *reason = TAOLINESEARCH_FAILED_BADPARAMETER;
   }
   if (PetscIsInfOrNanReal(*f)) {
-    ierr = PetscInfo1(ls,"Initial Line Search Function Value is Inf or Nan (%g)\n",(double)*f);CHKERRQ(ierr);
-    *reason=TAOLINESEARCH_FAILED_INFORNAN;
+    ierr = PetscInfo(ls,"Initial Line Search Function Value is Inf or Nan (%g)\n",(double)*f);CHKERRQ(ierr);
+    *reason = TAOLINESEARCH_FAILED_INFORNAN;
   }
 
   ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
@@ -404,12 +404,10 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
   ierr = PetscLogEventBegin(TAOLINESEARCH_Apply,ls,0,0,0);CHKERRQ(ierr);
   ierr = (*ls->ops->apply)(ls,x,f,g,s);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TAOLINESEARCH_Apply, ls, 0,0,0);CHKERRQ(ierr);
-  *reason=ls->reason;
+  *reason = ls->reason;
   ls->new_f = *f;
 
-  if (steplength) {
-    *steplength=ls->step;
-  }
+  if (steplength) *steplength = ls->step;
 
   ierr = TaoLineSearchViewFromOptions(ls,NULL,"-tao_ls_view");CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -451,11 +449,11 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, TaoLineSearchType type)
   if (flg) PetscFunctionReturn(0);
 
   ierr = PetscFunctionListFind(TaoLineSearchList,type, (void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested TaoLineSearch type %s",type);
+  PetscCheckFalse(!r,PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested TaoLineSearch type %s",type);
   if (ls->ops->destroy) {
     ierr = (*(ls)->ops->destroy)(ls);CHKERRQ(ierr);
   }
-  ls->max_funcs=30;
+  ls->max_funcs = 30;
   ls->ftol = 0.0001;
   ls->gtol = 0.9;
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -463,12 +461,12 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, TaoLineSearchType type)
 #else
   ls->rtol = 1.0e-10;
 #endif
-  ls->stepmin=1.0e-20;
-  ls->stepmax=1.0e+20;
+  ls->stepmin = 1.0e-20;
+  ls->stepmax = 1.0e+20;
 
-  ls->nfeval=0;
-  ls->ngeval=0;
-  ls->nfgeval=0;
+  ls->nfeval = 0;
+  ls->ngeval = 0;
+  ls->nfgeval = 0;
   ls->ops->setup = NULL;
   ls->ops->apply = NULL;
   ls->ops->view = NULL;
@@ -664,7 +662,7 @@ PetscErrorCode TaoLineSearchIsUsingTaoRoutines(TaoLineSearch ls, PetscBool *flg)
 
   Logically Collective on TaoLineSearch
 
-  Input Parameter:
+  Input Parameters:
 + ls - the TaoLineSearch context
 . func - the objective function evaluation routine
 - ctx - the (optional) user-defined context for private data
@@ -707,7 +705,7 @@ PetscErrorCode TaoLineSearchSetObjectiveRoutine(TaoLineSearch ls, PetscErrorCode
 
   Logically Collective on TaoLineSearch
 
-  Input Parameter:
+  Input Parameters:
 + ls - the TaoLineSearch context
 . func - the gradient evaluation routine
 - ctx - the (optional) user-defined context for private data
@@ -749,7 +747,7 @@ PetscErrorCode TaoLineSearchSetGradientRoutine(TaoLineSearch ls, PetscErrorCode(
 
   Logically Collective on TaoLineSearch
 
-  Input Parameter:
+  Input Parameters:
 + ls - the TaoLineSearch context
 . func - the objective and gradient evaluation routine
 - ctx - the (optional) user-defined context for private data
@@ -795,7 +793,7 @@ PetscErrorCode TaoLineSearchSetObjectiveAndGradientRoutine(TaoLineSearch ls, Pet
 
   Logically Collective on TaoLineSearch
 
-  Input Parameter:
+  Input Parameters:
 + ls - the TaoLineSearch context
 . func - the objective and gradient evaluation routine
 - ctx - the (optional) user-defined context for private data
@@ -833,7 +831,7 @@ PetscErrorCode TaoLineSearchSetObjectiveAndGTSRoutine(TaoLineSearch ls, PetscErr
   ls->ops->computeobjectiveandgts=func;
   if (ctx) ls->userctx_funcgts=ctx;
   ls->usegts = PETSC_TRUE;
-  ls->usetaoroutines=PETSC_FALSE;
+  ls->usetaoroutines = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -843,7 +841,7 @@ PetscErrorCode TaoLineSearchSetObjectiveAndGTSRoutine(TaoLineSearch ls, PetscErr
 
   Logically Collective on TaoLineSearch
 
-  Input Parameter:
+  Input Parameters:
 + ls - the TaoLineSearch context
 - ts - the Tao context with defined objective/gradient evaluation routines
 
@@ -857,7 +855,7 @@ PetscErrorCode TaoLineSearchUseTaoRoutines(TaoLineSearch ls, Tao ts)
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   PetscValidHeaderSpecific(ts,TAO_CLASSID,2);
   ls->tao = ts;
-  ls->usetaoroutines=PETSC_TRUE;
+  ls->usetaoroutines = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -895,7 +893,7 @@ PetscErrorCode TaoLineSearchComputeObjective(TaoLineSearch ls, Vec x, PetscReal 
   if (ls->usetaoroutines) {
     ierr = TaoComputeObjective(ls->tao,x,f);CHKERRQ(ierr);
   } else {
-    if (!ls->ops->computeobjective && !ls->ops->computeobjectiveandgradient && !ls->ops->computeobjectiveandgts) SETERRQ(PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_WRONGSTATE,"Line Search does not have objective function set");
+    PetscCheckFalse(!ls->ops->computeobjective && !ls->ops->computeobjectiveandgradient && !ls->ops->computeobjectiveandgts,PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_WRONGSTATE,"Line Search does not have objective function set");
     ierr = PetscLogEventBegin(TAOLINESEARCH_Eval,ls,0,0,0);CHKERRQ(ierr);
     PetscStackPush("TaoLineSearch user objective routine");
     if (ls->ops->computeobjective) {
@@ -923,7 +921,7 @@ PetscErrorCode TaoLineSearchComputeObjective(TaoLineSearch ls, Vec x, PetscReal 
 + ls - the TaoLineSearch context
 - x - input vector
 
-  Output Parameter:
+  Output Parameters:
 + f - Objective value at X
 - g - Gradient vector at X
 
@@ -949,23 +947,23 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGradient(TaoLineSearch ls, Vec x,
   if (ls->usetaoroutines) {
     ierr = TaoComputeObjectiveAndGradient(ls->tao,x,f,g);CHKERRQ(ierr);
   } else {
-    if (!ls->ops->computeobjective && !ls->ops->computeobjectiveandgradient) SETERRQ(PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_WRONGSTATE,"Line Search does not have objective function set");
-    if (!ls->ops->computegradient  && !ls->ops->computeobjectiveandgradient) SETERRQ(PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_WRONGSTATE,"Line Search does not have gradient function set");
     ierr = PetscLogEventBegin(TAOLINESEARCH_Eval,ls,0,0,0);CHKERRQ(ierr);
     if (ls->ops->computeobjectiveandgradient) {
       PetscStackPush("TaoLineSearch user objective/gradient routine");
       ierr = (*ls->ops->computeobjectiveandgradient)(ls,x,f,g,ls->userctx_funcgrad);CHKERRQ(ierr);
       PetscStackPop;
     } else {
+      PetscCheckFalse(!ls->ops->computeobjective,PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_WRONGSTATE,"Line Search does not have objective function set");
       PetscStackPush("TaoLineSearch user objective routine");
       ierr = (*ls->ops->computeobjective)(ls,x,f,ls->userctx_func);CHKERRQ(ierr);
       PetscStackPop;
+      PetscCheckFalse(!ls->ops->computegradient,PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_WRONGSTATE,"Line Search does not have gradient function set");
       PetscStackPush("TaoLineSearch user gradient routine");
       ierr = (*ls->ops->computegradient)(ls,x,g,ls->userctx_grad);CHKERRQ(ierr);
       PetscStackPop;
     }
     ierr = PetscLogEventEnd(TAOLINESEARCH_Eval,ls,0,0,0);CHKERRQ(ierr);
-    ierr = PetscInfo1(ls,"TaoLineSearch Function evaluation: %14.12e\n",(double)(*f));CHKERRQ(ierr);
+    ierr = PetscInfo(ls,"TaoLineSearch Function evaluation: %14.12e\n",(double)(*f));CHKERRQ(ierr);
   }
   ls->nfgeval++;
   PetscFunctionReturn(0);
@@ -1005,12 +1003,12 @@ PetscErrorCode TaoLineSearchComputeGradient(TaoLineSearch ls, Vec x, Vec g)
   if (ls->usetaoroutines) {
     ierr = TaoComputeGradient(ls->tao,x,g);CHKERRQ(ierr);
   } else {
-    if (!ls->ops->computegradient && !ls->ops->computeobjectiveandgradient) SETERRQ(PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_WRONGSTATE,"Line Search does not have gradient functions set");
     ierr = PetscLogEventBegin(TAOLINESEARCH_Eval,ls,0,0,0);CHKERRQ(ierr);
     PetscStackPush("TaoLineSearch user gradient routine");
     if (ls->ops->computegradient) {
       ierr = (*ls->ops->computegradient)(ls,x,g,ls->userctx_grad);CHKERRQ(ierr);
     } else {
+      PetscCheckFalse(!ls->ops->computeobjectiveandgradient,PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_WRONGSTATE,"Line Search does not have gradient functions set");
       ierr = (*ls->ops->computeobjectiveandgradient)(ls,x,&fdummy,g,ls->userctx_funcgrad);CHKERRQ(ierr);
     }
     PetscStackPop;
@@ -1029,7 +1027,7 @@ PetscErrorCode TaoLineSearchComputeGradient(TaoLineSearch ls, Vec x, Vec g)
 + ls - the TaoLineSearch context
 - x - input vector
 
-  Output Parameter:
+  Output Parameters:
 + f - Objective value at X
 - gts - inner product of gradient and step direction at X
 
@@ -1050,13 +1048,13 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGTS(TaoLineSearch ls, Vec x, Pets
   PetscValidPointer(f,3);
   PetscValidPointer(gts,4);
   PetscCheckSameComm(ls,1,x,2);
-  if (!ls->ops->computeobjectiveandgts) SETERRQ(PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_WRONGSTATE,"Line Search does not have objective and gts function set");
+  PetscCheckFalse(!ls->ops->computeobjectiveandgts,PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_WRONGSTATE,"Line Search does not have objective and gts function set");
   ierr = PetscLogEventBegin(TAOLINESEARCH_Eval,ls,0,0,0);CHKERRQ(ierr);
   PetscStackPush("TaoLineSearch user objective/gts routine");
   ierr = (*ls->ops->computeobjectiveandgts)(ls,x,ls->stepdirection,f,gts,ls->userctx_funcgts);CHKERRQ(ierr);
   PetscStackPop;
   ierr = PetscLogEventEnd(TAOLINESEARCH_Eval,ls,0,0,0);CHKERRQ(ierr);
-  ierr = PetscInfo1(ls,"TaoLineSearch Function evaluation: %14.12e\n",(double)(*f));CHKERRQ(ierr);
+  ierr = PetscInfo(ls,"TaoLineSearch Function evaluation: %14.12e\n",(double)(*f));CHKERRQ(ierr);
   ls->nfeval++;
   PetscFunctionReturn(0);
 }
@@ -1069,7 +1067,7 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGTS(TaoLineSearch ls, Vec x, Pets
   Input Parameter:
 . ls - the TaoLineSearch context
 
-  Output Parameter:
+  Output Parameters:
 + x - the new solution
 . f - the objective function value at x
 . g - the gradient at x
@@ -1111,9 +1109,7 @@ PetscErrorCode TaoLineSearchGetSolution(TaoLineSearch ls, Vec x, PetscReal *f, V
   if (ls->new_g) {
     ierr = VecCopy(ls->new_g,g);CHKERRQ(ierr);
   }
-  if (steplength) {
-    *steplength=ls->step;
-  }
+  if (steplength) *steplength = ls->step;
   *reason = ls->reason;
   PetscFunctionReturn(0);
 }
@@ -1136,9 +1132,7 @@ PetscErrorCode TaoLineSearchGetStartingVector(TaoLineSearch ls, Vec *x)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
-  if (x) {
-    *x = ls->start_x;
-  }
+  if (x) *x = ls->start_x;
   PetscFunctionReturn(0);
 }
 
@@ -1160,11 +1154,8 @@ PetscErrorCode TaoLineSearchGetStepDirection(TaoLineSearch ls, Vec *s)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
-  if (s) {
-    *s = ls->stepdirection;
-  }
+  if (s) *s = ls->stepdirection;
   PetscFunctionReturn(0);
-
 }
 
 /*@
@@ -1208,10 +1199,16 @@ PetscErrorCode TaoLineSearchGetFullStepObjective(TaoLineSearch ls, PetscReal *f_
 @*/
 PetscErrorCode TaoLineSearchSetVariableBounds(TaoLineSearch ls,Vec xl, Vec xu)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   PetscValidHeaderSpecific(xl,VEC_CLASSID,2);
   PetscValidHeaderSpecific(xu,VEC_CLASSID,3);
+  ierr = PetscObjectReference((PetscObject)xl);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)xu);CHKERRQ(ierr);
+  ierr = VecDestroy(&ls->lower);CHKERRQ(ierr);
+  ierr = VecDestroy(&ls->upper);CHKERRQ(ierr);
   ls->lower = xl;
   ls->upper = xu;
   ls->bounded = 1;
@@ -1291,6 +1288,7 @@ $     -tao_ls_type my_linesearch
 PetscErrorCode TaoLineSearchRegister(const char sname[], PetscErrorCode (*func)(TaoLineSearch))
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ierr = TaoLineSearchInitializePackage();CHKERRQ(ierr);
   ierr = PetscFunctionListAdd(&TaoLineSearchList, sname, (void (*)(void))func);CHKERRQ(ierr);

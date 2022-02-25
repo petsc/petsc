@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version         = '2.22.1'
+    self.version         = '2.24.0'
     self.minversion      = '2.14'
     self.versionname     = 'HYPRE_RELEASE_VERSION'
     self.versioninclude  = 'HYPRE_config.h'
@@ -23,15 +23,26 @@ class Configure(config.package.GNUPackage):
     self.hastests          = 1
     self.hastestsdatafiles = 1
 
+  def setupHelp(self, help):
+    config.package.GNUPackage.setupHelp(self,help)
+    import nargs
+    help.addArgument('HYPRE', '-with-hypre-gpu-arch=<string>',  nargs.ArgString(None, 0, 'Value passed to hypre\'s --with-gpu-arch= configure option'))
+    return
+
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.openmp     = framework.require('config.packages.openmp',self)
-    self.cxxlibs    = framework.require('config.packages.cxxlibs',self)
-    self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.mpi        = framework.require('config.packages.MPI',self)
-    self.mathlib    = framework.require('config.packages.mathlib',self)
-    self.scalar     = framework.require('PETSc.options.scalarTypes',self)
-    self.deps       = [self.mpi,self.blasLapack,self.cxxlibs,self.mathlib]
+    self.openmp        = framework.require('config.packages.openmp',self)
+    self.cxxlibs       = framework.require('config.packages.cxxlibs',self)
+    self.blasLapack    = framework.require('config.packages.BlasLapack',self)
+    self.mpi           = framework.require('config.packages.MPI',self)
+    self.mathlib       = framework.require('config.packages.mathlib',self)
+    self.cuda          = framework.require('config.packages.cuda',self)
+    self.hip           = framework.require('config.packages.hip',self)
+    self.openmp        = framework.require('config.packages.openmp',self)
+    self.compilerFlags = framework.require('config.compilerFlags', self)
+    self.scalar        = framework.require('PETSc.options.scalarTypes',self)
+    self.deps          = [self.mpi,self.blasLapack,self.cxxlibs,self.mathlib]
+    self.odeps         = [self.cuda,self.hip,self.openmp]
     if self.setCompilers.isCrayKNL(None,self.log):
       self.installwithbatch = 0
 
@@ -65,10 +76,60 @@ class Configure(config.package.GNUPackage):
     args.append('--with-lapack-lib=" "')
     args.append('--with-blas=no')
     args.append('--with-lapack=no')
-    if self.openmp.found:
+
+    # HYPRE automatically detects essl symbols and includes essl.h!
+    # There are no configure options to disable it programmatically
+    if hasattr(self.blasLapack,'essl'):
+      args = self.addArgStartsWith(args,'CFLAGS',self.headers.toString(self.blasLapack.include))
+      args = self.addArgStartsWith(args,'CXXFLAGS',self.headers.toString(self.blasLapack.include))
+
+    # device configuration
+    cucc = ''
+    devflags = ''
+    hipbuild = False
+    cudabuild = False
+    hasharch = 'with-gpu-arch' in args
+    if self.hip.found:
+      stdflag  = '-std=c++14'
+      hipbuild = True
+      args.append('--with-hip')
+      if not hasharch:
+        if not 'with-hypre-gpu-arch' in self.framework.clArgDB:
+          if hasattr(self.hip,'hipArch'):
+            args.append('--with-gpu-arch=' + self.hip.hipArch)
+          else:
+            args.append('--with-gpu-arch=gfx908') # defaults to MI100
+        else:
+          args.append('--with-gpu-arch='+self.argDB['with-hypre-gpu-arch'])
+      self.pushLanguage('HIP')
+      cucc = self.getCompiler()
+      devflags += ' '.join(('','-x','hip',stdflag,''))
+      devflags += self.getCompilerFlags() + ' ' + self.setCompilers.HIPPPFLAGS + ' ' + self.mpi.includepaths + ' ' + self.headers.toString(self.dinclude)
+      devflags = devflags.replace('-fvisibility=hidden','')
+      self.popLanguage()
+    elif self.cuda.found:
+      stdflag   = '-std=c++11'
+      cudabuild = True
+      args.append('CUDA_HOME="'+self.cuda.cudaDir+'"')
+      args.append('--with-cuda')
+      if not hasharch:
+        if not 'with-hypre-gpu-arch' in self.framework.clArgDB:
+          if hasattr(self.cuda,'cudaArch'):
+            args.append('--with-gpu-arch=' + self.cuda.cudaArch)
+          else:
+            args.append('--with-gpu-arch=70') # default
+        else:
+          args.append('--with-gpu-arch='+self.argDB['with-hypre-gpu-arch'])
+      self.pushLanguage('CUDA')
+      cucc = self.getCompiler()
+      devflags += ' '.join(('','-expt-extended-lambda',stdflag,'-x','cu',''))
+      devflags += self.getCompilerFlags() + ' ' + self.setCompilers.CUDAPPFLAGS + ' ' + self.mpi.includepaths+ ' ' + self.headers.toString(self.dinclude)
+      self.popLanguage()
+    elif self.openmp.found:
       args.append('--with-openmp')
       self.usesopenmp = 'yes'
-      # use OMP_NUM_THREADS to control the number of threads used
+    args.append('CUCC="'+cucc+'"')
+    args.append('CUFLAGS="'+devflags+'"')
 
     # explicitly tell hypre BLAS/LAPACK mangling since it may not match Fortran mangling
     if self.blasLapack.mangling == 'underscore':
@@ -81,12 +142,13 @@ class Configure(config.package.GNUPackage):
     args.append('--with-fmangle-lapack='+mang)
 
     args.append('--without-mli')
-    args.append('--without-fei')
     args.append('--without-superlu')
 
     if self.getDefaultIndexSize() == 64:
-      args.append('--enable-bigint')
-
+      if cudabuild: # HYPRE 2.23 supports only mixedint configurations with CUDA
+        args.append('--enable-bigint=no --enable-mixedint=yes')
+      else:
+        args.append('--enable-bigint')
     if self.scalar.scalartype == 'complex':
       args.append('--enable-complex')
 
@@ -99,6 +161,15 @@ class Configure(config.package.GNUPackage):
     # The -dynamic at the end makes cc think it is creating an executable
     args = self.rmArgsStartsWith(args,['LDFLAGS'])
     args.append('LDFLAGS="'+self.setCompilers.LDFLAGS.replace('-dynamic','')+'"')
+
+    # Prevent NVCC from complaining about different standards
+    if cudabuild or hipbuild:
+      for dialect in ('20','17','14','11'):
+        if dialect < stdflag[-2:]:
+          break
+        gnuflag = '-std=gnu++'+dialect
+        cppflag = '-std=c++'+dialect
+        args    = [a.replace(gnuflag,stdflag).replace(cppflag,stdflag) for a in args]
 
     return args
 
@@ -127,5 +198,8 @@ class Configure(config.package.GNUPackage):
     code = '#if defined(HYPRE_MIXEDINT)\n#error HYPRE_MIXEDINT defined!\n#endif\n'
     if not self.checkCompile('#include "HYPRE_config.h"',code):
       self.addDefine('HAVE_HYPRE_MIXEDINT', 1)
+    code = '#if defined(HYPRE_USING_GPU)\n#error HYPRE_USING_GPU defined!\n#endif\n'
+    if not self.checkCompile('#include "HYPRE_config.h"',code):
+      self.addDefine('HAVE_HYPRE_DEVICE', 1)
     setattr(self.compilers, flagsArg,oldFlags)
     return

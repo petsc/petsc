@@ -10,7 +10,7 @@
    n - the number of block indices in cc[]
    cc - the block indices (must be large enough to contain the indices)
 */
-PETSC_STATIC_INLINE PetscErrorCode MatCollapseRow(Mat Amat,PetscInt row,PetscInt bs,PetscInt *n,PetscInt *cc)
+static inline PetscErrorCode MatCollapseRow(Mat Amat,PetscInt row,PetscInt bs,PetscInt *n,PetscInt *cc)
 {
   PetscInt       cnt = -1,nidx,j;
   const PetscInt *idx;
@@ -36,7 +36,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatCollapseRow(Mat Amat,PetscInt row,PetscInt
     ncollapsed - the number of block indices
     collapsed - the block indices (must be large enough to contain the indices)
 */
-PETSC_STATIC_INLINE PetscErrorCode MatCollapseRows(Mat Amat,PetscInt start,PetscInt bs,PetscInt *w0,PetscInt *w1,PetscInt *w2,PetscInt *ncollapsed,PetscInt **collapsed)
+static inline PetscErrorCode MatCollapseRows(Mat Amat,PetscInt start,PetscInt bs,PetscInt *w0,PetscInt *w1,PetscInt *w2,PetscInt *ncollapsed,PetscInt **collapsed)
 {
   PetscInt       i,nprev,*cprev = w0,ncur = 0,*ccur = w1,*merged = w2,*cprevtmp;
   PetscErrorCode ierr;
@@ -102,7 +102,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
           Determine exact preallocation count for (sequential) scalar matrix
       */
       ierr = MatSeqAIJGetMaxRowNonzeros(Amat,&max_d_nnz);CHKERRQ(ierr);
-      max_d_nnz = PetscMin(nloc,bs*max_d_nnz);CHKERRQ(ierr);
+      max_d_nnz = PetscMin(nloc,bs*max_d_nnz);
       ierr = PetscMalloc3(max_d_nnz, &w0,max_d_nnz, &w1,max_d_nnz, &w2);CHKERRQ(ierr);
       for (Ii = 0, jj = 0; Ii < Iend; Ii += bs, jj++) {
         ierr = MatCollapseRows(Amat,Ii,bs,w0,w1,w2,&d_nnz[jj],NULL);CHKERRQ(ierr);
@@ -120,7 +120,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
           Determine exact preallocation count for diagonal block portion of scalar matrix
       */
       ierr = MatSeqAIJGetMaxRowNonzeros(Daij,&max_d_nnz);CHKERRQ(ierr);
-      max_d_nnz = PetscMin(nloc,bs*max_d_nnz);CHKERRQ(ierr);
+      max_d_nnz = PetscMin(nloc,bs*max_d_nnz);
       ierr = PetscMalloc3(max_d_nnz, &w0,max_d_nnz, &w1,max_d_nnz, &w2);CHKERRQ(ierr);
       for (Ii = 0, jj = 0; Ii < Iend - Istart; Ii += bs, jj++) {
         ierr = MatCollapseRows(Daij,Ii,bs,w0,w1,w2,&d_nnz[jj],NULL);CHKERRQ(ierr);
@@ -181,7 +181,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
 +   a_Gmat - the graph
 .   vfilter - threshold parameter [0,1)
 -   symm - make the result symmetric
@@ -217,7 +217,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
     PetscBool isaij,ismpiaij;
     ierr = PetscObjectBaseTypeCompare((PetscObject)Gmat,MATSEQAIJ,&isaij);CHKERRQ(ierr);
     ierr = PetscObjectBaseTypeCompare((PetscObject)Gmat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
-    if (!isaij && !ismpiaij) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Require (MPI)AIJ matrix type");
+    PetscCheckFalse(!isaij && !ismpiaij,PETSC_COMM_WORLD,PETSC_ERR_USER,"Require (MPI)AIJ matrix type");
     if (isaij) {
       ierr = MatGetInfo(Gmat,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = MatSeqAIJGetArray(Gmat,&avals);CHKERRQ(ierr);
@@ -304,7 +304,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
 #if defined(PETSC_USE_INFO)
   {
     double t1 = (!nnz0) ? 1. : 100.*(double)nnz1/(double)nnz0, t2 = (!nloc) ? 1. : (double)nnz0/(double)nloc;
-    ierr = PetscInfo4(*a_Gmat,"\t %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%D)\n",t1,vfilter,t2,MM);CHKERRQ(ierr);
+    ierr = PetscInfo(*a_Gmat,"\t %g%% nnz after filtering, with threshold %g, %g nnz ave. (N=%D)\n",t1,vfilter,t2,MM);CHKERRQ(ierr);
   }
 #endif
   ierr    = MatDestroy(&Gmat);CHKERRQ(ierr);
@@ -393,7 +393,7 @@ PetscErrorCode PCGAMGHashTableAdd(PCGAMGHashTable *a_tab, PetscInt a_key, PetscI
   PetscInt kk,idx;
 
   PetscFunctionBegin;
-  if (a_key<0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Negative key %D.",a_key);
+  PetscCheckFalse(a_key<0,PETSC_COMM_SELF,PETSC_ERR_USER,"Negative key %D.",a_key);
   for (kk = 0, idx = GAMG_HASH(a_key); kk < a_tab->size; kk++, idx = (idx==(a_tab->size-1)) ? 0 : idx + 1) {
     if (a_tab->table[idx] == a_key) {
       /* exists */

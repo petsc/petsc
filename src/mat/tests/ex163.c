@@ -22,7 +22,7 @@ int main(int argc,char **args)
 
   /* Determine file from which we read the matrix A */
   ierr = PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg);CHKERRQ(ierr);
-  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
+  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
 
   /* Load matrix A */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
@@ -33,14 +33,14 @@ int main(int argc,char **args)
   /* Print (for testing only) */
   ierr = PetscOptionsHasName(NULL,NULL, "-view_mats", &viewmats);CHKERRQ(ierr);
   if (viewmats) {
-    if (!rank) printf("A_aij:\n");
+    if (rank == 0) printf("A_aij:\n");
     ierr = MatView(A,0);CHKERRQ(ierr);
   }
 
   /* Test MatTransposeMatMult_aij_aij() */
   ierr = MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
   if (viewmats) {
-    if (!rank) printf("\nC = A_aij^T * A_aij:\n");
+    if (rank == 0) printf("\nC = A_aij^T * A_aij:\n");
     ierr = MatView(C,0);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&C);CHKERRQ(ierr);
@@ -71,7 +71,7 @@ int main(int argc,char **args)
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   ierr = PetscFree3(rows,cols,array);CHKERRQ(ierr);
   if (viewmats) {
-    if (!rank) printf("\nBdense:\n");
+    if (rank == 0) printf("\nBdense:\n");
     ierr = MatView(Bdense,0);CHKERRQ(ierr);
   }
 
@@ -79,7 +79,7 @@ int main(int argc,char **args)
   ierr = MatTransposeMatMult(A,Bdense,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
   ierr = MatTransposeMatMult(A,Bdense,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
   if (viewmats) {
-    if (!rank) printf("\nC=A^T*Bdense:\n");
+    if (rank == 0) printf("\nC=A^T*Bdense:\n");
     ierr = MatView(C,0);CHKERRQ(ierr);
   }
 
@@ -118,13 +118,13 @@ int main(int argc,char **args)
   ierr = MatDenseRestoreArray(Bdense,&Barray);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(Cdense,&Carray);CHKERRQ(ierr);
   if (viewmats) {
-    if (!rank) printf("\nCdense:\n");
+    if (rank == 0) printf("\nCdense:\n");
     ierr = MatView(Cdense,0);CHKERRQ(ierr);
   }
 
   ierr = MatEqual(C,Cdense,&flg);CHKERRQ(ierr);
   if (!flg) {
-    if (!rank) printf(" C != Cdense\n");
+    if (rank == 0) printf(" C != Cdense\n");
   }
 
   /* Free data structures */

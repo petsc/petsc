@@ -16,14 +16,18 @@ from sphinx.application import Sphinx
 if not hasattr(re,'Pattern'): re.Pattern = re._pattern_type
 
 
+PETSC_DOC_OUT_ROOT_PLACEHOLDER = 'PETSC_DOC_OUT_ROOT_PLACEHOLDER'
+
+
 def setup(app: Sphinx) -> None:
     _check_version(app)
 
     app.connect('builder-inited', _setup_translators)
+    return {'parallel_read_safe': True}
 
 
 def _check_version(app: Sphinx) -> None:
-    sphinx_version_info_source = (3, 5, 4, 'final', 0)
+    sphinx_version_info_source = (4, 2, 0, 'final', 0)
     app.require_sphinx('%s.%s' % (sphinx_version_info_source[0], sphinx_version_info_source[1]))
     if sphinx_version_info[:2] != sphinx_version_info_source[:2]:
         print('Warning: A custom extension duplicates code from Sphinx %s ' % (sphinx_version_info_source,),
@@ -83,7 +87,7 @@ class PETScHTMLTranslatorMixin:
             if not os.path.isfile(htmlmap_filename):
                 raise Exception("Expected file %s not found. Run script to build classic docs subset." %  htmlmap_filename)
             manpage_map_raw = htmlmap_to_dict(htmlmap_filename)
-            manpage_prefix_base = self._get_manpage_prefix_base()
+            manpage_prefix_base = PETSC_DOC_OUT_ROOT_PLACEHOLDER
             manpage_prefix = os.path.join(manpage_prefix_base, 'docs', '')
             self._manpage_map = dict_complete_links(manpage_map_raw, manpage_prefix)
         return self._manpage_map
@@ -98,9 +102,6 @@ class PETScHTMLTranslatorMixin:
         if not self._manpage_pattern:
             self._manpage_pattern = get_multiple_replace_pattern(self._get_manpage_map())
         return self._manpage_pattern
-
-    def _get_manpage_prefix_base(self) -> str:
-        return 'PETSC_DOC_OUT_ROOT_PLACEHOLDER'
 
     def _add_manpage_links(self, string: str) -> str:
         """ Add plain HTML link tags to a string """

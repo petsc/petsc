@@ -16,7 +16,7 @@ typedef PetscInt HYPRE_BigInt;
   With scalar type == real, HYPRE_Complex == PetscScalar;
   With scalar type == complex,  HYPRE_Complex is double __complex__ while PetscScalar may be std::complex<double>
 */
-PETSC_STATIC_INLINE PetscErrorCode PetscHYPREScalarCast(PetscScalar a, HYPRE_Complex *b)
+static inline PetscErrorCode PetscHYPREScalarCast(PetscScalar a, HYPRE_Complex *b)
 {
   PetscFunctionBegin;
 #if defined(HYPRE_COMPLEX)
@@ -29,3 +29,8 @@ PETSC_STATIC_INLINE PetscErrorCode PetscHYPREScalarCast(PetscScalar a, HYPRE_Com
 }
 #endif
 
+#if PETSC_PKG_HYPRE_VERSION_LT(2,19,0)
+typedef int HYPRE_MemoryLocation;
+#define hypre_IJVectorMemoryLocation(a) 0
+#define hypre_IJMatrixMemoryLocation(a) 0
+#endif

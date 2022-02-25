@@ -74,14 +74,14 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
       ierr = PetscStrcat(keyfile,"/");CHKERRQ(ierr);
       ierr = PetscStrcat(keyfile,"sslclient.pem");CHKERRQ(ierr);
       ierr = PetscTestFile(keyfile,'r',&exists);CHKERRQ(ierr);
-      if (!exists) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate sslclient.pem file in current directory or home directory");
+      PetscCheckFalse(!exists,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate sslclient.pem file in current directory or home directory");
     }
 
     /* Load our keys and certificates*/
-    if (!(SSL_CTX_use_certificate_chain_file(ctx,keyfile))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot read certificate file");
+    PetscCheckFalse(!(SSL_CTX_use_certificate_chain_file(ctx,keyfile)),PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot read certificate file");
 
     SSL_CTX_set_default_passwd_cb(ctx,password_cb);
-    if (!(SSL_CTX_use_PrivateKey_file(ctx,keyfile,SSL_FILETYPE_PEM))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot read key file");
+    PetscCheckFalse(!(SSL_CTX_use_PrivateKey_file(ctx,keyfile,SSL_FILETYPE_PEM)),PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot read key file");
 #endif
 
     *octx = ctx;
@@ -116,7 +116,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],c
   PetscFunctionBegin;
   ierr = PetscStrallocpy(url,&host);CHKERRQ(ierr);
   ierr = PetscStrchr(host,'/',&path);CHKERRQ(ierr);
-  if (!path) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"url must contain / it is %s",url);
+  PetscCheckFalse(!path,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"url must contain / it is %s",url);
   *path = 0;
   ierr  = PetscStrlen(host,&hostlen);CHKERRQ(ierr);
 
@@ -125,7 +125,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],c
 
   if (header) {
     ierr = PetscStrendswith(header,"\r\n",&flg);CHKERRQ(ierr);
-    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"header must end with \\r\\n");
+    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"header must end with \\r\");
   }
 
   ierr = PetscStrlen(type,&typelen);CHKERRQ(ierr);
@@ -155,7 +155,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],c
   ierr = PetscStrcat(request,contentlength);CHKERRQ(ierr);
   ierr = PetscStrcat(request,body);CHKERRQ(ierr);
   ierr = PetscStrlen(request,&request_len);CHKERRQ(ierr);
-  ierr = PetscInfo1(NULL,"HTTPS request follows: \n%s\n",request);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"HTTPS request follows: \n%s\n",request);CHKERRQ(ierr);
 
   *outrequest = request;
   PetscFunctionReturn(0);
@@ -196,7 +196,7 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
   r = SSL_write(ssl,request,(int)request_len);
   switch (SSL_get_error(ssl,r)) {
     case SSL_ERROR_NONE:
-      if (request_len != (size_t)r) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Incomplete write to SSL socket");
+      PetscCheckFalse(request_len != (size_t)r,PETSC_COMM_SELF,PETSC_ERR_LIB,"Incomplete write to SSL socket");
       break;
     default:
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SSL socket write problem");
@@ -244,7 +244,7 @@ PetscErrorCode PetscHTTPSRequest(const char type[],const char url[],const char h
       foundbody = PETSC_TRUE;
     }
   } while (!foundbody);
-  ierr = PetscInfo1(NULL,"HTTPS result follows: \n%s\n",buff);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"HTTPS result follows: \n%s\n",buff);CHKERRQ(ierr);
 
   SSL_free(ssl);
   ierr = PetscFree(request);CHKERRQ(ierr);
@@ -284,7 +284,7 @@ PetscErrorCode PetscHTTPRequest(const char type[],const char url[],const char he
   ierr = PetscFree(request);CHKERRQ(ierr);
   PetscBinaryRead(sock,buff,buffsize,NULL,PETSC_CHAR);
   buff[buffsize-1] = 0;
-  ierr = PetscInfo1(NULL,"HTTP result follows: \n%s\n",buff);CHKERRQ(ierr);
+  ierr = PetscInfo(NULL,"HTTP result follows: \n%s\n",buff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -317,7 +317,7 @@ PetscErrorCode PetscHTTPSConnect(const char host[],int port,SSL_CTX *ctx,int *so
   *ssl = SSL_new(ctx);
   sbio = BIO_new_socket(*sock,BIO_NOCLOSE);
   SSL_set_bio(*ssl,sbio,sbio);
-  if (SSL_connect(*ssl) <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"SSL connect error");
+  PetscCheckFalse(SSL_connect(*ssl) <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"SSL connect error");
   PetscFunctionReturn(0);
 }
 

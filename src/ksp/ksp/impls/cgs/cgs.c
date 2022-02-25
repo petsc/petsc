@@ -29,7 +29,7 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
   /* not sure what residual norm it does use, should use for right preconditioning */
 
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   X   = ksp->vec_sol;
   B   = ksp->vec_rhs;

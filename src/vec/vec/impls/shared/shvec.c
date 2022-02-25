@@ -121,7 +121,7 @@ PetscErrorCode PetscSharedMalloc(MPI_Comm comm,PetscInt llen,PetscInt len,void *
   shift -= llen;
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  if (!rank) {
+  if (rank == 0) {
     id = shmget(key,len, 0666 |IPC_CREAT);
     if (id == -1) {
       perror("Unable to malloc shared memory");
@@ -152,7 +152,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Shared(Vec vv)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)vv),&size);CHKERRMPI(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"No supported for shared memory vector objects on this machine");
+  PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"No supported for shared memory vector objects on this machine");
   ierr = VecCreate_Seq(vv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

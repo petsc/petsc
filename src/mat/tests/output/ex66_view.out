@@ -1,0 +1,80 @@
+%  type: general
+7
+58
+45
+22
+64
+51
+37
+41
+35
+3
+54
+28
+8
+6
+47
+36
+16
+55
+61
+26
+43
+34
+13
+50
+29
+49
+63
+52
+60
+25
+15
+4
+33
+42
+18
+32
+17
+9
+2
+30
+27
+56
+11
+38
+62
+40
+57
+14
+59
+46
+31
+24
+39
+1
+44
+53
+48
+19
+23
+21
+12
+10
+20
+5
+  type: h2opus
+    H-Matrix constructed from Kernel
+    PointCloud dim 2
+    Admissibility parameters: leaf size 17, eta 0.9
+    Offdiagonal blocks approximation order 4
+    Number of samples for norms 2
+    Memory consumption GB (CPU): 3.2368e-05 (dense) 2.8392e-05 (low rank) 6.076e-05 (total)
+MatMult err 0.00130227
+A Matrix norms:        infty=4.92033, norm_1=4.92033, norm_2=-1.
+A Approx Matrix norms: infty=4.92033, norm_1=4.92033, norm_2=4.05394
+B Approx Matrix norms: infty=4.9223, norm_1=4.9223, norm_2=4.08597
+MatMultTranspose err 0.00130227
+Approximation error 0.000861054 (0.00930182 / 10.8028, 10.8029)
+Approximation error transpose 0.000861054 (0.00930182 / 10.8028, 10.8029)
+Approximation error B - (B^T)^T 6.88405e-17

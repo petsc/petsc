@@ -2,8 +2,9 @@
 from __future__ import print_function
 import os, sys
 
-extraLogs = []
-petsc_arch = ''
+extraLogs     = []
+petsc_arch    = ''
+banner_length = 93
 
 # Use en_US as language so that BuildSystem parses compiler messages in english
 def fixLang(lang):
@@ -55,8 +56,6 @@ def check_for_option_changed(opts):
             ('matlabengine','matlab-engine'),
             ('sundials','sundials2'),
             ('f-blas-lapack','fblaslapack'),
-            ('with-cuda-arch',
-             'CUDAFLAGS=-arch'),
             ('with-packages-dir','with-packages-download-dir'),
             ('with-external-packages-dir','with-packages-build-dir'),
             ('package-dirs','with-packages-search-path'),
@@ -65,7 +64,7 @@ def check_for_option_changed(opts):
   for opt in opts[1:]:
     optname = opt.split('=')[0].strip('-')
     for oldname,newname in optMap:
-      if optname.find(oldname) >=0 and not optname.find(newname):
+      if optname.find(oldname) >=0 and not optname.find(newname) >=0:
         raise ValueError('The option '+opt+' should probably be '+opt.replace(oldname,newname))
   return
 
@@ -92,55 +91,62 @@ def chkenable():
   #enable-fortran is a special case, the resulting --with-fortran is ambiguous.
   #Would it mean --with-fc=
   en_dash = u'\N{EN DASH}'
+  no_break_space = u'\N{NO-BREAK SPACE}'
   if sys.version_info < (3, 0):
     en_dash = en_dash.encode('utf-8')
+    no_break_space = no_break_space.encode('utf-8')
+
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
-
-    if name.find(en_dash)  >= 0:
-      sys.argv[l] = name.replace(en_dash,'-')
-    if name.find('enable-cxx') >= 0:
+    if name.find(no_break_space) >= 0:
+      sys.exit(ValueError('Unicode NO-BREAK SPACE char found in arguments! Please rerun configure using regular space chars: %s' % [name]))
+    name = name.replace(en_dash,'-')
+    if hasattr(name,'isprintable') and not name.isprintable():
+      sys.exit(ValueError('Non-printable characters or control characters found in arguments! Please rerun configure using only printable character arguments: %s' % [name]))
+    if name.lstrip('-').startswith('enable-cxx'):
       if name.find('=') == -1:
-        sys.argv[l] = name.replace('enable-cxx','with-clanguage=C++')
+        name = name.replace('enable-cxx','with-clanguage=C++',1)
       else:
         head, tail = name.split('=', 1)
         if tail=='0':
-          sys.argv[l] = head.replace('enable-cxx','with-clanguage=C')
+          name = head.replace('enable-cxx','with-clanguage=C',1)
         else:
-          sys.argv[l] = head.replace('enable-cxx','with-clanguage=C++')
+          name = head.replace('enable-cxx','with-clanguage=C++',1)
+      sys.argv[l] = name
       continue
-    if name.find('disable-cxx') >= 0:
+    if name.lstrip('-').startswith('disable-cxx'):
       if name.find('=') == -1:
-        sys.argv[l] = name.replace('disable-cxx','with-clanguage=C')
+        name = name.replace('disable-cxx','with-clanguage=C',1)
       else:
         head, tail = name.split('=', 1)
         if tail == '0':
-          sys.argv[l] = head.replace('disable-cxx','with-clanguage=C++')
+          name = head.replace('disable-cxx','with-clanguage=C++',1)
         else:
-          sys.argv[l] = head.replace('disable-cxx','with-clanguage=C')
+          name = head.replace('disable-cxx','with-clanguage=C',1)
+      sys.argv[l] = name
       continue
 
-
-    if name.find('enable-') >= 0:
+    if name.lstrip('-').startswith('enable-'):
       if name.find('=') == -1:
-        sys.argv[l] = name.replace('enable-','with-')+'=1'
+        name = name.replace('enable-','with-',1)+'=1'
       else:
         head, tail = name.split('=', 1)
-        sys.argv[l] = head.replace('enable-','with-')+'='+tail
-    if name.find('disable-') >= 0:
+        name = head.replace('enable-','with-',1)+'='+tail
+    if name.lstrip('-').startswith('disable-'):
       if name.find('=') == -1:
-        sys.argv[l] = name.replace('disable-','with-')+'=0'
-      else:
-        head, tail = name.split('=', 1)
-        if tail == '1': tail = '0'
-        sys.argv[l] = head.replace('disable-','with-')+'='+tail
-    if name.find('without-') >= 0:
-      if name.find('=') == -1:
-        sys.argv[l] = name.replace('without-','with-')+'=0'
+        name = name.replace('disable-','with-',1)+'=0'
       else:
         head, tail = name.split('=', 1)
         if tail == '1': tail = '0'
-        sys.argv[l] = head.replace('without-','with-')+'='+tail
+        name = head.replace('disable-','with-',1)+'='+tail
+    if name.lstrip('-').startswith('without-'):
+      if name.find('=') == -1:
+        name = name.replace('without-','with-',1)+'=0'
+      else:
+        head, tail = name.split('=', 1)
+        if tail == '1': tail = '0'
+        name = head.replace('without-','with-',1)+'='+tail
+    sys.argv[l] = name
 
 def chksynonyms():
   #replace common configure options with ones that PETSc BuildSystem recognizes
@@ -152,6 +158,8 @@ def chksynonyms():
     name = name.replace('with-openmpi','with-mpi')
     name = name.replace('with-mpich','with-mpi')
     name = name.replace('with-blas-lapack','with-blaslapack')
+    name = name.replace('with-cuda-gencodearch','with-cuda-arch')
+    name = name.replace('download-hdf5-fortran-bindings','with-hdf5-fortran-bindings')
 
     if name.find('with-debug=') >= 0 or name.endswith('with-debug'):
       if name.find('=') == -1:
@@ -375,24 +383,19 @@ def print_final_timestamp(framework):
   return
 
 def petsc_configure(configure_options):
-  if 'PETSC_DIR' in os.environ:
-    petscdir = os.environ['PETSC_DIR']
-    if petscdir.find(' ') > -1:
-      raise RuntimeError('Your PETSC_DIR '+petscdir+' has spaces in it; this is not allowed.\n Change the directory with PETSc to not have spaces in it')
-    if not os.path.isabs(petscdir):
-      raise RuntimeError('PETSC_DIR ("'+petscdir+'") is set as a relative path. It must be set as an absolute path.')
-
-    try:
-      sys.path.append(os.path.join(petscdir,'lib','petsc','bin'))
-      import petscnagupgrade
-      file     = os.path.join(petscdir,'.nagged')
-      if not petscnagupgrade.naggedtoday(file):
-        petscnagupgrade.currentversion(petscdir)
-    except:
-      pass
-  print('=============================================================================================')
-  print('                      Configuring PETSc to compile on your system                            ')
-  print('=============================================================================================')
+  petscdir = os.getcwd()
+  try:
+    sys.path.append(os.path.join(petscdir,'lib','petsc','bin'))
+    import petscnagupgrade
+    file     = os.path.join(petscdir,'.nagged')
+    if not petscnagupgrade.naggedtoday(file):
+      petscnagupgrade.currentversion(petscdir)
+  except:
+    pass
+  banner_line = banner_length*'='
+  print(banner_line)
+  print('Configuring PETSc to compile on your system'.center(banner_length))
+  print(banner_line)
 
   try:
     # Command line arguments take precedence (but don't destroy argv[0])
@@ -402,10 +405,15 @@ def petsc_configure(configure_options):
   except (TypeError, ValueError) as e:
     emsg = str(e)
     if not emsg.endswith('\n'): emsg = emsg+'\n'
-    msg ='*******************************************************************************\n'\
-    +'                ERROR in COMMAND LINE ARGUMENT to ./configure \n' \
-    +'-------------------------------------------------------------------------------\n'  \
-    +emsg+'*******************************************************************************\n'
+    banner_line = banner_length*'*'
+    msg = '\n'.join([
+      banner_line,
+      'ERROR in COMMAND LINE ARGUMENT to ./configure'.center(banner_length),
+      banner_length*'-',
+      emsg,
+      banner_line,
+      '' # to add an additional newline at the end
+    ])
     sys.exit(msg)
   # check PETSC_ARCH
   check_for_unsupported_combinations(sys.argv)

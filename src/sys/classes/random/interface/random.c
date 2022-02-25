@@ -57,7 +57,7 @@ PetscErrorCode  PetscRandomGetValue(PetscRandom r,PetscScalar *val)
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
   PetscValidType(r,1);
   if (!r->ops->getvalue) {
-    if (!r->ops->getvalues) SETERRQ1(PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscScalar",((PetscObject)r)->type_name);
+    PetscCheckFalse(!r->ops->getvalues,PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscScalar",((PetscObject)r)->type_name);
     ierr = (*r->ops->getvalues)(r,1,val);CHKERRQ(ierr);
   } else {
     ierr = (*r->ops->getvalue)(r,val);CHKERRQ(ierr);
@@ -102,7 +102,7 @@ PetscErrorCode  PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
   PetscValidType(r,1);
   if (!r->ops->getvaluereal) {
-    if (!r->ops->getvaluesreal) SETERRQ1(PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscReal",((PetscObject)r)->type_name);
+    PetscCheckFalse(!r->ops->getvaluesreal,PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscReal",((PetscObject)r)->type_name);
     ierr = (*r->ops->getvaluesreal)(r,1,val);CHKERRQ(ierr);
   } else {
     ierr = (*r->ops->getvaluereal)(r,val);CHKERRQ(ierr);
@@ -143,7 +143,7 @@ PetscErrorCode  PetscRandomGetValues(PetscRandom r, PetscInt n, PetscScalar *val
   PetscValidType(r,1);
   if (!r->ops->getvalues) {
     PetscInt i;
-    if (!r->ops->getvalue) SETERRQ1(PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscScalar",((PetscObject)r)->type_name);
+    PetscCheckFalse(!r->ops->getvalue,PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscScalar",((PetscObject)r)->type_name);
     for (i = 0; i < n; i++) {
       ierr = (*r->ops->getvalue)(r,val+i);CHKERRQ(ierr);
     }
@@ -183,7 +183,7 @@ PetscErrorCode  PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *v
   PetscValidType(r,1);
   if (!r->ops->getvaluesreal) {
     PetscInt i;
-    if (!r->ops->getvaluereal) SETERRQ1(PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscReal",((PetscObject)r)->type_name);
+    PetscCheckFalse(!r->ops->getvaluereal,PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscReal",((PetscObject)r)->type_name);
     for (i = 0; i < n; i++) {
       ierr = (*r->ops->getvaluereal)(r,val+i);CHKERRQ(ierr);
     }
@@ -200,7 +200,7 @@ PetscErrorCode  PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *v
 
    Not collective
 
-   Input Parameters:
+   Input Parameter:
 .  r  - the random number generator context
 
    Output Parameters:
@@ -250,10 +250,10 @@ PetscErrorCode  PetscRandomSetInterval(PetscRandom r,PetscScalar low,PetscScalar
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
 #if defined(PETSC_USE_COMPLEX)
-  if (PetscRealPart(low) > PetscRealPart(high))           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low <= high");
-  if (PetscImaginaryPart(low) > PetscImaginaryPart(high)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low <= high");
+  PetscCheckFalse(PetscRealPart(low) > PetscRealPart(high),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low <= high");
+  PetscCheckFalse(PetscImaginaryPart(low) > PetscImaginaryPart(high),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low <= high");
 #else
-  if (low >= high) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low <= high: Instead %g %g",(double)low,(double)high);
+  PetscCheckFalse(low >= high,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"only low <= high: Instead %g %g",(double)low,(double)high);
 #endif
   r->low   = low;
   r->width = high-low;

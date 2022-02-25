@@ -12,7 +12,7 @@ Changes: 3.0.0
 -  Changed the Matlab Socket code to work the same as the Matlab
    binary reader except for its creation
 -  You can now replace the PetscVFPrintf() function pointer to
-   redirect all stdout/stderr output in Windows for example.
+   redirect all stdout/stderr output in Microsoft Windows for example.
 -  Removed MPICCommToFortran() and MPIFortranCommToC() since
    MPI_Comm_c2f() and f2c() are now always available.
 -  PetscOptionsInsertFile() now takes a MPI_Comm as the first

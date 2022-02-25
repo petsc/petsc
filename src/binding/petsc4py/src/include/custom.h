@@ -158,7 +158,7 @@ PetscLogEventGetPerfInfo(int stage,PetscLogEvent event,PetscEventPerfInfo *info)
 
 /* ---------------------------------------------------------------- */
 
-PETSC_STATIC_INLINE PetscErrorCode
+static inline PetscErrorCode
 VecStrideSum(Vec v, PetscInt start, PetscScalar *a)
 {
   PetscInt          i,n,bs;
@@ -171,11 +171,11 @@ VecStrideSum(Vec v, PetscInt start, PetscScalar *a)
   PetscValidType(v,1);
   PetscValidScalarPointer(a,2);
   ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
-  if (start <  0)  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-                            "Negative start %D",start);
-  if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,
-                            "Start of stride subvector (%D) is too large "
-                            "for block size (%D)",start,bs);
+  PetscCheckFalse(start <  0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+                            "Negative start %" PetscInt_FMT,start);
+  PetscCheckFalse(start >= bs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,
+                            "Start of stride subvector (%" PetscInt_FMT ") is too large "
+                            "for block size (%" PetscInt_FMT ")",start,bs);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArrayRead(v,&x);CHKERRQ(ierr);
   sum = (PetscScalar)0.0;
@@ -188,7 +188,7 @@ VecStrideSum(Vec v, PetscInt start, PetscScalar *a)
 
 /* ---------------------------------------------------------------- */
 
-PETSC_STATIC_INLINE
+static inline
 PetscErrorCode MatIsPreallocated(Mat A,PetscBool *flag)
 {
   PetscFunctionBegin;
@@ -198,8 +198,8 @@ PetscErrorCode MatIsPreallocated(Mat A,PetscBool *flag)
   PetscFunctionReturn(0);
 }
 
-PETSC_STATIC_INLINE
-PetscErrorCode MatHasPreallocationAIJ(Mat A,PetscBool *aij,PetscBool *baij,PetscBool *sbaij)
+static inline
+PetscErrorCode MatHasPreallocationAIJ(Mat A,PetscBool *aij,PetscBool *baij,PetscBool *sbaij,PetscBool *is)
 {
   void (*f)(void) = 0;
   PetscErrorCode ierr;
@@ -209,7 +209,8 @@ PetscErrorCode MatHasPreallocationAIJ(Mat A,PetscBool *aij,PetscBool *baij,Petsc
   PetscValidPointer(aij,2);
   PetscValidPointer(baij,3);
   PetscValidPointer(sbaij,4);
-  *aij = *baij = *sbaij = PETSC_FALSE;
+  PetscValidPointer(is,5);
+  *aij = *baij = *sbaij = *is = PETSC_FALSE;
   if (!f) {ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPIAIJSetPreallocation_C",&f);CHKERRQ(ierr);}
   if (!f) {ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqAIJSetPreallocation_C",&f);CHKERRQ(ierr);}
   if (f)  {*aij = PETSC_TRUE; goto done;};
@@ -219,6 +220,8 @@ PetscErrorCode MatHasPreallocationAIJ(Mat A,PetscBool *aij,PetscBool *baij,Petsc
   if (!f) {ierr = PetscObjectQueryFunction((PetscObject)A,"MatMPISBAIJSetPreallocation_C",&f);CHKERRQ(ierr);}
   if (!f) {ierr = PetscObjectQueryFunction((PetscObject)A,"MatSeqSBAIJSetPreallocation_C",&f);CHKERRQ(ierr);}
   if (f)  {*sbaij = PETSC_TRUE; goto done;};
+  if (!f) {ierr = PetscObjectQueryFunction((PetscObject)A,"MatISSetPreallocation_C",&f);CHKERRQ(ierr);}
+  if (f)  {*is = PETSC_TRUE; goto done;};
  done:
   PetscFunctionReturn(0);
 }
@@ -273,7 +276,7 @@ KSPSetIterationNumber(KSP ksp, PetscInt its)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (its < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+  PetscCheckFalse(its < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
                        "iteration number must be nonnegative");
   ksp->its = its;
   PetscFunctionReturn(0);
@@ -284,7 +287,7 @@ KSPSetResidualNorm(KSP ksp, PetscReal rnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (rnorm < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+  PetscCheckFalse(rnorm < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
                          "residual norm must be nonnegative");
   ksp->rnorm = rnorm;
   PetscFunctionReturn(0);
@@ -297,9 +300,9 @@ KSPConvergenceTestCall(KSP ksp, PetscInt its, PetscReal rnorm, KSPConvergedReaso
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(reason,4);
-  if (its < 0)   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+  PetscCheckFalse(its < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
                          "iteration number must be nonnegative");
-  if (rnorm < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+  PetscCheckFalse(rnorm < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
                          "residual norm must be nonnegative");
   ierr = (*ksp->converged)(ksp,its,rnorm,reason,ksp->cnvP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -325,13 +328,13 @@ SNESConvergenceTestCall(SNES snes, PetscInt its,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(reason,4);
-  if (its < 0)   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+  PetscCheckFalse(its < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
                          "iteration number must be nonnegative");
-  if (xnorm < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+  PetscCheckFalse(xnorm < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
                          "solution norm must be nonnegative");
-  if (ynorm < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+  PetscCheckFalse(ynorm < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
                          "step norm must be nonnegative");
-  if (fnorm < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+  PetscCheckFalse(fnorm < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
                          "function norm must be nonnegative");
   ierr = (*snes->ops->converged)(snes,its,xnorm,ynorm,fnorm,reason,snes->cnvP);CHKERRQ(ierr);
   PetscFunctionReturn(0);

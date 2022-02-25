@@ -9,7 +9,7 @@ class Configure(config.package.CMakePackage):
     self.includes  = ['gtest/gtest.h']
     self.liblist   = [['libgtest.a']]
     self.pkgname   = 'googletest'
-    self.cxx       = 1
+    self.buildLanguages= ['Cxx']
     self.hastests  = 1
     return
 

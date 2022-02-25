@@ -218,6 +218,10 @@ PetscErrorCode VecPointwiseDivide_SeqHIP(Vec win, Vec xin, Vec yin)
   PetscErrorCode                        ierr;
 
   PetscFunctionBegin;
+  if (xin->boundtocpu || yin->boundtocpu) {
+    ierr = VecPointwiseDivide_Seq(win,xin,yin);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = VecHIPGetArrayWrite(win,&warray);CHKERRQ(ierr);
   ierr = VecHIPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecHIPGetArrayRead(yin,&yarray);CHKERRQ(ierr);
@@ -232,7 +236,7 @@ PetscErrorCode VecPointwiseDivide_SeqHIP(Vec win, Vec xin, Vec yin)
     thrust::transform(xptr,xptr+n,yptr,wptr,thrust::divides<PetscScalar>());
 #endif
   } catch (char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = PetscLogGpuFlops(n);CHKERRQ(ierr);
@@ -548,7 +552,7 @@ PetscErrorCode VecMDot_SeqHIP(Vec xin,PetscInt nv,const Vec yin[],PetscScalar *z
   PetscFunctionBegin;
   ierr = PetscHIPBLASGetHandle(&hipblasv2handle);CHKERRQ(ierr);
   ierr = PetscBLASIntCast(xin->map->n,&bn);CHKERRQ(ierr);
-  if (nv <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Number of vectors provided to VecMDot_SeqHIP not positive.");
+  PetscCheckFalse(nv <= 0,PETSC_COMM_SELF,PETSC_ERR_LIB,"Number of vectors provided to VecMDot_SeqHIP not positive.");
   /* Handle the case of local size zero first */
   if (!xin->map->n) {
     for (i=0; i<nv; ++i) z[i] = 0;
@@ -706,7 +710,7 @@ PetscErrorCode VecSet_SeqHIP(Vec xin,PetscScalar alpha)
       xptr = thrust::device_pointer_cast(xarray);
       thrust::fill(xptr,xptr+n,alpha);
     } catch (char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
     }
     ierr = PetscLogCpuToGpuScalar(sizeof(PetscScalar));CHKERRQ(ierr);
   }
@@ -746,7 +750,7 @@ PetscErrorCode VecReciprocal_SeqHIP(Vec v)
     auto xptr = thrust::device_pointer_cast(x);
     thrust::transform(xptr,xptr+n,xptr,PetscScalarReciprocal());
   } catch (char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecHIPRestoreArray(v,&x);CHKERRQ(ierr);
@@ -970,6 +974,10 @@ PetscErrorCode VecPointwiseMult_SeqHIP(Vec win,Vec xin,Vec yin)
   PetscErrorCode                        ierr;
 
   PetscFunctionBegin;
+  if (xin->boundtocpu || yin->boundtocpu) {
+    ierr = VecPointwiseMult_Seq(win,xin,yin);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
   ierr = VecHIPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
   ierr = VecHIPGetArrayRead(yin,&yarray);CHKERRQ(ierr);
   ierr = VecHIPGetArrayWrite(win,&warray);CHKERRQ(ierr);
@@ -984,7 +992,7 @@ PetscErrorCode VecPointwiseMult_SeqHIP(Vec win,Vec xin,Vec yin)
     thrust::transform(xptr,xptr+n,yptr,wptr,thrust::multiplies<PetscScalar>());
 #endif
   } catch (char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecHIPRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
@@ -1100,7 +1108,7 @@ PetscErrorCode VecConjugate_SeqHIP(Vec xin)
     xptr = thrust::device_pointer_cast(xarray);
     thrust::transform(xptr,xptr+n,xptr,conjugate());
   } catch (char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecHIPRestoreArray(xin,&xarray);CHKERRQ(ierr);
@@ -1110,17 +1118,18 @@ PetscErrorCode VecConjugate_SeqHIP(Vec xin)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecGetLocalVector_SeqHIP(Vec v,Vec w)
+static inline PetscErrorCode VecGetLocalVectorK_SeqHIP(Vec v,Vec w,PetscBool read)
 {
   PetscErrorCode ierr;
-  hipError_t    err;
+  hipError_t     err;
+  PetscBool      wisseqhip;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(w,VEC_CLASSID,2);
-  PetscCheckTypeName(w,VECSEQHIP);
   PetscCheckTypeNames(v,VECSEQHIP,VECMPIHIP);
-  if (w->data) {
+  ierr = PetscObjectTypeCompare((PetscObject)w,VECSEQHIP,&wisseqhip);CHKERRQ(ierr);
+  if (w->data && wisseqhip) {
     if (((Vec_Seq*)w->data)->array_allocated) {
       if (w->pinned_memory) {
         ierr = PetscMallocSetHIPHost();CHKERRQ(ierr);
@@ -1134,8 +1143,7 @@ PetscErrorCode VecGetLocalVector_SeqHIP(Vec v,Vec w)
     ((Vec_Seq*)w->data)->array = NULL;
     ((Vec_Seq*)w->data)->unplacedarray = NULL;
   }
-  if (w->spptr) {
-    PetscCheckTypeNames(v,VECSEQHIP,VECMPIHIP);
+  if (w->spptr && wisseqhip) {
     if (((Vec_HIP*)w->spptr)->GPUarray) {
       err = hipFree(((Vec_HIP*)w->spptr)->GPUarray);CHKERRHIP(err);
       ((Vec_HIP*)w->spptr)->GPUarray = NULL;
@@ -1146,7 +1154,7 @@ PetscErrorCode VecGetLocalVector_SeqHIP(Vec v,Vec w)
     ierr = PetscFree(w->spptr);CHKERRQ(ierr);
   }
 
-  if (v->petscnative) {
+  if (v->petscnative && wisseqhip) {
     ierr = PetscFree(w->data);CHKERRQ(ierr);
     w->data = v->data;
     w->offloadmask = v->offloadmask;
@@ -1154,25 +1162,31 @@ PetscErrorCode VecGetLocalVector_SeqHIP(Vec v,Vec w)
     w->spptr = v->spptr;
     ierr = PetscObjectStateIncrease((PetscObject)w);CHKERRQ(ierr);
   } else {
-    ierr = VecGetArray(v,&((Vec_Seq*)w->data)->array);CHKERRQ(ierr);
+    if (read) {
+      ierr = VecGetArrayRead(v,(const PetscScalar**)&((Vec_Seq*)w->data)->array);CHKERRQ(ierr);
+    } else {
+      ierr = VecGetArray(v,&((Vec_Seq*)w->data)->array);CHKERRQ(ierr);
+    }
     w->offloadmask = PETSC_OFFLOAD_CPU;
-    ierr = VecHIPAllocateCheck(w);CHKERRQ(ierr);
+    if (wisseqhip) {
+      ierr = VecHIPAllocateCheck(w);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecRestoreLocalVector_SeqHIP(Vec v,Vec w)
+static inline PetscErrorCode VecRestoreLocalVectorK_SeqHIP(Vec v,Vec w,PetscBool read)
 {
   PetscErrorCode ierr;
-  hipError_t    err;
+  hipError_t     err;
+  PetscBool      wisseqhip;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(w,VEC_CLASSID,2);
   PetscCheckTypeNames(v,VECSEQHIP,VECMPIHIP);
-  PetscCheckTypeName(w,VECSEQHIP);
-
-  if (v->petscnative) {
+  ierr = PetscObjectTypeCompare((PetscObject)w,VECSEQHIP,&wisseqhip);CHKERRQ(ierr);
+  if (v->petscnative && wisseqhip) {
     v->data = w->data;
     v->offloadmask = w->offloadmask;
     v->pinned_memory = w->pinned_memory;
@@ -1181,8 +1195,12 @@ PetscErrorCode VecRestoreLocalVector_SeqHIP(Vec v,Vec w)
     w->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
     w->spptr = 0;
   } else {
-    ierr = VecRestoreArray(v,&((Vec_Seq*)w->data)->array);CHKERRQ(ierr);
-    if ((Vec_HIP*)w->spptr) {
+    if (read) {
+      ierr = VecRestoreArrayRead(v,(const PetscScalar**)&((Vec_Seq*)w->data)->array);CHKERRQ(ierr);
+    } else {
+      ierr = VecRestoreArray(v,&((Vec_Seq*)w->data)->array);CHKERRQ(ierr);
+    }
+    if ((Vec_HIP*)w->spptr && wisseqhip) {
       err = hipFree(((Vec_HIP*)w->spptr)->GPUarray);CHKERRHIP(err);
       ((Vec_HIP*)w->spptr)->GPUarray = NULL;
       if (((Vec_HIP*)v->spptr)->stream) {
@@ -1191,6 +1209,42 @@ PetscErrorCode VecRestoreLocalVector_SeqHIP(Vec v,Vec w)
       ierr = PetscFree(w->spptr);CHKERRQ(ierr);
     }
   }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecGetLocalVector_SeqHIP(Vec v,Vec w)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetLocalVectorK_SeqHIP(v,w,PETSC_FALSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecGetLocalVectorRead_SeqHIP(Vec v,Vec w)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetLocalVectorK_SeqHIP(v,w,PETSC_TRUE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecRestoreLocalVector_SeqHIP(Vec v,Vec w)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecRestoreLocalVectorK_SeqHIP(v,w,PETSC_FALSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecRestoreLocalVectorRead_SeqHIP(Vec v,Vec w)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecRestoreLocalVectorK_SeqHIP(v,w,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1273,7 +1327,7 @@ PetscErrorCode VecMax_SeqHIP(Vec v, PetscInt *p, PetscReal *m)
       res = thrust::reduce(zibit,zibit+n,res,petscmaxi());
 #endif
     } catch (char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
     }
     *m = res.get<0>();
     *p = res.get<1>();
@@ -1285,7 +1339,7 @@ PetscErrorCode VecMax_SeqHIP(Vec v, PetscInt *p, PetscReal *m)
       *m = thrust::reduce(avpt,avpt+n,PETSC_MIN_REAL,petscmax());
 #endif
     } catch (char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
     }
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
@@ -1320,7 +1374,7 @@ PetscErrorCode VecMin_SeqHIP(Vec v, PetscInt *p, PetscReal *m)
       res = thrust::reduce(zibit,zibit+n,res,petscmini());
 #endif
     } catch (char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
     }
     *m = res.get<0>();
     *p = res.get<1>();
@@ -1332,7 +1386,7 @@ PetscErrorCode VecMin_SeqHIP(Vec v, PetscInt *p, PetscReal *m)
       *m = thrust::reduce(avpt,avpt+n,PETSC_MAX_REAL,petscmin());
 #endif
     } catch (char *ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
     }
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
@@ -1355,7 +1409,7 @@ PetscErrorCode VecSum_SeqHIP(Vec v,PetscScalar *sum)
   try {
     *sum = thrust::reduce(dptr,dptr+n,PetscScalar(0.0));
   } catch (char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecHIPRestoreArrayRead(v,&a);CHKERRQ(ierr);
@@ -1385,7 +1439,7 @@ PetscErrorCode VecShift_SeqHIP(Vec v,PetscScalar shift)
   try {
     thrust::transform(dptr,dptr+n,dptr,petscshift(shift)); /* in-place transform */
   } catch (char *ex) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Thrust error: %s", ex);
   }
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   ierr = VecHIPRestoreArray(v,&a);CHKERRQ(ierr);

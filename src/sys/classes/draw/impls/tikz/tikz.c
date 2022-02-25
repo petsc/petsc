@@ -55,7 +55,7 @@ static PetscErrorCode  PetscDrawDestroy_TikZ(PetscDraw draw)
 
 static const char *TikZColors[] = {"white","black","red","green","cyan","blue","magenta",NULL,NULL,"orange","violet","brown","pink",NULL,"yellow",NULL};
 
-PETSC_STATIC_INLINE const char *TikZColorMap(int cl)
+static inline const char *TikZColorMap(int cl)
 {
   return((cl < 16) ? (TikZColors[cl] ? TikZColors[cl] : "black") : "black");
 }

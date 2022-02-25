@@ -28,7 +28,7 @@ The important PETSc classes include
 -  managing interactions between mesh data structures and vectors,
    matrices, and solvers (``DM``);
 
--   scalable optimization algorithms (``Tao``).
+-  scalable optimization algorithms (``Tao``).
 
 
 Each class consist of an abstract interface (simply a set of calling
@@ -53,7 +53,7 @@ of these pieces. The figure illustrates the library’s hierarchical
 organization, which enables users to employ the solvers that are most
 appropriate for a particular problem.
 
-.. figure:: images/library_structure.svg
+.. figure:: /images/docs/manual/library_structure.svg
   :alt: PETSc numerical libraries
   :name: fig_library
 
@@ -92,10 +92,10 @@ The manual pages provide hyperlinked indices (organized by both concept
 and routine name) to the tutorial examples and enable easy movement
 among related topics.
 
-`Visual Studio Code <https://code.visualstudio.com/>`__ , Eclipse, Emacs, and Vim users may find their development environment's options for
-searching in the source code (for example, ``etags`` ``ctags`` for Emacs and Vim) are
+`Visual Studio Code <https://code.visualstudio.com/>`__, Eclipse, Emacs, and Vim users may find their development environment's options for
+searching in the source code (for example, ``etags`` and ``ctags`` for Emacs and Vim) are
 extremely useful for exploring the PETSc source code. Details of these
-feature are provided in :any:`sec-emacs`.
+feature are provided in :any:`sec-developer-environments`.
 
 The complete PETSc distribution, manual pages, and additional information are available via the
 `PETSc home page <https://petsc.org/>`__. The PETSc
@@ -123,11 +123,11 @@ Running PETSc Programs
 
 Before using PETSc, the user must first set the environmental variable
 ``$PETSC_DIR``, indicating the full path of the PETSc home directory. For
-example, under the UNIX bash shell a command of the form
+example, under the Unix bash shell a command of the form
 
 .. code-block:: console
 
-   > export PETSC_DIR=$HOME/petsc
+   $ export PETSC_DIR=$HOME/petsc
 
 can be placed in the user’s ``.bashrc`` or other startup file. In
 addition, the user may need to set the environment variable
@@ -151,14 +151,14 @@ processors:
 
 .. code-block:: console
 
-   > mpiexec -n 8 ./petsc_program_name petsc_options
+   $ mpiexec -n 8 ./petsc_program_name petsc_options
 
 PETSc also comes with a script that automatically uses the correct
 ``mpiexec`` for your configuration.
 
 .. code-block:: console
 
-   > $PETSC_DIR/lib/petsc/bin/petscmpiexec -n 8 ./petsc_program_name petsc_options
+   $ $PETSC_DIR/lib/petsc/bin/petscmpiexec -n 8 ./petsc_program_name petsc_options
 
 All PETSc-compliant programs support the use of the ``-help``
 option as well as the ``-version`` option.
@@ -199,7 +199,7 @@ Writing PETSc Programs
 
 Most PETSc programs begin with a call to
 
-::
+.. code-block::
 
    ierr = PetscInitialize(int *argc,char ***argv,char *file,char *help);if (ierr) return ierr;
 
@@ -293,7 +293,7 @@ Include Files
 
 The C/C++ include files for PETSc should be used via statements such as
 
-::
+.. code-block::
 
    #include <petscksp.h>
 
@@ -326,7 +326,7 @@ Vectors
 One creates a new parallel or sequential vector, ``x``, of global
 dimension ``M`` with the commands
 
-::
+.. code-block::
 
    VecCreate(MPI_Comm comm,Vec *x);
    VecSetSizes(Vec x, PetscInt m, PetscInt M);
@@ -337,13 +337,13 @@ vector may be set with either calls to ``VecSetType()`` or
 ``VecSetFromOptions()``. Additional vectors of the same type can be
 formed with
 
-::
+.. code-block::
 
    VecDuplicate(Vec old,Vec *new);
 
 The commands
 
-::
+.. code-block::
 
    VecSet(Vec x,PetscScalar value);
    VecSetValues(Vec x,PetscInt n,PetscInt *indices,PetscScalar *values,INSERT_VALUES);
@@ -372,7 +372,7 @@ Usage of PETSc matrices and vectors is similar. The user can create a
 new parallel or sequential matrix, ``A``, which has ``M`` global rows
 and ``N`` global columns, with the routines
 
-::
+.. code-block::
 
    MatCreate(MPI_Comm comm,Mat *A);
    MatSetSizes(Mat A,PETSC_DECIDE,PETSC_DECIDE,PetscInt M,PetscInt N);
@@ -381,13 +381,13 @@ where the matrix format can be specified at runtime via the options
 database. The user could alternatively specify each processes’ number of
 local rows and columns using ``m`` and ``n``.
 
-::
+.. code-block::
 
    MatSetSizes(Mat A,PetscInt m,PetscInt n,PETSC_DETERMINE,PETSC_DETERMINE);
 
 Generally one then sets the “type” of the matrix, with, for example,
 
-::
+.. code-block::
 
    MatSetType(A,MATAIJ);
 
@@ -395,14 +395,14 @@ This causes the matrix ``A`` to used the compressed sparse row storage
 format to store the matrix entries. See ``MatType`` for a list of all
 matrix types. Values can then be set with the command
 
-::
+.. code-block::
 
    MatSetValues(Mat A,PetscInt m,PetscInt *im,PetscInt n,PetscInt *in,PetscScalar *values,INSERT_VALUES);
 
 After all elements have been inserted into the matrix, it must be
 processed with the pair of commands
 
-::
+.. code-block::
 
    MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);
    MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
@@ -417,7 +417,7 @@ After creating the matrix and vectors that define a linear system,
 ``Ax`` :math:`=` ``b``, the user can then use ``KSP`` to solve the
 system with the following sequence of commands:
 
-::
+.. code-block::
 
    KSPCreate(MPI_Comm comm,KSP *ksp);
    KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat);
@@ -502,8 +502,31 @@ also use Valgrind to track down memory errors; see the `FAQ <https://petsc.org/r
 
 .. _sec_parallel:
 
-Parallel Programming
-^^^^^^^^^^^^^^^^^^^^
+Parallel and GPU Programming
+----------------------------
+
+Numerical computing today has multiple levels of parallelism (concurrency).
+
+- Low-level, single instruction multiple data (SIMD) parallelism
+
+- Medium-level, multiple instruction shared memory parallelism, and
+
+- High-level, distributed memory parallelism
+
+Traditional CPUs support the lower two levels via, for example, Intel AVX-like instructions (:any:`sec_cpu_simd`) and Unix threads, often managed by using OpenMP pragmas (:any:`sec_cpu_openmp`),
+(or multiple processes). GPUs also support the lower two levels via kernel functions (:any:`sec_gpu_kernels`) and streams (:any:`sec_gpu_streams`).
+Distributed memory parallelism is created by combining multiple
+CPUs and/or GPUs and using MPI for communication (:any:`sec_mpi`).
+
+In addition there is also concurrency between computations (floating point operations) and data movement (from memory to caches and registers
+and via MPI between distinct memory nodes).
+
+PETSc provides support for all these levels of parallelism but its strongest support is for MPI-based distributed memory parallelism.
+
+.. _sec_mpi:
+
+MPI Parallelism
+~~~~~~~~~~~~~~~
 
 Since PETSc uses the message-passing model for parallel programming and
 employs MPI for all interprocessor communication, the user is free to
@@ -520,7 +543,7 @@ processors over which the object is to be distributed. For example, as
 mentioned above, some commands for matrix, vector, and linear solver
 creation are:
 
-::
+.. code-block::
 
    MatCreate(MPI_Comm comm,Mat *A);
    VecCreate(MPI_Comm comm,Vec *x);
@@ -534,7 +557,7 @@ being used, they *must* be called in the same order on each processor.
 The next example, given below,
 illustrates the solution of a linear system in parallel. This code,
 corresponding to
-`KSP Tutorial ex2 <../../src/ksp/ksp/tutorials/ex2.c.html>`,
+`KSP Tutorial ex2 <../../src/ksp/ksp/tutorials/ex2.c.html>`__,
 handles the two-dimensional Laplacian discretized with finite
 differences, where the linear system is again solved with KSP. The code
 performs the same tasks as the sequential version within
@@ -552,12 +575,34 @@ local part of the matrix and vectors in the parallel case.
    .. literalinclude:: /../src/ksp/ksp/tutorials/ex2.c
       :end-before: /*TEST
 
+.. _sec_cpu_simd:
+
+CPU SIMD parallelism
+~~~~~~~~~~~~~~~~~~~~
+
+.. _sec_cpu_openmp:
+
+CPU OpenMP parallelism
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. _sec_gpu_kernels:
+
+GPU kernel parallelism
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. _sec_gpu_streams:
+
+GPU stream parallelism
+~~~~~~~~~~~~~~~~~~~~~~
+
+
+
 .. raw:: latex
 
   \newpage
 
 Compiling and Running Programs
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------
 
 The output below illustrates compiling and running a
 PETSc program using MPICH on an OS X laptop. Note that different
@@ -572,8 +617,8 @@ on the PETSc website https://petsc.org/ or given in the file
 
    $ cd $PETSC_DIR/src/ksp/ksp/tutorials
    $ make ex2
-   /Users/patrick/petsc/arch-darwin-double-debug/bin/mpicc -o ex2.o -c -Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -Qunused-arguments -fvisibility=hidden -g3   -I/Users/patrick/petsc/include -I/Users/patrick/petsc/arch-darwin-double-debug/include -I/opt/X11/include -I/opt/local/include    `pwd`/ex2.c
-   /Users/patrick/petsc/arch-darwin-double-debug/bin/mpicc -Wl,-multiply_defined,suppress -Wl,-multiply_defined -Wl,suppress -Wl,-commons,use_dylibs -Wl,-search_paths_first -Wl,-multiply_defined,suppress -Wl,-multiply_defined -Wl,suppress -Wl,-commons,use_dylibs -Wl,-search_paths_first    -Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -Qunused-arguments -fvisibility=hidden -g3  -o ex2 ex2.o  -Wl,-rpath,/Users/patrick/petsc/arch-darwin-double-debug/lib -L/Users/patrick/petsc/arch-darwin-double-debug/lib  -lpetsc -Wl,-rpath,/Users/patrick/petsc/arch-darwin-double-debug/lib -lf2clapack -lf2cblas -Wl,-rpath,/opt/X11/lib -L/opt/X11/lib -lX11 -lssl -lcrypto -Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2/lib/darwin -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2/lib/darwin -lmpifort -lgfortran -Wl,-rpath,/opt/local/lib/gcc5/gcc/x86_64-apple-darwin14/5.3.0 -L/opt/local/lib/gcc5/gcc/x86_64-apple-darwin14/5.3.0 -Wl,-rpath,/opt/local/lib/gcc5 -L/opt/local/lib/gcc5 -lgfortran -lgcc_ext.10.5 -lquadmath -lm -lclang_rt.osx -lmpicxx -lc++ -Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/7.0.2/lib/darwin -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/7.0.2/lib/darwin -lclang_rt.osx -Wl,-rpath,/Users/patrick/petsc/arch-darwin-double-debug/lib -L/Users/patrick/petsc/arch-darwin-double-debug/lib -ldl -lmpi -lpmpi -lSystem -Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/7.0.2/lib/darwin -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/7.0.2/lib/darwin -lclang_rt.osx -ldl
+   /Users/patrick/petsc/arch-darwin-double-debug/bin/mpicc -o ex2.o -c -g3   -I/Users/patrick/petsc/include -I/Users/patrick/petsc/arch-darwin-double-debug/include -I/opt/X11/include -I/opt/local/include    `pwd`/ex2.c
+   /Users/patrick/petsc/arch-darwin-double-debug/bin/mpicc -g3  -o ex2 ex2.o  -Wl,-rpath,/Users/patrick/petsc/arch-darwin-double-debug/lib -L/Users/patrick/petsc/arch-darwin-double-debug/lib  -lpetsc -lf2clapack -lf2cblas -lmpifort -lgfortran -lgcc_ext.10.5 -lquadmath -lm -lclang_rt.osx -lmpicxx -lc++ -ldl -lmpi -lpmpi -lSystem
    /bin/rm -f ex2.o
    $ $PETSC_DIR/lib/petsc/bin/petscmpiexec -n 1 ./ex2
    Norm of error 0.000156044 iterations 6
@@ -583,7 +628,7 @@ on the PETSc website https://petsc.org/ or given in the file
 .. _sec_profiling_programs:
 
 Profiling Programs
-~~~~~~~~~~~~~~~~~~
+------------------
 
 The option
 ``-log_view`` activates printing of a performance summary, including
@@ -606,8 +651,6 @@ merely to demonstrate the ease of extracting performance information.
    Event                Count      Time (sec)     Flops                             --- Global ---  --- Stage ----  Total
                       Max Ratio  Max     Ratio   Max  Ratio  Mess   AvgLen  Reduct  %T %F %M %L %R  %T %F %M %L %R Mflop/s
    ------------------------------------------------------------------------------------------------------------------------
-
-   --- Event Stage 0: Main Stage
 
    VecMDot                1 1.0 3.2830e-06 1.0 2.00e+03 1.0 0.0e+00 0.0e+00 0.0e+00  0  5  0  0  0   0  5  0  0  0   609
    VecNorm                3 1.0 4.4550e-06 1.0 6.00e+03 1.0 0.0e+00 0.0e+00 0.0e+00  0 14  0  0  0   0 14  0  0  0  1346
@@ -651,8 +694,8 @@ merely to demonstrate the ease of extracting performance information.
 
 .. _sec_writing_application_codes:
 
-Writing Application Codes with PETSc
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Writing C/C++ or Fortran Applications
+-------------------------------------
 
 The examples throughout the library demonstrate the software usage and
 can serve as templates for developing custom applications. We suggest
@@ -660,63 +703,110 @@ that new PETSc users examine programs in the directories
 ``$PETSC_DIR/src/<library>/tutorials`` where ``<library>`` denotes any
 of the PETSc libraries (listed in the following section), such as
 ``SNES`` or ``KSP`` or ``TS``. The manual pages located at
-``$PETSC_DIR/docs/index.htm`` or
 https://petsc.org/release/documentation/ provide links (organized by
 both routine names and concepts) to the tutorial examples.
 
-To write a new application program using PETSc, we suggest the following
-procedure:
+To develop an application program that uses PETSc, we suggest the following:
 
-#. Install and test PETSc according to the instructions at the PETSc web
-   site.
+* :ref:`Download <doc_download>` and :ref:`install <doc_install>` PETSc.
 
-#. Make a working directory for your source code: for example,
-   ``mkdir $HOME/application``
+* For completely new applications
 
-#. Change to that working directory; for
-   example,\ ``cd $HOME/application``
+   #. Make a directory for your source code: for example, ``mkdir $HOME/application``
 
-#. Copy one of the examples in the directory that corresponds to the
-   class of problem of interest into your working directory, for
-   example, ``cp $PETSC_DIR/src/snes/tutorials/ex19.c ex19.c``
+   #. Change to that directory; for
+      example, ``cd $HOME/application``
 
-#. Copy $PETSC_DIR/share/petsc/Makefile.user to your working directory,
-   for example, ``cp $PETSC_DIR/share/petsc/Makefile.user Makefile``
+   #. Copy an example in the directory that corresponds to the
+      problems of interest into your directory, for
+      example, ``cp $PETSC_DIR/src/snes/tutorials/ex19.c ex19.c``
 
-   Note: ``Makefile.user`` relies on the ``pkg-config`` tool, and
-   ``PETSC_DIR`` and ``PETSC_ARCH`` variables.  If ``pkg-config`` is not
-   available, use ``$PETSC_DIR/src/snes/tutorials/makefile``, it is
-   useful for simple usages. ``Makefile.user`` provides a better template
-   that helps in adapting to more complex usages (for example, an
-   application project might already have a complex makefile, and is
-   now adding in PETSc library usage to it).
+   #. Select an application build process. The ``PETSC_DIR`` (and ``PETSC_ARCH`` if the ``--prefix=directoryname``
+      option was not used when configuring PETSc) environmental variable(s) must be
+      set for any of these approaches.
 
-#. Compile and run the example program, for example,
-   ``make ex19; ./ex19``
+      * make (recommended). Copy $PETSC_DIR/share/petsc/Makefile.user or $PETSC_DIR/share/petsc/Makefile.basic.user
+        to your directory, for example, ``cp $PETSC_DIR/share/petsc/Makefile.user makefile``
 
-#. Use the example program as a starting point for developing a custom
-   code.
+        Examine the comments in your makefile
 
-We highly recommend against the following since it requires changing
-your makefile for each new configuration/computing system but if you do
-not wish to include any PETSc utilities in your makefile, you can use
-the following commands in the PETSc root directory to get the
-information needed by your makefile:
+        Makefile.user uses the `pkg-config <https://en.wikipedia.org/wiki/Pkg-config>`__ tool and is the recommended approach.
 
-.. code-block:: console
+        Use ``make ex19`` to compile your program
 
-   > make getlinklibs getincludedirs getcflags getcxxflags getfortranflags getccompiler getfortrancompiler getcxxcompiler
+      * CMake. Copy $PETSC_DIR/share/petsc/CMakeLists.txt to your directory, for example, ``cp $PETSC_DIR/share/petsc/CMakeLists.txt CMakeLists.txt``
 
-All the libraries listed need to be linked into your executable and the
-include directories and flags need to be passed to the compiler. Usually
-this is done with ``CFLAGS=<list of -I and other flags>`` and
-``FFLAGS=<list of -I and other flags>`` in your makefile.
+        Edit CMakeLists.txt, read the comments on usage and change the name of application from ex1 to your application executable name.
+
+   #. Run the  program, for example,
+      ``./ex19``
+
+   #. Start to modify the program for developing your application.
+
+* For adding PETSc to an existing application
+
+   #. Start with a working version of your code that you build and run to confirm that it works.
+
+   #. Upgrade your build process. The ``PETSC_DIR`` (and ``PETSC_ARCH`` if the ``--prefix=directoryname``
+      option was not used when configuring PETSc) environmental variable(s) must be
+      set for any of these approaches.
+
+      * Using make. Update the application makefile to add the appropriate PETSc include
+        directories and libraries.
+
+        *  Recommended approach. Examine the comments in $PETSC_DIR/shared/petsc/Makefile.user and transfer selected portions of
+           that file to your makefile.
+
+        *  Minimalist. Add the line
+
+           .. code-block:: console
+
+              include ${PETSC_DIR}/lib/petsc/conf/variables
+
+           to the bottom of your makefile. This will provide a set of PETSc specific make variables you may use in your makefile. See
+           the comments in the file $PETSC_DIR/shared/petsc/Makefile.basic.user for details on the usage.
+
+        *  Simple, but hands the build process over to PETSc's control. Add the lines
+
+           .. code-block:: console
+
+              include ${PETSC_DIR}/lib/petsc/conf/variables
+              include ${PETSC_DIR}/lib/petsc/conf/rules
+              include ${PETSC_DIR}/lib/petsc/conf/tests
+
+           to the bottom of your makefile. See the comments in the file $PETSC_DIR/shared/petsc/Makefile.basic.user for details on the usage.
+           Since PETSc's rules now control the build process you will likely need to simplify and remove much of your makefile.
+
+        *  Not recommended since you must change your makefile for each new configuration/computing system. This approach does not require
+           that the environmental variable ``PETSC_DIR`` be set when building your application since the information will be hardwired in your
+           makefile. Run the following command in the PETSc root directory to get the information needed by your makefile:
+
+           .. code-block:: console
+
+             $ make getlinklibs getincludedirs getcflags getcxxflags getfortranflags getccompiler getfortrancompiler getcxxcompiler
+
+           All the libraries listed need to be linked into your executable and the
+           include directories and flags need to be passed to the compiler(s). Usually
+           this is done by setting ``LDFLAGS=<list of library flags and libraries>`` and
+           ``CFLAGS=<list of -I and other flags>`` and ``FFLAGS=<list of -I and other flags>`` etc in your makefile.
+
+      * Using CMake. Update the application CMakeLists.txt by examining the code and comments in
+        $PETSC_DIR/share/petsc/CMakeLists.txt
+
+   #. Rebuild your application and ensure it still runs correctly.
+
+   #. Add a ``PetscInitialize()`` near the beginning of your code and ``PetscFinalize()`` near the end with appropriate include commands
+      (and use commands in Fortran)
+
+   #. Rebuild your application and ensure it still runs correctly.
+
+   #. Slowly start utilizing PETSc functionality in your code, ensure that your code continues to build and run correctly.
 
 
 .. _sec_directory:
 
 Directory Structure
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 We conclude this introduction with an overview of the organization of
 the PETSc software. The root directory of PETSc contains the following
@@ -734,8 +824,7 @@ directories:
 -  ``include`` - All include files for PETSc that are visible to the
    user.
 
--  ``include/petsc/finclude`` - PETSc include files for Fortran
-   programmers using the .F suffix (recommended).
+-  ``include/petsc/finclude`` - PETSc include files for Fortran.
 
 -  ``include/petsc/private`` - Private PETSc include files that should
    *not* need to be used by application programmers.
@@ -791,10 +880,11 @@ subdirectories:
     such, these codes are not intended for examination by users.
 
 -  ``interface`` - The calling sequences for the abstract interface to
-   the component. Code here does not know about particular
-   implementations.
+   the component. In other words, provides the abstract base classes for the objects.
+   Code here does not know about particular implementations.
 
--  ``impls`` - Source code for one or more implementations.
+-  ``impls`` - Source code for one or more implementations of the class for particular
+   data structures or algorithms.
 
 -  ``utils`` - Utility routines. Source here may know about the
    implementations, but ideally will not know about implementations for
@@ -804,8 +894,5 @@ subdirectories:
 
     <hr>
 
-.. bibliography:: /../src/docs/tex/petsc.bib
-   :filter: docname in docnames
-
-.. bibliography:: /../src/docs/tex/petscapp.bib
+.. bibliography:: /petsc.bib
    :filter: docname in docnames

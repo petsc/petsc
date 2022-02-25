@@ -285,7 +285,7 @@ M*/
 + ht  - The hash table
 - key - The key
 
-  Output Parameter:
+  Output Parameters:
 + iter - Iterator referencing the value for key
 - found - Boolean indicating whether the key was present
 
@@ -305,7 +305,7 @@ M*/
 + ht  - The hash table
 - key - The key
 
-  Output Parameter:
+  Output Parameters:
 + iter - Iterator referencing the value for key
 - missing - Boolean indicating whether the key was missing
 
@@ -378,7 +378,7 @@ M*/
 . off   - Input offset in array (usually zero)
 - array - Array where to put hash table keys into
 
-  Output Parameter:
+  Output Parameters:
 + off   - Output offset in array (output offset = input offset + hash table size)
 - array - Array filled with the hash table keys
 
@@ -399,7 +399,7 @@ M*/
 . off   - Input offset in array (usually zero)
 - array - Array where to put hash table values into
 
-  Output Parameter:
+  Output Parameters:
 + off   - Output offset in array (output offset = input offset + hash table size)
 - array - Array filled with the hash table values
 
@@ -421,7 +421,7 @@ M*/
 - karray - Array where to put hash table keys into
 - varray - Array where to put hash table values into
 
-  Output Parameter:
+  Output Parameters:
 + off   - Output offset in array (output offset = input offset + hash table size)
 - karray - Array filled with the hash table keys
 - varray - Array filled with the hash table values
@@ -437,7 +437,7 @@ KHASH_INIT(HashT, KeyType, ValType, 1, HashFunc, EqualFunc)                     
                                                                                                      \
 typedef khash_t(HashT) *Petsc##HashT;                                                                \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##Create(Petsc##HashT *ht)                                                \
 {                                                                                                    \
   PetscFunctionBegin;                                                                                \
@@ -447,7 +447,7 @@ PetscErrorCode Petsc##HashT##Create(Petsc##HashT *ht)                           
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##Destroy(Petsc##HashT *ht)                                               \
 {                                                                                                    \
   PetscFunctionBegin;                                                                                \
@@ -457,7 +457,7 @@ PetscErrorCode Petsc##HashT##Destroy(Petsc##HashT *ht)                          
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##Reset(Petsc##HashT ht)                                                  \
 {                                                                                                    \
   PetscFunctionBegin;                                                                                \
@@ -466,7 +466,7 @@ PetscErrorCode Petsc##HashT##Reset(Petsc##HashT ht)                             
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##Duplicate(Petsc##HashT ht,Petsc##HashT *hd)                             \
 {                                                                                                    \
   int     ret;                                                                                       \
@@ -486,7 +486,7 @@ PetscErrorCode Petsc##HashT##Duplicate(Petsc##HashT ht,Petsc##HashT *hd)        
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##Clear(Petsc##HashT ht)                                                  \
 {                                                                                                    \
   PetscFunctionBegin;                                                                                \
@@ -495,7 +495,7 @@ PetscErrorCode Petsc##HashT##Clear(Petsc##HashT ht)                             
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##Resize(Petsc##HashT ht,PetscInt nb)                                     \
 {                                                                                                    \
   int ret;                                                                                           \
@@ -506,7 +506,7 @@ PetscErrorCode Petsc##HashT##Resize(Petsc##HashT ht,PetscInt nb)                
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##GetSize(Petsc##HashT ht,PetscInt *n)                                    \
 {                                                                                                    \
   PetscFunctionBegin;                                                                                \
@@ -516,7 +516,7 @@ PetscErrorCode Petsc##HashT##GetSize(Petsc##HashT ht,PetscInt *n)               
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##GetCapacity(Petsc##HashT ht,PetscInt *n)                                \
 {                                                                                                    \
   PetscFunctionBegin;                                                                                \
@@ -526,7 +526,7 @@ PetscErrorCode Petsc##HashT##GetCapacity(Petsc##HashT ht,PetscInt *n)           
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##Has(Petsc##HashT ht,KeyType key,PetscBool *has)                         \
 {                                                                                                    \
   khiter_t iter;                                                                                     \
@@ -538,7 +538,7 @@ PetscErrorCode Petsc##HashT##Has(Petsc##HashT ht,KeyType key,PetscBool *has)    
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##Get(Petsc##HashT ht,KeyType key,ValType *val)                           \
 {                                                                                                    \
   khiter_t iter;                                                                                     \
@@ -550,7 +550,7 @@ PetscErrorCode Petsc##HashT##Get(Petsc##HashT ht,KeyType key,ValType *val)      
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##Set(Petsc##HashT ht,KeyType key,ValType val)                            \
 {                                                                                                    \
   int      ret;                                                                                      \
@@ -563,7 +563,7 @@ PetscErrorCode Petsc##HashT##Set(Petsc##HashT ht,KeyType key,ValType val)       
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##Del(Petsc##HashT ht,KeyType key)                                        \
 {                                                                                                    \
   khiter_t iter;                                                                                     \
@@ -574,7 +574,7 @@ PetscErrorCode Petsc##HashT##Del(Petsc##HashT ht,KeyType key)                   
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##QuerySet(Petsc##HashT ht,KeyType key,ValType val,PetscBool *missing)    \
 {                                                                                                    \
   int      ret;                                                                                      \
@@ -589,7 +589,7 @@ PetscErrorCode Petsc##HashT##QuerySet(Petsc##HashT ht,KeyType key,ValType val,Pe
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##QueryDel(Petsc##HashT ht,KeyType key,PetscBool *present)                \
 {                                                                                                    \
   khiter_t iter;                                                                                     \
@@ -606,7 +606,7 @@ PetscErrorCode Petsc##HashT##QueryDel(Petsc##HashT ht,KeyType key,PetscBool *pre
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##Find(Petsc##HashT ht,KeyType key,PetscHashIter *iter,PetscBool *found)  \
                                                                                                      \
 {                                                                                                    \
@@ -619,7 +619,7 @@ PetscErrorCode Petsc##HashT##Find(Petsc##HashT ht,KeyType key,PetscHashIter *ite
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##Put(Petsc##HashT ht,KeyType key,PetscHashIter *iter,PetscBool *missing) \
 {                                                                                                    \
   int ret;                                                                                           \
@@ -633,7 +633,7 @@ PetscErrorCode Petsc##HashT##Put(Petsc##HashT ht,KeyType key,PetscHashIter *iter
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##IterGet(Petsc##HashT ht,PetscHashIter iter,ValType *val)                \
 {                                                                                                    \
   PetscFunctionBeginHot;                                                                             \
@@ -643,7 +643,7 @@ PetscErrorCode Petsc##HashT##IterGet(Petsc##HashT ht,PetscHashIter iter,ValType 
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##IterSet(Petsc##HashT ht,PetscHashIter iter,ValType val)                 \
 {                                                                                                    \
   PetscFunctionBeginHot;                                                                             \
@@ -652,7 +652,7 @@ PetscErrorCode Petsc##HashT##IterSet(Petsc##HashT ht,PetscHashIter iter,ValType 
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##IterDel(Petsc##HashT ht,PetscHashIter iter)                             \
 {                                                                                                    \
   PetscFunctionBeginHot;                                                                             \
@@ -661,7 +661,7 @@ PetscErrorCode Petsc##HashT##IterDel(Petsc##HashT ht,PetscHashIter iter)        
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##GetKeys(Petsc##HashT ht,PetscInt *off,KeyType array[])                  \
 {                                                                                                    \
   KeyType  key;                                                                                      \
@@ -675,7 +675,7 @@ PetscErrorCode Petsc##HashT##GetKeys(Petsc##HashT ht,PetscInt *off,KeyType array
   PetscFunctionReturn(0);                                                                            \
 }                                                                                                    \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##GetVals(Petsc##HashT ht,PetscInt *off,ValType array[])                  \
 {                                                                                                    \
   ValType  val;                                                                                      \
@@ -690,7 +690,7 @@ PetscErrorCode Petsc##HashT##GetVals(Petsc##HashT ht,PetscInt *off,ValType array
 }                                                                                                    \
                                                                                                      \
                                                                                                      \
-PETSC_STATIC_INLINE PETSC_UNUSED                                                                     \
+static inline PETSC_UNUSED                                                                     \
 PetscErrorCode Petsc##HashT##GetPairs(Petsc##HashT ht,PetscInt *off,KeyType karray[],ValType varray[]) \
 {                                                                                                    \
   ValType  val;                                                                                      \

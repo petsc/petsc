@@ -181,7 +181,7 @@ PetscErrorCode PetscConvEstSetUp(PetscConvEst ce)
     if (fieldIS) {ierr = ISRestoreIndices(fieldIS, &fields);CHKERRQ(ierr);}
   }
   for (f = 0; f < Nf; ++f) {
-    if (!ce->exactSol[f]) SETERRQ1(PetscObjectComm((PetscObject) ce), PETSC_ERR_ARG_WRONG, "DS must contain exact solution functions in order to estimate convergence, missing for field %D", f);
+    PetscCheckFalse(!ce->exactSol[f],PetscObjectComm((PetscObject) ce), PETSC_ERR_ARG_WRONG, "DS must contain exact solution functions in order to estimate convergence, missing for field %D", f);
   }
   PetscFunctionReturn(0);
 }
@@ -216,7 +216,7 @@ PetscErrorCode PetscConvEstComputeError(PetscConvEst ce, PetscInt r, DM dm, Vec 
 
   Collective on PetscConvEst
 
-  Input Parameter:
+  Input Parameters:
 + ce - The PetscConvEst object
 - r  - The refinement level
 
@@ -267,7 +267,7 @@ static PetscErrorCode PetscConvEstSetSNES_Private(PetscConvEst ce, PetscObject s
 
   PetscFunctionBegin;
   ierr = PetscObjectGetClassId(ce->solver, &id);CHKERRQ(ierr);
-  if (id != SNES_CLASSID) SETERRQ(PetscObjectComm((PetscObject) ce), PETSC_ERR_ARG_WRONG, "Solver was not a SNES");
+  PetscCheckFalse(id != SNES_CLASSID,PetscObjectComm((PetscObject) ce), PETSC_ERR_ARG_WRONG, "Solver was not a SNES");
   ierr = SNESGetDM((SNES) ce->solver, &ce->idm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -328,7 +328,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ce->r != 2.0) SETERRQ1(PetscObjectComm((PetscObject) ce), PETSC_ERR_SUP, "Only refinement factor 2 is currently supported (not %g)", (double) ce->r);
+  PetscCheckFalse(ce->r != 2.0,PetscObjectComm((PetscObject) ce), PETSC_ERR_SUP, "Only refinement factor 2 is currently supported (not %g)", (double) ce->r);
   ierr = DMGetDimension(ce->idm, &dim);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(ce->idm, &ctx);CHKERRQ(ierr);
   ierr = DMPlexSetRefinementUniform(ce->idm, PETSC_TRUE);CHKERRQ(ierr);

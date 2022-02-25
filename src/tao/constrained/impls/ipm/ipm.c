@@ -738,7 +738,7 @@ PetscErrorCode IPMUpdateAi(Tao tao)
     ierr = MatCreate(comm,&ipmP->Ai);CHKERRQ(ierr);
     ierr = MatSetType(ipmP->Ai,MATAIJ);CHKERRQ(ierr);
 
-    ierr = TaoGetSolutionVector(tao,&solu);CHKERRQ(ierr);
+    ierr = TaoGetSolution(tao,&solu);CHKERRQ(ierr);
     ierr = VecGetLocalSize(solu,&nloc);CHKERRQ(ierr);
     ierr = MatSetSizes(ipmP->Ai,PETSC_DECIDE,nloc,ipmP->nb,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = MatSetFromOptions(ipmP->Ai);CHKERRQ(ierr);
@@ -981,7 +981,7 @@ PetscErrorCode IPMUpdateK(Tao tao)
         newrow = i;
         newcol = i-r2+c1;
         newval = -1.0;
-        MatSetValues(ipmP->K,1,&newrow,1,&newcol,&newval,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(ipmP->K,1,&newrow,1,&newcol,&newval,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
 
