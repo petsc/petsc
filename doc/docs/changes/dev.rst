@@ -249,6 +249,7 @@ Changes: Development
 - Add ``DMPlexCreateReferenceCell()``
 - Remove deprecated ``DMPlexCreateFromCellList()`` and ``DMPlexCreateFromCellListParallel()``
 - Add ``DMSetMatrixPreallocateSkip()`` to save initialization time when ``MatSetPreallocationCOO()`` will be used.
+- Improve loading performance related to coordinate projection in common cases.
 
 .. rubric:: DMPlexLandau:
 
@@ -267,6 +268,7 @@ Changes: Development
 - Add argument to ``PetscFEIntegrateHybridJacobian()`` to indicate the face for the integration
 - Add ``PetscFECreateByCell()`` and ``PetscFECreateLagrangeByCell()`` to create FE spaces on specific cell types
 - Replace ``PetscDualSpaceCreateReferenceCell()`` with ``DMPlexCreateReferenceCell()``
+- Add ``PetscDualSpaceEqual()`` and ``PetscQuadratureEqual()``
 
 .. rubric:: DMNetwork:
 

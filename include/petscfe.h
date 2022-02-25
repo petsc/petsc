@@ -173,6 +173,7 @@ PETSC_EXTERN PetscErrorCode PetscDualSpaceGetAllData(PetscDualSpace, PetscQuadra
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreateAllDataDefault(PetscDualSpace, PetscQuadrature *, Mat *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceGetInteriorData(PetscDualSpace, PetscQuadrature *, Mat *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreateInteriorDataDefault(PetscDualSpace, PetscQuadrature *, Mat *);
+PETSC_EXTERN PetscErrorCode PetscDualSpaceEqual(PetscDualSpace, PetscDualSpace, PetscBool *);
 
 PETSC_EXTERN PetscErrorCode PetscDualSpaceApplyAll(PetscDualSpace, const PetscScalar *, PetscScalar *);
 PETSC_EXTERN PetscErrorCode PetscDualSpaceApplyAllDefault(PetscDualSpace, const PetscScalar *, PetscScalar *);

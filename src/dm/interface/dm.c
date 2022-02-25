@@ -6826,7 +6826,7 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
 
   Input Parameters:
 + dm      - The DM object
-- disc    - The new coordinate discretization
+- disc    - The new coordinate discretization or NULL to ensure a coordinate discretization exists
 
   Level: intermediate
 
@@ -6834,21 +6834,22 @@ PetscErrorCode DMSetCoordinateSection(DM dm, PetscInt dim, PetscSection section)
 @*/
 PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
 {
-  PetscObject    discOld;
+  PetscFE        discOld;
   PetscClassId   classid;
   DM             cdmOld,cdmNew;
   Vec            coordsOld,coordsNew;
   Mat            matInterp;
+  PetscBool      same_space = PETSC_TRUE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidHeaderSpecific(disc,PETSCFE_CLASSID,2);
+  if (disc) PetscValidHeaderSpecific(disc,PETSCFE_CLASSID,2);
 
   ierr = DMGetCoordinateDM(dm, &cdmOld);CHKERRQ(ierr);
   /* Check current discretization is compatible */
-  ierr = DMGetField(cdmOld, 0, NULL, &discOld);CHKERRQ(ierr);
-  ierr = PetscObjectGetClassId(discOld, &classid);CHKERRQ(ierr);
+  ierr = DMGetField(cdmOld, 0, NULL, (PetscObject*)&discOld);CHKERRQ(ierr);
+  ierr = PetscObjectGetClassId((PetscObject)discOld, &classid);CHKERRQ(ierr);
   if (classid != PETSCFE_CLASSID) {
     if (classid == PETSC_CONTAINER_CLASSID) {
       PetscFE        feLinear;
@@ -6872,23 +6873,35 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
       ierr = DMSetField(cdmOld, 0, NULL, (PetscObject) feLinear);CHKERRQ(ierr);
       ierr = PetscFEDestroy(&feLinear);CHKERRQ(ierr);
       ierr = DMCreateDS(cdmOld);CHKERRQ(ierr);
+      ierr = DMGetField(cdmOld, 0, NULL, (PetscObject*)&discOld);CHKERRQ(ierr);
     } else {
       const char *discname;
 
-      ierr = PetscObjectGetType(discOld, &discname);CHKERRQ(ierr);
-      SETERRQ(PetscObjectComm(discOld), PETSC_ERR_SUP, "Discretization type %s not supported", discname);
+      ierr = PetscObjectGetType((PetscObject)discOld, &discname);CHKERRQ(ierr);
+      SETERRQ(PetscObjectComm((PetscObject)discOld), PETSC_ERR_SUP, "Discretization type %s not supported", discname);
     }
+  }
+  if (!disc) PetscFunctionReturn(0);
+  { // Check if the new space is the same as the old modulo quadrature
+    PetscDualSpace dsOld, ds;
+    ierr = PetscFEGetDualSpace(discOld, &dsOld);CHKERRQ(ierr);
+    ierr = PetscFEGetDualSpace(disc, &ds);CHKERRQ(ierr);
+    ierr = PetscDualSpaceEqual(dsOld, ds, &same_space);CHKERRQ(ierr);
   }
   /* Make a fresh clone of the coordinate DM */
   ierr = DMClone(cdmOld, &cdmNew);CHKERRQ(ierr);
   ierr = DMSetField(cdmNew, 0, NULL, (PetscObject) disc);CHKERRQ(ierr);
   ierr = DMCreateDS(cdmNew);CHKERRQ(ierr);
-  /* Project the coordinate vector from old to new space  */
   ierr = DMGetCoordinates(dm, &coordsOld);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(cdmNew, &coordsNew);CHKERRQ(ierr);
-  ierr = DMCreateInterpolation(cdmOld, cdmNew, &matInterp, NULL);CHKERRQ(ierr);
-  ierr = MatInterpolate(matInterp, coordsOld, coordsNew);CHKERRQ(ierr);
-  ierr = MatDestroy(&matInterp);CHKERRQ(ierr);
+  if (same_space) {
+    ierr = PetscObjectReference((PetscObject)coordsOld);CHKERRQ(ierr);
+    coordsNew = coordsOld;
+  } else { // Project the coordinate vector from old to new space
+    ierr = DMCreateGlobalVector(cdmNew, &coordsNew);CHKERRQ(ierr);
+    ierr = DMCreateInterpolation(cdmOld, cdmNew, &matInterp, NULL);CHKERRQ(ierr);
+    ierr = MatInterpolate(matInterp, coordsOld, coordsNew);CHKERRQ(ierr);
+    ierr = MatDestroy(&matInterp);CHKERRQ(ierr);
+  }
   /* Set new coordinate structures */
   ierr = DMSetCoordinateField(dm, NULL);CHKERRQ(ierr);
   ierr = DMSetCoordinateDM(dm, cdmNew);CHKERRQ(ierr);

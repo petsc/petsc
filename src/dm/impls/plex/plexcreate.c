@@ -159,7 +159,7 @@ static PetscErrorCode DMPlexInterpolateInPlace_Internal(DM dm)
 
   Input Parameters:
 + DM        - The DM
-. degree    - The degree of the finite element
+. degree    - The degree of the finite element or PETSC_DECIDE
 - coordFunc - An optional function to map new points from refinement to the surface
 
   Level: advanced
@@ -191,9 +191,12 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscPointFun
     ierr = PetscObjectOptionsBegin((PetscObject) cdm);CHKERRQ(ierr);
     ierr = PetscOptionsBoundedInt("-coord_dm_default_quadrature_order", "Quadrature order is one less than quadrature points per edge", "DMPlexCreateCoordinateSpace", qorder, &qorder, NULL, 0);CHKERRQ(ierr);
     ierr = PetscOptionsEnd();CHKERRQ(ierr);
-    ierr = PetscFECreateLagrange(PETSC_COMM_SELF, dim, dE, simplex, degree, qorder, &fe);CHKERRQ(ierr);
-    ierr = DMSetField(cdm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
-    ierr = DMCreateDS(cdm);CHKERRQ(ierr);
+    if (degree == PETSC_DECIDE) fe = NULL;
+    else {
+      ierr = PetscFECreateLagrange(PETSC_COMM_SELF, dim, dE, simplex, degree, qorder, &fe);CHKERRQ(ierr);
+      ierr = DMSetField(cdm, 0, NULL, (PetscObject) fe);CHKERRQ(ierr);
+      ierr = DMCreateDS(cdm);CHKERRQ(ierr);
+    }
     ierr = DMProjectCoordinates(dm, fe);CHKERRQ(ierr);
     ierr = PetscFEDestroy(&fe);CHKERRQ(ierr);
   }
