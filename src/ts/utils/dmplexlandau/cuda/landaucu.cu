@@ -223,7 +223,7 @@ void landau_form_fdf(const PetscInt dim, const PetscInt Nb, const PetscInt num_g
             for (q = 0; q < d_maps[grid]->num_face; q++) {
               PetscInt  id    = d_maps[grid]->c_maps[idx][q].gid;
               PetscReal scale = d_maps[grid]->c_maps[idx][q].scale;
-              coef_buff[f*Nb+b] += scale*d_vertex_f[id+moffset];
+              if (id >= 0) coef_buff[f*Nb+b] += scale*d_vertex_f[id+moffset];
             }
           }
         }
@@ -478,7 +478,8 @@ landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx, PetscInt nip_g
             } else {
               idx = -idx - 1;
               for (q = 0; q < d_maps[grid]->num_face; q++) {
-                s_idx[f][q]   = d_maps[grid]->c_maps[idx][q].gid + moffset;
+                if (d_maps[grid]->c_maps[idx][q].gid >= 0) s_idx[f][q] = d_maps[grid]->c_maps[idx][q].gid + moffset;
+                else s_idx[f][q] = -1;
                 s_scale[f][q] = d_maps[grid]->c_maps[idx][q].scale;
               }
             }
@@ -680,7 +681,8 @@ void __launch_bounds__(256,4) landau_mass(const PetscInt dim, const PetscInt Nb,
             } else {
               idx = -idx - 1;
               for (q = 0; q < d_maps[grid]->num_face; q++) {
-                s_idx[f][q]   = d_maps[grid]->c_maps[idx][q].gid + moffset;
+                if (d_maps[grid]->c_maps[idx][q].gid >= 0) s_idx[f][q] = d_maps[grid]->c_maps[idx][q].gid + moffset;
+                else s_idx[f][q] = -1;
                 s_scale[f][q] = d_maps[grid]->c_maps[idx][q].scale;
               }
             }
@@ -873,13 +875,13 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
   } else { // mass
     dim3 dimBlock(nnn,Nq);
     ierr = PetscInfo(plex[0], "Mass d_maps = %p. Nq=%d, vector size %d num_cells_batch=%d\n",d_maps,Nq,nnn,num_cells_batch);CHKERRQ(ierr);
-    ierr = PetscLogEventBegin(events[4],0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(events[16],0,0,0,0);CHKERRQ(ierr);
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
     landau_mass<<<dimGrid,dimBlock>>>(dim, Nb, num_grids, d_w, d_BB, d_DD, d_elem_mats,
                                       d_maps, d_mat, shift, d_numCells, d_species_offset, d_mat_offset, d_ip_offset, d_elem_offset);
     CHECK_LAUNCH_ERROR(); // has sync
     ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(events[4],0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(events[16],0,0,0,0);CHKERRQ(ierr);
   }
   // First time assembly with or without GPU assembly
   if (d_elem_mats) {
