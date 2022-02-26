@@ -1590,7 +1590,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
        default: SETERRQ(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Unsupported solution type: %s (%D)", solTypes[PetscMin(user->solType, NUM_SOL_TYPES)], user->solType);
       }
       break;
-    default: SETERRQ(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Unsupported model type: %s (%D)", solTypes[PetscMin(user->modType, NUM_MOD_TYPES)], user->modType);
+    default: SETERRQ(PetscObjectComm((PetscObject) ds), PETSC_ERR_ARG_WRONG, "Unsupported model type: %s (%D)", modTypes[PetscMin(user->modType, NUM_MOD_TYPES)], user->modType);
   }
   /* Setup constants */
   {
