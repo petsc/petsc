@@ -2258,8 +2258,9 @@ PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC pc,const char *name[])
 
    Options Database Keys:
 +   -pc_hypre_type - One of euclid, pilut, parasails, boomeramg, ams, ads
--   Too many others to list, run with -pc_type hypre -pc_hypre_type XXX -help to see options for the XXX
-          preconditioner
+.   -pc_hypre_boomeramg_nodal_coarsen <n> - where n is from 1 to 6 (see HYPRE_BOOMERAMGSetNodal())
+.   -pc_hypre_boomeramg_vec_interp_variant <v> - where v is from 1 to 3 (see HYPRE_BoomerAMGSetInterpVecVariant())
+-   Many others, run with -pc_type hypre -pc_hypre_type XXX -help to see options for the XXX preconditioner
 
    Level: intermediate
 
@@ -2289,13 +2290,14 @@ PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC pc,const char *name[])
           MatSetNearNullSpace() - if you provide a near null space to your matrix it is ignored by hypre UNLESS you also use
           the following two options:
 
-   Options Database Keys:
-+   -pc_hypre_boomeramg_nodal_coarsen <n> - where n is from 1 to 6 (see HYPRE_BOOMERAMGSetNodal())
--   -pc_hypre_boomeramg_vec_interp_variant <v> - where v is from 1 to 3 (see HYPRE_BoomerAMGSetInterpVecVariant())
-
-          Depending on the linear system you may see the same or different convergence depending on the values you use.
-
           See PCPFMG for access to the hypre Struct PFMG solver
+
+   GPU Notes:
+     To configure hypre BoomerAMG so that it can utilize NVIDIA GPUs run ./configure --download-hypre --with-cuda
+     Then pass VECCUDA vectors and MATAIJCUSPARSE matrices to the solvers and PETSc will automatically utilize hypre's GPU solvers.
+
+     To configure hypre BoomerAMG so that it can utilize AMD GPUs run ./configure --download-hypre --with-hip
+     Then pass VECHIP vectors to the solvers and PETSc will automatically utilize hypre's GPU solvers.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCHYPRESetType(), PCPFMG

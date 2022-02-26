@@ -3235,8 +3235,8 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
   Input Parameters:
 + dm - The DM
 . numCells - The number of cells owned by this process
-. numVertices - The number of vertices owned by this process, or PETSC_DECIDE
-. NVertices - The global number of vertices, or PETSC_DECIDE
+. numVertices - The number of vertices to be owned by this process, or PETSC_DECIDE
+. NVertices - The global number of vertices, or PETSC_DETERMINE
 . numCorners - The number of vertices for each cell
 - cells - An array of numCells*numCorners numbers, the global vertex numbers for each cell
 
@@ -3275,8 +3275,8 @@ $        3
   Vertices are implicitly numbered consecutively 0,...,NVertices.
   Each rank owns a chunk of numVertices consecutive vertices.
   If numVertices is PETSC_DECIDE, PETSc will distribute them as evenly as possible using PetscLayout.
-  If both NVertices and numVertices are PETSC_DECIDE, NVertices is computed by PETSc as the maximum vertex index in cells + 1.
-  If only NVertices is PETSC_DECIDE, it is computed as the sum of numVertices over all ranks.
+  If NVertices is PETSC_DETERMINE and numVertices is PETSC_DECIDE, NVertices is computed by PETSc as the maximum vertex index in cells + 1.
+  If only NVertices is PETSC_DETERMINE, it is computed as the sum of numVertices over all ranks.
 
   The cell distribution is arbitrary non-overlapping, independent of the vertex distribution.
 
@@ -3543,7 +3543,7 @@ PetscErrorCode DMPlexCreateFromCellListParallel(MPI_Comm comm, PetscInt dim, Pet
   Input Parameters:
 + dm - The DM
 . numCells - The number of cells owned by this process
-. numVertices - The number of vertices owned by this process, or PETSC_DECIDE
+. numVertices - The number of vertices owned by this process, or PETSC_DETERMINE
 . numCorners - The number of vertices for each cell
 - cells - An array of numCells*numCorners numbers, the global vertex numbers for each cell
 
@@ -3577,7 +3577,7 @@ $     \  |  /
 $      \ | /
 $        3
 
-  If numVertices is PETSC_DECIDE, it is computed by PETSc as the maximum vertex index in cells + 1.
+  If numVertices is PETSC_DETERMINE, it is computed by PETSc as the maximum vertex index in cells + 1.
 
   Not currently supported in Fortran.
 

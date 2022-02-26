@@ -1139,7 +1139,10 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
       bs = bs < 0 ? 1 : bs;
       /* Must reduce indices by blocksize */
       if (bs > 1) {
-        for (l = 0, k = 0; l < n; l += bs, ++k) ltog[k] = ltog[l]/bs;
+        for (l = 0, k = 0; l < n; l += bs, ++k) {
+          // Integer division of negative values truncates toward zero(!), not toward negative infinity
+          ltog[k] = ltog[l] >= 0 ? ltog[l]/bs : -(-(ltog[l]+1)/bs + 1);
+        }
         n /= bs;
       }
       ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm), bs, n, ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
