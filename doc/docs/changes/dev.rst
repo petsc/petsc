@@ -174,6 +174,9 @@ Changes: Development
 
 .. rubric:: DMSwarm:
 
+- Add ``DMSwarmGetNumSpecies()`` and ``DMSwarmSetNumSpecies()`` to support PIC
+- Add ``DMSwarmComputeLocalSize()``, ``DMSwarmComputeLocalSizeFromOptions()``, ``DMSwarmInitializeCoordinates()``, ``DMSwarmInitializeVelocities()``, ``DMSwarmInitializeVelocitiesFromOptions()`` to assist initialization of PIC methods
+
 .. rubric:: DMPlex:
 
 - Add ``DMExtrude()`` which now the default extrusion

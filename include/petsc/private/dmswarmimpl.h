@@ -48,6 +48,9 @@ typedef struct {
   PetscBool collect_view_active;
   PetscInt  collect_view_reset_nlocal;
   DMSwarmSort sort_context;
+
+  /* Support for PIC */
+  PetscInt Ns; /* The number of particle species */
 } DM_Swarm;
 
 typedef struct {
