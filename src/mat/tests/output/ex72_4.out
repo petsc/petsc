@@ -1,0 +1,5 @@
+%%MatrixMarket matrix coordinate real general
+M: 6, N: 6, nnz: 12
+Reading matrix completes.
+Writing matrix to binary file petscmat.aij using PETSc AIJ format ...
+Writing matrix completes.
