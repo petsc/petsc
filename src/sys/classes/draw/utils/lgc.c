@@ -477,6 +477,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
     }
   }
   if (rank == 0 && lg->legend) {
+    PetscBool right = PETSC_FALSE;
     int       i,dim=lg->dim,cl;
     PetscReal xl,yl,xr,yr,tw,th;
     size_t    slen,len=0;
@@ -486,7 +487,11 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
       ierr = PetscStrlen(lg->legend[i],&slen);CHKERRQ(ierr);
       len = PetscMax(len,slen);
     }
-    xr = xr - 1.5*tw; xl = xr - (len + 7)*tw;
+    if (right) {
+      xr = xr - 1.5*tw; xl = xr - (len + 7)*tw;
+    } else {
+      xl = xl + 1.5*tw; xr = xl + (len + 7)*tw;
+    }
     yr = yr - 1.0*th; yl = yr - (dim + 1)*th;
     ierr = PetscDrawLine(draw,xl,yl,xr,yl,PETSC_DRAW_BLACK);CHKERRQ(ierr);
     ierr = PetscDrawLine(draw,xr,yl,xr,yr,PETSC_DRAW_BLACK);CHKERRQ(ierr);
