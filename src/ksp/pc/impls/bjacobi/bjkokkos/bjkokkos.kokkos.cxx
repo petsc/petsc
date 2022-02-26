@@ -368,9 +368,11 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc,Vec bin,Vec xout)
   Mat_SeqAIJKokkos    *aijkok;
 
   PetscFunctionBegin;
-  if (!jac->vec_diag || !A) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"Not setup???? %p %p",jac->vec_diag,A);
-  if (!(aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr))) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No aijkok");
-  else {
+  PetscCheck(jac->vec_diag && A,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"Not setup???? %p %p",jac->vec_diag,A);
+  aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
+  if (!aijkok) {
+    SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No aijkok");
+  } else {
     using scr_mem_t  = Kokkos::DefaultExecutionSpace::scratch_memory_space;
     using vect2D_scr_t = Kokkos::View<PetscScalar**, Kokkos::LayoutLeft, scr_mem_t>;
     PetscInt          *d_bid_eqOffset, maxit = jac->ksp->max_it, scr_bytes_team, stride, global_buff_size;
@@ -404,11 +406,11 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc,Vec bin,Vec xout)
     // get x
     ierr = VecGetArrayAndMemType(xout,&glb_xdata,&mtype);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA)
-    if (mtype!=PETSC_MEMTYPE_DEVICE) SETERRQ(PetscObjectComm((PetscObject) pc),PETSC_ERR_ARG_WRONG,"No GPU data for x %D != %D",mtype,PETSC_MEMTYPE_DEVICE);
+    PetscCheck(PetscMemTypeDevice(mtype),PetscObjectComm((PetscObject) pc),PETSC_ERR_ARG_WRONG,"No GPU data for x %D != %D",mtype,PETSC_MEMTYPE_DEVICE);
 #endif
     ierr = VecGetArrayReadAndMemType(bvec,&glb_bdata,&mtype);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUDA)
-    if (mtype!=PETSC_MEMTYPE_DEVICE) SETERRQ(PetscObjectComm((PetscObject) pc),PETSC_ERR_ARG_WRONG,"No GPU data for b");
+    PetscCheck(PetscMemTypeDevice(mtype),PetscObjectComm((PetscObject) pc),PETSC_ERR_ARG_WRONG,"No GPU data for b");
 #endif
     // get batch size
     ierr = PetscObjectQuery((PetscObject) A, "batch size", (PetscObject *) &container);CHKERRQ(ierr);
@@ -417,7 +419,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc,Vec bin,Vec xout)
       ierr = PetscContainerGetPointer(container, (void **) &pNf);CHKERRQ(ierr);
       batch_sz = *pNf;
     } else batch_sz = 1;
-    if (nBlk%batch_sz) SETERRQ(PetscObjectComm((PetscObject) pc),PETSC_ERR_ARG_WRONG,"batch_sz = %D, nBlk = %D",batch_sz,nBlk);
+    PetscCheck(nBlk%batch_sz == 0,PetscObjectComm((PetscObject) pc),PETSC_ERR_ARG_WRONG,"batch_sz = %D, nBlk = %D",batch_sz,nBlk);
     d_bid_eqOffset = jac->d_bid_eqOffset_k->data();
     // solve each block independently
     if (jac->const_block_size) { // use shared memory for work vectors only if constant block size - todo: test efficiency loss
@@ -543,12 +545,13 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
   PetscBool         flg;
 
   PetscFunctionBegin;
-  if (pc->useAmat) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"No support for using 'use_amat'");
-  if (!A) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"No matrix - A is used above");
+  PetscCheck(!pc->useAmat,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"No support for using 'use_amat'");
+  PetscCheck(A,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"No matrix - A is used above");
   ierr = PetscObjectTypeCompareAny((PetscObject)A,&flg,MATSEQAIJKOKKOS,MATMPIAIJKOKKOS,MATAIJKOKKOS,"");CHKERRQ(ierr);
-  if (!flg) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"must use '-dm_mat_type aijkokkos -dm_vec_type kokkos' for -pc_type bjkokkos");
-  if (!(aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr))) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"No aijkok");
-  else {
+  PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"must use '-dm_mat_type aijkokkos -dm_vec_type kokkos' for -pc_type bjkokkos");
+  if (!(aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr))) {
+    SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"No aijkok");
+  } else {
     if (!jac->vec_diag) {
       Vec               *subX;
       DM                pack,*subDM;
@@ -581,9 +584,9 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
       }
       // get block sizes
       ierr = PCGetDM(pc, &pack);CHKERRQ(ierr);
-      if (!pack) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"no DM. Requires a composite DM");
+      PetscCheck(pack,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"no DM. Requires a composite DM");
       ierr = PetscObjectTypeCompare((PetscObject)pack,DMCOMPOSITE,&flg);CHKERRQ(ierr);
-      if (!flg) SETERRQ(PetscObjectComm((PetscObject)pack),PETSC_ERR_USER,"Not for type %s",((PetscObject)pack)->type_name);
+      PetscCheck(flg,PetscObjectComm((PetscObject)pack),PETSC_ERR_USER,"Not for type %s",((PetscObject)pack)->type_name);
       ierr = DMCompositeGetNumberDM(pack,&nDMs);CHKERRQ(ierr);
       jac->num_dms = nDMs;
       ierr = DMCreateGlobalVector(pack, &jac->vec_diag);CHKERRQ(ierr);
@@ -643,7 +646,7 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
           PetscInt nloc,nblk;
           ierr = VecGetSize(subX[ii],&nloc);CHKERRQ(ierr);
           nblk = nloc/jac->dm_Nf[ii];
-          if (nloc%jac->dm_Nf[ii]) SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"nloc%jac->dm_Nf[ii] DMs",nloc,jac->dm_Nf[ii]);
+          PetscCheck(nloc%jac->dm_Nf[ii] == 0,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"nloc%jac->dm_Nf[ii] DMs",nloc,jac->dm_Nf[ii]);
           for (PetscInt jj=0;jj<jac->dm_Nf[ii];jj++, idx++) {
             h_block_offsets[idx+1] = h_block_offsets[idx] + nblk;
 #if PCBJKOKKOS_VERBOSE_LEVEL <= 2
