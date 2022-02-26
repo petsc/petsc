@@ -1489,7 +1489,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
     ierr = PetscPrintf(ctx->comm, "charges:       e=%10.3e; charges in elementary units: %10.3e %10.3e\n", ctx->charges[0],-ctx->charges[1]/ctx->charges[0],ctx->num_species>2 ? -ctx->charges[2]/ctx->charges[0] : 0);CHKERRQ(ierr);
     ierr = PetscPrintf(ctx->comm, "n:             e: %10.3e                           i: %10.3e %10.3e\n", ctx->n[0],ctx->n[1],ctx->num_species>2 ? ctx->n[2] : 0);CHKERRQ(ierr);
     ierr = PetscPrintf(ctx->comm, "thermal T (K): e=%10.3e i=%10.3e %10.3e. v_0=%10.3e (%10.3ec) n_0=%10.3e t_0=%10.3e, %s, %s, %D batched\n", ctx->thermal_temps[0], ctx->thermal_temps[1], (ctx->num_species>2) ? ctx->thermal_temps[2] : 0, ctx->v_0, ctx->v_0/SPEED_OF_LIGHT, ctx->n_0, ctx->t_0, ctx->use_relativistic_corrections ? "relativistic" : "classical", ctx->use_energy_tensor_trick ? "Use trick" : "Intuitive",ctx->batch_sz);CHKERRQ(ierr);
-    ierr = PetscPrintf(ctx->comm, "Domain radius (AMR levels) grid %D: %g (%D) ",0,ctx->radius[0],ctx->numAMRRefine[0]);CHKERRQ(ierr);
+    ierr = PetscPrintf(ctx->comm, "Domain radius (AMR levels) grid %D: %10.3e (%D) ",0,ctx->radius[0],ctx->numAMRRefine[0]);CHKERRQ(ierr);
     for (ii=1;ii<ctx->num_grids;ii++) PetscPrintf(ctx->comm, ", %D: %10.3e (%D) ",ii,ctx->radius[ii],ctx->numAMRRefine[ii]);
     ierr = PetscPrintf(ctx->comm,"\n");CHKERRQ(ierr);
     if (ctx->jacobian_field_major_order) {
@@ -1937,8 +1937,11 @@ static PetscErrorCode LandauCreateMatrix(MPI_Comm comm, Vec X, IS grid_batch_is_
     ierr = DMSetFromOptions(massDM);CHKERRQ(ierr);
     ierr = DMCreateMatrix(massDM, &gMat);CHKERRQ(ierr);
     ierr = PetscOptionsInsertString(NULL,"-dm_preallocate_only false");
+    ierr = MatSetOption(gMat,MAT_STRUCTURALLY_SYMMETRIC, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatSetOption(gMat,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
     ierr = DMCreateLocalVector(ctx->plex[grid],&tvec);CHKERRQ(ierr);
     ierr = DMPlexSNESComputeJacobianFEM(massDM, tvec, gMat, gMat, ctx);CHKERRQ(ierr);
+    ierr = MatViewFromOptions(gMat, NULL, "-dm_landau_reorder_mat_view");CHKERRQ(ierr);
     ierr = DMDestroy(&massDM);CHKERRQ(ierr);
     ierr = VecDestroy(&tvec);CHKERRQ(ierr);
     subM[grid] = gMat;
@@ -1994,6 +1997,7 @@ static PetscErrorCode LandauCreateMatrix(MPI_Comm comm, Vec X, IS grid_batch_is_
     Mat            mat_block_order;
     PetscContainer container;
     ierr = MatCreateSubMatrix(ctx->J,ctx->batch_is,ctx->batch_is,MAT_INITIAL_MATRIX,&mat_block_order);CHKERRQ(ierr); // use MatPermute
+    ierr = MatViewFromOptions(mat_block_order, NULL, "-dm_landau_field_major_mat_view");CHKERRQ(ierr);
     ierr = MatDestroy(&ctx->J);CHKERRQ(ierr);
     ctx->J = mat_block_order;
     // cache ctx for KSP with batch/field major Jacobian ordering -ksp_type gmres/etc -dm_landau_jacobian_field_major_order
@@ -2123,7 +2127,8 @@ PetscErrorCode LandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, const char
   ierr = DMSetFromOptions(*pack);CHKERRQ(ierr);
   ierr = DMCreateMatrix(*pack, &ctx->J);CHKERRQ(ierr);
   ierr = PetscOptionsInsertString(NULL,"-dm_preallocate_only false");
-  ierr = MatSetOption(ctx->J, MAT_STRUCTURALLY_SYMMETRIC, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(ctx->J,MAT_STRUCTURALLY_SYMMETRIC, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(ctx->J,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)ctx->J, "Jac");CHKERRQ(ierr);
   // construct initial conditions in X
   ierr = DMCreateGlobalVector(*pack,X);CHKERRQ(ierr);
@@ -2566,7 +2571,8 @@ PetscErrorCode LandauCreateMassMatrix(DM pack, Mat *Amat)
   ierr = DMSetFromOptions(mass_pack);CHKERRQ(ierr);
   ierr = DMCreateMatrix(mass_pack, &packM);CHKERRQ(ierr);
   ierr = PetscOptionsInsertString(NULL,"-dm_preallocate_only false");
-  ierr = MatSetOption(packM, MAT_STRUCTURALLY_SYMMETRIC, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(packM,MAT_STRUCTURALLY_SYMMETRIC, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(packM,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
   ierr = DMDestroy(&mass_pack);CHKERRQ(ierr);
   /* make mass matrix for each block */
   for (PetscInt grid=0;grid<ctx->num_grids;grid++) {
