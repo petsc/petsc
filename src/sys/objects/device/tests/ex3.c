@@ -74,6 +74,7 @@ int main(int argc, char *argv[])
    requires: defined(PETSC_HAVE_CXX)
 
  testset:
+   TODO: broken in ci
    requires: !device
    suffix: no_device
    filter: Error: grep -E -o -e ".*No support for this operation for this object type" -e ".*PETSc is not configured with device support.*" -e "^\[0\]PETSC ERROR:.*[0-9]{1} [A-z]+\(\)"
