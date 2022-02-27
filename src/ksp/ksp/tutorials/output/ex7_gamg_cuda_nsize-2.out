@@ -1,9 +1,9 @@
-  0 KSP Residual norm 4.74473 
-  1 KSP Residual norm 0.233639 
-  2 KSP Residual norm 0.0103672 
-  3 KSP Residual norm 0.00103616 
-  4 KSP Residual norm 6.33639e-05 
-  5 KSP Residual norm 2.7079e-06 
+  0 KSP Residual norm 3.57974 
+  1 KSP Residual norm 0.498886 
+  2 KSP Residual norm 0.0205212 
+  3 KSP Residual norm 0.000949791 
+  4 KSP Residual norm 0.000103597 
+  5 KSP Residual norm 5.6789e-06 
 KSP Object: 2 MPI processes
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -24,7 +24,7 @@ PC Object: 2 MPI processes
           Symmetric graph false
           Number of levels to square graph 1
           Number smoothing steps 1
-        Complexity:    grid = 1.21
+        Complexity:    grid = 1.20833    operator = 1.21
   Coarse grid solver -- level -------------------------------
     KSP Object: (mg_coarse_) 2 MPI processes
       type: preonly
@@ -74,8 +74,8 @@ PC Object: 2 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 2 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.12743, max = 1.40174
-        eigenvalues estimate via gmres min 0.306786, max 1.2743
+        eigenvalue estimates used:  min = 0.185488, max = 2.04037
+        eigenvalues estimate via gmres min 0.145059, max 1.85488
         eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
         KSP Object: (mg_levels_1_esteig_) 2 MPI processes
           type: gmres
@@ -91,8 +91,8 @@ PC Object: 2 MPI processes
       left preconditioning
       using NONE norm type for convergence test
     PC Object: (mg_levels_1_) 2 MPI processes
-      type: sor
-        type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+      type: jacobi
+        type DIAGONAL
       linear system matrix = precond matrix:
       Mat Object: 2 MPI processes
         type: mpiaijcusparse
@@ -108,4 +108,4 @@ PC Object: 2 MPI processes
     total: nonzeros=100, allocated nonzeros=240
     total number of mallocs used during MatSetValues calls=0
       not using I-node (on process 0) routines
-Norm of error 3.27507e-06 iterations 5
+Norm of error 7.2428e-06 iterations 5

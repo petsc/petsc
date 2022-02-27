@@ -119,6 +119,12 @@ Changes: Development
 - Add MG option ``-pc_mg_galerkin_mat_product_algorithm [cusparse|hypre]`` and ``PCMGGalerkinSetMatProductAlgorithm()`` to use cuSparse or hypre's SpGEMM for Galerkin products in hypre
 - Add PC type ``PCBJKOKKOS`` a new, experimental batch Kokkos solver ``-pc_type bjkokkos -pc_bjkokkos_ksp_type [tfqmr|bicg] -pc_bjkokkos_pc_type jacobi -ksp_type preonly``
 
+.. rubric:: PCMG:
+
+- Add ``PCMGGetGridComplexity()`` to get operator and grid complexity of MG hierarchy
+- Change ``PCGAMG`` default to use ``PCJACOBI`` smoothing instead of `PCSOR`. This also allows the default configuration to use GPUs effectively, and to deliver equivalent convergence. For the old default, use ``-mg_levels_pc_type sor``.
+- Change ``PCGAMG`` eigenvalue estimation to use ``KSPCG`` when ``MAT_SPD`` has been set (see ``MatSetOption()``) and ``KSPCR`` when ``MAT_SYMMETRIC`` or ``MAT_HERMITIAN`` has been set. These are usually somewhat more accurate and reliable than the previous default of ``KSPGMRES``, and in tune with ``KSPCHEBYSHEV``. Note that Chebyshev will generally not be a suitable smoother for indefinite matrices.
+
 .. rubric:: KSP:
 
 - Outer most ``KSPSolve()`` will error if KSP_DIVERGED_ITS and ```KSPSetErrorIfNotConverged()`` is used

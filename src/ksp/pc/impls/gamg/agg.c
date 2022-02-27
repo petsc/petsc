@@ -1100,13 +1100,23 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
       ierr = KSPSetOptionsPrefix(eksp,prefix);CHKERRQ(ierr);
       ierr = KSPAppendOptionsPrefix(eksp,"pc_gamg_smoothprolongator_");CHKERRQ(ierr);
       if (pc_gamg->esteig_type[0] == '\0') {
-        PetscBool flg;
-        ierr = MatGetOption(Amat, MAT_SPD, &flg);CHKERRQ(ierr);
-        if (flg) {
+        PetscBool sflg,hflg;
+        ierr = MatGetOption(Amat, MAT_SPD, &sflg);CHKERRQ(ierr);
+        if (sflg) {
           ierr = KSPGetOptionsPrefix(eksp,&prefix);CHKERRQ(ierr);
-          ierr = PetscOptionsHasName(NULL,prefix,"-ksp_type",&flg);CHKERRQ(ierr);
-          if (!flg) {
+          ierr = PetscOptionsHasName(NULL,prefix,"-ksp_type",&sflg);CHKERRQ(ierr);
+          if (!sflg) {
             ierr = KSPSetType(eksp, KSPCG);CHKERRQ(ierr);
+          }
+        } else {
+          ierr = MatGetOption(Amat, MAT_HERMITIAN, &hflg);CHKERRQ(ierr);
+          ierr = MatGetOption(Amat, MAT_SYMMETRIC, &sflg);CHKERRQ(ierr);
+          if (sflg || hflg) {
+            ierr = KSPGetOptionsPrefix(eksp,&prefix);CHKERRQ(ierr);
+            ierr = PetscOptionsHasName(NULL,prefix,"-ksp_type",&sflg);CHKERRQ(ierr);
+            if (!sflg) {
+              ierr = KSPSetType(eksp, KSPCR);CHKERRQ(ierr);
+            }
           }
         }
       } else {

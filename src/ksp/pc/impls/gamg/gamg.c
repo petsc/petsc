@@ -399,8 +399,25 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc,Mat Amat_fine,PetscInt cr_bs,
     ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET14],0,0,0,0);CHKERRQ(ierr);
     /* 'a_Amat_crs' output */
     {
-      Mat mat;
-      ierr        = MatCreateSubMatrix(Cmat, new_eq_indices, new_eq_indices, MAT_INITIAL_MATRIX, &mat);CHKERRQ(ierr);
+      Mat       mat;
+      PetscBool flg;
+      ierr = MatCreateSubMatrix(Cmat, new_eq_indices, new_eq_indices, MAT_INITIAL_MATRIX, &mat);CHKERRQ(ierr);
+      ierr = MatGetOption(Cmat, MAT_SPD, &flg);CHKERRQ(ierr);
+      if (flg) {
+        ierr = MatSetOption(mat, MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
+      } else {
+        ierr = MatGetOption(Cmat, MAT_HERMITIAN, &flg);CHKERRQ(ierr);
+        if (flg) {
+          ierr = MatSetOption(mat, MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
+        } else {
+#if !defined(PETSC_USE_COMPLEX)
+          ierr = MatGetOption(Cmat, MAT_SYMMETRIC, &flg);CHKERRQ(ierr);
+          if (flg) {
+            ierr = MatSetOption(mat, MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+          }
+#endif
+        }
+      }
       *a_Amat_crs = mat;
     }
     ierr = MatDestroy(&Cmat);CHKERRQ(ierr);
@@ -730,7 +747,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         ASMLocalIDsArr[level] = NULL;
         nASMBlocksArr[level]  = 0;
       } else {
-        ierr = PCSetType(subpc, PCSOR);CHKERRQ(ierr);
+        ierr = PCSetType(subpc, PCJACOBI);CHKERRQ(ierr);
       }
     }
     {
@@ -1566,51 +1583,13 @@ static PetscErrorCode PCGAMGSetType_GAMG(PC pc, PCGAMGType type)
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
-/*
-   PCMGGetGridComplexity - compute coarse grid complexity of MG hierarchy
-
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Output Parameter:
-.  gc - grid complexity = sum_i(nnz_i) / nnz_0
-
-   Level: advanced
-*/
-static PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc)
-{
-  PetscErrorCode ierr;
-  PC_MG          *mg      = (PC_MG*)pc->data;
-  PC_MG_Levels   **mglevels = mg->levels;
-  PetscInt       lev;
-  PetscLogDouble nnz0 = 0, sgc = 0;
-  MatInfo        info;
-
-  PetscFunctionBegin;
-  if (!pc->setupcalled) {
-    *gc = 0;
-    PetscFunctionReturn(0);
-  }
-  PetscCheckFalse(!mg->nlevels,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MG has no levels");
-  for (lev=0; lev<mg->nlevels; lev++) {
-    Mat dB;
-    ierr = KSPGetOperators(mglevels[lev]->smoothd,NULL,&dB);CHKERRQ(ierr);
-    ierr = MatGetInfo(dB,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr); /* global reduction */
-    sgc += info.nz_used;
-    if (lev==mg->nlevels-1) nnz0 = info.nz_used;
-  }
-  if (nnz0 > 0) *gc = (PetscReal)(sgc/nnz0);
-  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number for grid points on finest level is not available");
-  PetscFunctionReturn(0);
-}
-
 static PetscErrorCode PCView_GAMG(PC pc,PetscViewer viewer)
 {
   PetscErrorCode ierr,i;
   PC_MG          *mg      = (PC_MG*)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
-  PetscReal       gc=0;
+  PetscReal       gc=0, oc=0;
+
   PetscFunctionBegin;
   ierr = PetscViewerASCIIPrintf(viewer,"    GAMG specific options\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"      Threshold for dropping small values in graph on each level =");CHKERRQ(ierr);
@@ -1638,8 +1617,8 @@ static PetscErrorCode PCView_GAMG(PC pc,PetscViewer viewer)
   if (pc_gamg->ops->view) {
     ierr = (*pc_gamg->ops->view)(pc,viewer);CHKERRQ(ierr);
   }
-  ierr = PCMGGetGridComplexity(pc,&gc);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"      Complexity:    grid = %g\n",gc);CHKERRQ(ierr);
+  ierr = PCMGGetGridComplexity(pc,&gc,&oc);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"      Complexity:    grid = %g    operator = %g\n",gc,oc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

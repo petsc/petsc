@@ -10,16 +10,16 @@ Labels:
   marker: 1 strata with value/size (1 (65))
   Face Sets: 2 strata with value/size (1 (30), 4 (30))
   0 SNES Function norm 16.1587 
-  Linear solve converged due to CONVERGED_RTOL iterations 9
-  1 SNES Function norm 3.62874e-05 
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+  1 SNES Function norm 9.03612e-05 
 Nonlinear solve converged due to CONVERGED_ITS iterations 1
-  Linear solve converged due to CONVERGED_RTOL iterations 9
-  Linear solve converged due to CONVERGED_RTOL iterations 9
-  Linear solve converged due to CONVERGED_RTOL iterations 9
-  Linear solve converged due to CONVERGED_RTOL iterations 9
-  Linear solve converged due to CONVERGED_RTOL iterations 9
-  Linear solve converged due to CONVERGED_RTOL iterations 9
-  Linear solve converged due to CONVERGED_RTOL iterations 9
-  Linear solve converged due to CONVERGED_RTOL iterations 9
-  Linear solve converged due to CONVERGED_RTOL iterations 9
-  Linear solve converged due to CONVERGED_RTOL iterations 9
+  Linear solve converged due to CONVERGED_RTOL iterations 11
+  Linear solve converged due to CONVERGED_RTOL iterations 11
+  Linear solve converged due to CONVERGED_RTOL iterations 11
+  Linear solve converged due to CONVERGED_RTOL iterations 11
+  Linear solve converged due to CONVERGED_RTOL iterations 11
+  Linear solve converged due to CONVERGED_RTOL iterations 11
+  Linear solve converged due to CONVERGED_RTOL iterations 11
+  Linear solve converged due to CONVERGED_RTOL iterations 11
+  Linear solve converged due to CONVERGED_RTOL iterations 11
+  Linear solve converged due to CONVERGED_RTOL iterations 11

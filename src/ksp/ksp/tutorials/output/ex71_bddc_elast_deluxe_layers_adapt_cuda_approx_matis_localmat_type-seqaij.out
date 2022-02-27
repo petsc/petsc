@@ -74,7 +74,7 @@ PC Object: 8 MPI processes
               Symmetric graph false
               Number of levels to square graph 1
               Number smoothing steps 1
-            Complexity:    grid = 1.05143
+            Complexity:    grid = 1.05143    operator = 1.11594
       Coarse grid solver -- level -------------------------------
         KSP Object: (pc_bddc_dirichlet_mg_coarse_) 1 MPI processes
           type: preonly
@@ -136,8 +136,8 @@ PC Object: 8 MPI processes
           left preconditioning
           using NONE norm type for convergence test
         PC Object: (pc_bddc_dirichlet_mg_levels_1_) 1 MPI processes
-          type: sor
-            type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+      type: jacobi
+        type DIAGONAL
           linear system matrix = precond matrix:
           Mat Object: (pc_bddc_dirichlet_) 1 MPI processes
             type: seqaij
@@ -172,7 +172,7 @@ PC Object: 8 MPI processes
               Symmetric graph false
               Number of levels to square graph 1
               Number smoothing steps 1
-            Complexity:    grid = 1.02271
+            Complexity:    grid = 1.02271    operator = 1.11594
       Coarse grid solver -- level -------------------------------
         KSP Object: (pc_bddc_neumann_mg_coarse_) 1 MPI processes
           type: preonly
@@ -234,8 +234,8 @@ PC Object: 8 MPI processes
           left preconditioning
           using NONE norm type for convergence test
         PC Object: (pc_bddc_neumann_mg_levels_1_) 1 MPI processes
-          type: sor
-            type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
+      type: jacobi
+        type DIAGONAL
           linear system matrix = precond matrix:
           Mat Object: (pc_bddc_neumann_) 1 MPI processes
             type: seqaij
