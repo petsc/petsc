@@ -13,7 +13,7 @@ TESTSRCDIR := $(dir $(mkfile_path))src
 -include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
 -include $(PETSC_DIR)/lib/petsc/conf/variables
 
-TESTDIR ?= ./$(PETSC_ARCH)/tests
+TESTDIR ?= $(PETSC_DIR)/$(PETSC_ARCH)/tests
 MODDIR := $(PETSC_DIR)/$(PETSC_ARCH)/include
 TESTLOGTAPFILE ?= $(TESTDIR)/test_$(PETSC_ARCH)_tap.log
 TESTLOGERRFILE ?= $(TESTDIR)/test_$(PETSC_ARCH)_err.log
@@ -354,15 +354,15 @@ else ifdef gmakesearchin
 else ifdef argsearch
   TESTTARGETS := $(foreach v,$(alltesttargets),$(if $(findstring $(argsearch),$($(v)_ARGS)),$(v)))
 else ifdef search
-  TESTTARGETS := $(shell $(PYTHON) config/query_tests.py --testdir=$(TESTDIR) --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --searchin=$(searchin) 'name' '$(search)')
+  TESTTARGETS := $(shell $(PYTHON) $(CONFIGDIR)/query_tests.py --testdir=$(TESTDIR) --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --searchin=$(searchin) 'name' '$(search)')
 else ifdef s
-  TESTTARGETS := $(shell $(PYTHON) config/query_tests.py --testdir=$(TESTDIR) --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --searchin=$(searchin) 'name' '$(s)')
+  TESTTARGETS := $(shell $(PYTHON) $(CONFIGDIR)/query_tests.py --testdir=$(TESTDIR) --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --searchin=$(searchin) 'name' '$(s)')
 else ifdef test-fail
   TESTTARGETS := $(shell $(TESTDIR)/echofailures.sh)
 else ifdef query
-  TESTTARGETS := $(shell $(PYTHON) config/query_tests.py --testdir=$(TESTDIR) --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --searchin=$(searchin) '$(query)' '$(queryval)')
+  TESTTARGETS := $(shell $(PYTHON) $(CONFIGDIR)/query_tests.py --testdir=$(TESTDIR) --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --searchin=$(searchin) '$(query)' '$(queryval)')
 else ifdef q
-  TESTTARGETS := $(shell $(PYTHON) config/query_tests.py --testdir=$(TESTDIR) --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --searchin=$(searchin) '$(q)' '$(qv)')
+  TESTTARGETS := $(shell $(PYTHON) $(CONFIGDIR)/query_tests.py --testdir=$(TESTDIR) --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --searchin=$(searchin) '$(q)' '$(qv)')
 else                            # No filter - run them all, but delete the executables as we go
   TESTTARGETS := $(testpkgs)
   ifneq ($(PRINTONLY),1)
