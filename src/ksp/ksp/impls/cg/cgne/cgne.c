@@ -38,8 +38,8 @@ static PetscErrorCode KSPSetUp_CGNE(KSP ksp)
   */
   if (ksp->calc_sings) {
     /* get space to store tridiagonal matrix for Lanczos */
-    ierr = PetscMalloc4(maxit+1,&cgP->e,maxit+1,&cgP->d,maxit+1,&cgP->ee,maxit+1,&cgP->dd);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory((PetscObject)ksp,2*(maxit+1)*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
+    ierr = PetscMalloc4(maxit,&cgP->e,maxit,&cgP->d,maxit,&cgP->ee,maxit,&cgP->dd);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory((PetscObject)ksp,2*maxit*(sizeof(PetscScalar)+sizeof(PetscReal)));CHKERRQ(ierr);
 
     ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
     ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
@@ -171,7 +171,6 @@ static PetscErrorCode  KSPSolve_CGNE(KSP ksp)
     } else dp = 0.0;
     ksp->rnorm = dp;
     ierr = KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
-    if (eigs) cg->ned = ksp->its;
     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;

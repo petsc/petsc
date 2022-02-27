@@ -29,7 +29,7 @@ PETSC_INTERN PetscErrorCode KSPCGSetType_CG(KSP,KSPCGType);
 typedef struct {
   KSPCGType   type;                 /* type of system (symmetric or Hermitian) */
   PetscScalar emin,emax;           /* eigenvalues */
-  PetscInt    ned;                 /* size of following arrays */
+  // The following arrays are of size ksp->maxit
   PetscScalar *e,*d;
   PetscReal   *ee,*dd;             /* work space for Lanczos algorithm */
 
