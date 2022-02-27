@@ -4125,6 +4125,7 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat mat, PetscCount coo_n, 
     ierr = MatSetPreallocationCOO_SeqAIJ(newmat,coo_n,coo_i,coo_j);CHKERRQ(ierr);
     ierr = MatConvert(newmat,MATSEQAIJCUSPARSE,MAT_INPLACE_MATRIX,&newmat);CHKERRQ(ierr);
     ierr = MatHeaderMerge(mat,&newmat);CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSECopyToGPU(mat);CHKERRQ(ierr);
     ierr = MatZeroEntries(mat);CHKERRQ(ierr); /* Zero matrix on device */
 
     seq  = static_cast<Mat_SeqAIJ*>(mat->data);

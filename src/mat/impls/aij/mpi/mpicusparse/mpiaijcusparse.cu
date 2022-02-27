@@ -237,9 +237,11 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat mat, PetscCount 
     ierr = MatSetPreallocationCOO_MPIAIJ(newmat,coo_n,coo_i,coo_j);CHKERRQ(ierr);
     ierr = MatConvert(newmat,MATMPIAIJCUSPARSE,MAT_INPLACE_MATRIX,&newmat);CHKERRQ(ierr);
     ierr = MatHeaderMerge(mat,&newmat);CHKERRQ(ierr);
-    ierr = MatZeroEntries(mat);CHKERRQ(ierr); /* Zero matrix on device */
     mpiaij = static_cast<Mat_MPIAIJ*>(mat->data); /* mat->data was changed in MatHeaderReplace() */
     mpidev = static_cast<Mat_MPIAIJCUSPARSE*>(mpiaij->spptr);
+    ierr = MatSeqAIJCUSPARSECopyToGPU(mpiaij->A);CHKERRQ(ierr);
+    ierr = MatSeqAIJCUSPARSECopyToGPU(mpiaij->B);CHKERRQ(ierr);
+    ierr = MatZeroEntries(mat);CHKERRQ(ierr); /* Zero matrix on device */
     mpidev->use_extended_coo = PETSC_TRUE;
 
     cerr = cudaMalloc((void**)&mpidev->Aimap1_d,mpiaij->Annz1*sizeof(PetscCount));CHKERRCUDA(cerr);
