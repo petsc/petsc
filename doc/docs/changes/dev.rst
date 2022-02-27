@@ -27,6 +27,7 @@ Changes: Development
 - Change ``PETSC_HAVE_MKL`` to ``PETSC_HAVE_MKL_LIBS``
 - Add ``PETSC_HAVE_MKL_INCLUDES``
 - Enable HYPRE GPU for 64bit indices build (using HYPRE's mixed-int configuration)
+- Reuse PETSc-installed hwloc when installing OpenMPI
 
 .. rubric:: Sys:
 

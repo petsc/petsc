@@ -14,6 +14,8 @@ class Configure(config.package.GNUPackage):
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.cuda           = framework.require('config.packages.cuda',self)
+    self.hwloc          = framework.require('config.packages.hwloc',self)
+    self.odeps          = [self.hwloc]
     return
 
   def formGNUConfigureArgs(self):
@@ -41,8 +43,10 @@ class Configure(config.package.GNUPackage):
     args.append('--disable-vt')
     if self.cuda.found:
       args.append('--with-cuda='+self.cuda.cudaDir)
-    # have OpenMPI build its own private copy of hwloc to prevent possible conflict with one used by PETSc
-    args.append('--with-hwloc=internal')
+    if self.hwloc.found:
+      args.append('--with-hwloc="'+self.hwloc.directory+'"')
+    else:
+      args.append('--with-hwloc=internal')
     # https://www.open-mpi.org/faq/?category=building#libevent-or-hwloc-errors-when-linking-fortran
     args.append('--with-libevent=internal')
     return args
