@@ -346,7 +346,7 @@ pause-for-approval:
 
 osx-m1:
   extends:
-    - .stage-2
+    - .stage-3
     - .osx_test
   tags:
     - os:macos-m1

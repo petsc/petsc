@@ -4,7 +4,7 @@
 Mailing Lists
 *************
 
-The following mailing lists, with public archives are available for general use.
+The following mailing lists, with public archives, are available for general use.
 
 .. list-table::
    :header-rows: 1
@@ -28,17 +28,17 @@ The following mailing lists, with public archives are available for general use.
 
 .. important::
 
-   petsc-maint@mcs.anl.gov - a private maintenance e-mail without public archives is
-   also available. It might be preferable to send issues requiring large attachments here
-   (for example uncompressed ``configure.log`, ``make.log`` when encountering installation
-   issues).
+   petsc-maint@mcs.anl.gov - a private maintenance e-mail without public archives - is
+   also available. Send issues requiring large attachments here, in particular
+   uncompressed ``configure.log`` and  ``make.log`` when encountering installation
+   issues.
 
 
-   Additional notes on sending bug-reports is available at :ref:`documentation <doc_creepycrawly>`
+   Also see :ref:`doc_creepycrawly`.
 
 .. note::
 
-   - petsc-announce is an announcement only list (i.e users cannot post on this list).
+   - petsc-announce is an announcement-only list (users cannot post).
    - petsc-users and petsc-dev are open; we recommend subscribing and participating
      in the list discussions. However, it is possible to post to the lists without
      subscribing (the first post to the list will be held until list owner can
@@ -48,6 +48,4 @@ The following mailing lists, with public archives are available for general use.
 
 .. rubric:: Footnotes
 
-.. [#] This is mostly for PETSc developers, but is by no means a requirement. This mailing
-       list is also relevant for those who are interested in the development process of
-       PETSc.
+.. [#] Others interested in the development process of PETSc are welcome to join, as well.
