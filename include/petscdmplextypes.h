@@ -10,12 +10,14 @@ $ DM_SHAPE_BOX_SURFACE - The surface of a box in dimension d+1
 $ DM_SHAPE_BALL        - The d-dimensional ball
 $ DM_SHAPE_SPHERE      - The surface of the (d+1)-dimensional ball
 $ DM_SHAPE_CYLINDER    - The tensor product of the interval and disk
+$ DM_SHAPE_SCHWARZ_P   - The Schwarz-P triply periodic minimal surface
+$ DM_SHAPE_GYROID      - The Gyroid triply periodic minimal surface
 
   Level: beginner
 
 .seealso: DMPlexGetCellRefiner(), DMPlexSetCellRefiner(), DMRefine(), DMPolytopeType
 E*/
-typedef enum {DM_SHAPE_BOX, DM_SHAPE_BOX_SURFACE, DM_SHAPE_BALL, DM_SHAPE_SPHERE, DM_SHAPE_CYLINDER, DM_SHAPE_UNKNOWN} DMPlexShape;
+typedef enum {DM_SHAPE_BOX, DM_SHAPE_BOX_SURFACE, DM_SHAPE_BALL, DM_SHAPE_SPHERE, DM_SHAPE_CYLINDER, DM_SHAPE_SCHWARZ_P, DM_SHAPE_GYROID, DM_SHAPE_UNKNOWN} DMPlexShape;
 PETSC_EXTERN const char * const DMPlexShapes[];
 
 /*E
