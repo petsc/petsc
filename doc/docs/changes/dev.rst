@@ -228,6 +228,8 @@ Changes: Development
 - Newly created ``DMPlex`` will be distributed by default; this previously required ``-dm_distribute`` or explicit calls to ``DMPlexDistribute()``
 - Add ``DMPlexDistributeGetDefault()`` and ``DMPlexDistributeSetDefault()`` to determine and set the default for ``DMPlex`` distribution
 - Add meshing of the Schwarz-P and Gyroid triply periodic minimal surface (see ``DMPlexCreateTPSMesh()``). These meshes can be automatically generated using ``-dm_plex_shape schwarz_p`` or ``-dm_plex_shape gyroid``, with optional levels of refinement and extrusion to 3D solids with prescribed thickness.
+- Add ``DMCreateFEDefault()`` as a convenience method for creating the right element on a mesh
+- Add ``DMPlexCreateReferenceCell()``
 
 .. rubric:: FE/FV:
 
@@ -237,6 +239,8 @@ Changes: Development
 - Replace ``PetscDSGet/SetHybrid()`` with ``PetscDSGet/SetCohesive()``
 - Add ``PetscDSIsCohesive()``, ``PetscDSGetNumCohesive()``, and ``PetscDSGetFieldOffsetCohesive()``
 - Add argument to ``PetscFEIntegrateHybridJacobian()`` to indicate the face for the integration
+- Add ``PetscFECreateByCell()`` and ``PetscFECreateLagrangeByCell()`` to create FE spaces on specific cell types
+- Replace ``PetscDualSpaceCreateReferenceCell()`` with ``DMPlexCreateReferenceCell()``
 
 .. rubric:: DMNetwork:
 
@@ -248,6 +252,7 @@ Changes: Development
 
 - Add ``PetscDTPTrimmedEvalJet()`` to evaluate a stable basis for trimmed polynomials, and ``PetscDTPTrimmedSize()`` for the size of that space
 - Add ``PetscDSGetRHSResidual()`` and ``PetscDSSetRHSResidual()`` to support explicit timestepping
+- Add ``PetscDTTensorQuadratureCreate()`` to combine different quadratures, such as on a prism
 
 .. rubric:: Fortran:
 

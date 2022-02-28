@@ -33,7 +33,7 @@ static PetscErrorCode private_PetscFECreateDefault_scalar_pk1(DM dm, PetscInt di
   ierr = PetscDualSpaceCreate(PetscObjectComm((PetscObject) dm), &Q);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetType(Q,PETSCDUALSPACELAGRANGE);CHKERRQ(ierr);
   /*ierr = PetscObjectSetOptionsPrefix((PetscObject) Q, prefix);CHKERRQ(ierr);*/
-  ierr = PetscDualSpaceCreateReferenceCell(Q, dim, isSimplex, &K);CHKERRQ(ierr);
+  ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, isSimplex), &K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
   ierr = DMDestroy(&K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetNumComponents(Q, Nc);CHKERRQ(ierr);

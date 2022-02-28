@@ -2212,6 +2212,65 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *)
 }
 #endif
 
+/*@
+  PetscDTTensorQuadratureCreate - create the tensor product quadrature from two lower-dimensional quadratures
+
+  Not Collective
+
+  Input Parameters:
++ q1 - The first quadrature
+- q2 - The second quadrature
+
+  Output Parameter:
+. q - A PetscQuadrature object
+
+  Level: intermediate
+
+.seealso: PetscDTGaussTensorQuadrature()
+@*/
+PetscErrorCode PetscDTTensorQuadratureCreate(PetscQuadrature q1, PetscQuadrature q2, PetscQuadrature *q)
+{
+  const PetscReal *x1, *w1, *x2, *w2;
+  PetscReal       *x, *w;
+  PetscInt         dim1, Nc1, Np1, order1, qa, d1;
+  PetscInt         dim2, Nc2, Np2, order2, qb, d2;
+  PetscInt         dim,  Nc,  Np,  order, qc, d;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(q1, PETSCQUADRATURE_CLASSID, 1);
+  PetscValidHeaderSpecific(q2, PETSCQUADRATURE_CLASSID, 2);
+  PetscValidPointer(q, 3);
+  ierr = PetscQuadratureGetOrder(q1, &order1);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetOrder(q2, &order2);CHKERRQ(ierr);
+  PetscCheck(order1 == order2, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Order1 %" PetscInt_FMT " != %" PetscInt_FMT " Order2", order1, order2);
+  ierr = PetscQuadratureGetData(q1, &dim1, &Nc1, &Np1, &x1, &w1);CHKERRQ(ierr);
+  ierr = PetscQuadratureGetData(q2, &dim2, &Nc2, &Np2, &x2, &w2);CHKERRQ(ierr);
+  PetscCheck(Nc1 == Nc2, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "NumComp1 %" PetscInt_FMT " != %" PetscInt_FMT " NumComp2", Nc1, Nc2);
+
+  dim   = dim1 + dim2;
+  Nc    = Nc1;
+  Np    = Np1 * Np2;
+  order = order1;
+  ierr = PetscQuadratureCreate(PETSC_COMM_SELF, q);CHKERRQ(ierr);
+  ierr = PetscQuadratureSetOrder(*q, order);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Np*dim, &x);CHKERRQ(ierr);
+  ierr = PetscMalloc1(Np, &w);CHKERRQ(ierr);
+  for (qa = 0, qc = 0; qa < Np1; ++qa) {
+    for (qb = 0; qb < Np2; ++qb, ++qc) {
+      for (d1 = 0, d = 0; d1 < dim1; ++d1, ++d) {
+        x[qc*dim+d] = x1[qa*dim1+d1];
+      }
+      for (d2 = 0; d2 < dim2; ++d2, ++d) {
+        x[qc*dim+d] = x2[qb*dim2+d2];
+      }
+      w[qc] = w1[qa] * w2[qb];
+    }
+  }
+  ierr = PetscQuadratureSetData(*q, dim, Nc, Np, x, w);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* Overwrites A. Can only handle full-rank problems with m>=n
  * A in column-major format
  * Ainv in row-major format

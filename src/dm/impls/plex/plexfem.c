@@ -1294,6 +1294,7 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
         } else {
           gcoords = &coords[coordDim*q];
         }
+        ierr = PetscArrayzero(funcVal,Nc);CHKERRQ(ierr);
         ierr = (*funcs[field])(coordDim, time, gcoords, Nc, funcVal, ctx);
         if (ierr) {
           PetscErrorCode ierr2;
@@ -1305,10 +1306,10 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
         if (transform) {ierr = DMPlexBasisTransformApply_Internal(dm, &coords[coordDim*q], PETSC_FALSE, Nc, funcVal, funcVal, dm->transformCtx);CHKERRQ(ierr);}
         if (id == PETSCFE_CLASSID)      {ierr = PetscFEInterpolate_Static((PetscFE) obj, &x[fieldOffset], &qgeom, q, interpolant);CHKERRQ(ierr);}
         else if (id == PETSCFV_CLASSID) {ierr = PetscFVInterpolate_Static((PetscFV) obj, &x[fieldOffset], q, interpolant);CHKERRQ(ierr);}
-        else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", field);
+        else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, field);
         for (fc = 0; fc < Nc; ++fc) {
           const PetscReal wt = quadWeights[q*qNc+(qNc == 1 ? 0 : qc+fc)];
-          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %D field %D,%D point %g %g %g diff %g (%g, %g)\n", c, field, fc, (double)(coordDim > 0 ? coords[coordDim*q] : 0.), (double)(coordDim > 1 ? coords[coordDim*q+1] : 0.),(double)(coordDim > 2 ? coords[coordDim*q+2] : 0.), (double)(PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*wt*fegeom.detJ[q]), PetscRealPart(interpolant[fc]), PetscRealPart(funcVal[fc]));CHKERRQ(ierr);}
+          if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "    elem %" PetscInt_FMT " field %" PetscInt_FMT ",%" PetscInt_FMT " point %g %g %g diff %g (%g, %g)\n", c, field, fc, (double)(coordDim > 0 ? coords[coordDim*q] : 0.), (double)(coordDim > 1 ? coords[coordDim*q+1] : 0.),(double)(coordDim > 2 ? coords[coordDim*q+2] : 0.), (double)(PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*wt*fegeom.detJ[q]), PetscRealPart(interpolant[fc]), PetscRealPart(funcVal[fc]));CHKERRQ(ierr);}
           elemDiff += PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc]))*wt*fegeom.detJ[q];
         }
       }
@@ -1316,7 +1317,7 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
       qc += Nc;
     }
     ierr = DMPlexVecRestoreClosure(dm, NULL, localX, c, NULL, &x);CHKERRQ(ierr);
-    if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  elem %D diff %g\n", c, (double)elemDiff);CHKERRQ(ierr);}
+    if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  elem %" PetscInt_FMT " diff %g\n", c, (double)elemDiff);CHKERRQ(ierr);}
     localDiff += elemDiff;
   }
   ierr  = PetscFree6(funcVal,interpolant,coords,fegeom.detJ,fegeom.J,fegeom.invJ);CHKERRQ(ierr);
@@ -1385,7 +1386,7 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
       ierr = PetscFEGetNumComponents(fe, &Nc);CHKERRQ(ierr);
       if (debug) {
         char title[1024];
-        ierr = PetscSNPrintf(title, 1023, "Solution for Field %D", field);CHKERRQ(ierr);
+        ierr = PetscSNPrintf(title, 1023, "Solution for Field %" PetscInt_FMT, field);CHKERRQ(ierr);
         ierr = DMPrintCellVector(c, title, Nb, &x[fieldOffset]);CHKERRQ(ierr);
       }
       for (q = 0; q < Nq; ++q) {
@@ -1395,13 +1396,14 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
         qgeom.J        = &fegeom.J[q*coordDim*coordDim];
         qgeom.invJ     = &fegeom.invJ[q*coordDim*coordDim];
         qgeom.detJ     = &fegeom.detJ[q];
-        PetscCheckFalse(fegeom.detJ[q] <= 0.0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D, quadrature points %D", (double)fegeom.detJ[q], c, q);
+        PetscCheck(fegeom.detJ[q] > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT ", quadrature points %" PetscInt_FMT, (double)fegeom.detJ[q], c, q);
         if (transform) {
           gcoords = &coords[coordDim*Nq];
           ierr = DMPlexBasisTransformApplyReal_Internal(dm, &coords[coordDim*q], PETSC_TRUE, coordDim, &coords[coordDim*q], gcoords, dm->transformCtx);CHKERRQ(ierr);
         } else {
           gcoords = &coords[coordDim*q];
         }
+        ierr = PetscArrayzero(funcVal,Nc);CHKERRQ(ierr);
         ierr = (*funcs[field])(coordDim, time, gcoords, n, Nc, funcVal, ctx);
         if (ierr) {
           PetscErrorCode ierr2;
@@ -1549,6 +1551,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
           } else {
             gcoords = &coords[dE*q];
           }
+          for (fc = 0; fc < Nc; ++fc) funcVal[fc] = 0.;
           ierr = (*funcs[fields[f]])(dE, time, gcoords, Nc, funcVal, ctx);
           if (ierr) {
             PetscErrorCode ierr2;

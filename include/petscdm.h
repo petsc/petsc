@@ -268,6 +268,7 @@ PETSC_EXTERN PetscErrorCode DMSetRegionDS(DM, DMLabel, IS, PetscDS);
 PETSC_EXTERN PetscErrorCode DMGetRegionNumDS(DM, PetscInt, DMLabel *, IS *, PetscDS *);
 PETSC_EXTERN PetscErrorCode DMSetRegionNumDS(DM, PetscInt, DMLabel, IS, PetscDS);
 PETSC_EXTERN PetscErrorCode DMFindRegionNum(DM, PetscDS, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMCreateFEDefault(DM, PetscInt, const char[], PetscInt, PetscFE *);
 PETSC_EXTERN PetscErrorCode DMCreateDS(DM);
 PETSC_EXTERN PetscErrorCode DMClearDS(DM);
 PETSC_EXTERN PetscErrorCode DMCopyDS(DM, DM);

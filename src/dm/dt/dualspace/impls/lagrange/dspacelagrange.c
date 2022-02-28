@@ -1036,7 +1036,7 @@ static PetscErrorCode PetscDualSpaceCreateEdgeSubspace_Lagrange(PetscDualSpace s
   PetscFunctionBegin;
   ierr = PetscDualSpaceDuplicate(sp,bdsp);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetFormDegree(*bdsp, k);CHKERRQ(ierr);
-  ierr = PetscDualSpaceCreateReferenceCell(*bdsp, 1, PETSC_TRUE, &K);CHKERRQ(ierr);
+  ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(1, PETSC_TRUE), &K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetDM(*bdsp, K);CHKERRQ(ierr);
   ierr = DMDestroy(&K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetOrder(*bdsp, order);CHKERRQ(ierr);
@@ -1354,18 +1354,15 @@ static PetscErrorCode PetscDualSpaceCreateFacetSubspace_Lagrange(PetscDualSpace 
   ierr = PetscDualSpaceDuplicate(sp,bdsp);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetFormDegree(*bdsp,k);CHKERRQ(ierr);
   if (!K) {
-    PetscBool isSimplex;
-
     if (depth == dim) {
-      PetscInt coneSize;
+      DMPolytopeType ct;
 
       pointDim = dim - 1;
-      ierr = DMPlexGetConeSize(dm,f,&coneSize);CHKERRQ(ierr);
-      isSimplex = (PetscBool) (coneSize == dim);
-      ierr = PetscDualSpaceCreateReferenceCell(*bdsp, dim-1, isSimplex, &K);CHKERRQ(ierr);
+      ierr = DMPlexGetCellType(dm, f, &ct);CHKERRQ(ierr);
+      ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, ct, &K);CHKERRQ(ierr);
     } else if (depth == 1) {
       pointDim = 0;
-      ierr = PetscDualSpaceCreateReferenceCell(*bdsp, 0, PETSC_TRUE, &K);CHKERRQ(ierr);
+      ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DM_POLYTOPE_POINT, &K);CHKERRQ(ierr);
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unsupported interpolation state of reference element");
   } else {
     ierr = PetscObjectReference((PetscObject)K);CHKERRQ(ierr);

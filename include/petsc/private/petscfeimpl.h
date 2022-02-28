@@ -79,6 +79,10 @@ typedef struct {
   PetscQuadrature quad;         /* The points defining the space */
 } PetscSpace_Point;
 
+typedef struct {
+  PetscBool setupCalled;
+} PetscSpace_WXY;
+
 typedef struct _PetscDualSpaceOps *PetscDualSpaceOps;
 struct _PetscDualSpaceOps {
   PetscErrorCode (*setfromoptions)(PetscOptionItems*,PetscDualSpace);

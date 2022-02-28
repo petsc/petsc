@@ -1353,7 +1353,7 @@ static PetscErrorCode GmshCreateFE(MPI_Comm comm, const char prefix[], PetscBool
   ierr = PetscDualSpaceLagrangeSetNodeType(Q, nodeType, endpoint, 0);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetNumComponents(Q, Nc);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetOrder(Q, k);CHKERRQ(ierr);
-  ierr = PetscDualSpaceCreateReferenceCell(Q, dim, isSimplex, &K);CHKERRQ(ierr);
+  ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, isSimplex), &K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetDM(Q, K);CHKERRQ(ierr);
   ierr = DMDestroy(&K);CHKERRQ(ierr);
   if (prefix) {

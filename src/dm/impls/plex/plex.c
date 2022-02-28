@@ -9234,7 +9234,9 @@ static void g0_identity_private(PetscInt dim, PetscInt Nf, PetscInt NfAux,
                                 const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
                                 PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
-  g0[0] = 1.0;
+  const PetscInt Nc = uOff[1] - uOff[0];
+  PetscInt       c;
+  for (c = 0; c < Nc; ++c) g0[c*Nc+c] = 1.0;
 }
 
 PetscErrorCode DMCreateMassMatrixLumped_Plex(DM dm, Vec *mass)

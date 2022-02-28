@@ -319,7 +319,7 @@ static PetscErrorCode GLVisCreateFE(PetscFE femIn,char name[32],PetscFE *fem)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  comm = PetscObjectComm((PetscObject)femIn);
+  ierr = PetscObjectGetComm((PetscObject)femIn, &comm);CHKERRQ(ierr);
   ierr = PetscFEGetBasisSpace(femIn,&P);CHKERRQ(ierr);
   ierr = PetscFEGetDualSpace(femIn,&Q);CHKERRQ(ierr);
   ierr = PetscDualSpaceGetDM(Q,&K);CHKERRQ(ierr);
@@ -351,7 +351,7 @@ static PetscErrorCode GLVisCreateFE(PetscFE femIn,char name[32],PetscFE *fem)
   ierr = PetscDualSpaceLagrangeSetNodeType(Q,nodeType,endpoint,0);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetNumComponents(Q,dof);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetOrder(Q,deg);CHKERRQ(ierr);
-  ierr = PetscDualSpaceCreateReferenceCell(Q,dim,isSimplex,&K);CHKERRQ(ierr);
+  ierr = DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, isSimplex), &K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetDM(Q,K);CHKERRQ(ierr);
   ierr = DMDestroy(&K);CHKERRQ(ierr);
   ierr = PetscDualSpaceSetUp(Q);CHKERRQ(ierr);

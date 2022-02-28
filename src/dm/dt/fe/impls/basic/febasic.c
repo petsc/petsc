@@ -754,7 +754,6 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
       PetscReal w;
       PetscInt  c;
 
-      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       if (isAffine) {
         CoordinatesRefToReal(dE, dim, fegeom.xi, &cgeom->v[e*Np*dE], fegeom.J, &quadPoints[q*dim], x);
       } else {
@@ -763,6 +762,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
         fegeom.invJ = &cgeom->invJ[(e*Np+q)*dE*dE];
         fegeom.detJ = &cgeom->detJ[e*Np+q];
       }
+      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %" PetscInt_FMT " weight %g detJ %g\n", q, (double) quadWeights[q], (double) fegeom.detJ[0]);CHKERRQ(ierr);}
       w = fegeom.detJ[0]*quadWeights[q];
       if (coefficients) {ierr = PetscFEEvaluateFieldJets_Internal(ds, Nf, 0, q, T, &fegeom, &coefficients[cOffset], &coefficients_t[cOffset], u, u_x, u_t);CHKERRQ(ierr);}
       if (dsAux)        {ierr = PetscFEEvaluateFieldJets_Internal(dsAux, NfAux, 0, q, TAux, &fegeom, &coefficientsAux[cOffsetAux], NULL, a, a_x, NULL);CHKERRQ(ierr);}
