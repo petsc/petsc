@@ -590,14 +590,15 @@ Examples that use CUDA have the suffix .cu; see ``$PETSC_DIR/src/snes/tutorials/
 `Kokkos`_
 ^^^^^^^^^
 
-In most cases you need only pass the configure option ``--download-kokkos`` and one of
-``--with-cuda``, ``--with-openmp``, or ``--with-pthread`` (or nothing to use sequential
+In most cases you need only pass the configure option ``--download-kokkos`` ``--download-kokkos-kernels``
+and one of ``--with-cuda``, ``--with-openmp``, or ``--with-pthread`` (or nothing to use sequential
 `Kokkos`_). See the :ref:`CUDA installation documenation <doc_config_accel_cuda>`,
 :ref:`OpenMPI installation documentation <doc_config_mpi>` for further reference on their
 respective requirements.
 
-Examples that use `Kokkos`_ have the suffix .kokkos.cxx; see
-``src/snes/tutorials/ex3k.kokkos.cxx``
+Examples that use `Kokkos`_ at user-level have the suffix .kokkos.cxx; see
+``src/snes/tutorials/ex3k.kokkos.cxx``. More examples use `Kokkos`_ through options database;
+search them with ``grep -r -l "requires:.*kokkos_kernels" src/``.
 
 .. _doc_config_accel_opencl:
 
