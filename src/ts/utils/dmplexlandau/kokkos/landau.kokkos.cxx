@@ -336,7 +336,7 @@ PetscErrorCode landau_mat_assemble(PetscSplitCSRDataStructure d_mat, const Petsc
 }
 
 PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt batch_sz, const PetscInt num_grids, const PetscInt a_numCells[], PetscReal a_Eq_m[], PetscScalar a_elem_closure[],
-                                    const PetscScalar a_xarray[], const LandauStaticData *SData_d, const PetscInt num_sub_blocks, const PetscReal shift,
+                                    const PetscScalar a_xarray[], const LandauStaticData *SData_d, const PetscReal shift,
                                     const PetscLogEvent events[], const PetscInt a_mat_offset[], const PetscInt a_species_offset[], Mat subJ[], Mat JacP)
 {
   using scr_mem_t = Kokkos::DefaultExecutionSpace::scratch_memory_space;
@@ -673,7 +673,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
   } else { // mass
     ierr = PetscLogEventBegin(events[16],0,0,0,0);CHKERRQ(ierr);
     ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
-    ierr = PetscInfo(plex[0], "Mass shared memory size: level %d conc=%D team size=%D #face=%D Nb=%D\n",KOKKOS_SHARED_LEVEL,conc,team_size,nfaces,Nb);CHKERRQ(ierr);
+    ierr = PetscInfo(plex[0], "Mass conc=%D team size=%D #face=%D Nb=%D\n",conc,team_size,nfaces,Nb);CHKERRQ(ierr);
     Kokkos::parallel_for("Mass", Kokkos::TeamPolicy<>(num_cells_batch*batch_sz, team_size, /* Kokkos::AUTO */ 16), KOKKOS_LAMBDA (const team_member team) {
         const PetscInt  b_Nelem = d_elem_offset[num_grids], b_elem_idx = team.league_rank()%b_Nelem, b_id = team.league_rank()/b_Nelem;
         // find my grid

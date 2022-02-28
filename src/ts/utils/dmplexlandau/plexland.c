@@ -291,13 +291,13 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   if (ctx->deviceType == LANDAU_CUDA || ctx->deviceType == LANDAU_KOKKOS) {
     if (ctx->deviceType == LANDAU_CUDA) {
 #if defined(PETSC_HAVE_CUDA)
-      ierr = LandauCUDAJacobian(ctx->plex,Nq,ctx->batch_sz,ctx->num_grids,numCells,Eq_m,cellClosure,xdata,&ctx->SData_d,ctx->subThreadBlockSize,shift,ctx->events,ctx->mat_offset, ctx->species_offset, subJ, JacP);CHKERRQ(ierr);
+      ierr = LandauCUDAJacobian(ctx->plex,Nq,ctx->batch_sz,ctx->num_grids,numCells,Eq_m,cellClosure,xdata,&ctx->SData_d,shift,ctx->events,ctx->mat_offset, ctx->species_offset, subJ, JacP);CHKERRQ(ierr);
 #else
       SETERRQ(ctx->comm,PETSC_ERR_ARG_WRONG,"-landau_device_type %s not built","cuda");
 #endif
     } else if (ctx->deviceType == LANDAU_KOKKOS) {
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
-      ierr = LandauKokkosJacobian(ctx->plex,Nq,ctx->batch_sz,ctx->num_grids,numCells,Eq_m,cellClosure,xdata,&ctx->SData_d,ctx->subThreadBlockSize,shift,ctx->events,ctx->mat_offset, ctx->species_offset, subJ,JacP);CHKERRQ(ierr);
+      ierr = LandauKokkosJacobian(ctx->plex,Nq,ctx->batch_sz,ctx->num_grids,numCells,Eq_m,cellClosure,xdata,&ctx->SData_d,shift,ctx->events,ctx->mat_offset, ctx->species_offset, subJ,JacP);CHKERRQ(ierr);
 #else
       SETERRQ(ctx->comm,PETSC_ERR_ARG_WRONG,"-landau_device_type %s not built","kokkos");
 #endif
@@ -1323,7 +1323,6 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   ctx->lnLam = 10;         /* cross section ratio large - small angle collisions */
   ctx->n_0 = 1.e20;        /* typical plasma n, but could set it to 1 */
   ctx->Ez = 0;
-  ctx->subThreadBlockSize = 1; /* for device and maybe OMP */
   for (PetscInt grid=0;grid<LANDAU_NUM_TIMERS;grid++) ctx->times[grid] = 0;
   ctx->use_matrix_mass = PETSC_FALSE; /* fast but slightly fragile */
   ctx->use_relativistic_corrections = PETSC_FALSE;
@@ -1340,27 +1339,21 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
     ctx->deviceType = LANDAU_KOKKOS;
     ierr = PetscStrcpy(opstring,"kokkos");CHKERRQ(ierr);
-#if defined(PETSC_HAVE_CUDA)
-    ctx->subThreadBlockSize = 16;
-#endif
 #elif defined(PETSC_HAVE_CUDA)
     ctx->deviceType = LANDAU_CUDA;
     ierr = PetscStrcpy(opstring,"cuda");CHKERRQ(ierr);
 #else
     ctx->deviceType = LANDAU_CPU;
     ierr = PetscStrcpy(opstring,"cpu");CHKERRQ(ierr);
-    ctx->subThreadBlockSize = 0;
 #endif
     ierr = PetscOptionsString("-dm_landau_device_type","Use kernels on 'cpu', 'cuda', or 'kokkos'","plexland.c",opstring,opstring,256,NULL);CHKERRQ(ierr);
     ierr = PetscStrcmp("cpu",opstring,&flg);CHKERRQ(ierr);
     if (flg) {
       ctx->deviceType = LANDAU_CPU;
-      ctx->subThreadBlockSize = 0;
     } else {
       ierr = PetscStrcmp("cuda",opstring,&flg);CHKERRQ(ierr);
       if (flg) {
         ctx->deviceType = LANDAU_CUDA;
-        ctx->subThreadBlockSize = 0;
       } else {
         ierr = PetscStrcmp("kokkos",opstring,&flg);CHKERRQ(ierr);
         if (flg) ctx->deviceType = LANDAU_KOKKOS;
@@ -1475,7 +1468,6 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   PetscCheckFalse(flg && ctx->num_grids != nt,ctx->comm,PETSC_ERR_ARG_WRONG,"-dm_landau_i_radius: %D != num_species = %D",nt,ctx->num_grids);
   PetscCheckFalse(ctx->sphere && ctx->e_radius <= ctx->i_radius[0],ctx->comm,PETSC_ERR_ARG_WRONG,"bad radii: %g < %g < %g",ctx->i_radius[0],ctx->e_radius,ctx->radius[0]);
   /* processing options */
-  ierr = PetscOptionsInt("-dm_landau_sub_thread_block_size", "Number of threads in Kokkos integration point subblock", "plexland.c", ctx->subThreadBlockSize, &ctx->subThreadBlockSize, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_landau_gpu_assembly", "Assemble Jacobian on GPU", "plexland.c", ctx->gpu_assembly, &ctx->gpu_assembly, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_landau_jacobian_field_major_order", "Reorder Jacobian for GPU assembly with field major, or block diagonal, ordering", "plexland.c", ctx->jacobian_field_major_order, &ctx->jacobian_field_major_order, NULL);CHKERRQ(ierr);
   if (ctx->jacobian_field_major_order && !ctx->gpu_assembly) {
@@ -1548,7 +1540,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
   PetscSection      section[LANDAU_MAX_GRIDS],globsection[LANDAU_MAX_GRIDS];
   PetscQuadrature   quad;
   const PetscReal   *quadWeights;
-  PetscInt          q,eidx,fieldA,numCells[LANDAU_MAX_GRIDS],Nq,Nb,Nf[LANDAU_MAX_GRIDS];
+  PetscInt          numCells[LANDAU_MAX_GRIDS],Nq,Nb,Nf[LANDAU_MAX_GRIDS];
   PetscTabulation   *Tf;
   PetscDS           prob;
 
@@ -1558,7 +1550,8 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
   /* DS, Tab and quad is same on all grids */
   PetscCheckFalse(ctx->plex[0] == NULL,ctx->comm,PETSC_ERR_ARG_WRONG,"Plex not created");
   ierr = PetscFEGetQuadrature(ctx->fe[0], &quad);CHKERRQ(ierr);
-  ierr = PetscQuadratureGetData(quad, NULL, NULL, &Nq, NULL,  &quadWeights);CHKERRQ(ierr); Nb = Nq;
+  ierr = PetscQuadratureGetData(quad, NULL, NULL, &Nq, NULL,  &quadWeights);CHKERRQ(ierr);
+  Nb = Nq; // tensor elements
   PetscCheckFalse(Nq >LANDAU_MAX_NQ,ctx->comm,PETSC_ERR_ARG_WRONG,"Order too high. Nq = %D > LANDAU_MAX_NQ (%D)",Nq,LANDAU_MAX_NQ);
   /* setup each grid */
   for (PetscInt grid=0;grid<ctx->num_grids;grid++) {
@@ -1590,7 +1583,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
     ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
 
     for (PetscInt grid=0;grid<ctx->num_grids;grid++) {
-      PetscInt cStart, cEnd, ej, Nfloc = Nf[grid], totDim = Nfloc*Nq;
+      PetscInt cStart, cEnd, Nfloc = Nf[grid], totDim = Nfloc*Nq;
       if (grid_batch_is_inv[grid]) {
         ierr = ISGetIndices(grid_batch_is_inv[grid], &plex_batch);CHKERRQ(ierr);
       }
@@ -1605,9 +1598,9 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
       maps[grid].numgrids = ctx->num_grids;
       // count reduced and get
       ierr = PetscMalloc(maps[grid].num_elements * sizeof(*maps[grid].gIdx), &maps[grid].gIdx);CHKERRQ(ierr);
-      for (fieldA=0;fieldA<Nf[grid];fieldA++) {
-        for (ej = cStart, eidx = 0 ; ej < cEnd; ++ej, ++eidx) {
-          for (q = 0; q < Nb; ++q) {
+      for (int fieldA=0;fieldA<Nf[grid];fieldA++) {
+        for (int ej = cStart, eidx = 0 ; ej < cEnd; ++ej, ++eidx) {
+          for (int q = 0; q < Nb; ++q) {
             PetscInt    numindices,*indices;
             PetscScalar *valuesOrig = elMat = elemMatrix;
             ierr = PetscMemzero(elMat, totDim*totDim*sizeof(*elMat));CHKERRQ(ierr);
@@ -1677,8 +1670,8 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
       } // field
       // allocate and copy point data maps[grid].gIdx[eidx][field][q]
       ierr = PetscMalloc(maps[grid].num_reduced * sizeof(*maps[grid].c_maps), &maps[grid].c_maps);CHKERRQ(ierr);
-      for (ej = 0; ej < maps[grid].num_reduced; ++ej) {
-        for (q = 0; q < maps[grid].num_face; ++q) {
+      for (int ej = 0; ej < maps[grid].num_reduced; ++ej) {
+        for (int q = 0; q < maps[grid].num_face; ++q) {
           maps[grid].c_maps[ej][q].scale = pointMaps[ej][q].scale;
           maps[grid].c_maps[ej][q].gid   = pointMaps[ej][q].gid;
         }
@@ -2502,8 +2495,7 @@ PetscErrorCode LandauPrintNorms(Vec X, PetscInt stepi)
   } else {
     ierr = PetscPrintf(ctx->comm, " -- %D cells",cEnd-cStart);CHKERRQ(ierr);
   }
-  if (ctx->verbose > 1) {ierr = PetscPrintf(ctx->comm,", %D sub (vector) threads\n",ctx->subThreadBlockSize);CHKERRQ(ierr);}
-  else {ierr = PetscPrintf(ctx->comm,"\n");CHKERRQ(ierr);}
+  ierr = PetscPrintf(ctx->comm,"\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
