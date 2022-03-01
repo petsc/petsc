@@ -978,14 +978,17 @@ PetscErrorCode  VecSetValuesLocal(Vec x,PetscInt ni,const PetscInt ix[],const Pe
 
   ierr = PetscLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
   if (!x->ops->setvalueslocal) {
-    PetscCheckFalse(!x->map->mapping,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Local to global never set with VecSetLocalToGlobalMapping()");
-    if (ni > 128) {
-      ierr = PetscMalloc1(ni,&lix);CHKERRQ(ierr);
-    }
-    ierr = ISLocalToGlobalMappingApply(x->map->mapping,ni,(PetscInt*)ix,lix);CHKERRQ(ierr);
-    ierr = (*x->ops->setvalues)(x,ni,lix,y,iora);CHKERRQ(ierr);
-    if (ni > 128) {
-      ierr = PetscFree(lix);CHKERRQ(ierr);
+    if (x->map->mapping) {
+      if (ni > 128) {
+        ierr = PetscMalloc1(ni,&lix);CHKERRQ(ierr);
+      }
+      ierr = ISLocalToGlobalMappingApply(x->map->mapping,ni,(PetscInt*)ix,lix);CHKERRQ(ierr);
+      ierr = (*x->ops->setvalues)(x,ni,lix,y,iora);CHKERRQ(ierr);
+      if (ni > 128) {
+        ierr = PetscFree(lix);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = (*x->ops->setvalues)(x,ni,ix,y,iora);CHKERRQ(ierr);
     }
   } else {
     ierr = (*x->ops->setvalueslocal)(x,ni,ix,y,iora);CHKERRQ(ierr);
@@ -1039,17 +1042,20 @@ PetscErrorCode  VecSetValuesBlockedLocal(Vec x,PetscInt ni,const PetscInt ix[],c
   PetscValidIntPointer(ix,3);
   PetscValidScalarPointer(y,4);
   PetscValidType(x,1);
-  if (ni > 128) {
-    ierr = PetscMalloc1(ni,&lix);CHKERRQ(ierr);
-  }
-
   ierr = PetscLogEventBegin(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApplyBlock(x->map->mapping,ni,(PetscInt*)ix,lix);CHKERRQ(ierr);
-  ierr = (*x->ops->setvaluesblocked)(x,ni,lix,y,iora);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
-  if (ni > 128) {
-    ierr = PetscFree(lix);CHKERRQ(ierr);
+  if (x->map->mapping) {
+    if (ni > 128) {
+      ierr = PetscMalloc1(ni,&lix);CHKERRQ(ierr);
+    }
+    ierr = ISLocalToGlobalMappingApplyBlock(x->map->mapping,ni,(PetscInt*)ix,lix);CHKERRQ(ierr);
+    ierr = (*x->ops->setvaluesblocked)(x,ni,lix,y,iora);CHKERRQ(ierr);
+    if (ni > 128) {
+      ierr = PetscFree(lix);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = (*x->ops->setvaluesblocked)(x,ni,ix,y,iora);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventEnd(VEC_SetValues,x,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

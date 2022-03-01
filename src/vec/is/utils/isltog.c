@@ -843,11 +843,13 @@ PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscI
 @*/
 PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping mapping,PetscInt N,const PetscInt in[],PetscInt out[])
 {
-  PetscInt       i,Nmax = mapping->n;
-  const PetscInt *idx = mapping->indices;
+  PetscInt       i,Nmax;
+  const PetscInt *idx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
+  Nmax = mapping->n;
+  idx = mapping->indices;
   for (i=0; i<N; i++) {
     if (in[i] < 0) {
       out[i] = in[i];
@@ -1535,10 +1537,11 @@ $        ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,PetscInt nproc, Pe
 PetscErrorCode  ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
 {
   PetscErrorCode ierr;
-  PetscInt       **bindices = NULL,*bnumprocs = NULL,bs = mapping->bs,i,j,k;
+  PetscInt       **bindices = NULL,*bnumprocs = NULL,bs,i,j,k;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
+  bs = mapping->bs;
   ierr = ISLocalToGlobalMappingGetBlockInfo(mapping,nproc,procs,&bnumprocs,&bindices);CHKERRQ(ierr);
   if (bs > 1) { /* we need to expand the cached info */
     ierr = PetscCalloc1(*nproc,&*indices);CHKERRQ(ierr);
