@@ -647,18 +647,10 @@ static PetscErrorCode DMPlexTransformGetCoordinateFE(DMPlexTransform tr, DMPolyt
   PetscFunctionBegin;
   if (!tr->coordFE[ct]) {
     PetscInt  dim, cdim;
-    PetscBool isSimplex;
 
-    switch (ct) {
-      case DM_POLYTOPE_SEGMENT:       dim = 1; isSimplex = PETSC_TRUE;  break;
-      case DM_POLYTOPE_TRIANGLE:      dim = 2; isSimplex = PETSC_TRUE;  break;
-      case DM_POLYTOPE_QUADRILATERAL: dim = 2; isSimplex = PETSC_FALSE; break;
-      case DM_POLYTOPE_TETRAHEDRON:   dim = 3; isSimplex = PETSC_TRUE;  break;
-      case DM_POLYTOPE_HEXAHEDRON:    dim = 3; isSimplex = PETSC_FALSE; break;
-      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No coordinate FE for cell type %s", DMPolytopeTypes[ct]);
-    }
+    dim  = DMPolytopeTypeGetDim(ct);
     ierr = DMGetCoordinateDim(tr->dm, &cdim);CHKERRQ(ierr);
-    ierr = PetscFECreateLagrange(PETSC_COMM_SELF, dim, cdim, isSimplex, 1, PETSC_DETERMINE, &tr->coordFE[ct]);CHKERRQ(ierr);
+    ierr = PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, cdim, ct, 1, PETSC_DETERMINE, &tr->coordFE[ct]);CHKERRQ(ierr);
     {
       PetscDualSpace  dsp;
       PetscQuadrature quad;
