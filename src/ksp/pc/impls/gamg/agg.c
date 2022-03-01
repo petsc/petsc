@@ -1103,11 +1103,7 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
         PetscBool sflg;
         ierr = MatGetOption(Amat, MAT_SPD, &sflg);CHKERRQ(ierr);
         if (sflg) {
-          ierr = KSPGetOptionsPrefix(eksp,&prefix);CHKERRQ(ierr);
-          ierr = PetscOptionsHasName(NULL,prefix,"-ksp_type",&sflg);CHKERRQ(ierr);
-          if (!sflg) {
-            ierr = KSPSetType(eksp, KSPCG);CHKERRQ(ierr);
-          }
+          ierr = KSPSetType(eksp, KSPCG);CHKERRQ(ierr);
         }
       } else {
         ierr = KSPSetType(eksp, pc_gamg->esteig_type);CHKERRQ(ierr);
