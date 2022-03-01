@@ -161,7 +161,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp(ISLocalToGlobalMapping mapping
       ierr = ISLocalToGlobalMappingSetType(mapping,ISLOCALTOGLOBALMAPPINGBASIC);CHKERRQ(ierr);
     }
   }
-  ierr = (*mapping->ops->globaltolocalmappingsetup)(mapping);CHKERRQ(ierr);
+  if (mapping->ops->globaltolocalmappingsetup) { ierr = (*mapping->ops->globaltolocalmappingsetup)(mapping);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
@@ -281,11 +281,14 @@ static PetscErrorCode ISLocalToGlobalMappingDestroy_Hash(ISLocalToGlobalMapping 
 @*/
 PetscErrorCode  ISLocalToGlobalMappingDuplicate(ISLocalToGlobalMapping ltog,ISLocalToGlobalMapping* nltog)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode             ierr;
+  ISLocalToGlobalMappingType l2gtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,1);
   ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)ltog),ltog->bs,ltog->n,ltog->indices,PETSC_COPY_VALUES,nltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetType(ltog,&l2gtype);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingSetType(*nltog,l2gtype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -840,21 +843,18 @@ PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscI
 @*/
 PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping mapping,PetscInt N,const PetscInt in[],PetscInt out[])
 {
+  PetscInt       i,Nmax = mapping->n;
+  const PetscInt *idx = mapping->indices;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
-  {
-    PetscInt i,Nmax = mapping->n;
-    const PetscInt *idx = mapping->indices;
-
-    for (i=0; i<N; i++) {
-      if (in[i] < 0) {
-        out[i] = in[i];
-        continue;
-      }
-      PetscCheckFalse(in[i] >= Nmax,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local block index %" PetscInt_FMT " too large %" PetscInt_FMT " (max) at %" PetscInt_FMT,in[i],Nmax-1,i);
-      out[i] = idx[in[i]];
+  for (i=0; i<N; i++) {
+    if (in[i] < 0) {
+      out[i] = in[i];
+      continue;
     }
+    PetscCheckFalse(in[i] >= Nmax,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local block index %" PetscInt_FMT " too large %" PetscInt_FMT " (max) at %" PetscInt_FMT,in[i],Nmax-1,i);
+    out[i] = idx[in[i]];
   }
   PetscFunctionReturn(0);
 }
@@ -1951,30 +1951,54 @@ PetscErrorCode  ISLocalToGlobalMappingRegister(const char sname[],PetscErrorCode
   Developer Note: ISLocalToGlobalMappingRegister() is used to add new types to ISLocalToGlobalMappingList from which they
   are accessed by ISLocalToGlobalMappingSetType().
 
-.seealso: PCSetType(), ISLocalToGlobalMappingType, ISLocalToGlobalMappingRegister(), ISLocalToGlobalMappingCreate()
-
+.seealso: ISLocalToGlobalMappingType, ISLocalToGlobalMappingRegister(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingGetType()
 @*/
 PetscErrorCode  ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping ltog, ISLocalToGlobalMappingType type)
 {
-  PetscErrorCode ierr,(*r)(ISLocalToGlobalMapping);
+  PetscErrorCode ierr,(*r)(ISLocalToGlobalMapping) = NULL;
   PetscBool      match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,1);
-  PetscValidCharPointer(type,2);
+  if (type) PetscValidCharPointer(type,2);
 
   ierr = PetscObjectTypeCompare((PetscObject)ltog,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFunctionListFind(ISLocalToGlobalMappingList,type,&r);CHKERRQ(ierr);
-  PetscCheckFalse(!r,PetscObjectComm((PetscObject)ltog),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested ISLocalToGlobalMapping type %s",type);
+  /* L2G maps defer type setup at globaltolocal calls, allow passing NULL here */
+  if (type) {
+    ierr = PetscFunctionListFind(ISLocalToGlobalMappingList,type,&r);CHKERRQ(ierr);
+    PetscCheck(r,PetscObjectComm((PetscObject)ltog),PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested ISLocalToGlobalMapping type %s",type);
+  }
   /* Destroy the previous private LTOG context */
   if (ltog->ops->destroy) {
-    ierr              = (*ltog->ops->destroy)(ltog);CHKERRQ(ierr);
+    ierr = (*ltog->ops->destroy)(ltog);CHKERRQ(ierr);
     ltog->ops->destroy = NULL;
   }
   ierr = PetscObjectChangeTypeName((PetscObject)ltog,type);CHKERRQ(ierr);
-  ierr = (*r)(ltog);CHKERRQ(ierr);
+  if (r) { ierr = (*r)(ltog);CHKERRQ(ierr); }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   ISLocalToGlobalMappingGetType - Get the type of the l2g map
+
+   Not Collective
+
+   Input Parameter:
+.  ltog - the ISLocalToGlobalMapping object
+
+   Output Parameter:
+.  type - the type
+
+.seealso: ISLocalToGlobalMappingType, ISLocalToGlobalMappingRegister(), ISLocalToGlobalMappingCreate(), ISLocalToGlobalMappingSetType()
+@*/
+PetscErrorCode  ISLocalToGlobalMappingGetType(ISLocalToGlobalMapping ltog, ISLocalToGlobalMappingType *type)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ltog,IS_LTOGM_CLASSID,1);
+  PetscValidPointer(type,2);
+  *type = ((PetscObject)ltog)->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -1996,7 +2020,6 @@ PetscErrorCode  ISLocalToGlobalMappingRegisterAll(void)
   PetscFunctionBegin;
   if (ISLocalToGlobalMappingRegisterAllCalled) PetscFunctionReturn(0);
   ISLocalToGlobalMappingRegisterAllCalled = PETSC_TRUE;
-
   ierr = ISLocalToGlobalMappingRegister(ISLOCALTOGLOBALMAPPINGBASIC, ISLocalToGlobalMappingCreate_Basic);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingRegister(ISLOCALTOGLOBALMAPPINGHASH, ISLocalToGlobalMappingCreate_Hash);CHKERRQ(ierr);
   PetscFunctionReturn(0);

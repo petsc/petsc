@@ -161,6 +161,7 @@ typedef const char* ISLocalToGlobalMappingType;
 #define ISLOCALTOGLOBALMAPPINGHASH  "hash"
 
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping,ISLocalToGlobalMappingType);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetType(ISLocalToGlobalMapping,ISLocalToGlobalMappingType*);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRegister(const char[],PetscErrorCode (*)(ISLocalToGlobalMapping));
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRegisterAll(void);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,PetscInt,const PetscInt[],PetscCopyMode,ISLocalToGlobalMapping*);

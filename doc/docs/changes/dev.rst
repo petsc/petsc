@@ -81,6 +81,7 @@ Changes: Development
 - Add ``ISGeneralSetIndicesFromMask()``
 - Add ``ISSetLayout()``
 - Add ``PetscSectionSymDistribute()``
+- Add ``ISLocalToGlobalMappingGetType()``
 
 .. rubric:: VecScatter / PetscSF:
 
