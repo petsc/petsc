@@ -1866,7 +1866,7 @@ static PetscErrorCode PetscFECreate_Internal(MPI_Comm comm, PetscInt dim, PetscI
   ierr = PetscSpaceSetNumVariables(P, dim);CHKERRQ(ierr);
   if (degree >= 0) {
     ierr = PetscSpaceSetDegree(P, degree, PETSC_DETERMINE);CHKERRQ(ierr);
-    if (1 && (ct == DM_POLYTOPE_TRI_PRISM || ct == DM_POLYTOPE_TRI_PRISM_TENSOR)) {
+    if (ct == DM_POLYTOPE_TRI_PRISM || ct == DM_POLYTOPE_TRI_PRISM_TENSOR) {
       PetscSpace Pend, Pside;
 
       ierr = PetscSpaceCreate(comm, &Pend);CHKERRQ(ierr);
