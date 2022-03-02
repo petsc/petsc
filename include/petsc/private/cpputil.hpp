@@ -13,7 +13,7 @@ namespace Petsc
 namespace util
 {
 
-#if (__cplusplus >= 201402L) || PetscDefined(HAVE_CXX_DIALECT_CXX14) // C++14
+#if __cplusplus >= 201402L // C++14
 using std::conditional_t;
 using std::remove_const_t;
 using std::add_const_t;
@@ -24,7 +24,7 @@ using std::index_sequence;
 using std::make_index_sequence;
 using std::decay_t;
 using std::tuple_element_t;
-#if (__cplusplus >= 201703L)
+#if __cplusplus >= 201703L
 using std::void_t;
 #else // C++17
 template <class... T> using void_t = void;

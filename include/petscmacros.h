@@ -260,7 +260,7 @@ MC*/
 #endif
 
 /* C++14 features */
-#if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX14)
+#if defined(__cplusplus) && defined(PETSC_HAVE_CXX_DIALECT_CXX14) && __cplusplus >= 201402L
 #  define PETSC_CONSTEXPR_14 constexpr
 #else
 #  define PETSC_CONSTEXPR_14
