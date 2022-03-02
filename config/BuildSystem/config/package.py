@@ -1103,7 +1103,7 @@ If its a remote branch, use: origin/'+self.gitcommit+' for commit.')
       extraFlags = ' -o -' # Force 'hipcc -E' to output to stdout, instead of *.cui files (as of hip-4.0. hip-4.1+ does not need it, but does not get hurt either).
     else:
       extraFlags = ''
-    setattr(self.compilers, flagsArg, oldFlags+extraFlags+' '+self.headers.toString(self.include))
+    setattr(self.compilers, flagsArg, oldFlags+extraFlags+' '+self.headers.toString(self.dinclude))
     self.compilers.saveLog()
 
     # X.py uses a weird list of two headers.
