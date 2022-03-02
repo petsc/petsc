@@ -107,26 +107,85 @@ C Formatting
    ``PetscReal a, b, c``.
 
 #. The prototypes for functions should not include the names of the
-   variables; for example, write
+   variables
 
    ::
 
-       PETSC_EXTERN PetscErrorCode MyFunction(PetscInt);
+       PETSC_EXTERN PetscErrorCode MyFunction(PetscInt); // Correct
+       PETSC_EXTERN PetscErrorCode MyFunction(PetscInt myvalue); // Incorrect
 
-   not
+#. All local variables of a particular type (for example, ``PetscInt``) should be listed
+   on the same line if possible; otherwise, they should be listed on adjacent lines. Note
+   that pointers of different arity are considered to be different types
 
    ::
 
-       PETSC_EXTERN PetscErrorCode MyFunction(PetscInt myvalue); /* Incorrect */
+      // Correct
+      PetscInt a,b,c;
+      PetscInt *d,*e;
+      PetscInt **f;
 
-#. All local variables of a particular type (for example, ``PetscInt``)
-   should be listed on the same line if possible; otherwise, they should
-   be listed on adjacent lines.
+      // Incorrect
+      PetscInt a,b,c,*d,*e,**f;
 
-#. Equal signs should be aligned in regions where possible.
+#. Equal signs should be aligned in regions where possible, but are allowed to not be
+   aligned across comments, empty lines, or preprocessor directives.
+
+   ::
+
+      // Correct
+      bob   = 1;
+      alice = 2;
+
+      // Correct, broken by an allowed delimiter
+      bob = 1;
+
+      alice = 2;
+
+      bob = 1;
+      // a very instructive comment
+      alice = 2;
+
+      // Incorrect
+      bob = 1;
+      alice = 2;
 
 #. There *must* be a single blank line between the local variable
    declarations and the body of the function.
+
+   ::
+
+      // Correct
+      PetscInt x;
+
+      PetscFunctionBegin;
+
+      // Incorrect
+      PetscInt x;
+      PetscFunctionBegin;
+
+#. All PETSc functions must have their return value checked for errors using the
+   ``CHKERRQ()`` macro. This should be wrapped around the function in question.
+
+   ::
+
+      CHKERRQ(MyFunction(...)); // Correct
+      PetscErrorCode ierr = MyFunction(...);CHKERRQ(ierr); // Incorrect
+
+   The only exceptions to this rule are begin-end style macros which embed local variables
+   or loops as part of their expansion
+   (e.g. ``PetscOptionsBegin()``/``PetscOptionsEnd()``).  These should assign to ``ierr``
+   and place the ``CHKERRQ()`` call immediately afterwards on the same line
+
+   ::
+
+      // Correct
+      ierr = PetscOptionsBegin(...);CHKERRQ(ierr);
+      ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+      // Incorrect
+      CHKERRQ(PetscOptionsBegin(...));
+      CHKERRQ(PetscOptionsEnd());
 
 #. Indentation for ``if`` statements *must* be done as follows.
 
@@ -166,20 +225,16 @@ C Formatting
          a single indented line
        }
 
-   Note that error checking is a separate statement, so the following is
-   *incorrect*
-
-   ::
-
-       if ( ) ierr = XXX();CHKERRQ(ierr); /* Incorrect */
-
-   and instead you should use
+   Note that error checking is a complete statement, so should be put inline with the
+   ``if`` statement
 
    ::
 
        if ( ) {
-         ierr = XXX();CHKERRQ(ierr);
+         CHKERRQ(XXX()); /* Incorrect */
        }
+
+       if ( ) CHKERRQ(XXX()); /* Correct */
 
 #. Always have a space between ``if`` or ``for`` and the following
    ``()``.
@@ -202,9 +257,22 @@ C Formatting
    See the next item for an exception. The closing
    brace should *always* be on its own line.
 
-#. In function declarations, the opening brace
-   should be on the *next* line, not on the same line as the function
-   name and arguments. This is an exception to the previous item.
+#. In function declarations, the opening brace should be on the *next* line, not on the
+   same line as the function name and arguments. This is an exception to the previous
+   item.
+
+   ::
+
+      // Correct
+      PetscErrorCode Foo(...)
+      {
+
+      }
+
+      // Incorrect
+      PetscErrorCode Foo(...) {
+
+      }
 
 #. Do not leave sections of commented-out code in the source files.
 
@@ -218,14 +286,31 @@ C Formatting
      if (cond) {
        PetscScalar *tmp;
 
-       ierr = PetscMalloc1(10,&tmp);CHKERRQ(ierr);
+       CHKERRQ(PetscMalloc1(10,&tmp));
        // use tmp
-       ierr = PetscFree(tmp);CHKERRQ(ierr);
+       CHKERRQ(PetscFree(tmp));
      }
 
-   It is also permissible to use ``for`` loop declarations::
+   The only exception to this variables used exclusively within a ``for`` loop, which must
+   be declared inside the loop initializer::
 
-     for (PetscInt i=0; i<n; i++) {
+     // Correct
+     for (PetscInt i=0; i<n; ++i) {
+       // loop body
+     }
+
+     // Correct, variable used outside of loop
+     PetscInt i;
+
+     for (i=0; i<n; ++i) {
+       // loop body
+     }
+     j = i;
+
+     // Incorrect
+     PetscInt i;
+     ...
+     for (i=0; i<n; ++i) {
        // loop body
      }
 
@@ -233,29 +318,39 @@ C Formatting
 
    ::
 
-       ierr = PetscMalloc1( 10,&a );CHKERRQ(ierr); /* Incorrect */
+       CHKERRQ(PetscMalloc1( 10,&a )); /* Incorrect */
 
    but instead write
 
    ::
 
-       ierr = PetscMalloc1(10,&a);CHKERRQ(ierr);
+       CHKERRQ(PetscMalloc1(10,&a));
 
 #. Do not use a space after the ``)`` in a cast or between the type and
    the ``*`` in a cast.
+
+   ::
+
+      // Correct
+      (PetscInt)x;
+      (PetscInt*)y;
+
+      // Incorrect
+      (PetscInt) x;
+      (PetscInt *)y;
 
 #. Do not include a space before or after a comma in lists. That is, do
    not write
 
    ::
 
-       ierr = func(a, 22.0);CHKERRQ(ierr); /* Incorrect */
+       CHKERRQ(func(a, 22.0)); /* Incorrect */
 
    but instead write
 
    ::
 
-       ierr = func(a,22.0);CHKERRQ(ierr);
+       CHKERRQ(func(a,22.0));
 
 C Usage
 ~~~~~~~
@@ -420,18 +515,6 @@ Usage of PETSc Functions and Macros
    character-width-rule. Try to make error messages short but
    informative.
 
-#. Do not include a space before ``CHKXXX()``. That is, do not write
-
-   ::
-
-       ierr = PetscMalloc1(10,&a); CHKERRQ(ierr); /* Incorrect */
-
-   but instead write
-
-   ::
-
-       ierr = PetscMalloc1(10,&a);CHKERRQ(ierr);
-
 #. Except in code that may be called before PETSc is fully initialized,
    always use ``PetscMallocN()`` (for example, ``PetscMalloc1()``),
    ``PetscCallocN()``, ``PetscNew()``, and ``PetscFree()``, not
@@ -462,21 +545,25 @@ Usage of PETSc Functions and Macros
    accumulate flops and then call ``PetscLogFlops();`` *always* just
    call ``PetscLogFlops()`` directly when needed.
 
-#. Library functions should be declared
-   ``PETSC_INTERN`` if they are intended to be visible only within a
-   single PETSc shared library. They should be declared ``PETSC_EXTERN``
-   if intended to be visible across shared libraries. Note that PETSc
-   can be configured to build a separate shared library for each
-   top-level class (``Mat``, ``Vec``, ``KSP``, and so on) and that
-   plugin implementations of these classes can be included as separate
-   shared libraries; thus, private functions may need to be marked
-   ``PETSC_EXTERN``. For example,
+#. Library symbols meant to be directly usable by the user should be declared
+   ``PETSC_EXTERN`` in their respective public header-file. Symbols intended to be for
+   internal use only should instead be declared ``PETSC_INTERN``. Note that doing so is
+   not necessary in the case of symbols local to a single translation unit, these should
+   be declared ``static``. Note that PETSc can be configured to build a separate shared
+   library for each top-level class (``Mat``, ``Vec``, ``KSP``, and so on) and that plugin
+   implementations of these classes can be included as separate shared libraries; thus,
+   otherwise private symbols may need to be marked ``PETSC_SINGLE_LIBRARY_INTERN``. For
+   example
 
-   -  ``MatStashCreatePrivate`` is marked ``PETSC_INTERN`` as it is used
+   -  ``MatStashCreate_Private()`` is marked ``PETSC_INTERN`` as it is used
       across compilation units, but only within the ``Mat`` package;
 
    -  all functions, such as ``KSPCreate()``, included in the public
       headers (``include/petsc*.h``) should be marked ``PETSC_EXTERN``;
+
+   - ``PetscDeviceInitializeDefaultDevice_Internal()`` is marked
+     ``PETSC_SINGLE_LIBRARY_INTERN`` as it may be used across library boundaries, but is
+     not intended to be visible to users;
 
 #. Before removing or renaming an API function, type, or enumerator,
    ``PETSC_DEPRECATED_XXX()`` should be used in the relevant header file

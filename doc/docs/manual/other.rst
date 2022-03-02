@@ -548,13 +548,13 @@ possibly user-defined routines as well) with
 
 .. code-block::
 
-   ierr = PetscRoutine(...);CHKERRQ(PetscErrorCode ierr);
+   CHKERRQ(PetscRoutine(...));
 
 Likewise, all memory allocations should be checked with
 
 .. code-block::
 
-   ierr = PetscMalloc1(n, &ptr);CHKERRQ(ierr);
+   CHKERRQ(PetscMalloc1(n,&ptr));
 
 If this procedure is followed throughout all of the user’s libraries and
 codes, any error will by default generate a clean traceback of the

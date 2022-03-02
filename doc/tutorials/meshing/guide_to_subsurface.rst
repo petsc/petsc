@@ -80,7 +80,7 @@ We next create a label marking each cell in the mesh with an action, such as `DM
 
 .. literalinclude:: /../src/dm/impls/plex/tutorials/ex10.c
    :start-at: while (adapt) {
-   :end-at: ierr = DMLabelDestroy(&adaptLabel);CHKERRQ(ierr);
+   :end-at: CHKERRQ(DMLabelDestroy(&adaptLabel));
    :append: }
 
 Test 3 from `ex10` constrains the headwater cells (with marker 1) to have volume less than 0.01, and the river channel cells (with marker 2) to be smaller than 0.000625

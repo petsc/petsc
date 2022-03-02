@@ -96,7 +96,7 @@ its arguments. For example:
 
 .. code-block::
 
-    SETERRQ(comm,PETSC_ERR,"Iteration overflow: its %D norm %g",its,(double)norm);
+    SETERRQ(comm,PETSC_ERR,"Iteration overflow: its %" PetscInt_FMT " norm %g",its,(double)norm);
 
 Error Handlers
 ~~~~~~~~~~~~~~
