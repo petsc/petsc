@@ -201,7 +201,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* Return if there are no edges in the decomposition and the problem is not singular */
-  ierr = MatGetLocalToGlobalMapping(pc->pmat,&al2g,NULL);CHKERRQ(ierr);
+  ierr = MatISGetLocalToGlobalMapping(pc->pmat,&al2g,NULL);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetSize(al2g,&n);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   if (!singular) {
@@ -376,7 +376,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
 
   /* SF for nodal dofs communications */
   ierr = MatGetLocalSize(G,NULL,&Lv);CHKERRQ(ierr);
-  ierr = MatGetLocalToGlobalMapping(lGis,NULL,&vl2g);CHKERRQ(ierr);
+  ierr = MatISGetLocalToGlobalMapping(lGis,NULL,&vl2g);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)vl2g);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetSize(vl2g,&nv);CHKERRQ(ierr);
   ierr = PetscSFCreate(comm,&sfv);CHKERRQ(ierr);
@@ -1485,9 +1485,9 @@ PetscErrorCode PCBDDCComputeNoNetFlux(Mat A, Mat divudotp, PetscBool transpose, 
   /* create vectors to hold quadrature weights */
   ierr = MatCreateVecs(A,&quad_vec,NULL);CHKERRQ(ierr);
   if (!transpose) {
-    ierr = MatGetLocalToGlobalMapping(A,&map,NULL);CHKERRQ(ierr);
+    ierr = MatISGetLocalToGlobalMapping(A,&map,NULL);CHKERRQ(ierr);
   } else {
-    ierr = MatGetLocalToGlobalMapping(A,NULL,&map);CHKERRQ(ierr);
+    ierr = MatISGetLocalToGlobalMapping(A,NULL,&map);CHKERRQ(ierr);
   }
   ierr = VecDuplicateVecs(quad_vec,maxneighs,&quad_vecs);CHKERRQ(ierr);
   ierr = VecDestroy(&quad_vec);CHKERRQ(ierr);
@@ -2390,11 +2390,8 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
             ierr = PetscSectionGetDof(subSection,p,&dof);CHKERRQ(ierr);
             for (s = 0; s < dof-cdof; s++) {
               if (PetscBTLookupSet(btvt,off+s)) continue;
-              if (!PetscBTLookup(btv,off+s)) {
-                ids[cum++] = off+s;
-              } else { /* cross-vertex */
-                pids[cump++] = off+s;
-              }
+              if (!PetscBTLookup(btv,off+s)) ids[cum++] = off+s;
+              else pids[cump++] = off+s; /* cross-vertex */
             }
             ierr = DMPlexGetTreeParent(dm,p,&pp,NULL);CHKERRQ(ierr);
             if (pp != p) {
@@ -2403,11 +2400,8 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
               ierr = PetscSectionGetDof(subSection,pp,&dof);CHKERRQ(ierr);
               for (s = 0; s < dof-cdof; s++) {
                 if (PetscBTLookupSet(btvt,off+s)) continue;
-                if (!PetscBTLookup(btv,off+s)) {
-                  ids[cum++] = off+s;
-                } else { /* cross-vertex */
-                  pids[cump++] = off+s;
-                }
+                if (!PetscBTLookup(btv,off+s)) ids[cum++] = off+s;
+                else pids[cump++] = off+s; /* cross-vertex */
               }
             }
           }
@@ -2533,6 +2527,7 @@ PetscErrorCode PCBDDCBenignCheck(PC pc, IS zerodiag)
 PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, PetscBool reuse, IS *zerodiaglocal)
 {
   PC_BDDC*       pcbddc = (PC_BDDC*)pc->data;
+  Mat_IS*        matis = (Mat_IS*)(pc->pmat->data);
   IS             pressures = NULL,zerodiag = NULL,*bzerodiag = NULL,zerodiag_save,*zerodiag_subs;
   PetscInt       nz,n,benign_n,bsp = 1;
   PetscInt       *interior_dofs,n_interior_dofs,nneu;
@@ -2649,8 +2644,8 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, PetscBool reuse, IS *zerodia
     PetscInt n_neigh,*neigh,*n_shared,**shared;
     PetscInt *iwork;
 
-    ierr = ISLocalToGlobalMappingGetSize(pc->pmat->rmap->mapping,&n);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetInfo(pc->pmat->rmap->mapping,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(matis->rmapping,&n);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetInfo(matis->rmapping,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
     ierr = PetscCalloc1(n,&iwork);CHKERRQ(ierr);
     ierr = PetscMalloc1(n,&interior_dofs);CHKERRQ(ierr);
     for (i=1;i<n_neigh;i++)
@@ -2660,7 +2655,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, PetscBool reuse, IS *zerodia
       if (!iwork[i])
         interior_dofs[n_interior_dofs++] = i;
     ierr = PetscFree(iwork);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingRestoreInfo(pc->pmat->rmap->mapping,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreInfo(matis->rmapping,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
   }
   if (has_null_pressures) {
     IS             *subs;
@@ -2668,7 +2663,6 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, PetscBool reuse, IS *zerodia
     const PetscInt *idxs;
     PetscScalar    *array;
     Vec            *work;
-    Mat_IS*        matis = (Mat_IS*)(pc->pmat->data);
 
     subs  = pcbddc->local_subs;
     nsubs = pcbddc->n_local_subs;
@@ -2860,7 +2854,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, PetscBool reuse, IS *zerodia
     } else {
       isused = zerodiag_save;
     }
-    ierr = MatGetLocalToGlobalMapping(pc->pmat,&l2gmap,NULL);CHKERRQ(ierr);
+    ierr = MatISGetLocalToGlobalMapping(pc->pmat,&l2gmap,NULL);CHKERRQ(ierr);
     ierr = MatISGetLocalMat(pc->pmat,&A);CHKERRQ(ierr);
     ierr = MatGetLocalSize(A,&n,NULL);CHKERRQ(ierr);
     PetscCheckFalse(!isused && n,PETSC_COMM_SELF,PETSC_ERR_USER,"Don't know how to extract div u dot p! Please provide the pressure field");
@@ -2990,7 +2984,7 @@ project_b0:
       ierr = MatDestroy(&M);CHKERRQ(ierr);
     }
     /* store global idxs for p0 */
-    ierr = ISLocalToGlobalMappingApply(pc->pmat->rmap->mapping,pcbddc->benign_n,pcbddc->benign_p0_lidx,pcbddc->benign_p0_gidx);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingApply(matis->rmapping,pcbddc->benign_n,pcbddc->benign_p0_lidx,pcbddc->benign_p0_gidx);CHKERRQ(ierr);
   }
   *zerodiaglocal = zerodiag;
   PetscFunctionReturn(0);
@@ -5076,7 +5070,7 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
   ierr = MatDestroy(&pcbddc->local_mat);CHKERRQ(ierr);
   ierr = MatGetSize(matis->A,&local_size,NULL);CHKERRQ(ierr);
   ierr = ISCreateStride(PetscObjectComm((PetscObject)matis->A),local_size,0,1,&is_local);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApplyIS(pc->pmat->rmap->mapping,is_local,&is_global);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApplyIS(matis->rmapping,is_local,&is_global);CHKERRQ(ierr);
   ierr = ISDestroy(&is_local);CHKERRQ(ierr);
   ierr = MatCreateSubMatrixUnsorted(ChangeOfBasisMatrix,is_global,is_global,&new_mat);CHKERRQ(ierr);
   ierr = ISDestroy(&is_global);CHKERRQ(ierr);
@@ -7107,9 +7101,9 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       IS             is_global;
       const PetscInt *gidxs;
 
-      ierr = ISLocalToGlobalMappingGetIndices(pc->pmat->rmap->mapping,&gidxs);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingGetIndices(matis->rmapping,&gidxs);CHKERRQ(ierr);
       ierr = ISCreateGeneral(PetscObjectComm((PetscObject)pc),pcis->n,gidxs,PETSC_COPY_VALUES,&is_global);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingRestoreIndices(pc->pmat->rmap->mapping,&gidxs);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingRestoreIndices(matis->rmapping,&gidxs);CHKERRQ(ierr);
       ierr = MatCreateSubMatrixUnsorted(pcbddc->ChangeOfBasisMatrix,is_global,is_global,&pcbddc->switch_static_change);CHKERRQ(ierr);
       ierr = ISDestroy(&is_global);CHKERRQ(ierr);
     }
@@ -7182,7 +7176,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
     ierr = PCBDDCGraphReset(pcbddc->mat_graph);CHKERRQ(ierr);
     /* Init local Graph struct */
     ierr = MatGetSize(pc->pmat,&N,NULL);CHKERRQ(ierr);
-    ierr = MatGetLocalToGlobalMapping(pc->pmat,&map,NULL);CHKERRQ(ierr);
+    ierr = MatISGetLocalToGlobalMapping(pc->pmat,&map,NULL);CHKERRQ(ierr);
     ierr = PCBDDCGraphInit(pcbddc->mat_graph,map,N,pcbddc->graphmaxcount);CHKERRQ(ierr);
 
     if (pcbddc->user_primal_vertices_local && !pcbddc->user_primal_vertices) {
@@ -7317,18 +7311,19 @@ PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt *nio, Vec vecs[])
 
 PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomains, PetscInt redprocs, IS* is_sends, PetscBool *have_void)
 {
-  Mat            A;
-  PetscInt       n_neighs,*neighs,*n_shared,**shared;
-  PetscMPIInt    size,rank,color;
-  PetscInt       *xadj,*adjncy;
-  PetscInt       *adjncy_wgt,*v_wgt,*ranks_send_to_idx;
-  PetscInt       im_active,active_procs,N,n,i,j,threshold = 2;
-  PetscInt       void_procs,*procs_candidates = NULL;
-  PetscInt       xadj_count,*count;
-  PetscBool      ismatis,use_vwgt=PETSC_FALSE;
-  PetscSubcomm   psubcomm;
-  MPI_Comm       subcomm;
-  PetscErrorCode ierr;
+  ISLocalToGlobalMapping mapping;
+  Mat                    A;
+  PetscInt               n_neighs,*neighs,*n_shared,**shared;
+  PetscMPIInt            size,rank,color;
+  PetscInt               *xadj,*adjncy;
+  PetscInt               *adjncy_wgt,*v_wgt,*ranks_send_to_idx;
+  PetscInt               im_active,active_procs,N,n,i,j,threshold = 2;
+  PetscInt               void_procs,*procs_candidates = NULL;
+  PetscInt               xadj_count,*count;
+  PetscBool              ismatis,use_vwgt=PETSC_FALSE;
+  PetscSubcomm           psubcomm;
+  MPI_Comm               subcomm;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -7390,7 +7385,8 @@ PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomain
   threshold = PetscMax(threshold,2);
 
   /* Get info on mapping */
-  ierr = ISLocalToGlobalMappingGetInfo(mat->rmap->mapping,&n_neighs,&neighs,&n_shared,&shared);CHKERRQ(ierr);
+  ierr = MatISGetLocalToGlobalMapping(mat,&mapping,NULL);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetInfo(mapping,&n_neighs,&neighs,&n_shared,&shared);CHKERRQ(ierr);
 
   /* build local CSR graph of subdomains' connectivity */
   ierr = PetscMalloc1(2,&xadj);CHKERRQ(ierr);
@@ -7416,7 +7412,7 @@ PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomain
   }
   xadj[1] = xadj_count;
   ierr = PetscFree(count);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRestoreInfo(mat->rmap->mapping,&n_neighs,&neighs,&n_shared,&shared);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreInfo(mapping,&n_neighs,&neighs,&n_shared,&shared);CHKERRQ(ierr);
   ierr = PetscSortIntWithArray(xadj[1],adjncy,adjncy_wgt);CHKERRQ(ierr);
 
   ierr = PetscMalloc1(1,&ranks_send_to_idx);CHKERRQ(ierr);
@@ -7721,7 +7717,7 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
   }
 
   /* Get data from local matrices */
-  PetscCheckFalse(!isdense,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Subassembling of AIJ local matrices not yet implemented");
+  PetscCheck(isdense,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Subassembling of AIJ local matrices not yet implemented");
     /* TODO: See below some guidelines on how to prepare the local buffers */
     /*
        send_buffer_vals should contain the raw values of the local matrix
@@ -7731,15 +7727,18 @@ PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_subdomain
        - PetscInt        global_row_indices[size_of_l2gmap]
        - PetscInt        all_other_info_which_is_needed_to_compute_preallocation_and_set_values
     */
-  else {
+  {
+    ISLocalToGlobalMapping mapping;
+
+    ierr = MatISGetLocalToGlobalMapping(mat,&mapping,NULL);CHKERRQ(ierr);
     ierr = MatDenseGetArrayRead(local_mat,&send_buffer_vals);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetSize(mat->rmap->mapping,&i);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(mapping,&i);CHKERRQ(ierr);
     ierr = PetscMalloc1(i+2,&send_buffer_idxs);CHKERRQ(ierr);
     send_buffer_idxs[0] = (PetscInt)MATDENSE_PRIVATE;
     send_buffer_idxs[1] = i;
-    ierr = ISLocalToGlobalMappingGetIndices(mat->rmap->mapping,(const PetscInt**)&ptr_idxs);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(mapping,(const PetscInt**)&ptr_idxs);CHKERRQ(ierr);
     ierr = PetscArraycpy(&send_buffer_idxs[2],ptr_idxs,i);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingRestoreIndices(mat->rmap->mapping,(const PetscInt**)&ptr_idxs);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(mapping,(const PetscInt**)&ptr_idxs);CHKERRQ(ierr);
     ierr = PetscMPIIntCast(i,&len);CHKERRQ(ierr);
     for (i=0;i<n_sends;i++) {
       ilengths_vals[is_indices[i]] = len*len;
@@ -8601,7 +8600,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         ierr = MPI_Scan(&n,&st,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)coarse_mat));CHKERRMPI(ierr);
         st   = st-n;
         ierr = ISCreateStride(PetscObjectComm((PetscObject)coarse_mat),1,st,1,&row);CHKERRQ(ierr);
-        ierr = MatGetLocalToGlobalMapping(coarse_mat,&l2gmap,NULL);CHKERRQ(ierr);
+        ierr = MatISGetLocalToGlobalMapping(coarse_mat,&l2gmap,NULL);CHKERRQ(ierr);
         ierr = ISLocalToGlobalMappingGetSize(l2gmap,&n);CHKERRQ(ierr);
         ierr = ISLocalToGlobalMappingGetIndices(l2gmap,&gidxs);CHKERRQ(ierr);
         ierr = ISCreateGeneral(PetscObjectComm((PetscObject)coarse_mat),n,gidxs,PETSC_COPY_VALUES,&col);CHKERRQ(ierr);

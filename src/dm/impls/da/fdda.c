@@ -1,6 +1,7 @@
 
 #include <petsc/private/dmdaimpl.h> /*I      "petscdmda.h"     I*/
 #include <petscmat.h>
+#include <petscbt.h>
 
 extern PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM,ISColoringType,ISColoring*);
 extern PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM,ISColoringType,ISColoring*);
@@ -540,12 +541,12 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da,ISColoringType ctype,ISCo
 }
 
 /* =========================================================================== */
-extern PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM,Mat,PetscBool);
+extern PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM,Mat);
 extern PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM,Mat);
-extern PetscErrorCode DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(DM,Mat,PetscBool);
-extern PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM,Mat,PetscBool);
+extern PetscErrorCode DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(DM,Mat);
+extern PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM,Mat);
 extern PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM,Mat);
-extern PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM,Mat,PetscBool);
+extern PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM,Mat);
 extern PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM,Mat);
 extern PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM,Mat);
 extern PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM,Mat);
@@ -762,22 +763,22 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
         ierr = DMDAGetInfo(da,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,&bx,NULL,NULL,NULL);CHKERRQ(ierr);
         ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRMPI(ierr);
         if (size == 1 && bx == DM_BOUNDARY_NONE) {
-          ierr = DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(da,A,PETSC_FALSE);CHKERRQ(ierr);
+          ierr = DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(da,A);CHKERRQ(ierr);
         } else {
-          ierr = DMCreateMatrix_DA_1d_MPIAIJ(da,A,PETSC_FALSE);CHKERRQ(ierr);
+          ierr = DMCreateMatrix_DA_1d_MPIAIJ(da,A);CHKERRQ(ierr);
         }
       }
     } else if (dim == 2) {
       if (dd->ofill) {
         ierr = DMCreateMatrix_DA_2d_MPIAIJ_Fill(da,A);CHKERRQ(ierr);
       } else {
-        ierr = DMCreateMatrix_DA_2d_MPIAIJ(da,A,PETSC_FALSE);CHKERRQ(ierr);
+        ierr = DMCreateMatrix_DA_2d_MPIAIJ(da,A);CHKERRQ(ierr);
       }
     } else if (dim == 3) {
       if (dd->ofill) {
         ierr = DMCreateMatrix_DA_3d_MPIAIJ_Fill(da,A);CHKERRQ(ierr);
       } else {
-        ierr = DMCreateMatrix_DA_3d_MPIAIJ(da,A,PETSC_FALSE);CHKERRQ(ierr);
+        ierr = DMCreateMatrix_DA_3d_MPIAIJ(da,A);CHKERRQ(ierr);
       }
     }
   } else if (baij) {
@@ -827,83 +828,61 @@ PETSC_EXTERN PetscErrorCode MatISSetPreallocation_IS(Mat,PetscInt,const PetscInt
 PetscErrorCode DMCreateMatrix_DA_IS(DM dm,Mat J)
 {
   DM_DA                  *da = (DM_DA*)dm->data;
-  Mat                    lJ;
+  Mat                    lJ,P;
   ISLocalToGlobalMapping ltog;
-  IS                     is_loc_filt, is_glob;
+  IS                     is;
+  PetscBT                bt;
   const PetscInt         *e_loc,*idx;
-  PetscInt               nel,nen,nv,dof,dim,*gidx,nb;
-  PetscBool              flg;
+  PetscInt               i,nel,nen,nv,dof,*gidx,n,N;
   PetscErrorCode         ierr;
 
   /* The l2g map of DMDA has all ghosted nodes, and e_loc is a subset of all the local nodes (including the ghosted)
-     We need to filter the local indices that are represented through the DMDAGetElements decomposition
-     This is because the size of the local matrices in MATIS is the local size of the l2g map */
+     We need to filter out the local indices that are not represented through the DMDAGetElements decomposition */
   PetscFunctionBegin;
   dof  = da->w;
-  dim  = dm->dim;
-
   ierr = MatSetBlockSize(J,dof);CHKERRQ(ierr);
-
-  /* get local elements indices in local DMDA numbering */
-  ierr = DMDAGetElements(dm,&nel,&nen,&e_loc);CHKERRQ(ierr); /* this will throw an error if the stencil type is not DMDA_STENCIL_BOX */
-  ierr = ISCreateBlock(PetscObjectComm((PetscObject)dm),dof,nel*nen,e_loc,PETSC_COPY_VALUES,&is_loc_filt);CHKERRQ(ierr);
-  ierr = DMDARestoreElements(dm,&nel,&nen,&e_loc);CHKERRQ(ierr);
-
-  /* obtain a consistent local ordering for MATIS */
-  ierr = ISSortRemoveDups(is_loc_filt);CHKERRQ(ierr);
-  ierr = ISBlockGetLocalSize(is_loc_filt,&nb);CHKERRQ(ierr);
   ierr = DMGetLocalToGlobalMapping(dm,&ltog);CHKERRQ(ierr);
+
+  /* flag local elements indices in local DMDA numbering */
   ierr = ISLocalToGlobalMappingGetSize(ltog,&nv);CHKERRQ(ierr);
-  ierr = PetscMalloc1(PetscMax(nb,nv/dof),&gidx);CHKERRQ(ierr);
-  ierr = ISBlockGetIndices(is_loc_filt,&idx);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApplyBlock(ltog,nb,idx,gidx);CHKERRQ(ierr);
-  ierr = ISBlockRestoreIndices(is_loc_filt,&idx);CHKERRQ(ierr);
-  ierr = ISCreateBlock(PetscObjectComm((PetscObject)dm),dof,nb,gidx,PETSC_USE_POINTER,&is_glob);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreateIS(is_glob,&ltog);CHKERRQ(ierr);
-  ierr = ISDestroy(&is_glob);CHKERRQ(ierr);
+  ierr = PetscBTCreate(nv/dof,&bt);CHKERRQ(ierr);
+  ierr = DMDAGetElements(dm,&nel,&nen,&e_loc);CHKERRQ(ierr); /* this will throw an error if the stencil type is not DMDA_STENCIL_BOX */
+  for (i=0;i<nel*nen;i++) { ierr = PetscBTSet(bt,e_loc[i]);CHKERRQ(ierr); }
+
+  /* filter out (set to -1) the global indices not used by the local elements */
+  ierr = PetscMalloc1(nv/dof,&gidx);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetBlockIndices(ltog,&idx);CHKERRQ(ierr);
+  ierr = PetscArraycpy(gidx,idx,nv/dof);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreBlockIndices(ltog,&idx);CHKERRQ(ierr);
+  for (i=0;i<nv/dof;i++) if (!PetscBTLookup(bt,i)) gidx[i] = -1;
+  ierr = PetscBTDestroy(&bt);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PetscObjectComm((PetscObject)dm),dof,nv/dof,gidx,PETSC_OWN_POINTER,&is);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreateIS(is,&ltog);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(J,ltog,ltog);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
 
-  /* We also attach a l2g map to the local matrices to have MatSetValueLocal to work */
+  /* Preallocation */
   ierr = MatISGetLocalMat(J,&lJ);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreateIS(is_loc_filt,&ltog);CHKERRQ(ierr);
-  ierr = ISDestroy(&is_loc_filt);CHKERRQ(ierr);
-  ierr = ISCreateStride(PetscObjectComm((PetscObject)lJ),nv/dof,0,1,&is_glob);CHKERRQ(ierr);
-  ierr = ISGetIndices(is_glob,&idx);CHKERRQ(ierr);
-  ierr = ISGlobalToLocalMappingApplyBlock(ltog,IS_GTOLM_MASK,nv/dof,idx,&nb,gidx);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is_glob,&idx);CHKERRQ(ierr);
-  ierr = ISDestroy(&is_glob);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
-  ierr = ISCreateBlock(PETSC_COMM_SELF,dof,nb,gidx,PETSC_USE_POINTER,&is_loc_filt);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreateIS(is_loc_filt,&ltog);CHKERRQ(ierr);
-  ierr = ISDestroy(&is_loc_filt);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(lJ,ltog,ltog);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
-  ierr = PetscFree(gidx);CHKERRQ(ierr);
-
-  /* Preallocation (not exact): we reuse the preallocation routines of the assembled version  */
-  flg = dm->prealloc_only;
-  dm->prealloc_only = PETSC_TRUE;
-  switch (dim) {
-  case 1:
-    ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",MatISSetPreallocation_IS);CHKERRQ(ierr);
-    ierr = DMCreateMatrix_DA_1d_MPIAIJ(dm,J,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
-    break;
-  case 2:
-    ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",MatISSetPreallocation_IS);CHKERRQ(ierr);
-    ierr = DMCreateMatrix_DA_2d_MPIAIJ(dm,J,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
-    break;
-  case 3:
-    ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",MatISSetPreallocation_IS);CHKERRQ(ierr);
-    ierr = DMCreateMatrix_DA_3d_MPIAIJ(dm,J,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunction((PetscObject)J,"MatMPIAIJSetPreallocation_C",NULL);CHKERRQ(ierr);
-    break;
-  default:
-    SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unhandled dimension %d",dim);
+  ierr = MatGetLocalToGlobalMapping(lJ,&ltog,NULL);CHKERRQ(ierr);
+  ierr = MatCreate(PetscObjectComm((PetscObject)lJ),&P);CHKERRQ(ierr);
+  ierr = MatSetType(P,MATPREALLOCATOR);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(P,ltog,ltog);CHKERRQ(ierr);
+  ierr = MatGetSize(lJ,&N,NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(lJ,&n,NULL);CHKERRQ(ierr);
+  ierr = MatSetSizes(P,n,n,N,N);CHKERRQ(ierr);
+  ierr = MatSetBlockSize(P,dof);CHKERRQ(ierr);
+  ierr = MatSetUp(P);CHKERRQ(ierr);
+  for (i=0;i<nel;i++) {
+    ierr = MatSetValuesBlockedLocal(P,nen,e_loc+i*nen,nen,e_loc+i*nen,NULL,INSERT_VALUES);CHKERRQ(ierr);
   }
-  dm->prealloc_only = flg;
+  ierr = MatPreallocatorPreallocate(P,(PetscBool)!da->prealloc_only,lJ);CHKERRQ(ierr);
+  ierr = MatISRestoreLocalMat(J,&lJ);CHKERRQ(ierr);
+  ierr = DMDARestoreElements(dm,&nel,&nen,&e_loc);CHKERRQ(ierr);
+  ierr = MatDestroy(&P);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1125,7 +1104,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM da,Mat J)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J,PetscBool isIS)
+PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny,m,n,dim,s,*cols = NULL,k,nc,*rows = NULL,col,cnt,l,p,M,N;
@@ -1143,7 +1122,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J,PetscBool isIS)
 
   */
   ierr = DMDAGetInfo(da,&dim,&m,&n,&M,&N,NULL,NULL,&nc,&s,&bx,&by,NULL,&st);CHKERRQ(ierr);
-  if (!isIS && bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE) {
+  if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE) {
     ierr = MatSetOption(J,MAT_SORTED_FULL,PETSC_TRUE);CHKERRQ(ierr);
   }
   col  = 2*s + 1;
@@ -1164,7 +1143,6 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da,Mat J,PetscBool isIS)
   /* determine the matrix preallocation information */
   ierr = MatPreallocateInitialize(comm,nc*nx*ny,nc*nx*ny,dnz,onz);CHKERRQ(ierr);
   for (i=xs; i<xs+nx; i++) {
-
     pstart = (bx == DM_BOUNDARY_PERIODIC) ? -s : (PetscMax(-s,-i));
     pend   = (bx == DM_BOUNDARY_PERIODIC) ?  s : (PetscMin(s,m-i-1));
 
@@ -1381,7 +1359,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
 
 /* ---------------------------------------------------------------------------------*/
 
-PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J,PetscBool isIS)
+PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;
@@ -1400,7 +1378,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J,PetscBool isIS)
 
   */
   ierr = DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&nc,&s,&bx,&by,&bz,&st);CHKERRQ(ierr);
-  if (!isIS && bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE && bz == DM_BOUNDARY_NONE) {
+  if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE && bz == DM_BOUNDARY_NONE) {
     ierr = MatSetOption(J,MAT_SORTED_FULL,PETSC_TRUE);CHKERRQ(ierr);
   }
   col  = 2*s + 1;
@@ -1505,7 +1483,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da,Mat J,PetscBool isIS)
     ierr = MatBindToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    if (!isIS && bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE && bz == DM_BOUNDARY_NONE) {
+    if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE && bz == DM_BOUNDARY_NONE) {
       ierr = MatSetOption(J,MAT_SORTED_FULL,PETSC_FALSE);CHKERRQ(ierr);
     }
     ierr = MatBindToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
@@ -1693,7 +1671,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da,Mat J)
 
 /* ---------------------------------------------------------------------------------*/
 
-PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J,PetscBool isIS)
+PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,nx,i,i1,slot,gxs,gnx;
@@ -1709,7 +1687,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J,PetscBool isIS)
 
   */
   ierr = DMDAGetInfo(da,&dim,&m,NULL,NULL,NULL,NULL,NULL,&nc,&s,&bx,NULL,NULL,NULL);CHKERRQ(ierr);
-  if (!isIS && bx == DM_BOUNDARY_NONE) {
+  if (bx == DM_BOUNDARY_NONE) {
     ierr = MatSetOption(J,MAT_SORTED_FULL,PETSC_TRUE);CHKERRQ(ierr);
   }
   col  = 2*s + 1;
@@ -1753,7 +1731,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J,PetscBool isIS)
     ierr = MatBindToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    if (!isIS && bx == DM_BOUNDARY_NONE) {
+    if (bx == DM_BOUNDARY_NONE) {
       ierr = MatSetOption(J,MAT_SORTED_FULL,PETSC_FALSE);CHKERRQ(ierr);
     }
     ierr = MatBindToCPU(J,PETSC_FALSE);CHKERRQ(ierr);
@@ -1765,7 +1743,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da,Mat J,PetscBool isIS)
 
 /* ---------------------------------------------------------------------------------*/
 
-PetscErrorCode DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(DM da,Mat J,PetscBool isIS)
+PetscErrorCode DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(DM da,Mat J)
 {
   PetscErrorCode         ierr;
   PetscInt               xs,nx,i,i1,slot,gxs,gnx;
@@ -1820,7 +1798,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(DM da,Mat J,PetscBool
     ierr = MatBindToCPU(J,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    if (!isIS && bx == DM_BOUNDARY_NONE) {
+    if (bx == DM_BOUNDARY_NONE) {
       ierr = MatSetOption(J,MAT_SORTED_FULL,PETSC_FALSE);CHKERRQ(ierr);
     }
     ierr = MatBindToCPU(J,PETSC_FALSE);CHKERRQ(ierr);

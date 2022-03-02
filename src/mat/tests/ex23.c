@@ -22,12 +22,12 @@ int main(int argc,char **args)
   IS                     *rows,*cols;
   MatType                lmtype;
   PetscScalar            diag = 2.;
-  PetscInt               n,m,i;
+  PetscInt               n,m,i,lm,ln;
   PetscInt               rst,ren,cst,cen,nr,nc;
   PetscMPIInt            rank,size;
   PetscBool              testT,squaretest,isaij;
-  PetscBool              permute = PETSC_FALSE;
-  PetscBool              diffmap = PETSC_TRUE, symmetric = PETSC_FALSE;
+  PetscBool              permute = PETSC_FALSE, negmap = PETSC_FALSE, repmap = PETSC_FALSE;
+  PetscBool              diffmap = PETSC_TRUE, symmetric = PETSC_FALSE, issymmetric;
   PetscErrorCode         ierr;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
@@ -37,67 +37,103 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(NULL,NULL,"-symmetric",&symmetric,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-negmap",&negmap,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-repmap",&repmap,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-permmap",&permute,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-diffmap",&diffmap,NULL);CHKERRQ(ierr);
   PetscCheckFalse(size > 1 && m < 4,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be larger or equal 4 for parallel runs");
   PetscCheckFalse(size == 1 && m < 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be larger or equal 2 for uniprocessor runs");
   PetscCheckFalse(n < 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of cols should be larger or equal 2");
-  if (symmetric) m = n = PetscMax(m,n);
 
   /* create a MATIS matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetType(A,MATIS);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  /* This is not the proper setting for MATIS for finite elements, it is just used to test the routines
-     Here we use a one-to-one correspondence between local row/column spaces and global row/column spaces
-     Equivalent to passing NULL for the mapping */
-  ierr = ISCreateStride(PETSC_COMM_WORLD,n,0,1,&is);CHKERRQ(ierr);
+  if (!negmap && !repmap) {
+    /* This is not the proper setting for MATIS for finite elements, it is just used to test the routines
+       Here we use a one-to-one correspondence between local row/column spaces and global row/column spaces
+       Equivalent to passing NULL for the mapping */
+    ierr = ISCreateStride(PETSC_COMM_WORLD,n,0,1,&is);CHKERRQ(ierr);
+  } else if (negmap && !repmap) { /* non repeated but with negative indices */
+    ierr = ISCreateStride(PETSC_COMM_WORLD,n+2,-2,1,&is);CHKERRQ(ierr);
+  } else if (!negmap && repmap) { /* non negative but repeated indices */
+    IS isl[2];
+
+    ierr = ISCreateStride(PETSC_COMM_WORLD,n,0,1,&isl[0]);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_WORLD,n,n-1,-1,&isl[1]);CHKERRQ(ierr);
+    ierr = ISConcatenate(PETSC_COMM_WORLD,2,isl,&is);CHKERRQ(ierr);
+    ierr = ISDestroy(&isl[0]);CHKERRQ(ierr);
+    ierr = ISDestroy(&isl[1]);CHKERRQ(ierr);
+  } else { /* negative and repeated indices */
+    IS isl[2];
+
+    ierr = ISCreateStride(PETSC_COMM_WORLD,n+1,-1,1,&isl[0]);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_WORLD,n+1,n-1,-1,&isl[1]);CHKERRQ(ierr);
+    ierr = ISConcatenate(PETSC_COMM_WORLD,2,isl,&is);CHKERRQ(ierr);
+    ierr = ISDestroy(&isl[0]);CHKERRQ(ierr);
+    ierr = ISDestroy(&isl[1]);CHKERRQ(ierr);
+  }
   ierr = ISLocalToGlobalMappingCreateIS(is,&cmap);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(NULL,NULL,"-permmap",&permute,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-diffmap",&diffmap,NULL);CHKERRQ(ierr);
-  if (!symmetric && (diffmap || m != n)) {
-
-    ierr = ISCreateStride(PETSC_COMM_WORLD,m,permute ? m -1 : 0,permute ? -1 : 1,&is);CHKERRQ(ierr);
+  if (m != n || diffmap) {
+    ierr = ISCreateStride(PETSC_COMM_WORLD,m,permute ? m-1 : 0,permute ? -1 : 1,&is);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingCreateIS(is,&rmap);CHKERRQ(ierr);
     ierr = ISDestroy(&is);CHKERRQ(ierr);
-    if (m==n && !permute) squaretest = PETSC_TRUE;
-    else squaretest = PETSC_FALSE;
   } else {
     ierr = PetscObjectReference((PetscObject)cmap);CHKERRQ(ierr);
     rmap = cmap;
-    squaretest = PETSC_TRUE;
   }
+
   ierr = MatSetLocalToGlobalMapping(A,rmap,cmap);CHKERRQ(ierr);
   ierr = MatISStoreL2L(A,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = MatISSetPreallocation(A,3,NULL,0,NULL);CHKERRQ(ierr);
-  for (i=0; i<m; i++) {
+  ierr = MatISSetPreallocation(A,3,NULL,3,NULL);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,(PetscBool)!(repmap || negmap));CHKERRQ(ierr); /* I do not want to precompute the pattern */
+  ierr = ISLocalToGlobalMappingGetSize(rmap,&lm);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(cmap,&ln);CHKERRQ(ierr);
+  for (i=0; i<lm; i++) {
     PetscScalar v[3];
     PetscInt    cols[3];
 
     cols[0] = (i-1+n)%n;
     cols[1] = i%n;
     cols[2] = (i+1)%n;
-    v[0]    = -1.*(symmetric ? PetscMin(i+1,cols[0]+1) : i+1);
-    v[1]    =  2.*(symmetric ? PetscMin(i+1,cols[1]+1) : i+1);
-    v[2]    = -1.*(symmetric ? PetscMin(i+1,cols[2]+1) : i+1);
-    ierr    = MatSetValuesLocal(A,1,&i,3,cols,v,ADD_VALUES);CHKERRQ(ierr);
-  }
-  if (symmetric) {
-    ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    v[0] = -1.*(symmetric ? PetscMin(i+1,cols[0]+1) : i+1);
+    v[1] =  2.*(symmetric ? PetscMin(i+1,cols[1]+1) : i+1);
+    v[2] = -1.*(symmetric ? PetscMin(i+1,cols[2]+1) : i+1);
+    ierr = ISGlobalToLocalMappingApply(cmap,IS_GTOLM_MASK,3,cols,NULL,cols);CHKERRQ(ierr);
+    ierr = MatSetValuesLocal(A,1,&i,3,cols,v,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+  /* activate tests for square matrices with same maps only */
+  ierr = MatHasCongruentLayouts(A,&squaretest);CHKERRQ(ierr);
+  if (squaretest && rmap != cmap) {
+    PetscInt nr, nc;
+
+    ierr = ISLocalToGlobalMappingGetSize(rmap,&nr);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(cmap,&nc);CHKERRQ(ierr);
+    if (nr != nc) squaretest = PETSC_FALSE;
+    else {
+      const PetscInt *idxs1,*idxs2;
+
+      ierr = ISLocalToGlobalMappingGetIndices(rmap,&idxs1);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingGetIndices(cmap,&idxs2);CHKERRQ(ierr);
+      ierr = PetscArraycmp(idxs1,idxs2,nr,&squaretest);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingRestoreIndices(rmap,&idxs1);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingRestoreIndices(cmap,&idxs2);CHKERRQ(ierr);
+    }
+    ierr = MPIU_Allreduce(MPI_IN_PLACE,&squaretest,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
+  }
+
+  /* test MatISGetLocalMat */
   ierr = MatISGetLocalMat(A,&B);CHKERRQ(ierr);
   ierr = MatGetType(B,&lmtype);CHKERRQ(ierr);
 
   /* test MatGetInfo */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatGetInfo\n");CHKERRQ(ierr);
-  if (!PetscGlobalRank) {
-    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  }
   ierr = MatGetInfo(A,MAT_LOCAL,&info);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushSynchronized(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"Process  %2d: %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",PetscGlobalRank,(PetscInt)info.nz_used,
@@ -110,9 +146,9 @@ int main(int argc,char **args)
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"GlobalSum  : %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n",(PetscInt)info.nz_used,
                                 (PetscInt)info.nz_allocated,(PetscInt)info.nz_unneeded,(PetscInt)info.assemblies,(PetscInt)info.mallocs);CHKERRQ(ierr);
 
-  /* test MatView */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatView\n");CHKERRQ(ierr);
-  ierr = MatView(A,NULL);CHKERRQ(ierr);
+  /* test MatIsSymmetric */
+  ierr = MatIsSymmetric(A,0.0,&issymmetric);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatIsSymmetric: %d\n",issymmetric);CHKERRQ(ierr);
 
   /* Create a MPIAIJ matrix, same as A */
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
@@ -127,22 +163,27 @@ int main(int argc,char **args)
   ierr = MatHYPRESetPreallocation(B,3,NULL,3,NULL);CHKERRQ(ierr);
 #endif
   ierr = MatISSetPreallocation(B,3,NULL,3,NULL);CHKERRQ(ierr);
-  for (i=0; i<m; i++) {
+  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,(PetscBool)!(repmap || negmap));CHKERRQ(ierr); /* I do not want to precompute the pattern */
+  for (i=0; i<lm; i++) {
     PetscScalar v[3];
     PetscInt    cols[3];
 
     cols[0] = (i-1+n)%n;
     cols[1] = i%n;
     cols[2] = (i+1)%n;
-    v[0]    = -1.*(symmetric ? PetscMin(i+1,cols[0]+1) : i+1);
-    v[1]    =  2.*(symmetric ? PetscMin(i+1,cols[1]+1) : i+1);
-    v[2]    = -1.*(symmetric ? PetscMin(i+1,cols[2]+1) : i+1);
-    ierr    = MatSetValuesLocal(B,1,&i,3,cols,v,ADD_VALUES);CHKERRQ(ierr);
+    v[0] = -1.*(symmetric ? PetscMin(i+1,cols[0]+1) : i+1);
+    v[1] =  2.*(symmetric ? PetscMin(i+1,cols[1]+1) : i+1);
+    v[2] = -1.*(symmetric ? PetscMin(i+1,cols[2]+1) : i+1);
+    ierr = ISGlobalToLocalMappingApply(cmap,IS_GTOLM_MASK,3,cols,NULL,cols);CHKERRQ(ierr);
+    ierr = MatSetValuesLocal(B,1,&i,3,cols,v,ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&cmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&rmap);CHKERRQ(ierr);
+
+  /* test MatView */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatView\n");CHKERRQ(ierr);
+  ierr = MatView(A,NULL);CHKERRQ(ierr);
+  ierr = MatView(B,NULL);CHKERRQ(ierr);
 
   /* test CheckMat */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test CheckMat\n");CHKERRQ(ierr);
@@ -175,7 +216,8 @@ int main(int argc,char **args)
   ierr = MatDestroy(&B2);CHKERRQ(ierr);
   ierr = PetscStrcmp(lmtype,MATSEQAIJ,&isaij);CHKERRQ(ierr);
   if (size == 1 && isaij) { /* tests special code paths in MatConvert_IS_XAIJ */
-    PetscInt ri, ci, rr[3] = {0,1,0}, cr[4] = {1,2,0,1}, rk[3] = {0,2,1}, ck[4] = {1,0,3,2};
+    PetscInt               ri, ci, rr[3] = {0,1,0}, cr[4] = {1,2,0,1}, rk[3] = {0,2,1}, ck[4] = {1,0,3,2};
+    ISLocalToGlobalMapping tcmap,trmap;
 
     for (ri = 0; ri < 2; ri++) {
       PetscInt *r;
@@ -187,7 +229,7 @@ int main(int argc,char **args)
         c = (PetscInt*)(ci == 0 ? cr : ck);
         for (rb = 1; rb < 4; rb++) {
           ierr = ISCreateBlock(PETSC_COMM_SELF,rb,3,r,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-          ierr = ISLocalToGlobalMappingCreateIS(is,&rmap);CHKERRQ(ierr);
+          ierr = ISLocalToGlobalMappingCreateIS(is,&trmap);CHKERRQ(ierr);
           ierr = ISDestroy(&is);CHKERRQ(ierr);
           for (cb = 1; cb < 4; cb++) {
             Mat  T,lT,T2;
@@ -197,14 +239,14 @@ int main(int argc,char **args)
             ierr = PetscPrintf(PETSC_COMM_WORLD,"Test %s\n",testname);CHKERRQ(ierr);
 
             ierr = ISCreateBlock(PETSC_COMM_SELF,cb,4,c,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
-            ierr = ISLocalToGlobalMappingCreateIS(is,&cmap);CHKERRQ(ierr);
+            ierr = ISLocalToGlobalMappingCreateIS(is,&tcmap);CHKERRQ(ierr);
             ierr = ISDestroy(&is);CHKERRQ(ierr);
 
             ierr = MatCreate(PETSC_COMM_SELF,&T);CHKERRQ(ierr);
             ierr = MatSetSizes(T,PETSC_DECIDE,PETSC_DECIDE,rb*3,cb*4);CHKERRQ(ierr);
             ierr = MatSetType(T,MATIS);CHKERRQ(ierr);
-            ierr = MatSetLocalToGlobalMapping(T,rmap,cmap);CHKERRQ(ierr);
-            ierr = ISLocalToGlobalMappingDestroy(&cmap);CHKERRQ(ierr);
+            ierr = MatSetLocalToGlobalMapping(T,trmap,tcmap);CHKERRQ(ierr);
+            ierr = ISLocalToGlobalMappingDestroy(&tcmap);CHKERRQ(ierr);
             ierr = MatISGetLocalMat(T,&lT);CHKERRQ(ierr);
             ierr = MatSetType(lT,MATSEQAIJ);CHKERRQ(ierr);
             ierr = MatSeqAIJSetPreallocation(lT,cb*4,NULL);CHKERRQ(ierr);
@@ -225,7 +267,7 @@ int main(int argc,char **args)
             ierr = MatDestroy(&T);CHKERRQ(ierr);
             ierr = MatDestroy(&T2);CHKERRQ(ierr);
           }
-          ierr = ISLocalToGlobalMappingDestroy(&rmap);CHKERRQ(ierr);
+          ierr = ISLocalToGlobalMappingDestroy(&trmap);CHKERRQ(ierr);
         }
       }
     }
@@ -237,7 +279,7 @@ int main(int argc,char **args)
   ierr = MatDuplicate(B,MAT_COPY_VALUES,&B2);CHKERRQ(ierr);
   ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
   ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
-  if (symmetric) {
+  if (issymmetric) {
     ierr = VecCopy(x,y);CHKERRQ(ierr);
   } else {
     ierr = VecSetRandom(y,NULL);CHKERRQ(ierr);
@@ -267,26 +309,28 @@ int main(int argc,char **args)
   /* test MatGetLocalSubMatrix */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatGetLocalSubMatrix\n");CHKERRQ(ierr);
   ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&A2);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_WORLD,m/2+m%2,0,2,&reven);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_WORLD,m/2,1,2,&rodd);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_WORLD,n/2+n%2,0,2,&ceven);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_WORLD,n/2,1,2,&codd);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,lm/2+lm%2,0,2,&reven);CHKERRQ(ierr);
+  ierr = ISComplement(reven,0,lm,&rodd);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_SELF,ln/2+ln%2,0,2,&ceven);CHKERRQ(ierr);
+  ierr = ISComplement(ceven,0,ln,&codd);CHKERRQ(ierr);
   ierr = MatGetLocalSubMatrix(A2,reven,ceven,&Aee);CHKERRQ(ierr);
   ierr = MatGetLocalSubMatrix(A2,reven,codd,&Aeo);CHKERRQ(ierr);
   ierr = MatGetLocalSubMatrix(A2,rodd,ceven,&Aoe);CHKERRQ(ierr);
   ierr = MatGetLocalSubMatrix(A2,rodd,codd,&Aoo);CHKERRQ(ierr);
-  for (i=0; i<m; i++) {
+  for (i=0; i<lm; i++) {
     PetscInt    j,je,jo,colse[3], colso[3];
     PetscScalar ve[3], vo[3];
     PetscScalar v[3];
     PetscInt    cols[3];
+    PetscInt    row = i/2;
 
     cols[0] = (i-1+n)%n;
     cols[1] = i%n;
     cols[2] = (i+1)%n;
-    v[0]    = -1.*(symmetric ? PetscMin(i+1,cols[0]+1) : i+1);
-    v[1]    =  2.*(symmetric ? PetscMin(i+1,cols[1]+1) : i+1);
-    v[2]    = -1.*(symmetric ? PetscMin(i+1,cols[2]+1) : i+1);
+    v[0] = -1.*(symmetric ? PetscMin(i+1,cols[0]+1) : i+1);
+    v[1] =  2.*(symmetric ? PetscMin(i+1,cols[1]+1) : i+1);
+    v[2] = -1.*(symmetric ? PetscMin(i+1,cols[2]+1) : i+1);
+    ierr = ISGlobalToLocalMappingApply(cmap,IS_GTOLM_MASK,3,cols,NULL,cols);CHKERRQ(ierr);
     for (j=0,je=0,jo=0;j<3;j++) {
       if (cols[j]%2) {
         vo[jo] = v[j];
@@ -297,11 +341,9 @@ int main(int argc,char **args)
       }
     }
     if (i%2) {
-      PetscInt row = i/2;
       ierr = MatSetValuesLocal(Aoe,1,&row,je,colse,ve,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatSetValuesLocal(Aoo,1,&row,jo,colso,vo,ADD_VALUES);CHKERRQ(ierr);
     } else {
-      PetscInt row = i/2;
       ierr = MatSetValuesLocal(Aee,1,&row,je,colse,ve,ADD_VALUES);CHKERRQ(ierr);
       ierr = MatSetValuesLocal(Aeo,1,&row,jo,colso,vo,ADD_VALUES);CHKERRQ(ierr);
     }
@@ -405,7 +447,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A2);CHKERRQ(ierr);
   ierr = MatDestroy(&B2);CHKERRQ(ierr);
 
-  if (!symmetric) {
+  if (!issymmetric) {
     ierr = MatCreateSubMatrix(A,is,is2,MAT_INITIAL_MATRIX,&A2);CHKERRQ(ierr);
     ierr = MatCreateSubMatrix(B,is,is2,MAT_INITIAL_MATRIX,&B2);CHKERRQ(ierr);
     ierr = MatCreateSubMatrix(A,is,is2,MAT_REUSE_MATRIX,&A2);CHKERRQ(ierr);
@@ -491,6 +533,7 @@ int main(int argc,char **args)
     r[1] = PetscMin(m,n)-1;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Test MatISFixLocalEmpty\n");CHKERRQ(ierr);
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&A2);CHKERRQ(ierr);
+
     ierr = MatISFixLocalEmpty(A2,PETSC_TRUE);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(A2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -641,6 +684,8 @@ int main(int argc,char **args)
     }
   }
   /* free testing matrices */
+  ierr = ISLocalToGlobalMappingDestroy(&cmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&rmap);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -892,5 +937,10 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
         requires: cuda
         suffix: cusparse
         args: -matis_localmat_type aijcusparse
+
+   test:
+      suffix: negrep
+      nsize: {{1 3}separate output}
+      args: -m {{5 7}separate output} -n {{5 7}separate output} -test_trans -nr 2 -nc 3 -negmap {{0 1}separate output} -repmap {{0 1}separate output} -permmap -diffmap {{0 1}separate output}
 
 TEST*/

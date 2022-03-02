@@ -614,7 +614,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       ierr = MatGetLocalSize(A,&nl,NULL);CHKERRQ(ierr);
       ierr = MatGetOwnershipRange(A,&rst,&ren);CHKERRQ(ierr);
       ierr = MatGetLocalSize(lA,&n,NULL);CHKERRQ(ierr);
-      ierr = MatGetLocalToGlobalMapping(A,&l2g,NULL);CHKERRQ(ierr);
+      ierr = MatISGetLocalToGlobalMapping(A,&l2g,NULL);CHKERRQ(ierr);
 
       if (!pcis->is_I_local) { /* need to compute interior dofs */
         ierr = PetscCalloc1(n,&count);CHKERRQ(ierr);

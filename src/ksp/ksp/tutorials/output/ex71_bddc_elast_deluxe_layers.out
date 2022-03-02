@@ -147,6 +147,6 @@ PC Object: 8 MPI processes
   Mat Object: 8 MPI processes
     type: is
     rows=2160, cols=2160, bs=3
-    total: nonzeros=156078, allocated nonzeros=195300
+    total: nonzeros=156078, allocated nonzeros=156078
     total number of mallocs used during MatSetValues calls=0
       has attached near null space
