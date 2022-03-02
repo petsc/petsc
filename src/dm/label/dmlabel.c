@@ -2237,6 +2237,53 @@ PetscErrorCode PetscSectionSymLabelSetLabel(PetscSectionSym sym, DMLabel label)
 }
 
 /*@C
+  PetscSectionSymLabelGetStratum - get the symmetries for the orientations of a stratum
+
+  Logically collective on sym
+
+  Input Parameters:
++ sym       - the section symmetries
+- stratum   - the stratum value in the label that we are assigning symmetries for
+
+  Output Parameters:
++ size      - the number of dofs for points in the stratum of the label
+. minOrient - the smallest orientation for a point in this stratum
+. maxOrient - one greater than the largest orientation for a ppoint in this stratum (i.e., orientations are in the range [minOrient, maxOrient))
+. mode      - how sym should copy the perms and rots arrays
+. perms     - NULL if there are no permutations, or (maxOrient - minOrient) permutations, one for each orientation.  A NULL permutation is the identity
+- rots      - NULL if there are no rotations, or (maxOrient - minOrient) sets of rotations, one for each orientation.  A NULL set of orientations is the identity
+
+  Level: developer
+
+.seealso: PetscSectionSymLabelSetStratum(), PetscSectionSymCreate(), PetscSectionSetSym(), PetscSectionGetPointSyms(), PetscSectionSymCreateLabel()
+@*/
+PetscErrorCode PetscSectionSymLabelGetStratum(PetscSectionSym sym, PetscInt stratum, PetscInt *size, PetscInt *minOrient, PetscInt *maxOrient, const PetscInt ***perms, const PetscScalar ***rots)
+{
+  PetscSectionSym_Label *sl;
+  const char            *name;
+  PetscInt               i;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sym,PETSC_SECTION_SYM_CLASSID,1);
+  sl = (PetscSectionSym_Label *) sym->data;
+  PetscCheck(sl->label, PetscObjectComm((PetscObject) sym), PETSC_ERR_ARG_WRONGSTATE, "No label set yet");
+  for (i = 0; i <= sl->numStrata; i++) {
+    PetscInt value = (i < sl->numStrata) ? sl->label->stratumValues[i] : sl->label->defaultValue;
+
+    if (stratum == value) break;
+  }
+  ierr = PetscObjectGetName((PetscObject) sl->label, &name);CHKERRQ(ierr);
+  PetscCheck(i <= sl->numStrata, PetscObjectComm((PetscObject) sym), PETSC_ERR_ARG_OUTOFRANGE, "Stratum %" PetscInt_FMT " not found in label %s", stratum, name);
+  if (size)      {PetscValidIntPointer(size, 3);      *size      = sl->sizes[i];}
+  if (minOrient) {PetscValidIntPointer(minOrient, 4); *minOrient = sl->minMaxOrients[i][0];}
+  if (maxOrient) {PetscValidIntPointer(maxOrient, 5); *maxOrient = sl->minMaxOrients[i][1];}
+  if (perms)     {PetscValidPointer(perms, 6);        *perms     = sl->perms[i] ? &sl->perms[i][sl->minMaxOrients[i][0]] : NULL;}
+  if (rots)      {PetscValidPointer(rots, 7);         *rots      = sl->rots[i]  ? &sl->rots[i][sl->minMaxOrients[i][0]]  : NULL;}
+  PetscFunctionReturn(0);
+}
+
+/*@C
   PetscSectionSymLabelSetStratum - set the symmetries for the orientations of a stratum
 
   Logically collective on sym
@@ -2253,7 +2300,7 @@ PetscErrorCode PetscSectionSymLabelSetLabel(PetscSectionSym sym, DMLabel label)
 
   Level: developer
 
-.seealso: PetscSectionSymCreate(), PetscSectionSetSym(), PetscSectionGetPointSyms(), PetscSectionSymCreateLabel()
+.seealso: PetscSectionSymLabelGetStratum(), PetscSectionSymCreate(), PetscSectionSetSym(), PetscSectionGetPointSyms(), PetscSectionSymCreateLabel()
 @*/
 PetscErrorCode PetscSectionSymLabelSetStratum(PetscSectionSym sym, PetscInt stratum, PetscInt size, PetscInt minOrient, PetscInt maxOrient, PetscCopyMode mode, const PetscInt **perms, const PetscScalar **rots)
 {
@@ -2265,14 +2312,14 @@ PetscErrorCode PetscSectionSymLabelSetStratum(PetscSectionSym sym, PetscInt stra
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sym,PETSC_SECTION_SYM_CLASSID,1);
   sl = (PetscSectionSym_Label *) sym->data;
-  PetscCheckFalse(!sl->label,PetscObjectComm((PetscObject)sym),PETSC_ERR_ARG_WRONGSTATE,"No label set yet");
+  PetscCheck(sl->label, PetscObjectComm((PetscObject) sym), PETSC_ERR_ARG_WRONGSTATE, "No label set yet");
   for (i = 0; i <= sl->numStrata; i++) {
     PetscInt value = (i < sl->numStrata) ? sl->label->stratumValues[i] : sl->label->defaultValue;
 
     if (stratum == value) break;
   }
   ierr = PetscObjectGetName((PetscObject) sl->label, &name);CHKERRQ(ierr);
-  PetscCheckFalse(i > sl->numStrata,PetscObjectComm((PetscObject)sym),PETSC_ERR_ARG_OUTOFRANGE,"Stratum %D not found in label %s",stratum,name);
+  PetscCheck(i <= sl->numStrata, PetscObjectComm((PetscObject) sym), PETSC_ERR_ARG_OUTOFRANGE, "Stratum %D not found in label %s", stratum, name);
   sl->sizes[i] = size;
   sl->modes[i] = mode;
   sl->minMaxOrients[i][0] = minOrient;
@@ -2344,6 +2391,45 @@ static PetscErrorCode PetscSectionSymGetPoints_Label(PetscSectionSym sym, PetscS
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PetscSectionSymCopy_Label(PetscSectionSym sym, PetscSectionSym nsym)
+{
+  PetscSectionSym_Label *sl = (PetscSectionSym_Label *) nsym->data;
+  IS                     valIS;
+  const PetscInt        *values;
+  PetscInt               Nv, v;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLabelGetNumValues(sl->label, &Nv);CHKERRQ(ierr);
+  ierr = DMLabelGetValueIS(sl->label, &valIS);CHKERRQ(ierr);
+  ierr = ISGetIndices(valIS, &values);CHKERRQ(ierr);
+  for (v = 0; v < Nv; ++v) {
+    const PetscInt      val = values[v];
+    PetscInt            size, minOrient, maxOrient;
+    const PetscInt    **perms;
+    const PetscScalar **rots;
+
+    ierr = PetscSectionSymLabelGetStratum(sym,  val, &size, &minOrient, &maxOrient, &perms, &rots);CHKERRQ(ierr);
+    ierr = PetscSectionSymLabelSetStratum(nsym, val,  size,  minOrient,  maxOrient, PETSC_COPY_VALUES, perms, rots);CHKERRQ(ierr);
+  }
+  ierr = ISDestroy(&valIS);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscSectionSymDistribute_Label(PetscSectionSym sym, PetscSF migrationSF, PetscSectionSym *dsym)
+{
+  PetscSectionSym_Label *sl = (PetscSectionSym_Label *) sym->data;
+  DMLabel                dlabel;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLabelDistribute(sl->label, migrationSF, &dlabel);CHKERRQ(ierr);
+  ierr = PetscSectionSymCreateLabel(PetscObjectComm((PetscObject) sym), dlabel, dsym);CHKERRQ(ierr);
+  ierr = DMLabelDestroy(&dlabel);CHKERRQ(ierr);
+  ierr = PetscSectionSymCopy(sym, *dsym);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode PetscSectionSymCreate_Label(PetscSectionSym sym)
 {
   PetscSectionSym_Label *sl;
@@ -2351,10 +2437,12 @@ PetscErrorCode PetscSectionSymCreate_Label(PetscSectionSym sym)
 
   PetscFunctionBegin;
   ierr = PetscNewLog(sym,&sl);CHKERRQ(ierr);
-  sym->ops->getpoints = PetscSectionSymGetPoints_Label;
-  sym->ops->view      = PetscSectionSymView_Label;
-  sym->ops->destroy   = PetscSectionSymDestroy_Label;
-  sym->data           = (void *) sl;
+  sym->ops->getpoints  = PetscSectionSymGetPoints_Label;
+  sym->ops->distribute = PetscSectionSymDistribute_Label;
+  sym->ops->copy       = PetscSectionSymCopy_Label;
+  sym->ops->view       = PetscSectionSymView_Label;
+  sym->ops->destroy    = PetscSectionSymDestroy_Label;
+  sym->data            = (void *) sl;
   PetscFunctionReturn(0);
 }
 
