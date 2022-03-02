@@ -1,0 +1,804 @@
+
+-----------------
+
+Initial
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 0
+[1] Number of indices in (stride) set 0
+
+Renumbered, unique entries 0
+IS Object: 2 MPI processes
+  type: general
+[0] Number of indices in set 0
+[1] Number of indices in set 0
+
+-----------------
+
+Initial
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 2
+[0] 0 -1
+[0] 1 -5
+[1] Number of indices in (stride) set 2
+[1] 0 -2
+[1] 1 -6
+
+Renumbered, unique entries 0
+IS Object: 2 MPI processes
+  type: general
+[0] Number of indices in set 2
+[0] 0 -1
+[0] 1 -1
+[1] Number of indices in set 2
+[1] 0 -1
+[1] 1 -1
+
+-----------------
+
+Initial
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 10
+[0] 0 4
+[0] 1 6
+[0] 2 8
+[0] 3 10
+[0] 4 12
+[0] 5 14
+[0] 6 16
+[0] 7 18
+[0] 8 20
+[0] 9 22
+[1] Number of indices in (stride) set 10
+[1] 0 5
+[1] 1 7
+[1] 2 9
+[1] 3 11
+[1] 4 13
+[1] 5 15
+[1] 6 17
+[1] 7 19
+[1] 8 21
+[1] 9 23
+
+Renumbered, unique entries 20
+IS Object: 2 MPI processes
+  type: general
+[0] Number of indices in set 10
+[0] 0 0
+[0] 1 2
+[0] 2 4
+[0] 3 6
+[0] 4 8
+[0] 5 10
+[0] 6 12
+[0] 7 14
+[0] 8 16
+[0] 9 18
+[1] Number of indices in set 10
+[1] 0 1
+[1] 1 3
+[1] 2 5
+[1] 3 7
+[1] 4 9
+[1] 5 11
+[1] 6 13
+[1] 7 15
+[1] 8 17
+[1] 9 19
+
+-----------------
+
+Initial
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 10
+[0] 0 -1
+[0] 1 1
+[0] 2 3
+[0] 3 5
+[0] 4 7
+[0] 5 9
+[0] 6 11
+[0] 7 13
+[0] 8 15
+[0] 9 17
+[1] Number of indices in (stride) set 10
+[1] 0 -2
+[1] 1 0
+[1] 2 2
+[1] 3 4
+[1] 4 6
+[1] 5 8
+[1] 6 10
+[1] 7 12
+[1] 8 14
+[1] 9 16
+
+Renumbered, unique entries 18
+IS Object: 2 MPI processes
+  type: general
+[0] Number of indices in set 10
+[0] 0 -1
+[0] 1 1
+[0] 2 3
+[0] 3 5
+[0] 4 7
+[0] 5 9
+[0] 6 11
+[0] 7 13
+[0] 8 15
+[0] 9 17
+[1] Number of indices in set 10
+[1] 0 -1
+[1] 1 0
+[1] 2 2
+[1] 3 4
+[1] 4 6
+[1] 5 8
+[1] 6 10
+[1] 7 12
+[1] 8 14
+[1] 9 16
+
+-----------------
+
+Initial
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 0
+[1] Number of indices in (stride) set 0
+
+Mult
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 0
+[1] Number of indices in (stride) set 0
+
+Renumbered, unique entries 0
+IS Object: 2 MPI processes
+  type: general
+[0] Number of indices in set 0
+[1] Number of indices in set 0
+
+-----------------
+
+Initial
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 2
+[0] 0 -1
+[0] 1 -5
+[1] Number of indices in (stride) set 2
+[1] 0 -2
+[1] 1 -6
+
+Mult
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 2
+[0] 0 -1
+[0] 1 -1
+[1] Number of indices in (stride) set 2
+[1] 0 -1
+[1] 1 -1
+
+Renumbered, unique entries 0
+IS Object: 2 MPI processes
+  type: general
+[0] Number of indices in set 0
+[1] Number of indices in set 0
+
+-----------------
+
+Initial
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 10
+[0] 0 4
+[0] 1 6
+[0] 2 8
+[0] 3 10
+[0] 4 12
+[0] 5 14
+[0] 6 16
+[0] 7 18
+[0] 8 20
+[0] 9 22
+[1] Number of indices in (stride) set 10
+[1] 0 5
+[1] 1 7
+[1] 2 9
+[1] 3 11
+[1] 4 13
+[1] 5 15
+[1] 6 17
+[1] 7 19
+[1] 8 21
+[1] 9 23
+
+Mult
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 10
+[0] 0 -1
+[0] 1 0
+[0] 2 1
+[0] 3 2
+[0] 4 3
+[0] 5 4
+[0] 6 5
+[0] 7 6
+[0] 8 7
+[0] 9 8
+[1] Number of indices in (stride) set 10
+[1] 0 -1
+[1] 1 0
+[1] 2 1
+[1] 3 2
+[1] 4 3
+[1] 5 4
+[1] 6 5
+[1] 7 6
+[1] 8 7
+[1] 9 8
+
+Renumbered, unique entries 72
+IS Object: 2 MPI processes
+  type: general
+[0] Number of indices in set 36
+[0] 0 0
+[0] 1 2
+[0] 2 3
+[0] 3 6
+[0] 4 7
+[0] 5 8
+[0] 6 12
+[0] 7 13
+[0] 8 14
+[0] 9 15
+[0] 10 20
+[0] 11 21
+[0] 12 22
+[0] 13 23
+[0] 14 24
+[0] 15 30
+[0] 16 31
+[0] 17 32
+[0] 18 33
+[0] 19 34
+[0] 20 35
+[0] 21 42
+[0] 22 43
+[0] 23 44
+[0] 24 45
+[0] 25 46
+[0] 26 47
+[0] 27 48
+[0] 28 56
+[0] 29 57
+[0] 30 58
+[0] 31 59
+[0] 32 60
+[0] 33 61
+[0] 34 62
+[0] 35 63
+[1] Number of indices in set 36
+[1] 0 1
+[1] 1 4
+[1] 2 5
+[1] 3 9
+[1] 4 10
+[1] 5 11
+[1] 6 16
+[1] 7 17
+[1] 8 18
+[1] 9 19
+[1] 10 25
+[1] 11 26
+[1] 12 27
+[1] 13 28
+[1] 14 29
+[1] 15 36
+[1] 16 37
+[1] 17 38
+[1] 18 39
+[1] 19 40
+[1] 20 41
+[1] 21 49
+[1] 22 50
+[1] 23 51
+[1] 24 52
+[1] 25 53
+[1] 26 54
+[1] 27 55
+[1] 28 64
+[1] 29 65
+[1] 30 66
+[1] 31 67
+[1] 32 68
+[1] 33 69
+[1] 34 70
+[1] 35 71
+
+-----------------
+
+Initial
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 10
+[0] 0 -1
+[0] 1 1
+[0] 2 3
+[0] 3 5
+[0] 4 7
+[0] 5 9
+[0] 6 11
+[0] 7 13
+[0] 8 15
+[0] 9 17
+[1] Number of indices in (stride) set 10
+[1] 0 -2
+[1] 1 0
+[1] 2 2
+[1] 3 4
+[1] 4 6
+[1] 5 8
+[1] 6 10
+[1] 7 12
+[1] 8 14
+[1] 9 16
+
+Mult
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 10
+[0] 0 -1
+[0] 1 0
+[0] 2 1
+[0] 3 2
+[0] 4 3
+[0] 5 4
+[0] 6 5
+[0] 7 6
+[0] 8 7
+[0] 9 8
+[1] Number of indices in (stride) set 10
+[1] 0 -1
+[1] 1 0
+[1] 2 1
+[1] 3 2
+[1] 4 3
+[1] 5 4
+[1] 6 5
+[1] 7 6
+[1] 8 7
+[1] 9 8
+
+Renumbered, unique entries 72
+IS Object: 2 MPI processes
+  type: general
+[0] Number of indices in set 36
+[0] 0 1
+[0] 1 4
+[0] 2 5
+[0] 3 9
+[0] 4 10
+[0] 5 11
+[0] 6 16
+[0] 7 17
+[0] 8 18
+[0] 9 19
+[0] 10 25
+[0] 11 26
+[0] 12 27
+[0] 13 28
+[0] 14 29
+[0] 15 36
+[0] 16 37
+[0] 17 38
+[0] 18 39
+[0] 19 40
+[0] 20 41
+[0] 21 49
+[0] 22 50
+[0] 23 51
+[0] 24 52
+[0] 25 53
+[0] 26 54
+[0] 27 55
+[0] 28 64
+[0] 29 65
+[0] 30 66
+[0] 31 67
+[0] 32 68
+[0] 33 69
+[0] 34 70
+[0] 35 71
+[1] Number of indices in set 36
+[1] 0 0
+[1] 1 2
+[1] 2 3
+[1] 3 6
+[1] 4 7
+[1] 5 8
+[1] 6 12
+[1] 7 13
+[1] 8 14
+[1] 9 15
+[1] 10 20
+[1] 11 21
+[1] 12 22
+[1] 13 23
+[1] 14 24
+[1] 15 30
+[1] 16 31
+[1] 17 32
+[1] 18 33
+[1] 19 34
+[1] 20 35
+[1] 21 42
+[1] 22 43
+[1] 23 44
+[1] 24 45
+[1] 25 46
+[1] 26 47
+[1] 27 48
+[1] 28 56
+[1] 29 57
+[1] 30 58
+[1] 31 59
+[1] 32 60
+[1] 33 61
+[1] 34 62
+[1] 35 63
+
+-----------------
+
+Initial
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 0
+[1] Number of indices in (stride) set 0
+
+Mult
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 0
+[1] Number of indices in (stride) set 0
+
+Renumbered, unique entries 0
+IS Object: 2 MPI processes
+  type: general
+[0] Number of indices in set 0
+[1] Number of indices in set 0
+
+-----------------
+
+Initial
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 2
+[0] 0 -1
+[0] 1 -5
+[1] Number of indices in (stride) set 2
+[1] 0 -2
+[1] 1 -6
+
+Mult
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 2
+[0] 0 0
+[0] 1 0
+[1] Number of indices in (stride) set 2
+[1] 0 0
+[1] 1 0
+
+Renumbered, unique entries 0
+IS Object: 2 MPI processes
+  type: general
+[0] Number of indices in set 0
+[1] Number of indices in set 0
+
+-----------------
+
+Initial
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 10
+[0] 0 4
+[0] 1 6
+[0] 2 8
+[0] 3 10
+[0] 4 12
+[0] 5 14
+[0] 6 16
+[0] 7 18
+[0] 8 20
+[0] 9 22
+[1] Number of indices in (stride) set 10
+[1] 0 5
+[1] 1 7
+[1] 2 9
+[1] 3 11
+[1] 4 13
+[1] 5 15
+[1] 6 17
+[1] 7 19
+[1] 8 21
+[1] 9 23
+
+Mult
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 10
+[0] 0 0
+[0] 1 1
+[0] 2 2
+[0] 3 3
+[0] 4 4
+[0] 5 5
+[0] 6 6
+[0] 7 7
+[0] 8 8
+[0] 9 9
+[1] Number of indices in (stride) set 10
+[1] 0 0
+[1] 1 1
+[1] 2 2
+[1] 3 3
+[1] 4 4
+[1] 5 5
+[1] 6 6
+[1] 7 7
+[1] 8 8
+[1] 9 9
+
+Renumbered, unique entries 90
+IS Object: 2 MPI processes
+  type: general
+[0] Number of indices in set 45
+[0] 0 0
+[0] 1 2
+[0] 2 3
+[0] 3 6
+[0] 4 7
+[0] 5 8
+[0] 6 12
+[0] 7 13
+[0] 8 14
+[0] 9 15
+[0] 10 20
+[0] 11 21
+[0] 12 22
+[0] 13 23
+[0] 14 24
+[0] 15 30
+[0] 16 31
+[0] 17 32
+[0] 18 33
+[0] 19 34
+[0] 20 35
+[0] 21 42
+[0] 22 43
+[0] 23 44
+[0] 24 45
+[0] 25 46
+[0] 26 47
+[0] 27 48
+[0] 28 56
+[0] 29 57
+[0] 30 58
+[0] 31 59
+[0] 32 60
+[0] 33 61
+[0] 34 62
+[0] 35 63
+[0] 36 72
+[0] 37 73
+[0] 38 74
+[0] 39 75
+[0] 40 76
+[0] 41 77
+[0] 42 78
+[0] 43 79
+[0] 44 80
+[1] Number of indices in set 45
+[1] 0 1
+[1] 1 4
+[1] 2 5
+[1] 3 9
+[1] 4 10
+[1] 5 11
+[1] 6 16
+[1] 7 17
+[1] 8 18
+[1] 9 19
+[1] 10 25
+[1] 11 26
+[1] 12 27
+[1] 13 28
+[1] 14 29
+[1] 15 36
+[1] 16 37
+[1] 17 38
+[1] 18 39
+[1] 19 40
+[1] 20 41
+[1] 21 49
+[1] 22 50
+[1] 23 51
+[1] 24 52
+[1] 25 53
+[1] 26 54
+[1] 27 55
+[1] 28 64
+[1] 29 65
+[1] 30 66
+[1] 31 67
+[1] 32 68
+[1] 33 69
+[1] 34 70
+[1] 35 71
+[1] 36 81
+[1] 37 82
+[1] 38 83
+[1] 39 84
+[1] 40 85
+[1] 41 86
+[1] 42 87
+[1] 43 88
+[1] 44 89
+
+-----------------
+
+Initial
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 10
+[0] 0 -1
+[0] 1 1
+[0] 2 3
+[0] 3 5
+[0] 4 7
+[0] 5 9
+[0] 6 11
+[0] 7 13
+[0] 8 15
+[0] 9 17
+[1] Number of indices in (stride) set 10
+[1] 0 -2
+[1] 1 0
+[1] 2 2
+[1] 3 4
+[1] 4 6
+[1] 5 8
+[1] 6 10
+[1] 7 12
+[1] 8 14
+[1] 9 16
+
+Mult
+IS Object: 2 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 10
+[0] 0 0
+[0] 1 1
+[0] 2 2
+[0] 3 3
+[0] 4 4
+[0] 5 5
+[0] 6 6
+[0] 7 7
+[0] 8 8
+[0] 9 9
+[1] Number of indices in (stride) set 10
+[1] 0 0
+[1] 1 1
+[1] 2 2
+[1] 3 3
+[1] 4 4
+[1] 5 5
+[1] 6 6
+[1] 7 7
+[1] 8 8
+[1] 9 9
+
+Renumbered, unique entries 90
+IS Object: 2 MPI processes
+  type: general
+[0] Number of indices in set 45
+[0] 0 1
+[0] 1 4
+[0] 2 5
+[0] 3 9
+[0] 4 10
+[0] 5 11
+[0] 6 16
+[0] 7 17
+[0] 8 18
+[0] 9 19
+[0] 10 25
+[0] 11 26
+[0] 12 27
+[0] 13 28
+[0] 14 29
+[0] 15 36
+[0] 16 37
+[0] 17 38
+[0] 18 39
+[0] 19 40
+[0] 20 41
+[0] 21 49
+[0] 22 50
+[0] 23 51
+[0] 24 52
+[0] 25 53
+[0] 26 54
+[0] 27 55
+[0] 28 64
+[0] 29 65
+[0] 30 66
+[0] 31 67
+[0] 32 68
+[0] 33 69
+[0] 34 70
+[0] 35 71
+[0] 36 81
+[0] 37 82
+[0] 38 83
+[0] 39 84
+[0] 40 85
+[0] 41 86
+[0] 42 87
+[0] 43 88
+[0] 44 89
+[1] Number of indices in set 45
+[1] 0 0
+[1] 1 2
+[1] 2 3
+[1] 3 6
+[1] 4 7
+[1] 5 8
+[1] 6 12
+[1] 7 13
+[1] 8 14
+[1] 9 15
+[1] 10 20
+[1] 11 21
+[1] 12 22
+[1] 13 23
+[1] 14 24
+[1] 15 30
+[1] 16 31
+[1] 17 32
+[1] 18 33
+[1] 19 34
+[1] 20 35
+[1] 21 42
+[1] 22 43
+[1] 23 44
+[1] 24 45
+[1] 25 46
+[1] 26 47
+[1] 27 48
+[1] 28 56
+[1] 29 57
+[1] 30 58
+[1] 31 59
+[1] 32 60
+[1] 33 61
+[1] 34 62
+[1] 35 63
+[1] 36 72
+[1] 37 73
+[1] 38 74
+[1] 39 75
+[1] 40 76
+[1] 41 77
+[1] 42 78
+[1] 43 79
+[1] 44 80
