@@ -4712,6 +4712,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   const char    *extGmsh4     = ".msh4";
   const char    *extCGNS      = ".cgns";
   const char    *extExodus    = ".exo";
+  const char    *extExodus_e  = ".e";
   const char    *extGenesis   = ".gen";
   const char    *extFluent    = ".cas";
   const char    *extHDF5      = ".h5";
@@ -4741,6 +4742,9 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   ierr = PetscStrncmp(&filename[PetscMax(0,len-5)],  extGmsh4,     5, &isGmsh4);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-5)],  extCGNS,      5, &isCGNS);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)],  extExodus,    4, &isExodus);CHKERRQ(ierr);
+  if (!isExodus) {
+    ierr = PetscStrncmp(&filename[PetscMax(0,len-2)],  extExodus_e,    2, &isExodus);CHKERRQ(ierr);
+  }
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)],  extGenesis,   4, &isGenesis);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-4)],  extFluent,    4, &isFluent);CHKERRQ(ierr);
   ierr = PetscStrncmp(&filename[PetscMax(0,len-3)],  extHDF5,      3, &isHDF5);CHKERRQ(ierr);
