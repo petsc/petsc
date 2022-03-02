@@ -64,7 +64,7 @@ static PetscErrorCode VecView_Network_Seq(DM networkdm,Vec X,PetscViewer viewer)
     ierr = DMNetworkGetLocalVecOffset(networkdm,e,ALL_COMPONENTS,&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetGlobalEdgeIndex(networkdm,e,&id);CHKERRQ(ierr);
 
-    ierr = PetscViewerASCIIPrintf(viewer,"  Edge %D:\n",id);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Edge %" PetscInt_FMT ":\n",id);CHKERRQ(ierr);
     ierr = VecArrayPrint_private(viewer,nvar,xv+offset);CHKERRQ(ierr);
   }
 
@@ -77,7 +77,7 @@ static PetscErrorCode VecView_Network_Seq(DM networkdm,Vec X,PetscViewer viewer)
     ierr = DMNetworkGetLocalVecOffset(networkdm,v,ALL_COMPONENTS,&offset);CHKERRQ(ierr);
     ierr = DMNetworkGetGlobalVertexIndex(networkdm,v,&id);CHKERRQ(ierr);
 
-    ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %D:\n",id);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %" PetscInt_FMT ":\n",id);CHKERRQ(ierr);
     ierr = VecArrayPrint_private(viewer,nvar,xv+offset);CHKERRQ(ierr);
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -132,7 +132,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
     ierr = DMNetworkGetGlobalEdgeIndex(networkdm,e,&id);CHKERRQ(ierr);
 
     if (rank == 0) { /* print its own entries */
-      ierr = PetscViewerASCIIPrintf(viewer,"  Edge %D:\n",id);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Edge %" PetscInt_FMT ":\n",id);CHKERRQ(ierr);
       ierr = VecArrayPrint_private(viewer,nvar,xv+offset);CHKERRQ(ierr);
     } else {
       values[0]  += 1; /* number of edges */
@@ -153,7 +153,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
     ierr = DMNetworkGetGlobalVertexIndex(networkdm,v,&id);CHKERRQ(ierr);
 
     if (rank == 0) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %D:\n",id);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %" PetscInt_FMT ":\n",id);CHKERRQ(ierr);
       ierr = VecArrayPrint_private(viewer,nvar,xv+offset);CHKERRQ(ierr);
     } else {
       values[1]  += 1; /* number of vertices */
@@ -178,7 +178,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
       for (i=0; i<ne; i++) {
         id   = (PetscInt)PetscAbsScalar(values[k++]);
         nvar = (PetscInt)PetscAbsScalar(values[k++]);
-        ierr = PetscViewerASCIIPrintf(viewer,"  Edge %D:\n",id);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  Edge %" PetscInt_FMT ":\n",id);CHKERRQ(ierr);
         ierr = VecArrayPrint_private(viewer,nvar,values+k);CHKERRQ(ierr);
         k   += nvar;
       }
@@ -187,7 +187,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm,Vec X,PetscViewer viewer)
       for (i=0; i<nv; i++) {
         id   = (PetscInt)PetscAbsScalar(values[k++]);
         nvar = (PetscInt)PetscAbsScalar(values[k++]);
-        ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %D:\n",id);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  Vertex %" PetscInt_FMT ":\n",id);CHKERRQ(ierr);
         ierr = VecArrayPrint_private(viewer,nvar,values+k);CHKERRQ(ierr);
         k   += nvar;
       }
@@ -214,7 +214,7 @@ PetscErrorCode VecView_Network(Vec v,PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = VecGetDM(v,&dm);CHKERRQ(ierr);
-  PetscCheckFalse(!dm,PetscObjectComm((PetscObject)v),PETSC_ERR_ARG_WRONG,"Vector not generated from a DM");
+  PetscCheck(dm,PetscObjectComm((PetscObject)v),PETSC_ERR_ARG_WRONG,"Vector not generated from a DM");
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)v,VECSEQ,&isseq);CHKERRQ(ierr);
 
