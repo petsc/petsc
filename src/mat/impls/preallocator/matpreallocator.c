@@ -236,9 +236,10 @@ PetscErrorCode MatPreallocatorPreallocate(Mat mat, PetscBool fill, Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscValidHeaderSpecific(A,   MAT_CLASSID, 3);
-  ierr = PetscUseMethod(mat, "MatPreallocatorPreallocate_C", (Mat,PetscBool,Mat),(mat,fill,A));CHKERRQ(ierr);
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidLogicalCollectiveBool(mat,fill,2);
+  PetscValidHeaderSpecific(A,MAT_CLASSID,3);
+  ierr = PetscUseMethod(mat,"MatPreallocatorPreallocate_C",(Mat,PetscBool,Mat),(mat,fill,A));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
