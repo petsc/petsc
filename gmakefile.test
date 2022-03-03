@@ -13,7 +13,7 @@ TESTSRCDIR := $(dir $(mkfile_path))src
 -include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
 -include $(PETSC_DIR)/lib/petsc/conf/variables
 
-TESTDIR ?= $(PETSC_DIR)/$(PETSC_ARCH)/tests
+TESTDIR ?= ./$(PETSC_ARCH)/tests
 MODDIR := $(PETSC_DIR)/$(PETSC_ARCH)/include
 TESTLOGTAPFILE ?= $(TESTDIR)/test_$(PETSC_ARCH)_tap.log
 TESTLOGERRFILE ?= $(TESTDIR)/test_$(PETSC_ARCH)_err.log
