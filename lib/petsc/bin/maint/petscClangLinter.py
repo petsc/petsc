@@ -328,22 +328,13 @@ class PetscCursor(object):
           raise RuntimeError("Could not determine useful name for cursor {}".format(errstr))
     return name
 
-  @staticmethod
-  def getTypenameFromCursor(cursor):
+  @classmethod
+  def getTypenameFromCursor(cls,cursor):
     __doc__="""
     Try to get the most canonical type from a cursor so DM -> _p_DM *
     """
-    if cursor.type.get_pointee().spelling:
-      ctemp = cursor.type.get_pointee()
-      if ctemp.get_canonical().spelling:
-        typename = ctemp.get_canonical().spelling
-      else:
-        typename = ctemp.spelling
-    elif cursor.type.get_canonical().spelling:
-      typename = cursor.type.get_canonical().spelling
-    else:
-      typename = cursor.type.spelling
-    return typename
+    canon = cursor.type.get_canonical().spelling
+    return canon if canon else cls.getDerivedTypenameFromCursor(cursor)
 
   @staticmethod
   def getDerivedTypenameFromCursor(cursor):
@@ -369,11 +360,10 @@ class PetscCursor(object):
   @staticmethod
   def getFormattedLocationStringFromCursor(cursor):
     loc = cursor.location
-    return ":".join([loc.file.name,str(loc.column),str(loc.line)])
+    return ":".join([loc.file.name,str(loc.line),str(loc.column)])
 
   def getFormattedLocationString(self):
-    loc = self.location
-    return ":".join([loc.file.name,str(loc.column),str(loc.line)])
+    return self.getFormattedLocationStringFromCursor(self)
 
   @staticmethod
   def viewAstFromCursor(cursor):
@@ -1131,7 +1121,7 @@ def convertToCorrectPetscValidXXXPointer(linter,obj,objType,**kwargs):
   """
   validFuncName = None
   objTypeKind   = objType.kind
-  if (objTypeKind == clx.TypeKind.RECORD) or (objTypeKind == clx.TypeKind.VOID):
+  if objTypeKind in {clx.TypeKind.RECORD,clx.TypeKind.VOID,clx.TypeKind.POINTER}|arrayTypes:
     # pointer to struct or void pointer, use PetscValidPointer() instead
     validFuncName = "PetscValidPointer"
   elif objTypeKind in charTypes:
@@ -1148,8 +1138,18 @@ def convertToCorrectPetscValidXXXPointer(linter,obj,objType,**kwargs):
     if ("PetscInt" in obj.derivedtypename) or ("PetscMPIInt" in obj.derivedtypename):
       validFuncName = "PetscValidIntPointer"
   if validFuncName:
-    funcCursor = kwargs["funcCursor"]
-    addFunctionFixToBadSource(linter,obj,funcCursor,validFuncName)
+    if validFuncName != "PetscValidPointer":
+      count = 0
+      while objType.kind == clx.TypeKind.INCOMPLETEARRAY or count > 100:
+        count += 1
+        objType = objType.element_type
+      while objType.kind == clx.TypeKind.POINTER or count > 100:
+        count += 1
+        objType = objType.get_pointee()
+      if count != 0:
+        mess = "\n{}\n\nExpected to select PetscValidPointer() for object of clang type {} (a pointer of arrity > 1), chose {}() instead".format(PetscCursor.errorViewFromCursor(obj),objType.kind,validFuncName)
+        raise RuntimeError(mess)
+    addFunctionFixToBadSource(linter,obj,kwargs["funcCursor"],validFuncName)
     return True
   return False
 
@@ -1322,12 +1322,8 @@ def checkTraceableToParentArgs(obj,parentArgNames):
     tGroup    = list(clx.TokenGroup.get_tokens(tu,lineRange))
     funcProto = [i for i,t in enumerate(tGroup) if t.cursor.type.get_canonical().kind in functionTypes]
     if funcProto:
-      import itertools
-
-      assert len(funcProto) == 1, "Could not determine unique function prototype from {} for provenance of {}".format("".join([t.spelling for t in tGroup]),obj)
-      idx        = funcProto[0]
-      lambdaExpr = lambda t: (t.spelling != ")") and t.kind in varTokens
-      iterator   = map(lambda x: x.cursor,itertools.takewhile(lambdaExpr,tGroup[idx+2:]))
+      filterExpr = lambda t: t.kind in varTokens and t.cursor.type.kind not in functionTypes
+      iterator   = [x.cursor for x in filter(filterExpr,tGroup[funcProto[0]+2:])]
     # we now have completely different cursor selected, so we recursively call this
     # function
     else:
@@ -1404,7 +1400,7 @@ def checkMatchingArgNum(linter,obj,idx,parentArgs):
     linter.addErrorFromCursor(idx,errMess,patch=fix)
   return
 
-def checkMatchingSpecificType(linter,obj,expectedTypeKinds,pointer,unexpectedNotPointerFunction=alwaysFalse,unexpectedPointerFunction=alwaysFalse,successFunction=alwaysTrue,failureFunction=alwaysFalse,**kwargs):
+def checkMatchingSpecificType(linter,obj,expectedTypeKinds,pointer,unexpectedNotPointerFunction=alwaysFalse,unexpectedPointerFunction=alwaysFalse,successFunction=alwaysTrue,failureFunction=alwaysFalse,permissive=False,pointerDepth=1,**kwargs):
   __doc__="""
   Checks that obj is of a particular kind, for example char. Can optionally handle pointers too.
 
@@ -1419,6 +1415,9 @@ def checkMatchingSpecificType(linter,obj,expectedTypeKinds,pointer,unexpectedNot
                                  pointer
   successFunction              - the object matches the type and pointer specification
   failureFunction              - the object does NOT match the base type
+  permissive                   - allow type mismatch (e.g. when checking generic functions like
+                                 PetscValidPointer() which can accept anytype)
+  pointerDepth                 - how many levels of pointer to remove (-1 for no limit)
 
   The hooks must return whether they handled the failure, this can mean either determining
   that the object was correct all along, or that a more helpful error message was logged
@@ -1426,26 +1425,26 @@ def checkMatchingSpecificType(linter,obj,expectedTypeKinds,pointer,unexpectedNot
   """
   objType = obj.canonical.type.get_canonical()
   if pointer:
-    if objType.kind in expectedTypeKinds:
+    if objType.kind in expectedTypeKinds and not permissive:
+      # expecting a pointer to type, but obj is already that type
       if not unexpectedNotPointerFunction(linter,obj,objType,**kwargs):
         linter.addErrorFromCursor(obj,"Object of clang type {} is not a pointer. Expected pointer of one of the following types: {}".format(objType.kind,expectedTypeKinds))
       return
+    if pointerDepth < 0:
+      pointerDepth = 100
+    # get rid of any nested pointer types
     if objType.kind == clx.TypeKind.INCOMPLETEARRAY:
-      objType = objType.element_type
-      # get rid of any nested array types
-      while objType.kind in arrayTypes:
+      for _ in range(pointerDepth):
         objType = objType.element_type
-    if objType.kind == clx.TypeKind.POINTER:
-      objType = objType.get_pointee()
-      # get rid of any nested pointer types
-      while objType.kind == clx.TypeKind.POINTER:
+    elif objType.kind == clx.TypeKind.POINTER:
+      for _ in range(pointerDepth):
         objType = objType.get_pointee()
   else:
     if objType.kind in arrayTypes or objType.kind == clx.TypeKind.POINTER:
       if not unexpectedPointerFunction(linter,obj,objType,**kwargs):
         linter.addErrorFromCursor(obj,"Object of clang type {} is a pointer when it should not be".format(objType.kind))
       return
-  if objType.kind in expectedTypeKinds:
+  if objType.kind in expectedTypeKinds or permissive:
     handled = successFunction(linter,obj,objType,**kwargs)
     if not handled:
       errorMessage = "{}\nType checker successfully matched object of type {} to (one of) expected types:\n- {}\n\nBut user supplied on-successful-match hook '{}' returned non-truthy value '{}' indicating unhandled error!".format(obj,objType.kind,'\n- '.join(map(str,expectedTypeKinds)),successFunction,handled,expectedTypeKinds,objType.kind)
@@ -1509,6 +1508,19 @@ def checkPetscValidPointerAndType(linter,func,parent,expectedTypes,unexpectedNot
                             funcCursor=func,
                             **kwargs)
   checkMatchingArgNum(linter,obj,idx,parentArgs)
+  return
+
+def checkPetscValidPointer(linter,func,parent):
+  __doc__="""
+  Specific check for PetscValidPointer(obj,idx)
+  """
+  def tryConvertToSpecificPetscValidXXXPointer(linter,obj,objType,**kwargs):
+    objTypeKind = objType.kind
+    if objTypeKind not in {clx.TypeKind.RECORD,clx.TypeKind.VOID,clx.TypeKind.POINTER}|arrayTypes:
+      convertToCorrectPetscValidXXXPointer(linter,obj,objType,**kwargs)
+    return True # PetscValidPointer is always good
+
+  checkPetscValidPointerAndType(linter,func,parent,arrayTypes|{clx.TypeKind.POINTER},successFunction=tryConvertToSpecificPetscValidXXXPointer,permissive=True)
   return
 
 def checkPetscValidCharPointer(linter,func,parent):
@@ -1612,7 +1624,7 @@ checkFunctionMap = {
   "PetscValidHeaderSpecificType"       : checkPetscValidHeaderSpecificType,
   "PetscValidHeaderSpecific"           : checkPetscValidHeaderSpecific,
   "PetscValidHeader"                   : checkObjIdxGenericN,
-  "PetscValidPointer"                  : checkObjIdxGenericN,
+  "PetscValidPointer"                  : checkPetscValidPointer,
   "PetscValidCharPointer"              : checkPetscValidCharPointer,
   "PetscValidIntPointer"               : checkPetscValidIntPointer,
   "PetscValidBoolPointer"              : checkPetscValidBoolPointer,
