@@ -361,7 +361,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
   }
 
   CHKERRQ(MatMissingDiagonal(A,&missing,&d));
-  PetscCheckFalse(missing,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %" PetscInt_FMT,d);
+  PetscCheck(!missing,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %" PetscInt_FMT,d);
 
   f             = info->fill;
   levels        = (PetscInt)info->levels;
@@ -560,7 +560,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
 
   PetscFunctionBegin;
   CHKERRQ(MatMissingDiagonal_SeqBAIJ(A,&flg,&dd));
-  PetscCheckFalse(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix A is missing diagonal entry in row %" PetscInt_FMT,dd);
+  PetscCheck(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix A is missing diagonal entry in row %" PetscInt_FMT,dd);
 
   f             = info->fill;
   levels        = (PetscInt)info->levels;
@@ -612,7 +612,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_inplace(Mat fact,Mat A,IS isrow,IS i
 
     /* copy prow into linked list */
     nzf = nz = ai[r[prow]+1] - ai[r[prow]];
-    PetscCheckFalse(!nz,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %" PetscInt_FMT " in permuted ordering %" PetscInt_FMT,r[prow],prow);
+    PetscCheck(nz,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %" PetscInt_FMT " in permuted ordering %" PetscInt_FMT,r[prow],prow);
     xi         = aj + ai[r[prow]];
     fill[n]    = n;
     fill[prow] = -1;   /* marker for diagonal entry */

@@ -21,7 +21,7 @@ int main(int argc, char **argv)
   CHKERRQ(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
   CHKERRQ(MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, NULL, &nsp));
   CHKERRQ(MatNullSpaceTest(nsp, mat, &flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Null space test failed!");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Null space test failed!");
   CHKERRQ(MatNullSpaceDestroy(&nsp));
   CHKERRQ(MatDestroy(&mat));
   ierr = PetscFinalize();

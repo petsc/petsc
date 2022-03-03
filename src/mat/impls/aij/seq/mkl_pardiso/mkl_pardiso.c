@@ -109,7 +109,7 @@ PetscErrorCode MatMKLPardiso_Convert_seqsbaij(Mat A,PetscBool sym,MatReuse reuse
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!sym,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"This should not happen");
+  PetscCheck(sym,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"This should not happen");
   *v      = aa->a;
   if (bs == 1) { /* already in the correct format */
     /* though PetscInt and INT_TYPE are of the same size since they are defined differently the Intel compiler requires a cast */
@@ -537,10 +537,10 @@ PetscErrorCode MatMatSolve_MKL_PARDISO(Mat A,Mat B,Mat X)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)B,MATSEQDENSE,&flg));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATSEQDENSE matrix");
+  PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATSEQDENSE matrix");
   if (X != B) {
     CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)X,MATSEQDENSE,&flg));
-    PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATSEQDENSE matrix");
+    PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATSEQDENSE matrix");
   }
 
   CHKERRQ(MatGetSize(B,NULL,(PetscInt*)&mat_mkl_pardiso->nrhs));
@@ -1119,7 +1119,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
     mat_mkl_pardiso->needsym = PETSC_FALSE;
     if (isSeqAIJ) mat_mkl_pardiso->Convert = MatMKLPardiso_Convert_seqaij;
     else if (isSeqBAIJ) mat_mkl_pardiso->Convert = MatMKLPardiso_Convert_seqbaij;
-    else PetscCheckFalse(isSeqSBAIJ,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO LU factor with SEQSBAIJ format! Use MAT_FACTOR_CHOLESKY instead");
+    else PetscCheck(!isSeqSBAIJ,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO LU factor with SEQSBAIJ format! Use MAT_FACTOR_CHOLESKY instead");
     else SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO LU with %s format",((PetscObject)A)->type_name);
 #if defined(PETSC_USE_COMPLEX)
     mat_mkl_pardiso->mtype = 13;
@@ -1140,7 +1140,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_aij_mkl_pardiso(Mat A,MatFactorType fty
     else                      mat_mkl_pardiso->mtype = -2;
 #else
     mat_mkl_pardiso->mtype = 6;
-    PetscCheckFalse(A->hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO CHOLESKY with Hermitian matrices! Use MAT_FACTOR_LU instead");
+    PetscCheck(!A->hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for PARDISO CHOLESKY with Hermitian matrices! Use MAT_FACTOR_LU instead");
 #endif
   }
   B->ops->destroy = MatDestroy_MKL_PARDISO;

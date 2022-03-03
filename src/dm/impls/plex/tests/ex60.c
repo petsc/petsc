@@ -263,17 +263,17 @@ int main(int argc, char **argv) {
 
     CHKERRQ(DMGetLabel(dmAdapt, "Face Sets", &bdLabel));
     CHKERRQ(DMLabelHasStratum(bdLabel, 1, &hasTag));
-    PetscCheckFalse(!hasTag,comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh does not have face tag 1");
+    PetscCheck(hasTag,comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh does not have face tag 1");
     CHKERRQ(DMLabelHasStratum(bdLabel, 2, &hasTag));
-    PetscCheckFalse(!hasTag,comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh does not have face tag 2");
+    PetscCheck(hasTag,comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh does not have face tag 2");
     CHKERRQ(DMLabelGetNumValues(bdLabel, &size));
     PetscCheckFalse(size != 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh has the wrong number of face tags (got %d, expected 2)", size);
 
     CHKERRQ(DMGetLabel(dmAdapt, "Cell Sets", &rgLabel));
     CHKERRQ(DMLabelHasStratum(rgLabel, 3, &hasTag));
-    PetscCheckFalse(!hasTag,comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh does not have cell tag 3");
+    PetscCheck(hasTag,comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh does not have cell tag 3");
     CHKERRQ(DMLabelHasStratum(rgLabel, 4, &hasTag));
-    PetscCheckFalse(!hasTag,comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh does not have cell tag 4");
+    PetscCheck(hasTag,comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh does not have cell tag 4");
     CHKERRQ(DMLabelGetNumValues(rgLabel, &size));
     PetscCheckFalse(size != 2,comm, PETSC_ERR_ARG_OUTOFRANGE, "Adapted mesh has the wrong number of cell tags (got %d, expected 2)", size);
   }

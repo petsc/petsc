@@ -128,7 +128,7 @@ PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
           CHKERRQ(PetscFEGetDualSpace(fem,&sp));
           CHKERRQ(PetscDualSpaceGetType(sp,&spname));
           CHKERRQ(PetscStrcmp(spname,PETSCDUALSPACELAGRANGE,&islag));
-          PetscCheckFalse(!islag,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dual space");
+          PetscCheck(islag,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Unsupported dual space");
           CHKERRQ(PetscDualSpaceLagrangeGetContinuity(sp,&continuous));
           CHKERRQ(PetscDualSpaceGetOrder(sp,&order));
           if (continuous && order > 0) { /* no support for high-order viz, still have to figure out the numbering */
@@ -403,14 +403,14 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
-  PetscCheckFalse(!isascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer must be of type VIEWERASCII");
+  PetscCheck(isascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer must be of type VIEWERASCII");
   CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)viewer),&size));
   PetscCheckFalse(size > 1,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Use single sequential viewers for parallel visualization");
   CHKERRQ(DMGetDimension(dm,&dim));
 
   /* get container: determines if a process visualizes is portion of the data or not */
   CHKERRQ(PetscObjectQuery((PetscObject)viewer,"_glvis_info_container",(PetscObject*)&glvis_container));
-  PetscCheckFalse(!glvis_container,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing GLVis container");
+  PetscCheck(glvis_container,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing GLVis container");
   {
     PetscViewerGLVisInfo glvis_info;
     CHKERRQ(PetscContainerGetPointer(glvis_container,(void**)&glvis_info));
@@ -604,12 +604,12 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
                 dof = tetv;
                 SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled tethraedral case");
               case 6:
-                PetscCheckFalse(cellvertex,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: vertices per cell %D",fpc);
+                PetscCheck(!cellvertex,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: vertices per cell %D",fpc);
                 vpc = 8;
                 dof = hexv;
                 break;
               case 8:
-                PetscCheckFalse(!cellvertex,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
+                PetscCheck(cellvertex,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unhandled case: faces per cell %D",fpc);
                 vpc = 8;
                 dof = hexv;
                 break;
@@ -622,7 +622,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
         }
         CHKERRQ(DMPlexReorderCell(dm,cStart,vids));
       }
-      PetscCheckFalse(!dof,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing dofs");
+      PetscCheck(dof,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing dofs");
       CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,(cEnd-cStart-novl)*vpc*sdim,&hovec));
       CHKERRQ(PetscObjectSetName((PetscObject)hovec,fec));
       CHKERRQ(VecGetArray(hovec,&array));
@@ -729,7 +729,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
               vidxs = cellClosure + 2*v;
               break;
             }
-          PetscCheckFalse(!vidxs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing vertices");
+          PetscCheck(vidxs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing vertices");
           for (v=0;v<uvpc;v++) {
             PetscInt s;
 
@@ -929,7 +929,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
         }
       }
     }
-    PetscCheckFalse(bf,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Remaining boundary faces %D",bf);
+    PetscCheck(!bf,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Remaining boundary faces %D",bf);
     CHKERRQ(PetscBTDestroy(&bfaces));
     CHKERRQ(PetscFree(fcells));
   }
@@ -1063,7 +1063,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       }
       CHKERRQ(PetscFree(skip));
     }
-    PetscCheckFalse(vp,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected %D hanging vertices",vp);
+    PetscCheck(!vp,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected %D hanging vertices",vp);
   }
   CHKERRQ(PetscBTDestroy(&pown));
   CHKERRQ(PetscBTDestroy(&vown));

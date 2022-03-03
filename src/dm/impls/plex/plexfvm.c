@@ -186,9 +186,9 @@ PetscErrorCode DMPlexReconstructGradientsFVM(DM dm, Vec locX, Vec grad)
     CHKERRQ(PetscObjectGetClassId(obj, &id));
     if (id == PETSCFV_CLASSID) {useFVM = PETSC_TRUE; fvm = (PetscFV) obj;}
   }
-  PetscCheckFalse(!useFVM,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"This dm does not have a finite volume discretization");
+  PetscCheck(useFVM,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"This dm does not have a finite volume discretization");
   CHKERRQ(DMPlexGetDataFVM(dm, fvm, &cellGeometryFVM, &faceGeometryFVM, &dmGrad));
-  PetscCheckFalse(!dmGrad,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"This dm's finite volume discretization does not reconstruct gradients");
+  PetscCheck(dmGrad,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"This dm's finite volume discretization does not reconstruct gradients");
   CHKERRQ(VecGetArrayRead(faceGeometryFVM, (const PetscScalar **) &fgeomFVM));
   CHKERRQ(VecGetArrayRead(cellGeometryFVM, (const PetscScalar **) &cgeomFVM));
   CHKERRQ(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));

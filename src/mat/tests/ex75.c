@@ -159,7 +159,7 @@ int main(int argc,char **args)
   CHKERRQ(MatDiagonalScale(A,x,x));
   CHKERRQ(MatDiagonalScale(sA,x,x));
   CHKERRQ(MatMultEqual(A,sA,10,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
 
   /* Test MatGetDiagonal(), MatScale() */
   CHKERRQ(MatGetDiagonal(A,s1));

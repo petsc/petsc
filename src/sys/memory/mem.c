@@ -90,7 +90,7 @@ PetscErrorCode  PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
   PetscCheckFalse(fscanf(file,"%d %d",&mm,&rss) != 2,PETSC_COMM_SELF,PETSC_ERR_SYS,"Failed to read two integers (mm and rss) from %s",proc);
   *mem = ((PetscLogDouble)rss) * ((PetscLogDouble)getpagesize());
   err  = fclose(file);
-  PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
+  PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
 
 #elif defined(PETSC_HAVE_GETRUSAGE)
   getrusage(RUSAGE_SELF,&temp);
@@ -143,7 +143,7 @@ PetscLogDouble PetscMemoryMaximumUsage        = 0;
 PetscErrorCode  PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(!PetscMemoryCollectMaximumUsage,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"To use this function you must first call PetscMemorySetGetMaximumUsage()");
+  PetscCheck(PetscMemoryCollectMaximumUsage,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"To use this function you must first call PetscMemorySetGetMaximumUsage()");
   *mem = PetscMemoryMaximumUsage;
   PetscFunctionReturn(0);
 }

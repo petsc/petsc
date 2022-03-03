@@ -412,7 +412,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
   PetscFunctionBegin;
   if (ctype == IS_COLORING_LOCAL) {
-    PetscCheckFalse(!map,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_INCOMP,"When using ghosted differencing matrix must have local to global mapping provided with MatSetLocalToGlobalMapping");
+    PetscCheck(map,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_INCOMP,"When using ghosted differencing matrix must have local to global mapping provided with MatSetLocalToGlobalMapping");
     CHKERRQ(ISLocalToGlobalMappingGetIndices(map,&ltog));
   }
 
@@ -744,7 +744,7 @@ PetscErrorCode  MatFDColoringSetValues(Mat J,MatFDColoring coloring,const PetscS
   PetscValidHeaderSpecific(J,MAT_CLASSID,1);
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_CLASSID,2);
   CHKERRQ(PetscObjectCompareId((PetscObject)J,coloring->matid,&eq));
-  PetscCheckFalse(!eq,PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_WRONG,"Matrix used with MatFDColoringSetValues() must be that used with MatFDColoringCreate()");
+  PetscCheck(eq,PetscObjectComm((PetscObject)J),PETSC_ERR_ARG_WRONG,"Matrix used with MatFDColoringSetValues() must be that used with MatFDColoringCreate()");
   Jentry2 = coloring->matentry2;
   nrows   = coloring->nrows;
   ncolors = coloring->ncolors;

@@ -55,9 +55,9 @@ PetscErrorCode PetscTellMyCell(MPI_Comm comm,const char number[],const char mess
     PetscBool set;
 
     CHKERRQ(PetscOptionsGetString(NULL,NULL,"-tellmycell_user",Username,sizeof(Username),&set));
-    PetscCheckFalse(!set,PETSC_COMM_SELF,PETSC_ERR_USER,"You must pass in a tellmycell user name with -tellmycell_user <Username>");
+    PetscCheck(set,PETSC_COMM_SELF,PETSC_ERR_USER,"You must pass in a tellmycell user name with -tellmycell_user <Username>");
     CHKERRQ(PetscOptionsGetString(NULL,NULL,"-tellmycell_password",Password,sizeof(Password),&set));
-    PetscCheckFalse(!set,PETSC_COMM_SELF,PETSC_ERR_USER,"You must pass in a tellmycell password with -tellmycell_password <Password>");
+    PetscCheck(set,PETSC_COMM_SELF,PETSC_ERR_USER,"You must pass in a tellmycell password with -tellmycell_password <Password>");
     CHKERRQ(PetscMalloc1(mlen+nlen+100,&body));
     CHKERRQ(PetscStrcpy(body,"User="));
     CHKERRQ(PetscStrcat(body,Username));

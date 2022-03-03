@@ -50,7 +50,7 @@ static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(PetscOptionItems *Pe
   CHKERRQ(PetscMalloc1(nl, &thicknesses));
   CHKERRQ(PetscOptionsRealArray("-dm_plex_transform_extrude_thicknesses", "Thickness of each individual extruded layer", "", thicknesses, &nl, &flg));
   if (flg) {
-    PetscCheckFalse(!nl,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_OUTOFRANGE, "Must give at least one thickness for -dm_plex_transform_extrude_thicknesses");
+    PetscCheck(nl,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_OUTOFRANGE, "Must give at least one thickness for -dm_plex_transform_extrude_thicknesses");
     CHKERRQ(DMPlexTransformExtrudeSetThicknesses(tr, nl, thicknesses));
   }
   CHKERRQ(PetscFree(thicknesses));

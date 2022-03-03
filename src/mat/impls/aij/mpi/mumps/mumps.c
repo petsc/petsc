@@ -457,7 +457,7 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A,PetscInt shift,MatReu
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
   CHKERRQ(MatGetOption(A,MAT_HERMITIAN,&hermitian));
-  PetscCheckFalse(hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MUMPS does not support Hermitian symmetric matrices for Choleksy");
+  PetscCheck(!hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MUMPS does not support Hermitian symmetric matrices for Choleksy");
 #endif
   ai   = aa->i;
   aj   = aa->j;
@@ -531,7 +531,7 @@ PetscErrorCode MatConvertToTriples_seqaij_seqsbaij(Mat A,PetscInt shift,MatReuse
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
   CHKERRQ(MatGetOption(A,MAT_HERMITIAN,&hermitian));
-  PetscCheckFalse(hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MUMPS does not support Hermitian symmetric matrices for Choleksy");
+  PetscCheck(!hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MUMPS does not support Hermitian symmetric matrices for Choleksy");
 #endif
   CHKERRQ(MatSeqAIJGetArrayRead(A,&av));
   ai    = aa->i; aj = aa->j;
@@ -646,7 +646,7 @@ PetscErrorCode MatConvertToTriples_mpisbaij_mpisbaij(Mat A,PetscInt shift,MatReu
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
   CHKERRQ(MatGetOption(A,MAT_HERMITIAN,&hermitian));
-  PetscCheckFalse(hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MUMPS does not support Hermitian symmetric matrices for Choleksy");
+  PetscCheck(!hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MUMPS does not support Hermitian symmetric matrices for Choleksy");
 #endif
   CHKERRQ(MatGetBlockSize(A,&bs));
   rstart = A->rmap->rstart;
@@ -889,7 +889,7 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A,PetscInt shift,MatReuse
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
   CHKERRQ(MatGetOption(A,MAT_HERMITIAN,&hermitian));
-  PetscCheckFalse(hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MUMPS does not support Hermitian symmetric matrices for Choleksy");
+  PetscCheck(!hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MUMPS does not support Hermitian symmetric matrices for Choleksy");
 #endif
   CHKERRQ(MatMPIAIJGetSeqAIJ(A,&Ad,&Ao,&garray));
   CHKERRQ(MatSeqAIJGetArrayRead(Ad,&av));
@@ -1244,7 +1244,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectTypeCompareAny((PetscObject)X,&denseX,MATSEQDENSE,MATMPIDENSE,NULL));
-  PetscCheckFalse(!denseX,PetscObjectComm((PetscObject)X),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
+  PetscCheck(denseX,PetscObjectComm((PetscObject)X),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
 
   CHKERRQ(PetscObjectTypeCompareAny((PetscObject)B,&denseB,MATSEQDENSE,MATMPIDENSE,NULL));
   if (denseB) {
@@ -1281,7 +1281,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     } else { /* sparse B */
       CHKERRQ(MatSeqAIJGetArray(Bt,&aa));
       CHKERRQ(MatGetRowIJ(Bt,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&flg));
-      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
+      PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
       CHKERRQ(PetscMUMPSIntCSRCast(mumps,spnr,ia,ja,&mumps->id.irhs_ptr,&mumps->id.irhs_sparse,&mumps->id.nz_rhs));
       mumps->id.rhs_sparse  = (MumpsScalar*)aa;
     }
@@ -1303,7 +1303,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     if (!denseB) { /* sparse B */
       CHKERRQ(MatSeqAIJRestoreArray(Bt,&aa));
       CHKERRQ(MatRestoreRowIJ(Bt,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&flg));
-      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot restore IJ structure");
+      PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot restore IJ structure");
     }
     CHKERRQ(MatDenseRestoreArray(X,&array));
     PetscFunctionReturn(0);
@@ -1391,7 +1391,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
     if (!mumps->myid) {
       CHKERRQ(MatSeqAIJGetArray(b->A,&aa));
       CHKERRQ(MatGetRowIJ(b->A,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&flg));
-      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
+      PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
       CHKERRQ(PetscMUMPSIntCSRCast(mumps,spnr,ia,ja,&mumps->id.irhs_ptr,&mumps->id.irhs_sparse,&mumps->id.nz_rhs));
       mumps->id.rhs_sparse  = (MumpsScalar*)aa;
     } else {
@@ -1454,7 +1454,7 @@ PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X)
       b = (Mat_MPIAIJ*)Bt->data;
       CHKERRQ(MatSeqAIJRestoreArray(b->A,&aa));
       CHKERRQ(MatRestoreRowIJ(b->A,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&flg));
-      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot restore IJ structure");
+      PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot restore IJ structure");
     }
   } else {
     if (mumps->ICNTL20 == 0) {
@@ -1474,7 +1474,7 @@ PetscErrorCode MatMatTransposeSolve_MUMPS(Mat A,Mat Bt,Mat X)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectTypeCompareAny((PetscObject)Bt,&flg,MATSEQAIJ,MATMPIAIJ,NULL));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)Bt),PETSC_ERR_ARG_WRONG,"Matrix Bt must be MATAIJ matrix");
+  PetscCheck(flg,PetscObjectComm((PetscObject)Bt),PETSC_ERR_ARG_WRONG,"Matrix Bt must be MATAIJ matrix");
 
   /* Create B=Bt^T that uses Bt's data structure */
   CHKERRQ(MatCreateTranspose(Bt,&B));
@@ -2294,7 +2294,7 @@ PetscErrorCode MatFactorSetSchurIS_MUMPS(Mat F, IS is)
 
     ls   = mumps->myid ? (size ? PETSC_FALSE : PETSC_TRUE) : PETSC_TRUE; /* always true on root; false on others if their size != 0 */
     CHKERRMPI(MPI_Allreduce(&ls,&gs,1,MPIU_BOOL,MPI_LAND,mumps->petsc_comm));
-    PetscCheckFalse(!gs,PETSC_COMM_SELF,PETSC_ERR_SUP,"MUMPS distributed parallel Schur complements not yet supported from PETSc");
+    PetscCheck(gs,PETSC_COMM_SELF,PETSC_ERR_SUP,"MUMPS distributed parallel Schur complements not yet supported from PETSc");
   }
 
   /* Schur complement matrix */
@@ -2441,7 +2441,7 @@ PetscErrorCode MatMumpsSetIcntl(Mat F,PetscInt icntl,PetscInt ival)
 {
   PetscFunctionBegin;
   PetscValidType(F,1);
-  PetscCheckFalse(!F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
+  PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidLogicalCollectiveInt(F,icntl,2);
   PetscValidLogicalCollectiveInt(F,ival,3);
   CHKERRQ(PetscTryMethod(F,"MatMumpsSetIcntl_C",(Mat,PetscInt,PetscInt),(F,icntl,ival)));
@@ -2471,7 +2471,7 @@ PetscErrorCode MatMumpsGetIcntl(Mat F,PetscInt icntl,PetscInt *ival)
 {
   PetscFunctionBegin;
   PetscValidType(F,1);
-  PetscCheckFalse(!F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
+  PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidLogicalCollectiveInt(F,icntl,2);
   PetscValidIntPointer(ival,3);
   CHKERRQ(PetscUseMethod(F,"MatMumpsGetIcntl_C",(Mat,PetscInt,PetscInt*),(F,icntl,ival)));
@@ -2521,7 +2521,7 @@ PetscErrorCode MatMumpsSetCntl(Mat F,PetscInt icntl,PetscReal val)
 {
   PetscFunctionBegin;
   PetscValidType(F,1);
-  PetscCheckFalse(!F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
+  PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidLogicalCollectiveInt(F,icntl,2);
   PetscValidLogicalCollectiveReal(F,val,3);
   CHKERRQ(PetscTryMethod(F,"MatMumpsSetCntl_C",(Mat,PetscInt,PetscReal),(F,icntl,val)));
@@ -2551,7 +2551,7 @@ PetscErrorCode MatMumpsGetCntl(Mat F,PetscInt icntl,PetscReal *val)
 {
   PetscFunctionBegin;
   PetscValidType(F,1);
-  PetscCheckFalse(!F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
+  PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidLogicalCollectiveInt(F,icntl,2);
   PetscValidRealPointer(val,3);
   CHKERRQ(PetscUseMethod(F,"MatMumpsGetCntl_C",(Mat,PetscInt,PetscReal*),(F,icntl,val)));
@@ -2626,7 +2626,7 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F,Mat spRHS)
   if (!mumps->myid) {
     CHKERRQ(MatSeqAIJGetArray(Btseq,&aa));
     CHKERRQ(MatGetRowIJ(Btseq,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
     CHKERRQ(PetscMUMPSIntCSRCast(mumps,spnr,ia,ja,&mumps->id.irhs_ptr,&mumps->id.irhs_sparse,&mumps->id.nz_rhs));
     mumps->id.rhs_sparse  = (MumpsScalar*)aa;
   } else {
@@ -2648,7 +2648,7 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F,Mat spRHS)
   if (!mumps->myid) {
     CHKERRQ(MatSeqAIJRestoreArray(Btseq,&aa));
     CHKERRQ(MatRestoreRowIJ(Btseq,1,PETSC_FALSE,PETSC_FALSE,&spnr,(const PetscInt**)&ia,(const PetscInt**)&ja,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot get IJ structure");
   }
   PetscFunctionReturn(0);
 }
@@ -2676,7 +2676,7 @@ PetscErrorCode MatMumpsGetInverse(Mat F,Mat spRHS)
 {
   PetscFunctionBegin;
   PetscValidType(F,1);
-  PetscCheckFalse(!F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
+  PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   CHKERRQ(PetscUseMethod(F,"MatMumpsGetInverse_C",(Mat,Mat),(F,spRHS)));
   PetscFunctionReturn(0);
 }
@@ -2717,9 +2717,9 @@ PetscErrorCode MatMumpsGetInverseTranspose(Mat F,Mat spRHST)
 
   PetscFunctionBegin;
   PetscValidType(F,1);
-  PetscCheckFalse(!F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
+  PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   CHKERRQ(PetscObjectTypeCompareAny((PetscObject)spRHST,&flg,MATSEQAIJ,MATMPIAIJ,NULL));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)spRHST),PETSC_ERR_ARG_WRONG,"Matrix spRHST must be MATAIJ matrix");
+  PetscCheck(flg,PetscObjectComm((PetscObject)spRHST),PETSC_ERR_ARG_WRONG,"Matrix spRHST must be MATAIJ matrix");
 
   CHKERRQ(PetscUseMethod(F,"MatMumpsGetInverseTranspose_C",(Mat,Mat),(F,spRHST)));
   PetscFunctionReturn(0);
@@ -2748,7 +2748,7 @@ PetscErrorCode MatMumpsGetInfo(Mat F,PetscInt icntl,PetscInt *ival)
 {
   PetscFunctionBegin;
   PetscValidType(F,1);
-  PetscCheckFalse(!F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
+  PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidIntPointer(ival,3);
   CHKERRQ(PetscUseMethod(F,"MatMumpsGetInfo_C",(Mat,PetscInt,PetscInt*),(F,icntl,ival)));
   PetscFunctionReturn(0);
@@ -2777,7 +2777,7 @@ PetscErrorCode MatMumpsGetInfog(Mat F,PetscInt icntl,PetscInt *ival)
 {
   PetscFunctionBegin;
   PetscValidType(F,1);
-  PetscCheckFalse(!F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
+  PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidIntPointer(ival,3);
   CHKERRQ(PetscUseMethod(F,"MatMumpsGetInfog_C",(Mat,PetscInt,PetscInt*),(F,icntl,ival)));
   PetscFunctionReturn(0);
@@ -2806,7 +2806,7 @@ PetscErrorCode MatMumpsGetRinfo(Mat F,PetscInt icntl,PetscReal *val)
 {
   PetscFunctionBegin;
   PetscValidType(F,1);
-  PetscCheckFalse(!F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
+  PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidRealPointer(val,3);
   CHKERRQ(PetscUseMethod(F,"MatMumpsGetRinfo_C",(Mat,PetscInt,PetscReal*),(F,icntl,val)));
   PetscFunctionReturn(0);
@@ -2835,7 +2835,7 @@ PetscErrorCode MatMumpsGetRinfog(Mat F,PetscInt icntl,PetscReal *val)
 {
   PetscFunctionBegin;
   PetscValidType(F,1);
-  PetscCheckFalse(!F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
+  PetscCheck(F->factortype,PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix");
   PetscValidRealPointer(val,3);
   CHKERRQ(PetscUseMethod(F,"MatMumpsGetRinfog_C",(Mat,PetscInt,PetscReal*),(F,icntl,val)));
   PetscFunctionReturn(0);

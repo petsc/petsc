@@ -55,7 +55,7 @@ PetscErrorCode  PetscFOpen(MPI_Comm comm,const char name[],const char mode[],FIL
       }
       CHKERRQ(PetscInfo(0,"Opening file %s\n",fname));
       fd   = fopen(fname,mode);
-      PetscCheckFalse(!fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file %s",fname);
+      PetscCheck(fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file %s",fname);
     }
   } else fd = NULL;
   *fp = fd;
@@ -88,7 +88,7 @@ PetscErrorCode  PetscFClose(MPI_Comm comm,FILE *fd)
   CHKERRMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0 && fd != PETSC_STDOUT && fd != PETSC_STDERR) {
     err = fclose(fd);
-    PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
+    PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
   }
   PetscFunctionReturn(0);
 }

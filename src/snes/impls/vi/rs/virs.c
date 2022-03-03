@@ -54,7 +54,7 @@ PetscErrorCode  DMCreateGlobalVector_SNESVI(DM dm,Vec *vec)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectQuery((PetscObject)dm,"VI",(PetscObject*)&isnes));
-  PetscCheckFalse(!isnes,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Composed SNES is missing");
+  PetscCheck(isnes,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Composed SNES is missing");
   CHKERRQ(PetscContainerGetPointer(isnes,(void**)&dmsnesvi));
   CHKERRQ(VecCreateMPI(PetscObjectComm((PetscObject)dm),dmsnesvi->n,PETSC_DETERMINE,vec));
   CHKERRQ(VecSetDM(*vec, dm));
@@ -73,10 +73,10 @@ PetscErrorCode  DMCreateInterpolation_SNESVI(DM dm1,DM dm2,Mat *mat,Vec *vec)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectQuery((PetscObject)dm1,"VI",(PetscObject*)&isnes));
-  PetscCheckFalse(!isnes,PetscObjectComm((PetscObject)dm1),PETSC_ERR_PLIB,"Composed VI data structure is missing");
+  PetscCheck(isnes,PetscObjectComm((PetscObject)dm1),PETSC_ERR_PLIB,"Composed VI data structure is missing");
   CHKERRQ(PetscContainerGetPointer(isnes,(void**)&dmsnesvi1));
   CHKERRQ(PetscObjectQuery((PetscObject)dm2,"VI",(PetscObject*)&isnes));
-  PetscCheckFalse(!isnes,PetscObjectComm((PetscObject)dm2),PETSC_ERR_PLIB,"Composed VI data structure is missing");
+  PetscCheck(isnes,PetscObjectComm((PetscObject)dm2),PETSC_ERR_PLIB,"Composed VI data structure is missing");
   CHKERRQ(PetscContainerGetPointer(isnes,(void**)&dmsnesvi2));
 
   CHKERRQ((*dmsnesvi1->createinterpolation)(dm1,dm2,&interp,NULL));
@@ -106,7 +106,7 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectQuery((PetscObject)dm1,"VI",(PetscObject*)&isnes));
-  PetscCheckFalse(!isnes,PetscObjectComm((PetscObject)dm1),PETSC_ERR_PLIB,"Composed VI data structure is missing");
+  PetscCheck(isnes,PetscObjectComm((PetscObject)dm1),PETSC_ERR_PLIB,"Composed VI data structure is missing");
   CHKERRQ(PetscContainerGetPointer(isnes,(void**)&dmsnesvi1));
 
   /* get the original coarsen */

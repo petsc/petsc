@@ -25,7 +25,7 @@ int main(int argc,char **args)
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",name,sizeof(name),&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must provide a binary file for the matrix");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must provide a binary file for the matrix");
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-breakdown",&breakdown,NULL));
   CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-ksp_hpddm_deflation_tol",&deflation,NULL));

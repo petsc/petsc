@@ -86,7 +86,7 @@ static PetscErrorCode SNESMultiblockSetFieldsRuntime_Private(SNES snes)
     nfields = mb->bs;
     CHKERRQ(PetscOptionsGetIntArray(NULL,((PetscObject) snes)->prefix, optionname, ifields, &nfields, &flg));
     if (!flg) break;
-    PetscCheckFalse(!nfields,PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot list zero fields");
+    PetscCheck(nfields,PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot list zero fields");
     CHKERRQ(SNESMultiblockSetFields(snes, name, nfields, ifields));
   }
   if (i > 0) {
@@ -234,7 +234,7 @@ PetscErrorCode SNESSetUp_Multiblock(SNES snes)
         }
       }
       CHKERRQ(ISSorted(blocks->is, &sorted));
-      PetscCheckFalse(!sorted,PETSC_COMM_SELF, PETSC_ERR_USER, "Fields must be sorted when creating split");
+      PetscCheck(sorted,PETSC_COMM_SELF, PETSC_ERR_USER, "Fields must be sorted when creating split");
       blocks = blocks->next;
     }
   }

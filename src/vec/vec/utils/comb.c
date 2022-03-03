@@ -211,7 +211,7 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
       else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
     }
     if (sum_flg + max_flg + min_flg > 1) {
-      PetscCheckFalse(sr->mix,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
+      PetscCheck(!sr->mix,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in PetscSplitReduction() data structure, probably memory corruption");
       for (i=0; i<numops; i++) { sr->lvalues_mix[i].v = lvalues[i]; sr->lvalues_mix[i].i = reducetype[i]; }
       CHKERRMPI(MPIU_Allreduce(sr->lvalues_mix,sr->gvalues_mix,numops,MPIU_SCALAR_INT,PetscSplitReduction_Op,comm));
       for (i=0; i<numops; i++) { sr->gvalues[i] = sr->gvalues_mix[i].v; }
@@ -342,7 +342,7 @@ PetscErrorCode  VecDotBegin(Vec x,Vec y,PetscScalar *result)
   }
   sr->reducetype[sr->numopsbegin] = PETSC_SR_REDUCE_SUM;
   sr->invecs[sr->numopsbegin]     = (void*)x;
-  PetscCheckFalse(!x->ops->dot_local,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support local dots");
+  PetscCheck(x->ops->dot_local,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support local dots");
   CHKERRQ(PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0));
   CHKERRQ((*x->ops->dot_local)(x,y,sr->lvalues+sr->numopsbegin++));
   CHKERRQ(PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0));
@@ -424,7 +424,7 @@ PetscErrorCode  VecTDotBegin(Vec x,Vec y,PetscScalar *result)
   }
   sr->reducetype[sr->numopsbegin] = PETSC_SR_REDUCE_SUM;
   sr->invecs[sr->numopsbegin]     = (void*)x;
-  PetscCheckFalse(!x->ops->tdot_local,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support local dots");
+  PetscCheck(x->ops->tdot_local,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support local dots");
   CHKERRQ(PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0));
   CHKERRQ((*x->ops->tdot_local)(x,y,sr->lvalues+sr->numopsbegin++));
   CHKERRQ(PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0));
@@ -491,7 +491,7 @@ PetscErrorCode  VecNormBegin(Vec x,NormType ntype,PetscReal *result)
   }
 
   sr->invecs[sr->numopsbegin] = (void*)x;
-  PetscCheckFalse(!x->ops->norm_local,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support local norms");
+  PetscCheck(x->ops->norm_local,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support local norms");
   CHKERRQ(PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0));
   CHKERRQ((*x->ops->norm_local)(x,ntype,lresult));
   CHKERRQ(PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0));
@@ -601,7 +601,7 @@ PetscErrorCode  VecMDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result[
     sr->reducetype[sr->numopsbegin+i] = PETSC_SR_REDUCE_SUM;
     sr->invecs[sr->numopsbegin+i]     = (void*)x;
   }
-  PetscCheckFalse(!x->ops->mdot_local,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support local mdots");
+  PetscCheck(x->ops->mdot_local,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support local mdots");
   CHKERRQ(PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0));
   CHKERRQ((*x->ops->mdot_local)(x,nv,y,sr->lvalues+sr->numopsbegin));
   CHKERRQ(PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0));
@@ -691,7 +691,7 @@ PetscErrorCode  VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result
     sr->reducetype[sr->numopsbegin+i] = PETSC_SR_REDUCE_SUM;
     sr->invecs[sr->numopsbegin+i]     = (void*)x;
   }
-  PetscCheckFalse(!x->ops->mtdot_local,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support local mdots");
+  PetscCheck(x->ops->mtdot_local,PETSC_COMM_SELF,PETSC_ERR_SUP,"Vector does not support local mdots");
   CHKERRQ(PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0));
   CHKERRQ((*x->ops->mdot_local)(x,nv,y,sr->lvalues+sr->numopsbegin));
   CHKERRQ(PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0));

@@ -41,20 +41,20 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
     /* Check for PLY file */
     CHKERRQ(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
     CHKERRQ(PetscStrncmp(line, "ply", PETSC_MAX_PATH_LEN, &match));
-    PetscCheckFalse(!match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid PLY file");
+    PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid PLY file");
     /* Check PLY format */
     CHKERRQ(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
     CHKERRQ(PetscStrncmp(line, "format", PETSC_MAX_PATH_LEN, &match));
-    PetscCheckFalse(!match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid PLY file");
+    PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid PLY file");
     CHKERRQ(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
     CHKERRQ(PetscStrncmp(line, "ascii", PETSC_MAX_PATH_LEN, &isAscii));
     CHKERRQ(PetscStrncmp(line, "binary_big_endian", PETSC_MAX_PATH_LEN, &isBinaryBig));
     CHKERRQ(PetscStrncmp(line, "binary_little_endian", PETSC_MAX_PATH_LEN, &isBinaryLittle));
-    PetscCheckFalse(isAscii,PETSC_COMM_SELF, PETSC_ERR_SUP, "PLY ascii format not yet supported");
+    PetscCheck(!isAscii,PETSC_COMM_SELF, PETSC_ERR_SUP, "PLY ascii format not yet supported");
     else if (isBinaryLittle) byteSwap = PETSC_TRUE;
     CHKERRQ(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
     CHKERRQ(PetscStrncmp(line, "1.0", PETSC_MAX_PATH_LEN, &match));
-    PetscCheckFalse(!match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid version of PLY file, %s", line);
+    PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid version of PLY file, %s", line);
     /* Ignore comments */
     match = PETSC_TRUE;
     while (match) {
@@ -65,10 +65,10 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
     }
     /* Read vertex information */
     CHKERRQ(PetscStrncmp(line, "element", PETSC_MAX_PATH_LEN, &match));
-    PetscCheckFalse(!match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
+    PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
     CHKERRQ(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
     CHKERRQ(PetscStrncmp(line, "vertex", PETSC_MAX_PATH_LEN, &match));
-    PetscCheckFalse(!match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
+    PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
     CHKERRQ(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
     snum = sscanf(line, "%d", &Nv);
     PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
@@ -108,10 +108,10 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
     }
     /* Read cell information */
     CHKERRQ(PetscStrncmp(line, "element", PETSC_MAX_PATH_LEN, &match));
-    PetscCheckFalse(!match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
+    PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
     CHKERRQ(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
     CHKERRQ(PetscStrncmp(line, "face", PETSC_MAX_PATH_LEN, &match));
-    PetscCheckFalse(!match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
+    PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
     CHKERRQ(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
     snum = sscanf(line, "%d", &Nc);
     PetscCheckFalse(snum != 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
@@ -119,13 +119,13 @@ PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm comm, const char filename[], Pet
     snum = sscanf(line, "property list %s %s %s", ntype, itype, name);
     PetscCheckFalse(snum != 3,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse PLY file header: %s", line);
     CHKERRQ(PetscStrncmp(ntype, "uint8", 1024, &match));
-    PetscCheckFalse(!match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid size type in PLY file header: %s", line);
+    PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid size type in PLY file header: %s", line);
     CHKERRQ(PetscStrncmp(name, "vertex_indices", 1024, &match));
-    PetscCheckFalse(!match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid property in PLY file header: %s", line);
+    PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid property in PLY file header: %s", line);
     /* Header should terminate */
     CHKERRQ(PetscViewerRead(viewer, line, 1, NULL, PETSC_STRING));
     CHKERRQ(PetscStrncmp(line, "end_header", PETSC_MAX_PATH_LEN, &match));
-    PetscCheckFalse(!match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid PLY file: %s", line);
+    PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid PLY file: %s", line);
   } else {
     Nc = Nv = 0;
   }

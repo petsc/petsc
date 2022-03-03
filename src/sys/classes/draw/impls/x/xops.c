@@ -448,7 +448,7 @@ static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *
   if (rank) goto finally;
 
   /* change cursor to indicate input */
-  cursor = XCreateFontCursor(win->disp,XC_hand2); PetscCheckFalse(!cursor,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to create X cursor");
+  cursor = XCreateFontCursor(win->disp,XC_hand2); PetscCheck(cursor,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to create X cursor");
   XDefineCursor(win->disp,win->win,cursor);
   /* wait for mouse button events */
   XSelectInput(win->disp,win->win,ButtonPressMask|ButtonReleaseMask);

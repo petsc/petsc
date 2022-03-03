@@ -232,7 +232,7 @@ static PetscErrorCode  DMGlobalToLocalBegin_Sliced(DM da,Vec g,InsertMode mode,V
 
   PetscFunctionBegin;
   CHKERRQ(VecGhostIsLocalForm(g,l,&flg));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Local vector is not local form of global vector");
+  PetscCheck(flg,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Local vector is not local form of global vector");
   CHKERRQ(VecGhostUpdateEnd(g,mode,SCATTER_FORWARD));
   CHKERRQ(VecGhostUpdateBegin(g,mode,SCATTER_FORWARD));
   PetscFunctionReturn(0);
@@ -244,7 +244,7 @@ static PetscErrorCode  DMGlobalToLocalEnd_Sliced(DM da,Vec g,InsertMode mode,Vec
 
   PetscFunctionBegin;
   CHKERRQ(VecGhostIsLocalForm(g,l,&flg));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Local vector is not local form of global vector");
+  PetscCheck(flg,PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"Local vector is not local form of global vector");
   CHKERRQ(VecGhostUpdateEnd(g,mode,SCATTER_FORWARD));
   PetscFunctionReturn(0);
 }

@@ -167,7 +167,7 @@ PetscErrorCode PCGAMGCoarsen_Classical(PC pc,Mat *G,PetscCoarsenData **agg_lists
   MPI_Comm         fcomm = ((PetscObject)pc)->comm;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!G,fcomm,PETSC_ERR_ARG_WRONGSTATE,"Must set Graph in PC in PCGAMG before coarsening");
+  PetscCheck(G,fcomm,PETSC_ERR_ARG_WRONGSTATE,"Must set Graph in PC in PCGAMG before coarsening");
 
   CHKERRQ(MatCoarsenCreate(fcomm,&crs));
   CHKERRQ(MatCoarsenSetFromOptions(crs));
@@ -874,7 +874,7 @@ PetscErrorCode PCGAMGProlongator_Classical(PC pc, Mat A, Mat G, PetscCoarsenData
 
   PetscFunctionBegin;
   CHKERRQ(PetscFunctionListFind(PCGAMGClassicalProlongatorList,cls->prolongtype,&f));
-  PetscCheckFalse(!f,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot find PCGAMG Classical prolongator type");
+  PetscCheck(f,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot find PCGAMG Classical prolongator type");
   CHKERRQ((*f)(pc,A,G,agg_lists,P));
   PetscFunctionReturn(0);
 }

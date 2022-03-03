@@ -2113,7 +2113,7 @@ PetscErrorCode VecGetArrayReadAndMemType(Vec x,const PetscScalar **a,PetscMemTyp
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidType(x,1);
  #if defined(PETSC_USE_DEBUG)
-  PetscCheckFalse(x->ops->getarrayreadandmemtype,PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Not expected vector type \"%s\" has ops->getarrayreadandmemtype",((PetscObject)x)->type_name);
+  PetscCheck(!x->ops->getarrayreadandmemtype,PetscObjectComm((PetscObject)x),PETSC_ERR_SUP,"Not expected vector type \"%s\" has ops->getarrayreadandmemtype",((PetscObject)x)->type_name);
  #endif
 
   if (x->ops->getarrayandmemtype) { /* VECCUDA, VECKOKKOS etc, though they are also petscnative */

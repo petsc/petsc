@@ -401,7 +401,7 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf,MPI_Datatype unit,void *array,
           CHKERRMPI(MPI_Allreduce(MPI_IN_PLACE,dummy+1,1,MPIU_BOOL,MPI_LOR ,PetscObjectComm((PetscObject)sf)));
           PetscCheckFalse(dummy[0] != dummy[1],PetscObjectComm((PetscObject)sf),PETSC_ERR_SUP,"PETSCSF_WINDOW_FLAVOR_DYNAMIC requires root pointers to be consistently used across the comm. Use PETSCSF_WINDOW_FLAVOR_CREATE or PETSCSF_WINDOW_FLAVOR_ALLOCATE instead");
         }
-        PetscCheckFalse(link->inuse,PetscObjectComm((PetscObject)sf),PETSC_ERR_PLIB,"Window in use");
+        PetscCheck(!link->inuse,PetscObjectComm((PetscObject)sf),PETSC_ERR_PLIB,"Window in use");
         PetscCheckFalse(epoch && link->epoch,PetscObjectComm((PetscObject)sf),PETSC_ERR_PLIB,"Window epoch not finished");
         winok = PETSC_TRUE;
         link->paddr = array;
@@ -461,7 +461,7 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf,MPI_Datatype unit,void *array,
 #endif
     link->addr  = array;
     link->paddr = array;
-    PetscCheckFalse(!w->dynsf,PetscObjectComm((PetscObject)sf),PETSC_ERR_ORDER,"Must call PetscSFSetUp()");
+    PetscCheck(w->dynsf,PetscObjectComm((PetscObject)sf),PETSC_ERR_ORDER,"Must call PetscSFSetUp()");
     CHKERRQ(PetscSFSetUp(w->dynsf));
     CHKERRQ(PetscSFGetRootRanks(w->dynsf,&nranks,NULL,NULL,NULL,NULL));
     CHKERRQ(PetscMalloc1(nranks,&link->dyn_target_addr));
@@ -605,7 +605,7 @@ static PetscErrorCode PetscSFRestoreWindow(PetscSF sf,MPI_Datatype unit,void *ar
     if (*win == link->win) {
       PetscCheckFalse(array != link->paddr,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Matched window, but not array");
       if (epoch != link->epoch) {
-        PetscCheckFalse(epoch,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"No epoch to end");
+        PetscCheck(!epoch,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"No epoch to end");
         else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Restoring window without ending epoch");
       }
       laddr = link->addr;
@@ -731,7 +731,7 @@ static PetscErrorCode PetscSFReset_Window(PetscSF sf)
   w->link = NULL;
   for (wlink=w->wins; wlink; wlink=wnext) {
     wnext = wlink->next;
-    PetscCheckFalse(wlink->inuse,PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Window still in use with address %p",(void*)wlink->addr);
+    PetscCheck(!wlink->inuse,PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Window still in use with address %p",(void*)wlink->addr);
     CHKERRQ(PetscFree(wlink->dyn_target_addr));
     CHKERRQ(PetscFree(wlink->reqs));
     CHKERRMPI(MPI_Win_free(&wlink->win));
@@ -782,7 +782,7 @@ static PetscErrorCode PetscSFView_Window(PetscSF sf,PetscViewer viewer)
 
           CHKERRMPI(MPI_Info_get_nthkey(w->info,k,key));
           CHKERRMPI(MPI_Info_get(w->info,key,MPI_MAX_INFO_VAL,value,&flag));
-          PetscCheckFalse(!flag,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing key %s",key);
+          PetscCheck(flag,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing key %s",key);
           CHKERRQ(PetscViewerASCIIPrintf(viewer,"      %s = %s\n",key,value));
         }
       } else {

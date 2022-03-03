@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   CHKERRQ(MatCreateKAIJ(A,p,q,NULL,Bv,&K));
   CHKERRQ(MatDenseRestoreArrayRead(Bd,&Bv));
   CHKERRQ(MatMultEqual(C,K,10,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"K*x != C*x");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"K*x != C*x");
   CHKERRQ(MatScale(A,1.3));
   CHKERRQ(MatScale(B,0.3));
   CHKERRQ(MatScale(Bd,0.3));
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   CHKERRQ(MatKAIJSetT(K,p,q,Bv));
   CHKERRQ(MatDenseRestoreArrayRead(Bd,&Bv));
   CHKERRQ(MatMultEqual(C,K,10,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"K*x != C*x");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"K*x != C*x");
   CHKERRQ(MatDestroy(&K));
   CHKERRQ(MatDestroy(&C));
   CHKERRQ(MatDestroy(&B));

@@ -59,7 +59,7 @@ PetscErrorCode LSCLoadTestOperators(Mat *A11,Mat *A12,Mat *A21,Mat *A22,Vec *b1,
   CHKERRQ(VecCreate(PETSC_COMM_WORLD,b2));
   /* Load matrices from a Q1-P0 discretisation of variable viscosity Stokes. The matrix blocks are packed into one file. */
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",filename,sizeof(filename),&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must provide a matrix file with -f");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must provide a matrix file with -f");
   CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer));
   CHKERRQ(MatLoad(*A11,viewer));
   CHKERRQ(MatLoad(*A12,viewer));

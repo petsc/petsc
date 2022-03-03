@@ -106,8 +106,8 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
 
   PetscFunctionBegin;
   CHKERRQ(PCGetDiagonalScale(ksp->pc,&diagonalscale));
-  PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
-  PetscCheckFalse(ksp->transpose_solve,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Currently does not support transpose solve");
+  PetscCheck(!diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  PetscCheck(!ksp->transpose_solve,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Currently does not support transpose solve");
 
   ksp->its = 0;
   maxit    = ksp->max_it;

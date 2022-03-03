@@ -126,7 +126,7 @@ static PetscErrorCode MatSetValues_ScaLAPACK(Mat A,PetscInt nr,const PetscInt *r
           default: SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"No support for InsertMode %d",(int)imode);
         }
       } else {
-        PetscCheckFalse(A->nooffprocentries,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process entry even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set");
+        PetscCheck(!A->nooffprocentries,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process entry even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set");
         A->assembled = PETSC_FALSE;
         CHKERRQ(MatStashValuesRow_Private(&A->stash,rows[i],1,cols+j,vals+i*nc+j,(PetscBool)(imode==ADD_VALUES)));
       }
@@ -1578,7 +1578,7 @@ static PetscErrorCode MatScaLAPACKSetBlockSizes_ScaLAPACK(Mat A,PetscInt mb,Pets
   Mat_ScaLAPACK  *a = (Mat_ScaLAPACK*)A->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(A->preallocated,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Cannot change block sizes after MatSetUp");
+  PetscCheck(!A->preallocated,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Cannot change block sizes after MatSetUp");
   PetscCheckFalse(mb<1 && mb!=PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"mb %" PetscInt_FMT " must be at least 1",mb);
   PetscCheckFalse(nb<1 && nb!=PETSC_DECIDE,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"nb %" PetscInt_FMT " must be at least 1",nb);
   CHKERRQ(PetscBLASIntCast((mb==PETSC_DECIDE)?DEFAULT_BLOCKSIZE:mb,&a->mb));

@@ -48,7 +48,7 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
   PetscInt       n=sell->B->cmap->n,i;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!sell->garray,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPISELL Matrix was assembled but is missing garray");
+  PetscCheck(sell->garray,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPISELL Matrix was assembled but is missing garray");
 #if defined(PETSC_USE_CTABLE)
   CHKERRQ(PetscTableCreate(n,mat->cmap->N+1,&sell->colmap));
   for (i=0; i<n; i++) {
@@ -206,7 +206,7 @@ PetscErrorCode MatSetValues_MPISELL(Mat mat,PetscInt m,const PetscInt im[],Petsc
         }
       }
     } else {
-      PetscCheckFalse(mat->nooffprocentries,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process row %" PetscInt_FMT " even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set",im[i]);
+      PetscCheck(!mat->nooffprocentries,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process row %" PetscInt_FMT " even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set",im[i]);
       if (!sell->donotstash) {
         mat->assembled = PETSC_FALSE;
         if (roworiented) {
@@ -1561,7 +1561,7 @@ PetscErrorCode MatMPISELLGetSeqSELL(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATMPISELL,&flg));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"This function requires a MATMPISELL matrix as input");
+  PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"This function requires a MATMPISELL matrix as input");
   if (Ad)     *Ad     = a->A;
   if (Ao)     *Ao     = a->B;
   if (colmap) *colmap = a->garray;
@@ -1596,7 +1596,7 @@ PetscErrorCode MatMPISELLGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *c
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATMPISELL,&match));
-  PetscCheckFalse(!match,PetscObjectComm((PetscObject)A), PETSC_ERR_SUP,"Requires MATMPISELL matrix as input");
+  PetscCheck(match,PetscObjectComm((PetscObject)A), PETSC_ERR_SUP,"Requires MATMPISELL matrix as input");
   CHKERRQ(PetscLogEventBegin(MAT_Getlocalmatcondensed,A,0,0,0));
   if (!row) {
     start = A->rmap->rstart; end = A->rmap->rend;
@@ -1648,7 +1648,7 @@ PetscErrorCode MatConvert_MPISELL_MPIAIJ(Mat A,MatType newtype,MatReuse reuse,Ma
   Mat_MPIAIJ     *b;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!A->assembled,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix must be assembled");
+  PetscCheck(A->assembled,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix must be assembled");
 
   if (reuse == MAT_REUSE_MATRIX) {
     B = *newmat;
@@ -1692,7 +1692,7 @@ PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat A,MatType newtype,MatReuse reuse,Ma
   Mat_MPISELL    *b;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!A->assembled,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix must be assembled");
+  PetscCheck(A->assembled,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Matrix must be assembled");
 
   if (reuse == MAT_REUSE_MATRIX) {
     B = *newmat;

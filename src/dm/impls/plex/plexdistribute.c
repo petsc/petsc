@@ -979,7 +979,7 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
     for (p = 0; p < newConesSize; ++p) {
       if (newCones[p] < 0) {valid = PETSC_FALSE; CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "[%d] Point %D not in overlap SF\n", PetscGlobalRank,p));}
     }
-    PetscCheckFalse(!valid,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid global to local map");
+    PetscCheck(valid,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid global to local map");
   }
   CHKERRQ(PetscOptionsHasName(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-cones_view", &flg));
   if (flg) {
@@ -1183,7 +1183,7 @@ static PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLo
       for (p = 0; p < newParentSize; ++p) {
         if (newParents[p] < 0) {valid = PETSC_FALSE; CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "Point %d not in overlap SF\n", p));}
       }
-      PetscCheckFalse(!valid,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid global to local map");
+      PetscCheck(valid,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid global to local map");
     }
     CHKERRQ(PetscOptionsHasName(((PetscObject) dm)->options,((PetscObject) dm)->prefix, "-parents_view", &flg));
     if (flg) {

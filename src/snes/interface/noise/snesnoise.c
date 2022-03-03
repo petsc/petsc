@@ -55,7 +55,7 @@ PetscErrorCode SNESDiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   CHKERRQ(PetscOptionsGetString(((PetscObject)snes)->options,((PetscObject)snes)->prefix,"-snes_mf_noise_file",noise_file,sizeof(noise_file),&flg));
   if (flg) neP->fp = fopen(noise_file,"w");
   else     neP->fp = fopen("noise.out","w");
-  PetscCheckFalse(!neP->fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file");
+  PetscCheck(neP->fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file");
   CHKERRQ(PetscInfo(snes,"Creating Jorge's differencing parameter context\n"));
 
   *outneP = neP;
@@ -71,7 +71,7 @@ PetscErrorCode SNESDiffParameterDestroy_More(void *nePv)
   /* Destroy work vectors and close output file */
   CHKERRQ(VecDestroyVecs(3,&neP->workv));
   err  = fclose(neP->fp);
-  PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
+  PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
   CHKERRQ(PetscFree(neP));
   PetscFunctionReturn(0);
 }

@@ -47,12 +47,12 @@ int main(int argc,char **argv)
   CHKERRQ(MatSeqAIJRestoreArray(A,&aa));
   CHKERRQ(MatRestoreRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&n,&ai,&aj,&flg));
   CHKERRQ(MatMultEqual(A,B,10,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"MatMult(A,B) are NOT equal");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"MatMult(A,B) are NOT equal");
 
   /* Create a sbaij matrix using MatCreateSeqSBAIJWithArrays() */
   CHKERRQ(MatCreateSeqSBAIJWithArrays(PETSC_COMM_SELF,1,5,5,asi,asj,asa,&As));
   CHKERRQ(MatMultEqual(A,As,10,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"MatMult(A,As) are NOT equal");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"MatMult(A,As) are NOT equal");
 
   /* Free spaces */
   CHKERRQ(PetscRandomDestroy(&rctx));

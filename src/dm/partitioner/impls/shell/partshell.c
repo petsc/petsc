@@ -95,7 +95,7 @@ static PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, Pet
     CHKERRQ(PetscPartitionerShellSetPartition(part, nparts, sizes, points));
     CHKERRQ(PetscFree2(sizes, points));
   }
-  PetscCheckFalse(!p->section,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_WRONG, "Shell partitioner information not provided. Please call PetscPartitionerShellSetPartition()");
+  PetscCheck(p->section,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_WRONG, "Shell partitioner information not provided. Please call PetscPartitionerShellSetPartition()");
   CHKERRQ(PetscSectionGetChart(p->section, NULL, &np));
   PetscCheckFalse(nparts != np,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of requested partitions %d != configured partitions %d", nparts, np);
   CHKERRQ(ISGetLocalSize(p->partition, &np));

@@ -136,7 +136,7 @@ int main(int argc, char **args)
 
   /* Check accuracy */
   CHKERRQ(MatMatMultEqual(A,X,Y,10,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatMatMult()");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatMatMult()");
 
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&X));

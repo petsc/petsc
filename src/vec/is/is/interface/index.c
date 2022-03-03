@@ -1055,7 +1055,7 @@ PetscErrorCode  ISInvertPermutation(IS is,PetscInt nlocal,IS *isout)
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
   PetscValidPointer(isout,3);
   CHKERRQ(ISGetInfo(is,IS_PERMUTATION,IS_GLOBAL,PETSC_TRUE,&isperm));
-  PetscCheckFalse(!isperm,PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_WRONG,"Not a permutation");
+  PetscCheck(isperm,PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_WRONG,"Not a permutation");
   CHKERRQ(ISGetInfo(is,IS_IDENTITY,IS_GLOBAL,PETSC_TRUE,&isidentity));
   issame = PETSC_FALSE;
   if (isidentity) {

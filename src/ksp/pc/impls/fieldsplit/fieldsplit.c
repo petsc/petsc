@@ -374,7 +374,7 @@ static PetscErrorCode PCFieldSplitSetRuntimeSplits_Private(PC pc)
     CHKERRQ(PetscOptionsGetIntArray(((PetscObject)pc)->options,((PetscObject)pc)->prefix,optionname_col,ifields_col,&nfields_col,&flg_col));
     if (!flg) break;
     else if (flg && !flg_col) {
-      PetscCheckFalse(!nfields,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot list zero fields");
+      PetscCheck(nfields,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot list zero fields");
       CHKERRQ(PCFieldSplitSetFields(pc,splitname,nfields,ifields,ifields));
     } else {
       PetscCheckFalse(!nfields || !nfields_col,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot list zero fields");
@@ -1729,7 +1729,7 @@ static PetscErrorCode  PCFieldSplitSchurGetSubKSP_FieldSplit(PC pc,PetscInt *n,K
   if (jac->type == PC_COMPOSITE_SCHUR) {
     PetscInt nn;
 
-    PetscCheckFalse(!jac->schur,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call KSPSetUp() or PCSetUp() before calling PCFieldSplitSchurGetSubKSP()");
+    PetscCheck(jac->schur,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call KSPSetUp() or PCSetUp() before calling PCFieldSplitSchurGetSubKSP()");
     PetscCheckFalse(jac->nsplits != 2,PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Unexpected number of splits %D != 2",jac->nsplits);
     nn   = jac->nsplits + (jac->kspupper != jac->head->ksp ? 1 : 0);
     CHKERRQ(PetscMalloc1(nn,subksp));
@@ -1746,7 +1746,7 @@ static PetscErrorCode  PCFieldSplitGetSubKSP_FieldSplit_Schur(PC pc,PetscInt *n,
   PC_FieldSplit  *jac = (PC_FieldSplit*)pc->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!jac->schur,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call KSPSetUp() or PCSetUp() before calling PCFieldSplitGetSubKSP()");
+  PetscCheck(jac->schur,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call KSPSetUp() or PCSetUp() before calling PCFieldSplitGetSubKSP()");
   CHKERRQ(PetscMalloc1(jac->nsplits,subksp));
   CHKERRQ(MatSchurComplementGetKSP(jac->schur,*subksp));
 
@@ -1967,7 +1967,7 @@ PetscErrorCode  PCFieldSplitSetDiagUseAmat(PC pc,PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCFIELDSPLIT,&isfs));
-  PetscCheckFalse(!isfs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PC not of type %s",PCFIELDSPLIT);
+  PetscCheck(isfs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PC not of type %s",PCFIELDSPLIT);
   jac->diag_use_amat = flg;
   PetscFunctionReturn(0);
 }
@@ -1997,7 +1997,7 @@ PetscErrorCode  PCFieldSplitGetDiagUseAmat(PC pc,PetscBool *flg)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidBoolPointer(flg,2);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCFIELDSPLIT,&isfs));
-  PetscCheckFalse(!isfs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PC not of type %s",PCFIELDSPLIT);
+  PetscCheck(isfs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PC not of type %s",PCFIELDSPLIT);
   *flg = jac->diag_use_amat;
   PetscFunctionReturn(0);
 }
@@ -2027,7 +2027,7 @@ PetscErrorCode  PCFieldSplitSetOffDiagUseAmat(PC pc,PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCFIELDSPLIT,&isfs));
-  PetscCheckFalse(!isfs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PC not of type %s",PCFIELDSPLIT);
+  PetscCheck(isfs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PC not of type %s",PCFIELDSPLIT);
   jac->offdiag_use_amat = flg;
   PetscFunctionReturn(0);
 }
@@ -2057,7 +2057,7 @@ PetscErrorCode  PCFieldSplitGetOffDiagUseAmat(PC pc,PetscBool *flg)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidBoolPointer(flg,2);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCFIELDSPLIT,&isfs));
-  PetscCheckFalse(!isfs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PC not of type %s",PCFIELDSPLIT);
+  PetscCheck(isfs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PC not of type %s",PCFIELDSPLIT);
   *flg = jac->offdiag_use_amat;
   PetscFunctionReturn(0);
 }
@@ -2386,7 +2386,7 @@ PetscErrorCode  PCFieldSplitSchurGetS(PC pc,Mat *S)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   CHKERRQ(PetscObjectGetType((PetscObject)pc,&t));
   CHKERRQ(PetscStrcmp(t,PCFIELDSPLIT,&isfs));
-  PetscCheckFalse(!isfs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected PC of type PCFIELDSPLIT, got %s instead",t);
+  PetscCheck(isfs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected PC of type PCFIELDSPLIT, got %s instead",t);
   jac = (PC_FieldSplit*)pc->data;
   PetscCheckFalse(jac->type != PC_COMPOSITE_SCHUR,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected PCFIELDSPLIT of type SCHUR, got %D instead",jac->type);
   if (S) *S = jac->schur;
@@ -2417,7 +2417,7 @@ PetscErrorCode  PCFieldSplitSchurRestoreS(PC pc,Mat *S)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   CHKERRQ(PetscObjectGetType((PetscObject)pc,&t));
   CHKERRQ(PetscStrcmp(t,PCFIELDSPLIT,&isfs));
-  PetscCheckFalse(!isfs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected PC of type PCFIELDSPLIT, got %s instead",t);
+  PetscCheck(isfs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected PC of type PCFIELDSPLIT, got %s instead",t);
   jac = (PC_FieldSplit*)pc->data;
   PetscCheckFalse(jac->type != PC_COMPOSITE_SCHUR,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected PCFIELDSPLIT of type SCHUR, got %D instead",jac->type);
   PetscCheckFalse(!S || *S != jac->schur,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatSchurComplement restored is not the same as gotten");

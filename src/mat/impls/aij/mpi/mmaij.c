@@ -24,7 +24,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 
   PetscFunctionBegin;
   if (!aij->garray) {
-    PetscCheckFalse(!aij->B,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing B mat");
+    PetscCheck(aij->B,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing B mat");
 #if defined(PETSC_USE_CTABLE)
     /* use a table */
     CHKERRQ(PetscTableCreate(aij->B->rmap->n,mat->cmap->N+1,&gid1_lid1));
@@ -102,7 +102,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   }
 
   if (!aij->lvec) {
-    PetscCheckFalse(!aij->B,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing B mat");
+    PetscCheck(aij->B,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing B mat");
     CHKERRQ(MatCreateVecs(aij->B,&aij->lvec,NULL));
   }
   CHKERRQ(VecGetSize(aij->lvec,&ec));

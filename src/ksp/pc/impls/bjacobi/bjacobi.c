@@ -271,7 +271,7 @@ static PetscErrorCode  PCBJacobiGetSubKSP_BJacobi(PC pc,PetscInt *n_local,PetscI
   PC_BJacobi *jac = (PC_BJacobi*)pc->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!pc->setupcalled,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call KSPSetUp() or PCSetUp() first");
+  PetscCheck(pc->setupcalled,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call KSPSetUp() or PCSetUp() first");
 
   if (n_local) *n_local = jac->n_local;
   if (first_local) *first_local = jac->first_local;
@@ -965,7 +965,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
   if (pc->useAmat) {
     PetscBool same;
     CHKERRQ(PetscObjectTypeCompare((PetscObject)mat,((PetscObject)pmat)->type_name,&same));
-    PetscCheckFalse(!same,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Matrices not of same type");
+    PetscCheck(same,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Matrices not of same type");
   }
 
   if (!pc->setupcalled) {

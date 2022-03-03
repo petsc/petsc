@@ -265,7 +265,7 @@ static PetscErrorCode TestCone(DM dm, AppCtx *user)
   } else if (eventInfo.time > maxTimePerRun * numRuns) {
     CHKERRQ(PetscSynchronizedPrintf(comm, "[%d] Cones: %d Average time per cone: %gs standard: %gs\n", rank, numRuns, eventInfo.time/numRuns, maxTimePerRun));
     CHKERRQ(PetscSynchronizedFlush(comm, PETSC_STDOUT));
-    PetscCheckFalse(user->errors,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for cone %g > standard %g", eventInfo.time/numRuns, maxTimePerRun);
+    PetscCheck(!user->errors,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for cone %g > standard %g", eventInfo.time/numRuns, maxTimePerRun);
   }
   PetscFunctionReturn(0);
 }
@@ -310,7 +310,7 @@ static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
   } else if (eventInfo.time > maxTimePerRun * numRuns) {
     CHKERRQ(PetscSynchronizedPrintf(comm, "[%d] Closures: %d Average time per cone: %gs standard: %gs\n", rank, numRuns, eventInfo.time/numRuns, maxTimePerRun));
     CHKERRQ(PetscSynchronizedFlush(comm, PETSC_STDOUT));
-    PetscCheckFalse(user->errors,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for closure %g > standard %g", eventInfo.time/numRuns, maxTimePerRun);
+    PetscCheck(!user->errors,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for closure %g > standard %g", eventInfo.time/numRuns, maxTimePerRun);
   }
   PetscFunctionReturn(0);
 }
@@ -388,7 +388,7 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpe
     } else {
       CHKERRQ(PetscSynchronizedPrintf(comm, "[%d] %s: %d Average time per vector closure: %gs standard: %gs\n", rank, useIndex ? (useSpectral ? titleSpecIndex : titleIndex) : (useSpectral ? titleSpec : title), numRuns, eventInfo.time/numRuns, maxTimePerRun));
       CHKERRQ(PetscSynchronizedFlush(comm, PETSC_STDOUT));
-      PetscCheckFalse(user->errors,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for vector closure %g > standard %g", eventInfo.time/numRuns, maxTimePerRun);
+      PetscCheck(!user->errors,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Average time for vector closure %g > standard %g", eventInfo.time/numRuns, maxTimePerRun);
     }
   }
   PetscFunctionReturn(0);

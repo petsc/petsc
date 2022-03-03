@@ -19,7 +19,7 @@ int main(int argc,char **args)
 
   /* Load aij matrix A */
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
   CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
   CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
   CHKERRQ(MatLoad(A,fd));
@@ -39,18 +39,18 @@ int main(int argc,char **args)
 
   /* Test MatMult() */
   CHKERRQ(MatMultEqual(MA,B,10,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMul() for MAIJ matrix");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMul() for MAIJ matrix");
   /* Test MatMultAdd() */
   CHKERRQ(MatMultAddEqual(MA,B,10,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMulAdd() for MAIJ matrix");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMulAdd() for MAIJ matrix");
 
   /* Test MatMultTranspose() */
   CHKERRQ(MatMultTransposeEqual(MA,B,10,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMulAdd() for MAIJ matrix");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMulAdd() for MAIJ matrix");
 
   /* Test MatMultTransposeAdd() */
   CHKERRQ(MatMultTransposeAddEqual(MA,B,10,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMulTransposeAdd() for MAIJ matrix");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMulTransposeAdd() for MAIJ matrix");
 
   CHKERRQ(MatDestroy(&MA));
   CHKERRQ(MatDestroy(&A));

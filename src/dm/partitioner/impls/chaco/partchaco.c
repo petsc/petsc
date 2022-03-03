@@ -103,7 +103,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
     ival = (numVertices > 0);
     CHKERRMPI(MPI_Allreduce(&ival, &isum, 1, MPI_INT, MPI_SUM, comm));
     distributed = (isum > 1) ? PETSC_TRUE : PETSC_FALSE;
-    PetscCheckFalse(distributed,comm, PETSC_ERR_SUP, "Chaco cannot partition a distributed graph");
+    PetscCheck(!distributed,comm, PETSC_ERR_SUP, "Chaco cannot partition a distributed graph");
   }
   if (!numVertices) { /* distributed case, return if not holding the graph */
     CHKERRQ(ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, partition));
@@ -126,7 +126,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
   {
     int piperet;
     piperet = pipe(fd_pipe);
-    PetscCheckFalse(piperet,PETSC_COMM_SELF,PETSC_ERR_SYS,"Could not create pipe");
+    PetscCheck(!piperet,PETSC_COMM_SELF,PETSC_ERR_SYS,"Could not create pipe");
     fd_stdout = dup(1);
     close(1);
     dup2(fd_pipe[1], 1);
@@ -150,10 +150,10 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
     close(fd_stdout);
     close(fd_pipe[0]);
     close(fd_pipe[1]);
-    PetscCheckFalse(ierr,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in Chaco library: %s", msgLog);
+    PetscCheck(!ierr,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in Chaco library: %s", msgLog);
   }
 #else
-  PetscCheckFalse(ierr,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in Chaco library: %s", "error in stdout");
+  PetscCheck(!ierr,PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in Chaco library: %s", "error in stdout");
 #endif
   /* Convert to PetscSection+IS */
   for (v = 0; v < nvtxs; ++v) {

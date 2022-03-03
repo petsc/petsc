@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   PetscCheckFalse(start != 0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStrideGetInfo");
   PetscCheckFalse(stride != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStrideGetInfo");
   CHKERRQ(PetscObjectTypeCompare((PetscObject)is,ISSTRIDE,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStride");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStride");
   CHKERRQ(ISGetIndices(is,&ii));
   CHKERRQ(ISRestoreIndices(is,&ii));
   CHKERRQ(ISDestroy(&is));

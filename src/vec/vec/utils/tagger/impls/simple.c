@@ -44,7 +44,7 @@ PetscErrorCode VecTaggerSetUp_Simple(VecTagger tagger)
   VecTagger_Simple *smpl = (VecTagger_Simple *) tagger->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!smpl->box,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_WRONGSTATE,"Must set a box before calling setup.");
+  PetscCheck(smpl->box,PetscObjectComm((PetscObject)tagger),PETSC_ERR_ARG_WRONGSTATE,"Must set a box before calling setup.");
   PetscFunctionReturn(0);
 }
 

@@ -85,7 +85,7 @@ int main(int argc,char **args)
       /* Test Cholesky Factorization */
       PetscBool flg;
       CHKERRQ(MatIsSymmetric(A,0.0,&flg));
-      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A must be symmetric for Cholesky factorization");
+      PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A must be symmetric for Cholesky factorization");
 
       CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"test Cholesky factorization\n"));
       CHKERRQ(MatGetFactor(A,solver,MAT_FACTOR_CHOLESKY,&F));

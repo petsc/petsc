@@ -640,7 +640,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
       CHKERRQ(KSPAppendOptionsPrefix(def->WtAWinv,"deflation_tel_"));
       CHKERRQ(PCSetFromOptions(pcinner));
       CHKERRQ(PetscObjectTypeCompare((PetscObject)pcinner,PCTELESCOPE,&match));
-      PetscCheckFalse(!match,comm,PETSC_ERR_SUP,"User can not owerwrite PCTELESCOPE on bottom level, use reduction factor = 1 instead.");
+      PetscCheck(match,comm,PETSC_ERR_SUP,"User can not owerwrite PCTELESCOPE on bottom level, use reduction factor = 1 instead.");
       /* Reduction factor choice */
       red = def->reductionfact;
       if (red < 0) {

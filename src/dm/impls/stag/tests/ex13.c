@@ -109,7 +109,7 @@ static PetscErrorCode Test1(DM dm)
   CHKERRQ(DMGlobalToLocal(dm,vecGlobal,INSERT_VALUES,vecLocal));
   CHKERRQ(DMLocalToGlobal(dm,vecLocal,INSERT_VALUES,vecGlobalCheck));
   CHKERRQ(VecEqual(vecGlobal,vecGlobalCheck,&equal));
-  PetscCheckFalse(!equal,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Check failed - vectors should be bitwise identical");
+  PetscCheck(equal,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Check failed - vectors should be bitwise identical");
   CHKERRQ(VecDestroy(&vecLocal));
   CHKERRQ(VecDestroy(&vecGlobal));
   CHKERRQ(VecDestroy(&vecGlobalCheck));

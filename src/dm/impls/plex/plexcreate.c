@@ -4314,7 +4314,7 @@ PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm comm, PetscInt dim, PetscI
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!dim,comm, PETSC_ERR_ARG_OUTOFRANGE, "This is not appropriate for 0-dimensional meshes. Consider either creating the DM using DMPlexCreateFromDAG(), by hand, or using DMSwarm.");
+  PetscCheck(dim,comm, PETSC_ERR_ARG_OUTOFRANGE, "This is not appropriate for 0-dimensional meshes. Consider either creating the DM using DMPlexCreateFromDAG(), by hand, or using DMSwarm.");
   CHKERRMPI(MPI_Comm_rank(comm, &rank));
   CHKERRQ(DMCreate(comm, dm));
   CHKERRQ(DMSetType(*dm, DMPLEX));
@@ -4639,7 +4639,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   CHKERRQ(PetscLogEventBegin(DMPLEX_CreateFromFile,0,0,0,0));
   CHKERRMPI(MPI_Comm_rank(comm, &rank));
   CHKERRQ(PetscStrlen(filename, &len));
-  PetscCheckFalse(!len,comm, PETSC_ERR_ARG_WRONG, "Filename must be a valid path");
+  PetscCheck(len,comm, PETSC_ERR_ARG_WRONG, "Filename must be a valid path");
   CHKERRQ(PetscStrncmp(&filename[PetscMax(0,len-4)],  extGmsh,      4, &isGmsh));
   CHKERRQ(PetscStrncmp(&filename[PetscMax(0,len-5)],  extGmsh2,     5, &isGmsh2));
   CHKERRQ(PetscStrncmp(&filename[PetscMax(0,len-5)],  extGmsh4,     5, &isGmsh4));

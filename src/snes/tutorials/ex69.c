@@ -3316,7 +3316,7 @@ static PetscErrorCode SNESConvergenceCorrectPressure(SNES snes, PetscInt it, Pet
     CHKERRQ(SNESGetSolution(snes, &u));
     CHKERRQ(SNESGetJacobian(snes, &J, NULL, NULL, NULL));
     CHKERRQ(MatGetNullSpace(J, &nullspace));
-    PetscCheckFalse(!nullspace,PetscObjectComm((PetscObject) snes), PETSC_ERR_ARG_WRONG, "SNES Jacobian has no attached null space");
+    PetscCheck(nullspace,PetscObjectComm((PetscObject) snes), PETSC_ERR_ARG_WRONG, "SNES Jacobian has no attached null space");
     CHKERRQ(CorrectDiscretePressure(dm, nullspace, u, (AppCtx *) user));
   }
   PetscFunctionReturn(0);

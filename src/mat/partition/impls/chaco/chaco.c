@@ -78,7 +78,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
 #endif
 
   PetscFunctionBegin;
-  PetscCheckFalse(part->use_edge_weights,PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Chaco does not support edge weights");
+  PetscCheck(!part->use_edge_weights,PetscObjectComm((PetscObject)part),PETSC_ERR_SUP,"Chaco does not support edge weights");
   FREE_GRAPH = 0; /* otherwise Chaco will attempt to free memory for adjacency graph */
   CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size));
   CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)mat),&rank));
@@ -146,7 +146,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
 
 #if defined(PETSC_HAVE_UNISTD_H)
   err = fflush(stdout);
-  PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on stdout");
+  PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on stdout");
   count = read(fd_pipe[0],mesg_log,(SIZE_LOG-1)*sizeof(char));
   if (count<0) count = 0;
   mesg_log[count] = 0;
@@ -160,7 +160,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part,IS *partit
   }
   CHKERRQ(PetscFree(mesg_log));
 #endif
-  PetscCheckFalse(ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Chaco failed");
+  PetscCheck(!ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Chaco failed");
 
   CHKERRQ(PetscMalloc1(mat->rmap->N,&parttab));
   for (i=0; i<nvtxs; i++) parttab[i] = assignment[i];

@@ -72,13 +72,13 @@ int main(int argc, char** argv)
     CHKERRQ(MatConvert(A, MATELEMENTAL, MAT_INITIAL_MATRIX, &A_elemental));
     CHKERRQ(MatComputeOperator(A_elemental,isAIJ ? MATAIJ : MATDENSE,&Aexplicit));
     CHKERRQ(MatMultEqual(Aexplicit,A_elemental,5,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Aexplicit != A_elemental.");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Aexplicit != A_elemental.");
     CHKERRQ(MatDestroy(&Aexplicit));
 
     /* Test MAT_REUSE_MATRIX which is only supported for inplace conversion */
     CHKERRQ(MatConvert(A, MATELEMENTAL, MAT_INPLACE_MATRIX, &A));
     CHKERRQ(MatMultEqual(A_elemental,A,5,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A_elemental != A.");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A_elemental != A.");
     CHKERRQ(MatDestroy(&A_elemental));
   }
 

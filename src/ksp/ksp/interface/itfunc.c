@@ -58,7 +58,7 @@ PetscErrorCode  KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscRea
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidRealPointer(emax,2);
   PetscValidRealPointer(emin,3);
-  PetscCheckFalse(!ksp->calc_sings,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Singular values not requested before KSPSetUp()");
+  PetscCheck(ksp->calc_sings,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Singular values not requested before KSPSetUp()");
 
   if (ksp->ops->computeextremesingularvalues) {
     CHKERRQ((*ksp->ops->computeextremesingularvalues)(ksp,emax,emin));
@@ -119,7 +119,7 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
   if (n) PetscValidRealPointer(c,4);
   PetscCheckFalse(n<0,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_OUTOFRANGE,"Requested < 0 Eigenvalues");
   PetscValidIntPointer(neig,5);
-  PetscCheckFalse(!ksp->calc_sings,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Eigenvalues not requested before KSPSetUp()");
+  PetscCheck(ksp->calc_sings,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Eigenvalues not requested before KSPSetUp()");
 
   if (n && ksp->ops->computeeigenvalues) {
     CHKERRQ((*ksp->ops->computeeigenvalues)(ksp,n,r,c,neig));
@@ -170,7 +170,7 @@ PetscErrorCode  KSPComputeRitz(KSP ksp,PetscBool ritz,PetscBool small,PetscInt *
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscCheckFalse(!ksp->calc_ritz,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Ritz pairs not requested before KSPSetUp()");
+  PetscCheck(ksp->calc_ritz,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONGSTATE,"Ritz pairs not requested before KSPSetUp()");
   if (ksp->ops->computeritz) CHKERRQ((*ksp->ops->computeritz)(ksp,ritz,small,nrit,S,tetar,tetai));
   PetscFunctionReturn(0);
 }
@@ -801,7 +801,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
   level++;
   comm = PetscObjectComm((PetscObject)ksp);
   if (x && x == b) {
-    PetscCheckFalse(!ksp->guess_zero,comm,PETSC_ERR_ARG_INCOMP,"Cannot use x == b with nonzero initial guess");
+    PetscCheck(ksp->guess_zero,comm,PETSC_ERR_ARG_INCOMP,"Cannot use x == b with nonzero initial guess");
     CHKERRQ(VecDuplicate(b,&x));
     inXisinB = PETSC_TRUE;
   }
@@ -910,7 +910,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp,Vec b,Vec x)
 
   ksp->guess_zero = guess_zero;
 
-  PetscCheckFalse(!ksp->reason,comm,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
+  PetscCheck(ksp->reason,comm,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   ksp->totalits += ksp->its;
 
   CHKERRQ(KSPConvergedReasonViewFromOptions(ksp));
@@ -1188,7 +1188,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
   PetscValidHeaderSpecific(X, MAT_CLASSID, 3);
   PetscCheckSameComm(ksp, 1, B, 2);
   PetscCheckSameComm(ksp, 1, X, 3);
-  PetscCheckFalse(!B->assembled,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
+  PetscCheck(B->assembled,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   MatCheckPreallocated(X, 3);
   if (!X->assembled) {
     CHKERRQ(MatSetOption(X, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
@@ -1203,9 +1203,9 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
   CHKERRQ(MatGetSize(X, NULL, &N1));
   PetscCheckFalse(n1 != n2 || N1 != N2,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible number of columns between block of right-hand sides (n,N) = (%D,%D) and block of solutions (n,N) = (%D,%D)", n2, N2, n1, N1);
   CHKERRQ(PetscObjectBaseTypeCompareAny((PetscObject)B, &match, MATSEQDENSE, MATMPIDENSE, ""));
-  PetscCheckFalse(!match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of right-hand sides not stored in a dense Mat");
+  PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of right-hand sides not stored in a dense Mat");
   CHKERRQ(PetscObjectBaseTypeCompareAny((PetscObject)X, &match, MATSEQDENSE, MATMPIDENSE, ""));
-  PetscCheckFalse(!match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of solutions not stored in a dense Mat");
+  PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of solutions not stored in a dense Mat");
   CHKERRQ(KSPSetUp(ksp));
   CHKERRQ(KSPSetUpOnBlocks(ksp));
   if (ksp->ops->matsolve) {

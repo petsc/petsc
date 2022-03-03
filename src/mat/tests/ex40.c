@@ -49,7 +49,7 @@ int main(int argc,char **args)
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must use -f filename to indicate a file containing a PETSc binary matrix");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must use -f filename to indicate a file containing a PETSc binary matrix");
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nd",&nd,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-ov",&ov,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-nested_dissection",&useND,NULL));

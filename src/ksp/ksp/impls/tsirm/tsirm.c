@@ -65,7 +65,7 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp)
   /* Inner solver */
   CHKERRQ(KSPGetPC(ksp,&pc));
   CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCKSP,&isksp));
-  PetscCheckFalse(!isksp,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"PC must be of type PCKSP");
+  PetscCheck(isksp,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"PC must be of type PCKSP");
   CHKERRQ(PCKSPGetKSP(pc,&sub_ksp));
   CHKERRQ(KSPSetTolerances(sub_ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,restart));
 

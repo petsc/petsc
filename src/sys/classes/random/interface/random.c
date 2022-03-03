@@ -55,7 +55,7 @@ PetscErrorCode  PetscRandomGetValue(PetscRandom r,PetscScalar *val)
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
   PetscValidType(r,1);
   if (!r->ops->getvalue) {
-    PetscCheckFalse(!r->ops->getvalues,PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscScalar",((PetscObject)r)->type_name);
+    PetscCheck(r->ops->getvalues,PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscScalar",((PetscObject)r)->type_name);
     CHKERRQ((*r->ops->getvalues)(r,1,val));
   } else {
     CHKERRQ((*r->ops->getvalue)(r,val));
@@ -98,7 +98,7 @@ PetscErrorCode  PetscRandomGetValueReal(PetscRandom r,PetscReal *val)
   PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
   PetscValidType(r,1);
   if (!r->ops->getvaluereal) {
-    PetscCheckFalse(!r->ops->getvaluesreal,PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscReal",((PetscObject)r)->type_name);
+    PetscCheck(r->ops->getvaluesreal,PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscReal",((PetscObject)r)->type_name);
     CHKERRQ((*r->ops->getvaluesreal)(r,1,val));
   } else {
     CHKERRQ((*r->ops->getvaluereal)(r,val));
@@ -137,7 +137,7 @@ PetscErrorCode  PetscRandomGetValues(PetscRandom r, PetscInt n, PetscScalar *val
   PetscValidType(r,1);
   if (!r->ops->getvalues) {
     PetscInt i;
-    PetscCheckFalse(!r->ops->getvalue,PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscScalar",((PetscObject)r)->type_name);
+    PetscCheck(r->ops->getvalue,PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscScalar",((PetscObject)r)->type_name);
     for (i = 0; i < n; i++) {
       CHKERRQ((*r->ops->getvalue)(r,val+i));
     }
@@ -175,7 +175,7 @@ PetscErrorCode  PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *v
   PetscValidType(r,1);
   if (!r->ops->getvaluesreal) {
     PetscInt i;
-    PetscCheckFalse(!r->ops->getvaluereal,PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscReal",((PetscObject)r)->type_name);
+    PetscCheck(r->ops->getvaluereal,PetscObjectComm((PetscObject)r),PETSC_ERR_SUP,"Random type %s cannot generate PetscReal",((PetscObject)r)->type_name);
     for (i = 0; i < n; i++) {
       CHKERRQ((*r->ops->getvaluereal)(r,val+i));
     }

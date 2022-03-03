@@ -94,7 +94,7 @@ static PetscErrorCode PCSetUp_Shell(PC pc)
   PC_Shell       *shell = (PC_Shell*)pc->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!shell->setup,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No setup() routine provided to Shell PC");
+  PetscCheck(shell->setup,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No setup() routine provided to Shell PC");
   PetscStackCall("PCSHELL user function setup()",CHKERRQ((*shell->setup)(pc)));
   PetscFunctionReturn(0);
 }
@@ -105,7 +105,7 @@ static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
   PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!shell->apply,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No apply() routine provided to Shell PC");
+  PetscCheck(shell->apply,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No apply() routine provided to Shell PC");
   CHKERRQ(PetscObjectStateGet((PetscObject)y, &instate));
   PetscStackCall("PCSHELL user function apply()",CHKERRQ((*shell->apply)(pc,x,y)));
   CHKERRQ(PetscObjectStateGet((PetscObject)y, &outstate));
@@ -122,7 +122,7 @@ static PetscErrorCode PCMatApply_Shell(PC pc,Mat X,Mat Y)
   PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!shell->matapply,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No apply() routine provided to Shell PC");
+  PetscCheck(shell->matapply,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No apply() routine provided to Shell PC");
   CHKERRQ(PetscObjectStateGet((PetscObject)Y, &instate));
   PetscStackCall("PCSHELL user function apply()",CHKERRQ((*shell->matapply)(pc,X,Y)));
   CHKERRQ(PetscObjectStateGet((PetscObject)Y, &outstate));
@@ -138,7 +138,7 @@ static PetscErrorCode PCApplySymmetricLeft_Shell(PC pc,Vec x,Vec y)
   PC_Shell       *shell = (PC_Shell*)pc->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!shell->applysymmetricleft,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No apply() routine provided to Shell PC");
+  PetscCheck(shell->applysymmetricleft,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No apply() routine provided to Shell PC");
   PetscStackCall("PCSHELL user function apply()",CHKERRQ((*shell->applysymmetricleft)(pc,x,y)));
   PetscFunctionReturn(0);
 }
@@ -148,7 +148,7 @@ static PetscErrorCode PCApplySymmetricRight_Shell(PC pc,Vec x,Vec y)
   PC_Shell       *shell = (PC_Shell*)pc->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!shell->applysymmetricright,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No apply() routine provided to Shell PC");
+  PetscCheck(shell->applysymmetricright,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No apply() routine provided to Shell PC");
   PetscStackCall("PCSHELL user function apply()",CHKERRQ((*shell->applysymmetricright)(pc,x,y)));
   PetscFunctionReturn(0);
 }
@@ -159,7 +159,7 @@ static PetscErrorCode PCApplyBA_Shell(PC pc,PCSide side,Vec x,Vec y,Vec w)
   PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!shell->applyBA,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No applyBA() routine provided to Shell PC");
+  PetscCheck(shell->applyBA,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No applyBA() routine provided to Shell PC");
   CHKERRQ(PetscObjectStateGet((PetscObject)w, &instate));
   PetscStackCall("PCSHELL user function applyBA()",CHKERRQ((*shell->applyBA)(pc,side,x,y,w)));
   CHKERRQ(PetscObjectStateGet((PetscObject)w, &outstate));
@@ -182,7 +182,7 @@ static PetscErrorCode PCPreSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
   PC_Shell       *shell = (PC_Shell*)pc->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!shell->presolve,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No presolve() routine provided to Shell PC");
+  PetscCheck(shell->presolve,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No presolve() routine provided to Shell PC");
   PetscStackCall("PCSHELL user function presolve()",CHKERRQ((*shell->presolve)(pc,ksp,b,x)));
   PetscFunctionReturn(0);
 }
@@ -192,7 +192,7 @@ static PetscErrorCode PCPostSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
   PC_Shell       *shell = (PC_Shell*)pc->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!shell->postsolve,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No postsolve() routine provided to Shell PC");
+  PetscCheck(shell->postsolve,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No postsolve() routine provided to Shell PC");
   PetscStackCall("PCSHELL user function postsolve()",CHKERRQ((*shell->postsolve)(pc,ksp,b,x)));
   PetscFunctionReturn(0);
 }
@@ -203,7 +203,7 @@ static PetscErrorCode PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
   PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!shell->applytranspose,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No applytranspose() routine provided to Shell PC");
+  PetscCheck(shell->applytranspose,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No applytranspose() routine provided to Shell PC");
   CHKERRQ(PetscObjectStateGet((PetscObject)y, &instate));
   PetscStackCall("PCSHELL user function applytranspose()",CHKERRQ((*shell->applytranspose)(pc,x,y)));
   CHKERRQ(PetscObjectStateGet((PetscObject)y, &outstate));
@@ -220,7 +220,7 @@ static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal 
   PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!shell->applyrich,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No applyrichardson() routine provided to Shell PC");
+  PetscCheck(shell->applyrich,PetscObjectComm((PetscObject)pc),PETSC_ERR_USER,"No applyrichardson() routine provided to Shell PC");
   CHKERRQ(PetscObjectStateGet((PetscObject)y, &instate));
   PetscStackCall("PCSHELL user function applyrichardson()",CHKERRQ((*shell->applyrich)(pc,x,y,w,rtol,abstol,dtol,it,guesszero,outits,reason)));
   CHKERRQ(PetscObjectStateGet((PetscObject)y, &outstate));

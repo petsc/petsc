@@ -115,7 +115,7 @@ static PetscErrorCode SNESComputeObjective_DMDA(SNES snes,Vec X,PetscReal *ob,vo
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
   PetscValidPointer(ob,3);
-  PetscCheckFalse(!dmdasnes->objectivelocal,PetscObjectComm((PetscObject)snes),PETSC_ERR_PLIB,"Corrupt context");
+  PetscCheck(dmdasnes->objectivelocal,PetscObjectComm((PetscObject)snes),PETSC_ERR_PLIB,"Corrupt context");
   CHKERRQ(SNESGetDM(snes,&dm));
   CHKERRQ(DMGetLocalVector(dm,&Xloc));
   CHKERRQ(DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xloc));
@@ -140,7 +140,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B
   void           *x;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!dmdasnes->residuallocal,PetscObjectComm((PetscObject)snes),PETSC_ERR_PLIB,"Corrupt context");
+  PetscCheck(dmdasnes->residuallocal,PetscObjectComm((PetscObject)snes),PETSC_ERR_PLIB,"Corrupt context");
   CHKERRQ(SNESGetDM(snes,&dm));
 
   if (dmdasnes->jacobianlocal) {
@@ -324,7 +324,7 @@ static PetscErrorCode SNESComputePicard_DMDA(SNES snes,Vec X,Vec F,void *ctx)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,2);
   PetscValidHeaderSpecific(F,VEC_CLASSID,3);
-  PetscCheckFalse(!dmdasnes->rhsplocal,PetscObjectComm((PetscObject)snes),PETSC_ERR_PLIB,"Corrupt context");
+  PetscCheck(dmdasnes->rhsplocal,PetscObjectComm((PetscObject)snes),PETSC_ERR_PLIB,"Corrupt context");
   CHKERRQ(SNESGetDM(snes,&dm));
   CHKERRQ(DMGetLocalVector(dm,&Xloc));
   CHKERRQ(DMGlobalToLocalBegin(dm,X,INSERT_VALUES,Xloc));
@@ -369,7 +369,7 @@ static PetscErrorCode SNESComputePicardJacobian_DMDA(SNES snes,Vec X,Mat A,Mat B
   void           *x;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!dmdasnes->jacobianplocal,PetscObjectComm((PetscObject)snes),PETSC_ERR_PLIB,"Corrupt context");
+  PetscCheck(dmdasnes->jacobianplocal,PetscObjectComm((PetscObject)snes),PETSC_ERR_PLIB,"Corrupt context");
   CHKERRQ(SNESGetDM(snes,&dm));
 
   CHKERRQ(DMGetLocalVector(dm,&Xloc));

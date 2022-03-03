@@ -65,7 +65,7 @@ PETSC_INTERN PetscErrorCode PetscSFReset_Allgatherv(PetscSF sf)
   CHKERRQ(PetscFree(dat->irootloc));
   CHKERRQ(PetscFree(dat->recvcounts));
   CHKERRQ(PetscFree(dat->displs));
-  PetscCheckFalse(dat->inuse,PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
+  PetscCheck(!dat->inuse,PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
   for (; link; link=next) {next = link->next; CHKERRQ(PetscSFLinkDestroy(sf,link));}
   dat->avail = NULL;
   PetscFunctionReturn(0);

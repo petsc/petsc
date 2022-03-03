@@ -275,7 +275,7 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
       dlhandle = dlopen(NULL, dlflags1|dlflags2);
 #if defined(PETSC_HAVE_DLERROR)
       { const char *e = (const char*) dlerror();
-        PetscCheckFalse(e,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error opening main executable as a dynamic library:\n  Error message from dlopen(): '%s'", e);
+        PetscCheck(!e,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error opening main executable as a dynamic library:\n  Error message from dlopen(): '%s'", e);
       }
 #endif
 #endif

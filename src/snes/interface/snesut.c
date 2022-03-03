@@ -383,7 +383,7 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes,PetscInt it,PetscReal fnor
     PetscInt     i;
     CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscStackCallBLAS("LAPACKgeev",LAPACKgeev_("N","N",&nb,a,&nb,eigr,eigi,NULL,&nb,NULL,&nb,work,&lwork,&lierr));
-    PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"geev() error %d",lierr);
+    PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"geev() error %d",lierr);
     CHKERRQ(PetscFPTrapPop());
     CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)snes),"Eigenvalues of J_%d - J_%d:\n",it,it-1));
     for (i=0;i<n;i++) {

@@ -25,7 +25,7 @@ PetscErrorCode PFReadMatPowerData(PFDATA *pf,char *filename)
   PetscFunctionBegin;
   fp = fopen(filename,"r");
   /* Check for valid file */
-  PetscCheckFalse(!fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Can't open Matpower data file %s",filename);
+  PetscCheck(fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Can't open Matpower data file %s",filename);
   pf->nload=0;
   while (fgets(line,MAXLINE,fp)) {
     if (strstr(line,"mpc.bus = ["))    bus_start_line = line_counter+1; /* Bus data starts from next line */

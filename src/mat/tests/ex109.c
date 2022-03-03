@@ -82,14 +82,14 @@ int main(int argc,char **argv)
     CHKERRQ(MatProductNumeric(D));
   }
   CHKERRQ(MatEqual(C,D,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != D");
+  PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != D");
   CHKERRQ(MatDestroy(&D));
 
   /* Test D = AT*B (transpose(aij)*dense) */
   CHKERRQ(MatCreateTranspose(A,&AT));
   CHKERRQ(MatMatMult(AT,B,MAT_INITIAL_MATRIX,fill,&D));
   CHKERRQ(MatMatMultEqual(AT,B,D,10,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != AT*B (transpose(aij)*dense)");
+  PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != AT*B (transpose(aij)*dense)");
   CHKERRQ(MatDestroy(&D));
   CHKERRQ(MatDestroy(&AT));
 
@@ -97,14 +97,14 @@ int main(int argc,char **argv)
   CHKERRQ(MatMatMult(C,A,MAT_INITIAL_MATRIX,fill,&D));
   CHKERRQ(MatMatMult(C,A,MAT_REUSE_MATRIX,fill,&D));
   CHKERRQ(MatMatMultEqual(C,A,D,10,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != C*A (dense*aij)");
+  PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != C*A (dense*aij)");
   CHKERRQ(MatDestroy(&D));
 
   /* Test D = A*C (aij*dense) */
   CHKERRQ(MatMatMult(A,C,MAT_INITIAL_MATRIX,fill,&D));
   CHKERRQ(MatMatMult(A,C,MAT_REUSE_MATRIX,fill,&D));
   CHKERRQ(MatMatMultEqual(A,C,D,10,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != A*C (aij*dense)");
+  PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != A*C (aij*dense)");
   CHKERRQ(MatDestroy(&D));
 
   /* Test D = B*C (dense*dense) */
@@ -113,7 +113,7 @@ int main(int argc,char **argv)
     CHKERRQ(MatMatMult(B,C,MAT_INITIAL_MATRIX,fill,&D));
     CHKERRQ(MatMatMult(B,C,MAT_REUSE_MATRIX,fill,&D));
     CHKERRQ(MatMatMultEqual(B,C,D,10,&equal));
-    PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != B*C (dense*dense)");
+    PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != B*C (dense*dense)");
     CHKERRQ(MatDestroy(&D));
   }
 
@@ -121,7 +121,7 @@ int main(int argc,char **argv)
   CHKERRQ(MatMatTransposeMult(B,C,MAT_INITIAL_MATRIX,fill,&D));
   CHKERRQ(MatMatTransposeMult(B,C,MAT_REUSE_MATRIX,fill,&D));
   CHKERRQ(MatMatTransposeMultEqual(B,C,D,10,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != B*C^T (dense*dense)");
+  PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"D != B*C^T (dense*dense)");
   CHKERRQ(MatDestroy(&D));
 
   /* Test MatProductCreateWithMat() and reuse C and B for B = A*C */

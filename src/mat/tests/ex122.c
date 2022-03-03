@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   CHKERRQ(MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C));
   CHKERRQ(MatMatMult(B,A,MAT_REUSE_MATRIX,fill,&C));
   CHKERRQ(MatMatMultEqual(B,A,C,10,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != B*A");
+  PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != B*A");
 
   CHKERRQ(MatDestroy(&C));
   CHKERRQ(MatDestroy(&B));

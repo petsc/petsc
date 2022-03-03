@@ -180,7 +180,7 @@ PetscErrorCode  PetscDrawUtilitySetCmap(const char colormap[],int mapsize,unsign
   if (colormap && colormap[0]) {
     PetscBool match = PETSC_FALSE;
     for (id=0; !match && id<count; id++) CHKERRQ(PetscStrcasecmp(colormap,cmap_name_list[id],&match));
-    PetscCheckFalse(!match,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Colormap '%s' not found",colormap);
+    PetscCheck(match,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Colormap '%s' not found",colormap);
   }
   CHKERRQ(PetscOptionsGetEList(NULL,NULL,"-draw_cmap",cmap_name_list,count,&id,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-draw_cmap_reverse",&reverse,NULL));

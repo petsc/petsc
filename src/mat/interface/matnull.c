@@ -454,7 +454,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
     if (!consistent && flg2) CHKERRQ(VecView(l,viewer));
   }
 
-  PetscCheckFalse(sp->remove,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot test a null space provided as a function with MatNullSpaceSetFunction()");
+  PetscCheck(!sp->remove,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot test a null space provided as a function with MatNullSpaceSetFunction()");
   CHKERRQ(VecDestroy(&l));
   if (isNull) *isNull = consistent;
   PetscFunctionReturn(0);

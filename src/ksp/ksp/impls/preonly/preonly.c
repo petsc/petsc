@@ -14,8 +14,8 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
 
   PetscFunctionBegin;
   CHKERRQ(PCGetDiagonalScale(ksp->pc,&diagonalscale));
-  PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
-  PetscCheckFalse(!ksp->guess_zero,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Running KSP of preonly doesn't make sense with nonzero initial guess\n\
+  PetscCheck(!diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  PetscCheck(ksp->guess_zero,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Running KSP of preonly doesn't make sense with nonzero initial guess\n\
                you probably want a KSP type of Richardson");
   ksp->its = 0;
   CHKERRQ(KSP_PCApply(ksp,ksp->vec_rhs,ksp->vec_sol));
@@ -53,8 +53,8 @@ static PetscErrorCode KSPMatSolve_PREONLY(KSP ksp, Mat B, Mat X)
 
   PetscFunctionBegin;
   CHKERRQ(PCGetDiagonalScale(ksp->pc,&diagonalscale));
-  PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
-  PetscCheckFalse(!ksp->guess_zero,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Running KSP of preonly doesn't make sense with nonzero initial guess\n\
+  PetscCheck(!diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  PetscCheck(ksp->guess_zero,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Running KSP of preonly doesn't make sense with nonzero initial guess\n\
                you probably want a KSP type of Richardson");
   ksp->its = 0;
   CHKERRQ(PCMatApply(ksp->pc,B,X));

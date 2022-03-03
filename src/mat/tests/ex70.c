@@ -53,7 +53,7 @@ PetscErrorCode proj_destroy(void *ctx)
   proj_data      *userdata = (proj_data*)ctx;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!userdata,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing userdata");
+  PetscCheck(userdata,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing userdata");
   CHKERRQ(MatDestroy(&userdata->A));
   CHKERRQ(MatDestroy(&userdata->P));
   CHKERRQ(MatDestroy(&userdata->R));
@@ -70,11 +70,11 @@ PetscErrorCode proj_mult(Mat S, Vec X, Vec Y)
 
   PetscFunctionBegin;
   CHKERRQ(MatShellGetContext(S,&userdata));
-  PetscCheckFalse(!userdata,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing userdata");
+  PetscCheck(userdata,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing userdata");
   A = userdata->A;
   R = userdata->R;
   P = userdata->P;
-  PetscCheckFalse(!A,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing matrix");
+  PetscCheck(A,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing matrix");
   PetscCheckFalse(!R && !P,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Missing projectors");
   PetscCheckFalse(R && P,PetscObjectComm((PetscObject)S),PETSC_ERR_PLIB,"Both projectors");
   CHKERRQ(MatCreateVecs(A,&Ax,&Ay));

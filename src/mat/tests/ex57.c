@@ -24,7 +24,7 @@ int main(int argc,char **args)
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-fin",fin,sizeof(fin),&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -fin option");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -fin option");
   CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,fin,FILE_MODE_READ,&fdin));
 
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-fout",fout,sizeof(fout),&flg));

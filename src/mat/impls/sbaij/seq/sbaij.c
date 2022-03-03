@@ -1021,7 +1021,7 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,const MatFactorInfo *info)
   PetscFunctionBegin;
   PetscCheckFalse(info->levels != 0,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only levels=0 is supported for in-place icc");
   CHKERRQ(ISIdentity(row,&row_identity));
-  PetscCheckFalse(!row_identity,PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix reordering is not supported");
+  PetscCheck(row_identity,PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix reordering is not supported");
   PetscCheckFalse(inA->rmap->bs != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix block size %" PetscInt_FMT " is not supported",inA->rmap->bs); /* Need to replace MatCholeskyFactorSymbolic_SeqSBAIJ_MSR()! */
 
   outA            = inA;
@@ -1106,7 +1106,7 @@ PetscErrorCode MatCopy_SeqSBAIJ(Mat A,Mat B,MatStructure str)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectTypeCompareAny((PetscObject)B,&isbaij,MATSEQSBAIJ,MATMPISBAIJ,""));
-  PetscCheckFalse(!isbaij,PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)B)->type_name);
+  PetscCheck(isbaij,PetscObjectComm((PetscObject)B),PETSC_ERR_SUP,"Not for matrix type %s",((PetscObject)B)->type_name);
   /* If the two matrices have the same copy implementation and nonzero pattern, use fast copy. */
   if (str == SAME_NONZERO_PATTERN && A->ops->copy == B->ops->copy) {
     Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
@@ -1537,7 +1537,7 @@ PetscErrorCode  MatRetrieveValues_SeqSBAIJ(Mat mat)
 
   PetscFunctionBegin;
   PetscCheckFalse(aij->nonew != 1,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
-  PetscCheckFalse(!aij->saved_values,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");
+  PetscCheck(aij->saved_values,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");
 
   /* copy values over */
   CHKERRQ(PetscArraycpy(aij->a,aij->saved_values,nz));
@@ -2271,7 +2271,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(Mat mat,PetscViewer viewer)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
-  PetscCheckFalse(!isbinary,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer type %s not yet supported for reading %s matrices",((PetscObject)viewer)->type_name,((PetscObject)mat)->type_name);
+  PetscCheck(isbinary,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer type %s not yet supported for reading %s matrices",((PetscObject)viewer)->type_name,((PetscObject)mat)->type_name);
   CHKERRQ(MatLoad_SeqSBAIJ_Binary(mat,viewer));
   PetscFunctionReturn(0);
 }

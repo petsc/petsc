@@ -76,9 +76,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSavePNG(const char filename[],unsigned
   /* open file and create libpng structures */
   CHKERRQ(PetscFOpen(PETSC_COMM_SELF,filename,"wb",&fp));
   png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,NULL,NULL,NULL);
-  PetscCheckFalse(!png_ptr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot create PNG context");
+  PetscCheck(png_ptr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot create PNG context");
   info_ptr = png_create_info_struct(png_ptr);
-  PetscCheckFalse(!info_ptr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot create PNG context");
+  PetscCheck(info_ptr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot create PNG context");
 
   /* setup libpng error handling */
 #if defined(PNG_SETJMP_SUPPORTED)

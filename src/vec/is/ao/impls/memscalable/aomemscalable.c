@@ -28,7 +28,7 @@ PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
-  PetscCheckFalse(!iascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer type %s not supported for AO MemoryScalable",((PetscObject)viewer)->type_name);
+  PetscCheck(iascii,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Viewer type %s not supported for AO MemoryScalable",((PetscObject)viewer)->type_name);
 
   CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)ao),&rank));
   CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)ao),&size));
@@ -396,7 +396,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
   PetscMPIInt       size,rank;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!isapp,PetscObjectComm((PetscObject)ao),PETSC_ERR_ARG_WRONGSTATE,"AOSetIS() must be called before AOSetType()");
+  PetscCheck(isapp,PetscObjectComm((PetscObject)ao),PETSC_ERR_ARG_WRONGSTATE,"AOSetIS() must be called before AOSetType()");
   /* create special struct aomems */
   CHKERRQ(PetscNewLog(ao,&aomems));
   ao->data = (void*) aomems;

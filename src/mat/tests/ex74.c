@@ -163,7 +163,7 @@ int main(int argc,char **args)
   CHKERRQ(MatNorm(A,NORM_FROBENIUS,&norm1));
   CHKERRQ(MatDuplicate(sA,MAT_COPY_VALUES,&sB));
   CHKERRQ(MatEqual(sA,sB,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDuplicate()");
+  PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDuplicate()");
 
   /* Test MatNorm() */
   CHKERRQ(MatNorm(A,NORM_FROBENIUS,&norm1));
@@ -224,7 +224,7 @@ int main(int argc,char **args)
   CHKERRQ(MatDiagonalScale(A,x,x));
   CHKERRQ(MatDiagonalScale(sB,x,x));
   CHKERRQ(MatMultEqual(A,sB,10,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
+  PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
 
   CHKERRQ(MatGetDiagonal(A,s1));
   CHKERRQ(MatGetDiagonal(sB,s2));
@@ -283,7 +283,7 @@ int main(int argc,char **args)
   CHKERRQ(MatSetRandom(B,rdm));
   CHKERRQ(MatMatMult(sA,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C));
   CHKERRQ(MatMatMultEqual(sA,B,C,5*n,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()");
+  PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()");
   CHKERRQ(MatDestroy(&C));
   CHKERRQ(MatDestroy(&B));
 

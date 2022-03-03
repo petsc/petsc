@@ -87,7 +87,7 @@ int main(int argc,char **args)
   switch (ipack) {
 #if defined(PETSC_HAVE_SUPERLU)
   case 0:
-    PetscCheckFalse(chol,PETSC_COMM_WORLD,PETSC_ERR_SUP,"SuperLU does not provide Cholesky!");
+    PetscCheck(!chol,PETSC_COMM_WORLD,PETSC_ERR_SUP,"SuperLU does not provide Cholesky!");
     CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," SUPERLU LU:\n"));
     CHKERRQ(MatGetFactor(A,MATSOLVERSUPERLU,MAT_FACTOR_LU,&F));
     matsolvexx = PETSC_TRUE;
@@ -95,7 +95,7 @@ int main(int argc,char **args)
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
   case 1:
-    PetscCheckFalse(chol,PETSC_COMM_WORLD,PETSC_ERR_SUP,"SuperLU does not provide Cholesky!");
+    PetscCheck(!chol,PETSC_COMM_WORLD,PETSC_ERR_SUP,"SuperLU does not provide Cholesky!");
     CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," SUPERLU_DIST LU:\n"));
     CHKERRQ(MatGetFactor(A,MATSOLVERSUPERLU_DIST,MAT_FACTOR_LU,&F));
     matsolvexx = PETSC_TRUE;

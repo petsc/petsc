@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   CHKERRMPI(MPI_Comm_size(comm,&size));
   PetscCheckFalse(size < 4,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must run with at least 4 MPI processes");
   CHKERRQ(PetscOptionsGetViewer(comm,NULL,NULL,"-viewer",&viewer,&format,&flg));
-  PetscCheckFalse(!viewer,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must use -viewer option");
+  PetscCheck(viewer,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must use -viewer option");
 
   CHKERRQ(PetscViewerASCIIPrintf(viewer,"Print called on original full viewer %d\n",PetscGlobalRank));
 

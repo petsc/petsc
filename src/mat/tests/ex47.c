@@ -51,7 +51,7 @@ int main(int argc,char **args)
 
   /* Test MatEqual() */
   CHKERRQ(MatEqual(B,C,&tflg));
-  PetscCheckFalse(!tflg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatEqual() failed");
+  PetscCheck(tflg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatEqual() failed");
 
   /* Test MatGetDiagonal() */
   CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,m,&x));
@@ -61,7 +61,7 @@ int main(int argc,char **args)
   CHKERRQ(MatGetDiagonal(B,y));
 
   CHKERRQ(VecEqual(x,y,&tflg));
-  PetscCheckFalse(!tflg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetDiagonal() failed");
+  PetscCheck(tflg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatGetDiagonal() failed");
 
   /* Test MatDiagonalScale() */
   CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF,&r));

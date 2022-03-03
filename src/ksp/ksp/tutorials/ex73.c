@@ -458,10 +458,10 @@ PetscErrorCode DMShellDAFieldScatter_Forward(DM dmf,Vec x,DM dmc,Vec xc)
   CHKERRQ(PetscObjectQuery((PetscObject)dmf,"xp",(PetscObject*)&xp));
   CHKERRQ(PetscObjectQuery((PetscObject)dmf,"scatter",(PetscObject*)&scatter));
   CHKERRQ(PetscObjectQuery((PetscObject)dmf,"xtmp",(PetscObject*)&xtmp));
-  PetscCheckFalse(!P,PETSC_COMM_SELF,PETSC_ERR_USER,"Require a permutation matrix (\"P\")to be composed with the parent (fine) DM");
-  PetscCheckFalse(!xp,PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"xp\" to be composed with the parent (fine) DM");
-  PetscCheckFalse(!scatter,PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"scatter\" to be composed with the parent (fine) DM");
-  PetscCheckFalse(!xtmp,PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"xtmp\" to be composed with the parent (fine) DM");
+  PetscCheck(P,PETSC_COMM_SELF,PETSC_ERR_USER,"Require a permutation matrix (\"P\")to be composed with the parent (fine) DM");
+  PetscCheck(xp,PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"xp\" to be composed with the parent (fine) DM");
+  PetscCheck(scatter,PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"scatter\" to be composed with the parent (fine) DM");
+  PetscCheck(xtmp,PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"xtmp\" to be composed with the parent (fine) DM");
 
   CHKERRQ(MatMultTranspose(P,x,xp));
 
@@ -499,10 +499,10 @@ PetscErrorCode DMShellDAFieldScatter_Reverse(DM dmf,Vec y,DM dmc,Vec yc)
   CHKERRQ(PetscObjectQuery((PetscObject)dmf,"scatter",(PetscObject*)&scatter));
   CHKERRQ(PetscObjectQuery((PetscObject)dmf,"xtmp",(PetscObject*)&xtmp));
 
-  PetscCheckFalse(!P,PETSC_COMM_SELF,PETSC_ERR_USER,"Require a permutation matrix (\"P\")to be composed with the parent (fine) DM");
-  PetscCheckFalse(!xp,PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"xp\" to be composed with the parent (fine) DM");
-  PetscCheckFalse(!scatter,PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"scatter\" to be composed with the parent (fine) DM");
-  PetscCheckFalse(!xtmp,PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"xtmp\" to be composed with the parent (fine) DM");
+  PetscCheck(P,PETSC_COMM_SELF,PETSC_ERR_USER,"Require a permutation matrix (\"P\")to be composed with the parent (fine) DM");
+  PetscCheck(xp,PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"xp\" to be composed with the parent (fine) DM");
+  PetscCheck(scatter,PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"scatter\" to be composed with the parent (fine) DM");
+  PetscCheck(xtmp,PETSC_COMM_SELF,PETSC_ERR_USER,"Require \"xtmp\" to be composed with the parent (fine) DM");
 
   /* return vector */
   CHKERRQ(VecGetArray(xtmp,&array));
@@ -1005,7 +1005,7 @@ PetscErrorCode ComputeRHS_DMDA(DM da,Vec b,void *ctx)
 
   PetscFunctionBeginUser;
   CHKERRQ(PetscObjectTypeCompare((PetscObject)da,DMDA,&isda));
-  PetscCheckFalse(!isda,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"DM provided must be a DMDA");
+  PetscCheck(isda,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"DM provided must be a DMDA");
   CHKERRQ(DMDAGetInfo(da,NULL,&mx,&my,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));
   Hx   = 1.0 / (PetscReal)(mx-1);
   Hy   = 1.0 / (PetscReal)(my-1);
@@ -1055,7 +1055,7 @@ PetscErrorCode ComputeMatrix_DMDA(DM da,Mat J,Mat jac,void *ctx)
 
   PetscFunctionBeginUser;
   CHKERRQ(PetscObjectTypeCompare((PetscObject)da,DMDA,&isda));
-  PetscCheckFalse(!isda,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"DM provided must be a DMDA");
+  PetscCheck(isda,PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"DM provided must be a DMDA");
   CHKERRQ(MatZeroEntries(jac));
   centerRho = user->rho;
   CHKERRQ(DMDAGetInfo(da,NULL,&mx,&my,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL));

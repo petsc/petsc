@@ -70,7 +70,7 @@ static PetscErrorCode MatPartitioningApply_Hierarchical(MatPartitioning part,IS 
   mat_localsize = adj->rmap->n;
   /* check parameters */
   /* how many small subdomains we want from a given 'big' suddomain */
-  PetscCheckFalse(!hpart->nfineparts,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG," must set number of small subdomains for each big subdomain ");
+  PetscCheck(hpart->nfineparts,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG," must set number of small subdomains for each big subdomain ");
   PetscCheckFalse(!hpart->ncoarseparts && !part->n,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE," did not either set number of coarse parts or total number of parts ");
 
   /* Partitioning the domain into one single subdomain is a trivial case, and we should just return  */

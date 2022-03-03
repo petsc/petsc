@@ -133,7 +133,7 @@ int main(int argc, char **argv)
   CHKERRQ(PetscStrreplace(PETSC_COMM_SELF, out, path, sizeof(path)));
   CHKERRQ(PetscFixFilename(path, out));
   CHKERRQ(PetscTestFile(geo, 'r', &flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "File not found: %s", geo);
+  PetscCheck(flg,PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "File not found: %s", geo);
 
   CHKERRQ(PetscSNPrintf(cmd, sizeof(cmd), cmdtemplate, gmsh, fmtlist[fmt], bin?"-bin":"", (int)dim, (int)order, geo, out));
   CHKERRQ(PetscPOpen(PETSC_COMM_SELF, NULL, cmd, "r", &fp));

@@ -1101,7 +1101,7 @@ PetscErrorCode MatProductSymbolic_MPIAIJKokkos(Mat C)
 
   PetscFunctionBegin;
   MatCheckProduct(C,1);
-  PetscCheckFalse(product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
+  PetscCheck(!product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
   ptype = product->type;
   A     = product->A;
   B     = product->B;

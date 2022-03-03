@@ -13,7 +13,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_QMD(Mat mat,MatOrderingType type,IS *
 
   PetscFunctionBegin;
   CHKERRQ(MatGetRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done));
-  PetscCheckFalse(!done,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot get rows for matrix");
+  PetscCheck(done,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot get rows for matrix");
 
   CHKERRQ(PetscMalloc1(nrow,&perm));
   CHKERRQ(PetscMalloc5(nrow,&iperm,nrow,&deg,nrow,&marker,nrow,&rchset,nrow,&nbrhd));

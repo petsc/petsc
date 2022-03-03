@@ -83,7 +83,7 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
       } else {
         PetscBool change;
 
-        PetscCheckFalse(!ksp->vec_rhs,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Chebyshev must use a noisy right hand side to estimate the eigenvalues when no right hand side is available");
+        PetscCheck(ksp->vec_rhs,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Chebyshev must use a noisy right hand side to estimate the eigenvalues when no right hand side is available");
         CHKERRQ(PCPreSolveChangeRHS(ksp->pc,&change));
         if (change) {
           B = ksp->work[1];
@@ -410,7 +410,7 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
 
   PetscFunctionBegin;
   CHKERRQ(PCGetDiagonalScale(ksp->pc,&diagonalscale));
-  PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  PetscCheck(!diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   CHKERRQ(PCGetOperators(ksp->pc,&Amat,&Pmat));
   CHKERRQ(PetscObjectSAWsTakeAccess((PetscObject)ksp));

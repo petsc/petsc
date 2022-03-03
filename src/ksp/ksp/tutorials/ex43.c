@@ -296,7 +296,7 @@ static PetscErrorCode DMDACoordViewGnuplot2d(DM da,const char prefix[])
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank));
   CHKERRQ(PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp));
-  PetscCheckFalse(!fp,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
+  PetscCheck(fp,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
 
   CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"### Element geometry for processor %1.4d ### \n",rank));
 
@@ -335,7 +335,7 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],co
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank));
   CHKERRQ(PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp));
-  PetscCheckFalse(!fp,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
+  PetscCheck(fp,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
 
   CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"### %s (processor %1.4d) ### \n",comment,rank));
   CHKERRQ(DMDAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0,0,0));
@@ -397,7 +397,7 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da,Vec fields,const char 
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank));
   CHKERRQ(PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp));
-  PetscCheckFalse(!fp,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
+  PetscCheck(fp,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
 
   CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"### %s (processor %1.4d) ### \n",comment,rank));
   CHKERRQ(DMDAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0,0,0));

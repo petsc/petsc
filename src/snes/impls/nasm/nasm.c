@@ -106,7 +106,7 @@ static PetscErrorCode SNESSetUp_NASM(SNES snes)
     if (dm) {
       nasm->usesdm = PETSC_TRUE;
       CHKERRQ(DMCreateDomainDecomposition(dm,&nasm->n,NULL,NULL,NULL,&subdms));
-      PetscCheckFalse(!subdms,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DM has no default decomposition defined.  Set subsolves manually with SNESNASMSetSubdomains().");
+      PetscCheck(subdms,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DM has no default decomposition defined.  Set subsolves manually with SNESNASMSetSubdomains().");
       CHKERRQ(DMCreateDomainDecompositionScatters(dm,nasm->n,subdms,&nasm->iscatter,&nasm->oscatter,&nasm->gscatter));
       CHKERRQ(PetscMalloc1(nasm->n, &nasm->oscatter_copy));
       for (i=0; i<nasm->n; i++) {
@@ -359,7 +359,7 @@ static PetscErrorCode SNESNASMSetSubdomains_NASM(SNES snes,PetscInt n,SNES subsn
   SNES_NASM      *nasm = (SNES_NASM*)snes->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(snes->setupcalled,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"SNESNASMSetSubdomains() should be called before calling SNESSetUp().");
+  PetscCheck(!snes->setupcalled,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"SNESNASMSetSubdomains() should be called before calling SNESSetUp().");
 
   /* tear down the previously set things */
   CHKERRQ(SNESReset(snes));

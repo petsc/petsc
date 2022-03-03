@@ -161,7 +161,7 @@ static PetscErrorCode CompareMeshes(AppCtx *options, DM dm0, DM dm1)
   PetscFunctionBeginUser;
   if (options->compare) {
     CHKERRQ(DMPlexEqual(dm0, dm1, &flg));
-    PetscCheckFalse(!flg,options->comm, PETSC_ERR_ARG_INCOMP, "DMs are not equal");
+    PetscCheck(flg,options->comm, PETSC_ERR_ARG_INCOMP, "DMs are not equal");
     CHKERRQ(PetscPrintf(options->comm,"DMs equal\n"));
   }
   if (options->compare_labels) {
@@ -265,7 +265,7 @@ static PetscErrorCode DMGetBoundaryLabel_CompareWithCoordinateRepresentation(App
   CHKERRQ(PetscObjectGetComm((PetscObject)dm, &comm));
   CHKERRMPI(MPI_Comm_rank(comm, &rank));
   CHKERRQ(DMGetLabel(dm, LABEL_NAME, &label));
-  PetscCheckFalse(!label,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Label \"%s\" was not loaded", LABEL_NAME);
+  PetscCheck(label,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Label \"%s\" was not loaded", LABEL_NAME);
   {
     PetscInt pStart, pEnd;
 
@@ -301,7 +301,7 @@ static PetscErrorCode DMGetBoundaryLabel_CompareWithCoordinateRepresentation(App
   CHKERRQ(ISRestoreIndices(pointsIS, &points));
   CHKERRQ(ISDestroy(&pointsIS));
   CHKERRMPI(MPI_Allreduce(MPI_IN_PLACE, &fail, 1, MPIU_BOOL, MPI_LOR, comm));
-  PetscCheckFalse(fail,comm, PETSC_ERR_PLIB, "Label \"%s\" was not loaded correctly - see details above", LABEL_NAME);
+  PetscCheck(!fail,comm, PETSC_ERR_PLIB, "Label \"%s\" was not loaded correctly - see details above", LABEL_NAME);
   PetscFunctionReturn(0);
 }
 

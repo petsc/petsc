@@ -1020,7 +1020,7 @@ PetscErrorCode DMPlexMetricCreate(DM dm, PetscInt f, Vec *metric)
     MPI_Comm comm;
 
     CHKERRQ(PetscObjectGetComm((PetscObject) dm, &comm));
-    PetscCheckFalse(!isotropic,comm, PETSC_ERR_ARG_WRONG, "Uniform anisotropic metrics not supported");
+    PetscCheck(isotropic,comm, PETSC_ERR_ARG_WRONG, "Uniform anisotropic metrics not supported");
     CHKERRQ(VecCreate(comm, metric));
     CHKERRQ(VecSetSizes(*metric, 1, PETSC_DECIDE));
     CHKERRQ(VecSetFromOptions(*metric));
@@ -1389,7 +1389,7 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
   CHKERRQ(DMPlexMetricGetNormalizationOrder(dm, &p));
   constants[0] = p;
   if (uniform) {
-    PetscCheckFalse(!isotropic,comm, PETSC_ERR_ARG_WRONG, "Uniform anisotropic metrics not supported");
+    PetscCheck(isotropic,comm, PETSC_ERR_ARG_WRONG, "Uniform anisotropic metrics not supported");
     DM  dmTmp;
     Vec tmp;
 

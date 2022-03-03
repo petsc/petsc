@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   */
   /* ISPermutation doesn't check if not set */
   CHKERRQ(ISPermutation(is,&flg));
-  PetscCheckFalse(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISPermutation");
+  PetscCheck(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISPermutation");
   CHKERRQ(ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,compute,&flg));
   PetscCheckFalse(rank == 0 && !flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
   PetscCheckFalse(rank && flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
@@ -62,9 +62,9 @@ int main(int argc,char **argv)
   CHKERRQ(ISSetInfo(is,IS_PERMUTATION,IS_LOCAL,permanent,PETSC_TRUE));
   CHKERRQ(ISSetInfo(is,IS_IDENTITY,IS_LOCAL,permanent,PETSC_TRUE));
   CHKERRQ(ISGetInfo(is,IS_PERMUTATION,IS_LOCAL,compute,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_PERMUTATION,IS_LOCAL)");
   CHKERRQ(ISGetInfo(is,IS_IDENTITY,IS_LOCAL,compute,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_IDENTITY,IS_LOCAL)");
 
   CHKERRQ(ISClearInfoCache(is,PETSC_TRUE));
 
@@ -72,28 +72,28 @@ int main(int argc,char **argv)
      Check equality of index sets
   */
   CHKERRQ(ISEqual(is,is,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISEqual");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISEqual");
 
   /*
      Sorting
   */
   CHKERRQ(ISSort(is));
   CHKERRQ(ISSorted(is,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISSort");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISSort");
   CHKERRQ(ISGetInfo(is,IS_SORTED,IS_LOCAL,compute,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_SORTED,IS_LOCAL)");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_SORTED,IS_LOCAL)");
   CHKERRQ(ISSorted(is,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISSort");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISSort");
   CHKERRQ(ISGetInfo(is,IS_SORTED,IS_LOCAL,compute,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_SORTED,IS_LOCAL)");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISGetInfo(IS_SORTED,IS_LOCAL)");
 
   /*
      Thinks it is a different type?
   */
   CHKERRQ(PetscObjectTypeCompare((PetscObject)is,ISSTRIDE,&flg));
-  PetscCheckFalse(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStride");
+  PetscCheck(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISStride");
   CHKERRQ(PetscObjectTypeCompare((PetscObject)is,ISBLOCK,&flg));
-  PetscCheckFalse(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISBlock");
+  PetscCheck(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ISBlock");
 
   CHKERRQ(ISDestroy(&is));
 

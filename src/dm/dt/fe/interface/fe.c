@@ -122,7 +122,7 @@ PetscErrorCode PetscFESetType(PetscFE fem, PetscFEType name)
 
   if (!PetscFERegisterAllCalled) CHKERRQ(PetscFERegisterAll());
   CHKERRQ(PetscFunctionListFind(PetscFEList, name, &r));
-  PetscCheckFalse(!r,PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscFE type: %s", name);
+  PetscCheck(r,PetscObjectComm((PetscObject) fem), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscFE type: %s", name);
 
   if (fem->ops->destroy) {
     CHKERRQ((*fem->ops->destroy)(fem));

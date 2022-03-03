@@ -246,7 +246,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
       } else if (s.index == 10 || s.index == 2010) { /* Vertices */
         if (s.zoneID == 0) numVertices = s.last;
         else {
-          PetscCheckFalse(coordsIn,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Currently no support for multiple coordinate sets in Fluent files");
+          PetscCheck(!coordsIn,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Currently no support for multiple coordinate sets in Fluent files");
           coordsIn = (PetscScalar *) s.data;
         }
 

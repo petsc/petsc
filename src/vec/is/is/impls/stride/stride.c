@@ -83,7 +83,7 @@ PetscErrorCode  ISStrideGetInfo(IS is,PetscInt *first,PetscInt *step)
   if (first) PetscValidIntPointer(first,2);
   if (step) PetscValidIntPointer(step,3);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)is,ISSTRIDE,&flg));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_WRONG,"IS must be of type ISSTRIDE");
+  PetscCheck(flg,PetscObjectComm((PetscObject)is),PETSC_ERR_ARG_WRONG,"IS must be of type ISSTRIDE");
 
   sub = (IS_Stride*)is->data;
   if (first) *first = sub->first;

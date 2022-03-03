@@ -735,7 +735,7 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
   while (nnn & nnn - 1) nnn = nnn & nnn - 1;
   if (nnn>16) nnn = 16; // printf("DEBUG\n");
   CHKERRQ(DMGetApplicationContext(plex[0], &ctx));
-  PetscCheckFalse(!ctx,PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
+  PetscCheck(ctx,PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
   CHKERRQ(DMGetDimension(plex[0], &dim));
   PetscCheckFalse(dim!=LANDAU_DIM,PETSC_COMM_SELF, PETSC_ERR_PLIB, "LANDAU_DIM %D != dim %d",LANDAU_DIM,dim);
   if (ctx->gpu_assembly) {

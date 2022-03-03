@@ -127,7 +127,7 @@ int main(int argc,char **args)
   CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
   CHKERRQ(MatConvert(A,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&sA));
   CHKERRQ(MatMultEqual(A,sA,20,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_USER,"A != sA");
+  PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_USER,"A != sA");
 
   /* Test MatGetOwnershipRange() */
   CHKERRQ(MatGetOwnershipRange(A,&Ii,&J));

@@ -84,7 +84,7 @@ PetscErrorCode  PFStringCreateFunction(PF pf,char *string,void **f)
   CHKERRQ(PetscGetUserName(username,64));
   sprintf(lib,"%s/%s/libpetscdlib",tmp,username);
   CHKERRQ(PetscDLLibrarySym(comm,NULL,lib,"PFApply_String",f));
-  PetscCheckFalse(!f,PetscObjectComm((PetscObject)pf),PETSC_ERR_ARG_WRONGSTATE,"Cannot find function %s",lib);
+  PetscCheck(f,PetscObjectComm((PetscObject)pf),PETSC_ERR_ARG_WRONGSTATE,"Cannot find function %s",lib);
 #endif
   PetscFunctionReturn(0);
 }

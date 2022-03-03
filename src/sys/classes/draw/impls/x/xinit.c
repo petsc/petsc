@@ -178,7 +178,7 @@ static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin,char *label,in
           CWCursor     | CWColormap;
 
   XiWin->win = XCreateWindow(XiWin->disp,RootWindow(XiWin->disp,XiWin->screen),x,y,w,h,border_width,XiWin->depth,InputOutput,XiWin->vis,wmask,&window_attributes);
-  PetscCheckFalse(!XiWin->win,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to open X window");
+  PetscCheck(XiWin->win,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to open X window");
 
   /* set window manager hints */
   {

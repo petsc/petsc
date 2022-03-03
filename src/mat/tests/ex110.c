@@ -61,7 +61,7 @@ int main(int argc,char **argv)
   CHKERRQ(MatRestoreRowIJ(AB,0,PETSC_FALSE,PETSC_FALSE,&nd,(const PetscInt**)&oi,(const PetscInt**)&oj,&done));
   CHKERRQ(MatSeqAIJRestoreArray(AB,&oa));
 
-  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Likely a bug in MatCreateMPIAIJWithSplitArrays()");
+  PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Likely a bug in MatCreateMPIAIJWithSplitArrays()");
 
   /* Free spaces */
   CHKERRQ(PetscFree(ooj));

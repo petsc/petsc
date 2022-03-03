@@ -175,7 +175,7 @@ PetscErrorCode PetscSFSetType(PetscSF sf,PetscSFType type)
   if (match) PetscFunctionReturn(0);
 
   CHKERRQ(PetscFunctionListFind(PetscSFList,type,&r));
-  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PetscSF type %s",type);
+  PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PetscSF type %s",type);
   /* Destroy the previous PetscSF implementation context */
   if (sf->ops->Destroy) CHKERRQ((*(sf)->ops->Destroy)(sf));
   CHKERRQ(PetscMemzero(sf->ops,sizeof(*sf->ops)));
@@ -355,7 +355,7 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
     if (isCuda) sf->backend = PETSCSF_BACKEND_CUDA;
     else if (isKokkos) sf->backend = PETSCSF_BACKEND_KOKKOS;
     else if (isHip) sf->backend = PETSCSF_BACKEND_HIP;
-    else PetscCheckFalse(set,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"-sf_backend %s is not supported. You may choose cuda, hip or kokkos (if installed)", backendstr);
+    else PetscCheck(!set,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"-sf_backend %s is not supported. You may choose cuda, hip or kokkos (if installed)", backendstr);
   #elif defined(PETSC_HAVE_KOKKOS)
     PetscCheckFalse(set && !isKokkos,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"-sf_backend %s is not supported. You can only choose kokkos", backendstr);
    #endif
@@ -384,7 +384,7 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf,PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
   PetscValidLogicalCollectiveBool(sf,flg,2);
-  PetscCheckFalse(sf->multi,PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Rank ordering must be set before first call to PetscSFGatherBegin() or PetscSFScatterBegin()");
+  PetscCheck(!sf->multi,PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Rank ordering must be set before first call to PetscSFGatherBegin() or PetscSFScatterBegin()");
   sf->rankorder = flg;
   PetscFunctionReturn(0);
 }
@@ -916,7 +916,7 @@ PetscErrorCode PetscSFGetRootRanks(PetscSF sf,PetscInt *nranks,const PetscMPIInt
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  PetscCheckFalse(!sf->setupcalled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetUp() before obtaining ranks");
+  PetscCheck(sf->setupcalled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetUp() before obtaining ranks");
   if (sf->ops->GetRootRanks) {
     CHKERRQ((sf->ops->GetRootRanks)(sf,nranks,ranks,roffset,rmine,rremote));
   } else {
@@ -952,7 +952,7 @@ PetscErrorCode PetscSFGetLeafRanks(PetscSF sf,PetscInt *niranks,const PetscMPIIn
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf,PETSCSF_CLASSID,1);
-  PetscCheckFalse(!sf->setupcalled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetUp() before obtaining ranks");
+  PetscCheck(sf->setupcalled,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSFSetUp() before obtaining ranks");
   if (sf->ops->GetLeafRanks) {
     CHKERRQ((sf->ops->GetLeafRanks)(sf,niranks,iranks,ioffset,irootloc));
   } else {
@@ -1272,7 +1272,7 @@ PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF sf,PetscInt nselected,const P
   if (PetscDefined(USE_DEBUG)) {  /* Error out if selected[] has dups or  out of range indices */
     PetscBool dups;
     CHKERRQ(PetscCheckDupsInt(nselected,selected,&dups));
-    PetscCheckFalse(dups,comm,PETSC_ERR_ARG_WRONG,"selected[] has dups");
+    PetscCheck(!dups,comm,PETSC_ERR_ARG_WRONG,"selected[] has dups");
     for (i=0; i<nselected; i++)
       PetscCheckFalse(selected[i] < 0 || selected[i] >= nroots,comm,PETSC_ERR_ARG_OUTOFRANGE,"selected root indice %" PetscInt_FMT " is out of [0,%" PetscInt_FMT ")",selected[i],nroots);
   }
@@ -1703,7 +1703,7 @@ PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf,const PetscInt **degree)
   PetscValidPointer(degree,2);
   if (!sf->degreeknown) {
     PetscInt i, nroots = sf->nroots, maxlocal;
-    PetscCheckFalse(sf->degree,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Calls to PetscSFComputeDegreeBegin() cannot be nested.");
+    PetscCheck(!sf->degree,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Calls to PetscSFComputeDegreeBegin() cannot be nested.");
     maxlocal = sf->maxleaf-sf->minleaf+1;
     CHKERRQ(PetscMalloc1(nroots,&sf->degree));
     CHKERRQ(PetscMalloc1(PetscMax(maxlocal,1),&sf->degreetmp)); /* allocate at least one entry, see check in PetscSFComputeDegreeEnd() */
@@ -1740,7 +1740,7 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf,const PetscInt **degree)
   PetscSFCheckGraphSet(sf,1);
   PetscValidPointer(degree,2);
   if (!sf->degreeknown) {
-    PetscCheckFalse(!sf->degreetmp,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PetscSFComputeDegreeBegin() before PetscSFComputeDegreeEnd()");
+    PetscCheck(sf->degreetmp,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PetscSFComputeDegreeBegin() before PetscSFComputeDegreeEnd()");
     CHKERRQ(PetscSFReduceEnd(sf,MPIU_INT,sf->degreetmp-sf->minleaf,sf->degree,MPI_SUM));
     CHKERRQ(PetscFree(sf->degreetmp));
     sf->degreeknown = PETSC_TRUE;

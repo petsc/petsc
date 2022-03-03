@@ -44,7 +44,7 @@ int main(int argc,char **args)
 
   /* Read matrix and RHS */
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
   CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
   CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
   CHKERRQ(MatLoad(A,fd));

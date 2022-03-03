@@ -197,7 +197,7 @@ PetscErrorCode DMPlexTransformSetType(DMPlexTransform tr, DMPlexTransformType me
 
   CHKERRQ(DMPlexTransformRegisterAll());
   CHKERRQ(PetscFunctionListFind(DMPlexTransformList, method, &r));
-  PetscCheckFalse(!r,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DMPlexTransform type: %s", method);
+  PetscCheck(r,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DMPlexTransform type: %s", method);
 
   if (tr->ops->destroy) CHKERRQ((*tr->ops->destroy)(tr));
   CHKERRQ(PetscMemzero(tr->ops, sizeof(*tr->ops)));
@@ -1733,7 +1733,7 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
     if (!maxCell) {
       PetscBool localized;
       CHKERRQ(DMGetCoordinatesLocalized(dm, &localized));
-      PetscCheckFalse(!localized,PetscObjectComm((PetscObject) dm), PETSC_ERR_USER, "Cannot refine a periodic mesh if coordinates have not been localized");
+      PetscCheck(localized,PetscObjectComm((PetscObject) dm), PETSC_ERR_USER, "Cannot refine a periodic mesh if coordinates have not been localized");
       localizeCells = PETSC_TRUE;
     }
   }

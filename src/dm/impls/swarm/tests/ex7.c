@@ -22,7 +22,7 @@ PetscErrorCode MatMultMtM_SeqAIJ(Mat MtM,Vec xx,Vec yy)
 
   PetscFunctionBeginUser;
   CHKERRQ(MatShellGetContext(MtM,&matshellctx));
-  PetscCheckFalse(!matshellctx,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No context");
+  PetscCheck(matshellctx,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No context");
   CHKERRQ(MatMult(matshellctx->Mp, xx, matshellctx->ff));
   CHKERRQ(MatMult(matshellctx->MpTrans, matshellctx->ff, yy));
   PetscFunctionReturn(0);
@@ -34,7 +34,7 @@ PetscErrorCode MatMultAddMtM_SeqAIJ(Mat MtM,Vec xx, Vec yy, Vec zz)
 
   PetscFunctionBeginUser;
   CHKERRQ(MatShellGetContext(MtM,&matshellctx));
-  PetscCheckFalse(!matshellctx,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No context");
+  PetscCheck(matshellctx,PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No context");
   CHKERRQ(MatMult(matshellctx->Mp, xx, matshellctx->ff));
   CHKERRQ(MatMultAdd(matshellctx->MpTrans, matshellctx->ff, yy, zz));
   PetscFunctionReturn(0);

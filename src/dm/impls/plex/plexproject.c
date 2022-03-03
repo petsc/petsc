@@ -592,7 +592,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
   if (dmAux) {
     CHKERRQ(DMConvert(dmAux, DMPLEX, &plexAux));
     if (type == DM_BC_ESSENTIAL_FIELD || type == DM_BC_ESSENTIAL_BD_FIELD || type == DM_BC_NATURAL_FIELD) {
-      PetscCheckFalse(!localA,PETSC_COMM_SELF, PETSC_ERR_USER, "Missing localA vector");
+      PetscCheck(localA,PETSC_COMM_SELF, PETSC_ERR_USER, "Missing localA vector");
     }
   }
   /* Determine height for iteration of all meshes */

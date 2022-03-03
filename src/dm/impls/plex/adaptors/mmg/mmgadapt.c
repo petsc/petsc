@@ -28,12 +28,12 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   if (bdLabel) {
     CHKERRQ(PetscObjectGetName((PetscObject) bdLabel, &bdLabelName));
     CHKERRQ(PetscStrcmp(bdLabelName, bdName, &flg));
-    PetscCheckFalse(flg,comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
+    PetscCheck(!flg,comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for boundary facets", bdLabelName);
   }
   if (rgLabel) {
     CHKERRQ(PetscObjectGetName((PetscObject) rgLabel, &rgLabelName));
     CHKERRQ(PetscStrcmp(rgLabelName, rgName, &flg));
-    PetscCheckFalse(flg,comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for element tags", rgLabelName);
+    PetscCheck(!flg,comm, PETSC_ERR_ARG_WRONG, "\"%s\" cannot be used as label for element tags", rgLabelName);
   }
 
   /* Get mesh information */

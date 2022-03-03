@@ -80,7 +80,7 @@ int main(int argc,char **argv)
       CHKERRQ(ISView(output1, viewer));
     }
     CHKERRQ(ISEqual(output0, output1, &flg));
-    PetscCheckFalse(!flg,comm, PETSC_ERR_PLIB, "output0 != output1");
+    PetscCheck(flg,comm, PETSC_ERR_PLIB, "output0 != output1");
     CHKERRQ(ISDestroy(&input));
     CHKERRQ(ISDestroy(&output0));
     CHKERRQ(ISDestroy(&output1));

@@ -946,7 +946,7 @@ PetscErrorCode  PCGASMSetTotalSubdomains(PC pc,PetscInt N)
 
   PetscFunctionBegin;
   PetscCheckFalse(N < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Total number of subdomains must be 1 or more, got N = %D",N);
-  PetscCheckFalse(pc->setupcalled,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"PCGASMSetTotalSubdomains() should be called before calling PCSetUp().");
+  PetscCheck(!pc->setupcalled,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"PCGASMSetTotalSubdomains() should be called before calling PCSetUp().");
 
   CHKERRQ(PCGASMDestroySubdomains(osm->n,&osm->iis,&osm->ois));
   osm->ois = osm->iis = NULL;
@@ -967,7 +967,7 @@ static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois
 
   PetscFunctionBegin;
   PetscCheckFalse(n < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Each process must have 1 or more subdomains, got n = %D",n);
-  PetscCheckFalse(pc->setupcalled,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"PCGASMSetSubdomains() should be called before calling PCSetUp().");
+  PetscCheck(!pc->setupcalled,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"PCGASMSetSubdomains() should be called before calling PCSetUp().");
 
   CHKERRQ(PCGASMDestroySubdomains(osm->n,&osm->iis,&osm->ois));
   osm->iis  = osm->ois = NULL;
@@ -986,7 +986,7 @@ static PetscErrorCode  PCGASMSetSubdomains_GASM(PC pc,PetscInt n,IS iis[],IS ois
     */
     osm->overlap = -1;
     /* inner subdomains must be provided  */
-    PetscCheckFalse(!iis,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"inner indices have to be provided ");
+    PetscCheck(iis,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"inner indices have to be provided ");
   }/* end if */
   if (iis) {
     CHKERRQ(PetscMalloc1(n,&osm->iis));
@@ -1838,7 +1838,7 @@ PetscErrorCode  PCGASMGetSubdomains(PC pc,PetscInt *n,IS *iis[],IS *ois[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCGASM,&match));
-  PetscCheckFalse(!match,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Incorrect object type: expected %s, got %s instead", PCGASM, ((PetscObject)pc)->type_name);
+  PetscCheck(match,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Incorrect object type: expected %s, got %s instead", PCGASM, ((PetscObject)pc)->type_name);
   osm = (PC_GASM*)pc->data;
   if (n) *n = osm->n;
   if (iis) {
@@ -1886,9 +1886,9 @@ PetscErrorCode  PCGASMGetSubmatrices(PC pc,PetscInt *n,Mat *mat[])
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidIntPointer(n,2);
   if (mat) PetscValidPointer(mat,3);
-  PetscCheckFalse(!pc->setupcalled,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call after KSPSetUp() or PCSetUp().");
+  PetscCheck(pc->setupcalled,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call after KSPSetUp() or PCSetUp().");
   CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCGASM,&match));
-  PetscCheckFalse(!match,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Expected %s, got %s instead", PCGASM, ((PetscObject)pc)->type_name);
+  PetscCheck(match,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Expected %s, got %s instead", PCGASM, ((PetscObject)pc)->type_name);
   osm = (PC_GASM*)pc->data;
   if (n) *n = osm->n;
   if (mat) *mat = osm->pmat;
@@ -1924,7 +1924,7 @@ PetscErrorCode  PCGASMSetUseDMSubdomains(PC pc,PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveBool(pc,flg,2);
-  PetscCheckFalse(pc->setupcalled,((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for a setup PC.");
+  PetscCheck(!pc->setupcalled,((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for a setup PC.");
   CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCGASM,&match));
   if (match) {
     if (!osm->user_subdomains && osm->N == PETSC_DETERMINE && osm->overlap < 0) {

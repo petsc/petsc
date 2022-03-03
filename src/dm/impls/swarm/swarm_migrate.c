@@ -193,7 +193,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm,PetscBool remove_sent_points)
 
   PetscFunctionBegin;
   CHKERRQ(DMSwarmGetCellDM(dm,&dmcell));
-  PetscCheckFalse(!dmcell,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only valid if cell DM provided");
+  PetscCheck(dmcell,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only valid if cell DM provided");
 
   CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm),&size));
   CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank));
@@ -464,10 +464,10 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globa
   CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank));
 
   CHKERRQ(DMSwarmGetCellDM(dm,&dmcell));
-  PetscCheckFalse(!dmcell,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only valid if cell DM provided");
+  PetscCheck(dmcell,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only valid if cell DM provided");
   isdmda = PETSC_FALSE;
   PetscObjectTypeCompare((PetscObject)dmcell,DMDA,&isdmda);
-  PetscCheckFalse(!isdmda,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only DMDA support for CollectBoundingBox");
+  PetscCheck(isdmda,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Only DMDA support for CollectBoundingBox");
 
   CHKERRQ(DMGetDimension(dm,&dim));
   sizeof_bbox_ctx = sizeof(CollectBBox);

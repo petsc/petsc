@@ -31,7 +31,7 @@ PetscErrorCode  PetscViewerMatlabPutArray(PetscViewer mfile,int m,int n,const Pe
   mxArray            *mat;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!mfile,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_VIEWER_MATLAB_() failed");
+  PetscCheck(mfile,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_VIEWER_MATLAB_() failed");
   ml = (PetscViewer_Matlab*)mfile->data;
   if (!ml->rank) {
     CHKERRQ(PetscInfo(mfile,"Putting MATLAB array %s\n",name));
@@ -80,12 +80,12 @@ PetscErrorCode  PetscViewerMatlabGetArray(PetscViewer mfile,int m,int n,PetscSca
   mxArray            *mat;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!mfile,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_VIEWER_MATLAB_() failed");
+  PetscCheck(mfile,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_VIEWER_MATLAB_() failed");
   ml = (PetscViewer_Matlab*)mfile->data;
   if (!ml->rank) {
     CHKERRQ(PetscInfo(mfile,"Getting MATLAB array %s\n",name));
     mat  = matGetVariable(ml->ep,name);
-    PetscCheckFalse(!mat,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
+    PetscCheck(mat,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
     CHKERRQ(PetscArraycpy(array,mxGetPr(mat),m*n));
     CHKERRQ(PetscInfo(mfile,"Got MATLAB array %s\n",name));
   }

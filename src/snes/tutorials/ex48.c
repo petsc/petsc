@@ -646,9 +646,9 @@ static PetscErrorCode THIDAGetPrm(DM da,PrmNode ***prm)
 
   PetscFunctionBeginUser;
   CHKERRQ(PetscObjectQuery((PetscObject)da,"DMDA2Prm",(PetscObject*)&da2prm));
-  PetscCheckFalse(!da2prm,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm composed with given DMDA");
+  PetscCheck(da2prm,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm composed with given DMDA");
   CHKERRQ(PetscObjectQuery((PetscObject)da,"DMDA2Prm_Vec",(PetscObject*)&X));
-  PetscCheckFalse(!X,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm_Vec composed with given DMDA");
+  PetscCheck(X,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm_Vec composed with given DMDA");
   CHKERRQ(DMDAVecGetArray(da2prm,X,prm));
   PetscFunctionReturn(0);
 }
@@ -660,9 +660,9 @@ static PetscErrorCode THIDARestorePrm(DM da,PrmNode ***prm)
 
   PetscFunctionBeginUser;
   CHKERRQ(PetscObjectQuery((PetscObject)da,"DMDA2Prm",(PetscObject*)&da2prm));
-  PetscCheckFalse(!da2prm,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm composed with given DMDA");
+  PetscCheck(da2prm,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm composed with given DMDA");
   CHKERRQ(PetscObjectQuery((PetscObject)da,"DMDA2Prm_Vec",(PetscObject*)&X));
-  PetscCheckFalse(!X,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm_Vec composed with given DMDA");
+  PetscCheck(X,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"No DMDA2Prm_Vec composed with given DMDA");
   CHKERRQ(DMDAVecRestoreArray(da2prm,X,prm));
   PetscFunctionReturn(0);
 }
@@ -1249,7 +1249,7 @@ static PetscErrorCode DMRefineHierarchy_THI(DM dac0,PetscInt nlevels,DM hierarch
 
   PetscFunctionBeginUser;
   CHKERRQ(PetscObjectQuery((PetscObject)dac0,"THI",(PetscObject*)&thi));
-  PetscCheckFalse(!thi,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot refine this DMDA, missing composed THI instance");
+  PetscCheck(thi,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot refine this DMDA, missing composed THI instance");
   if (nlevels > 1) {
     CHKERRQ(DMRefineHierarchy(dac0,nlevels-1,hierarchy));
     dac  = hierarchy[nlevels-2];
@@ -1296,7 +1296,7 @@ static PetscErrorCode DMCreateInterpolation_DA_THI(DM dac,DM daf,Mat *A,Vec *sca
 
     CHKERRQ(DMDAGetInfo(daf,0, &mz,&my,&mx, 0,0,0, 0,0,0,0,0,0));
     CHKERRQ(DMDAGetCorners(daf,&zs,&ys,&xs,&zm,&ym,&xm));
-    PetscCheckFalse(zs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"unexpected");
+    PetscCheck(!zs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"unexpected");
     CHKERRQ(MatCreate(PetscObjectComm((PetscObject)daf),&B));
     CHKERRQ(MatSetSizes(B,xm*ym*zm,xm*ym,mx*my*mz,mx*my));
 

@@ -507,8 +507,8 @@ PetscErrorCode MatSetValuesCOO_Basic(Mat A,const PetscScalar coo_v[],InsertMode 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectQuery((PetscObject)A,"__PETSc_coo_i",(PetscObject*)&is_coo_i));
   CHKERRQ(PetscObjectQuery((PetscObject)A,"__PETSc_coo_j",(PetscObject*)&is_coo_j));
-  PetscCheckFalse(!is_coo_i,PetscObjectComm((PetscObject)A),PETSC_ERR_COR,"Missing coo_i IS");
-  PetscCheckFalse(!is_coo_j,PetscObjectComm((PetscObject)A),PETSC_ERR_COR,"Missing coo_j IS");
+  PetscCheck(is_coo_i,PetscObjectComm((PetscObject)A),PETSC_ERR_COR,"Missing coo_i IS");
+  PetscCheck(is_coo_j,PetscObjectComm((PetscObject)A),PETSC_ERR_COR,"Missing coo_j IS");
   CHKERRQ(ISGetLocalSize(is_coo_i,&n_i));
   CHKERRQ(ISGetLocalSize(is_coo_j,&n_j));
   PetscCheckFalse(n_i != n_j,PETSC_COMM_SELF,PETSC_ERR_COR,"Wrong local size %" PetscInt_FMT " != %" PetscInt_FMT,n_i,n_j);

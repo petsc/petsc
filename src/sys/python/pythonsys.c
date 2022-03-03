@@ -140,11 +140,11 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
   CHKERRQ(PetscDLPyLibSym("PyErr_Display",            &PyErr_Display));
   CHKERRQ(PetscDLPyLibSym("PyErr_Restore",            &PyErr_Restore));
   /* XXX TODO: check that ALL symbols were there !!! */
-  PetscCheckFalse(!Py_None,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
-  PetscCheckFalse(!Py_GetVersion,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
-  PetscCheckFalse(!Py_IsInitialized,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
-  PetscCheckFalse(!Py_InitializeEx,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
-  PetscCheckFalse(!Py_Finalize,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
+  PetscCheck(Py_None,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
+  PetscCheck(Py_GetVersion,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
+  PetscCheck(Py_IsInitialized,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
+  PetscCheck(Py_InitializeEx,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
+  PetscCheck(Py_Finalize,PETSC_COMM_SELF,PETSC_ERR_LIB,"Python: failed to load symbols from Python dynamic library %s",pythonlib);
   CHKERRQ(PetscInfo(NULL,"Python: all required symbols loaded from Python dynamic library %s\n",pythonlib));
   PetscFunctionReturn(0);
 }
@@ -291,7 +291,7 @@ PetscErrorCode PetscPythonMonitorSet(PetscObject obj, const char url[])
   PetscValidCharPointer(url,2);
   if (!PetscPythonMonitorSet_C) {
     CHKERRQ(PetscPythonInitialize(NULL,NULL));
-    PetscCheckFalse(!PetscPythonMonitorSet_C,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Couldn't initialize Python support for monitors");
+    PetscCheck(PetscPythonMonitorSet_C,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Couldn't initialize Python support for monitors");
   }
   CHKERRQ(PetscPythonMonitorSet_C(obj,url));
   PetscFunctionReturn(0);

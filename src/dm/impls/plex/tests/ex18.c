@@ -692,7 +692,7 @@ static PetscErrorCode CreateMeshFromFile(MPI_Comm comm, AppCtx *user, DM *dm, DM
     CHKERRQ(PetscOptionsSetValue(NULL, "-dm_plex_hdf5_force_sequential", NULL));
     CHKERRQ(DMPlexCreateFromFile(comm, filename, "ex18_plex", interpCreate, serialDM));
     CHKERRQ(DMPlexIsDistributed(*serialDM, &distributed));
-    PetscCheckFalse(distributed,comm, PETSC_ERR_PLIB, "unable to create a serial DM from file");
+    PetscCheck(!distributed,comm, PETSC_ERR_PLIB, "unable to create a serial DM from file");
   }
   CHKERRQ(DMGetDimension(*dm, &user->dim));
   PetscFunctionReturn(0);
@@ -918,7 +918,7 @@ static PetscErrorCode TestExpandPoints(DM dm, AppCtx *user)
     if (d < depth-1) {
       CHKERRQ(DMPlexExpandedConesToFaces_Private(dm, iss[d], sects[d], &checkIS));
       CHKERRQ(ISEqualUnsorted(checkIS, iss[d+1], &flg));
-      PetscCheckFalse(!flg,PetscObjectComm((PetscObject) checkIS), PETSC_ERR_PLIB, "DMPlexExpandedConesToFaces_Private produced wrong IS");
+      PetscCheck(flg,PetscObjectComm((PetscObject) checkIS), PETSC_ERR_PLIB, "DMPlexExpandedConesToFaces_Private produced wrong IS");
       CHKERRQ(ISDestroy(&checkIS));
     }
   }
@@ -1126,7 +1126,7 @@ static PetscErrorCode DMPlexGetExpandedBoundary_Private(DM dm, PortableBoundary 
   CHKERRMPI(MPI_Comm_rank(comm, &rank));
   CHKERRMPI(MPI_Comm_size(comm, &size));
   CHKERRQ(DMPlexIsDistributed(dm, &flg));
-  PetscCheckFalse(flg,comm, PETSC_ERR_ARG_WRONG, "serial DM (all points on one rank) needed");
+  PetscCheck(!flg,comm, PETSC_ERR_ARG_WRONG, "serial DM (all points on one rank) needed");
 
   /* interpolate serial DM if not yet interpolated */
   CHKERRQ(DMPlexIsInterpolatedCollective(dm, &intp));
@@ -1156,7 +1156,7 @@ static PetscErrorCode DMPlexGetExpandedBoundary_Private(DM dm, PortableBoundary 
       IS is0;
       CHKERRQ(DMPlexExpandedVerticesCoordinatesToFaces_Private(idm, bnd0, &is0));
       CHKERRQ(ISEqual(is0, boundary_is, &flg));
-      PetscCheckFalse(!flg,PETSC_COMM_SELF, PETSC_ERR_PLIB, "DMPlexExpandedVerticesCoordinatesToFaces_Private produced a wrong IS");
+      PetscCheck(flg,PETSC_COMM_SELF, PETSC_ERR_PLIB, "DMPlexExpandedVerticesCoordinatesToFaces_Private produced a wrong IS");
       CHKERRQ(ISDestroy(&is0));
     }
   } else {
@@ -1376,7 +1376,7 @@ static PetscErrorCode ViewPointsWithType(DM dm, IS points, PetscViewer v)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &flg));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "Only for ASCII viewer");
+  PetscCheck(flg,PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "Only for ASCII viewer");
   CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)v), &rank));
   CHKERRQ(PetscViewerASCIIPushSynchronized(v));
   CHKERRQ(ISGetLocalSize(points, &npoints));
@@ -1409,7 +1409,7 @@ static PetscErrorCode DMPlexComparePointSFWithInterface_Private(DM ipdm, IS inte
   if (!pointsf) {
     PetscInt N=0;
     if (interface_is) CHKERRQ(ISGetSize(interface_is, &N));
-    PetscCheckFalse(N,comm, PETSC_ERR_PLIB, "interface_is should be NULL or empty for PointSF being NULL");
+    PetscCheck(!N,comm, PETSC_ERR_PLIB, "interface_is should be NULL or empty for PointSF being NULL");
     PetscFunctionReturn(0);
   }
 

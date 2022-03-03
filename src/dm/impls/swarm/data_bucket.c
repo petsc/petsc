@@ -163,7 +163,7 @@ PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldByName(DMSwarmDataBucket db,c
 
   PetscFunctionBegin;
   CHKERRQ(DMSwarmDataFieldStringInList(name,db->nfields,(const DMSwarmDataField*)db->field,&found));
-  PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot find DMSwarmDataField with name %s",name);
+  PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot find DMSwarmDataField with name %s",name);
   CHKERRQ(DMSwarmDataFieldStringFindInList(name,db->nfields,(const DMSwarmDataField*)db->field,&idx));
   *gfield = db->field[idx];
   PetscFunctionReturn(0);
@@ -236,7 +236,7 @@ PetscErrorCode DMSwarmDataBucketSetSizes(DMSwarmDataBucket db,const PetscInt L,c
   PetscFunctionBegin;
   PetscCheckFalse(db->finalised == PETSC_FALSE,PETSC_COMM_SELF,PETSC_ERR_USER,"You must call DMSwarmDataBucketFinalize() before DMSwarmDataBucketSetSizes()");
   CHKERRQ(DMSwarmDataBucketQueryForActiveFields(db,&any_active_fields));
-  PetscCheckFalse(any_active_fields,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot safely re-size as at least one DMSwarmDataField is currently being accessed");
+  PetscCheck(!any_active_fields,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot safely re-size as at least one DMSwarmDataField is currently being accessed");
 
   current_allocated = db->allocated;
   new_used   = L;
@@ -319,7 +319,7 @@ PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFields(DMSwarmDataBucket db,PetscI
 PetscErrorCode DMSwarmDataFieldGetAccess(const DMSwarmDataField gfield)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(gfield->active,PETSC_COMM_SELF,PETSC_ERR_USER,"Field \"%s\" is already active. You must call DMSwarmDataFieldRestoreAccess()",gfield->name);
+  PetscCheck(!gfield->active,PETSC_COMM_SELF,PETSC_ERR_USER,"Field \"%s\" is already active. You must call DMSwarmDataFieldRestoreAccess()",gfield->name);
   gfield->active = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -465,7 +465,7 @@ PetscErrorCode DMSwarmDataBucketRemovePointAtIndex(const DMSwarmDataBucket db,co
   PetscCheckFalse(index >= db->allocated,PETSC_COMM_SELF,PETSC_ERR_USER,"index must be < %D",db->L+db->buffer);
 #endif
   CHKERRQ(DMSwarmDataBucketQueryForActiveFields(db,&any_active_fields));
-  PetscCheckFalse(any_active_fields,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot safely remove point as at least one DMSwarmDataField is currently being accessed");
+  PetscCheck(!any_active_fields,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot safely remove point as at least one DMSwarmDataField is currently being accessed");
   if (index >= db->L) { /* this point is not in the list - no need to error, but I will anyway */
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"You should not be trying to remove point at index=%D since it's < db->L = %D", index, db->L);
   }

@@ -129,9 +129,9 @@ PetscErrorCode  ISSum(IS is1,IS is2,IS *is3)
   PetscCheckFalse(size>1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Currently only for uni-processor IS");
 
   CHKERRQ(ISSorted(is1,&f));
-  PetscCheckFalse(!f,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Arg 1 is not sorted");
+  PetscCheck(f,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Arg 1 is not sorted");
   CHKERRQ(ISSorted(is2,&f));
-  PetscCheckFalse(!f,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Arg 2 is not sorted");
+  PetscCheck(f,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Arg 2 is not sorted");
 
   CHKERRQ(ISGetLocalSize(is1,&n1));
   CHKERRQ(ISGetLocalSize(is2,&n2));

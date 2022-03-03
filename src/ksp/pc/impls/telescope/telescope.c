@@ -277,8 +277,8 @@ static PetscErrorCode PCTelescopeSubNullSpaceCreate_Telescope(PC pc,PC_Telescope
     /* create new (near) nullspace for redundant object */
     CHKERRQ(MatNullSpaceCreate(subcomm,has_const,n,sub_vecs,sub_nullspace));
     CHKERRQ(VecDestroyVecs(n,&sub_vecs));
-    PetscCheckFalse(nullspace->remove,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callbacks not supported when propagating (near) nullspaces with PCTelescope");
-    PetscCheckFalse(nullspace->rmctx,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callback context not supported when propagating (near) nullspaces with PCTelescope");
+    PetscCheck(!nullspace->remove,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callbacks not supported when propagating (near) nullspaces with PCTelescope");
+    PetscCheck(!nullspace->rmctx,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callback context not supported when propagating (near) nullspaces with PCTelescope");
   }
   PetscFunctionReturn(0);
 }
@@ -540,7 +540,7 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
       PetscCheckFalse(csg[0] == csg[1],comm_fine,PETSC_ERR_SUP,"Coarse DM uses the same size communicator as the parent DM attached to the PC");
 
       CHKERRQ(PCTelescopeTestValidSubcomm(comm_fine,comm_coarse_partition,&isvalidsubcomm));
-      PetscCheckFalse(!isvalidsubcomm,comm_fine,PETSC_ERR_SUP,"Coarse DM communicator is not a sub-communicator of parentDM->comm");
+      PetscCheck(isvalidsubcomm,comm_fine,PETSC_ERR_SUP,"Coarse DM communicator is not a sub-communicator of parentDM->comm");
       sred->subcomm = comm_coarse_partition;
     }
   }
@@ -777,7 +777,7 @@ static PetscErrorCode PCTelescopeSetSubcommType_Telescope(PC pc,PetscSubcommType
   PC_Telescope     red = (PC_Telescope)pc->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(pc->setupcalled,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"You cannot change the subcommunicator type for PCTelescope after it has been set up.");
+  PetscCheck(!pc->setupcalled,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"You cannot change the subcommunicator type for PCTelescope after it has been set up.");
   red->subcommtype = subcommtype;
   PetscFunctionReturn(0);
 }

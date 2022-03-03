@@ -75,7 +75,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
     }
   }
   PetscCheckFalse(dim > 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot perform child symmetry for %d-cells",dim);
-  PetscCheckFalse(!dim,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A vertex has no children");
+  PetscCheck(dim,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A vertex has no children");
   if (childA < dStart || childA >= dEnd) {
     /* this is a lower-dimensional child: bootstrap */
     PetscInt size, i, sA = -1, sB, sOrientB, sConeSize;
@@ -201,7 +201,7 @@ PetscErrorCode DMPlexReferenceTreeGetChildSymmetry(DM dm, PetscInt parent, Petsc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCheckFalse(!mesh->getchildsymmetry,PETSC_COMM_SELF,PETSC_ERR_SUP,"DMPlexReferenceTreeGetChildSymmetry not implemented");
+  PetscCheck(mesh->getchildsymmetry,PETSC_COMM_SELF,PETSC_ERR_SUP,"DMPlexReferenceTreeGetChildSymmetry not implemented");
   CHKERRQ(mesh->getchildsymmetry(dm,parent,parentOrientA,childOrientA,childA,parentOrientB,childOrientB,childB));
   PetscFunctionReturn(0);
 }
@@ -1707,7 +1707,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
     PetscScalar *vals;
 
     CHKERRQ(MatGetRowIJ(cMat,0,PETSC_FALSE,PETSC_FALSE,&nRows,&ia,&ja,&done));
-    PetscCheckFalse(!done,PetscObjectComm((PetscObject)cMat),PETSC_ERR_PLIB,"Could not get RowIJ of constraint matrix");
+    PetscCheck(done,PetscObjectComm((PetscObject)cMat),PETSC_ERR_PLIB,"Could not get RowIJ of constraint matrix");
     nnz  = ia[nRows];
     /* malloc and then zero rows right before we fill them: this way valgrind
      * can tell if we are doing progressive fill in the wrong order */
@@ -1841,7 +1841,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
       CHKERRQ(MatSetValues(cMat,1,&row,ia[row+1]-ia[row],&ja[ia[row]],&vals[ia[row]],INSERT_VALUES));
     }
     CHKERRQ(MatRestoreRowIJ(cMat,0,PETSC_FALSE,PETSC_FALSE,&nRows,&ia,&ja,&done));
-    PetscCheckFalse(!done,PetscObjectComm((PetscObject)cMat),PETSC_ERR_PLIB,"Could not restore RowIJ of constraint matrix");
+    PetscCheck(done,PetscObjectComm((PetscObject)cMat),PETSC_ERR_PLIB,"Could not restore RowIJ of constraint matrix");
     CHKERRQ(MatAssemblyBegin(cMat,MAT_FINAL_ASSEMBLY));
     CHKERRQ(MatAssemblyEnd(cMat,MAT_FINAL_ASSEMBLY));
     CHKERRQ(PetscFree(vals));

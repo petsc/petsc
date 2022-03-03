@@ -274,7 +274,7 @@ PetscErrorCode ex1_3(void)
 
     CHKERRQ(PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"c-rank%d.gp",rank));
     fp = fopen(name,"w");
-    PetscCheckFalse(!fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s",name);
+    PetscCheck(fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s",name);
     CHKERRQ(DMSwarmGetLocalSize(dms,&npoints));
     CHKERRQ(DMSwarmGetField(dms,"coorx",NULL,NULL,(void**)&array_x));
     CHKERRQ(DMSwarmGetField(dms,"coory",NULL,NULL,(void**)&array_y));
@@ -467,7 +467,7 @@ PetscErrorCode ex1_4(void)
 
     CHKERRQ(PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"c-rank%d.gp",rank));
     fp = fopen(name,"w");
-    PetscCheckFalse(!fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s",name);
+    PetscCheck(fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s",name);
     CHKERRQ(DMSwarmGetLocalSize(dms,&npoints));
     CHKERRQ(DMSwarmGetField(dms,"coorx",NULL,NULL,(void**)&array_x));
     CHKERRQ(DMSwarmGetField(dms,"coory",NULL,NULL,(void**)&array_y));

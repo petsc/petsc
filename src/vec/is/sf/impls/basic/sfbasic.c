@@ -94,7 +94,7 @@ PETSC_INTERN PetscErrorCode PetscSFReset_Basic(PetscSF sf)
   PetscSFLink       link = bas->avail,next;
 
   PetscFunctionBegin;
-  PetscCheckFalse(bas->inuse,PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
+  PetscCheck(!bas->inuse,PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
   CHKERRQ(PetscFree2(bas->iranks,bas->ioffset));
   CHKERRQ(PetscFree(bas->irootloc));
 

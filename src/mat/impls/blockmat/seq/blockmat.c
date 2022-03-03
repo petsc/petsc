@@ -32,7 +32,7 @@ static PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,Mat
   PetscCheckFalse(its <= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %" PetscInt_FMT " and local its %" PetscInt_FMT " both positive",its,lits);
   PetscCheckFalse(flag & SOR_EISENSTAT,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for Eisenstat");
   PetscCheckFalse(omega != 1.0,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for omega not equal to 1.0");
-  PetscCheckFalse(fshift,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for fshift");
+  PetscCheck(!fshift,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for fshift");
   if ((flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) && !(flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP)) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot do backward sweep without forward sweep");
   }
@@ -137,7 +137,7 @@ static PetscErrorCode MatSOR_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType fl
   PetscCheckFalse(its <= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Relaxation requires global its %" PetscInt_FMT " and local its %" PetscInt_FMT " both positive",its,lits);
   PetscCheckFalse(flag & SOR_EISENSTAT,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for Eisenstat");
   PetscCheckFalse(omega != 1.0,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for omega not equal to 1.0");
-  PetscCheckFalse(fshift,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for fshift");
+  PetscCheck(!fshift,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for fshift");
 
   if (!a->diags) {
     CHKERRQ(PetscMalloc1(mbs,&a->diags));
@@ -584,9 +584,9 @@ static PetscErrorCode MatCreateSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,MatReu
 
   PetscFunctionBegin;
   CHKERRQ(ISEqual(isrow,iscol,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only for identical column and row indices");
+  PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only for identical column and row indices");
   CHKERRQ(PetscObjectTypeCompare((PetscObject)iscol,ISSTRIDE,&stride));
-  PetscCheckFalse(!stride,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only for stride indices");
+  PetscCheck(stride,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only for stride indices");
   CHKERRQ(ISStrideGetInfo(iscol,&first,&step));
   PetscCheckFalse(step != A->rmap->bs,PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only select one entry from each block");
 

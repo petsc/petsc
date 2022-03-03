@@ -160,7 +160,7 @@ int main(int argc,char **argv)
     found:
     PetscCheckFalse(PetscRealPart(fromdata[n].value) != expected_rank,PETSC_COMM_SELF,PETSC_ERR_PLIB,"[%d] Got data %g from rank %d",rank,(double)PetscRealPart(fromdata[n].value),expected_rank);
     CHKERRQ(PetscStrcmp(fromdata[n].ok,"ok",&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"[%d] Got string %s from rank %d",rank,fromdata[n].ok,expected_rank);
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"[%d] Got string %s from rank %d",rank,fromdata[n].ok,expected_rank);
   }
   CHKERRQ(PetscFree2(todata,toranks));
   CHKERRQ(PetscFree(fromdata));

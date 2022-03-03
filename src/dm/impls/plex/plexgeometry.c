@@ -2604,7 +2604,7 @@ static PetscErrorCode BuildGradientReconstruction_Internal(DM dm, PetscFV fvm, D
       for (d = 0; d < dim; ++d) dx[usedFaces*dim+d] = cg1->centroid[d] - cg->centroid[d];
       gref[usedFaces++] = fg->grad[side];  /* Gradient reconstruction term will go here */
     }
-    PetscCheckFalse(!usedFaces,PETSC_COMM_SELF, PETSC_ERR_USER, "Mesh contains isolated cell (no neighbors). Is it intentional?");
+    PetscCheck(usedFaces,PETSC_COMM_SELF, PETSC_ERR_USER, "Mesh contains isolated cell (no neighbors). Is it intentional?");
     CHKERRQ(PetscFVComputeGradient(fvm, usedFaces, dx, grad));
     for (f = 0, usedFaces = 0; f < numFaces; ++f) {
       CHKERRQ(DMLabelGetValue(ghostLabel, faces[f], &ghost));

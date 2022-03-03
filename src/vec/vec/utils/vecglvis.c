@@ -67,7 +67,7 @@ PetscErrorCode VecView_GLVis(Vec U,PetscViewer viewer)
       if (!dm) {
         CHKERRQ(PetscObjectQuery((PetscObject)U, "__PETSc_dm",&dm));
       }
-      PetscCheckFalse(!dm,PetscObjectComm((PetscObject)U),PETSC_ERR_SUP,"Mesh not present");
+      PetscCheck(dm,PetscObjectComm((PetscObject)U),PETSC_ERR_SUP,"Mesh not present");
       CHKERRQ(PetscObjectCompose((PetscObject)Ufield[i], "__PETSc_dm",dm));
     }
   }

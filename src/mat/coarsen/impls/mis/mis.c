@@ -49,7 +49,7 @@ PetscErrorCode maxIndSetAgg(IS perm,Mat Gmat,PetscBool strict_aggs,PetscCoarsenD
     CHKERRQ(MatCheckCompressedRow(mpimat->B,matB->nonzerorowcnt,&matB->compressedrow,matB->i,Gmat->rmap->n,-1.0));
   } else {
     CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)Gmat,MATSEQAIJ,&isAIJ));
-    PetscCheckFalse(!isAIJ,PETSC_COMM_SELF,PETSC_ERR_USER,"Require AIJ matrix.");
+    PetscCheck(isAIJ,PETSC_COMM_SELF,PETSC_ERR_USER,"Require AIJ matrix.");
     matA = (Mat_SeqAIJ*)Gmat->data;
   }
   CHKERRQ(MatGetOwnershipRange(Gmat,&my0,&Iend));

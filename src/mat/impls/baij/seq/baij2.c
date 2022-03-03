@@ -108,7 +108,7 @@ PetscErrorCode MatCreateSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatReu
 
     PetscCheckFalse(c->mbs!=nrows || c->nbs!=ncols || (*B)->rmap->bs!=bs,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Submatrix wrong size");
     CHKERRQ(PetscArraycmp(c->ilen,lens,c->mbs,&flag));
-    PetscCheckFalse(!flag,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
+    PetscCheck(flag,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong no of nonzeros");
     CHKERRQ(PetscArrayzero(c->ilen,c->mbs));
     C    = *B;
   } else {
@@ -2772,7 +2772,7 @@ PetscErrorCode MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
   MatScalar      *aa,*aa_j;
 
   PetscFunctionBegin;
-  PetscCheckFalse(A->factortype,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  PetscCheck(!A->factortype,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   bs   = A->rmap->bs;
   aa   = a->a;
   ai   = a->i;

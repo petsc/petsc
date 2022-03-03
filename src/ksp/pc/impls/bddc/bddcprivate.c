@@ -56,7 +56,7 @@ PetscErrorCode MatDenseOrthogonalRangeOrComplement(Mat A, PetscBool range, Petsc
   CHKERRQ(PetscFree(rwork2));
 #endif
   CHKERRQ(PetscFPTrapPop());
-  PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GESVD Lapack routine %d",(int)lierr);
+  PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GESVD Lapack routine %d",(int)lierr);
   CHKERRQ(MatDenseRestoreArray(A,&data));
   for (i=0;i<n;i++) if (sing[i] < PETSC_SMALL) break;
   if (!rwork) {
@@ -250,7 +250,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
 
   /* Sanity checks */
   PetscCheckFalse(!order && !conforming,comm,PETSC_ERR_SUP,"Variable order and non-conforming spaces are not supported at the same time");
-  PetscCheckFalse(pcbddc->user_ChangeOfBasisMatrix,comm,PETSC_ERR_SUP,"Cannot generate Nedelec support with user defined change of basis");
+  PetscCheck(!pcbddc->user_ChangeOfBasisMatrix,comm,PETSC_ERR_SUP,"Cannot generate Nedelec support with user defined change of basis");
   PetscCheckFalse(order && ne%order,PETSC_COMM_SELF,PETSC_ERR_USER,"The number of local edge dofs %D it's not a multiple of the order %D",ne,order);
 
   /* Just set primal dofs and return */
@@ -832,7 +832,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
 
     CHKERRQ(ISGetLocalSize(eedges[i],&size));
     if (!size && nedfieldlocal) continue;
-    PetscCheckFalse(!size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected zero sized edge %D",i);
+    PetscCheck(size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected zero sized edge %D",i);
     CHKERRQ(ISGetIndices(eedges[i],&idxs));
     if (print) {
       CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"ENDPOINTS ANALYSIS EDGE %D\n",i));
@@ -899,7 +899,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     cum  = 0;
     CHKERRQ(ISGetLocalSize(eedges[i],&size));
     if (!size && nedfieldlocal) continue;
-    PetscCheckFalse(!size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected zero sized edge %D",i);
+    PetscCheck(size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected zero sized edge %D",i);
     CHKERRQ(ISGetIndices(eedges[i],&idxs));
     CHKERRQ(PetscBTMemzero(nv,btvc));
     for (j=0;j<size;j++) {
@@ -928,7 +928,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       eerr = PETSC_TRUE;
     }
   }
-  /* PetscCheckFalse(eerr,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected SIZE OF EDGE > EXTCOL FIRST PASS"); */
+  /* PetscCheck(!eerr,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected SIZE OF EDGE > EXTCOL FIRST PASS"); */
   CHKERRMPI(MPIU_Allreduce(&eerr,&done,1,MPIU_BOOL,MPI_LOR,comm));
   if (done) {
     PetscInt *newprimals;
@@ -1053,7 +1053,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       cum  = 0;
       CHKERRQ(ISGetLocalSize(eedges[i],&size));
       if (!size && nedfieldlocal) continue;
-      PetscCheckFalse(!size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected zero sized edge %D",i);
+      PetscCheck(size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected zero sized edge %D",i);
       CHKERRQ(ISGetIndices(eedges[i],&idxs));
       for (j=0;j<size;j++) {
         PetscInt k,ee = idxs[j];
@@ -1080,7 +1080,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   CHKERRQ(PetscBTDestroy(&bter));
   if (print) CHKERRQ(PCBDDCGraphASCIIView(pcbddc->mat_graph,5,PETSC_VIEWER_STDOUT_SELF));
   /* an error should not occur at this point */
-  PetscCheckFalse(eerr,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected SIZE OF EDGE > EXTCOL SECOND PASS");
+  PetscCheck(!eerr,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected SIZE OF EDGE > EXTCOL SECOND PASS");
 
   /* Check the number of endpoints */
   CHKERRQ(MatGetRowIJ(lG,0,PETSC_FALSE,PETSC_FALSE,&i,&ii,&jj,&done));
@@ -1093,7 +1093,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     cedges[i] = corners[i*2] = corners[i*2+1] = -1;
     CHKERRQ(ISGetLocalSize(eedges[i],&size));
     if (!size && nedfieldlocal) continue;
-    PetscCheckFalse(!size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected zero sized edge %D",i);
+    PetscCheck(size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected zero sized edge %D",i);
     CHKERRQ(ISGetIndices(eedges[i],&idxs));
     CHKERRQ(PetscBTMemzero(nv,btvc));
     for (j=0;j<size;j++) {
@@ -1294,7 +1294,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       CHKERRQ(ISRestoreIndices(extrows[i],&rows));
       /* complement */
       CHKERRQ(MatGetSize(GKins,&nrc,&ncc));
-      PetscCheckFalse(!ncc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Constant function has not been generated for coarse edge %D",i);
+      PetscCheck(ncc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Constant function has not been generated for coarse edge %D",i);
       PetscCheckFalse(ncc + nch != nrc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"The sum of the number of columns of GKins %D and Gins %D does not match %D for coarse edge %D",ncc,nch,nrc,i);
       PetscCheckFalse(ncc != 1 && pcbddc->nedcG,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot generate the coarse discrete gradient for coarse edge %D with ncc %D",i,ncc);
       CHKERRQ(MatDenseGetArrayRead(GKins,&data));
@@ -2038,7 +2038,7 @@ PetscErrorCode PCBDDCBenignShellMat(PC pc, PetscBool restore)
     PetscScalar        *work;
     PCBDDCReuseSolvers reuse = pcbddc->sub_schurs ? pcbddc->sub_schurs->reuse_solver : NULL;
 
-    PetscCheckFalse(pcbddc->benign_original_mat,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Benign original mat has not been restored");
+    PetscCheck(!pcbddc->benign_original_mat,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Benign original mat has not been restored");
     if (!pcbddc->benign_change || !pcbddc->benign_n || pcbddc->benign_change_explicit) PetscFunctionReturn(0);
     CHKERRQ(PetscMalloc1(pcis->n,&work));
     CHKERRQ(MatCreate(PETSC_COMM_SELF,&A_IB));
@@ -3117,8 +3117,8 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!sub_schurs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Adaptive selection of constraints requires SubSchurs data");
-  PetscCheckFalse(!sub_schurs->schur_explicit,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS and/or MKL_CPARDISO");
+  PetscCheck(sub_schurs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Adaptive selection of constraints requires SubSchurs data");
+  PetscCheck(sub_schurs->schur_explicit,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Adaptive selection of constraints requires MUMPS and/or MKL_CPARDISO");
   PetscCheckFalse(sub_schurs->n_subs && (!sub_schurs->is_symmetric),PETSC_COMM_SELF,PETSC_ERR_SUP,"Adaptive selection not yet implemented for this matrix pencil (herm %d, symm %d, posdef %d)",sub_schurs->is_hermitian,sub_schurs->is_symmetric,sub_schurs->is_posdef);
   CHKERRQ(PetscLogEventBegin(PC_BDDC_AdaptiveSetUp[pcbddc->current_level],pc,0,0,0));
 
@@ -3251,7 +3251,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       upper = PETSC_MAX_REAL;
       lower = uthresh;
     } else {
-      PetscCheckFalse(!sub_schurs->is_posdef,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented without deluxe scaling");
+      PetscCheck(sub_schurs->is_posdef,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not yet implemented without deluxe scaling");
       upper = 1./uthresh;
       lower = 0.;
     }
@@ -3520,7 +3520,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
           CHKERRQ(PetscLogFlops((4.0*subset_size*subset_size*subset_size)/3.0));
         } else { /* same_data is true, so just get the adaptive functional requested by the user */
           PetscInt k;
-          PetscCheckFalse(!sub_schurs->change_primal_sub,PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
+          PetscCheck(sub_schurs->change_primal_sub,PETSC_COMM_SELF,PETSC_ERR_PLIB,"This should not happen");
           CHKERRQ(ISGetLocalSize(sub_schurs->change_primal_sub[i],&nmax));
           CHKERRQ(PetscBLASIntCast(nmax,&B_neigs));
           nmin = nmax;
@@ -4004,11 +4004,11 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
         PetscBool   done;
 
         CHKERRQ(MatGetRowIJ(C_CR,0,PETSC_FALSE,PETSC_FALSE,&r,(const PetscInt**)&ii,(const PetscInt**)&jj,&done));
-        PetscCheckFalse(!done,PETSC_COMM_SELF,PETSC_ERR_PLIB,"GetRowIJ failed");
+        PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_PLIB,"GetRowIJ failed");
         CHKERRQ(MatSeqAIJGetArray(C_CR,&aa));
         CHKERRQ(MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,n_constraints,lda_rhs,ii,jj,aa,&tC_CR));
         CHKERRQ(MatRestoreRowIJ(C_CR,0,PETSC_FALSE,PETSC_FALSE,&r,(const PetscInt**)&ii,(const PetscInt**)&jj,&done));
-        PetscCheckFalse(!done,PETSC_COMM_SELF,PETSC_ERR_PLIB,"RestoreRowIJ failed");
+        PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_PLIB,"RestoreRowIJ failed");
       } else {
         CHKERRQ(PetscObjectReference((PetscObject)C_CR));
         tC_CR = C_CR;
@@ -4302,11 +4302,11 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
           PetscBool   done;
 
           CHKERRQ(MatGetRowIJ(A_RVT,0,PETSC_FALSE,PETSC_FALSE,&r,(const PetscInt**)&ii,(const PetscInt**)&jj,&done));
-          PetscCheckFalse(!done,PETSC_COMM_SELF,PETSC_ERR_PLIB,"GetRowIJ failed");
+          PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_PLIB,"GetRowIJ failed");
           CHKERRQ(MatSeqAIJGetArray(A_RVT,&aa));
           CHKERRQ(MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,n_vertices,lda_rhs,ii,jj,aa,&tA_RVT));
           CHKERRQ(MatRestoreRowIJ(A_RVT,0,PETSC_FALSE,PETSC_FALSE,&r,(const PetscInt**)&ii,(const PetscInt**)&jj,&done));
-          PetscCheckFalse(!done,PETSC_COMM_SELF,PETSC_ERR_PLIB,"RestoreRowIJ failed");
+          PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_PLIB,"RestoreRowIJ failed");
         } else {
           CHKERRQ(PetscObjectReference((PetscObject)A_RVT));
           tA_RVT = A_RVT;
@@ -5001,7 +5001,7 @@ PetscErrorCode MatCreateSubMatrixUnsorted(Mat A, IS isrow, IS iscol, Mat* B)
         is_perm_c = is_perm_r;
       } else {
         PetscInt *idxs_c,i;
-        PetscCheckFalse(!idxs_perm_c,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Permutation array not present");
+        PetscCheck(idxs_perm_c,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Permutation array not present");
         CHKERRQ(PetscMalloc1(csize,&idxs_c));
         for (i=0;i<csize;i++) {
           idxs_c[idxs_perm_c[i]] = i;
@@ -5864,7 +5864,7 @@ PetscErrorCode  PCBDDCApplyInterfacePreconditioner(PC pc, PetscBool applytranspo
     CHKERRQ(KSPGetSolution(pcbddc->coarse_ksp,&sol));
     CHKERRQ(KSPGetOperators(pcbddc->coarse_ksp,&coarse_mat,NULL));
     if (applytranspose) {
-      PetscCheckFalse(pcbddc->benign_apply_coarse_only,PetscObjectComm((PetscObject)pcbddc->coarse_ksp),PETSC_ERR_SUP,"Not yet implemented");
+      PetscCheck(!pcbddc->benign_apply_coarse_only,PetscObjectComm((PetscObject)pcbddc->coarse_ksp),PETSC_ERR_SUP,"Not yet implemented");
       CHKERRQ(PetscLogEventBegin(PC_BDDC_Solves[pcbddc->current_level][2],pc,0,0,0));
       CHKERRQ(KSPSolveTranspose(pcbddc->coarse_ksp,rhs,sol));
       CHKERRQ(PetscLogEventEnd(PC_BDDC_Solves[pcbddc->current_level][2],pc,0,0,0));
@@ -6204,7 +6204,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&Blas_N,correlation_mat,&Blas_LDA,singular_vals,&temp_work,&lwork,rwork,&lierr));
 #endif
         CHKERRQ(PetscFPTrapPop());
-        PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to SYEV Lapack routine %d",(int)lierr);
+        PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to SYEV Lapack routine %d",(int)lierr);
       } else {
 #if !defined(PETSC_MISSING_LAPACK_GESVD)
         /* SVD */
@@ -6231,7 +6231,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Blas_M,&Blas_N,&constraints_data[0],&Blas_LDA,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,&temp_work,&lwork,rwork,&lierr));
 #endif
         CHKERRQ(PetscFPTrapPop());
-        PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GESVD Lapack routine %d",(int)lierr);
+        PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GESVD Lapack routine %d",(int)lierr);
 #else
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"This should not happen");
 #endif /* on missing GESVD */
@@ -6357,7 +6357,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
             PetscStackCallBLAS("LAPACKsyev",LAPACKsyev_("V","U",&Blas_N,correlation_mat,&Blas_LDA,singular_vals,work,&lwork,rwork,&lierr));
 #endif
             CHKERRQ(PetscFPTrapPop());
-            PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEV Lapack routine %d",(int)lierr);
+            PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in SYEV Lapack routine %d",(int)lierr);
             /* retain eigenvalues greater than tol: note that LAPACKsyev gives eigs in ascending order */
             j = 0;
             while (j < temp_constraints && singular_vals[j]/singular_vals[temp_constraints-1] < tol) j++;
@@ -6393,7 +6393,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 #else
             PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("O","N",&Blas_M,&Blas_N,ptr_to_data,&Blas_LDA,singular_vals,&dummy_scalar,&dummy_int,&dummy_scalar,&dummy_int,work,&lwork,rwork,&lierr));
 #endif
-            PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GESVD Lapack routine %d",(int)lierr);
+            PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GESVD Lapack routine %d",(int)lierr);
             CHKERRQ(PetscFPTrapPop());
             /* retain eigenvalues greater than tol: note that LAPACKgesvd gives eigs in descending order */
             k = temp_constraints;
@@ -6696,7 +6696,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       CHKERRQ(PetscBLASIntCast(max_size_of_constraint,&Blas_LDA));
       lqr_work = -1;
       PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&Blas_M,&Blas_N,qr_basis,&Blas_LDA,qr_tau,&lqr_work_t,&lqr_work,&lierr));
-      PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GEQRF Lapack routine %d",(int)lierr);
+      PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GEQRF Lapack routine %d",(int)lierr);
       CHKERRQ(PetscBLASIntCast((PetscInt)PetscRealPart(lqr_work_t),&lqr_work));
       CHKERRQ(PetscMalloc1((PetscInt)PetscRealPart(lqr_work_t),&qr_work));
       lgqr_work = -1;
@@ -6706,7 +6706,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       CHKERRQ(PetscBLASIntCast(max_size_of_constraint,&Blas_LDA));
       if (Blas_K>Blas_M) Blas_K=Blas_M; /* adjust just for computing optimal work */
       PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&Blas_M,&Blas_N,&Blas_K,qr_basis,&Blas_LDA,qr_tau,&lgqr_work_t,&lgqr_work,&lierr));
-      PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to ORGQR/UNGQR Lapack routine %d",(int)lierr);
+      PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to ORGQR/UNGQR Lapack routine %d",(int)lierr);
       CHKERRQ(PetscBLASIntCast((PetscInt)PetscRealPart(lgqr_work_t),&lgqr_work));
       CHKERRQ(PetscMalloc1((PetscInt)PetscRealPart(lgqr_work_t),&gqr_work));
       /* array to store rhs and solution of triangular solver */
@@ -6753,7 +6753,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           CHKERRQ(PetscBLASIntCast(size_of_constraint,&Blas_LDA));
           CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
           PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&Blas_M,&Blas_N,qr_basis,&Blas_LDA,qr_tau,qr_work,&lqr_work,&lierr));
-          PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GEQRF Lapack routine %d",(int)lierr);
+          PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GEQRF Lapack routine %d",(int)lierr);
           CHKERRQ(PetscFPTrapPop());
 
           /* explicitly compute R^-T */
@@ -6765,7 +6765,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           CHKERRQ(PetscBLASIntCast(primal_dofs,&Blas_LDB));
           CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
           PetscStackCallBLAS("LAPACKtrtrs",LAPACKtrtrs_("U","T","N",&Blas_N,&Blas_NRHS,qr_basis,&Blas_LDA,trs_rhs,&Blas_LDB,&lierr));
-          PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TRTRS Lapack routine %d",(int)lierr);
+          PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in TRTRS Lapack routine %d",(int)lierr);
           CHKERRQ(PetscFPTrapPop());
 
           /* explicitly compute all columns of Q (Q = [Q1 | Q2]) overwriting QR factorization in qr_basis */
@@ -6775,7 +6775,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           CHKERRQ(PetscBLASIntCast(size_of_constraint,&Blas_LDA));
           CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
           PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&Blas_M,&Blas_N,&Blas_K,qr_basis,&Blas_LDA,qr_tau,gqr_work,&lgqr_work,&lierr));
-          PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in ORGQR/UNGQR Lapack routine %d",(int)lierr);
+          PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in ORGQR/UNGQR Lapack routine %d",(int)lierr);
           CHKERRQ(PetscFPTrapPop());
 
           /* first primal_dofs columns of Q need to be re-scaled in order to be unitary w.r.t constraints
@@ -7290,7 +7290,7 @@ PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_subdomain
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)mat,MATIS,&ismatis));
-  PetscCheckFalse(!ismatis,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot use %s on a matrix object which is not of type MATIS",PETSC_FUNCTION_NAME);
+  PetscCheck(ismatis,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot use %s on a matrix object which is not of type MATIS",PETSC_FUNCTION_NAME);
   PetscValidLogicalCollectiveInt(mat,*n_subdomains,2);
   PetscValidLogicalCollectiveInt(mat,redprocs,3);
   PetscCheckFalse(*n_subdomains <=0,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONG,"Invalid number of subdomains requested %D",*n_subdomains);
@@ -8239,7 +8239,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
         nedcfield = pcbddc->nedfield;
       } else {
         nedcfield = 0;
-        PetscCheckFalse(nisdofs,PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"This should not happen (%D)",nisdofs);
+        PetscCheck(!nisdofs,PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"This should not happen (%D)",nisdofs);
         nisdofs = 1;
       }
     }
@@ -8371,7 +8371,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     } else {
       /* if this matrix is present, it means we are not reusing the coarse matrix */
       if (coarse_mat_is) {
-        PetscCheckFalse(coarse_mat,PetscObjectComm((PetscObject)coarse_mat_is),PETSC_ERR_PLIB,"This should not happen");
+        PetscCheck(!coarse_mat,PetscObjectComm((PetscObject)coarse_mat_is),PETSC_ERR_PLIB,"This should not happen");
         CHKERRQ(PetscObjectReference((PetscObject)coarse_mat_is));
         coarse_mat = coarse_mat_is;
       }
@@ -8631,7 +8631,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc,PetscScalar* coarse_submat_vals)
     PetscInt       i,d,N,n,cdim = pcbddc->mat_graph->cdim;
     PetscScalar    *coords;
 
-    PetscCheckFalse(!pcbddc->mat_graph->cloc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing local coordinates");
+    PetscCheck(pcbddc->mat_graph->cloc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing local coordinates");
     CHKERRQ(VecGetSize(pcbddc->coarse_vec,&N));
     CHKERRQ(VecGetLocalSize(pcbddc->coarse_vec,&n));
     CHKERRQ(VecCreate(PetscObjectComm((PetscObject)pcbddc->coarse_vec),&gv));
@@ -8961,7 +8961,7 @@ PetscErrorCode PCBDDCComputePrimalNumbering(PC pc,PetscInt* coarse_size_n,PetscI
     }
     CHKERRQ(PetscViewerFlush(pcbddc->dbg_viewer));
     CHKERRQ(PetscViewerASCIIPushSynchronized(pcbddc->dbg_viewer));
-    PetscCheckFalse(set_error_reduced,PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"BDDC Numbering of coarse dofs failed");
+    PetscCheck(!set_error_reduced,PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"BDDC Numbering of coarse dofs failed");
   }
 
   /* get back data */
@@ -9099,7 +9099,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
       PC_BDDC *pcbddcf;
       PC      pcf;
 
-      PetscCheckFalse(pcbddc->sub_schurs_rebuild,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot compute change of basis with a different graph");
+      PetscCheck(!pcbddc->sub_schurs_rebuild,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot compute change of basis with a different graph");
       CHKERRQ(PCCreate(PetscObjectComm((PetscObject)pc),&pcf));
       CHKERRQ(PCSetOperators(pcf,pc->mat,pc->pmat));
       CHKERRQ(PCSetType(pcf,PCBDDC));

@@ -274,13 +274,13 @@ PetscErrorCode  MatSubMatrixVirtualUpdate(Mat N,Mat A,IS isrow,IS iscol)
   PetscValidHeaderSpecific(isrow,IS_CLASSID,3);
   PetscValidHeaderSpecific(iscol,IS_CLASSID,4);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)N,MATSUBMATRIX,&flg));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix has wrong type");
+  PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix has wrong type");
 
   Na   = (Mat_SubVirtual*)N->data;
   CHKERRQ(ISEqual(isrow,Na->isrow,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot update submatrix with different row indices");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot update submatrix with different row indices");
   CHKERRQ(ISEqual(iscol,Na->iscol,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot update submatrix with different column indices");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot update submatrix with different column indices");
 
   CHKERRQ(PetscFree(N->defaultvectype));
   CHKERRQ(PetscStrallocpy(A->defaultvectype,&N->defaultvectype));

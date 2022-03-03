@@ -42,7 +42,7 @@ PetscErrorCode PCMGACycle_Private(PC pc,PC_MG_Levels **mglevels,PetscBool transp
         CHKERRQ(KSPCheckSolve(mglevels[i]->smoothd,pc,mglevels[i]->x));
       }
     } else {
-      PetscCheckFalse(matapp,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Not supported");
+      PetscCheck(!matapp,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Not supported");
       CHKERRQ(KSPSolveTranspose(mglevels[i]->smoothu,mglevels[i]->b,mglevels[i]->x));
       CHKERRQ(KSPCheckSolve(mglevels[i]->smoothu,pc,mglevels[i]->x));
     }

@@ -110,7 +110,7 @@ PETSC_INTERN PetscErrorCode MatProductNumeric_Nest_Dense(Mat C)
     PetscFunctionReturn(0);
   }
   contents = (Nest_Dense*)C->product->data;
-  PetscCheckFalse(!contents,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
+  PetscCheck(contents,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
   bA   = (Mat_Nest*)A->data;
   nr   = bA->nr;
   nc   = bA->nc;
@@ -178,7 +178,7 @@ PETSC_INTERN PetscErrorCode MatProductSymbolic_Nest_Dense(Mat C)
 
   PetscFunctionBegin;
   MatCheckProduct(C,4);
-  PetscCheckFalse(C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
+  PetscCheck(!C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
   A    = C->product->A;
   B    = C->product->B;
   fill = C->product->fill;
@@ -1542,7 +1542,7 @@ static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const I
       PetscInt mil,nleaves;
 
       CHKERRQ(ISGetLocalSize(islocal[i],&mi));
-      PetscCheckFalse(!smap,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing local to global map");
+      PetscCheck(smap,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing local to global map");
       for (j=0; j<mi; j++) ix[m+j] = j;
       CHKERRQ(ISLocalToGlobalMappingApply(smap,mi,ix+m,ix+m));
 
@@ -1616,7 +1616,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
     nsum = 0;
     for (i=0; i<vs->nr; i++) {  /* Add up the local sizes to compute the aggregate offset */
       CHKERRQ(MatNestFindNonzeroSubMatRow(A,i,&sub));
-      PetscCheckFalse(!sub,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"No nonzero submatrix in row %" PetscInt_FMT,i);
+      PetscCheck(sub,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"No nonzero submatrix in row %" PetscInt_FMT,i);
       CHKERRQ(MatGetLocalSize(sub,&n,NULL));
       PetscCheckFalse(n < 0,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Sizes have not yet been set for submatrix");
       nsum += n;
@@ -1645,7 +1645,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
     nsum   = 0;
     for (j=0; j<vs->nc; j++) {
       CHKERRQ(MatNestFindNonzeroSubMatCol(A,j,&sub));
-      PetscCheckFalse(!sub,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"No nonzero submatrix in column %" PetscInt_FMT,i);
+      PetscCheck(sub,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"No nonzero submatrix in column %" PetscInt_FMT,i);
       CHKERRQ(MatGetLocalSize(sub,NULL,&n));
       PetscCheckFalse(n < 0,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Sizes have not yet been set for submatrix");
       nsum += n;
@@ -1793,7 +1793,7 @@ PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A,MatType newtype,MatReuse reuse,
     PetscInt rnr;
 
     CHKERRQ(MatGetRowIJ(*newmat,0,PETSC_FALSE,PETSC_FALSE,&rnr,(const PetscInt**)&ii,(const PetscInt**)&jj,&done));
-    PetscCheckFalse(!done,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"MatGetRowIJ");
+    PetscCheck(done,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"MatGetRowIJ");
     PetscCheckFalse(rnr != nr,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Cannot reuse matrix, wrong number of rows");
     CHKERRQ(MatSeqAIJGetArray(*newmat,&vv));
   }
@@ -1817,7 +1817,7 @@ PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A,MatType newtype,MatReuse reuse,
           B    = trans[i*nest->nc+j];
         }
         CHKERRQ(MatGetRowIJ(B,0,PETSC_FALSE,PETSC_FALSE,&nnr,(const PetscInt**)&nii,(const PetscInt**)&njj,&done));
-        PetscCheckFalse(!done,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"MatGetRowIJ");
+        PetscCheck(done,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"MatGetRowIJ");
         CHKERRQ(MatSeqAIJGetArray(B,&naa));
         nnz += nii[nnr];
 
@@ -1897,7 +1897,7 @@ PetscErrorCode MatConvert_Nest_SeqAIJ_fast(Mat A,MatType newtype,MatReuse reuse,
 
         B    = (trans[k] ? trans[k] : B);
         CHKERRQ(MatRestoreRowIJ(B,0,PETSC_FALSE,PETSC_FALSE,&nnr,(const PetscInt**)&aii[k],(const PetscInt**)&ajj[k],&done));
-        PetscCheckFalse(!done,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"MatRestoreRowIJ");
+        PetscCheck(done,PetscObjectComm((PetscObject)B),PETSC_ERR_PLIB,"MatRestoreRowIJ");
         CHKERRQ(MatSeqAIJRestoreArray(B,&avv[k]));
         CHKERRQ(MatDestroy(&trans[k]));
       }

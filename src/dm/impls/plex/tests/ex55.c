@@ -133,7 +133,7 @@ int main(int argc, char **argv)
   /* This currently makes sense only for sequential meshes. */
   if (user.compare) {
     CHKERRQ(DMPlexEqual(dmnew, dm, &flg));
-    PetscCheckFalse(!flg,PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "DMs are not equal");
+    PetscCheck(flg,PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "DMs are not equal");
     CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"DMs equal\n"));
   }
   if (user.compare_labels) {

@@ -428,7 +428,7 @@ PetscErrorCode DMPlexOrient(DM dm)
             flippedB = PetscBTLookup(flippedProcs, nproc) ? 1 : 0;
 
             if (mismatch ^ (flippedA ^ flippedB)) {
-              PetscCheckFalse(seen,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Previously seen procs %d and %d do not match: Fault mesh is non-orientable", proc, nproc);
+              PetscCheck(!seen,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Previously seen procs %d and %d do not match: Fault mesh is non-orientable", proc, nproc);
               if (!flippedB) {
                 CHKERRQ(PetscBTSet(flippedProcs, nproc));
               } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent mesh orientation: Fault mesh is non-orientable");

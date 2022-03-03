@@ -1049,7 +1049,7 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V,PetscInt nb,IS is[])
         PetscInt  start;
         PetscBool contiguous;
         CHKERRQ(ISContiguousLocal(is[i],offset,offset+n,&start,&contiguous));
-        PetscCheckFalse(!contiguous,PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"Index set %" PetscInt_FMT " is not contiguous with layout of matching vector",i);
+        PetscCheck(contiguous,PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"Index set %" PetscInt_FMT " is not contiguous with layout of matching vector",i);
         PetscCheckFalse(start != 0,PetscObjectComm((PetscObject)V),PETSC_ERR_SUP,"Index set %" PetscInt_FMT " introduces overlap or a hole",i);
       }
       CHKERRQ(PetscObjectReference((PetscObject)is[i]));

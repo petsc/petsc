@@ -73,7 +73,7 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
 
   CHKERRQ(MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done));
   CHKERRQ(MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done));
-  PetscCheckFalse(!done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
+  PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
 
   CHKERRQ(MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq));
 
@@ -183,7 +183,7 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
 
   CHKERRQ(MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done));
   CHKERRQ(MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done));
-  PetscCheckFalse(!done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
+  PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
 
   CHKERRQ(MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq));
 
@@ -292,7 +292,7 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
 
   CHKERRQ(MatGetRowIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done));
   CHKERRQ(MatGetColumnIJ(mat_seq,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done));
-  PetscCheckFalse(!done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
+  PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
 
   CHKERRQ(MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq));
 

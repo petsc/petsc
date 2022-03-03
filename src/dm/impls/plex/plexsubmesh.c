@@ -1552,7 +1552,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         }
       }
       /* Cells with only a vertex or edge on the submesh have no replacement */
-      /* PetscCheckFalse(!replaced,comm, PETSC_ERR_ARG_WRONG, "The cone of point %d does not contain split points", oldp); */
+      /* PetscCheck(replaced,comm, PETSC_ERR_ARG_WRONG, "The cone of point %d does not contain split points", oldp); */
     }
     CHKERRQ(ISRestoreIndices(pIS, &points));
     CHKERRQ(ISDestroy(&pIS));
@@ -2516,7 +2516,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
         break;
       }
     }
-    PetscCheckFalse(!found,comm, PETSC_ERR_ARG_WRONG, "Invalid tri crossface");
+    PetscCheck(found,comm, PETSC_ERR_ARG_WRONG, "Invalid tri crossface");
     if (posOriented) *posOriented = PETSC_TRUE;
     PetscFunctionReturn(0);
   } else if (cellDim == 2 && numCorners == 9) {
@@ -2558,7 +2558,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
         break;
       }
     }
-    PetscCheckFalse(!found,comm, PETSC_ERR_ARG_WRONG, "Invalid quad crossface");
+    PetscCheck(found,comm, PETSC_ERR_ARG_WRONG, "Invalid quad crossface");
     if (posOriented) *posOriented = PETSC_TRUE;
     PetscFunctionReturn(0);
   } else if (cellDim == 3 && numCorners == 8) {
@@ -2616,7 +2616,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
         break;
       }
     }
-    PetscCheckFalse(!found,comm, PETSC_ERR_ARG_WRONG, "Invalid hex crossface");
+    PetscCheck(found,comm, PETSC_ERR_ARG_WRONG, "Invalid hex crossface");
     if (posOriented) *posOriented = PETSC_TRUE;
     PetscFunctionReturn(0);
   } else if (cellDim == 3 && numCorners == 10) {
@@ -2660,7 +2660,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
         break;
       }
     }
-    PetscCheckFalse(!found,comm, PETSC_ERR_ARG_WRONG, "Invalid tet crossface");
+    PetscCheck(found,comm, PETSC_ERR_ARG_WRONG, "Invalid tet crossface");
     if (posOriented) *posOriented = PETSC_TRUE;
     PetscFunctionReturn(0);
   } else if (cellDim == 3 && numCorners == 27) {
@@ -2718,7 +2718,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
         break;
       }
     }
-    PetscCheckFalse(!found,comm, PETSC_ERR_ARG_WRONG, "Invalid hex crossface");
+    PetscCheck(found,comm, PETSC_ERR_ARG_WRONG, "Invalid hex crossface");
     if (posOriented) *posOriented = PETSC_TRUE;
     PetscFunctionReturn(0);
   } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Unknown cell type for faceOrientation().");
@@ -3772,7 +3772,7 @@ static PetscErrorCode DMPlexCreateSubpointIS_Internal(DM dm, IS *subpointIS)
     PetscInt  pStart, pEnd, p, off;
 
     CHKERRQ(DMPlexGetChart(dm, &pStart, &pEnd));
-    PetscCheckFalse(pStart,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Submeshes must start the point numbering at 0, not %d", pStart);
+    PetscCheck(!pStart,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Submeshes must start the point numbering at 0, not %d", pStart);
     CHKERRQ(PetscMalloc1(pEnd, &points));
     CHKERRQ(DMGetWorkArray(dm, depth+1, MPIU_INT, &depths));
     depths[0] = depth;

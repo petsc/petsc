@@ -523,7 +523,7 @@ PetscErrorCode DMSwarmDataExPackData(DMSwarmDataEx de,PetscMPIInt proc_id,PetscI
   PetscCheckFalse(de->packer_status == DEOBJECT_FINALIZED, de->comm, PETSC_ERR_ORDER, "Packed data have been defined. To modify these call DMSwarmDataExInitializeSendCount(), DMSwarmDataExAddToSendCount(), DMSwarmDataExPackInitialize() first");
   else PetscCheckFalse(de->packer_status != DEOBJECT_INITIALIZED, de->comm, PETSC_ERR_ORDER, "Packed data must be defined. Call DMSwarmDataExInitializeSendCount(), DMSwarmDataExAddToSendCount(), DMSwarmDataExPackInitialize() first");
 
-  PetscCheckFalse(!de->send_message, de->comm, PETSC_ERR_ORDER, "send_message is not initialized. Call DMSwarmDataExPackInitialize() first");
+  PetscCheck(de->send_message, de->comm, PETSC_ERR_ORDER, "send_message is not initialized. Call DMSwarmDataExPackInitialize() first");
   CHKERRQ(_DMSwarmDataExConvertProcIdToLocalIndex( de, proc_id, &local));
   PetscCheckFalse(local == -1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "proc_id %d is not registered neighbour", (int)proc_id);
   PetscCheckFalse(n+de->pack_cnt[local] > de->messages_to_be_sent[local], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Trying to pack too many entries to be sent to proc %d. Space requested = %D: Attempt to insert %D",
@@ -593,7 +593,7 @@ PetscErrorCode DMSwarmDataExBegin(DMSwarmDataEx de)
   PetscCheckFalse(de->message_lengths_status != DEOBJECT_FINALIZED, de->comm, PETSC_ERR_ORDER, "Message lengths not finalized");
   PetscCheckFalse(de->packer_status != DEOBJECT_FINALIZED, de->comm, PETSC_ERR_ORDER, "Packer not finalized");
   PetscCheckFalse(de->communication_status == DEOBJECT_FINALIZED, de->comm, PETSC_ERR_ORDER, "Communication has already been finalized. Must call DMSwarmDataExInitialize() first.");
-  PetscCheckFalse(!de->recv_message, de->comm, PETSC_ERR_ORDER, "recv_message has not been initialized. Must call DMSwarmDataExPackFinalize() first");
+  PetscCheck(de->recv_message, de->comm, PETSC_ERR_ORDER, "recv_message has not been initialized. Must call DMSwarmDataExPackFinalize() first");
   CHKERRQ(PetscLogEventBegin(DMSWARM_DataExchangerBegin,0,0,0,0));
   np = de->n_neighbour_procs;
   /* == NON BLOCKING == */
@@ -617,7 +617,7 @@ PetscErrorCode DMSwarmDataExEnd(DMSwarmDataEx de)
 
   PetscFunctionBegin;
   PetscCheckFalse(de->communication_status != DEOBJECT_INITIALIZED, de->comm, PETSC_ERR_ORDER, "Communication has not been initialized. Must call DMSwarmDataExInitialize() first.");
-  PetscCheckFalse(!de->recv_message, de->comm, PETSC_ERR_ORDER, "recv_message has not been initialized. Must call DMSwarmDataExPackFinalize() first");
+  PetscCheck(de->recv_message, de->comm, PETSC_ERR_ORDER, "recv_message has not been initialized. Must call DMSwarmDataExPackFinalize() first");
   CHKERRQ(PetscLogEventBegin(DMSWARM_DataExchangerEnd,0,0,0,0));
   np = de->n_neighbour_procs;
   CHKERRQ(PetscMalloc1(np+1, &message_recv_offsets));

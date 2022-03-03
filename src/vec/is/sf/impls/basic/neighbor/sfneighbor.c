@@ -130,7 +130,7 @@ static PetscErrorCode PetscSFReset_Neighbor(PetscSF sf)
   PetscSF_Neighbor     *dat = (PetscSF_Neighbor*)sf->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(dat->inuse,PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
+  PetscCheck(!dat->inuse,PetscObjectComm((PetscObject)sf),PETSC_ERR_ARG_WRONGSTATE,"Outstanding operation has not been completed");
   CHKERRQ(PetscFree6(dat->rootdispls,dat->rootcounts,dat->rootweights,dat->leafdispls,dat->leafcounts,dat->leafweights));
   for (i=0; i<2; i++) {
     if (dat->initialized[i]) {

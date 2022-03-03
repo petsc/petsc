@@ -97,14 +97,14 @@ static PetscErrorCode MatSolve_SPQR_Internal(Mat F, cholmod_dense *cholB, cholmo
   PetscFunctionBegin;
   if (!chol->normal) {
     QTB_handle = SuiteSparseQR_C_qmult(SPQR_QTX, chol->spqrfact, cholB, chol->common);
-    PetscCheckFalse(!QTB_handle,PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_qmult failed");
+    PetscCheck(QTB_handle,PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_qmult failed");
     Y_handle = SuiteSparseQR_C_solve(SPQR_RETX_EQUALS_B, chol->spqrfact, QTB_handle, chol->common);
-    PetscCheckFalse(!Y_handle,PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_solve failed");
+    PetscCheck(Y_handle,PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_solve failed");
   } else {
     Z_handle = SuiteSparseQR_C_solve(SPQR_RTX_EQUALS_ETB, chol->spqrfact, cholB, chol->common);
-    PetscCheckFalse(!Z_handle,PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_solve failed");
+    PetscCheck(Z_handle,PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_solve failed");
     Y_handle = SuiteSparseQR_C_solve(SPQR_RETX_EQUALS_B, chol->spqrfact, Z_handle, chol->common);
-    PetscCheckFalse(!Y_handle,PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_solve failed");
+    PetscCheck(Y_handle,PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_solve failed");
     CHKERRQ(!cholmod_l_free_dense(&Z_handle, chol->common));
   }
   *_Y_handle = Y_handle;
@@ -163,9 +163,9 @@ static PetscErrorCode MatSolveTranspose_SPQR_Internal(Mat F, cholmod_dense *chol
 
   PetscFunctionBegin;
   RTB_handle = SuiteSparseQR_C_solve(SPQR_RTX_EQUALS_ETB, chol->spqrfact, cholB, chol->common);
-  PetscCheckFalse(!RTB_handle,PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_solve failed");
+  PetscCheck(RTB_handle,PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_solve failed");
   Y_handle = SuiteSparseQR_C_qmult(SPQR_QX, chol->spqrfact, RTB_handle, chol->common);
-  PetscCheckFalse(!Y_handle,PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_qmult failed");
+  PetscCheck(Y_handle,PetscObjectComm((PetscObject)F), PETSC_ERR_LIB, "SuiteSparseQR_C_qmult failed");
   *_Y_handle = Y_handle;
   CHKERRQ(!cholmod_l_free_dense(&RTB_handle, chol->common));
   PetscFunctionReturn(0);
@@ -229,7 +229,7 @@ static PetscErrorCode MatQRFactorNumeric_SPQR(Mat F,Mat A,const MatFactorInfo *i
   }
   CHKERRQ((*chol->Wrap)(A,PETSC_TRUE,&cholA,&aijalloc,&valloc));
   ierr = !SuiteSparseQR_C_numeric(PETSC_SMALL, &cholA, chol->spqrfact, chol->common);
-  PetscCheckFalse(ierr,PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"SPQR factorization failed with status %d",chol->common->status);
+  PetscCheck(!ierr,PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"SPQR factorization failed with status %d",chol->common->status);
 
   if (aijalloc) CHKERRQ(PetscFree2(cholA.p,cholA.i));
   if (valloc) CHKERRQ(PetscFree(cholA.x));
@@ -265,7 +265,7 @@ PETSC_INTERN PetscErrorCode MatQRFactorSymbolic_SPQR(Mat F,Mat A,IS perm,const M
     CHKERRQ(!SuiteSparseQR_C_free(&chol->spqrfact, chol->common));
   }
   chol->spqrfact = SuiteSparseQR_C_symbolic(SPQR_ORDERING_DEFAULT, 1, &cholA, chol->common);
-  PetscCheckFalse(!chol->spqrfact,PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD analysis failed using internal ordering with status %d",chol->common->status);
+  PetscCheck(chol->spqrfact,PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD analysis failed using internal ordering with status %d",chol->common->status);
 
   if (aijalloc) CHKERRQ(PetscFree2(cholA.p,cholA.i));
   if (valloc) CHKERRQ(PetscFree(cholA.x));

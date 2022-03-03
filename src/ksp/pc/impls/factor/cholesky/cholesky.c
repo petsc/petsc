@@ -68,7 +68,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
         /* check if dir->row == dir->col */
         if (dir->row) {
           CHKERRQ(ISEqual(dir->row,dir->col,&flg));
-          PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"row and column permutations must be equal");
+          PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"row and column permutations must be equal");
         }
         CHKERRQ(ISDestroy(&dir->col)); /* only pass one ordering into CholeskyFactor */
 

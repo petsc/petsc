@@ -654,7 +654,7 @@ static PetscErrorCode PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG(PC pc,c
   PetscFunctionBegin;
   if (jac->spgemm_type) {
     CHKERRQ(PetscStrcmp(jac->spgemm_type,name,&flag));
-    PetscCheckFalse(!flag,PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Cannot reset the HYPRE SpGEMM (really we can)");
+    PetscCheck(flag,PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Cannot reset the HYPRE SpGEMM (really we can)");
     PetscFunctionReturn(0);
   } else {
     CHKERRQ(PetscStrallocpy(name, &jac->spgemm_type));
@@ -2441,7 +2441,7 @@ PetscErrorCode PCSetUp_PFMG(PC pc)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectTypeCompare((PetscObject)pc->pmat,MATHYPRESTRUCT,&flg));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Must use MATHYPRESTRUCT with this preconditioner");
+  PetscCheck(flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Must use MATHYPRESTRUCT with this preconditioner");
 
   /* create the hypre solver object and set its information */
   if (ex->hsolver) PetscStackCallStandard(HYPRE_StructPFMGDestroy,ex->hsolver);
@@ -2675,7 +2675,7 @@ PetscErrorCode PCSetUp_SysPFMG(PC pc)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectTypeCompare((PetscObject)pc->pmat,MATHYPRESSTRUCT,&flg));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Must use MATHYPRESSTRUCT with this preconditioner");
+  PetscCheck(flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_INCOMP,"Must use MATHYPRESSTRUCT with this preconditioner");
 
   /* create the hypre sstruct solver object and set its information */
   if (ex->ss_solver) PetscStackCallStandard(HYPRE_SStructSysPFMGDestroy,ex->ss_solver);

@@ -123,7 +123,7 @@ PETSC_EXTERN PetscErrorCode MatISColoringTest(Mat A,ISColoring iscoloring)
   PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support sequential matrix");
 
   CHKERRQ(MatGetColumnIJ(A,0,PETSC_FALSE,PETSC_FALSE,&N,&cia,&cja,&done));
-  PetscCheckFalse(!done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
+  PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Ordering requires IJ");
 
   CHKERRQ(MatGetSize(A,&M,NULL));
   CHKERRQ(PetscBTCreate(M,&table));

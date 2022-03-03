@@ -1161,7 +1161,7 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t 
     *epar = 0;
     epar += 1;
     CHKERRQ(PetscOptionsGetenv(comm,par,env,sizeof(env),&flag));
-    PetscCheckFalse(!flag,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Substitution string ${%s} not found as environmental variable",par);
+    PetscCheck(flag,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Substitution string ${%s} not found as environmental variable",par);
     CHKERRQ(PetscStrlcat(work,env,len));
     CHKERRQ(PetscStrlcat(work,epar,len));
     CHKERRQ(PetscStrncpy(b,work,len));

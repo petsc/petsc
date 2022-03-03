@@ -77,7 +77,7 @@ PetscErrorCode VecView_Swarm(Vec v, PetscViewer viewer)
 
   PetscFunctionBegin;
   CHKERRQ(VecGetDM(v, &dm));
-  PetscCheckFalse(!dm,PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
+  PetscCheck(dm,PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
 #if defined(PETSC_HAVE_HDF5)
   CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5,  &ishdf5));
   if (ishdf5) {
@@ -141,7 +141,7 @@ PetscErrorCode DMCreateGlobalVector_Swarm(DM dm,Vec *vec)
 
   PetscFunctionBegin;
   if (!swarm->issetup) CHKERRQ(DMSetUp(dm));
-  PetscCheckFalse(!swarm->vec_field_set,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMSwarmVectorDefineField first");
+  PetscCheck(swarm->vec_field_set,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMSwarmVectorDefineField first");
   PetscCheckFalse(swarm->vec_field_nlocal != swarm->db->L,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"DMSwarm sizes have changed since last call to VectorDefineField first"); /* Stale data */
 
   CHKERRQ(PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarmField_%s",swarm->vec_field_name));
@@ -166,7 +166,7 @@ PetscErrorCode DMCreateLocalVector_Swarm(DM dm,Vec *vec)
 
   PetscFunctionBegin;
   if (!swarm->issetup) CHKERRQ(DMSetUp(dm));
-  PetscCheckFalse(!swarm->vec_field_set,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMSwarmVectorDefineField first");
+  PetscCheck(swarm->vec_field_set,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMSwarmVectorDefineField first");
   PetscCheckFalse(swarm->vec_field_nlocal != swarm->db->L,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"DMSwarm sizes have changed since last call to VectorDefineField first");
 
   CHKERRQ(PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"DMSwarmField_%s",swarm->vec_field_name));
@@ -196,7 +196,7 @@ static PetscErrorCode DMSwarmDestroyVectorFromField_Private(DM dm, const char fi
   /* check vector is an inplace array */
   CHKERRQ(PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1, "DMSwarm_VecFieldInPlace_%s", fieldname));
   CHKERRQ(PetscObjectQueryFunction((PetscObject) *vec, name, &fptr));
-  PetscCheckFalse(!fptr,PetscObjectComm((PetscObject) dm), PETSC_ERR_USER, "Vector being destroyed was not created from DMSwarm field(%s)", fieldname);
+  PetscCheck(fptr,PetscObjectComm((PetscObject) dm), PETSC_ERR_USER, "Vector being destroyed was not created from DMSwarm field(%s)", fieldname);
   CHKERRQ(DMSwarmDataFieldRestoreAccess(gfield));
   CHKERRQ(VecDestroy(vec));
   PetscFunctionReturn(0);
@@ -950,8 +950,8 @@ PetscErrorCode DMSwarmRegisterPetscDatatypeField(DM dm,const char fieldname[],Pe
   size_t         size;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!swarm->field_registration_initialized,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMSwarmInitializeFieldRegister() first");
-  PetscCheckFalse(swarm->field_registration_finalized,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Cannot register additional fields after calling DMSwarmFinalizeFieldRegister() first");
+  PetscCheck(swarm->field_registration_initialized,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Must call DMSwarmInitializeFieldRegister() first");
+  PetscCheck(!swarm->field_registration_finalized,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Cannot register additional fields after calling DMSwarmFinalizeFieldRegister() first");
 
   PetscCheckFalse(type == PETSC_OBJECT,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Valid for {char,short,int,long,float,double}");
   PetscCheckFalse(type == PETSC_FUNCTION,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Valid for {char,short,int,long,float,double}");
@@ -1316,7 +1316,7 @@ PetscErrorCode DMSwarmCollectViewCreate(DM dm)
   PetscInt       ng;
 
   PetscFunctionBegin;
-  PetscCheckFalse(swarm->collect_view_active,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"CollectView currently active");
+  PetscCheck(!swarm->collect_view_active,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"CollectView currently active");
   CHKERRQ(DMSwarmGetLocalSize(dm,&ng));
   switch (swarm->collect_type) {
 
@@ -1355,7 +1355,7 @@ PetscErrorCode DMSwarmCollectViewDestroy(DM dm)
   DM_Swarm       *swarm = (DM_Swarm*)dm->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!swarm->collect_view_active,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"CollectView is currently not active");
+  PetscCheck(swarm->collect_view_active,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"CollectView is currently not active");
   CHKERRQ(DMSwarmSetLocalSizes(dm,swarm->collect_view_reset_nlocal,-1));
   swarm->collect_view_active = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -1477,7 +1477,7 @@ PetscErrorCode DMSetup_Swarm(DM dm)
 
   if (swarm->swarm_type == DMSWARM_PIC) {
     /* check dmcell exists */
-    PetscCheckFalse(!swarm->dmcell,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"DMSWARM_PIC requires you call DMSwarmSetCellDM");
+    PetscCheck(swarm->dmcell,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"DMSWARM_PIC requires you call DMSwarmSetCellDM");
 
     if (swarm->dmcell->ops->locatepointssubdomain) {
       /* check methods exists for exact ownership identificiation */
@@ -1583,7 +1583,7 @@ PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
   CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW,  &isdraw));
   if (iascii) {
     CHKERRQ(DMSwarmDataBucketView(PetscObjectComm((PetscObject)dm),swarm->db,NULL,DATABUCKET_VIEW_STDOUT));
-  } else PetscCheckFalse(ibinary,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO Binary support");
+  } else PetscCheck(!ibinary,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"NO Binary support");
 #if defined(PETSC_HAVE_HDF5)
   else if (ishdf5) {
     CHKERRQ(DMSwarmView_HDF5(dm, viewer));

@@ -474,7 +474,7 @@ int main(int argc, char **argv)
 
       CHKERRQ(SNESComputeJacobian(snes, u, A, A));
       CHKERRQ(MatNullSpaceTest(nullSpace, J, &isNull));
-      //PetscCheckFalse(!isNull,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
+      //PetscCheck(isNull,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
       CHKERRQ(VecDuplicate(u, &b));
       CHKERRQ(VecSet(r, 0.0));
       CHKERRQ(SNESComputeFunction(snes, r, b));

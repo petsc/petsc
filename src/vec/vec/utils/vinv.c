@@ -436,7 +436,7 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidRealPointer(nrm,3);
-  PetscCheckFalse(idex,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
+  PetscCheck(!idex,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   CHKERRQ(VecGetLocalSize(v,&n));
   CHKERRQ(VecGetArrayRead(v,&x));
   CHKERRQ(PetscObjectGetComm((PetscObject)v,&comm));
@@ -495,7 +495,7 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidRealPointer(nrm,3);
-  PetscCheckFalse(idex,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
+  PetscCheck(!idex,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   CHKERRQ(VecGetLocalSize(v,&n));
   CHKERRQ(VecGetArrayRead(v,&x));
   CHKERRQ(PetscObjectGetComm((PetscObject)v,&comm));
@@ -748,7 +748,7 @@ PetscErrorCode  VecStrideGather(Vec v,PetscInt start,Vec s,InsertMode addv)
   PetscValidHeaderSpecific(s,VEC_CLASSID,3);
   PetscCheckFalse(start < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
   PetscCheckFalse(start >= v->map->bs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,v->map->bs);
-  PetscCheckFalse(!v->ops->stridegather,PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
+  PetscCheck(v->ops->stridegather,PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
   CHKERRQ((*v->ops->stridegather)(v,start,s,addv));
   PetscFunctionReturn(0);
 }
@@ -787,7 +787,7 @@ PetscErrorCode  VecStrideScatter(Vec s,PetscInt start,Vec v,InsertMode addv)
   PetscValidHeaderSpecific(v,VEC_CLASSID,3);
   PetscCheckFalse(start < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %" PetscInt_FMT,start);
   PetscCheckFalse(start >= v->map->bs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%" PetscInt_FMT ") is too large for stride\n Have you set the vector blocksize (%" PetscInt_FMT ") correctly with VecSetBlockSize()?",start,v->map->bs);
-  PetscCheckFalse(!v->ops->stridescatter,PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
+  PetscCheck(v->ops->stridescatter,PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
   CHKERRQ((*v->ops->stridescatter)(s,start,v,addv));
   PetscFunctionReturn(0);
 }
@@ -827,7 +827,7 @@ PetscErrorCode  VecStrideSubSetGather(Vec v,PetscInt nidx,const PetscInt idxv[],
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
   PetscValidHeaderSpecific(s,VEC_CLASSID,5);
   if (nidx == PETSC_DETERMINE) nidx = s->map->bs;
-  PetscCheckFalse(!v->ops->stridesubsetgather,PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
+  PetscCheck(v->ops->stridesubsetgather,PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
   CHKERRQ((*v->ops->stridesubsetgather)(v,nidx,idxv,idxs,s,addv));
   PetscFunctionReturn(0);
 }
@@ -866,7 +866,7 @@ PetscErrorCode  VecStrideSubSetScatter(Vec s,PetscInt nidx,const PetscInt idxs[]
   PetscValidHeaderSpecific(s,VEC_CLASSID,1);
   PetscValidHeaderSpecific(v,VEC_CLASSID,5);
   if (nidx == PETSC_DETERMINE) nidx = s->map->bs;
-  PetscCheckFalse(!v->ops->stridesubsetscatter,PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
+  PetscCheck(v->ops->stridesubsetscatter,PetscObjectComm((PetscObject)s),PETSC_ERR_SUP,"Not implemented for this Vec class");
   CHKERRQ((*v->ops->stridesubsetscatter)(s,nidx,idxs,idxv,v,addv));
   PetscFunctionReturn(0);
 }

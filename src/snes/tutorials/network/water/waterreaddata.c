@@ -150,7 +150,7 @@ PetscErrorCode WaterReadData(WATERDATA *water,char *filename)
   water->nvertex = water->nedge = 0;
   fp = fopen(filename,"rb");
   /* Check for valid file */
-  PetscCheckFalse(!fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Can't open EPANET data file %s",filename);
+  PetscCheck(fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Can't open EPANET data file %s",filename);
 
   /* Read file and get line numbers for different data segments */
   while (fgets(line,MAXLINE,fp)) {

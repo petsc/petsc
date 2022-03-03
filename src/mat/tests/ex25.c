@@ -37,7 +37,7 @@ int main(int argc,char **args)
   CHKERRQ(MatTranspose(C,MAT_INITIAL_MATRIX,&A));
 
   CHKERRQ(MatEqual(C,A,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_SUP,"C != C^T");
+  PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_SUP,"C != C^T");
 
   CHKERRQ(MatDestroy(&C));
   CHKERRQ(MatDestroy(&A));

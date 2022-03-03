@@ -647,7 +647,7 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
   MatReuse       reuse = (ex->P) ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!pc->dm,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Need to call PCSetDM() before using this PC");
+  PetscCheck(pc->dm,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Need to call PCSetDM() before using this PC");
   CHKERRQ(PCGetOperators(pc,NULL,&A));
   if (ex->type == PC_EXOTIC_FACE) {
     CHKERRQ(DMDAGetFaceInterpolation(pc,pc->dm,ex,A,reuse,&ex->P));

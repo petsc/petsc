@@ -34,13 +34,13 @@ int main(int argc, char ** argv)
   CHKERRQ(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
 
   CHKERRQ(MatMatMultEqual(A,B,C,10,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatMatMult() for C");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatMatMult() for C");
 
   /* Test user-provided mpidense matrix product */
   CHKERRQ(MatDuplicate(C,MAT_COPY_VALUES,&C1));
   CHKERRQ(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C1));
   CHKERRQ(MatMatMultEqual(A,B,C1,10,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatMatMult() for C1");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatMatMult() for C1");
 
   CHKERRQ(MatDestroy(&C1));
   CHKERRQ(MatDestroy(&C));
@@ -50,7 +50,7 @@ int main(int argc, char ** argv)
   CHKERRQ(MatTransposeMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
 
   CHKERRQ(MatTransposeMatMultEqual(A,B,C,10,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatTransposeMatMult()");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatTransposeMatMult()");
   CHKERRQ(MatDestroy(&C));
 
   CHKERRQ(MatDestroy(&B));

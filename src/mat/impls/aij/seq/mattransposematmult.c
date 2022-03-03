@@ -30,7 +30,7 @@ PETSC_INTERN PetscErrorCode MatTMatTMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,Pet
 
   PetscFunctionBegin;
   MatCheckProduct(C,4);
-  PetscCheckFalse(C->product->data,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Extra product struct not empty");
+  PetscCheck(!C->product->data,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Extra product struct not empty");
   PetscCheckFalse(C->product->type != MATPRODUCT_ABt && C->product->type != MATPRODUCT_AtB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not for product type %s",MatProductTypes[C->product->type]);
 
   /* create output dense matrix C */
@@ -75,7 +75,7 @@ PetscErrorCode MatTMatTMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   MatCheckProduct(C,3);
   PetscCheckFalse(C->product->type != MATPRODUCT_ABt && C->product->type != MATPRODUCT_AtB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Not for product type %s",MatProductTypes[C->product->type]);
   atb = (Mat_MatTransMatMult *)C->product->data;
-  PetscCheckFalse(!atb,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing product struct");
+  PetscCheck(atb,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing product struct");
   bt = atb->bt;
   ct = atb->ct;
 

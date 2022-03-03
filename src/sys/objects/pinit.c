@@ -571,10 +571,10 @@ PETSC_INTERN PetscErrorCode PetscInitializeSAWs(const char help[])
     CHKERRQ(PetscOptionsHasName(NULL,NULL,"-saws_local",&flg2));
     if (flg2) {
       char jsdir[PETSC_MAX_PATH_LEN];
-      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"-saws_local option requires -saws_root option");
+      PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"-saws_local option requires -saws_root option");
       CHKERRQ(PetscSNPrintf(jsdir,sizeof(jsdir),"%s/js",root));
       CHKERRQ(PetscTestDirectory(jsdir,'r',&flg));
-      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"-saws_local option requires js directory in root directory");
+      PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"-saws_local option requires js directory in root directory");
       PetscStackCallSAWs(SAWs_Push_Local_Header,());
     }
     CHKERRQ(PetscGetProgramName(programname,sizeof(programname)));
@@ -1342,7 +1342,7 @@ PetscErrorCode  PetscFinalize(void)
     CHKERRQ(PetscMalloc1(2,&buffs));
     CHKERRQ(PetscOptionsGetStringArray(NULL,NULL,"-textbelt",buffs,&nmax,&flg1));
     if (flg1) {
-      PetscCheckFalse(!nmax,PETSC_COMM_WORLD,PETSC_ERR_USER,"-textbelt requires either the phone number or number,\"message\"");
+      PetscCheck(nmax,PETSC_COMM_WORLD,PETSC_ERR_USER,"-textbelt requires either the phone number or number,\"message\"");
       if (nmax == 1) {
         CHKERRQ(PetscMalloc1(128,&buffs[1]));
         CHKERRQ(PetscGetProgramName(buffs[1],32));
@@ -1360,7 +1360,7 @@ PetscErrorCode  PetscFinalize(void)
     CHKERRQ(PetscMalloc1(2,&buffs));
     CHKERRQ(PetscOptionsGetStringArray(NULL,NULL,"-tellmycell",buffs,&nmax,&flg1));
     if (flg1) {
-      PetscCheckFalse(!nmax,PETSC_COMM_WORLD,PETSC_ERR_USER,"-tellmycell requires either the phone number or number,\"message\"");
+      PetscCheck(nmax,PETSC_COMM_WORLD,PETSC_ERR_USER,"-tellmycell requires either the phone number or number,\"message\"");
       if (nmax == 1) {
         CHKERRQ(PetscMalloc1(128,&buffs[1]));
         CHKERRQ(PetscGetProgramName(buffs[1],32));
@@ -1589,10 +1589,10 @@ PetscErrorCode  PetscFinalize(void)
     if (flg1 && fname[0]) {
 
       PetscSNPrintf(sname,sizeof(sname),"%s_%d",fname,rank);
-      fd   = fopen(sname,"w"); PetscCheckFalse(!fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
+      fd   = fopen(sname,"w"); PetscCheck(fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
       CHKERRQ(PetscMallocDump(fd));
       err  = fclose(fd);
-      PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
+      PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
     } else if (flg1 || flg2 || flg3) {
       MPI_Comm local_comm;
 
@@ -1607,10 +1607,10 @@ PetscErrorCode  PetscFinalize(void)
     if (flg1 && fname[0]) {
 
       PetscSNPrintf(sname,sizeof(sname),"%s_%d",fname,rank);
-      fd   = fopen(sname,"w"); PetscCheckFalse(!fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
+      fd   = fopen(sname,"w"); PetscCheck(fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
       CHKERRQ(PetscMallocView(fd));
       err  = fclose(fd);
-      PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
+      PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
     } else if (flg1) {
       MPI_Comm local_comm;
 
@@ -1667,7 +1667,7 @@ PetscErrorCode  PetscFinalize(void)
     if (flg) {
       icomm = ucomm.comm;
       CHKERRMPI(MPI_Comm_get_attr(icomm,Petsc_Counter_keyval,&counter,&flg));
-      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected tag/name counter, problem with corrupted memory");
+      PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected tag/name counter, problem with corrupted memory");
 
       CHKERRMPI(MPI_Comm_delete_attr(PETSC_COMM_SELF,Petsc_InnerComm_keyval));
       CHKERRMPI(MPI_Comm_delete_attr(icomm,Petsc_Counter_keyval));
@@ -1677,7 +1677,7 @@ PetscErrorCode  PetscFinalize(void)
     if (flg) {
       icomm = ucomm.comm;
       CHKERRMPI(MPI_Comm_get_attr(icomm,Petsc_Counter_keyval,&counter,&flg));
-      PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected tag/name counter, problem with corrupted memory");
+      PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected tag/name counter, problem with corrupted memory");
 
       CHKERRMPI(MPI_Comm_delete_attr(PETSC_COMM_WORLD,Petsc_InnerComm_keyval));
       CHKERRMPI(MPI_Comm_delete_attr(icomm,Petsc_Counter_keyval));

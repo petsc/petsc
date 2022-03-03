@@ -116,7 +116,7 @@ int main(int argc,char **args)
     if (!issymmetric && (ismpisbaij || isseqsbaij)) continue;
     CHKERRQ(MatConvert(C,type[i],MAT_INITIAL_MATRIX,&A));
     CHKERRQ(MatMultEqual(A,C,10,&equal));
-    PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from BAIJ to %s",type[i]);
+    PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from BAIJ to %s",type[i]);
     for (j=i+1; j<ntypes; j++) {
       CHKERRQ(PetscStrcmp(type[j],MATMPISBAIJ,&ismpisbaij));
       CHKERRQ(PetscStrcmp(type[j],MATMPISBAIJ,&isseqsbaij));
@@ -136,13 +136,13 @@ int main(int argc,char **args)
       }
        */
       CHKERRQ(MatMultEqual(A,B,10,&equal));
-      PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from %s to %s",type[i],type[j]);
+      PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from %s to %s",type[i],type[j]);
 
       if (size == 1 || j != 2) { /* Matconvert from mpisbaij mat to other formats are not supported */
         if (rank == 0 && verbose) printf("Convert %s B to %s D\n",type[j],type[i]);
         CHKERRQ(MatConvert(B,type[i],MAT_INITIAL_MATRIX,&D));
         CHKERRQ(MatMultEqual(B,D,10,&equal));
-        PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from %s to %s",type[j],type[i]);
+        PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from %s to %s",type[j],type[i]);
 
         CHKERRQ(MatDestroy(&D));
       }

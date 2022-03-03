@@ -49,7 +49,7 @@ int main(int argc,char **argv)
   CHKERRQ(VecDuplicate(x,&x1));
   CHKERRQ(VecCopy(x,x1));
   CHKERRQ(VecEqual(x,x1,&flg));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_WRONG,"x1 != x");
+  PetscCheck(flg,PetscObjectComm((PetscObject)x),PETSC_ERR_ARG_WRONG,"x1 != x");
 
   CHKERRQ(VecScale(x1,2.0));
   CHKERRQ(VecSet(x1,10.0));

@@ -125,7 +125,7 @@ static PetscErrorCode VecTaggerComputeIS_Or(VecTagger tagger, Vec vec, IS *is,Pe
     IS subIS, newUnionIS;
 
     CHKERRQ(VecTaggerComputeIS(subs[i],vec,&subIS,&boxlisted));
-    PetscCheckFalse(!boxlisted,PetscObjectComm((PetscObject)tagger),PETSC_ERR_SUP,"Tagger cannot VecTaggerComputeIS()");
+    PetscCheck(boxlisted,PetscObjectComm((PetscObject)tagger),PETSC_ERR_SUP,"Tagger cannot VecTaggerComputeIS()");
     CHKERRQ(ISExpand(unionIS,subIS,&newUnionIS));
     CHKERRQ(ISSort(newUnionIS));
     CHKERRQ(ISDestroy(&unionIS));

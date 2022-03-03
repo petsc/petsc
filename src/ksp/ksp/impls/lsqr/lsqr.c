@@ -77,7 +77,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 
   PetscFunctionBegin;
   CHKERRQ(PCGetDiagonalScale(ksp->pc,&diagonalscale));
-  PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  PetscCheck(!diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   CHKERRQ(PCGetOperators(ksp->pc,&Amat,&Pmat));
   CHKERRQ(PetscObjectTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner));

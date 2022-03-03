@@ -64,7 +64,7 @@ int main(int argc,char **argv)
 
   /* Check mC = C */
   CHKERRQ(MatEqual(C,mC,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"MatProduct C != mC");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"MatProduct C != mC");
   CHKERRQ(MatDestroy(&mC));
 
   /* User API */
@@ -73,7 +73,7 @@ int main(int argc,char **argv)
 
   /* Check mC = C */
   CHKERRQ(MatEqual(C,mC,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"MatPtAP C != mC");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"MatPtAP C != mC");
   CHKERRQ(MatDestroy(&mC));
 
   /* Cleanup */

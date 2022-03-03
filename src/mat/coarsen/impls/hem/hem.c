@@ -144,12 +144,12 @@ PetscErrorCode PetscCDAppendID(PetscCoarsenData *ail, PetscInt a_idx, PetscInt a
     do {
       if (!n2->next) {
         n2->next = n;
-        PetscCheckFalse(n->next,PETSC_COMM_SELF,PETSC_ERR_PLIB,"n should not have a next");
+        PetscCheck(!n->next,PETSC_COMM_SELF,PETSC_ERR_PLIB,"n should not have a next");
         break;
       }
       n2 = n2->next;
     } while (n2);
-    PetscCheckFalse(!n2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"n2 should be non-null");
+    PetscCheck(n2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"n2 should be non-null");
   }
   PetscFunctionReturn(0);
 }
@@ -172,7 +172,7 @@ PetscErrorCode PetscCDAppendNode(PetscCoarsenData *ail, PetscInt a_idx,  PetscCD
       }
       n2 = n2->next;
     } while (n2);
-    PetscCheckFalse(!n2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"n2 should be non-null");
+    PetscCheck(n2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"n2 should be non-null");
   }
   PetscFunctionReturn(0);
 }
@@ -185,7 +185,7 @@ PetscErrorCode PetscCDRemoveNextNode(PetscCoarsenData *ail, PetscInt a_idx,  Pet
 
   PetscFunctionBegin;
   PetscCheckFalse(a_idx>=ail->size,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index %" PetscInt_FMT " out of range.",a_idx);
-  PetscCheckFalse(!a_last->next,PETSC_COMM_SELF,PETSC_ERR_PLIB,"a_last should have a next");
+  PetscCheck(a_last->next,PETSC_COMM_SELF,PETSC_ERR_PLIB,"a_last should have a next");
   del          = a_last->next;
   a_last->next = del->next;
   /* del->next = NULL; -- this still used in a iterator so keep it intact -- need to fix this with a double linked list */

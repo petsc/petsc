@@ -10,12 +10,12 @@ static PetscErrorCode PetscViewerFileClose_ASCII(PetscViewer viewer)
   int               err;
 
   PetscFunctionBegin;
-  PetscCheckFalse(vascii->sviewer,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
+  PetscCheck(!vascii->sviewer,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank));
   if (rank == 0 && vascii->fd != stderr && vascii->fd != PETSC_STDOUT) {
     if (vascii->fd && vascii->closefile) {
       err = fclose(vascii->fd);
-      PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
+      PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
     }
     if (vascii->storecompressed) {
       char par[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
@@ -43,7 +43,7 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
   PetscBool         flg;
 
   PetscFunctionBegin;
-  PetscCheckFalse(vascii->sviewer,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
+  PetscCheck(!vascii->sviewer,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   CHKERRQ(PetscViewerFileClose_ASCII(viewer));
   CHKERRQ(PetscFree(vascii));
 
@@ -108,14 +108,14 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
   FILE              *fd = vascii->fd;
 
   PetscFunctionBegin;
-  PetscCheckFalse(vascii->sviewer,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
+  PetscCheck(!vascii->sviewer,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   CHKERRQ(PetscObjectGetComm((PetscObject)viewer,&comm));
   CHKERRMPI(MPI_Comm_rank(comm,&rank));
   CHKERRMPI(MPI_Comm_size(comm,&size));
 
   if (!vascii->bviewer && rank == 0 && (vascii->mode != FILE_MODE_READ)) {
     err = fflush(vascii->fd);
-    PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() call failed");
+    PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() call failed");
   }
 
   if (vascii->allowsynchronized) {
@@ -381,7 +381,7 @@ PetscErrorCode  PetscViewerASCIIPushSynchronized(PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscCheckFalse(ascii->sviewer,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
+  PetscCheck(!ascii->sviewer,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) ascii->allowsynchronized++;
   PetscFunctionReturn(0);
@@ -411,7 +411,7 @@ PetscErrorCode  PetscViewerASCIIPopSynchronized(PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscCheckFalse(ascii->sviewer,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
+  PetscCheck(!ascii->sviewer,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
     ascii->allowsynchronized--;
@@ -552,10 +552,10 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscCheckFalse(ascii->sviewer,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
+  PetscCheck(!ascii->sviewer,PetscObjectComm((PetscObject)viewer),PETSC_ERR_ARG_WRONGSTATE,"Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   PetscValidCharPointer(format,2);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
-  PetscCheckFalse(!iascii,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not ASCII PetscViewer");
+  PetscCheck(iascii,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not ASCII PetscViewer");
   CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank));
   if (rank) PetscFunctionReturn(0);
 
@@ -592,7 +592,7 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
     va_start(Argp,format);
     CHKERRQ((*PetscVFPrintf)(fd,format,Argp));
     err  = fflush(fd);
-    PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+    PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
     if (petsc_history) {
       va_start(Argp,format);
       tab = intab;
@@ -601,7 +601,7 @@ PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],..
       }
       CHKERRQ((*PetscVFPrintf)(petsc_history,format,Argp));
       err  = fflush(petsc_history);
-      PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+      PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
     }
     va_end(Argp);
   }
@@ -732,7 +732,7 @@ PetscErrorCode  PetscViewerFileSetName_ASCII(PetscViewer viewer,const char name[
       default:
         SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unsupported file mode %s",PetscFileModes[vascii->mode]);
       }
-      PetscCheckFalse(!vascii->fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open PetscViewer file: %s",fname);
+      PetscCheck(vascii->fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open PetscViewer file: %s",fname);
     }
   }
 #if defined(PETSC_USE_LOG)
@@ -747,7 +747,7 @@ PetscErrorCode PetscViewerGetSubViewer_ASCII(PetscViewer viewer,MPI_Comm subcomm
 
   PetscFunctionBegin;
   CHKERRQ(PetscViewerASCIIPushSynchronized(viewer));
-  PetscCheckFalse(vascii->sviewer,PETSC_COMM_SELF,PETSC_ERR_ORDER,"SubViewer already obtained from PetscViewer and not restored");
+  PetscCheck(!vascii->sviewer,PETSC_COMM_SELF,PETSC_ERR_ORDER,"SubViewer already obtained from PetscViewer and not restored");
   /*
      The following line is a bug; it does another PetscViewerASCIIPushSynchronized() on viewer, but if it is removed the code won't work
      because it relies on this behavior in other places. In particular this line causes the synchronized flush to occur when the viewer is destroyed
@@ -777,7 +777,7 @@ PetscErrorCode PetscViewerRestoreSubViewer_ASCII(PetscViewer viewer,MPI_Comm com
   PetscViewer_ASCII *ascii  = (PetscViewer_ASCII*)viewer->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!ascii->sviewer,PETSC_COMM_SELF,PETSC_ERR_ORDER,"SubViewer never obtained from PetscViewer");
+  PetscCheck(ascii->sviewer,PETSC_COMM_SELF,PETSC_ERR_ORDER,"SubViewer never obtained from PetscViewer");
   PetscCheckFalse(ascii->sviewer != *outviewer,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"This PetscViewer did not generate this SubViewer");
 
   CHKERRQ(PetscViewerASCIIPopSynchronized(*outviewer));
@@ -894,8 +894,8 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidCharPointer(format,2);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
-  PetscCheckFalse(!iascii,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not ASCII PetscViewer");
-  PetscCheckFalse(!vascii->allowsynchronized,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"First call PetscViewerASCIIPushSynchronized() to allow this call");
+  PetscCheck(iascii,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not ASCII PetscViewer");
+  PetscCheck(vascii->allowsynchronized,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"First call PetscViewerASCIIPushSynchronized() to allow this call");
 
   CHKERRQ(PetscObjectGetComm((PetscObject)viewer,&comm));
   CHKERRMPI(MPI_Comm_rank(comm,&rank));
@@ -933,12 +933,12 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
     va_start(Argp,format);
     CHKERRQ((*PetscVFPrintf)(fp,format,Argp));
     err  = fflush(fp);
-    PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+    PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
     if (petsc_history) {
       va_start(Argp,format);
       CHKERRQ((*PetscVFPrintf)(petsc_history,format,Argp));
       err  = fflush(petsc_history);
-      PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+      PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
     }
     va_end(Argp);
   } else { /* other processors add to queue */
@@ -1013,7 +1013,7 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt num,P
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank));
-  PetscCheckFalse(rank,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG,"Can only be called from process 0 in the PetscViewer");
+  PetscCheck(!rank,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG,"Can only be called from process 0 in the PetscViewer");
   for (i=0; i<num; i++) {
     if (dtype == PETSC_CHAR)         ret = fscanf(fd, "%c",  &(((char*)data)[i]));
     else if (dtype == PETSC_STRING)  ret = fscanf(fd, "%s",  &(((char*)data)[i]));
@@ -1031,7 +1031,7 @@ PetscErrorCode PetscViewerASCIIRead(PetscViewer viewer,void *data,PetscInt num,P
     }
 #endif
     else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Data type %d not supported", (int) dtype);
-    PetscCheckFalse(!ret,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Conversion error for data type %d", (int) dtype);
+    PetscCheck(ret,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Conversion error for data type %d", (int) dtype);
     else if (ret < 0) break; /* Proxy for EOF, need to check for it in configure */
   }
   if (count) *count = i;

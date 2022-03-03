@@ -122,13 +122,13 @@ PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm,char access_token[],size_t tok
     PetscCheckFalse(!isatty(fileno(PETSC_STDOUT)),PETSC_COMM_SELF,PETSC_ERR_USER,"Requires users input/output");
     CHKERRQ(PetscPrintf(comm,"Enter globus username:"));
     ptr  = fgets(buff, 1024, stdin);
-    PetscCheckFalse(!ptr,PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from stdin: %d", errno);
+    PetscCheck(ptr,PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from stdin: %d", errno);
     CHKERRQ(PetscStrlen(buff,&len));
     buff[len-1] = ':'; /* remove carriage return at end of line */
 
     CHKERRQ(PetscPrintf(comm,"Enter globus password:"));
     ptr  = fgets(buff+len, 1024-len, stdin);
-    PetscCheckFalse(!ptr,PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from stdin: %d", errno);
+    PetscCheck(ptr,PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from stdin: %d", errno);
     CHKERRQ(PetscStrlen(buff,&len));
     buff[len-1] = '\0'; /* remove carriage return at end of line */
     CHKERRQ(PetscStrcpy(head,"Authorization: Basic "));
@@ -142,7 +142,7 @@ PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm,char access_token[],size_t tok
     close(sock);
 
     CHKERRQ(PetscPullJSONValue(buff,"access_token",access_token,tokensize,&found));
-    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Globus did not return access token");
+    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Globus did not return access token");
 
     CHKERRQ(PetscPrintf(comm,"Here is your Globus access token, save it in a save place, in the future you can run PETSc\n"));
     CHKERRQ(PetscPrintf(comm,"programs with the option -globus_access_token %s\n",access_token));
@@ -189,7 +189,7 @@ PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm,const char access_token[],c
       PetscBool set;
       char      accesstoken[4096];
       CHKERRQ(PetscOptionsGetString(NULL,NULL,"-globus_access_token",accesstoken,sizeof(accesstoken),&set));
-      PetscCheckFalse(!set,PETSC_COMM_SELF,PETSC_ERR_USER,"Pass in Globus accesstoken or use -globus_access_token XXX");
+      PetscCheck(set,PETSC_COMM_SELF,PETSC_ERR_USER,"Pass in Globus accesstoken or use -globus_access_token XXX");
       CHKERRQ(PetscStrcat(head,accesstoken));
     }
     CHKERRQ(PetscStrcat(head,"\r\n"));
@@ -235,7 +235,7 @@ PetscErrorCode PetscGlobusUpload(MPI_Comm comm,const char access_token[],const c
   CHKERRMPI(MPI_Comm_rank(comm,&rank));
   if (rank == 0) {
     CHKERRQ(PetscTestFile(filename,'r',&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to find file: %s",filename);
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to find file: %s",filename);
 
     CHKERRQ(PetscStrcpy(head,"Authorization : Globus-Goauthtoken "));
     if (access_token) {
@@ -244,7 +244,7 @@ PetscErrorCode PetscGlobusUpload(MPI_Comm comm,const char access_token[],const c
       PetscBool set;
       char      accesstoken[4096];
       CHKERRQ(PetscOptionsGetString(NULL,NULL,"-globus_access_token",accesstoken,sizeof(accesstoken),&set));
-      PetscCheckFalse(!set,PETSC_COMM_SELF,PETSC_ERR_USER,"Pass in Globus accesstoken or use -globus_access_token XXX");
+      PetscCheck(set,PETSC_COMM_SELF,PETSC_ERR_USER,"Pass in Globus accesstoken or use -globus_access_token XXX");
       CHKERRQ(PetscStrcat(head,accesstoken));
     }
     CHKERRQ(PetscStrcat(head,"\r\n"));
@@ -256,7 +256,7 @@ PetscErrorCode PetscGlobusUpload(MPI_Comm comm,const char access_token[],const c
     CHKERRQ(PetscSSLDestroyContext(ctx));
     close(sock);
     CHKERRQ(PetscPullJSONValue(buff,"value",submission_id,sizeof(submission_id),&found));
-    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Globus did not return submission id");
+    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Globus did not return submission id");
 
     /* build JSON body of transfer request */
     CHKERRQ(PetscStrcpy(body,"{"));
@@ -282,9 +282,9 @@ PetscErrorCode PetscGlobusUpload(MPI_Comm comm,const char access_token[],const c
     CHKERRQ(PetscSSLDestroyContext(ctx));
     close(sock);
     CHKERRQ(PetscPullJSONValue(buff,"code",submission_id,sizeof(submission_id),&found));
-    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Globus did not return code on transfer");
+    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Globus did not return code on transfer");
     CHKERRQ(PetscStrcmp(submission_id,"Accepted",&found));
-    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Globus did not accept transfer");
+    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Globus did not accept transfer");
   }
   PetscFunctionReturn(0);
 }

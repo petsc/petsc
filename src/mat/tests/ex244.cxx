@@ -90,9 +90,9 @@ int main(int argc,char **args)
 
     /* Test accuracy */
     CHKERRQ(MatMultEqual(A,Ae,5,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != A_scalapack.");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != A_scalapack.");
     CHKERRQ(MatMultEqual(B,Be,5,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"B != B_scalapack.");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"B != B_scalapack.");
   }
 
   if (!isScaLAPACK) {

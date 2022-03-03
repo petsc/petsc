@@ -53,7 +53,7 @@ int main(int argc,char **args)
   CHKERRQ(PetscOptionsHasName(NULL,NULL, "-check_symmetric", &flg));
   if (flg) {
     CHKERRQ(MatIsSymmetric(A,0.0,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_USER,"A is not symmetric");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_USER,"A is not symmetric");
   }
   CHKERRQ(MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE));
 
@@ -82,7 +82,7 @@ int main(int argc,char **args)
   CHKERRQ(PetscOptionsHasName(NULL,NULL, "-check_Hermitian", &flg));
   if (flg && size == 1) {
     CHKERRQ(MatIsHermitian(A,0.0,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_USER,"A is not Hermitian");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_USER,"A is not Hermitian");
   }
   CHKERRQ(MatSetOption(A,MAT_HERMITIAN,PETSC_TRUE));
 
@@ -114,9 +114,9 @@ int main(int argc,char **args)
 
   /* Test MatMult */
   CHKERRQ(MatMultEqual(A,As,10,&flg));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"MatMult not equal");
+  PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"MatMult not equal");
   CHKERRQ(MatMultAddEqual(A,As,10,&flg));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"MatMultAdd not equal");
+  PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"MatMultAdd not equal");
 
   /* Free spaces */
   CHKERRQ(MatDestroy(&A));

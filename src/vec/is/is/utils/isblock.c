@@ -105,7 +105,7 @@ PetscErrorCode  ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,con
   PetscFunctionBegin;
   for (i=0; i<imax; i++) {
     CHKERRQ(ISSorted(is_in[i],&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Indices are not sorted");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Indices are not sorted");
   }
 
 #if defined(PETSC_USE_CTABLE)

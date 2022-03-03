@@ -454,8 +454,8 @@ PetscErrorCode PetscSFCreateFromLayouts(PetscLayout rmap, PetscLayout lmap, Pets
 
   PetscFunctionBegin;
   PetscValidPointer(sf,3);
-  PetscCheckFalse(!rmap->setupcalled,rcomm,PETSC_ERR_ARG_WRONGSTATE,"Root layout not setup");
-  PetscCheckFalse(!lmap->setupcalled,lcomm,PETSC_ERR_ARG_WRONGSTATE,"Leaf layout not setup");
+  PetscCheck(rmap->setupcalled,rcomm,PETSC_ERR_ARG_WRONGSTATE,"Root layout not setup");
+  PetscCheck(lmap->setupcalled,lcomm,PETSC_ERR_ARG_WRONGSTATE,"Leaf layout not setup");
   CHKERRMPI(MPI_Comm_compare(rcomm,lcomm,&flg));
   PetscCheckFalse(flg != MPI_CONGRUENT && flg != MPI_IDENT,rcomm,PETSC_ERR_SUP,"cannot map two layouts with non-matching communicators");
   CHKERRQ(PetscSFCreate(rcomm,sf));

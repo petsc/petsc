@@ -23,11 +23,11 @@ static PetscErrorCode DMPlexStorageVersionParseString_Private(DM dm, const char 
   CHKERRQ(PetscTokenCreate(str, '.', &t));
   for (i=0; i<3; i++) {
     CHKERRQ(PetscTokenFind(t, &ts));
-    PetscCheckFalse(!ts,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Malformed version string %s", str);
+    PetscCheck(ts,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Malformed version string %s", str);
     CHKERRQ(PetscOptionsStringToInt(ts, &ti[i]));
   }
   CHKERRQ(PetscTokenFind(t, &ts));
-  PetscCheckFalse(ts,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Malformed version string %s", str);
+  PetscCheck(!ts,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Malformed version string %s", str);
   CHKERRQ(PetscTokenDestroy(&t));
   v->major    = ti[0];
   v->minor    = ti[1];
@@ -62,7 +62,7 @@ static PetscErrorCode DMPlexStorageVersionSetUpWriting_Private(DM dm, PetscViewe
     PetscBool flg;
 
     CHKERRQ(PetscStrcmp(fileVersion, optVersion, &flg));
-    PetscCheckFalse(!flg,PetscObjectComm((PetscObject)dm), PETSC_ERR_FILE_UNEXPECTED, "User requested DMPlex storage version %s but file already has version %s - cannot mix versions", optVersion, fileVersion);
+    PetscCheck(flg,PetscObjectComm((PetscObject)dm), PETSC_ERR_FILE_UNEXPECTED, "User requested DMPlex storage version %s but file already has version %s - cannot mix versions", optVersion, fileVersion);
   }
   CHKERRQ(PetscViewerHDF5WriteAttribute(viewer, NULL, "petsc_version_git", PETSC_STRING, PETSC_VERSION_GIT));
   CHKERRQ(DMPlexStorageVersionParseString_Private(dm, optVersion, version));
@@ -1323,7 +1323,7 @@ PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM dm, PetscViewer viewer, PetscSF
   PetscFunctionBegin;
   CHKERRQ(DMPlexIsDistributed(dm, &distributed));
   if (distributed) {
-    PetscCheckFalse(!sfXC,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_NULL, "PetscSF must be given for parallel load");
+    PetscCheck(sfXC,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_NULL, "PetscSF must be given for parallel load");
   }
   CHKERRQ(LoadLabelsCtxCreate(dm, viewer, sfXC, &ctx));
   CHKERRQ(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
@@ -1528,7 +1528,7 @@ PetscErrorCode DMPlexCoordinatesLoad_HDF5_Internal(DM dm, PetscViewer viewer, Pe
       PetscFunctionReturn(0);
     }
   }
-  PetscCheckFalse(!sfXC,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_NULL, "PetscSF must be given for parallel load");
+  PetscCheck(sfXC,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_NULL, "PetscSF must be given for parallel load");
   CHKERRQ(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
   CHKERRQ(PetscViewerHDF5PushGroup(viewer, "topologies"));
   CHKERRQ(PetscViewerHDF5PushGroup(viewer, topologydm_name));
@@ -1606,9 +1606,9 @@ static PetscErrorCode DMPlexSectionLoad_HDF5_Internal_CreateDataSF(PetscSection 
   /* Currently, PetscSFDistributeSection() returns globalOffsets[] only */
   /* for the top-level section (not for each field), so one must have   */
   /* rootSection->pointMajor == PETSC_TRUE.                             */
-  PetscCheckFalse(!rootSection->pointMajor,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for field major ordering");
+  PetscCheck(rootSection->pointMajor,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for field major ordering");
   /* Currently, we also assume that leafSection->pointMajor == PETSC_TRUE. */
-  PetscCheckFalse(!leafSection->pointMajor,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for field major ordering");
+  PetscCheck(leafSection->pointMajor,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for field major ordering");
   for (p = pStart, m = 0; p < pEnd; ++p) {
     PetscInt        dof, cdof, i, j, off, goff;
     const PetscInt *cinds;

@@ -410,7 +410,7 @@ static PetscErrorCode MatCholeskyFactorNumeric_CHOLMOD(Mat F,Mat A,const MatFact
   CHKERRQ((*chol->Wrap)(A,PETSC_TRUE,&cholA,&aijalloc,&valloc));
   static_F = F;
   ierr     = !cholmod_X_factorize(&cholA,chol->factor,chol->common);
-  PetscCheckFalse(ierr,PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD factorization failed with status %d",chol->common->status);
+  PetscCheck(!ierr,PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD factorization failed with status %d",chol->common->status);
   PetscCheckFalse(chol->common->status == CHOLMOD_NOT_POSDEF,PetscObjectComm((PetscObject)F),PETSC_ERR_MAT_CH_ZRPVT,"CHOLMOD detected that the matrix is not positive definite, failure at column %u",(unsigned)chol->factor->minor);
 
   CHKERRQ(PetscLogFlops(chol->common->fl));
@@ -441,16 +441,16 @@ PETSC_INTERN PetscErrorCode  MatCholeskyFactorSymbolic_CHOLMOD(Mat F,Mat A,IS pe
   static_F = F;
   if (chol->factor) {
     ierr = !cholmod_X_resymbol(&cholA,fset,fsize,(int)chol->pack,chol->factor,chol->common);
-    PetscCheckFalse(ierr,PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD analysis failed with status %d",chol->common->status);
+    PetscCheck(!ierr,PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD analysis failed with status %d",chol->common->status);
   } else if (perm) {
     const PetscInt *ip;
     CHKERRQ(ISGetIndices(perm,&ip));
     chol->factor = cholmod_X_analyze_p(&cholA,(PetscInt*)ip,fset,fsize,chol->common);
-    PetscCheckFalse(!chol->factor,PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD analysis failed using PETSc ordering with status %d",chol->common->status);
+    PetscCheck(chol->factor,PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD analysis failed using PETSc ordering with status %d",chol->common->status);
     CHKERRQ(ISRestoreIndices(perm,&ip));
   } else {
     chol->factor = cholmod_X_analyze(&cholA,chol->common);
-    PetscCheckFalse(!chol->factor,PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD analysis failed using internal ordering with status %d",chol->common->status);
+    PetscCheck(chol->factor,PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD analysis failed using internal ordering with status %d",chol->common->status);
   }
 
   if (aijalloc) CHKERRQ(PetscFree2(cholA.p,cholA.i));
@@ -532,7 +532,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat A,MatFactorType ft
   CHKERRQ(MatGetBlockSize(A,&bs));
   PetscCheckFalse(bs != 1,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"CHOLMOD only supports block size=1, given %" PetscInt_FMT,bs);
 #if defined(PETSC_USE_COMPLEX)
-  PetscCheckFalse(!A->hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only for Hermitian matrices");
+  PetscCheck(A->hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only for Hermitian matrices");
 #endif
   /* Create the factorization matrix F */
   CHKERRQ(MatCreate(PetscObjectComm((PetscObject)A),&B));

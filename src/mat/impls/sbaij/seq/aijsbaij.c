@@ -126,7 +126,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A,MatType newtype,Mat
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
-  PetscCheckFalse(!A->symmetric,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
+  PetscCheck(A->symmetric,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
 #else
   PetscCheckFalse(!A->symmetric && !A->hermitian,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be either symmetric or hermitian. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE) and/or MatSetOption(mat,MAT_HERMITIAN,PETSC_TRUE)");
 #endif
@@ -288,10 +288,10 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype,M
   PetscBool      flg;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!A->symmetric,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
+  PetscCheck(A->symmetric,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
   PetscCheckFalse(n != m,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix must be square");
   CHKERRQ(MatMissingDiagonal_SeqBAIJ(A,&flg,&dd)); /* check for missing diagonals, then mark diag */
-  PetscCheckFalse(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal %" PetscInt_FMT,dd);
+  PetscCheck(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal %" PetscInt_FMT,dd);
 
   CHKERRQ(PetscMalloc1(mbs,&browlengths));
   for (i=0; i<mbs; i++) {

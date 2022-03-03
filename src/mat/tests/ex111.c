@@ -152,7 +152,7 @@ int main(int argc,char **argv)
     CHKERRQ(MatMatMatMult(R,Adense,P,MAT_REUSE_MATRIX,fill,&Cdense));
 
     CHKERRQ(MatMultEqual(D,Cdense,10,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"D*v != Cdense*v");
+    PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"D*v != Cdense*v");
     CHKERRQ(MatDestroy(&Adense));
     CHKERRQ(MatDestroy(&Cdense));
   }
@@ -163,13 +163,13 @@ int main(int argc,char **argv)
 
   /* Test D == C */
   CHKERRQ(MatEqual(D,C,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"D != C");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"D != C");
 
   /* Test C == PtAP */
   CHKERRQ(MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&PtAP));
   CHKERRQ(MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&PtAP));
   CHKERRQ(MatEqual(C,PtAP,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"C != PtAP");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"C != PtAP");
   CHKERRQ(MatDestroy(&PtAP));
 
   /* Clean up */

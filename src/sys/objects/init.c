@@ -117,7 +117,7 @@ PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
     }
 
     *fd = fopen(fname,"a");
-    PetscCheckFalse(!fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file: %s",fname);
+    PetscCheck(fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file: %s",fname);
 
     CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n"));
     CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,*fd,"%s %s\n",version,date));
@@ -126,7 +126,7 @@ PetscErrorCode  PetscOpenHistoryFile(const char filename[],FILE **fd)
     CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n"));
 
     err = fflush(*fd);
-    PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+    PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   }
   PetscFunctionReturn(0);
 }
@@ -145,9 +145,9 @@ PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd)
     CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,*fd,"Finished at %s\n",date));
     CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,*fd,"----------------------------------------\n"));
     err  = fflush(*fd);
-    PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+    PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
     err = fclose(*fd);
-    PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
+    PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
   }
   PetscFunctionReturn(0);
 }
@@ -556,7 +556,7 @@ PETSC_INTERN PetscErrorCode  PetscOptionsCheckInitial_Private(const char help[])
       PetscSNPrintf(name,PETSC_MAX_PATH_LEN,"%s.%d",mname,rank);
       CHKERRQ(PetscFixFilename(name,fname));
       file = fopen(fname,"w");
-      PetscCheckFalse(!file,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open trace file: %s",fname);
+      PetscCheck(file,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open trace file: %s",fname);
     } else file = PETSC_STDOUT;
     CHKERRQ(PetscLogTraceBegin(file));
   }

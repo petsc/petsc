@@ -8,7 +8,7 @@ PetscErrorCode PCFactorSetUpMatSolverType_Factor(PC pc)
   PC_Factor      *icc = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!pc->pmat,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"You can only call this routine after the matrix object has been provided to the solver, for example with KSPSetOperators() or SNESSetJacobian()");
+  PetscCheck(pc->pmat,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"You can only call this routine after the matrix object has been provided to the solver, for example with KSPSetOperators() or SNESSetJacobian()");
   if (!pc->setupcalled && !((PC_Factor*)icc)->fact) {
     CHKERRQ(MatGetFactor(pc->pmat,((PC_Factor*)icc)->solvertype,((PC_Factor*)icc)->factortype,&((PC_Factor*)icc)->fact));
   }
@@ -85,7 +85,7 @@ PetscErrorCode  PCFactorSetMatOrderingType_Factor(PC pc,MatOrderingType ordering
     CHKERRQ(PetscStrallocpy(ordering,(char**)&dir->ordering));
   } else {
     CHKERRQ(PetscStrcmp(dir->ordering,ordering,&flg));
-    PetscCheckFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change ordering after use");
+    PetscCheck(flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change ordering after use");
   }
   PetscFunctionReturn(0);
 }
@@ -174,7 +174,7 @@ PetscErrorCode  PCFactorGetMatrix_Factor(PC pc,Mat *mat)
   PC_Factor *ilu = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!ilu->fact,PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
+  PetscCheck(ilu->fact,PetscObjectComm((PetscObject)pc),PETSC_ERR_ORDER,"Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
   *mat = ilu->fact;
   PetscFunctionReturn(0);
 }
@@ -192,7 +192,7 @@ PetscErrorCode  PCFactorSetMatSolverType_Factor(PC pc,MatSolverType stype)
     PetscBool     flg;
     CHKERRQ(MatFactorGetSolverType(lu->fact,&ltype));
     CHKERRQ(PetscStrcmp(stype,ltype,&flg));
-    PetscCheckFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package from %s to %s after PC has been setup or used",ltype,stype);
+    PetscCheck(flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package from %s to %s after PC has been setup or used",ltype,stype);
   }
 
   CHKERRQ(PetscFree(lu->solvertype));

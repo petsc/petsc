@@ -251,9 +251,9 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat mat,PetscInt n
   CHKERRQ(MatMPIAIJGetSeqAIJ(mat,&amat,&bmat,&gcols));
   /* Even if the mat is symmetric, we still assume it is not symmetric */
   CHKERRQ(MatGetRowIJ(amat,0,PETSC_FALSE,PETSC_FALSE,&an,&ai,&aj,&done));
-  PetscCheckFalse(!done,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"can not get row IJ ");
+  PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"can not get row IJ ");
   CHKERRQ(MatGetRowIJ(bmat,0,PETSC_FALSE,PETSC_FALSE,&bn,&bi,&bj,&done));
-  PetscCheckFalse(!done,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"can not get row IJ ");
+  PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"can not get row IJ ");
   /* total number of nonzero values is used to estimate the memory usage in the next step */
   tnz  = ai[an]+bi[bn];
   CHKERRQ(MatGetLayouts(mat,&rmap,&cmap));
@@ -371,9 +371,9 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local_Scalable(Mat mat,PetscInt 
   CHKERRMPI(MPI_Comm_rank(comm,&rank));
   CHKERRQ(MatMPIAIJGetSeqAIJ(mat,&amat,&bmat,&gcols));
   CHKERRQ(MatGetRowIJ(amat,0,PETSC_FALSE,PETSC_FALSE,&an,&ai,&aj,&done));
-  PetscCheckFalse(!done,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"can not get row IJ ");
+  PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"can not get row IJ ");
   CHKERRQ(MatGetRowIJ(bmat,0,PETSC_FALSE,PETSC_FALSE,&bn,&bi,&bj,&done));
-  PetscCheckFalse(!done,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"can not get row IJ ");
+  PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"can not get row IJ ");
   /* is it a safe way to compute number of nonzero values ? */
   tnz  = ai[an]+bi[bn];
   CHKERRQ(MatGetLayouts(mat,&rmap,&cmap));
@@ -2872,7 +2872,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C,IS rowemb,IS dcolemb,IS ocolemb,MatStr
   /* Check to make sure the component matrices (and embeddings) are compatible with C. */
   if (A) {
     CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)A,MATSEQAIJ,&seqaij));
-    PetscCheckFalse(!seqaij,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Diagonal matrix is of wrong type");
+    PetscCheck(seqaij,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Diagonal matrix is of wrong type");
     if (rowemb) {
       CHKERRQ(ISGetLocalSize(rowemb,&m));
       PetscCheckFalse(m != A->rmap->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Row IS of size %" PetscInt_FMT " is incompatible with diag matrix row size %" PetscInt_FMT,m,A->rmap->n);
@@ -2890,7 +2890,7 @@ PetscErrorCode MatSetSeqMats_MPIAIJ(Mat C,IS rowemb,IS dcolemb,IS ocolemb,MatStr
   }
   if (B) {
     CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)B,MATSEQAIJ,&seqaij));
-    PetscCheckFalse(!seqaij,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Off-diagonal matrix is of wrong type");
+    PetscCheck(seqaij,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Off-diagonal matrix is of wrong type");
     if (rowemb) {
       CHKERRQ(ISGetLocalSize(rowemb,&m));
       PetscCheckFalse(m != B->rmap->n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Row IS of size %" PetscInt_FMT " is incompatible with off-diag matrix row size %" PetscInt_FMT,m,A->rmap->n);

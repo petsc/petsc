@@ -162,7 +162,7 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
     n    = n/pf->dimin;
     CHKERRQ(VecGetArray(x,&xx));
     CHKERRQ(VecGetArray(y,&yy));
-    PetscCheckFalse(!pf->ops->apply,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No function has been provided for this PF");
+    PetscCheck(pf->ops->apply,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No function has been provided for this PF");
     CHKERRQ((*pf->ops->apply)(pf->data,n,xx,yy));
     CHKERRQ(VecRestoreArray(x,&xx));
     CHKERRQ(VecRestoreArray(y,&yy));
@@ -201,7 +201,7 @@ PetscErrorCode  PFApply(PF pf,PetscInt n,const PetscScalar *x,PetscScalar *y)
   PetscValidScalarPointer(x,3);
   PetscValidScalarPointer(y,4);
   PetscCheckFalse(x == y,PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"x and y must be different arrays");
-  PetscCheckFalse(!pf->ops->apply,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No function has been provided for this PF");
+  PetscCheck(pf->ops->apply,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"No function has been provided for this PF");
 
   CHKERRQ((*pf->ops->apply)(pf->data,n,x,y));
   PetscFunctionReturn(0);

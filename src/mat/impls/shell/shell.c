@@ -546,7 +546,7 @@ static PetscErrorCode MatProductNumeric_Shell_X(Mat D)
   PetscFunctionBegin;
   MatCheckProduct(D,1);
   product = D->product;
-  PetscCheckFalse(!product->data,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data empty");
+  PetscCheck(product->data,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data empty");
   A = product->A;
   B = product->B;
   mdata = (MatMatDataShell*)product->data;
@@ -588,7 +588,7 @@ static PetscErrorCode MatProductNumeric_Shell_X(Mat D)
           PetscBool flg;
 
           CHKERRQ(VecEqual(shell->right,shell->left,&flg));
-          PetscCheckFalse(!flg,PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices because left scaling != from right scaling",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
+          PetscCheck(flg,PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices because left scaling != from right scaling",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
         }
         if (shell->right) {
           CHKERRQ(MatDiagonalScale(mdata->B,NULL,shell->right));
@@ -599,7 +599,7 @@ static PetscErrorCode MatProductNumeric_Shell_X(Mat D)
           PetscBool flg;
 
           CHKERRQ(VecEqual(shell->right,shell->left,&flg));
-          PetscCheckFalse(!flg,PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices because left scaling != from right scaling",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
+          PetscCheck(flg,PetscObjectComm((PetscObject)D),PETSC_ERR_SUP,"MatProductSymbolic type %s not supported for %s and %s matrices because left scaling != from right scaling",MatProductTypes[product->type],((PetscObject)A)->type_name,((PetscObject)B)->type_name);
         }
         if (shell->right) {
           CHKERRQ(MatDiagonalScale(mdata->B,shell->right,NULL));
@@ -724,7 +724,7 @@ static PetscErrorCode MatProductSymbolic_Shell_X(Mat D)
   PetscFunctionBegin;
   MatCheckProduct(D,1);
   product = D->product;
-  PetscCheckFalse(product->data,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data not empty");
+  PetscCheck(!product->data,PetscObjectComm((PetscObject)D),PETSC_ERR_PLIB,"Product data not empty");
   A = product->A;
   B = product->B;
   shell = (Mat_Shell*)A->data;
@@ -736,7 +736,7 @@ static PetscErrorCode MatProductSymbolic_Shell_X(Mat D)
     if (flg) break;
     matmat = matmat->next;
   }
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Composedname \"%s\" for product type %s not found",composedname,MatProductTypes[product->type]);
+  PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Composedname \"%s\" for product type %s not found",composedname,MatProductTypes[product->type]);
   switch (product->type) {
   case MATPRODUCT_AB:
     CHKERRQ(MatSetSizes(D,A->rmap->n,B->cmap->n,A->rmap->N,B->cmap->N));
@@ -774,8 +774,8 @@ static PetscErrorCode MatProductSymbolic_Shell_X(Mat D)
   } else { /* call general setup if symbolic operation not provided */
     CHKERRQ(MatSetUp(D));
   }
-  PetscCheckFalse(!D->product,PetscObjectComm((PetscObject)D),PETSC_ERR_COR,"Product disappeared after user symbolic phase");
-  PetscCheckFalse(D->product->data,PetscObjectComm((PetscObject)D),PETSC_ERR_COR,"Product data not empty after user symbolic phase");
+  PetscCheck(D->product,PetscObjectComm((PetscObject)D),PETSC_ERR_COR,"Product disappeared after user symbolic phase");
+  PetscCheck(!D->product->data,PetscObjectComm((PetscObject)D),PETSC_ERR_COR,"Product data not empty after user symbolic phase");
   D->product->data = mdata;
   D->product->destroy = DestroyMatMatDataShell;
   /* Be sure to reset these pointers if the user did something unexpected */
@@ -821,8 +821,8 @@ static PetscErrorCode MatShellSetMatProductOperation_Private(Mat A,MatProductTyp
   MatShellMatFunctionList matmat;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!numeric,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing numeric routine");
-  PetscCheckFalse(!composedname,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing composed name");
+  PetscCheck(numeric,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing numeric routine");
+  PetscCheck(composedname,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing composed name");
 
   /* add product callback */
   shell = (Mat_Shell*)A->data;
@@ -903,7 +903,7 @@ PetscErrorCode MatShellSetMatProductOperation(Mat A,MatProductType ptype,PetscEr
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidLogicalCollectiveEnum(A,ptype,2);
   PetscCheckFalse(ptype == MATPRODUCT_ABC,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Not for product type %s",MatProductTypes[ptype]);
-  PetscCheckFalse(!numeric,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Missing numeric routine, argument 4");
+  PetscCheck(numeric,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"Missing numeric routine, argument 4");
   PetscValidPointer(Btype,6);
   if (Ctype) PetscValidPointer(Ctype,7);
   CHKERRQ(PetscTryMethod(A,"MatShellSetMatProductOperation_C",(Mat,MatProductType,PetscErrorCode(*)(Mat,Mat,Mat,void**),PetscErrorCode(*)(Mat,Mat,Mat,void*),PetscErrorCode(*)(void*),MatType,MatType),(A,ptype,symbolic,numeric,destroy,Btype,Ctype)));
@@ -945,7 +945,7 @@ PetscErrorCode MatCopy_Shell(Mat A,Mat B,MatStructure str)
 
   PetscFunctionBegin;
   CHKERRQ(MatIsShell(B,&matflg));
-  PetscCheckFalse(!matflg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix %s not derived from MATSHELL",((PetscObject)B)->type_name);
+  PetscCheck(matflg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix %s not derived from MATSHELL",((PetscObject)B)->type_name);
 
   CHKERRQ(PetscMemcpy(B->ops,A->ops,sizeof(struct _MatOps)));
   CHKERRQ(PetscMemcpy(shellB->ops,shellA->ops,sizeof(struct _MatShellOps)));
@@ -1033,7 +1033,7 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
   PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!shell->ops->mult,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Have not provided a MatMult() for this MATSHELL");
+  PetscCheck(shell->ops->mult,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Have not provided a MatMult() for this MATSHELL");
   CHKERRQ(MatShellPreZeroRight(A,x,&xx));
   CHKERRQ(MatShellPreScaleRight(A,xx,&xx));
   CHKERRQ(PetscObjectStateGet((PetscObject)y, &instate));
@@ -1086,7 +1086,7 @@ PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
   PetscObjectState instate,outstate;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!shell->ops->multtranspose,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Have not provided a MatMultTranspose() for this MATSHELL");
+  PetscCheck(shell->ops->multtranspose,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Have not provided a MatMultTranspose() for this MATSHELL");
   CHKERRQ(MatShellPreZeroLeft(A,x,&xx));
   CHKERRQ(MatShellPreScaleLeft(A,xx,&xx));
   CHKERRQ(PetscObjectStateGet((PetscObject)y, &instate));
@@ -1174,7 +1174,7 @@ PetscErrorCode MatShift_Shell(Mat Y,PetscScalar a)
 
   PetscFunctionBegin;
   CHKERRQ(MatHasCongruentLayouts(Y,&flg));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)Y),PETSC_ERR_SUP,"Cannot shift shell matrix if it is not congruent");
+  PetscCheck(flg,PetscObjectComm((PetscObject)Y),PETSC_ERR_SUP,"Cannot shift shell matrix if it is not congruent");
   if (shell->left || shell->right) {
     if (!shell->dshift) {
       CHKERRQ(VecDuplicate(shell->left ? shell->left : shell->right, &shell->dshift));
@@ -1224,9 +1224,9 @@ PetscErrorCode MatDiagonalSet_Shell(Mat A,Vec D,InsertMode ins)
 
   PetscFunctionBegin;
   CHKERRQ(MatHasCongruentLayouts(A,&flg));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Cannot diagonal set or shift shell matrix if it is not congruent");
+  PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Cannot diagonal set or shift shell matrix if it is not congruent");
   if (ins == INSERT_VALUES) {
-    PetscCheckFalse(!A->ops->getdiagonal,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Operation MATOP_GETDIAGONAL must be set first");
+    PetscCheck(A->ops->getdiagonal,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Operation MATOP_GETDIAGONAL must be set first");
     CHKERRQ(VecDuplicate(D,&d));
     CHKERRQ(MatGetDiagonal(A,d));
     CHKERRQ(MatDiagonalSet_Shell_Private(A,d,-1.));
@@ -1556,7 +1556,7 @@ PetscErrorCode MatShellSetOperation_Shell(Mat mat,MatOperation op,void (*f)(void
   case MATOP_AXPY:
   case MATOP_ZERO_ROWS:
   case MATOP_ZERO_ROWS_COLUMNS:
-    PetscCheckFalse(shell->managescalingshifts,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"MATSHELL is managing scalings and shifts, see MatShellSetManageScalingShifts()");
+    PetscCheck(!shell->managescalingshifts,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"MATSHELL is managing scalings and shifts, see MatShellSetManageScalingShifts()");
     (((void(**)(void))mat->ops)[op]) = f;
     break;
   case MATOP_GET_DIAGONAL:

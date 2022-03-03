@@ -46,7 +46,7 @@ static PetscErrorCode DMFieldView_DS(DMField field,PetscViewer viewer)
     CHKERRQ(PetscViewerASCIIPopTab(viewer));
   }
   CHKERRQ(PetscViewerASCIIPushTab(viewer));
-  PetscCheckFalse(dsfield->multifieldVec,PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"View of subfield not implemented yet");
+  PetscCheck(!dsfield->multifieldVec,PetscObjectComm((PetscObject)field),PETSC_ERR_SUP,"View of subfield not implemented yet");
   CHKERRQ(VecView(dsfield->vec,viewer));
   CHKERRQ(PetscViewerASCIIPopTab(viewer));
   PetscFunctionReturn(0);
@@ -460,7 +460,7 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
     CHKERRQ(DMFieldCreateDefaultQuadrature(coordField, pointIS, &quad));
   }
   if (!quad) CHKERRQ(DMFieldCreateDefaultQuadrature(field, pointIS, &quad));
-  PetscCheckFalse(!quad,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not determine quadrature for cell averages");
+  PetscCheck(quad,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not determine quadrature for cell averages");
   CHKERRQ(DMFieldCreateFEGeom(coordField,pointIS,quad,PETSC_FALSE,&geom));
   CHKERRQ(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &weights));
   PetscCheckFalse(qNc != 1,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected scalar quadrature components");
@@ -761,7 +761,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     const PetscInt *supp, *cone, *ornt;
 
     CHKERRQ(DMPlexGetTreeChildren(dm, point, &numChildren, NULL));
-    PetscCheckFalse(numChildren,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face data not valid for facets with children");
+    PetscCheck(!numChildren,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face data not valid for facets with children");
     CHKERRQ(DMPlexGetSupportSize(dm, point, &suppSize));
     PetscCheckFalse(suppSize > 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D has %D support, expected at most 2", point, suppSize);
     if (!suppSize) continue;
@@ -790,7 +790,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
       PetscInt        numSupp, numChildren;
 
       CHKERRQ(DMPlexGetTreeChildren(dm, point, &numChildren, NULL));
-      PetscCheckFalse(numChildren,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face data not valid for facets with children");
+      PetscCheck(!numChildren,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face data not valid for facets with children");
       CHKERRQ(DMPlexGetSupportSize(dm, point,&numSupp));
       PetscCheckFalse(numSupp > 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D has %D support, expected at most 2", point, numSupp);
       numCells += numSupp;
@@ -869,7 +869,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
       const PetscInt *supp;
 
       CHKERRQ(DMPlexGetTreeChildren(dm, point, &numChildren, NULL));
-      PetscCheckFalse(numChildren,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face data not valid for facets with children");
+      PetscCheck(!numChildren,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face data not valid for facets with children");
       CHKERRQ(DMPlexGetSupportSize(dm, point,&numSupp));
       PetscCheckFalse(numSupp > 2,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D has %D support, expected at most 2", point, numSupp);
       CHKERRQ(DMPlexGetSupport(dm, point, &supp));

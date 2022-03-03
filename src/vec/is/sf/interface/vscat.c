@@ -109,7 +109,7 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf,const PetscInt *tom
     for (i=0; i<sf->nroots*bs; i++) {if (i != tomap[i]) {ident = PETSC_FALSE; break; } }
     if (ident) PetscFunctionReturn(0);
   }
-  PetscCheckFalse(frommap,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unable to remap the FROM in scatters yet");
+  PetscCheck(!frommap,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unable to remap the FROM in scatters yet");
   if (!tomap) PetscFunctionReturn(0);
 
   CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sf),&size));
@@ -558,7 +558,7 @@ PetscErrorCode  VecScatterRemap(VecScatter sf,PetscInt tomap[],PetscInt frommap[
   if (tomap)   PetscValidIntPointer(tomap,2);
   if (frommap) PetscValidIntPointer(frommap,3);
   CHKERRQ(VecScatterRemap_Internal(sf,tomap,frommap));
-  PetscCheckFalse(frommap,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unable to remap the FROM in scatters yet");
+  PetscCheck(!frommap,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unable to remap the FROM in scatters yet");
   /* Mark then vector lengths as unknown because we do not know the lengths of the remapped vectors */
   sf->vscat.from_n = -1;
   sf->vscat.to_n   = -1;

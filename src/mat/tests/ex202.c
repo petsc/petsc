@@ -71,7 +71,7 @@ PetscErrorCode TestInitialMatrix(void)
   CHKERRQ(MatMatMult(A,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C));
   CHKERRQ(MatMatMult(A,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C));
   CHKERRQ(MatMatMultEqual(A,B,C,10,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in C != A*B");
+  PetscCheck(equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in C != A*B");
 
   CHKERRQ(MatGetSize(A,&M,&N));
   CHKERRQ(MatGetLocalSize(A,&m,&n));

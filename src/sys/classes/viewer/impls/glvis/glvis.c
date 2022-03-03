@@ -129,7 +129,7 @@ PetscErrorCode PetscViewerGLVisSetFields(PetscViewer viewer, PetscInt nf, const 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveInt(viewer,nf,2);
-  PetscCheckFalse(!fec_type,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"You need to provide the FiniteElementCollection names for the fields");
+  PetscCheck(fec_type,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"You need to provide the FiniteElementCollection names for the fields");
   PetscValidPointer(fec_type,3);
   PetscValidPointer(dim,4);
   PetscValidPointer(Vfield,6);
@@ -467,7 +467,7 @@ PetscErrorCode PetscViewerGLVisInitWindow_Private(PetscViewer viewer, PetscBool 
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectQuery((PetscObject)viewer,"_glvis_info_container",(PetscObject*)&container));
-  PetscCheckFalse(!container,PETSC_COMM_SELF,PETSC_ERR_USER,"Viewer was not obtained from PetscGLVisViewerGetNewWindow_Private");
+  PetscCheck(container,PETSC_COMM_SELF,PETSC_ERR_USER,"Viewer was not obtained from PetscGLVisViewerGetNewWindow_Private");
   CHKERRQ(PetscContainerGetPointer(container,(void**)&info));
   if (info->init) PetscFunctionReturn(0);
 
@@ -762,7 +762,7 @@ static PetscErrorCode PetscViewerDestroy_ASCII_Socket(PetscViewer viewer)
   CHKERRQ(PetscViewerASCIIGetPointer(viewer,&stream));
   if (stream) {
     ierr = fclose(stream);
-    PetscCheckFalse(ierr,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on stream");
+    PetscCheck(!ierr,PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on stream");
   }
   CHKERRQ(PetscViewerDestroy_ASCII(viewer));
   PetscFunctionReturn(0);
@@ -802,7 +802,7 @@ static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm,const char* hostn
     CHKERRQ(PetscInfo(NULL,"%s",msg));
   }
   stream = fdopen(fd,"w"); /* Not possible on Windows */
-  PetscCheckFalse(!stream,PETSC_COMM_SELF,PETSC_ERR_SYS,"Cannot open stream from socket %s:%" PetscInt_FMT,hostname,port);
+  PetscCheck(stream,PETSC_COMM_SELF,PETSC_ERR_SYS,"Cannot open stream from socket %s:%" PetscInt_FMT,hostname,port);
   CHKERRQ(PetscViewerASCIIOpenWithFILE(PETSC_COMM_SELF,stream,viewer));
   PetscViewerDestroy_ASCII = (*viewer)->ops->destroy;
   (*viewer)->ops->destroy = PetscViewerDestroy_ASCII_Socket;
@@ -835,7 +835,7 @@ static void PetscGLVisSigHandler_SIGPIPE(PETSC_UNUSED int sig)
 PetscErrorCode PetscGLVisCollectiveBegin(PETSC_UNUSED MPI_Comm comm,PETSC_UNUSED PetscViewer *win)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(PetscGLVisSigHandler_save,comm,PETSC_ERR_PLIB,"Nested call to %s()",PETSC_FUNCTION_NAME);
+  PetscCheck(!PetscGLVisSigHandler_save,comm,PETSC_ERR_PLIB,"Nested call to %s()",PETSC_FUNCTION_NAME);
   PetscGLVisBrokenPipe = PETSC_FALSE;
   PetscGLVisSigHandler_save = signal(SIGPIPE,PetscGLVisSigHandler_SIGPIPE);
   PetscFunctionReturn(0);

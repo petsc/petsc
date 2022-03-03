@@ -226,7 +226,7 @@ PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x)
          lusol->indc, lusol->indr, lusol->ip, lusol->iq,
          lusol->lenc, lusol->lenr, lusol->locc, lusol->locr, &status);
 
-  PetscCheckFalse(status,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"solve failed, error code %d",status);
+  PetscCheck(!status,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"solve failed, error code %d",status);
 
   CHKERRQ(VecRestoreArray(x, &xx));
   CHKERRQ(VecRestoreArrayRead(b, &bb));

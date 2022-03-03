@@ -66,7 +66,7 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(MatConvert(C,MATDENSE,MAT_INITIAL_MATRIX,&Cdense));
   CHKERRQ(MatMultEqual(C,Cdense,5,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Check fails: Cdense != C");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Check fails: Cdense != C");
 
   /* Test MatNorm() */
   CHKERRQ(MatNorm(C,NORM_1,&Cnorm));
@@ -139,7 +139,7 @@ int main(int argc,char **args)
   CHKERRQ(MatScale(C,2.0));
   CHKERRQ(MatMatTransposeMult(C,C,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B));
   CHKERRQ(MatMatTransposeMultEqual(C,C,B,10,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Check fails: B != C*C^T");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Check fails: B != C*C^T");
 
   if (mats_view) {
     CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"C MatMatTransposeMult C:\n"));
@@ -149,15 +149,15 @@ int main(int argc,char **args)
   /* Test MatMult() */
   CHKERRQ(MatComputeOperator(C,MATAIJ,&Caij));
   CHKERRQ(MatMultEqual(C,Caij,5,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultEqual() fails");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultEqual() fails");
   CHKERRQ(MatMultTransposeEqual(C,Caij,5,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultTransposeEqual() fails");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultTransposeEqual() fails");
 
   /* Test MatMultAdd() and MatMultTransposeAddEqual() */
   CHKERRQ(MatMultAddEqual(C,Caij,5,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultAddEqual() fails");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultAddEqual() fails");
   CHKERRQ(MatMultTransposeAddEqual(C,Caij,5,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultTransposeAddEqual() fails");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultTransposeAddEqual() fails");
 
   /* Test MatMatMult() */
   CHKERRQ(PetscOptionsHasName(NULL,NULL,"-test_matmatmult",&flg));
@@ -166,7 +166,7 @@ int main(int argc,char **args)
     CHKERRQ(MatMatMult(C,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CC));
     CHKERRQ(MatMatMult(Caij,Caij,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CCaij));
     CHKERRQ(MatMultEqual(CC,CCaij,5,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_NOTSAMETYPE,"CC != CCaij. MatMatMult() fails");
+    PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_NOTSAMETYPE,"CC != CCaij. MatMatMult() fails");
     CHKERRQ(MatDestroy(&CCaij));
     CHKERRQ(MatDestroy(&CC));
   }

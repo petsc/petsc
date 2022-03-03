@@ -34,7 +34,7 @@ static PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
   Vec_MPI        *v = (Vec_MPI*)vin->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(v->unplacedarray,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecPlaceArray() was already called on this vector, without a call to VecResetArray()");
+  PetscCheck(!v->unplacedarray,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"VecPlaceArray() was already called on this vector, without a call to VecResetArray()");
   v->unplacedarray = v->array;  /* save previous array so reset can bring it back */
   v->array         = (PetscScalar*)a;
   if (v->localrep) {
@@ -279,7 +279,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
     PetscFunctionReturn(0);
   }
 
-  PetscCheckFalse(!x->segrecvframe,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing segrecvframe! Probably you forgot to call VecAssemblyBegin first");
+  PetscCheck(x->segrecvframe,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing segrecvframe! Probably you forgot to call VecAssemblyBegin first");
   CHKERRQ(VecGetArray(X,&xarray));
   CHKERRQ(PetscSegBufferExtractInPlace(x->segrecvframe,&frame));
   CHKERRQ(PetscMalloc2(4*x->nrecvranks,&some_indices,x->use_status?4*x->nrecvranks:0,&some_statuses));

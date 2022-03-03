@@ -65,14 +65,14 @@ int main(int argc,char **argv)
   CHKERRQ(MatCreateTranspose(A,&C));
   CHKERRQ(MatTranspose(A,MAT_INITIAL_MATRIX,&B)); /* B = A^T */
   CHKERRQ(MatMultEqual(C,B,10,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A^T*x != (x^T*A)^T");
+  PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A^T*x != (x^T*A)^T");
   CHKERRQ(MatDestroy(&B));
 
   CHKERRQ(MatDuplicate(A,MAT_COPY_VALUES,&B));
   if (!Aiselemental) {
     CHKERRQ(MatTranspose(B,MAT_INPLACE_MATRIX,&B));
     CHKERRQ(MatMultEqual(C,B,10,&equal));
-    PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"C*x != B*x");
+    PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"C*x != B*x");
   }
   CHKERRQ(MatDestroy(&B));
 
@@ -80,7 +80,7 @@ int main(int argc,char **argv)
   if (size == 1 && !Aiselemental) {
     CHKERRQ(MatMatMult(C,A,MAT_INITIAL_MATRIX,fill,&B));
     CHKERRQ(MatMatMultEqual(C,A,B,10,&equal));
-    PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"B != C*A for matrix type transpose and seqdense");
+    PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"B != C*A for matrix type transpose and seqdense");
     CHKERRQ(MatDestroy(&B));
   }
   CHKERRQ(MatDestroy(&C));
@@ -94,7 +94,7 @@ int main(int argc,char **argv)
     CHKERRQ(MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C)); /* C = B*A = A^T*A */
     CHKERRQ(MatMatMult(B,A,MAT_REUSE_MATRIX,fill,&C));
     CHKERRQ(MatMatMultEqual(B,A,C,10,&equal));
-    PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"B*A*x != C*x");
+    PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"B*A*x != C*x");
 
     /* Test MatDuplicate for matrix product */
     CHKERRQ(MatDuplicate(C,MAT_COPY_VALUES,&D));
@@ -109,7 +109,7 @@ int main(int argc,char **argv)
     CHKERRQ(MatTransposeMatMult(A,A,MAT_INITIAL_MATRIX,fill,&D)); /* D = A^T*A */
     CHKERRQ(MatTransposeMatMult(A,A,MAT_REUSE_MATRIX,fill,&D));
     CHKERRQ(MatTransposeMatMultEqual(A,A,D,10,&equal));
-    PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*A*x");
+    PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*A*x");
 
     /* Test MatDuplicate for matrix product */
     CHKERRQ(MatDuplicate(D,MAT_COPY_VALUES,&C));
@@ -138,7 +138,7 @@ int main(int argc,char **argv)
     CHKERRQ(MatMatMult(C,A,MAT_INITIAL_MATRIX,1.0,&B));
     CHKERRQ(MatTransposeMatMult(A,B,MAT_INITIAL_MATRIX,fill,&D));
     CHKERRQ(MatTransposeMatMultEqual(A,B,D,10,&equal));
-    PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*B*x");
+    PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*B*x");
 
     CHKERRQ(MatDestroy(&D));
     CHKERRQ(MatDestroy(&C));
@@ -170,7 +170,7 @@ int main(int argc,char **argv)
     CHKERRQ(MatDestroy(&C));
 
     CHKERRQ(MatMatTransposeMultEqual(A,B,D,10,&equal));
-    PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*A*x");
+    PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"D*x != A^T*A*x");
     CHKERRQ(MatDestroy(&D));
     CHKERRQ(MatDestroy(&B));
 

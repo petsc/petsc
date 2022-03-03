@@ -55,7 +55,7 @@ int main(int argc,char **args)
   CHKERRQ(MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY));
 
   CHKERRQ(MatIsSymmetric(C,0.0,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"C is non-symmetric");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"C is non-symmetric");
 
   /* Create vectors for error checking */
   CHKERRQ(MatCreateVecs(C,&x,&b));

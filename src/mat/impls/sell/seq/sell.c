@@ -275,7 +275,7 @@ PetscErrorCode MatConvert_SeqAIJ_SeqSELL(Mat A,MatType newtype,MatReuse reuse,Ma
     if (PetscDefined(USE_DEBUG) && a->ilen) {
       PetscBool eq;
       CHKERRQ(PetscMemcmp(rowlengths,a->ilen,m*sizeof(PetscInt),&eq));
-      PetscCheckFalse(!eq,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SeqAIJ ilen array incorrect");
+      PetscCheck(eq,PETSC_COMM_SELF,PETSC_ERR_PLIB,"SeqAIJ ilen array incorrect");
       CHKERRQ(PetscFree(rowlengths));
       rowlengths = a->ilen;
     } else if (a->ilen) rowlengths = a->ilen;
@@ -1872,7 +1872,7 @@ PetscErrorCode MatStoreValues_SeqSELL(Mat mat)
   Mat_SeqSELL    *a=(Mat_SeqSELL*)mat->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!a->nonew,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
+  PetscCheck(a->nonew,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
 
   /* allocate space for values if not already there */
   if (!a->saved_values) {
@@ -1890,8 +1890,8 @@ PetscErrorCode MatRetrieveValues_SeqSELL(Mat mat)
   Mat_SeqSELL    *a=(Mat_SeqSELL*)mat->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!a->nonew,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
-  PetscCheckFalse(!a->saved_values,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");
+  PetscCheck(a->nonew,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
+  PetscCheck(a->saved_values,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");
   CHKERRQ(PetscArraycpy(a->val,a->saved_values,a->sliidx[a->totalslices]));
   PetscFunctionReturn(0);
 }

@@ -8,7 +8,7 @@ static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
 
   PetscFunctionBegin;
   CHKERRQ(PCGetDiagonalScale(ksp->pc,&diagonalscale));
-  PetscCheckFalse(diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  PetscCheck(!diagonalscale,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
   CHKERRQ(KSPSetWorkVecs(ksp,9));
   PetscFunctionReturn(0);
 }
@@ -65,7 +65,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   Mat                               A;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!ksp->vec_rhs->petscnative,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Only coded for PETSc vectors");
+  PetscCheck(ksp->vec_rhs->petscnative,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Only coded for PETSc vectors");
 
  #if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
   /* since 80 bit long doubls do not fill the upper bits, we fill them initially so that
@@ -137,7 +137,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     betan = deltan/omegan_1;
     taun  = sigman_1 + betan*taun_1  - deltan*pin_1;
     if (taun == 0.0) {
-      PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to taun is zero, iteration %D",ksp->its);
+      PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to taun is zero, iteration %D",ksp->its);
       else {
         ksp->reason = KSP_DIVERGED_NANORINF;
         PetscFunctionReturn(0);
@@ -227,14 +227,14 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     if (ksp->lagnorm && ksp->its > 1 && ksp->normtype != KSP_NORM_NONE) rnorm = PetscSqrtReal(PetscRealPart(outsums[6]));
 
     if (kappan == 0.0) {
-      PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to kappan is zero, iteration %D",ksp->its);
+      PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to kappan is zero, iteration %D",ksp->its);
       else {
         ksp->reason = KSP_DIVERGED_NANORINF;
         PetscFunctionReturn(0);
       }
     }
     if (thetan == 0.0) {
-      PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to thetan is zero, iteration %D",ksp->its);
+      PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has not converged due to thetan is zero, iteration %D",ksp->its);
       else {
         ksp->reason = KSP_DIVERGED_NANORINF;
         PetscFunctionReturn(0);

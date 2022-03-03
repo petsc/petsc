@@ -79,7 +79,7 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char host[],PetscMat
   }
   CHKERRQ(PetscInfo(0,"Starting MATLAB engine with command %s\n",buffer));
   e->ep = engOpen(buffer);
-  PetscCheckFalse(!e->ep,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to start MATLAB engine with %s",buffer);
+  PetscCheck(e->ep,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to start MATLAB engine with %s",buffer);
   engOutputBuffer(e->ep,e->buffer,sizeof(e->buffer));
   if (host) {
     CHKERRQ(PetscInfo(0,"Started MATLAB engine on %s\n",host));
@@ -118,7 +118,7 @@ PetscErrorCode  PetscMatlabEngineDestroy(PetscMatlabEngine *v)
   if (--((PetscObject)(*v))->refct > 0) PetscFunctionReturn(0);
   CHKERRQ(PetscInfo(0,"Stopping MATLAB engine\n"));
   ierr = engClose((*v)->ep);
-  PetscCheckFalse(ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error closing Matlab engine");
+  PetscCheck(!ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error closing Matlab engine");
   CHKERRQ(PetscInfo(0,"MATLAB engine stopped\n"));
   CHKERRQ(PetscHeaderDestroy(v));
   PetscFunctionReturn(0);
@@ -186,7 +186,7 @@ PetscErrorCode  PetscMatlabEngineEvaluate(PetscMatlabEngine mengine,const char s
 PetscErrorCode  PetscMatlabEngineGetOutput(PetscMatlabEngine mengine,char **string)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(!mengine,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_MATLAB_ENGINE_() failed");
+  PetscCheck(mengine,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null argument: probably PETSC_MATLAB_ENGINE_() failed");
   *string = mengine->buffer;
   PetscFunctionReturn(0);
 }

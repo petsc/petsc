@@ -89,24 +89,24 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
     PetscBool found;
 #if defined(PETSC_USE_SINGLE_LIBRARY)
     CHKERRQ(PetscLoadDynamicLibrary("",&found));
-    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
 #else
     CHKERRQ(PetscLoadDynamicLibrary("sys",&found));
-    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
     CHKERRQ(PetscLoadDynamicLibrary("vec",&found));
-    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc Vec dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc Vec dynamic library \n You cannot move the dynamic libraries!");
     CHKERRQ(PetscLoadDynamicLibrary("mat",&found));
-    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc Mat dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc Mat dynamic library \n You cannot move the dynamic libraries!");
     CHKERRQ(PetscLoadDynamicLibrary("dm",&found));
-    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc DM dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc DM dynamic library \n You cannot move the dynamic libraries!");
     CHKERRQ(PetscLoadDynamicLibrary("ksp",&found));
-    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc KSP dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc KSP dynamic library \n You cannot move the dynamic libraries!");
     CHKERRQ(PetscLoadDynamicLibrary("snes",&found));
-    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc SNES dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc SNES dynamic library \n You cannot move the dynamic libraries!");
     CHKERRQ(PetscLoadDynamicLibrary("ts",&found));
-    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc TS dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc TS dynamic library \n You cannot move the dynamic libraries!");
     CHKERRQ(PetscLoadDynamicLibrary("tao",&found));
-    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate Tao dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate Tao dynamic library \n You cannot move the dynamic libraries!");
 #endif
 #else /* defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES) */
 #if defined(PETSC_USE_SINGLE_LIBRARY)
@@ -134,7 +134,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
   {
     PetscBool found;
     CHKERRQ(PetscLoadDynamicLibrary("bamg",&found));
-    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc BAMG dynamic library \n You cannot move the dynamic libraries!");
+    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate PETSc BAMG dynamic library \n You cannot move the dynamic libraries!");
   }
 #endif
 
@@ -354,7 +354,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl,c
   PetscBool         flg;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!name,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to find routine with null name");
+  PetscCheck(name,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to find routine with null name");
 
   *r = NULL;
   while (entry) {
@@ -391,7 +391,7 @@ PetscErrorCode  PetscFunctionListView(PetscFunctionList list,PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
 
   CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
-  PetscCheckFalse(!iascii,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ASCII viewer supported");
+  PetscCheck(iascii,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only ASCII viewer supported");
 
   while (list) {
     CHKERRQ(PetscViewerASCIIPrintf(viewer," %s\n",list->name));

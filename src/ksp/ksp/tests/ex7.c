@@ -84,7 +84,7 @@ int main(int argc,char **args)
 
   /* Check As is a linear operator: As*(ax + y) = a As*x + As*y */
   CHKERRQ(MatIsLinear(As,10,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Shell matrix As is non-linear! Use '-info |grep MatIsLinear' to get detailed report");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Shell matrix As is non-linear! Use '-info |grep MatIsLinear' to get detailed report");
 
   /* Compute right-hand-side vector. */
   CHKERRQ(MatMult(As,u,b));

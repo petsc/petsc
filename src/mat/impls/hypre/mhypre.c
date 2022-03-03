@@ -899,7 +899,7 @@ static PetscErrorCode MatPtAPNumeric_AIJ_HYPRE(Mat A,Mat P,Mat C)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectTypeCompare((PetscObject)P,MATHYPRE,&ishypre));
-  PetscCheckFalse(!ishypre,comm,PETSC_ERR_USER,"P should be of type %s",MATHYPRE);
+  PetscCheck(ishypre,comm,PETSC_ERR_USER,"P should be of type %s",MATHYPRE);
   hP = (Mat_HYPRE*)P->data;
   PetscStackCallStandard(HYPRE_IJMatrixGetObjectType,hP->ij,&type);
   PetscCheckFalse(type != HYPRE_PARCSR,comm,PETSC_ERR_SUP,"Only HYPRE_PARCSR is supported");
@@ -925,9 +925,9 @@ static PetscErrorCode MatPtAPNumeric_HYPRE_HYPRE(Mat A,Mat P,Mat C)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectTypeCompare((PetscObject)P,MATHYPRE,&ishypre));
-  PetscCheckFalse(!ishypre,PetscObjectComm((PetscObject)P),PETSC_ERR_USER,"P should be of type %s",MATHYPRE);
+  PetscCheck(ishypre,PetscObjectComm((PetscObject)P),PETSC_ERR_USER,"P should be of type %s",MATHYPRE);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATHYPRE,&ishypre));
-  PetscCheckFalse(!ishypre,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"A should be of type %s",MATHYPRE);
+  PetscCheck(ishypre,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"A should be of type %s",MATHYPRE);
   hA = (Mat_HYPRE*)A->data;
   hP = (Mat_HYPRE*)P->data;
   PetscStackCallStandard(HYPRE_IJMatrixGetObjectType,hA->ij,&type);
@@ -1001,9 +1001,9 @@ static PetscErrorCode MatMatMultNumeric_HYPRE_HYPRE(Mat A,Mat B,Mat C)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectTypeCompare((PetscObject)B,MATHYPRE,&ishypre));
-  PetscCheckFalse(!ishypre,PetscObjectComm((PetscObject)B),PETSC_ERR_USER,"B should be of type %s",MATHYPRE);
+  PetscCheck(ishypre,PetscObjectComm((PetscObject)B),PETSC_ERR_USER,"B should be of type %s",MATHYPRE);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATHYPRE,&ishypre));
-  PetscCheckFalse(!ishypre,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"A should be of type %s",MATHYPRE);
+  PetscCheck(ishypre,PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"A should be of type %s",MATHYPRE);
   hA = (Mat_HYPRE*)A->data;
   hB = (Mat_HYPRE*)B->data;
   PetscStackCallStandard(HYPRE_IJMatrixGetObjectType,hA->ij,&type);
@@ -1337,7 +1337,7 @@ static PetscErrorCode MatGetArray_HYPRE(Mat A, PetscInt size, void **array)
   Mat_HYPRE          *hA = (Mat_HYPRE*)A->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!hA->available,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Temporary space is in use");
+  PetscCheck(hA->available,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Temporary space is in use");
 
   if (hA->size >= size) {
     *array = hA->array;
@@ -1695,7 +1695,7 @@ static PetscErrorCode MatHYPREGetParCSR_HYPRE(Mat A, hypre_ParCSRMatrix **parcsr
   HYPRE_Int type;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!hA->ij,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"HYPRE_IJMatrix not present");
+  PetscCheck(hA->ij,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"HYPRE_IJMatrix not present");
   PetscStackCallStandard(HYPRE_IJMatrixGetObjectType,hA->ij,&type);
   PetscCheckFalse(type != HYPRE_PARCSR,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"HYPRE_IJMatrix is not of type HYPRE_PARCSR");
   PetscStackCallStandard(HYPRE_IJMatrixGetObject,hA->ij,(void**)parcsr);
@@ -2007,7 +2007,7 @@ static PetscErrorCode MatView_HYPRE(Mat A, PetscViewer view)
     CHKERRQ(MatHYPREGetParCSR_HYPRE(A,&parcsr));
     CHKERRQ(MatCreateFromParCSR(parcsr,MATAIJ,PETSC_USE_POINTER,&B));
     CHKERRQ(MatGetOperation(B,MATOP_VIEW,(void(**)(void))&mview));
-    PetscCheckFalse(!mview,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing view operation");
+    PetscCheck(mview,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing view operation");
     CHKERRQ((*mview)(B,view));
     CHKERRQ(MatDestroy(&B));
   } else {
@@ -2018,7 +2018,7 @@ static PetscErrorCode MatView_HYPRE(Mat A, PetscViewer view)
 
     /* HYPRE uses only text files */
     CHKERRQ(PetscObjectTypeCompare((PetscObject)view,PETSCVIEWERASCII,&isascii));
-    PetscCheckFalse(!isascii,PetscObjectComm((PetscObject)view),PETSC_ERR_SUP,"PetscViewerType %s: native HYPRE format needs PETSCVIEWERASCII",((PetscObject)view)->type_name);
+    PetscCheck(isascii,PetscObjectComm((PetscObject)view),PETSC_ERR_SUP,"PetscViewerType %s: native HYPRE format needs PETSCVIEWERASCII",((PetscObject)view)->type_name);
     CHKERRQ(PetscViewerFileGetName(view,&filename));
     PetscStackCallStandard(HYPRE_IJMatrixPrint,hA->ij,filename);
     CHKERRMPI(MPI_Comm_size(hA->comm,&size));
@@ -2078,7 +2078,7 @@ static PetscErrorCode MatGetDiagonal_HYPRE(Mat A, Vec d)
 
   PetscFunctionBegin;
   CHKERRQ(MatHasCongruentLayouts(A,&cong));
-  PetscCheckFalse(!cong,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only for square matrices with same local distributions of rows and columns");
+  PetscCheck(cong,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only for square matrices with same local distributions of rows and columns");
   if (PetscDefined(USE_DEBUG)) {
     PetscBool miss;
     CHKERRQ(MatMissingDiagonal(A,&miss,NULL));

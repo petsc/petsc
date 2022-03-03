@@ -507,7 +507,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
         }
       }
     } else {
-      PetscCheckFalse(mat->nooffprocentries,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process row %" PetscInt_FMT " even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set",im[i]);
+      PetscCheck(!mat->nooffprocentries,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Setting off process row %" PetscInt_FMT " even though MatSetOption(,MAT_NO_OFF_PROC_ENTRIES,PETSC_TRUE) was set",im[i]);
       if (!aij->donotstash) {
         mat->assembled = PETSC_FALSE;
         if (roworiented) {
@@ -772,7 +772,7 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
     const PetscScalar *xx;
     PetscScalar       *bb;
 
-    PetscCheckFalse(!cong,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Need matching row/col layout");
+    PetscCheck(cong,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Need matching row/col layout");
     CHKERRQ(VecGetArrayRead(x, &xx));
     CHKERRQ(VecGetArray(b, &bb));
     for (r = 0; r < len; ++r) bb[lrows[r]] = diag*xx[lrows[r]];
@@ -882,7 +882,7 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
     PetscBool cong;
 
     CHKERRQ(MatHasCongruentLayouts(A,&cong));
-    PetscCheckFalse(!cong,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Need matching row/col layout");
+    PetscCheck(cong,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Need matching row/col layout");
     CHKERRQ(VecScatterBegin(l->Mvctx,x,l->lvec,INSERT_VALUES,SCATTER_FORWARD));
     CHKERRQ(VecScatterEnd(l->Mvctx,x,l->lvec,INSERT_VALUES,SCATTER_FORWARD));
     CHKERRQ(VecGetArrayRead(l->lvec,&xx));
@@ -1719,7 +1719,7 @@ PetscErrorCode MatGetRow_MPIAIJ(Mat matin,PetscInt row,PetscInt *nz,PetscInt **i
   PetscInt       *cmap,*idx_p;
 
   PetscFunctionBegin;
-  PetscCheckFalse(mat->getrowactive,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Already active");
+  PetscCheck(!mat->getrowactive,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Already active");
   mat->getrowactive = PETSC_TRUE;
 
   if (!mat->rowvalues && (idx || v)) {
@@ -1792,7 +1792,7 @@ PetscErrorCode MatRestoreRow_MPIAIJ(Mat mat,PetscInt row,PetscInt *nz,PetscInt *
   Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!aij->getrowactive,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"MatGetRow() must be called first");
+  PetscCheck(aij->getrowactive,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"MatGetRow() must be called first");
   aij->getrowactive = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -3180,13 +3180,13 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat,IS isrow,IS isco
   if (call == MAT_REUSE_MATRIX) {
     /* Retrieve isrow_d, iscol_d and iscol_o from submat */
     CHKERRQ(PetscObjectQuery((PetscObject)*submat,"isrow_d",(PetscObject*)&isrow_d));
-    PetscCheckFalse(!isrow_d,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"isrow_d passed in was not used before, cannot reuse");
+    PetscCheck(isrow_d,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"isrow_d passed in was not used before, cannot reuse");
 
     CHKERRQ(PetscObjectQuery((PetscObject)*submat,"iscol_d",(PetscObject*)&iscol_d));
-    PetscCheckFalse(!iscol_d,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"iscol_d passed in was not used before, cannot reuse");
+    PetscCheck(iscol_d,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"iscol_d passed in was not used before, cannot reuse");
 
     CHKERRQ(PetscObjectQuery((PetscObject)*submat,"iscol_o",(PetscObject*)&iscol_o));
-    PetscCheckFalse(!iscol_o,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"iscol_o passed in was not used before, cannot reuse");
+    PetscCheck(iscol_o,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"iscol_o passed in was not used before, cannot reuse");
 
     /* Update diagonal and off-diagonal portions of submat */
     asub = (Mat_MPIAIJ*)(*submat)->data;
@@ -3346,7 +3346,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call
   /* General case: iscol -> iscol_local which has global size of iscol */
   if (call == MAT_REUSE_MATRIX) {
     CHKERRQ(PetscObjectQuery((PetscObject)*newmat,"ISAllGather",(PetscObject*)&iscol_local));
-    PetscCheckFalse(!iscol_local,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
+    PetscCheck(iscol_local,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
   } else {
     if (!iscol_local) {
       CHKERRQ(ISGetSeqIS_Private(mat,iscol,&iscol_local));
@@ -3473,14 +3473,14 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat,IS isrow,IS iscol,I
   CHKERRQ(PetscObjectGetComm((PetscObject)mat,&comm));
   if (call == MAT_REUSE_MATRIX) {
     CHKERRQ(PetscObjectQuery((PetscObject)*newmat,"SubIScol",(PetscObject*)&iscol_sub));
-    PetscCheckFalse(!iscol_sub,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"SubIScol passed in was not used before, cannot reuse");
+    PetscCheck(iscol_sub,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"SubIScol passed in was not used before, cannot reuse");
     CHKERRQ(ISGetLocalSize(iscol_sub,&count));
 
     CHKERRQ(PetscObjectQuery((PetscObject)*newmat,"Subcmap",(PetscObject*)&iscmap));
-    PetscCheckFalse(!iscmap,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Subcmap passed in was not used before, cannot reuse");
+    PetscCheck(iscmap,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Subcmap passed in was not used before, cannot reuse");
 
     CHKERRQ(PetscObjectQuery((PetscObject)*newmat,"SubMatrix",(PetscObject*)&Msub));
-    PetscCheckFalse(!Msub,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
+    PetscCheck(Msub,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
 
     CHKERRQ(MatCreateSubMatrices_MPIAIJ_SingleIS_Local(mat,1,&isrow,&iscol_sub,MAT_REUSE_MATRIX,PETSC_FALSE,&Msub));
 
@@ -3694,7 +3694,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_nonscalable(Mat mat,IS isrow,IS iscol,P
 
   if (call ==  MAT_REUSE_MATRIX) {
     CHKERRQ(PetscObjectQuery((PetscObject)*newmat,"SubMatrix",(PetscObject*)&Mreuse));
-    PetscCheckFalse(!Mreuse,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
+    PetscCheck(Mreuse,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
     CHKERRQ(MatCreateSubMatrices_MPIAIJ_SingleIS_Local(mat,1,&isrow,&iscol,MAT_REUSE_MATRIX,allcolumns,&Mreuse));
   } else {
     CHKERRQ(MatCreateSubMatrices_MPIAIJ_SingleIS_Local(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,allcolumns,&Mreuse));
@@ -4412,7 +4412,7 @@ PetscErrorCode MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,const PetscInt *colmap[]
 
   PetscFunctionBegin;
   CHKERRQ(PetscStrbeginswith(((PetscObject)A)->type_name,MATMPIAIJ,&flg));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"This function requires a MATMPIAIJ matrix as input");
+  PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"This function requires a MATMPIAIJ matrix as input");
   if (Ad)     *Ad     = a->A;
   if (Ao)     *Ao     = a->B;
   if (colmap) *colmap = a->garray;
@@ -4566,7 +4566,7 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJNumeric(Mat seqmat,Mat mpimat)
   CHKERRMPI(MPI_Comm_rank(comm,&rank));
 
   CHKERRQ(PetscObjectQuery((PetscObject)mpimat,"MatMergeSeqsToMPI",(PetscObject*)&container));
-  PetscCheckFalse(!container,PetscObjectComm((PetscObject)mpimat),PETSC_ERR_PLIB,"Mat not created from MatCreateMPIAIJSumSeqAIJSymbolic");
+  PetscCheck(container,PetscObjectComm((PetscObject)mpimat),PETSC_ERR_PLIB,"Mat not created from MatCreateMPIAIJSumSeqAIJSymbolic");
   CHKERRQ(PetscContainerGetPointer(container,(void**)&merge));
   CHKERRQ(MatSeqAIJGetArrayRead(seqmat,&a_a));
   aa   = a_a;
@@ -4998,7 +4998,7 @@ PetscErrorCode MatMPIAIJGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
 
   PetscFunctionBegin;
   CHKERRQ(PetscStrbeginswith(((PetscObject)A)->type_name,MATMPIAIJ,&match));
-  PetscCheckFalse(!match,PetscObjectComm((PetscObject)A), PETSC_ERR_SUP,"Requires MATMPIAIJ matrix as input");
+  PetscCheck(match,PetscObjectComm((PetscObject)A), PETSC_ERR_SUP,"Requires MATMPIAIJ matrix as input");
   CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A),&size));
   if (size == 1) {
     if (scall == MAT_INITIAL_MATRIX) {
@@ -5232,7 +5232,7 @@ PetscErrorCode MatMPIAIJGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *co
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&match));
-  PetscCheckFalse(!match,PetscObjectComm((PetscObject)A), PETSC_ERR_SUP,"Requires MATMPIAIJ matrix as input");
+  PetscCheck(match,PetscObjectComm((PetscObject)A), PETSC_ERR_SUP,"Requires MATMPIAIJ matrix as input");
   CHKERRQ(PetscLogEventBegin(MAT_Getlocalmatcondensed,A,0,0,0));
   if (!row) {
     start = A->rmap->rstart; end = A->rmap->rend;
@@ -6758,7 +6758,7 @@ static PetscErrorCode MatProductNumeric_MPIAIJBACKEND(Mat C)
 
   PetscFunctionBegin;
   MatCheckProduct(C,1);
-  PetscCheckFalse(!C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
+  PetscCheck(C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
   mmdata = (MatMatMPIAIJBACKEND*)C->product->data;
   if (!mmdata->reusesym) { /* update temporary matrices */
     if (mmdata->P_oth) {
@@ -6827,7 +6827,7 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
 
   PetscFunctionBegin;
   MatCheckProduct(C,1);
-  PetscCheckFalse(product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
+  PetscCheck(!product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
   ptype = product->type;
   if (product->A->symmetric && ptype == MATPRODUCT_AtB) {
     ptype = MATPRODUCT_AB;

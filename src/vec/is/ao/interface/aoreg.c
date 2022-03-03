@@ -35,7 +35,7 @@ PetscErrorCode  AOSetType(AO ao, AOType method)
 
   CHKERRQ(AORegisterAll());
   CHKERRQ(PetscFunctionListFind(AOList,method,&r));
-  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown AO type: %s", method);
+  PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown AO type: %s", method);
   if (ao->ops->destroy) {
     CHKERRQ((*ao->ops->destroy)(ao));
     ao->ops->destroy = NULL;

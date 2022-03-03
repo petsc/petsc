@@ -250,7 +250,7 @@ static PetscErrorCode DMFTopologyCreateBrick_pforest(DM dm,PetscInt N[], PetscIn
   PetscInt       i, numVerts;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!useMorton,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Lexicographic ordering not implemented yet");
+  PetscCheck(useMorton,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Lexicographic ordering not implemented yet");
   CHKERRQ(PetscNewLog(dm,topo));
 
   (*topo)->refct = 1;
@@ -356,7 +356,7 @@ static PetscErrorCode DMConvert_plex_pforest(DM dm, DMType newtype, DM *pforest)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   comm = PetscObjectComm((PetscObject)dm);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMPLEX,&isPlex));
-  PetscCheckFalse(!isPlex,comm,PETSC_ERR_ARG_WRONG,"Expected DM type %s, got %s",DMPLEX,((PetscObject)dm)->type_name);
+  PetscCheck(isPlex,comm,PETSC_ERR_ARG_WRONG,"Expected DM type %s, got %s",DMPLEX,((PetscObject)dm)->type_name);
   CHKERRQ(DMGetDimension(dm,&dim));
   PetscCheckFalse(dim != P4EST_DIM,comm,PETSC_ERR_ARG_WRONG,"Expected DM dimension %d, got %d",P4EST_DIM,dim);
   CHKERRQ(DMCreate(comm,pforest));
@@ -522,7 +522,7 @@ static PetscErrorCode DMPforestComputeLocalCellTransferSF_loop(p4est_t *p4estFro
     int              comp;
 
     PetscStackCallP4estReturn(comp,p4est_quadrant_is_equal,(firstFrom,firstTo));
-    PetscCheckFalse(!comp,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"non-matching partitions");
+    PetscCheck(comp,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"non-matching partitions");
 
     for (currentFrom = 0, currentTo = 0; currentFrom < numFrom && currentTo < numTo;) {
       p4est_quadrant_t *quadFrom = &quadsFrom[currentFrom];
@@ -586,8 +586,8 @@ static PetscErrorCode DMPforestGetRefinementLevel(DM dm, PetscInt *lev)
   p4est_t           *p4est;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!pforest,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing DM_Forest_pforest");
-  PetscCheckFalse(!pforest->forest,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing p4est_t");
+  PetscCheck(pforest,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing DM_Forest_pforest");
+  PetscCheck(pforest->forest,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Missing p4est_t");
   p4est = pforest->forest;
   flt   = p4est->first_local_tree;
   llt   = p4est->last_local_tree;
@@ -723,8 +723,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     DM_Forest_pforest *apforest = (DM_Forest_pforest*) aforest->data;
 
     CHKERRQ(PetscObjectTypeCompare((PetscObject)adaptFrom,DMPFOREST,&ispforest));
-    PetscCheckFalse(!ispforest,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_NOTSAMETYPE,"Trying to adapt from %s, which is not %s",((PetscObject)adaptFrom)->type_name,DMPFOREST);
-    PetscCheckFalse(!apforest->topo,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"The pre-adaptation forest must have a topology");
+    PetscCheck(ispforest,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_NOTSAMETYPE,"Trying to adapt from %s, which is not %s",((PetscObject)adaptFrom)->type_name,DMPFOREST);
+    PetscCheck(apforest->topo,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"The pre-adaptation forest must have a topology");
     CHKERRQ(DMSetUp(adaptFrom));
     CHKERRQ(DMForestGetBaseDM(dm,&base));
     CHKERRQ(DMForestGetTopology(dm,&topoName));
@@ -758,7 +758,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
         PetscSF sf;
 
         CHKERRQ(DMPlexGetRedundantDM(base,&sf,&dmRedundant));
-        PetscCheckFalse(!dmRedundant,comm,PETSC_ERR_PLIB,"Could not create redundant DM");
+        PetscCheck(dmRedundant,comm,PETSC_ERR_PLIB,"Could not create redundant DM");
         CHKERRQ(PetscObjectCompose((PetscObject)dmRedundant,"_base_migration_sf",(PetscObject)sf));
         CHKERRQ(PetscSFDestroy(&sf));
         base = dmRedundant;
@@ -795,7 +795,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       }
       topo->tree_face_to_uniq = tree_face_to_uniq;
       pforest->topo           = topo;
-    } else PetscCheckFalse(isDA,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Not implemented yet");
+    } else PetscCheck(!isDA,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Not implemented yet");
 #if 0
       PetscInt N[3], P[3];
 
@@ -1393,10 +1393,10 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
   CHKERRQ(DMSetUp(dm));
   geom = pforest->topo->geom;
   CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK, &isvtk));
-  PetscCheckFalse(!isvtk,PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Cannot use viewer type %s", ((PetscObject)viewer)->type_name);
+  PetscCheck(isvtk,PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Cannot use viewer type %s", ((PetscObject)viewer)->type_name);
   switch (viewer->format) {
   case PETSC_VIEWER_VTK_VTU:
-    PetscCheckFalse(!pforest->forest,PetscObjectComm(odm),PETSC_ERR_ARG_WRONG,"DM has not been setup with a valid forest");
+    PetscCheck(pforest->forest,PetscObjectComm(odm),PETSC_ERR_ARG_WRONG,"DM has not been setup with a valid forest");
     name = vtk->filename;
     CHKERRQ(PetscStrlen(name,&len));
     CHKERRQ(PetscStrcasecmp(name+len-4,".vtu",&hasExt));
@@ -1414,7 +1414,7 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
       PetscStackCallP4est(p4est_vtk_context_set_geom,(pvtk,geom));
       PetscStackCallP4est(p4est_vtk_context_set_scale,(pvtk,(double)vtkScale));
       PetscStackCallP4estReturn(pvtk,p4est_vtk_write_header,(pvtk));
-      PetscCheckFalse(!pvtk,PetscObjectComm((PetscObject)odm),PETSC_ERR_LIB,P4EST_STRING "_vtk_write_header() failed");
+      PetscCheck(pvtk,PetscObjectComm((PetscObject)odm),PETSC_ERR_LIB,P4EST_STRING "_vtk_write_header() failed");
       PetscStackCallP4estReturn(pvtk,p4est_vtk_write_cell_dataf,(pvtk,
                                                                  1, /* write tree */
                                                                  1, /* write level */
@@ -1423,9 +1423,9 @@ static PetscErrorCode DMView_VTK_pforest(PetscObject odm, PetscViewer viewer)
                                                                  0, /* no scalar fields */
                                                                  0, /* no vector fields */
                                                                  pvtk));
-      PetscCheckFalse(!pvtk,PetscObjectComm((PetscObject)odm),PETSC_ERR_LIB,P4EST_STRING "_vtk_write_cell_dataf() failed");
+      PetscCheck(pvtk,PetscObjectComm((PetscObject)odm),PETSC_ERR_LIB,P4EST_STRING "_vtk_write_cell_dataf() failed");
       PetscStackCallP4estReturn(footerr,p4est_vtk_write_footer,(pvtk));
-      PetscCheckFalse(footerr,PetscObjectComm((PetscObject)odm),PETSC_ERR_LIB,P4EST_STRING "_vtk_write_footer() failed");
+      PetscCheck(!footerr,PetscObjectComm((PetscObject)odm),PETSC_ERR_LIB,P4EST_STRING "_vtk_write_footer() failed");
     }
     if (!pforest->topo->geom) PetscStackCallP4est(p4est_geometry_destroy,(geom));
     CHKERRQ(PetscFree(filenameStrip));
@@ -1954,7 +1954,7 @@ static PetscErrorCode DMReferenceTreeGetChildSymmetry_pforest(DM dm, PetscInt pa
     if (parent >= dStart && parent <= dEnd) break;
   }
   PetscCheckFalse(dim > 2,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot perform child symmetry for %d-cells",dim);
-  PetscCheckFalse(!dim,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A vertex has no children");
+  PetscCheck(dim,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A vertex has no children");
   if (childA < dStart || childA >= dEnd) { /* a 1-cell in a 2-cell */
     /* this is a lower-dimensional child: bootstrap */
     PetscInt       size, i, sA = -1, sB, sOrientB, sConeSize;
@@ -4100,7 +4100,7 @@ static PetscErrorCode DMPforestLocalizeCoordinates(DM dm, DM plex)
 
   /* Copy over vertex coordinates */
   CHKERRQ(DMGetCoordinatesLocal(plex, &coordinates));
-  PetscCheckFalse(!coordinates,PetscObjectComm((PetscObject)plex),PETSC_ERR_SUP,"Missing local coordinates vector");
+  PetscCheck(coordinates,PetscObjectComm((PetscObject)plex),PETSC_ERR_SUP,"Missing local coordinates vector");
   CHKERRQ(VecGetArray(cVec, &coords2));
   CHKERRQ(VecGetArrayRead(coordinates, &coords));
   for (v = vStart; v < vEnd; ++v) {
@@ -4224,7 +4224,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   comm = PetscObjectComm((PetscObject)dm);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMPFOREST,&isPforest));
-  PetscCheckFalse(!isPforest,comm,PETSC_ERR_ARG_WRONG,"Expected DM type %s, got %s",DMPFOREST,((PetscObject)dm)->type_name);
+  PetscCheck(isPforest,comm,PETSC_ERR_ARG_WRONG,"Expected DM type %s, got %s",DMPFOREST,((PetscObject)dm)->type_name);
   CHKERRQ(DMGetDimension(dm,&dim));
   PetscCheckFalse(dim != P4EST_DIM,comm,PETSC_ERR_ARG_WRONG,"Expected DM dimension %d, got %d",P4EST_DIM,dim);
   forest  = (DM_Forest*) dm->data;
@@ -4581,7 +4581,7 @@ static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec 
   PetscFunctionBegin;
   CHKERRQ(VecGetDM(vecIn,&dmVecIn));
   CHKERRQ(DMGetDS(dmVecIn,&ds));
-  PetscCheckFalse(!ds,PetscObjectComm((PetscObject)dmVecIn),PETSC_ERR_SUP,"Cannot transfer without a PetscDS object");
+  PetscCheck(ds,PetscObjectComm((PetscObject)dmVecIn),PETSC_ERR_SUP,"Cannot transfer without a PetscDS object");
   { /* we cannot stick user contexts into function callbacks for DMProjectFieldLocal! */
     PetscSection section;
     PetscInt     Nf;
@@ -4591,9 +4591,9 @@ static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec 
     PetscCheckFalse(Nf > 3,PetscObjectComm((PetscObject)dmVecIn),PETSC_ERR_SUP,"Number of fields %D are currently not supported! Send an email at petsc-dev@mcs.anl.gov",Nf);
   }
   CHKERRQ(DMForestGetMinimumRefinement(dm,&minLevel));
-  PetscCheckFalse(minLevel,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot transfer with minimum refinement set to %D. Rerun with DMForestSetMinimumRefinement(dm,0)",minLevel);
+  PetscCheck(!minLevel,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Cannot transfer with minimum refinement set to %D. Rerun with DMForestSetMinimumRefinement(dm,0)",minLevel);
   CHKERRQ(DMForestGetBaseDM(dm,&base));
-  PetscCheckFalse(!base,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Missing base DM");
+  PetscCheck(base,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Missing base DM");
 
   CHKERRQ(VecSet(vecOut,0.0));
   if (dmVecIn == base) { /* sequential runs */
@@ -4603,7 +4603,7 @@ static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec 
     Vec          vecInRed, vecInLocal;
 
     CHKERRQ(PetscObjectQuery((PetscObject)base,"_base_migration_sf",(PetscObject*)&sfRed));
-    PetscCheckFalse(!sfRed,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not the DM set with DMForestSetBaseDM()");
+    PetscCheck(sfRed,PETSC_COMM_SELF,PETSC_ERR_SUP,"Not the DM set with DMForestSetBaseDM()");
     CHKERRQ(PetscSectionCreate(PetscObjectComm((PetscObject)dmVecIn),&secInRed));
     CHKERRQ(VecCreate(PETSC_COMM_SELF,&vecInRed));
     CHKERRQ(DMGetLocalSection(dmVecIn,&secIn));
@@ -4630,7 +4630,7 @@ static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec 
     /* need to call DMSetUp to have the hierarchy recursively setup */
     CHKERRQ(DMSetUp(dmIn));
     CHKERRQ(DMIsForest(dmIn,&isforest));
-    PetscCheckFalse(!isforest,PetscObjectComm((PetscObject)dmIn),PETSC_ERR_SUP,"Cannot currently transfer through a mixed hierarchy! Found DM type %s",((PetscObject)dmIn)->type_name);
+    PetscCheck(isforest,PetscObjectComm((PetscObject)dmIn),PETSC_ERR_SUP,"Cannot currently transfer through a mixed hierarchy! Found DM type %s",((PetscObject)dmIn)->type_name);
     coarseDM = NULL;
     if (hiforest) {
       CHKERRQ(DMForestGetAdaptivityForest(dmIn,&coarseDM));
@@ -4678,7 +4678,7 @@ static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec 
   }
 
   CHKERRQ(DMGetLabel(dmIn,"_forest_base_subpoint_map",&subpointMap));
-  PetscCheckFalse(!subpointMap,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing _forest_base_subpoint_map label");
+  PetscCheck(subpointMap,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing _forest_base_subpoint_map label");
 
   CHKERRQ(DMPlexGetMaxProjectionHeight(base,&mh));
   CHKERRQ(DMPlexSetMaxProjectionHeight(plex,mh));

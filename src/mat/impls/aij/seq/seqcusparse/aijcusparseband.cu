@@ -171,7 +171,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B,Mat A,const Ma
 {
   Mat_SeqAIJ                   *b = (Mat_SeqAIJ*)B->data;
   Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors*)B->spptr;
-  PetscCheckFalse(!cusparseTriFactors,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing cusparseTriFactors");
+  PetscCheck(cusparseTriFactors,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing cusparseTriFactors");
   Mat_SeqAIJCUSPARSE           *cusparsestructA = (Mat_SeqAIJCUSPARSE*)A->spptr;
   Mat_SeqAIJCUSPARSEMultStruct *matstructA;
   CsrMatrix                    *matrixA;
@@ -187,11 +187,11 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B,Mat A,const Ma
     PetscFunctionReturn(0);
   }
   // cusparse setup
-  PetscCheckFalse(!cusparsestructA,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing cusparsestructA");
+  PetscCheck(cusparsestructA,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing cusparsestructA");
   matstructA = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestructA->mat; //  matstruct->cprowIndices
-  PetscCheckFalse(!matstructA,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing mat struct");
+  PetscCheck(matstructA,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing mat struct");
   matrixA = (CsrMatrix*)matstructA->mat;
-  PetscCheckFalse(!matrixA,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing matrix cusparsestructA->mat->mat");
+  PetscCheck(matrixA,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing matrix cusparsestructA->mat->mat");
 
   // get data
   ic      = thrust::raw_pointer_cast(cusparseTriFactors->cpermIndices->data());
@@ -265,10 +265,10 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B,Mat A,IS isrow,IS is
   PetscFunctionBegin;
   PetscCheckFalse(A->rmap->N != A->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix must be square");
   CHKERRQ(MatMissingDiagonal(A,&missing,&i));
-  PetscCheckFalse(missing,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %" PetscInt_FMT,i);
-  PetscCheckFalse(!cusparseTriFactors,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"!cusparseTriFactors");
+  PetscCheck(!missing,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %" PetscInt_FMT,i);
+  PetscCheck(cusparseTriFactors,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"!cusparseTriFactors");
   CHKERRQ(MatGetOption(A,MAT_STRUCTURALLY_SYMMETRIC,&missing));
-  PetscCheckFalse(!missing,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"only structrally symmetric matrices supported");
+  PetscCheck(missing,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"only structrally symmetric matrices supported");
 
   CHKERRQ(ISInvertPermutation(iscol,PETSC_DECIDE,&isicol));
   CHKERRQ(ISGetIndices(isicol,&ic));

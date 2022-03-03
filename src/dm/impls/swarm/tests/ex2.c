@@ -77,7 +77,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
     } else {
       CHKERRQ(PetscStrcmp(fstring, "x2_x4", &flag));
       options->func = x2_x4;
-      PetscCheckFalse(!flag,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown function %s",fstring);
+      PetscCheck(flag,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown function %s",fstring);
     }
   }
   CHKERRQ(PetscOptionsReal("-moment_tol", "Tolerance for moment checks", "ex2.c", options->momentTol, &options->momentTol, NULL));

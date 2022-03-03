@@ -2076,7 +2076,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   if (!dim) sp->order = 0;
   order = sp->order;
   uniform = sp->uniform;
-  PetscCheckFalse(!uniform,PETSC_COMM_SELF, PETSC_ERR_SUP, "Variable order not supported yet");
+  PetscCheck(uniform,PETSC_COMM_SELF, PETSC_ERR_SUP, "Variable order not supported yet");
   if (lag->trimmed && !formDegree) lag->trimmed = PETSC_FALSE; /* trimmed spaces are the same as full spaces for 0-forms */
   if (lag->nodeType == PETSCDTNODES_DEFAULT) {
     lag->nodeType = PETSCDTNODES_GAUSSJACOBI;
@@ -2785,7 +2785,7 @@ static PetscErrorCode PetscDualSpaceGetSymmetries_Lagrange(PetscDualSpace sp, co
           CHKERRQ(MatGetRow(symMat, i, &ncols, &cols, &vals));
           for (j = 0; j < ncols; j++) {
             if (PetscAbsScalar(vals[j]) > PETSC_SMALL) {
-              PetscCheckFalse(nz_seen,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
+              PetscCheck(!nz_seen,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
               nz_seen = PETSC_TRUE;
               PetscCheckFalse(PetscAbsReal(PetscAbsScalar(vals[j]) - PetscRealConstant(1.)) > PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");
               PetscCheckFalse(PetscAbsReal(PetscImaginaryPart(vals[j])) > PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "This dual space has symmetries that can't be described as a permutation + sign flips");

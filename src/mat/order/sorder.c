@@ -63,7 +63,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_RowLength(Mat mat,MatOrderingType typ
 
   PetscFunctionBegin;
   CHKERRQ(MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,&ia,&ja,&done));
-  PetscCheckFalse(!done,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot get rows for matrix");
+  PetscCheck(done,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot get rows for matrix");
 
   CHKERRQ(PetscMalloc2(n,&lens,n,&permr));
   for (i=0; i<n; i++) {
@@ -169,9 +169,9 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(rperm,3);
   PetscValidPointer(cperm,4);
-  PetscCheckFalse(!mat->assembled,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  PetscCheckFalse(mat->factortype,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  PetscCheckFalse(!type,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Ordering type cannot be null");
+  PetscCheck(mat->assembled,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  PetscCheck(!mat->factortype,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  PetscCheck(type,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Ordering type cannot be null");
 
   CHKERRQ(PetscStrcmp(type,MATORDERINGEXTERNAL,&flg));
   if (flg) {
@@ -224,7 +224,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 
   CHKERRQ(MatOrderingRegisterAll());
   CHKERRQ(PetscFunctionListFind(MatOrderingList,type,&r));
-  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);
+  PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);
 
   CHKERRQ(PetscLogEventBegin(MAT_GetOrdering,mat,0,0,0));
   CHKERRQ((*r)(mat,type,rperm,cperm));

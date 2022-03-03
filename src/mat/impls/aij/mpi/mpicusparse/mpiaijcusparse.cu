@@ -602,7 +602,7 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
   Mat_MPIAIJCUSPARSE *cusparseStruct = (Mat_MPIAIJCUSPARSE*)aij->spptr;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!cusparseStruct,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing spptr");
+  PetscCheck(cusparseStruct,PETSC_COMM_SELF,PETSC_ERR_COR,"Missing spptr");
   if (cusparseStruct->deviceMat) {
     PetscSplitCSRDataStructure d_mat = cusparseStruct->deviceMat, h_mat;
 
@@ -810,7 +810,7 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B
   CsrMatrix                  *matrixA = NULL,*matrixB = NULL;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!A->assembled,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Need already assembled matrix");
+  PetscCheck(A->assembled,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Need already assembled matrix");
   if (A->factortype != MAT_FACTOR_NONE) {
     *B = NULL;
     PetscFunctionReturn(0);
@@ -823,13 +823,13 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B
     CHKERRQ(PetscObjectBaseTypeCompare((PetscObject)A,MATSEQAIJ,&isseqaij));
     if (isseqaij) {
       jaca = (Mat_SeqAIJ*)A->data;
-      PetscCheckFalse(!jaca->roworiented,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Device assembly does not currently support column oriented values insertion");
+      PetscCheck(jaca->roworiented,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Device assembly does not currently support column oriented values insertion");
       cusparsestructA = (Mat_SeqAIJCUSPARSE*)A->spptr;
       d_mat = cusparsestructA->deviceMat;
       CHKERRQ(MatSeqAIJCUSPARSECopyToGPU(A));
     } else {
       Mat_MPIAIJ *aij = (Mat_MPIAIJ*)A->data;
-      PetscCheckFalse(!aij->roworiented,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Device assembly does not currently support column oriented values insertion");
+      PetscCheck(aij->roworiented,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Device assembly does not currently support column oriented values insertion");
       Mat_MPIAIJCUSPARSE *spptr = (Mat_MPIAIJCUSPARSE*)aij->spptr;
       jaca = (Mat_SeqAIJ*)aij->A->data;
       cusparsestructA = (Mat_SeqAIJCUSPARSE*)aij->A->spptr;
@@ -838,7 +838,7 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B
     }
     if (cusparsestructA->format==MAT_CUSPARSE_CSR) {
       Mat_SeqAIJCUSPARSEMultStruct *matstruct = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestructA->mat;
-      PetscCheckFalse(!matstruct,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing Mat_SeqAIJCUSPARSEMultStruct for A");
+      PetscCheck(matstruct,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing Mat_SeqAIJCUSPARSEMultStruct for A");
       matrixA = (CsrMatrix*)matstruct->mat;
       bi = NULL;
       bj = NULL;
@@ -846,7 +846,7 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Device Mat needs MAT_CUSPARSE_CSR");
   } else {
     Mat_MPIAIJ *aij = (Mat_MPIAIJ*)A->data;
-    PetscCheckFalse(!aij->roworiented,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Device assembly does not currently support column oriented values insertion");
+    PetscCheck(aij->roworiented,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Device assembly does not currently support column oriented values insertion");
     jaca = (Mat_SeqAIJ*)aij->A->data;
     jacb = (Mat_SeqAIJ*)aij->B->data;
     Mat_MPIAIJCUSPARSE *spptr = (Mat_MPIAIJCUSPARSE*)aij->spptr;
@@ -860,8 +860,8 @@ PetscErrorCode MatCUSPARSEGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B
       CHKERRQ(MatSeqAIJCUSPARSECopyToGPU(aij->B));
       Mat_SeqAIJCUSPARSEMultStruct *matstructA = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestructA->mat;
       Mat_SeqAIJCUSPARSEMultStruct *matstructB = (Mat_SeqAIJCUSPARSEMultStruct*)cusparsestructB->mat;
-      PetscCheckFalse(!matstructA,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing Mat_SeqAIJCUSPARSEMultStruct for A");
-      PetscCheckFalse(!matstructB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing Mat_SeqAIJCUSPARSEMultStruct for B");
+      PetscCheck(matstructA,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing Mat_SeqAIJCUSPARSEMultStruct for A");
+      PetscCheck(matstructB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing Mat_SeqAIJCUSPARSEMultStruct for B");
       matrixA = (CsrMatrix*)matstructA->mat;
       matrixB = (CsrMatrix*)matstructB->mat;
       if (jacb->compressedrow.use) {

@@ -146,7 +146,7 @@ static PetscErrorCode MatMult_LMVM(Mat B, Vec X, Vec Y)
   PetscFunctionBegin;
   VecCheckSameSize(X, 2, Y, 3);
   VecCheckMatCompatible(B, X, 2, Y, 3);
-  PetscCheckFalse(!lmvm->allocated,PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
+  PetscCheck(lmvm->allocated,PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
   CHKERRQ((*lmvm->ops->mult)(B, X, Y));
   if (lmvm->shift != 0.0) {
     CHKERRQ(VecAXPY(Y, lmvm->shift, X));
@@ -169,7 +169,7 @@ static PetscErrorCode MatCopy_LMVM(Mat B, Mat M, MatStructure str)
     CHKERRQ(MatLMVMAllocate(M, bctx->Xprev, bctx->Fprev));
   } else {
     CHKERRQ(MatLMVMIsAllocated(M, &allocatedM));
-    PetscCheckFalse(!allocatedM,PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONGSTATE, "Target matrix must be allocated first");
+    PetscCheck(allocatedM,PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONGSTATE, "Target matrix must be allocated first");
     MatCheckSameSize(B, 1, M, 2);
   }
 
@@ -239,7 +239,7 @@ static PetscErrorCode MatShift_LMVM(Mat B, PetscScalar a)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!lmvm->allocated,PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
+  PetscCheck(lmvm->allocated,PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
   lmvm->shift += PetscRealPart(a);
   PetscFunctionReturn(0);
 }
@@ -251,7 +251,7 @@ static PetscErrorCode MatGetVecs_LMVM(Mat B, Vec *L, Vec *R)
   Mat_LMVM          *lmvm = (Mat_LMVM*)B->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!lmvm->allocated,PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
+  PetscCheck(lmvm->allocated,PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
   CHKERRQ(VecDuplicate(lmvm->Xprev, L));
   CHKERRQ(VecDuplicate(lmvm->Fprev, R));
   PetscFunctionReturn(0);

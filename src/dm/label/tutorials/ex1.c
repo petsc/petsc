@@ -55,7 +55,7 @@ PetscErrorCode CheckLabelsSame(DMLabel label0, DMLabel label1)
   CHKERRQ(PetscObjectGetName((PetscObject)label1, &name1));
   CHKERRQ(DMLabelCompare(PETSC_COMM_WORLD, label0, label1, &same, &msg));
   PetscCheckFalse(same != (PetscBool) !msg,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMLabelCompare returns inconsistent same=%d msg=\"%s\"", same, msg);
-  PetscCheckFalse(!same,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should not differ! Message:\n%s", name0, name1, msg);
+  PetscCheck(same,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should not differ! Message:\n%s", name0, name1, msg);
   /* Test passing NULL, must not fail */
   CHKERRQ(DMLabelCompare(PETSC_COMM_WORLD, label0, label1, NULL, NULL));
   CHKERRQ(PetscFree(msg));
@@ -73,7 +73,7 @@ PetscErrorCode CheckLabelsNotSame(DMLabel label0, DMLabel label1)
   CHKERRQ(PetscObjectGetName((PetscObject)label1, &name1));
   CHKERRQ(DMLabelCompare(PETSC_COMM_WORLD, label0, label1, &same, &msg));
   PetscCheckFalse(same != (PetscBool) !msg,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMLabelCompare returns inconsistent same=%d msg=\"%s\"", same, msg);
-  PetscCheckFalse(same,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should differ!", name0, name1);
+  PetscCheck(!same,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels \"%s\" and \"%s\" should differ!", name0, name1);
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Compare label \"%s\" with \"%s\": %s\n", name0, name1, msg));
   CHKERRQ(PetscFree(msg));
   PetscFunctionReturn(0);
@@ -90,7 +90,7 @@ PetscErrorCode CheckDMLabelsSame(DM dm0, DM dm1)
   CHKERRQ(PetscObjectGetName((PetscObject)dm1, &name1));
   CHKERRQ(DMCompareLabels(dm0, dm1, &same, &msg));
   PetscCheckFalse(same != (PetscBool) !msg,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMCompareLabels returns inconsistent same=%d msg=\"%s\"", same, msg);
-  PetscCheckFalse(!same,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should not differ! Message:\n%s", name0, name1, msg);
+  PetscCheck(same,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should not differ! Message:\n%s", name0, name1, msg);
   /* Test passing NULL, must not fail */
   CHKERRQ(DMCompareLabels(dm0, dm1, NULL, NULL));
   CHKERRQ(PetscFree(msg));
@@ -108,7 +108,7 @@ PetscErrorCode CheckDMLabelsNotSame(DM dm0, DM dm1)
   CHKERRQ(PetscObjectGetName((PetscObject)dm1, &name1));
   CHKERRQ(DMCompareLabels(dm0, dm1, &same, &msg));
   PetscCheckFalse(same != (PetscBool) !msg,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "DMCompareLabels returns inconsistent same=%d msg=\"%s\"", same, msg);
-  PetscCheckFalse(same,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should differ!", name0, name1);
+  PetscCheck(!same,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Labels of DMs \"%s\" and \"%s\" should differ!", name0, name1);
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Labels of DMs \"%s\" and \"%s\" differ: %s\n", name0, name1, msg));
   CHKERRQ(PetscFree(msg));
   PetscFunctionReturn(0);
@@ -270,21 +270,21 @@ int main(int argc, char **argv)
     DMLabel label0, label1, label2;
     CHKERRQ(DMGetLabel(dm, "label0", &label0));
     CHKERRQ(DMGetLabel(dm, "label1", &label1));
-    PetscCheckFalse(!label0,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label0 must not be NULL now");
-    PetscCheckFalse(!label1,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label1 must not be NULL now");
+    PetscCheck(label0,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label0 must not be NULL now");
+    PetscCheck(label1,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label1 must not be NULL now");
     CHKERRQ(DMRemoveLabel(dm, "label1", NULL));
     CHKERRQ(DMRemoveLabel(dm, "label2", &label2));
     CHKERRQ(DMRemoveLabelBySelf(dm, &label0, PETSC_TRUE));
     CHKERRQ(DMGetLabel(dm, "label0", &label0));
     CHKERRQ(DMGetLabel(dm, "label1", &label1));
-    PetscCheckFalse(label0,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label0 must be NULL now");
-    PetscCheckFalse(label1,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label1 must be NULL now");
-    PetscCheckFalse(!label2,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must not be NULL now");
+    PetscCheck(!label0,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label0 must be NULL now");
+    PetscCheck(!label1,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label1 must be NULL now");
+    PetscCheck(label2,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must not be NULL now");
     CHKERRQ(DMRemoveLabelBySelf(dm, &label2, PETSC_FALSE)); /* this should do nothing */
-    PetscCheckFalse(!label2,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must not be NULL now");
+    PetscCheck(label2,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must not be NULL now");
     CHKERRQ(DMLabelDestroy(&label2));
     CHKERRQ(DMGetLabel(dm, "label2", &label2));
-    PetscCheckFalse(label2,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must be NULL now");
+    PetscCheck(!label2,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "label2 must be NULL now");
   }
 
   CHKERRQ(DMDestroy(&dm));

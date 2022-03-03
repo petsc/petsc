@@ -72,7 +72,7 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&Atrans));
   CHKERRQ(MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans));
   CHKERRQ(MatEqual(A, Atrans, &flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A+A^T is non-symmetric");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"A+A^T is non-symmetric");
   CHKERRQ(MatDestroy(&Atrans));
 
   /* create a SeqSBAIJ matrix sA (= A) */
@@ -132,7 +132,7 @@ int main(int argc,char **args)
 
   for (i=0; i<nd; ++i) {
     CHKERRQ(ISEqual(is1[i],is2[i],&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"i=%" PetscInt_FMT ", is1 != is2",i);
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"i=%" PetscInt_FMT ", is1 != is2",i);
   }
 
   CHKERRQ(MatCreateSubMatrices(A,nd,is1,is1,MAT_INITIAL_MATRIX,&submatA));

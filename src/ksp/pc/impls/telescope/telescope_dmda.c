@@ -850,8 +850,8 @@ PetscErrorCode PCTelescopeSubNullSpaceCreate_dmda_Telescope(PC pc,PC_Telescope s
     /* create new (near) nullspace for redundant object */
     CHKERRQ(MatNullSpaceCreate(subcomm,has_const,n,sub_vecs,sub_nullspace));
     CHKERRQ(VecDestroyVecs(n,&sub_vecs));
-    PetscCheckFalse(nullspace->remove,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callbacks not supported when propagating (near) nullspaces with PCTelescope");
-    PetscCheckFalse(nullspace->rmctx,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callback context not supported when propagating (near) nullspaces with PCTelescope");
+    PetscCheck(!nullspace->remove,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callbacks not supported when propagating (near) nullspaces with PCTelescope");
+    PetscCheck(!nullspace->rmctx,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Propagation of custom remove callback context not supported when propagating (near) nullspaces with PCTelescope");
   }
   PetscFunctionReturn(0);
 }

@@ -463,7 +463,7 @@ PetscErrorCode MatMeshToCellGraph(Mat mesh,PetscInt ncommonnodes,Mat *dual)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectTypeCompare((PetscObject)mesh,MATMPIADJ,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use MPIAdj matrix type");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"Must use MPIAdj matrix type");
 
   CHKERRQ(PetscObjectGetComm((PetscObject)mesh,&comm));
   PetscStackCallParmetis(ParMETIS_V3_Mesh2Dual,((idx_t*)mesh->rmap->range,(idx_t*)adj->i,(idx_t*)adj->j,(idx_t*)&numflag,(idx_t*)&ncommonnodes,(idx_t**)&newxadj,(idx_t**)&newadjncy,&comm));

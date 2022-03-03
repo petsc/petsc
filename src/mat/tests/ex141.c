@@ -73,7 +73,7 @@ int main(int argc,char **args)
   /* convert C to BAIJ format */
   CHKERRQ(MatConvert(C,MATSEQBAIJ,MAT_INITIAL_MATRIX,&B));
   CHKERRQ(MatMultEqual(B,C,10,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatConvert fails!");
+  PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatConvert fails!");
 
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(MatDestroy(&C));

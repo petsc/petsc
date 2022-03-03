@@ -173,7 +173,7 @@ PetscErrorCode MatMFFDDSSetUmin_DS(Mat mat,PetscReal umin)
 
   PetscFunctionBegin;
   CHKERRQ(MatShellGetContext(mat,&ctx));
-  PetscCheckFalse(!ctx,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatMFFDDSSetUmin() attached to non-shell matrix");
+  PetscCheck(ctx,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatMFFDDSSetUmin() attached to non-shell matrix");
   hctx       = (MatMFFD_DS*)ctx->hctx;
   hctx->umin = umin;
   PetscFunctionReturn(0);

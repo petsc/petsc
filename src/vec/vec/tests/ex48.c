@@ -331,7 +331,7 @@ static PetscErrorCode CapsuleReadAndCompareAttributes(Capsule c, PetscViewer v, 
         ptr0 = &buffer;
       }
       CHKERRQ(compare(c->types[t], ptr0, c->vals[t], &flg));
-      PetscCheckFalse(!flg,comm, PETSC_ERR_PLIB, "Value of attribute %s/%s/%s is not equal to the original value", group, parent, attribute);
+      PetscCheck(flg,comm, PETSC_ERR_PLIB, "Value of attribute %s/%s/%s is not equal to the original value", group, parent, attribute);
       if (verbose) CHKERRQ(PetscPrintf(comm, " (=)"));
       if (c->types[t] == PETSC_STRING) {
         CHKERRQ(PetscFree(str));
@@ -436,7 +436,7 @@ static PetscErrorCode testGroupsDatasets(PetscViewer viewer)
       CHKERRQ(PetscPrintf(comm, "%-32s => %4s => %-32s  exists? %s\n", paths[p], flg?"pop":"push", group, PetscBools[flg1]));
     }
     CHKERRQ(PetscStrcmp(group, expected, &flg2));
-    PetscCheckFalse(!flg2,comm, PETSC_ERR_PLIB, "Current group %s not equal to expected %s", group, expected);
+    PetscCheck(flg2,comm, PETSC_ERR_PLIB, "Current group %s not equal to expected %s", group, expected);
     CHKERRQ(shouldExist(group, PETSC_TRUE, &flg2));
     PetscCheckFalse(flg1 != flg2,comm, PETSC_ERR_PLIB, "Group %s should exist? %s Exists in %s? %s", group, PetscBools[flg2], filename, PetscBools[flg1]);
   }
@@ -475,7 +475,7 @@ static PetscErrorCode testGroupsDatasets(PetscViewer viewer)
         CHKERRQ(PetscObjectSetName((PetscObject)v, name));
         CHKERRQ(VecLoad(v, viewer));
         CHKERRQ(VecEqual(v, vecs[paths2apaths[p]][s], &flg1));
-        PetscCheckFalse(!flg1,comm, PETSC_ERR_PLIB, "Dataset %s in %s is not equal to the original Vec", fullname, filename);
+        PetscCheck(flg1,comm, PETSC_ERR_PLIB, "Dataset %s in %s is not equal to the original Vec", fullname, filename);
         if (verbose) CHKERRQ(PetscPrintf(comm, " (=)"));
         CHKERRQ(VecDestroy(&v));
       }
@@ -542,7 +542,7 @@ static PetscErrorCode testAttributesAbsolutePath(PetscViewer viewer, const char 
       const char *group;
       CHKERRQ(PetscViewerHDF5GetGroup(viewer, &group));
       CHKERRQ(PetscStrcmp(group, prefix, &flg));
-      PetscCheckFalse(!flg,comm, PETSC_ERR_PLIB, "prefix %s not equal to pushed group %s", prefix, group);
+      PetscCheck(flg,comm, PETSC_ERR_PLIB, "prefix %s not equal to pushed group %s", prefix, group);
     }
     CHKERRQ(formPath((PetscBool)!!prefix, paths[p], datasets[s], buf, sizeof(buf)));
     CHKERRQ(shouldExist(buf, PETSC_TRUE, &flg));
@@ -831,9 +831,9 @@ static PetscErrorCode testAttributesDefaultValue(PetscViewer viewer)
   CHKERRQ(PetscViewerHDF5ReadAttribute(viewer, "/", "attr_0_str", PETSC_STRING, &strings[1], &strings[2]));
   CHKERRQ(PetscViewerHDF5ReadAttribute(viewer, "/", "attr_nonExisting_str", PETSC_STRING, &strings[1], &strings[3]));
   CHKERRQ(PetscStrcmp(strings[2], strings[0], &flg));
-  PetscCheckFalse(!flg,comm, PETSC_ERR_PLIB, "%s = strings[2] != strings[0] = %s", strings[2], strings[0]);
+  PetscCheck(flg,comm, PETSC_ERR_PLIB, "%s = strings[2] != strings[0] = %s", strings[2], strings[0]);
   CHKERRQ(PetscStrcmp(strings[3], strings[1], &flg));
-  PetscCheckFalse(!flg,comm, PETSC_ERR_PLIB, "%s = strings[3] != strings[1] = %s", strings[3], strings[1]);
+  PetscCheck(flg,comm, PETSC_ERR_PLIB, "%s = strings[3] != strings[1] = %s", strings[3], strings[1]);
   for (i=0; i<nv; i++) {
     CHKERRQ(PetscFree(strings[i]));
   }

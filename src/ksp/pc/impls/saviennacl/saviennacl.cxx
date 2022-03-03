@@ -43,7 +43,7 @@ static PetscErrorCode PCSetUp_SAVIENNACL(PC pc)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQAIJVIENNACL,&flg));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles ViennaCL matrices");
+  PetscCheck(flg,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Currently only handles ViennaCL matrices");
   if (pc->setupcalled != 0) {
     try {
       delete sa->SAVIENNACL;

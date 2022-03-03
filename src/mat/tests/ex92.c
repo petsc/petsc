@@ -105,7 +105,7 @@ int main(int argc,char **args)
 
   /* Test sA==A through MatMult() */
   CHKERRQ(MatMultEqual(A,sA,10,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in MatConvert(): A != sA");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Error in MatConvert(): A != sA");
 
   /* Test MatIncreaseOverlap() */
   CHKERRQ(PetscMalloc1(nd,&is1));
@@ -184,13 +184,13 @@ int main(int argc,char **args)
     CHKERRQ(MatCreateSubMatrices(sA,nd,is1,is1,MAT_INITIAL_MATRIX,&submatsA));
 
     CHKERRQ(MatMultEqual(A,sA,10,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A != sA");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A != sA");
 
     /* Now test MatCreateSubmatrices with MAT_REUSE_MATRIX option */
     CHKERRQ(MatCreateSubMatrices(A,nd,is1,is1,MAT_REUSE_MATRIX,&submatA));
     CHKERRQ(MatCreateSubMatrices(sA,nd,is1,is1,MAT_REUSE_MATRIX,&submatsA));
     CHKERRQ(MatMultEqual(A,sA,10,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"MatCreateSubmatrices(): A != sA");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"MatCreateSubmatrices(): A != sA");
 
     CHKERRQ(MatDestroySubMatrices(nd,&submatA));
     CHKERRQ(MatDestroySubMatrices(nd,&submatsA));

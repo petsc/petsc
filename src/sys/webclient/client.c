@@ -74,7 +74,7 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
       CHKERRQ(PetscStrcat(keyfile,"/"));
       CHKERRQ(PetscStrcat(keyfile,"sslclient.pem"));
       CHKERRQ(PetscTestFile(keyfile,'r',&exists));
-      PetscCheckFalse(!exists,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate sslclient.pem file in current directory or home directory");
+      PetscCheck(exists,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate sslclient.pem file in current directory or home directory");
     }
 
     /* Load our keys and certificates*/
@@ -116,7 +116,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],c
   PetscFunctionBegin;
   CHKERRQ(PetscStrallocpy(url,&host));
   CHKERRQ(PetscStrchr(host,'/',&path));
-  PetscCheckFalse(!path,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"url must contain / it is %s",url);
+  PetscCheck(path,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"url must contain / it is %s",url);
   *path = 0;
   CHKERRQ(PetscStrlen(host,&hostlen));
 
@@ -125,7 +125,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[],const char url[],c
 
   if (header) {
     CHKERRQ(PetscStrendswith(header,"\r\n",&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"header must end with \\r\");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"header must end with \\r\");
   }
 
   CHKERRQ(PetscStrlen(type,&typelen));

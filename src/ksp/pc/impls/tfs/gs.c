@@ -965,7 +965,7 @@ PetscErrorCode PCTFS_gs_gop_vec(PCTFS_gs_id *gs,  PetscScalar *vals,  const char
 static PetscErrorCode PCTFS_gs_gop_vec_plus(PCTFS_gs_id *gs,  PetscScalar *vals,  PetscInt step)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(!gs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_gs_gop_vec() passed NULL gs handle!!!");
+  PetscCheck(gs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_gs_gop_vec() passed NULL gs handle!!!");
 
   /* local only operations!!! */
   if (gs->num_local) PCTFS_gs_gop_vec_local_plus(gs,vals,step);

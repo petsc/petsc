@@ -431,7 +431,7 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
 
   PetscFunctionBegin;
   CHKERRQ(VecGetDM(v, &dm));
-  PetscCheckFalse(!dm,PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
+  PetscCheck(dm,PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
   CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,   &isvtk));
   CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5,  &ishdf5));
   CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW,  &isdraw));
@@ -498,7 +498,7 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
 
   PetscFunctionBegin;
   CHKERRQ(VecGetDM(v, &dm));
-  PetscCheckFalse(!dm,PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
+  PetscCheck(dm,PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
   CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,      &isvtk));
   CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5,     &ishdf5));
   CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW,     &isdraw));
@@ -552,7 +552,7 @@ PetscErrorCode VecView_Plex_Native(Vec originalv, PetscViewer viewer)
   PetscFunctionBegin;
   CHKERRQ(VecGetDM(originalv, &dm));
   CHKERRQ(PetscObjectGetComm((PetscObject) originalv, &comm));
-  PetscCheckFalse(!dm,comm, PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
+  PetscCheck(dm,comm, PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
   CHKERRQ(PetscViewerGetFormat(viewer, &format));
   CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5));
   CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERVTK,  &isvtk));
@@ -603,7 +603,7 @@ PetscErrorCode VecLoad_Plex_Local(Vec v, PetscViewer viewer)
 
   PetscFunctionBegin;
   CHKERRQ(VecGetDM(v, &dm));
-  PetscCheckFalse(!dm,PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
+  PetscCheck(dm,PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
   CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5));
   if (ishdf5) {
     DM          dmBC;
@@ -631,7 +631,7 @@ PetscErrorCode VecLoad_Plex(Vec v, PetscViewer viewer)
 
   PetscFunctionBegin;
   CHKERRQ(VecGetDM(v, &dm));
-  PetscCheckFalse(!dm,PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
+  PetscCheck(dm,PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
   CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5,     &ishdf5));
   CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWEREXODUSII, &isexodusii));
   if (ishdf5) {
@@ -660,7 +660,7 @@ PetscErrorCode VecLoad_Plex_Native(Vec originalv, PetscViewer viewer)
 
   PetscFunctionBegin;
   CHKERRQ(VecGetDM(originalv, &dm));
-  PetscCheckFalse(!dm,PetscObjectComm((PetscObject) originalv), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
+  PetscCheck(dm,PetscObjectComm((PetscObject) originalv), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
   CHKERRQ(PetscViewerGetFormat(viewer, &format));
   CHKERRQ(PetscObjectTypeCompare((PetscObject) viewer, PETSCVIEWERHDF5, &ishdf5));
   if (format == PETSC_VIEWER_NATIVE) {
@@ -1762,7 +1762,7 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
     Vec     val;
 
     CHKERRQ(DMGetLabel(dm, name, &label));
-    PetscCheckFalse(!label,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Label %s provided to -dm_label_view does not exist in this DM", name);
+    PetscCheck(label,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Label %s provided to -dm_label_view does not exist in this DM", name);
     CHKERRQ(DMPlexCreateLabelField(dm, label, &val));
     CHKERRQ(VecView(val, viewer));
     CHKERRQ(VecDestroy(&val));
@@ -3817,7 +3817,7 @@ PetscErrorCode DMPlexSymmetrize(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCheckFalse(mesh->supports,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Supports were already setup in this DMPlex");
+  PetscCheck(!mesh->supports,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "Supports were already setup in this DMPlex");
   CHKERRQ(PetscLogEventBegin(DMPLEX_Symmetrize,dm,0,0,0));
   /* Calculate support sizes */
   CHKERRQ(DMPlexGetChart(dm, &pStart, &pEnd));
@@ -3876,7 +3876,7 @@ static PetscErrorCode DMPlexCreateDepthStratum(DM dm, DMLabel label, PetscInt de
       CHKERRQ(DMLabelGetStratumBounds(label, level, &qStart, &qEnd));
       if ((pStart >= qStart && pStart < qEnd) || (pEnd > qStart && pEnd <= qEnd)) {overlap = PETSC_TRUE; break;}
     }
-    PetscCheckFalse(overlap,PETSC_COMM_SELF, PETSC_ERR_PLIB, "New depth %D range [%D,%D) overlaps with depth %D range [%D,%D)", depth, pStart, pEnd, level, qStart, qEnd);
+    PetscCheck(!overlap,PETSC_COMM_SELF, PETSC_ERR_PLIB, "New depth %D range [%D,%D) overlaps with depth %D range [%D,%D)", depth, pStart, pEnd, level, qStart, qEnd);
   }
   CHKERRQ(ISCreateStride(PETSC_COMM_SELF, pEnd-pStart, pStart, 1, &stratumIS));
   CHKERRQ(DMLabelSetStratumIS(label, depth, stratumIS));
@@ -4813,7 +4813,7 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
     PetscFunctionReturn(0);
   }
   CHKERRQ(DMPlexGetDepthLabel(dm, &label));
-  PetscCheckFalse(!label,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");
+  PetscCheck(label,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");
   CHKERRQ(DMLabelGetStratumBounds(label, stratumValue, start, end));
   PetscFunctionReturn(0);
 }
@@ -4857,7 +4857,7 @@ PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
     PetscFunctionReturn(0);
   }
   CHKERRQ(DMPlexGetDepthLabel(dm, &label));
-  PetscCheckFalse(!label,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");
+  PetscCheck(label,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");
   CHKERRQ(DMLabelGetNumValues(label, &depth));
   CHKERRQ(DMLabelGetStratumBounds(label, depth-1-stratumValue, start, end));
   PetscFunctionReturn(0);
@@ -8312,7 +8312,7 @@ PetscErrorCode DMPlexCheckSymmetry(DM dm)
           CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "%D, ", support[s]));
         }
         CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "\n"));
-        PetscCheckFalse(dup,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D not repeatedly found in support of repeated cone point %D", p, cone[c]);
+        PetscCheck(!dup,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D not repeatedly found in support of repeated cone point %D", p, cone[c]);
         else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %D not found in support of cone point %D", p, cone[c]);
       }
     }
@@ -8656,7 +8656,7 @@ PetscErrorCode DMPlexCheckPointSF(DM dm)
     CHKERRQ(PetscPrintf(PetscObjectComm((PetscObject)dm), "Warning: DMPlexCheckPointSF() is currently not implemented for meshes with partition overlapping"));
     PetscFunctionReturn(0);
   }
-  PetscCheckFalse(!pointSF,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This DMPlex is distributed but does not have PointSF attached");
+  PetscCheck(pointSF,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This DMPlex is distributed but does not have PointSF attached");
   CHKERRQ(PetscSFGetGraph(pointSF, &nroots, &nleaves, &locals, NULL));
   PetscCheckFalse(nroots < 0,PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This DMPlex is distributed but its PointSF has no graph set");
   CHKERRQ(PetscSFComputeDegreeBegin(pointSF, &rootdegree));
@@ -9638,8 +9638,8 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
 
   PetscFunctionBegin;
   CHKERRQ(DMGetLocalSection(dm, &section));
-  PetscCheckFalse(!section,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Must set default section for DM before splitting subdomain");
-  PetscCheckFalse(!subdm,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Must set output subDM for splitting subdomain");
+  PetscCheck(section,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Must set default section for DM before splitting subdomain");
+  PetscCheck(subdm,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Must set output subDM for splitting subdomain");
   /* Create subdomain */
   CHKERRQ(DMPlexFilter(dm, label, value, subdm));
   /* Create submodel */

@@ -92,7 +92,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
 
     CHKERRQ(VecDot(V,RP,&d1));
     if (d1 == 0.0) {
-      PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero inner product");
+      PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero inner product");
       else ksp->reason = KSP_DIVERGED_BREAKDOWN;
       CHKERRQ(PetscInfo(ksp,"Breakdown due to zero inner product\n"));
       break;
@@ -108,7 +108,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
       /* t is 0. if s is 0, then alpha v == r, and hence alpha p may be our solution. Give it a try? */
       CHKERRQ(VecDot(S,S,&d1));
       if (d1 != 0.0) {
-        PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has failed due to singular preconditioned operator");
+        PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has failed due to singular preconditioned operator");
         else ksp->reason = KSP_DIVERGED_BREAKDOWN;
         CHKERRQ(PetscInfo(ksp,"Failed due to singular preconditioned operator\n"));
         break;
@@ -143,7 +143,7 @@ static PetscErrorCode  KSPSolve_FBCGS(KSP ksp)
     CHKERRQ((*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP));
     if (ksp->reason) break;
     if (rho == 0.0) {
-     PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero rho inner product");
+     PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve breakdown due to zero rho inner product");
       else ksp->reason = KSP_DIVERGED_BREAKDOWN;
       CHKERRQ(PetscInfo(ksp,"Breakdown due to zero rho inner product\n"));
       break;

@@ -569,7 +569,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
     switch (adaptor->adaptCriterion) {
     case DM_ADAPTATION_REFINE:
       CHKERRQ(DMRefine(dm, comm, &odm));
-      PetscCheckFalse(!odm,comm, PETSC_ERR_ARG_INCOMP, "DMRefine() did not perform any refinement, cannot continue grid sequencing");
+      PetscCheck(odm,comm, PETSC_ERR_ARG_INCOMP, "DMRefine() did not perform any refinement, cannot continue grid sequencing");
       adapted = PETSC_TRUE;
       break;
     case DM_ADAPTATION_LABEL:

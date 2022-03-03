@@ -29,7 +29,7 @@ static PetscErrorCode TestInsertion()
     PetscInt        n;
 
     CHKERRQ(DMLabelGetStratumIS(label, values[v], &stratum));
-    PetscCheckFalse(!stratum,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Stratum %d is empty!", v);
+    PetscCheck(stratum,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Stratum %d is empty!", v);
     CHKERRQ(ISGetIndices(stratum, &points));
     CHKERRQ(ISGetLocalSize(stratum, &n));
     for (i = 0; i < n; ++i) {

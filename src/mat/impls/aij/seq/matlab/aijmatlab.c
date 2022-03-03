@@ -32,7 +32,7 @@ PETSC_EXTERN PetscErrorCode MatlabEnginePut_SeqAIJ(PetscObject obj,void *mengine
   mxArray        *mat;
 
   PetscFunctionBegin;
-  mat  = MatSeqAIJToMatlab((Mat)obj);PetscCheckFalse(!mat,PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot create MATLAB matrix");
+  mat  = MatSeqAIJToMatlab((Mat)obj);PetscCheck(mat,PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot create MATLAB matrix");
   CHKERRQ(PetscObjectName(obj));
   engPutVariable((Engine*)mengine,obj->name,mat);
   PetscFunctionReturn(0);

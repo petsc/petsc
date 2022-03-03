@@ -55,7 +55,7 @@ int main(int argc,char **args)
     Mat Trans;
     CHKERRQ(MatTranspose(A,MAT_INITIAL_MATRIX, &Trans));
     CHKERRQ(MatEqual(A, Trans, &isSymmetric));
-    PetscCheckFalse(!isSymmetric,PETSC_COMM_SELF,PETSC_ERR_USER,"A must be symmetric");
+    PetscCheck(isSymmetric,PETSC_COMM_SELF,PETSC_ERR_USER,"A must be symmetric");
     CHKERRQ(MatDestroy(&Trans));
   }
 

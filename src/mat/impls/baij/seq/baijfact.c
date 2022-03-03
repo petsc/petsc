@@ -984,7 +984,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
 
   PetscFunctionBegin;
   CHKERRQ(MatMissingDiagonal(A,&missing,&i));
-  PetscCheckFalse(missing,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %" PetscInt_FMT,i);
+  PetscCheck(!missing,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %" PetscInt_FMT,i);
 
   if (bs > 1) {
     if (!a->sbaijMat) {
@@ -1216,11 +1216,11 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
   }
 
   CHKERRQ(MatMissingDiagonal(A,&missing,&i));
-  PetscCheckFalse(missing,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %" PetscInt_FMT,i);
+  PetscCheck(!missing,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %" PetscInt_FMT,i);
 
   /* check whether perm is the identity mapping */
   CHKERRQ(ISIdentity(perm,&perm_identity));
-  PetscCheckFalse(!perm_identity,PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix reordering is not supported");
+  PetscCheck(perm_identity,PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix reordering is not supported");
   CHKERRQ(ISGetIndices(perm,&rip));
 
   /* initialization */
@@ -1519,7 +1519,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   PetscFunctionBegin;
   /* ------- symbolic factorization, can be reused ---------*/
   CHKERRQ(MatMissingDiagonal(A,&missing,&i));
-  PetscCheckFalse(missing,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %" PetscInt_FMT,i);
+  PetscCheck(!missing,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %" PetscInt_FMT,i);
   adiag=a->diag;
 
   CHKERRQ(ISInvertPermutation(iscol,PETSC_DECIDE,&isicol));
@@ -1590,7 +1590,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   for (i=0; i<mbs; i++) {
     /* copy initial fill into linked list */
     nzi = ai[r[i]+1] - ai[r[i]];
-    PetscCheckFalse(!nzi,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %" PetscInt_FMT " in permuted ordering %" PetscInt_FMT,r[i],i);
+    PetscCheck(nzi,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %" PetscInt_FMT " in permuted ordering %" PetscInt_FMT,r[i],i);
     nzi_al = adiag[r[i]] - ai[r[i]];
     nzi_au = ai[r[i]+1] - adiag[r[i]] -1;
 

@@ -313,7 +313,7 @@ static PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
 
   PetscFunctionBegin;
   CHKERRQ(MatShellGetContext(mat,&ctx));
-  PetscCheckFalse(!ctx->current_u,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"MatMFFDSetBase() has not been called, this is often caused by forgetting to call \n\t\tMatAssemblyBegin/End on the first Mat in the SNES compute function");
+  PetscCheck(ctx->current_u,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"MatMFFDSetBase() has not been called, this is often caused by forgetting to call \n\t\tMatAssemblyBegin/End on the first Mat in the SNES compute function");
   /* We log matrix-free matrix-vector products separately, so that we can
      separate the performance monitoring from the cases that use conventional
      storage.  We may eventually modify event logging to associate events
@@ -401,8 +401,8 @@ PetscErrorCode MatGetDiagonal_MFFD(Mat mat,Vec a)
 
   PetscFunctionBegin;
   CHKERRQ(MatShellGetContext(mat,&ctx));
-  PetscCheckFalse(!ctx->func,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Requires calling MatMFFDSetFunction() first");
-  PetscCheckFalse(!ctx->funci,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Requires calling MatMFFDSetFunctioni() first");
+  PetscCheck(ctx->func,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Requires calling MatMFFDSetFunction() first");
+  PetscCheck(ctx->funci,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Requires calling MatMFFDSetFunctioni() first");
   w    = ctx->w;
   U    = ctx->current_u;
   CHKERRQ((*ctx->func)(ctx->funcctx,U,a));

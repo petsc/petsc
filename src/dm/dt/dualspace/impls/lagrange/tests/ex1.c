@@ -278,9 +278,9 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
         PetscCheckFalse(intNodeIdxDim != nodeIdxDim || intNodeVecDim != nodeVecDim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node indices not the same shale as all node indices");
         PetscCheckFalse(intNnodes != spintdim,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect interior nNodes");
         CHKERRQ(PetscArraycmp(intNodeIdx, nodeIdx, nodeIdxDim * intNnodes, &same));
-        PetscCheckFalse(!same,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node indices not the same as start of all node indices");
+        PetscCheck(same,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node indices not the same as start of all node indices");
         CHKERRQ(PetscArraycmp(intNodeVec, nodeVec, nodeVecDim * intNnodes, &same));
-        PetscCheckFalse(!same,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node vectors not the same as start of all node vectors");
+        PetscCheck(same,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior node vectors not the same as start of all node vectors");
       } else if (intMat) {
         CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "Interior data is the same as all data\n"));
         PetscCheckFalse(intNodes != allNodes,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Interior nodes should be the same as all nodes");

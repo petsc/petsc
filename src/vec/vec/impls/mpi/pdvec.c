@@ -296,7 +296,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       CHKERRQ(VecGetBlockSize(xin,&vdim));
       CHKERRQ(PetscViewerASCIIPrintf(viewer,"FiniteElementSpace\n"));
       CHKERRQ(PetscObjectQuery((PetscObject)xin,"_glvis_info_container",(PetscObject*)&glvis_container));
-      PetscCheckFalse(!glvis_container,PetscObjectComm((PetscObject)xin),PETSC_ERR_PLIB,"Missing GLVis container");
+      PetscCheck(glvis_container,PetscObjectComm((PetscObject)xin),PETSC_ERR_PLIB,"Missing GLVis container");
       CHKERRQ(PetscContainerGetPointer(glvis_container,(void**)&glvis_vec_info));
       CHKERRQ(PetscViewerASCIIPrintf(viewer,"%s\n",glvis_vec_info->fec_type));
       CHKERRQ(PetscViewerASCIIPrintf(viewer,"VDim: %" PetscInt_FMT "\n",vdim));
@@ -304,7 +304,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       CHKERRQ(PetscViewerASCIIPrintf(viewer,"\n"));
       /* mfem::Vector::Print() */
       CHKERRQ(PetscObjectQuery((PetscObject)viewer,"_glvis_info_container",(PetscObject*)&glvis_container));
-      PetscCheckFalse(!glvis_container,PetscObjectComm((PetscObject)viewer),PETSC_ERR_PLIB,"Missing GLVis container");
+      PetscCheck(glvis_container,PetscObjectComm((PetscObject)viewer),PETSC_ERR_PLIB,"Missing GLVis container");
       CHKERRQ(PetscContainerGetPointer(glvis_container,(void**)&glvis_info));
       if (glvis_info->enabled) {
         CHKERRQ(VecGetLocalSize(xin,&n));

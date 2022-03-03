@@ -1420,7 +1420,7 @@ static PetscErrorCode TSSetUp_BEuler(TS ts)
 
   PetscFunctionBegin;
   PetscCheckFalse(th->Theta != 1.0,PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change the default value (1) of theta when using backward Euler");
-  PetscCheckFalse(th->endpoint,PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change to the endpoint form of the Theta methods when using backward Euler");
+  PetscCheck(!th->endpoint,PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change to the endpoint form of the Theta methods when using backward Euler");
   CHKERRQ(TSSetUp_Theta(ts));
   PetscFunctionReturn(0);
 }

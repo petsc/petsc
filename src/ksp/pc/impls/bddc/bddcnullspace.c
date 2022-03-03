@@ -88,7 +88,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
     PetscFunctionReturn(0);
   }
   CHKERRQ(PetscObjectQuery((PetscObject)NullSpace,"_PBDDC_Null_dmat",(PetscObject*)&dmat));
-  PetscCheckFalse(!dmat,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing dense matrix");
+  PetscCheck(dmat,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing dense matrix");
   CHKERRQ(PetscLogEventBegin(PC_BDDC_ApproxSetUp[pcbddc->current_level],pc,0,0,0));
 
   CHKERRQ(PetscNew(&shell_ctx));

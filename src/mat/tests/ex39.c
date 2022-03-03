@@ -71,7 +71,7 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(MatConvert(C,MATMPIDENSE,MAT_INITIAL_MATRIX,&Cdense));
   CHKERRQ(MatMultEqual(C,Cdense,5,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Cdense != C. MatConvert() fails");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Cdense != C. MatConvert() fails");
 
   /* Test MatNorm() */
   CHKERRQ(MatNorm(C,NORM_1,&Cnorm));
@@ -140,7 +140,7 @@ int main(int argc,char **args)
   CHKERRQ(MatScale(C,2.0));
   CHKERRQ(MatMatTransposeMult(C,C,MAT_REUSE_MATRIX,PETSC_DEFAULT,&B));
   CHKERRQ(MatMatTransposeMultEqual(C,C,B,10,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatTransposeMult: B != C*B^T");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatTransposeMult: B != C*B^T");
 
   if (mats_view) {
     CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"C MatMatTransposeMult C:\n"));

@@ -72,7 +72,7 @@ int main(int argc,char **args)
 
   /* Test MatMissingDiagonal() */
   CHKERRQ(MatMissingDiagonal(C,&flg,NULL));
-  PetscCheckFalse(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"MatMissingDiagonal() did not return false!");
+  PetscCheck(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"MatMissingDiagonal() did not return false!");
 
   /* Set unowned matrix entries - add subdiagonals and diagonals from proc[0] */
   if (rank == 0) {
@@ -94,15 +94,15 @@ int main(int argc,char **args)
   /* Test MatMult() */
   CHKERRQ(MatComputeOperator(C,MATAIJ,&Caij));
   CHKERRQ(MatMultEqual(C,Caij,5,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultEqual() fails");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultEqual() fails");
   CHKERRQ(MatMultTransposeEqual(C,Caij,5,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultTransposeEqual() fails");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultTransposeEqual() fails");
 
   /* Test MatMultAdd() and MatMultTransposeAddEqual() */
   CHKERRQ(MatMultAddEqual(C,Caij,5,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultAddEqual() fails");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultAddEqual() fails");
   CHKERRQ(MatMultTransposeAddEqual(C,Caij,5,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultTransposeAddEqual() fails");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"C != Caij. MatMultTransposeAddEqual() fails");
 
   /* Test MatMatMult() */
   CHKERRQ(PetscOptionsHasName(NULL,NULL,"-test_matmatmult",&Test_MatMatMult));
@@ -111,7 +111,7 @@ int main(int argc,char **args)
     CHKERRQ(MatMatMult(C,C,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CCelem));
     CHKERRQ(MatMatMult(Caij,Caij,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CCaij));
     CHKERRQ(MatMultEqual(CCelem,CCaij,5,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"CCelem != CCaij. MatMatMult() fails");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"CCelem != CCaij. MatMatMult() fails");
     CHKERRQ(MatDestroy(&CCaij));
     CHKERRQ(MatDestroy(&CCelem));
   }

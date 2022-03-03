@@ -29,9 +29,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->ntimes        = 2;
   ierr = PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
   CHKERRQ(PetscOptionsString("-infile", "The input mesh file", EX, options->infile, options->infile, sizeof(options->infile), &flg));
-  PetscCheckFalse(!flg,comm, PETSC_ERR_USER_INPUT, "-infile needs to be specified");
+  PetscCheck(flg,comm, PETSC_ERR_USER_INPUT, "-infile needs to be specified");
   CHKERRQ(PetscOptionsString("-outfile", "The output mesh file (by default it's the same as infile)", EX, options->outfile, options->outfile, sizeof(options->outfile), &flg));
-  PetscCheckFalse(!flg,comm, PETSC_ERR_USER_INPUT, "-outfile needs to be specified");
+  PetscCheck(flg,comm, PETSC_ERR_USER_INPUT, "-outfile needs to be specified");
   CHKERRQ(PetscOptionsEnum("-informat", "Input mesh format", EX, PetscViewerFormats, (PetscEnum)options->informat, (PetscEnum*)&options->informat, NULL));
   CHKERRQ(PetscOptionsEnum("-outformat", "Dump/reload mesh format", EX, PetscViewerFormats, (PetscEnum)options->outformat, (PetscEnum*)&options->outformat, NULL));
   CHKERRQ(PetscOptionsBool("-redistribute", "Redistribute the mesh", EX, options->redistribute, &options->redistribute, NULL));

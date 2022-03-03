@@ -347,7 +347,7 @@ int main(int argc,char **args)
       CHKERRQ(PetscObjectGetOptionsPrefix((PetscObject)dm,&prefix));
       CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject)newdm,prefix));
       CHKERRQ(DMIsForest(newdm,&isForest));
-      PetscCheckFalse(!isForest,PETSC_COMM_WORLD, PETSC_ERR_USER, "Converted to non Forest?");
+      PetscCheck(isForest,PETSC_COMM_WORLD, PETSC_ERR_USER, "Converted to non Forest?");
       CHKERRQ(DMDestroy(&dm));
       dm   = newdm;
     } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Convert failed?");

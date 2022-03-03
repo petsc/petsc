@@ -111,7 +111,7 @@ PetscErrorCode SwarmViewGP(DM dms,const char prefix[])
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s-rank%d.gp",prefix,rank));
   fp = fopen(name,"w");
-  PetscCheckFalse(!fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s",name);
+  PetscCheck(fp,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s",name);
   CHKERRQ(DMSwarmGetLocalSize(dms,&npoints));
   CHKERRQ(DMSwarmGetField(dms,DMSwarmPICField_coor,&bs,NULL,(void**)&array));
   CHKERRQ(DMSwarmGetField(dms,"itag",NULL,NULL,(void**)&iarray));

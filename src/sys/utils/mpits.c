@@ -153,7 +153,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm,PetscMPIInt
   CHKERRMPI(MPI_Comm_rank(comm,&rank));
   CHKERRQ(PetscCommDuplicate(comm,&comm,&tag));
   CHKERRMPI(MPI_Comm_get_attr(comm,Petsc_Counter_keyval,&counter,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tag/name counter attribute set");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tag/name counter attribute set");
   if (!counter->iflags) {
     CHKERRQ(PetscCalloc1(size,&counter->iflags));
     iflags = counter->iflags;
@@ -202,7 +202,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm,PetscMPIIn
   CHKERRMPI(MPI_Comm_size(comm,&size));
   CHKERRQ(PetscCommDuplicate(comm,&comm,&tag));
   CHKERRMPI(MPI_Comm_get_attr(comm,Petsc_Counter_keyval,&counter,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tag/name counter attribute set");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tag/name counter attribute set");
   if (!counter->iflags) {
     CHKERRQ(PetscCalloc1(size,&counter->iflags));
     iflags = counter->iflags;

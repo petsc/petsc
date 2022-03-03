@@ -77,9 +77,9 @@ PETSC_INTERN PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
   CHKERRQ(PetscMalloc2(pdim,&pivots,pdim,&work));
   n = pdim;
   PetscStackCallBLAS("LAPACKgetrf", LAPACKREALgetrf_(&n, &n, fem->invV, &n, pivots, &info));
-  PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %D",(PetscInt)info);
+  PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %D",(PetscInt)info);
   PetscStackCallBLAS("LAPACKgetri", LAPACKREALgetri_(&n, fem->invV, &n, pivots, work, &n, &info));
-  PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %D",(PetscInt)info);
+  PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %D",(PetscInt)info);
   CHKERRQ(PetscFree2(pivots,work));
   PetscFunctionReturn(0);
 }

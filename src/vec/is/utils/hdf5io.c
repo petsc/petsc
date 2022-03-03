@@ -215,7 +215,7 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
   PetscFunctionBegin;
   CHKERRQ(PetscViewerHDF5GetGroup(viewer, &group));
   CHKERRQ(PetscViewerHDF5HasDataset(viewer, name, &has));
-  PetscCheckFalse(!has,PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Object (dataset) \"%s\" not stored in group %s", name, group ? group : "/");
+  PetscCheck(has,PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Object (dataset) \"%s\" not stored in group %s", name, group ? group : "/");
   CHKERRQ(PetscViewerHDF5ReadInitialize_Private(viewer, name, &h));
 #if defined(PETSC_USE_COMPLEX)
   if (!h->complexVal) {
@@ -223,7 +223,7 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
     PetscCheckFalse(clazz == H5T_FLOAT,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Dataset %s/%s is marked as real but PETSc is configured for complex scalars. The conversion is not yet implemented. Configure with --with-scalar-type=real to read this dataset", group ? group : "",name);
   }
 #else
-  PetscCheckFalse(h->complexVal,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Dataset %s/%s is marked as complex but PETSc is configured for real scalars. Configure with --with-scalar-type=complex to read this dataset", group ? group : "",name);
+  PetscCheck(!h->complexVal,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Dataset %s/%s is marked as complex but PETSc is configured for real scalars. Configure with --with-scalar-type=complex to read this dataset", group ? group : "",name);
 #endif
 
   CHKERRQ(PetscViewerHDF5ReadSizes_Private(viewer, h, PETSC_TRUE, &map));

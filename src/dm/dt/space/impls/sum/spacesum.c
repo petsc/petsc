@@ -142,7 +142,7 @@ static PetscErrorCode PetscSpaceSumSetNumSubspaces_Sum(PetscSpace space,PetscInt
   PetscInt       Ns   = sum->numSumSpaces;
 
   PetscFunctionBegin;
-  PetscCheckFalse(sum->setupCalled,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_WRONGSTATE,"Cannot change number of subspaces after setup called");
+  PetscCheck(!sum->setupCalled,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_WRONGSTATE,"Cannot change number of subspaces after setup called");
   if (numSumSpaces == Ns) PetscFunctionReturn(0);
   if (Ns >= 0) {
     PetscInt s;
@@ -171,7 +171,7 @@ static PetscErrorCode PetscSpaceSumSetConcatenate_Sum(PetscSpace sp,PetscBool co
   PetscSpace_Sum *sum = (PetscSpace_Sum*)sp->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(sum->setupCalled,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_WRONGSTATE,"Cannot change space concatenation after setup called.");
+  PetscCheck(!sum->setupCalled,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_WRONGSTATE,"Cannot change space concatenation after setup called.");
 
   sum->concatenate = concatenate;
   PetscFunctionReturn(0);
@@ -196,7 +196,7 @@ static PetscErrorCode PetscSpaceSumSetSubspace_Sum(PetscSpace space,PetscInt s,P
   PetscInt       Ns   = sum->numSumSpaces;
 
   PetscFunctionBegin;
-  PetscCheckFalse(sum->setupCalled,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_WRONGSTATE,"Cannot change subspace after setup called");
+  PetscCheck(!sum->setupCalled,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_WRONGSTATE,"Cannot change subspace after setup called");
   PetscCheckFalse(Ns < 0,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_WRONGSTATE,"Must call PetscSpaceSumSetNumSubspaces() first");
   PetscCheckFalse(s < 0 || s >= Ns,PetscObjectComm((PetscObject)space),PETSC_ERR_ARG_OUTOFRANGE,"Invalid subspace number %D",subspace);
 
@@ -250,7 +250,7 @@ static PetscErrorCode PetscSpaceSetFromOptions_Sum(PetscOptionItems *PetscOption
     }
     CHKERRQ(PetscSpaceSetFromOptions(subspace));
     CHKERRQ(PetscSpaceGetNumVariables(subspace,&sNv));
-    PetscCheckFalse(!sNv,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_WRONGSTATE,"Subspace %D has not been set properly, number of variables is 0.",i);
+    PetscCheck(sNv,PetscObjectComm((PetscObject)sp),PETSC_ERR_ARG_WRONGSTATE,"Subspace %D has not been set properly, number of variables is 0.",i);
     CHKERRQ(PetscSpaceSumSetSubspace(sp,i,subspace));
     CHKERRQ(PetscSpaceDestroy(&subspace));
   }

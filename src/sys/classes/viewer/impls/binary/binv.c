@@ -1377,13 +1377,13 @@ static PetscErrorCode PetscViewerFileSetUp_BinarySTDIO(PetscViewer viewer)
     if (gz && gz[3] == 0) {*gz = 0; vbinary->storecompressed = PETSC_TRUE;}
   }
 #if !defined(PETSC_HAVE_POPEN)
-  PetscCheckFalse(vbinary->storecompressed,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP_SYS,"Cannot run gzip on this machine");
+  PetscCheck(!vbinary->storecompressed,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP_SYS,"Cannot run gzip on this machine");
 #endif
 
   fname = vbinary->filename;
   if (vbinary->filemode == FILE_MODE_READ) { /* possibly get the file from remote site or compressed file */
     CHKERRQ(PetscFileRetrieve(PetscObjectComm((PetscObject)viewer),fname,bname,PETSC_MAX_PATH_LEN,&found));
-    PetscCheckFalse(!found,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_OPEN,"Cannot locate file: %s",fname);
+    PetscCheck(found,PetscObjectComm((PetscObject)viewer),PETSC_ERR_FILE_OPEN,"Cannot locate file: %s",fname);
     fname = bname;
   }
 
@@ -1425,7 +1425,7 @@ static PetscErrorCode PetscViewerFileSetUp_BinaryInfo(PetscViewer viewer)
     } else if (rank == 0) { /* write or append */
       const char *omode = (vbinary->filemode == FILE_MODE_APPEND) ? "a" : "w";
       vbinary->fdes_info = fopen(infoname,omode);
-      PetscCheckFalse(!vbinary->fdes_info,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open .info file %s for writing",infoname);
+      PetscCheck(vbinary->fdes_info,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open .info file %s for writing",infoname);
     }
   }
   PetscFunctionReturn(0);
@@ -1438,7 +1438,7 @@ static PetscErrorCode PetscViewerSetUp_Binary(PetscViewer viewer)
 
   PetscFunctionBegin;
   if (!vbinary->setfromoptionscalled) CHKERRQ(PetscViewerSetFromOptions(viewer));
-  PetscCheckFalse(!vbinary->filename,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetName()");
+  PetscCheck(vbinary->filename,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetName()");
   PetscCheckFalse(vbinary->filemode == (PetscFileMode)-1,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode()");
   CHKERRQ(PetscViewerFileClose_Binary(viewer));
 

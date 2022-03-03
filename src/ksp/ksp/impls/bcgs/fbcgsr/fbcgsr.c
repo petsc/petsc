@@ -31,7 +31,7 @@ static PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
   Mat               mat;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!ksp->vec_rhs->petscnative,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Only coded for PETSc vectors");
+  PetscCheck(ksp->vec_rhs->petscnative,PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Only coded for PETSc vectors");
   CHKERRQ(VecGetLocalSize(ksp->vec_sol,&N));
 
   X  = ksp->vec_sol;
@@ -152,7 +152,7 @@ static PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
 
     /* test denominator */
     if ((xi3 == 0.0) || (sigma == 0.0)) {
-      PetscCheckFalse(ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has failed due to zero inner product");
+      PetscCheck(!ksp->errorifnotconverged,PetscObjectComm((PetscObject)ksp),PETSC_ERR_NOT_CONVERGED,"KSPSolve has failed due to zero inner product");
       else ksp->reason = KSP_DIVERGED_BREAKDOWN;
       CHKERRQ(PetscInfo(ksp,"KSPSolve has failed due to zero inner product\n"));
       break;

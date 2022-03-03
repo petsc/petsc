@@ -40,7 +40,7 @@ PetscErrorCode  PetscMPIDump(FILE *fd)
     CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fd,"[%d]You have not waited on all non-blocking sends and receives",rank));
     CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fd,"[%d]Number non-blocking sends %g receives %g number of waits %g\n",rank,petsc_isend_ct,petsc_irecv_ct,petsc_sum_of_waits_ct));
     err  = fflush(fd);
-    PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+    PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   }
   CHKERRQ(PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1));
   /* Did we receive all the messages that we sent? */
@@ -51,7 +51,7 @@ PetscErrorCode  PetscMPIDump(FILE *fd)
   if (rank == 0 && tsends != trecvs) {
     CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fd,"Total number sends %g not equal receives %g\n",tsends,trecvs));
     err  = fflush(fd);
-    PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
+    PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");
   }
   PetscFunctionReturn(0);
 }

@@ -70,7 +70,7 @@ static PetscErrorCode PointQueueEnqueue(PointQueue queue, PetscInt p)
 static PetscErrorCode PointQueueDequeue(PointQueue queue, PetscInt *p)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(!queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot dequeue from an empty queue");
+  PetscCheck(queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot dequeue from an empty queue");
   *p = queue->points[queue->front];
   queue->front = (queue->front + 1) % queue->size;
   --queue->num;
@@ -81,7 +81,7 @@ static PetscErrorCode PointQueueDequeue(PointQueue queue, PetscInt *p)
 static PetscErrorCode PointQueueFront(PointQueue queue, PetscInt *p)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(!queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot get the front of an empty queue");
+  PetscCheck(queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot get the front of an empty queue");
   *p = queue->points[queue->front];
   PetscFunctionReturn(0);
 }
@@ -89,7 +89,7 @@ static PetscErrorCode PointQueueFront(PointQueue queue, PetscInt *p)
 static PetscErrorCode PointQueueBack(PointQueue queue, PetscInt *p)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(!queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot get the back of an empty queue");
+  PetscCheck(queue->num,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot get the back of an empty queue");
   *p = queue->points[queue->back];
   PetscFunctionReturn(0);
 }
@@ -305,7 +305,7 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
   CHKERRQ(PetscCalloc1(edgeLenSize, &sbr->edgeLen));
   /* Add edges of cells that are marked for refinement to edge queue */
   CHKERRQ(DMPlexTransformGetActive(tr, &active));
-  PetscCheckFalse(!active,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_WRONGSTATE, "DMPlexTransform must have an adaptation label in order to use SBR algorithm");
+  PetscCheck(active,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_WRONGSTATE, "DMPlexTransform must have an adaptation label in order to use SBR algorithm");
   CHKERRQ(PointQueueCreate(1024, &queue));
   CHKERRQ(DMLabelGetStratumIS(active, DM_ADAPT_REFINE, &refineIS));
   CHKERRQ(DMLabelGetStratumSize(active, DM_ADAPT_REFINE, &Nc));

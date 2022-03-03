@@ -666,7 +666,7 @@ finish:
   }
   /* If same output arg not ser and labels are not equal, throw error */
   if (equal) *equal = eq;
-  else PetscCheckFalse(!eq,comm, PETSC_ERR_ARG_INCOMP, "DMLabels l0 \"%s\" and l1 \"%s\" are not equal");
+  else PetscCheck(eq,comm, PETSC_ERR_ARG_INCOMP, "DMLabels l0 \"%s\" and l1 \"%s\" are not equal");
   PetscFunctionReturn(0);
 }
 
@@ -859,7 +859,7 @@ PetscErrorCode DMLabelHasPoint(DMLabel label, PetscInt point, PetscBool *contain
   PetscValidBoolPointer(contains, 3);
   CHKERRQ(DMLabelMakeAllValid_Private(label));
   if (PetscDefined(USE_DEBUG)) {
-    PetscCheckFalse(!label->bt,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call DMLabelCreateIndex() before DMLabelHasPoint()");
+    PetscCheck(label->bt,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call DMLabelCreateIndex() before DMLabelHasPoint()");
     PetscCheckFalse((point < label->pStart) || (point >= label->pEnd),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Label point %D is not in [%D, %D)", point, label->pStart, label->pEnd);
   }
   *contains = PetscBTLookup(label->bt, point - label->pStart) ? PETSC_TRUE : PETSC_FALSE;

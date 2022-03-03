@@ -51,9 +51,9 @@ int main(int argc,char **args)
   CHKERRQ(MatHermitianTranspose(A,MAT_INITIAL_MATRIX,&B));
   CHKERRQ(MatCreateHermitianTranspose(A,&C));
   CHKERRQ(MatMultHermitianTransposeEqual(B,C,4,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"B^Hx != C^Hx");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"B^Hx != C^Hx");
   CHKERRQ(MatMultHermitianTransposeAddEqual(B,C,4,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"y+B^Hx != y+C^Hx");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"y+B^Hx != y+C^Hx");
   CHKERRQ(MatDestroy(&C));
   CHKERRQ(MatDestroy(&B));
 

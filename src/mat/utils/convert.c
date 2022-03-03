@@ -22,7 +22,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Basic(Mat mat,MatType newtype,MatReuse re
   if (!isSBAIJ) {
     CHKERRQ(PetscObjectTypeCompare((PetscObject)mat,MATMPISBAIJ,&isSBAIJ));
   }
-  PetscCheckFalse(isSBAIJ,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot convert from SBAIJ matrix since cannot obtain entire rows of matrix");
+  PetscCheck(!isSBAIJ,PetscObjectComm((PetscObject)mat),PETSC_ERR_SUP,"Cannot convert from SBAIJ matrix since cannot obtain entire rows of matrix");
 
   if (reuse == MAT_REUSE_MATRIX) {
     M = *newmat;

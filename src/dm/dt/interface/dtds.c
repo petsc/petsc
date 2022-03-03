@@ -89,7 +89,7 @@ PetscErrorCode PetscDSSetType(PetscDS prob, PetscDSType name)
 
   CHKERRQ(PetscDSRegisterAll());
   CHKERRQ(PetscFunctionListFind(PetscDSList, name, &r));
-  PetscCheckFalse(!r,PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscDS type: %s", name);
+  PetscCheck(r,PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscDS type: %s", name);
 
   if (prob->ops->destroy) {
     CHKERRQ((*prob->ops->destroy)(prob));
@@ -3195,7 +3195,7 @@ PetscErrorCode PetscDSGetComponentOffsetsCohesive(PetscDS ds, PetscInt s, PetscI
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidPointer(offsets, 3);
-  PetscCheckFalse(!ds->isCohesive,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cohesive offsets are only valid for a cohesive DS");
+  PetscCheck(ds->isCohesive,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cohesive offsets are only valid for a cohesive DS");
   PetscCheckFalse((s < 0) || (s > 2),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cohesive side %D is not in [0, 2]", s);
   CHKERRQ(PetscDSSetUp(ds));
   *offsets = ds->offCohesive[s];
@@ -3223,7 +3223,7 @@ PetscErrorCode PetscDSGetComponentDerivativeOffsetsCohesive(PetscDS ds, PetscInt
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidPointer(offsets, 3);
-  PetscCheckFalse(!ds->isCohesive,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cohesive offsets are only valid for a cohesive DS");
+  PetscCheck(ds->isCohesive,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cohesive offsets are only valid for a cohesive DS");
   PetscCheckFalse((s < 0) || (s > 2),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cohesive side %D is not in [0, 2]", s);
   CHKERRQ(PetscDSSetUp(ds));
   *offsets = ds->offDerCohesive[s];
@@ -3579,7 +3579,7 @@ PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditio
     b = b->next;
     ++n;
   }
-  PetscCheckFalse(!b,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %d is not in [0, %d)", bd, n);
+  PetscCheck(b,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %d is not in [0, %d)", bd, n);
   if (name) {
     CHKERRQ(PetscFree(b->name));
     CHKERRQ(PetscStrallocpy(name, (char **) &b->name));
@@ -3678,7 +3678,7 @@ PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscWeakForm *wf, DM
     b = b->next;
     ++n;
   }
-  PetscCheckFalse(!b,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %d is not in [0, %d)", bd, n);
+  PetscCheck(b,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boundary %d is not in [0, %d)", bd, n);
   if (wf) {
     PetscValidPointer(wf, 3);
     *wf = b->wf;

@@ -59,7 +59,7 @@ int main(int argc,char **args)
   CHKERRQ(PetscObjectSetName((PetscObject)A,"duplicate_copy"));
   CHKERRQ(MatViewFromOptions(A,NULL,"-view"));
   CHKERRQ(MatEqual(A,C,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"MatDuplicate(C,MAT_COPY_VALUES,): Matrices are NOT equal");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"MatDuplicate(C,MAT_COPY_VALUES,): Matrices are NOT equal");
   CHKERRQ(MatDestroy(&A));
 
   /* test matrices with different nonzero patterns - Note: A is created with different nonzero pattern of C! */
@@ -74,7 +74,7 @@ int main(int argc,char **args)
   CHKERRQ(PetscObjectSetName((PetscObject)A,"copy_diffnnz"));
   CHKERRQ(MatViewFromOptions(A,NULL,"-view"));
   CHKERRQ(MatEqual(A,C,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"MatCopy(C,A,DIFFERENT_NONZERO_PATTERN): Matrices are NOT equal");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"MatCopy(C,A,DIFFERENT_NONZERO_PATTERN): Matrices are NOT equal");
 
   /* test matrices with same nonzero pattern */
   CHKERRQ(MatDestroy(&A));
@@ -83,14 +83,14 @@ int main(int argc,char **args)
   CHKERRQ(PetscObjectSetName((PetscObject)A,"copy_samennz"));
   CHKERRQ(MatViewFromOptions(A,NULL,"-view"));
   CHKERRQ(MatEqual(A,C,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"MatCopy(C,A,SAME_NONZERO_PATTERN): Matrices are NOT equal");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"MatCopy(C,A,SAME_NONZERO_PATTERN): Matrices are NOT equal");
 
   /* test subset nonzero pattern */
   CHKERRQ(MatCopy(C,A,SUBSET_NONZERO_PATTERN));
   CHKERRQ(PetscObjectSetName((PetscObject)A,"copy_subnnz"));
   CHKERRQ(MatViewFromOptions(A,NULL,"-view"));
   CHKERRQ(MatEqual(A,C,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"MatCopy(C,A,SUBSET_NONZERO_PATTERN): Matrices are NOT equal");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"MatCopy(C,A,SUBSET_NONZERO_PATTERN): Matrices are NOT equal");
 
   /* Test MatCopy on a matrix obtained after MatConvert from AIJ
      see https://lists.mcs.anl.gov/pipermail/petsc-dev/2019-April/024289.html */
@@ -113,31 +113,31 @@ int main(int argc,char **args)
     CHKERRQ(PetscObjectSetName((PetscObject)Cse,"symm_conv_init"));
     CHKERRQ(MatViewFromOptions(Cse,NULL,"-view"));
     CHKERRQ(MatMultEqual(Cs,Cse,5,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatConvert MAT_INITIAL_MATRIX %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatConvert MAT_INITIAL_MATRIX %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
 
     CHKERRQ(MatConvert(Cs,Ctype,MAT_REUSE_MATRIX,&Cse));
     CHKERRQ(PetscObjectSetName((PetscObject)Cse,"symm_conv_reuse"));
     CHKERRQ(MatViewFromOptions(Cse,NULL,"-view"));
     CHKERRQ(MatMultEqual(Cs,Cse,5,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatConvert MAT_REUSE_MATRIX %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatConvert MAT_REUSE_MATRIX %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
 
     CHKERRQ(MatCopy(Cs,Cse,SAME_NONZERO_PATTERN));
     CHKERRQ(PetscObjectSetName((PetscObject)Cse,"symm_conv_copy_samennz"));
     CHKERRQ(MatViewFromOptions(Cse,NULL,"-view"));
     CHKERRQ(MatMultEqual(Cs,Cse,5,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatCopy(...SAME_NONZERO_PATTERN) %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatCopy(...SAME_NONZERO_PATTERN) %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
 
     CHKERRQ(MatCopy(Cs,Cse,SUBSET_NONZERO_PATTERN));
     CHKERRQ(PetscObjectSetName((PetscObject)Cse,"symm_conv_copy_subnnz"));
     CHKERRQ(MatViewFromOptions(Cse,NULL,"-view"));
     CHKERRQ(MatMultEqual(Cs,Cse,5,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatCopy(...SUBSET_NONZERO_PATTERN) %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatCopy(...SUBSET_NONZERO_PATTERN) %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
 
     CHKERRQ(MatCopy(Cs,Cse,DIFFERENT_NONZERO_PATTERN));
     CHKERRQ(PetscObjectSetName((PetscObject)Cse,"symm_conv_copy_diffnnz"));
     CHKERRQ(MatViewFromOptions(Cse,NULL,"-view"));
     CHKERRQ(MatMultEqual(Cs,Cse,5,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatCopy(...DIFFERENT_NONZERO_PATTERN) %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatCopy(...DIFFERENT_NONZERO_PATTERN) %s -> %s: Matrices are NOT multequal",Ctype,Cstype);
 
     CHKERRQ(MatDestroy(&Cse));
     CHKERRQ(MatDestroy(&Cs));

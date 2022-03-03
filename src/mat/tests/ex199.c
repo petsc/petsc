@@ -18,7 +18,7 @@ int main(int argc,char **args)
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must use -f filename to load sparse matrix");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must use -f filename to load sparse matrix");
   CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer));
   CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
   CHKERRQ(MatLoad(C,viewer));

@@ -90,7 +90,7 @@ PetscErrorCode  DMSetUp_Composite(DM dm)
   PetscLayout            map;
 
   PetscFunctionBegin;
-  PetscCheckFalse(com->setup,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Packer has already been setup");
+  PetscCheck(!com->setup,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Packer has already been setup");
   CHKERRQ(PetscLayoutCreate(PetscObjectComm((PetscObject)dm),&map));
   CHKERRQ(PetscLayoutSetLocalSize(map,com->n));
   CHKERRQ(PetscLayoutSetSize(map,PETSC_DETERMINE));
@@ -763,7 +763,7 @@ PetscErrorCode  DMCompositeAddDM(DM dmc,DM dm)
   CHKERRQ(PetscObjectTypeCompare((PetscObject)dmc,DMCOMPOSITE,&flg));
   PetscCheck(flg,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Not for type %s",((PetscObject)dm)->type_name);
   next = com->next;
-  PetscCheckFalse(com->setup,PetscObjectComm((PetscObject)dmc),PETSC_ERR_ARG_WRONGSTATE,"Cannot add a DM once you have used the DMComposite");
+  PetscCheck(!com->setup,PetscObjectComm((PetscObject)dmc),PETSC_ERR_ARG_WRONGSTATE,"Cannot add a DM once you have used the DMComposite");
 
   /* create new link */
   CHKERRQ(PetscNew(&mine));

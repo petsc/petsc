@@ -8,7 +8,7 @@ static PetscErrorCode PetscViewerDestroy_Draw(PetscViewer v)
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)v->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(vdraw->singleton_made,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Destroying PetscViewer without first restoring singleton");
+  PetscCheck(!vdraw->singleton_made,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Destroying PetscViewer without first restoring singleton");
   for (i=0; i<vdraw->draw_max; i++) {
     CHKERRQ(PetscDrawAxisDestroy(&vdraw->drawaxis[i]));
     CHKERRQ(PetscDrawLGDestroy(&vdraw->drawlg[i]));
@@ -63,7 +63,7 @@ PetscErrorCode  PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt windownumber,
   PetscValidLogicalCollectiveInt(viewer,windownumber,2);
   if (draw) PetscValidPointer(draw,3);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
-  PetscCheckFalse(!isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
+  PetscCheck(isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   PetscCheckFalse(windownumber < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   vdraw = (PetscViewer_Draw*)viewer->data;
 
@@ -126,7 +126,7 @@ PetscErrorCode  PetscViewerDrawBaseAdd(PetscViewer viewer,PetscInt windownumber)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveInt(viewer,windownumber,2);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
-  PetscCheckFalse(!isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
+  PetscCheck(isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   vdraw = (PetscViewer_Draw*)viewer->data;
 
   PetscCheckFalse(windownumber + vdraw->draw_base < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Resulting base %" PetscInt_FMT " cannot be negative",windownumber+vdraw->draw_base);
@@ -156,7 +156,7 @@ PetscErrorCode  PetscViewerDrawBaseSet(PetscViewer viewer,PetscInt windownumber)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
   PetscValidLogicalCollectiveInt(viewer,windownumber,2);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
-  PetscCheckFalse(!isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
+  PetscCheck(isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   vdraw = (PetscViewer_Draw*)viewer->data;
 
   PetscCheckFalse(windownumber < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Resulting base %" PetscInt_FMT " cannot be negative",windownumber);
@@ -192,7 +192,7 @@ PetscErrorCode  PetscViewerDrawGetDrawLG(PetscViewer viewer,PetscInt windownumbe
   PetscValidLogicalCollectiveInt(viewer,windownumber,2);
   PetscValidPointer(drawlg,3);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
-  PetscCheckFalse(!isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
+  PetscCheck(isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   PetscCheckFalse(windownumber < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   vdraw = (PetscViewer_Draw*)viewer->data;
 
@@ -236,7 +236,7 @@ PetscErrorCode  PetscViewerDrawGetDrawAxis(PetscViewer viewer,PetscInt windownum
   PetscValidLogicalCollectiveInt(viewer,windownumber,2);
   PetscValidPointer(drawaxis,3);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw));
-  PetscCheckFalse(!isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
+  PetscCheck(isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   PetscCheckFalse(windownumber < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   vdraw = (PetscViewer_Draw*)viewer->data;
 
@@ -309,7 +309,7 @@ PetscErrorCode PetscViewerDrawGetDrawType(PetscViewer v,PetscDrawType *drawtype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw));
-  PetscCheckFalse(!isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
+  PetscCheck(isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   vdraw = (PetscViewer_Draw*)v->data;
 
   *drawtype = vdraw->drawtype;
@@ -340,7 +340,7 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v,const char *title[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_CLASSID,1);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)v,PETSCVIEWERDRAW,&isdraw));
-  PetscCheckFalse(!isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
+  PetscCheck(isdraw,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
   vdraw = (PetscViewer_Draw*)v->data;
 
   *title = vdraw->title;
@@ -410,7 +410,7 @@ PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer,MPI_Comm comm,Pet
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data,*svdraw;
 
   PetscFunctionBegin;
-  PetscCheckFalse(vdraw->singleton_made,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Trying to get SubViewer without first restoring previous");
+  PetscCheck(!vdraw->singleton_made,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Trying to get SubViewer without first restoring previous");
   /* only processor zero can use the PetscViewer draw singleton */
   if (sviewer) *sviewer = NULL;
   CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank));
@@ -453,7 +453,7 @@ PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer,MPI_Comm comm
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data,*svdraw;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!vdraw->singleton_made,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Trying to restore a singleton that was not gotten");
+  PetscCheck(vdraw->singleton_made,PETSC_COMM_SELF,PETSC_ERR_ORDER,"Trying to restore a singleton that was not gotten");
   CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer),&rank));
   if (rank == 0) {
     PetscDraw draw,sdraw;

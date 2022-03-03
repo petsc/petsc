@@ -834,7 +834,7 @@ static PetscErrorCode  PCASMSetTotalSubdomains_ASM(PC pc,PetscInt N,IS *is,IS *i
   CHKERRMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc),&rank));
   CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size));
   n    = N/size + ((N % size) > rank);
-  PetscCheckFalse(!n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Process %d must have at least one block: total processors %d total blocks %D",(int)rank,(int)size,N);
+  PetscCheck(n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Process %d must have at least one block: total processors %d total blocks %D",(int)rank,(int)size,N);
   PetscCheckFalse(pc->setupcalled && n != osm->n_local_true,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PCASMSetTotalSubdomains() should be called before PCSetUp().");
   if (!pc->setupcalled) {
     CHKERRQ(PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local));
@@ -1690,7 +1690,7 @@ PetscErrorCode  PCASMGetLocalSubdomains(PC pc,PetscInt *n,IS *is[],IS *is_local[
   if (is) PetscValidPointer(is,3);
   if (is_local) PetscValidPointer(is_local,4);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCASM,&match));
-  PetscCheckFalse(!match,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PC is not a PCASM");
+  PetscCheck(match,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PC is not a PCASM");
   if (n) *n = osm->n_local_true;
   if (is) *is = osm->is;
   if (is_local) *is_local = osm->is_local;
@@ -1729,7 +1729,7 @@ PetscErrorCode  PCASMGetLocalSubmatrices(PC pc,PetscInt *n,Mat *mat[])
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (n) PetscValidIntPointer(n,2);
   if (mat) PetscValidPointer(mat,3);
-  PetscCheckFalse(!pc->setupcalled,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call after KSPSetUp() or PCSetUp().");
+  PetscCheck(pc->setupcalled,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call after KSPSetUp() or PCSetUp().");
   CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCASM,&match));
   if (!match) {
     if (n) *n = 0;
@@ -1771,7 +1771,7 @@ PetscErrorCode  PCASMSetDMSubdomains(PC pc,PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveBool(pc,flg,2);
-  PetscCheckFalse(pc->setupcalled,((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for a setup PC.");
+  PetscCheck(!pc->setupcalled,((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for a setup PC.");
   CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCASM,&match));
   if (match) {
     osm->dm_subdomains = flg;

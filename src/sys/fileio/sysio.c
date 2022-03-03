@@ -276,7 +276,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *data,PetscInt num,PetscInt *count,P
     fname = (char*)malloc(m*sizeof(char));
     p     = (char*)fname;
     ptmp  = (void*)fname;
-    PetscCheckFalse(!fname,PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
+    PetscCheck(fname,PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
   }
   if (type == PETSC_BIT_LOGICAL) m = PetscBTLength(m);
 
@@ -395,7 +395,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,const void *p,PetscInt n,PetscDataType t
 #endif
     m     = 64;
     fname = (char*)malloc(m*sizeof(char));
-    PetscCheckFalse(!fname,PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
+    PetscCheck(fname,PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
     PetscCheckFalse(n > 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only binary view a single function at a time");
     CHKERRQ(PetscFPTFind(*(void**)p,&fnametmp));
@@ -612,7 +612,7 @@ PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *data,Pets
     fname = (char*)malloc(num*sizeof(char));
     fptr  = data;
     data  = (void*)fname;
-    PetscCheckFalse(!fname,PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
+    PetscCheck(fname,PETSC_COMM_SELF,PETSC_ERR_MEM,"Cannot allocate space for function name");
   }
 
   CHKERRMPI(MPI_Comm_rank(comm,&rank));

@@ -422,7 +422,7 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
     is the union of the bindings of all ranks in the omp_comm
     =================================================================================*/
 
-  ctrl->cpuset = hwloc_bitmap_alloc(); PetscCheckFalse(!ctrl->cpuset,PETSC_COMM_SELF,PETSC_ERR_LIB,"hwloc_bitmap_alloc() failed");
+  ctrl->cpuset = hwloc_bitmap_alloc(); PetscCheck(ctrl->cpuset,PETSC_COMM_SELF,PETSC_ERR_LIB,"hwloc_bitmap_alloc() failed");
   CHKERRQ(hwloc_get_cpubind(ctrl->topology,ctrl->cpuset, HWLOC_CPUBIND_PROCESS));
 
   /* hwloc main developer said they will add new APIs hwloc_bitmap_{nr,to,from}_ulongs in 2.1 to help us simplify the following bitmap pack/unpack code */
@@ -437,7 +437,7 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm,PetscInt nthreads,PetscOmp
   CHKERRMPI(MPI_Reduce(ctrl->is_omp_master ? MPI_IN_PLACE : cpu_ulongs, cpu_ulongs,nr_cpu_ulongs, MPI_UNSIGNED_LONG,MPI_BOR,0,ctrl->omp_comm));
 
   if (ctrl->is_omp_master) {
-    ctrl->omp_cpuset = hwloc_bitmap_alloc(); PetscCheckFalse(!ctrl->omp_cpuset,PETSC_COMM_SELF,PETSC_ERR_LIB,"hwloc_bitmap_alloc() failed");
+    ctrl->omp_cpuset = hwloc_bitmap_alloc(); PetscCheck(ctrl->omp_cpuset,PETSC_COMM_SELF,PETSC_ERR_LIB,"hwloc_bitmap_alloc() failed");
     if (nr_cpu_ulongs == 1) {
 #if HWLOC_API_VERSION >= 0x00020000
       CHKERRQ(hwloc_bitmap_from_ulong(ctrl->omp_cpuset,cpu_ulongs[0]));

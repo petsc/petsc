@@ -78,7 +78,7 @@ PetscErrorCode MatMult_Composite_Multiplicative(Mat A,Vec x,Vec y)
   PetscInt          i;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!next,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
+  PetscCheck(next,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
   in = x;
   if (shell->right) {
     if (!shell->rightwork) {
@@ -115,7 +115,7 @@ PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A,Vec x,Vec y)
   PetscInt          i;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!tail,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
+  PetscCheck(tail,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
   in = x;
   if (shell->left) {
     if (!shell->leftwork) {
@@ -157,7 +157,7 @@ PetscErrorCode MatMult_Composite(Mat mat,Vec x,Vec y)
   PetscBool         match;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!cur,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
+  PetscCheck(cur,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
   in = x;
   if (shell->right) {
     if (!shell->rightwork) {
@@ -303,7 +303,7 @@ PetscErrorCode MatMultTranspose_Composite(Mat A,Vec x,Vec y)
   PetscInt          i;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!next,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
+  PetscCheck(next,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
   in = x;
   if (shell->left) {
     if (!shell->leftwork) {
@@ -379,7 +379,7 @@ PetscErrorCode MatGetDiagonal_Composite(Mat A,Vec v)
   PetscInt          i;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!next,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
+  PetscCheck(next,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
   PetscCheckFalse(shell->right || shell->left,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get diagonal if left or right scaling");
 
   CHKERRQ(MatGetDiagonal(next->mat,v));
@@ -756,7 +756,7 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
   PetscInt          i;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!next,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
+  PetscCheck(next,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
   scale = shell->scale;
   if (shell->type == MAT_COMPOSITE_ADDITIVE) {
     if (shell->mergetype == MAT_COMPOSITE_MERGE_RIGHT) {

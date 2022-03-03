@@ -275,7 +275,7 @@ static PetscErrorCode DMCreateGlobalVector_Stag(DM dm,Vec *vec)
   DM_Stag * const stag = (DM_Stag*)dm->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
+  PetscCheck(dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   CHKERRQ(VecCreateMPI(PetscObjectComm((PetscObject)dm),stag->entries,PETSC_DECIDE,vec));
   CHKERRQ(VecSetDM(*vec,dm));
   /* Could set some ops, as DMDA does */
@@ -288,7 +288,7 @@ static PetscErrorCode DMCreateLocalVector_Stag(DM dm,Vec *vec)
   DM_Stag * const stag = (DM_Stag*)dm->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
+  PetscCheck(dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,stag->entriesGhost,vec));
   CHKERRQ(VecSetBlockSize(*vec,stag->entriesPerElement));
   CHKERRQ(VecSetDM(*vec,dm));
@@ -303,7 +303,7 @@ static PetscErrorCode DMCreateMatrix_Stag(DM dm,Mat *mat)
   ISLocalToGlobalMapping ltogmap;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
+  PetscCheck(dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   CHKERRQ(DMGetDimension(dm,&dim));
   CHKERRQ(DMGetMatType(dm,&mat_type));
   CHKERRQ(DMStagGetEntries(dm,&entries));
@@ -521,7 +521,7 @@ static PetscErrorCode DMCreateCoordinateDM_Stag(DM dm,DM *dmc)
 
   PetscFunctionBegin;
 
-  PetscCheckFalse(!stag->coordinateDMType,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Before creating a coordinate DM, a type must be specified with DMStagSetCoordinateDMType()");
+  PetscCheck(stag->coordinateDMType,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Before creating a coordinate DM, a type must be specified with DMStagSetCoordinateDMType()");
 
   CHKERRQ(DMGetDimension(dm,&dim));
   CHKERRQ(PetscStrcmp(stag->coordinateDMType,DMSTAG,&isstag));

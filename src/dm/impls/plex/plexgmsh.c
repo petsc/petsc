@@ -290,7 +290,7 @@ static PetscErrorCode GmshExpect(GmshFile *gmsh, const char Section[], char line
 
   PetscFunctionBegin;
   CHKERRQ(GmshMatch(gmsh, Section, line, &match));
-  PetscCheckFalse(!match,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file, expecting %s",Section);
+  PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file, expecting %s",Section);
   PetscFunctionReturn(0);
 }
 
@@ -1109,7 +1109,7 @@ static PetscErrorCode GmshReadPhysicalNames(GmshFile *gmsh, GmshMesh *mesh)
     PetscCheckFalse(snum != 2,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
     CHKERRQ(GmshReadString(gmsh, line, -(PetscInt)sizeof(line)));
     CHKERRQ(PetscStrchr(line, '"', &p));
-    PetscCheckFalse(!p,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
+    PetscCheck(p,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
     CHKERRQ(PetscStrrchr(line, '"', &q));
     PetscCheckFalse(q == p,PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "File is not a valid Gmsh file");
     CHKERRQ(PetscStrncpy(name, p+1, (size_t)(q-p-1)));

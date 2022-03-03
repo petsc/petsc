@@ -156,7 +156,7 @@ int main(int argc,char **argv)
 
   if (test == 1) {
     CHKERRQ(MatDenseCUDAGetArray(B,&aa));
-    PetscCheckFalse(aa,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected a null pointer");
+    PetscCheck(!aa,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected a null pointer");
     CHKERRQ(MatDenseCUDARestoreArray(B,&aa));
   }
 

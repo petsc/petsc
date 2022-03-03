@@ -43,13 +43,13 @@ static PetscErrorCode DMStagGetProductCoordinateArrays_Private(DM dm,void* arrX,
   PetscCheckFalse(dim > DMSTAG_MAX_DIM,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Not implemented for %D dimensions",dim);
   arr[0] = arrX; arr[1] = arrY; arr[2] = arrZ;
   CHKERRQ(DMGetCoordinateDM(dm,&dmCoord));
-  PetscCheckFalse(!dmCoord,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DM does not have a coordinate DM");
+  PetscCheck(dmCoord,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DM does not have a coordinate DM");
   {
     PetscBool isProduct;
     DMType    dmType;
     CHKERRQ(DMGetType(dmCoord,&dmType));
     CHKERRQ(PetscStrcmp(DMPRODUCT,dmType,&isProduct));
-    PetscCheckFalse(!isProduct,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate DM is not of type DMPRODUCT");
+    PetscCheck(isProduct,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate DM is not of type DMPRODUCT");
   }
   for (s=0; s<DMSTAG_MAX_STRATA; ++s) dofCheck[s] = 0;
   checkDof = PETSC_FALSE;
@@ -64,12 +64,12 @@ static PetscErrorCode DMStagGetProductCoordinateArrays_Private(DM dm,void* arrX,
     if (!arr[d]) continue;
 
     CHKERRQ(DMProductGetDM(dmCoord,d,&subDM));
-    PetscCheckFalse(!subDM,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate DM is missing sub DM %D",d);
+    PetscCheck(subDM,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate DM is missing sub DM %D",d);
     CHKERRQ(DMGetDimension(subDM,&subDim));
     PetscCheckFalse(subDim != 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DM is not of dimension 1");
     CHKERRQ(DMGetType(subDM,&dmType));
     CHKERRQ(PetscStrcmp(DMSTAG,dmType,&isStag));
-    PetscCheckFalse(!isStag,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DM is not of type DMSTAG");
+    PetscCheck(isStag,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DM is not of type DMSTAG");
     CHKERRQ(DMStagGetDOF(subDM,&dof[0],&dof[1],&dof[2],&dof[3]));
     if (!checkDof) {
       for (s=0; s<DMSTAG_MAX_STRATA; ++s) dofCheck[s] = dof[s];
@@ -184,13 +184,13 @@ PETSC_EXTERN PetscErrorCode DMStagGetProductCoordinateLocationSlot(DM dm,DMStagS
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   CHKERRQ(DMGetDimension(dm,&dim));
   CHKERRQ(DMGetCoordinateDM(dm,&dmCoord));
-  PetscCheckFalse(!dmCoord,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DM does not have a coordinate DM");
+  PetscCheck(dmCoord,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"DM does not have a coordinate DM");
   {
     PetscBool isProduct;
     DMType    dmType;
     CHKERRQ(DMGetType(dmCoord,&dmType));
     CHKERRQ(PetscStrcmp(DMPRODUCT,dmType,&isProduct));
-    PetscCheckFalse(!isProduct,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate DM is not of type DMPRODUCT");
+    PetscCheck(isProduct,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate DM is not of type DMPRODUCT");
   }
   for (s=0; s<DMSTAG_MAX_STRATA; ++s) dofCheck[s] = 0;
   for (d=0; d<dim; ++d) {
@@ -199,12 +199,12 @@ PETSC_EXTERN PetscErrorCode DMStagGetProductCoordinateLocationSlot(DM dm,DMStagS
     PetscBool isStag;
     PetscInt  dof[DMSTAG_MAX_STRATA],subDim;
     CHKERRQ(DMProductGetDM(dmCoord,d,&subDM));
-    PetscCheckFalse(!subDM,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate DM is missing sub DM %D",d);
+    PetscCheck(subDM,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate DM is missing sub DM %D",d);
     CHKERRQ(DMGetDimension(subDM,&subDim));
     PetscCheckFalse(subDim != 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DM is not of dimension 1");
     CHKERRQ(DMGetType(subDM,&dmType));
     CHKERRQ(PetscStrcmp(DMSTAG,dmType,&isStag));
-    PetscCheckFalse(!isStag,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DM is not of type DMSTAG");
+    PetscCheck(isStag,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"Coordinate sub-DM is not of type DMSTAG");
     CHKERRQ(DMStagGetDOF(subDM,&dof[0],&dof[1],&dof[2],&dof[3]));
     if (d == 0) {
       const PetscInt component = 0;
@@ -990,7 +990,7 @@ PetscErrorCode DMStagSetBoundaryTypes(DM dm,DMBoundaryType boundaryType0,DMBound
   PetscValidLogicalCollectiveEnum(dm,boundaryType0,2);
   if (dim > 1) PetscValidLogicalCollectiveEnum(dm,boundaryType1,3);
   if (dim > 2) PetscValidLogicalCollectiveEnum(dm,boundaryType2,4);
-  PetscCheckFalse(dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  PetscCheck(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
                stag->boundaryType[0] = boundaryType0;
   if (dim > 1) stag->boundaryType[1] = boundaryType1;
   if (dim > 2) stag->boundaryType[2] = boundaryType2;
@@ -1048,7 +1048,7 @@ PetscErrorCode DMStagSetDOF(DM dm,PetscInt dof0, PetscInt dof1,PetscInt dof2,Pet
   PetscValidLogicalCollectiveInt(dm,dof1,3);
   PetscValidLogicalCollectiveInt(dm,dof2,4);
   PetscValidLogicalCollectiveInt(dm,dof3,5);
-  PetscCheckFalse(dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  PetscCheck(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   CHKERRQ(DMGetDimension(dm,&dim));
   PetscCheckFalse(dof0 < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"dof0 cannot be negative");
   PetscCheckFalse(dof1 < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"dof1 cannot be negative");
@@ -1087,7 +1087,7 @@ PetscErrorCode DMStagSetNumRanks(DM dm,PetscInt nRanks0,PetscInt nRanks1,PetscIn
   PetscValidLogicalCollectiveInt(dm,nRanks0,2);
   PetscValidLogicalCollectiveInt(dm,nRanks1,3);
   PetscValidLogicalCollectiveInt(dm,nRanks2,4);
-  PetscCheckFalse(dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  PetscCheck(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   CHKERRQ(DMGetDimension(dm,&dim));
   PetscCheckFalse(nRanks0 != PETSC_DECIDE && nRanks0 < 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in X direction cannot be less than 1");
   PetscCheckFalse(dim > 1 && nRanks1 != PETSC_DECIDE && nRanks1 < 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"number of ranks in Y direction cannot be less than 1");
@@ -1118,7 +1118,7 @@ PetscErrorCode DMStagSetStencilType(DM dm,DMStagStencilType stencilType)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   PetscValidLogicalCollectiveEnum(dm,stencilType,2);
-  PetscCheckFalse(dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  PetscCheck(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   stag->stencilType = stencilType;
   PetscFunctionReturn(0);
 }
@@ -1146,7 +1146,7 @@ PetscErrorCode DMStagSetStencilWidth(DM dm,PetscInt stencilWidth)
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
   PetscValidLogicalCollectiveInt(dm,stencilWidth,2);
-  PetscCheckFalse(dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  PetscCheck(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   PetscCheckFalse(stencilWidth < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Stencil width must be non-negative");
   stag->stencilWidth = stencilWidth;
   PetscFunctionReturn(0);
@@ -1175,7 +1175,7 @@ PetscErrorCode DMStagSetGlobalSizes(DM dm,PetscInt N0,PetscInt N1,PetscInt N2)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
-  PetscCheckFalse(dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  PetscCheck(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   CHKERRQ(DMGetDimension(dm,&dim));
   PetscCheckFalse(N0 < 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Number of elements in X direction must be positive");
   PetscCheckFalse(dim > 1 && N1 < 0,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_SIZ,"Number of elements in Y direction must be positive");
@@ -1210,7 +1210,7 @@ PetscErrorCode DMStagSetOwnershipRanges(DM dm,PetscInt const *lx,PetscInt const 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
-  PetscCheckFalse(dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
+  PetscCheck(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called before DMSetUp()");
   lin[0] = lx; lin[1] = ly; lin[2] = lz;
   CHKERRQ(DMGetDimension(dm,&dim));
   for (d=0; d<dim; ++d) {
@@ -1257,8 +1257,8 @@ PetscErrorCode DMStagSetUniformCoordinates(DM dm,PetscReal xmin,PetscReal xmax,P
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
-  PetscCheckFalse(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
-  PetscCheckFalse(!stag->coordinateDMType,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"You must first call DMStagSetCoordinateDMType()");
+  PetscCheck(dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
+  PetscCheck(stag->coordinateDMType,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"You must first call DMStagSetCoordinateDMType()");
   CHKERRQ(PetscStrcmp(stag->coordinateDMType,DMSTAG,&flg_stag));
   CHKERRQ(PetscStrcmp(stag->coordinateDMType,DMPRODUCT,&flg_product));
   if (flg_stag) {
@@ -1300,7 +1300,7 @@ PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm,PetscReal xmin,PetscRea
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
-  PetscCheckFalse(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
+  PetscCheck(dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   CHKERRQ(PetscStrcmp(stag->coordinateDMType,DMSTAG,&flg));
   PetscCheckFalse(stag->coordinateDMType && !flg,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Refusing to change an already-set DM coordinate type");
   CHKERRQ(DMStagSetCoordinateDMType(dm,DMSTAG));
@@ -1348,7 +1348,7 @@ PetscErrorCode DMStagSetUniformCoordinatesProduct(DM dm,PetscReal xmin,PetscReal
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMSTAG);
-  PetscCheckFalse(!dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
+  PetscCheck(dm->setupcalled,PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_WRONGSTATE,"This function must be called after DMSetUp()");
   CHKERRQ(PetscStrcmp(stag->coordinateDMType,DMPRODUCT,&flg));
   PetscCheckFalse(stag->coordinateDMType && !flg,PetscObjectComm((PetscObject)dm),PETSC_ERR_PLIB,"Refusing to change an already-set DM coordinate type");
   CHKERRQ(DMStagSetCoordinateDMType(dm,DMPRODUCT));

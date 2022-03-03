@@ -117,9 +117,9 @@ int main(int argc,char **args)
       PetscCheckFalse(nzA!=nzB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT, nzA-nzB);
       CHKERRQ(PetscSortIntWithScalarArray(nzB,(PetscInt*)idxB,(PetscScalar*)vB));
       CHKERRQ(PetscArraycmp(idxA,idxB,nzA,&flg));
-      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT " (indices)",i);
+      PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT " (indices)",i);
       CHKERRQ(PetscArraycmp(vA,vB,nzA,&flg));
-      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT " (values)",i);
+      PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetRow %" PetscInt_FMT " (values)",i);
       CHKERRQ(MatRestoreRow(A,i,&nzA,&idxA,&vA));
       CHKERRQ(MatRestoreRow(B,i,&nzB,&idxB,&vB));
     }
@@ -133,7 +133,7 @@ int main(int argc,char **args)
 
     for (i=0; i<(rend-rstart); i++) {
       CHKERRQ(PetscArraycmp(valuesA + 6*i,valuesB + 6*i,6,&flg));
-      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetValues %" PetscInt_FMT,i + rstart);
+      PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error MatGetValues %" PetscInt_FMT,i + rstart);
     }
     CHKERRQ(PetscFree3(valuesA,valuesB,rows));
   }

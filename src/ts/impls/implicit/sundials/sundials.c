@@ -321,11 +321,11 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
 
   /* Set the pointer to user-defined data */
   flag = CVodeSetUserData(mem, ts);
-  PetscCheckFalse(flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSetUserData() fails");
+  PetscCheck(!flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSetUserData() fails");
 
   /* Sundials may choose to use a smaller initial step, but will never use a larger step. */
   flag = CVodeSetInitStep(mem,(realtype)ts->time_step);
-  PetscCheckFalse(flag,PetscObjectComm((PetscObject)ts),PETSC_ERR_LIB,"CVodeSetInitStep() failed");
+  PetscCheck(!flag,PetscObjectComm((PetscObject)ts),PETSC_ERR_LIB,"CVodeSetInitStep() failed");
   if (cvode->mindt > 0) {
     flag = CVodeSetMinStep(mem,(realtype)cvode->mindt);
     if (flag) {
@@ -336,28 +336,28 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   }
   if (cvode->maxdt > 0) {
     flag = CVodeSetMaxStep(mem,(realtype)cvode->maxdt);
-    PetscCheckFalse(flag,PetscObjectComm((PetscObject)ts),PETSC_ERR_LIB,"CVodeSetMaxStep() failed");
+    PetscCheck(!flag,PetscObjectComm((PetscObject)ts),PETSC_ERR_LIB,"CVodeSetMaxStep() failed");
   }
 
   /* Call CVodeInit to initialize the integrator memory and specify the
    * user's right hand side function in u'=f(t,u), the initial time T0, and
    * the initial dependent variable vector cvode->y */
   flag = CVodeInit(mem,TSFunction_Sundials,ts->ptime,cvode->y);
-  PetscCheckFalse(flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeInit() fails, flag %d",flag);
+  PetscCheck(!flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeInit() fails, flag %d",flag);
 
   /* specifies scalar relative and absolute tolerances */
   flag = CVodeSStolerances(mem,cvode->reltol,cvode->abstol);
-  PetscCheckFalse(flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSStolerances() fails, flag %d",flag);
+  PetscCheck(!flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSStolerances() fails, flag %d",flag);
 
   /* Specify max order of BDF / ADAMS method */
   if (cvode->maxord != PETSC_DEFAULT) {
     flag = CVodeSetMaxOrd(mem,cvode->maxord);
-    PetscCheckFalse(flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSetMaxOrd() fails, flag %d",flag);
+    PetscCheck(!flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSetMaxOrd() fails, flag %d",flag);
   }
 
   /* Specify max num of steps to be taken by cvode in its attempt to reach the next output time */
   flag = CVodeSetMaxNumSteps(mem,ts->max_steps);
-  PetscCheckFalse(flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSetMaxNumSteps() fails, flag %d",flag);
+  PetscCheck(!flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSetMaxNumSteps() fails, flag %d",flag);
 
   if (cvode->use_dense) {
     /* call CVDense to use a dense linear solver. */
@@ -366,7 +366,7 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
     CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
     PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"TSSUNDIALS only supports a dense solve in the serial case");
     flag = CVDense(mem,locsize);
-    PetscCheckFalse(flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVDense() fails, flag %d",flag);
+    PetscCheck(!flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVDense() fails, flag %d",flag);
   } else {
     /* call CVSpgmr to use GMRES as the linear solver.        */
     /* setup the ode integrator with the given preconditioner */
@@ -375,15 +375,15 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
     CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCNONE,&pcnone));
     if (pcnone) {
       flag = CVSpgmr(mem,PREC_NONE,0);
-      PetscCheckFalse(flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpgmr() fails, flag %d",flag);
+      PetscCheck(!flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpgmr() fails, flag %d",flag);
     } else {
       flag = CVSpgmr(mem,PREC_LEFT,cvode->maxl);
-      PetscCheckFalse(flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpgmr() fails, flag %d",flag);
+      PetscCheck(!flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpgmr() fails, flag %d",flag);
 
       /* Set preconditioner and solve routines Precond and PSolve,
          and the pointer to the user-defined block data */
       flag = CVSpilsSetPreconditioner(mem,TSPrecond_Sundials,TSPSolve_Sundials);
-      PetscCheckFalse(flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpilsSetPreconditioner() fails, flag %d", flag);
+      PetscCheck(!flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpilsSetPreconditioner() fails, flag %d", flag);
     }
   }
   PetscFunctionReturn(0);

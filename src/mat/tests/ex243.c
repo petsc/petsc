@@ -67,13 +67,13 @@ int main(int argc, char** argv)
     CHKERRQ(MatConvert(A,MATSCALAPACK,MAT_INITIAL_MATRIX,&A_scalapack));
     CHKERRQ(MatComputeOperator(A_scalapack,isAIJ?MATAIJ:MATDENSE,&Aexplicit));
     CHKERRQ(MatMultEqual(Aexplicit,A_scalapack,5,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Aexplicit != A_scalapack.");
+    PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Aexplicit != A_scalapack.");
     CHKERRQ(MatDestroy(&Aexplicit));
 
     /* Test MAT_REUSE_MATRIX which is only supported for inplace conversion */
     CHKERRQ(MatConvert(A,MATSCALAPACK,MAT_INPLACE_MATRIX,&A));
     CHKERRQ(MatMultEqual(A_scalapack,A,5,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"A_scalapack != A.");
+    PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"A_scalapack != A.");
     CHKERRQ(MatDestroy(&A_scalapack));
   }
 

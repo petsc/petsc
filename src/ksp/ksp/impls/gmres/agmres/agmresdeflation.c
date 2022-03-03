@@ -126,10 +126,10 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   /* Compute the Schur form */
   if (IsReduced) {                /* The eigenvalue problem is already in reduced form, meaning that A is upper Hessenberg and B is triangular */
     PetscStackCallBLAS("LAPACKhgeqz",LAPACKhgeqz_("S", "I", "I", &KspSize, &ilo, &ihi, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, work, &lwork, &info));
-    PetscCheckFalse(info,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Error while calling LAPACK routine xhgeqz_");
+    PetscCheck(!info,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Error while calling LAPACK routine xhgeqz_");
   } else {
     PetscStackCallBLAS("LAPACKgges",LAPACKgges_("V", "V", "N", NULL, &KspSize, A, &ldA, B, &ldB, &sdim, wr, wi, beta, Q, &N, Z, &N, work, &lwork, NULL, &info));
-    PetscCheckFalse(info,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Error while calling LAPACK routine xgges_");
+    PetscCheck(!info,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB, "Error while calling LAPACK routine xgges_");
   }
 
   /* We should avoid computing these ratio...  */

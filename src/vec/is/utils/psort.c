@@ -132,7 +132,7 @@ static PetscErrorCode PetscParallelSampleSelect(PetscLayout mapin, PetscLayout m
     PetscBool sorted;
 
     CHKERRQ(PetscParallelSortedInt(mapin->comm, size - 1, pivots, &sorted));
-    PetscCheckFalse(!sorted,mapin->comm, PETSC_ERR_PLIB, "bitonic sort failed");
+    PetscCheck(sorted,mapin->comm, PETSC_ERR_PLIB, "bitonic sort failed");
   }
 
   /* if there are Z nonempty processes, we have (P - 1) * Z real pivots, and we want to select
@@ -288,7 +288,7 @@ static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLa
     PetscBool sorted;
 
     CHKERRQ(PetscParallelSortedInt(mapin->comm, nrecv, buffer, &sorted));
-    PetscCheckFalse(!sorted,mapin->comm, PETSC_ERR_PLIB, "samplesort (pre-redistribute) sort failed");
+    PetscCheck(sorted,mapin->comm, PETSC_ERR_PLIB, "samplesort (pre-redistribute) sort failed");
   }
 #endif
 
@@ -360,7 +360,7 @@ PetscErrorCode PetscParallelSortInt(PetscLayout mapin, PetscLayout mapout, Petsc
     PetscBool sorted;
 
     CHKERRQ(PetscParallelSortedInt(mapout->comm, mapout->n, keysout, &sorted));
-    PetscCheckFalse(!sorted,mapout->comm, PETSC_ERR_PLIB, "samplesort sort failed");
+    PetscCheck(sorted,mapout->comm, PETSC_ERR_PLIB, "samplesort sort failed");
   }
 #endif
   CHKERRQ(PetscFree(keysincopy));

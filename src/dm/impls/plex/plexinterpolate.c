@@ -459,7 +459,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
       key.l = faceSize > 3 ? face[3] : PETSC_MAX_INT;
       CHKERRQ(PetscSortInt(faceSize, (PetscInt *) &key));
       CHKERRQ(PetscHashIJKLPut(faceTable, key, &iter, &missing));
-      PetscCheckFalse(missing,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing face (cell %D, lf %D)", c, cf);
+      PetscCheck(!missing,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing face (cell %D, lf %D)", c, cf);
       CHKERRQ(PetscHashIJKLIterGet(faceTable, iter, &f));
       CHKERRQ(DMPlexSetConeSize(idm, f, faceSize));
       CHKERRQ(DMPlexSetCellType(idm, f, faceType));
@@ -973,7 +973,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
   CHKERRQ(PetscObjectGetComm((PetscObject) dm, &comm));
   CHKERRMPI(MPI_Comm_rank(comm, &rank));
   CHKERRQ(DMPlexGetOverlap(dm, &ov));
-  PetscCheckFalse(ov,comm, PETSC_ERR_SUP, "Interpolation of overlapped DMPlex not implemented yet");
+  PetscCheck(!ov,comm, PETSC_ERR_SUP, "Interpolation of overlapped DMPlex not implemented yet");
   CHKERRQ(PetscOptionsHasName(NULL, ((PetscObject) dm)->prefix, "-dmplex_interp_debug", &debug));
   CHKERRQ(PetscObjectViewFromOptions((PetscObject) dm, NULL, "-dm_interp_pre_view"));
   CHKERRQ(PetscObjectViewFromOptions((PetscObject) pointSF, NULL, "-petscsf_interp_pre_view"));
@@ -1164,7 +1164,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
           CHKERRQ(PetscSortSFNode(Np, (PetscSFNode *) &key));
           if (debug) CHKERRQ(PetscSynchronizedPrintf(PetscObjectComm((PetscObject) dm), "[%d]    key (%D, %D) (%D, %D) (%D, %D) (%D, %D)\n", rank, key.i.rank, key.i.index, key.j.rank, key.j.index, key.k.rank, key.k.index, key.l.rank, key.l.index));
           CHKERRQ(PetscHashIJKLRemotePut(faceTable, key, &iter, &missing));
-          PetscCheckFalse(missing,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Root %D Idx %D ought to have an associated face", r, idx2);
+          PetscCheck(!missing,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Root %D Idx %D ought to have an associated face", r, idx2);
           else        CHKERRQ(PetscHashIJKLRemoteIterGet(faceTable, iter, &candidatesRemote[hidx]));
         }
       }

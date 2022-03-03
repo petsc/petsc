@@ -219,7 +219,7 @@ PetscErrorCode PetscTableGetNext(PetscTable ta, PetscTablePosition *rPosition, P
   PetscValidIntPointer(pkey,3);
   PetscValidIntPointer(data,4);
   pos = *rPosition;
-  PetscCheckFalse(!pos,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null position");
+  PetscCheck(pos,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null position");
   *data = *pos;
   PetscCheckFalse(!*data,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null data");
   idex  = pos - ta->table;

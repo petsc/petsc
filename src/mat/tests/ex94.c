@@ -54,15 +54,15 @@ int main(int argc,char **args)
 
   /*  Load the matrices A_save and B */
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f0",file[0],sizeof(file[0]),&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate a file name for small matrix A with the -f0 option.");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate a file name for small matrix A with the -f0 option.");
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f1",file[1],sizeof(file[1]),&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate a file name for small matrix B with the -f1 option.");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate a file name for small matrix B with the -f1 option.");
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f2",file[2],sizeof(file[2]),&flg));
   if (!flg) {
     preload = PETSC_FALSE;
   } else {
     CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f3",file[3],sizeof(file[3]),&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate a file name for test matrix B with the -f3 option.");
+    PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate a file name for test matrix B with the -f3 option.");
   }
 
   PetscPreLoadBegin(preload,"Load system");
@@ -108,7 +108,7 @@ int main(int argc,char **args)
     CHKERRQ(MatScale(A,-1.0)); /* A = -A = B - A_save */
     CHKERRQ(MatAXPY(Btmp,-1.0,A,DIFFERENT_NONZERO_PATTERN)); /* Btmp = -A + B = A_save */
     CHKERRQ(MatMultEqual(A_save,Btmp,10,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatAXPY() is incorrect");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatAXPY() is incorrect");
     CHKERRQ(MatDestroy(&A));
     CHKERRQ(MatDestroy(&Btmp));
 
@@ -130,29 +130,29 @@ int main(int argc,char **args)
 
     CHKERRQ(MatMatMult(AT,B,MAT_INITIAL_MATRIX,fill,&C));
     CHKERRQ(MatMatMultEqual(AT,B,C,10,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult() for C=AT*B");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult() for C=AT*B");
     CHKERRQ(MatDestroy(&C));
 
     CHKERRQ(MatMatMult(ATT,B,MAT_INITIAL_MATRIX,fill,&C));
     CHKERRQ(MatMatMultEqual(ATT,B,C,10,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult() for C=ATT*B");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult() for C=ATT*B");
     CHKERRQ(MatDestroy(&C));
 
     CHKERRQ(MatMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C));
     CHKERRQ(MatMatMultEqual(A,B,C,10,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult() for reuse C=A*B");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult() for reuse C=A*B");
     /* ATT has different matrix type as A (although they have same internal data structure),
        we cannot call MatProductReplaceMats(ATT,NULL,NULL,C) and MatMatMult(ATT,B,MAT_REUSE_MATRIX,fill,&C) */
     CHKERRQ(MatDestroy(&C));
 
     CHKERRQ(MatMatMult(A,BTT,MAT_INITIAL_MATRIX,fill,&C));
     CHKERRQ(MatMatMultEqual(A,BTT,C,10,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult() for C=A*BTT");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult() for C=A*BTT");
     CHKERRQ(MatDestroy(&C));
 
     CHKERRQ(MatMatMult(ATT,BTT,MAT_INITIAL_MATRIX,fill,&C));
     CHKERRQ(MatMatMultEqual(A,B,C,10,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()");
     CHKERRQ(MatDestroy(&C));
 
     CHKERRQ(MatDestroy(&BTT));
@@ -172,7 +172,7 @@ int main(int argc,char **args)
       CHKERRQ(MatMatMult(A,B,MAT_REUSE_MATRIX,fill,&C));
     }
     CHKERRQ(MatMatMultEqual(A,B,C,10,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()");
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: MatMatMult()");
     CHKERRQ(MatDestroy(&A));
 
     /* Test MatDuplicate() of C=A*B */
@@ -323,7 +323,7 @@ int main(int argc,char **args)
     CHKERRQ(MatPtAP(A,Pdense,MAT_INITIAL_MATRIX,fill,&Cdense));
     CHKERRQ(MatPtAP(A,Pdense,MAT_REUSE_MATRIX,fill,&Cdense));
     CHKERRQ(MatPtAPMultEqual(A,Pdense,Cdense,10,&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatPtAP with A AIJ and P Dense");
+    PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in MatPtAP with A AIJ and P Dense");
     CHKERRQ(MatDestroy(&Cdense));
 
     /* test with A SeqDense */
@@ -332,7 +332,7 @@ int main(int argc,char **args)
       CHKERRQ(MatPtAP(Adense,Pdense,MAT_INITIAL_MATRIX,fill,&Cdense));
       CHKERRQ(MatPtAP(Adense,Pdense,MAT_REUSE_MATRIX,fill,&Cdense));
       CHKERRQ(MatPtAPMultEqual(Adense,Pdense,Cdense,10,&flg));
-      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatPtAP with A SeqDense and P SeqDense");
+      PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in MatPtAP with A SeqDense and P SeqDense");
       CHKERRQ(MatDestroy(&Cdense));
       CHKERRQ(MatDestroy(&Adense));
     }

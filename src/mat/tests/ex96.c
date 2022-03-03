@@ -93,7 +93,7 @@ int main(int argc,char **argv)
 
   CHKERRQ(MatConvert(C,MATAIJ,MAT_INITIAL_MATRIX,&A_tmp)); /* not work for mpisbaij matrix! */
   CHKERRQ(MatEqual(A,A_tmp,&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != C");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != C");
   CHKERRQ(MatDestroy(&C));
   CHKERRQ(MatDestroy(&A_tmp));
 

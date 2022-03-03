@@ -86,9 +86,9 @@ PetscErrorCode MatCreateSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS
   /* Check if the col indices are sorted */
   for (i=0; i<ismax; i++) {
     CHKERRQ(ISSorted(isrow[i],&sorted));
-    PetscCheckFalse(!sorted,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"ISrow is not sorted");
+    PetscCheck(sorted,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"ISrow is not sorted");
     CHKERRQ(ISSorted(iscol[i],&sorted));
-    PetscCheckFalse(!sorted,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IScol is not sorted");
+    PetscCheck(sorted,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"IScol is not sorted");
   }
 
   CHKERRQ(PetscMalloc5(ismax,(PetscInt***)&irow,ismax,(PetscInt***)&icol,ismax,&nrow,ismax,&ncol,m,&rtable));

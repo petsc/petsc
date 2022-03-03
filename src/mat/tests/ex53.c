@@ -25,7 +25,7 @@ int main(int argc,char **args)
 
   /* Check out if MatLoad() works */
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Input file not specified");
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Input file not specified");
   CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
   CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
   CHKERRQ(MatSetType(A,MATBAIJ));

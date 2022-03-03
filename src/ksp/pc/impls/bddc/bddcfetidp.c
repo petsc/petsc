@@ -161,7 +161,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
   if (pP) { /* saddle point */
     /* subdomain pressures in global numbering */
     CHKERRQ(PetscObjectQuery((PetscObject)fetidpmat_ctx->pc,"__KSPFETIDP_gP",(PetscObject*)&gP));
-    PetscCheckFalse(!gP,PETSC_COMM_SELF,PETSC_ERR_PLIB,"gP not present");
+    PetscCheck(gP,PETSC_COMM_SELF,PETSC_ERR_PLIB,"gP not present");
     CHKERRQ(ISGetLocalSize(gP,&nPl));
     CHKERRQ(VecCreate(PETSC_COMM_SELF,&fetidpmat_ctx->vP));
     CHKERRQ(VecSetSizes(fetidpmat_ctx->vP,nPl,nPl));
@@ -196,19 +196,19 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
 
     /* import matrices for pressures coupling */
     CHKERRQ(PetscObjectQuery((PetscObject)fetidpmat_ctx->pc,"__KSPFETIDP_B_BI",(PetscObject*)&fetidpmat_ctx->B_BI));
-    PetscCheckFalse(!fetidpmat_ctx->B_BI,PETSC_COMM_SELF,PETSC_ERR_PLIB,"B_BI not present");
+    PetscCheck(fetidpmat_ctx->B_BI,PETSC_COMM_SELF,PETSC_ERR_PLIB,"B_BI not present");
     CHKERRQ(PetscObjectReference((PetscObject)fetidpmat_ctx->B_BI));
 
     CHKERRQ(PetscObjectQuery((PetscObject)fetidpmat_ctx->pc,"__KSPFETIDP_B_BB",(PetscObject*)&fetidpmat_ctx->B_BB));
-    PetscCheckFalse(!fetidpmat_ctx->B_BB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"B_BB not present");
+    PetscCheck(fetidpmat_ctx->B_BB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"B_BB not present");
     CHKERRQ(PetscObjectReference((PetscObject)fetidpmat_ctx->B_BB));
 
     CHKERRQ(PetscObjectQuery((PetscObject)fetidpmat_ctx->pc,"__KSPFETIDP_Bt_BI",(PetscObject*)&fetidpmat_ctx->Bt_BI));
-    PetscCheckFalse(!fetidpmat_ctx->Bt_BI,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Bt_BI not present");
+    PetscCheck(fetidpmat_ctx->Bt_BI,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Bt_BI not present");
     CHKERRQ(PetscObjectReference((PetscObject)fetidpmat_ctx->Bt_BI));
 
     CHKERRQ(PetscObjectQuery((PetscObject)fetidpmat_ctx->pc,"__KSPFETIDP_Bt_BB",(PetscObject*)&fetidpmat_ctx->Bt_BB));
-    PetscCheckFalse(!fetidpmat_ctx->Bt_BB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Bt_BB not present");
+    PetscCheck(fetidpmat_ctx->Bt_BB,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Bt_BB not present");
     CHKERRQ(PetscObjectReference((PetscObject)fetidpmat_ctx->Bt_BB));
 
     CHKERRQ(PetscObjectQuery((PetscObject)fetidpmat_ctx->pc,"__KSPFETIDP_flip" ,(PetscObject*)&fetidpmat_ctx->rhs_flip));
@@ -445,7 +445,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
   BD1 = NULL;
   BD2 = NULL;
   if (fully_redundant) {
-    PetscCheckFalse(pcbddc->use_deluxe_scaling,comm,PETSC_ERR_SUP,"Deluxe FETIDP with fully-redundant multipliers to be implemented");
+    PetscCheck(!pcbddc->use_deluxe_scaling,comm,PETSC_ERR_SUP,"Deluxe FETIDP with fully-redundant multipliers to be implemented");
     CHKERRQ(MatCreate(PETSC_COMM_SELF,&ScalingMat));
     CHKERRQ(MatSetSizes(ScalingMat,n_local_lambda,n_local_lambda,n_local_lambda,n_local_lambda));
     CHKERRQ(MatSetType(ScalingMat,MATSEQAIJ));
@@ -478,7 +478,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
       PetscInt            cum,mss,*nnz;
       PetscBLASInt        *pivots,B_lwork,B_N,B_ierr;
 
-      PetscCheckFalse(!pcbddc->deluxe_singlemat,comm,PETSC_ERR_USER,"Cannot compute B_Ddelta! rerun with -pc_bddc_deluxe_singlemat");
+      PetscCheck(pcbddc->deluxe_singlemat,comm,PETSC_ERR_USER,"Cannot compute B_Ddelta! rerun with -pc_bddc_deluxe_singlemat");
       mss  = 0;
       CHKERRQ(PetscCalloc1(pcis->n_B,&nnz));
       if (sub_schurs->is_Ej_all) {
@@ -508,7 +508,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
         CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
         PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,&dummy,&B_N,&B_N,&lwork,&B_lwork,&B_ierr));
         CHKERRQ(PetscFPTrapPop());
-        PetscCheckFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GETRI Lapack routine %d",(int)B_ierr);
+        PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in query to GETRI Lapack routine %d",(int)B_ierr);
         CHKERRQ(PetscBLASIntCast((PetscInt)PetscRealPart(lwork),&B_lwork));
       }
       CHKERRQ(PetscMalloc3(mss*mss,&W,mss,&pivots,B_lwork,&Bwork));
@@ -524,12 +524,12 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
         CHKERRQ(MatDenseRestoreArrayRead(deluxe_ctx->seq_mat[i],&M));
         CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
         PetscStackCallBLAS("LAPACKgetrf",LAPACKgetrf_(&B_N,&B_N,W,&B_N,pivots,&B_ierr));
-        PetscCheckFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
+        PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRF Lapack routine %d",(int)B_ierr);
         PetscStackCallBLAS("LAPACKgetri",LAPACKgetri_(&B_N,W,&B_N,pivots,Bwork,&B_lwork,&B_ierr));
-        PetscCheckFalse(B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
+        PetscCheck(!B_ierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in GETRI Lapack routine %d",(int)B_ierr);
         CHKERRQ(PetscFPTrapPop());
         /* silent static analyzer */
-        PetscCheckFalse(!idxs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"IDXS not present");
+        PetscCheck(idxs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"IDXS not present");
         CHKERRQ(MatSetValues(T,subset_size,idxs+cum,subset_size,idxs+cum,W,INSERT_VALUES));
         cum += subset_size;
       }

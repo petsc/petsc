@@ -9,7 +9,7 @@ static PetscErrorCode DMPlexTransformSetUp_1D(DMPlexTransform tr)
   PetscFunctionBegin;
   CHKERRQ(DMPlexTransformGetDM(tr, &dm));
   CHKERRQ(DMPlexTransformGetActive(tr, &active));
-  PetscCheckFalse(!active,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_WRONGSTATE, "DMPlexTransform must have an adaptation label in order to use 1D algorithm");
+  PetscCheck(active,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_WRONGSTATE, "DMPlexTransform must have an adaptation label in order to use 1D algorithm");
   /* Calculate refineType for each cell */
   CHKERRQ(DMLabelCreate(PETSC_COMM_SELF, "Refine Type", &tr->trType));
   CHKERRQ(DMPlexGetChart(dm, &pStart, &pEnd));

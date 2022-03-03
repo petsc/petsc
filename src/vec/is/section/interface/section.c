@@ -661,7 +661,7 @@ PetscErrorCode PetscSectionSetPermutation(PetscSection s, IS perm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (perm) PetscValidHeaderSpecific(perm, IS_CLASSID, 2);
-  PetscCheckFalse(s->setup,PetscObjectComm((PetscObject) s), PETSC_ERR_ARG_WRONGSTATE, "Cannot set a permutation after the section is setup");
+  PetscCheck(!s->setup,PetscObjectComm((PetscObject) s), PETSC_ERR_ARG_WRONGSTATE, "Cannot set a permutation after the section is setup");
   if (s->perm != perm) {
     CHKERRQ(ISDestroy(&s->perm));
     if (perm) {
@@ -715,7 +715,7 @@ PetscErrorCode PetscSectionSetPointMajor(PetscSection s, PetscBool pm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscCheckFalse(s->setup,PetscObjectComm((PetscObject) s), PETSC_ERR_ARG_WRONGSTATE, "Cannot set the dof ordering after the section is setup");
+  PetscCheck(!s->setup,PetscObjectComm((PetscObject) s), PETSC_ERR_ARG_WRONGSTATE, "Cannot set the dof ordering after the section is setup");
   s->pointMajor = pm;
   PetscFunctionReturn(0);
 }
@@ -763,7 +763,7 @@ PetscErrorCode PetscSectionSetIncludesConstraints(PetscSection s, PetscBool incl
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscCheckFalse(s->setup,PetscObjectComm((PetscObject) s), PETSC_ERR_ARG_WRONGSTATE, "Cannot set includesConstraints after the section is set up");
+  PetscCheck(!s->setup,PetscObjectComm((PetscObject) s), PETSC_ERR_ARG_WRONGSTATE, "Cannot set includesConstraints after the section is set up");
   s->includesConstraints = includesConstraints;
   PetscFunctionReturn(0);
 }
@@ -1119,7 +1119,7 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
   s->setup = PETSC_TRUE;
   /* Set offsets and field offsets for all points */
   /*   Assume that all fields have the same chart */
-  PetscCheckFalse(!s->includesConstraints,PETSC_COMM_SELF,PETSC_ERR_SUP,"PetscSectionSetUp is currently unsupported for includesConstraints = PETSC_TRUE");
+  PetscCheck(s->includesConstraints,PETSC_COMM_SELF,PETSC_ERR_SUP,"PetscSectionSetUp is currently unsupported for includesConstraints = PETSC_TRUE");
   if (s->perm) CHKERRQ(ISGetIndices(s->perm, &pind));
   if (s->pointMajor) {
     for (p = 0; p < s->pEnd - s->pStart; ++p) {
@@ -1276,7 +1276,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   PetscValidLogicalCollectiveBool(s, includeConstraints, 3);
   PetscValidLogicalCollectiveBool(s, localOffsets, 4);
   PetscValidPointer(gsection, 5);
-  PetscCheckFalse(!s->pointMajor,PETSC_COMM_SELF,PETSC_ERR_SUP, "No support for field major ordering");
+  PetscCheck(s->pointMajor,PETSC_COMM_SELF,PETSC_ERR_SUP, "No support for field major ordering");
   CHKERRQ(PetscSectionCreate(PetscObjectComm((PetscObject) s), &gs));
   CHKERRQ(PetscSectionGetNumFields(s, &numFields));
   if (numFields > 0) CHKERRQ(PetscSectionSetNumFields(gs, numFields));
@@ -2888,7 +2888,7 @@ PetscErrorCode  PetscSectionSymSetType(PetscSectionSym sym, PetscSectionSymType 
   if (match) PetscFunctionReturn(0);
 
   CHKERRQ(PetscFunctionListFind(PetscSectionSymList,method,&r));
-  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscSectionSym type: %s", method);
+  PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscSectionSym type: %s", method);
   if (sym->ops->destroy) {
     CHKERRQ((*sym->ops->destroy)(sym));
     sym->ops->destroy = NULL;

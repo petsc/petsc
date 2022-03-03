@@ -546,7 +546,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[
     } else { /* (*submat)[0] is a dummy matrix */
       smat = (Mat_SubSppt*)(*submat)[0]->data;
     }
-    PetscCheckFalse(!smat,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"MatCreateSubMatrices(...,MAT_REUSE_MATRIX,...) requires submat");
+    PetscCheck(smat,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"MatCreateSubMatrices(...,MAT_REUSE_MATRIX,...) requires submat");
     nstages = smat->nstages;
   }
 

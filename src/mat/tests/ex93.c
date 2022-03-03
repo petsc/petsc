@@ -43,12 +43,12 @@ int main(int argc,char **argv)
   CHKERRQ(MatMatMult(B,A,MAT_REUSE_MATRIX,fill,&C));   /* recompute C=B*A */
   CHKERRQ(MatSetOptionsPrefix(C,"C_"));
   CHKERRQ(MatMatMultEqual(B,A,C,10,&isequal));
-  PetscCheckFalse(!isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatMult: C != B*A");
+  PetscCheck(isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatMult: C != B*A");
 
   CHKERRQ(MatMatMult(C,A,MAT_INITIAL_MATRIX,fill,&D)); /* D = C*A = (A^T*A)*A */
   CHKERRQ(MatMatMult(C,A,MAT_REUSE_MATRIX,fill,&D));
   CHKERRQ(MatMatMultEqual(C,A,D,10,&isequal));
-  PetscCheckFalse(!isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatMult: D != C*A");
+  PetscCheck(isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatMult: D != C*A");
 
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(MatDestroy(&C));
@@ -58,12 +58,12 @@ int main(int argc,char **argv)
   CHKERRQ(MatDuplicate(A,MAT_COPY_VALUES,&B));      /* B = A */
   CHKERRQ(MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C)); /* C = B^T*A*B */
   CHKERRQ(MatPtAPMultEqual(A,B,C,10,&isequal));
-  PetscCheckFalse(!isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatPtAP: C != B^T*A*B");
+  PetscCheck(isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatPtAP: C != B^T*A*B");
 
   /* Repeat MatPtAP to test symbolic/numeric separation for reuse of the symbolic product */
   CHKERRQ(MatPtAP(A,B,MAT_REUSE_MATRIX,fill,&C));
   CHKERRQ(MatPtAPMultEqual(A,B,C,10,&isequal));
-  PetscCheckFalse(!isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatPtAP(reuse): C != B^T*A*B");
+  PetscCheck(isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatPtAP(reuse): C != B^T*A*B");
 
   CHKERRQ(MatDestroy(&C));
 
@@ -87,7 +87,7 @@ int main(int argc,char **argv)
     CHKERRQ(MatScale(A,2.0));
     CHKERRQ(MatMatTransposeMult(A,A,MAT_REUSE_MATRIX,fill,&D));
     CHKERRQ(MatMatTransposeMultEqual(A,A,D,10,&isequal));
-    PetscCheckFalse(!isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatTranspose: D != A*A^T");
+    PetscCheck(isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatMatTranspose: D != A*A^T");
   }
 
   CHKERRQ(MatDestroy(&A));

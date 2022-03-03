@@ -1412,7 +1412,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool inter
   if (rank == 0) {
     CHKERRQ(PetscMemzero(title,PETSC_MAX_PATH_LEN+1));
     PetscStackCallStandard(ex_get_init,exoid, title, &dimEmbed, &numVertices, &numCells, &num_cs, &num_vs, &num_fs);
-    PetscCheckFalse(!num_cs,PETSC_COMM_SELF,PETSC_ERR_SUP,"Exodus file does not contain any cell set");
+    PetscCheck(num_cs,PETSC_COMM_SELF,PETSC_ERR_SUP,"Exodus file does not contain any cell set");
   }
   CHKERRMPI(MPI_Bcast(title, PETSC_MAX_PATH_LEN+1, MPI_CHAR, 0, comm));
   CHKERRMPI(MPI_Bcast(&dim, 1, MPI_INT, 0, comm));

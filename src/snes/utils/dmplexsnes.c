@@ -46,8 +46,8 @@ static PetscErrorCode SNESCorrectDiscretePressure_Private(SNES snes, PetscInt pf
   PetscFunctionBegin;
   CHKERRQ(PetscObjectGetComm((PetscObject) snes, &comm));
   CHKERRQ(SNESGetDM(snes, &dm));
-  PetscCheckFalse(!dm,comm, PETSC_ERR_ARG_WRONG, "Cannot compute test without a SNES DM");
-  PetscCheckFalse(!nullspace,comm, PETSC_ERR_ARG_WRONG, "Cannot compute test without a Jacobian nullspace");
+  PetscCheck(dm,comm, PETSC_ERR_ARG_WRONG, "Cannot compute test without a SNES DM");
+  PetscCheck(nullspace,comm, PETSC_ERR_ARG_WRONG, "Cannot compute test without a Jacobian nullspace");
   CHKERRQ(DMGetDS(dm, &ds));
   CHKERRQ(PetscDSSetObjective(ds, pfield, pressure_Private));
   CHKERRQ(MatNullSpaceGetVecs(nullspace, NULL, &Nv, &nullvecs));
@@ -290,7 +290,7 @@ PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo ctx, PetscInt n, Pet
 {
   PetscFunctionBegin;
   PetscCheckFalse(ctx->dim < 0,ctx->comm, PETSC_ERR_ARG_WRONGSTATE, "The spatial dimension has not been set");
-  PetscCheckFalse(ctx->points,ctx->comm, PETSC_ERR_ARG_WRONGSTATE, "Cannot add points multiple times yet");
+  PetscCheck(!ctx->points,ctx->comm, PETSC_ERR_ARG_WRONGSTATE, "Cannot add points multiple times yet");
   ctx->nInput = n;
 
   CHKERRQ(PetscMalloc1(n*ctx->dim, &ctx->points));
@@ -383,7 +383,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   ctx->n = 0;
   for (p = 0; p < N; ++p) {
     if (globalProcs[p] == size) {
-      PetscCheckFalse(!ignoreOutsideDomain,comm, PETSC_ERR_PLIB, "Point %d: %g %g %g not located in mesh", p, (double)globalPoints[p*ctx->dim+0], (double)(ctx->dim > 1 ? globalPoints[p*ctx->dim+1] : 0.0), (double)(ctx->dim > 2 ? globalPoints[p*ctx->dim+2] : 0.0));
+      PetscCheck(ignoreOutsideDomain,comm, PETSC_ERR_PLIB, "Point %d: %g %g %g not located in mesh", p, (double)globalPoints[p*ctx->dim+0], (double)(ctx->dim > 1 ? globalPoints[p*ctx->dim+1] : 0.0), (double)(ctx->dim > 2 ? globalPoints[p*ctx->dim+2] : 0.0));
       else if (rank == 0) ++ctx->n;
     } else if (globalProcs[p] == rank) ++ctx->n;
   }
@@ -445,7 +445,7 @@ PetscErrorCode DMInterpolationGetCoordinates(DMInterpolationInfo ctx, Vec *coord
 {
   PetscFunctionBegin;
   PetscValidPointer(coordinates, 2);
-  PetscCheckFalse(!ctx->coords,ctx->comm, PETSC_ERR_ARG_WRONGSTATE, "The interpolation context has not been setup.");
+  PetscCheck(ctx->coords,ctx->comm, PETSC_ERR_ARG_WRONGSTATE, "The interpolation context has not been setup.");
   *coordinates = ctx->coords;
   PetscFunctionReturn(0);
 }
@@ -471,7 +471,7 @@ PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo ctx, Vec *v)
 {
   PetscFunctionBegin;
   PetscValidPointer(v, 2);
-  PetscCheckFalse(!ctx->coords,ctx->comm, PETSC_ERR_ARG_WRONGSTATE, "The interpolation context has not been setup.");
+  PetscCheck(ctx->coords,ctx->comm, PETSC_ERR_ARG_WRONGSTATE, "The interpolation context has not been setup.");
   CHKERRQ(VecCreate(ctx->comm, v));
   CHKERRQ(VecSetSizes(*v, ctx->n*ctx->dof, PETSC_DECIDE));
   CHKERRQ(VecSetBlockSize(*v, ctx->dof));
@@ -496,7 +496,7 @@ PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo ctx, Vec *v)
 {
   PetscFunctionBegin;
   PetscValidPointer(v, 2);
-  PetscCheckFalse(!ctx->coords,ctx->comm, PETSC_ERR_ARG_WRONGSTATE, "The interpolation context has not been setup.");
+  PetscCheck(ctx->coords,ctx->comm, PETSC_ERR_ARG_WRONGSTATE, "The interpolation context has not been setup.");
   CHKERRQ(VecDestroy(v));
   PetscFunctionReturn(0);
 }
@@ -1607,9 +1607,9 @@ static PetscErrorCode MatComputeNeumannOverlap_Plex(Mat J, PetscReal t, Vec X, V
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectQuery((PetscObject)ovl,"_DM_Overlap_HPDDM_MATIS",(PetscObject*)&pJ));
-  PetscCheckFalse(!pJ,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing overlapping Mat");
+  PetscCheck(pJ,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing overlapping Mat");
   CHKERRQ(PetscObjectQuery((PetscObject)ovl,"_DM_Original_HPDDM",(PetscObject*)&origdm));
-  PetscCheckFalse(!origdm,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing original DM");
+  PetscCheck(origdm,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing original DM");
   CHKERRQ(MatGetDM(pJ,&ovldm));
   CHKERRQ(DMSNESGetBoundaryLocal(origdm,&bfun,&bctx));
   CHKERRQ(DMSNESSetBoundaryLocal(ovldm,bfun,bctx));
@@ -1853,7 +1853,7 @@ PetscErrorCode DMSNESCheckJacobian(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
   if (nullspace) {
     PetscBool isNull;
     CHKERRQ(MatNullSpaceTest(nullspace, J, &isNull));
-    PetscCheckFalse(!isNull,comm, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
+    PetscCheck(isNull,comm, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
   }
   /* Taylor test */
   {

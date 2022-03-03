@@ -179,7 +179,7 @@ PetscErrorCode  PetscStageLogRegister(PetscStageLog stageLog, const char sname[]
     PetscBool same;
 
     CHKERRQ(PetscStrcmp(stageLog->stageInfo[s].name, sname, &same));
-    PetscCheckFalse(same,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Duplicate stage name given: %s", sname);
+    PetscCheck(!same,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Duplicate stage name given: %s", sname);
   }
   /* Create new stage */
   s = stageLog->numStages++;

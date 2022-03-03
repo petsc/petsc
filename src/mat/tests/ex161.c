@@ -112,7 +112,7 @@ int main(int argc,char **argv)
   CHKERRQ(MatRARt(A,R,MAT_INITIAL_MATRIX,2.0,&C));
   CHKERRQ(MatRARt(A,R,MAT_REUSE_MATRIX,2.0,&C));
   CHKERRQ(MatEqual(C,PtAP,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: PtAP != RARt");
+  PetscCheck(equal,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error: PtAP != RARt");
 
   /* Free spaces */
   CHKERRQ(MatDestroy(&C));

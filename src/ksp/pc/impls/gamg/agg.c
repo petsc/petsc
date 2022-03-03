@@ -282,7 +282,7 @@ static PetscErrorCode smoothAggs(PC pc,Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *
   } else {
     PetscBool isAIJ;
     CHKERRQ(PetscStrbeginswith(((PetscObject)Gmat_1)->type_name,MATSEQAIJ,&isAIJ));
-    PetscCheckFalse(!isAIJ,PETSC_COMM_SELF,PETSC_ERR_USER,"Require AIJ matrix.");
+    PetscCheck(isAIJ,PETSC_COMM_SELF,PETSC_ERR_USER,"Require AIJ matrix.");
     matA_1        = (Mat_SeqAIJ*)Gmat_1->data;
     lid_cprowID_1 = NULL;
   }
@@ -375,7 +375,7 @@ static PetscErrorCode smoothAggs(PC pc,Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *
               PetscInt gid;
               CHKERRQ(PetscCDIntNdGetID(pos, &gid));
               if (gid == gidj) {
-                PetscCheckFalse(!last,PETSC_COMM_SELF,PETSC_ERR_PLIB,"last cannot be null");
+                PetscCheck(last,PETSC_COMM_SELF,PETSC_ERR_PLIB,"last cannot be null");
                 CHKERRQ(PetscCDRemoveNextNode(aggs_2, slid, last));
                 CHKERRQ(PetscCDAppendNode(aggs_2, lid, pos));
                 hav  = 1;
@@ -384,7 +384,7 @@ static PetscErrorCode smoothAggs(PC pc,Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *
               CHKERRQ(PetscCDGetNextPos(aggs_2,slid,&pos));
             }
             if (hav != 1) {
-              PetscCheckFalse(!hav,PETSC_COMM_SELF,PETSC_ERR_PLIB,"failed to find adj in 'selected' lists - structurally unsymmetric matrix");
+              PetscCheck(hav,PETSC_COMM_SELF,PETSC_ERR_PLIB,"failed to find adj in 'selected' lists - structurally unsymmetric matrix");
               SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"found node %D times???",hav);
             }
           } else {            /* I'm stealing this local, owned by a ghost */
@@ -414,7 +414,7 @@ static PetscErrorCode smoothAggs(PC pc,Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *
                 CHKERRQ(PetscCDIntNdGetID(pos, &gid));
                 if (lid+my0 == gid) {
                   /* id_llist_2[lastid] = id_llist_2[flid];   /\* remove lid from oldslidj list *\/ */
-                  PetscCheckFalse(!last,PETSC_COMM_SELF,PETSC_ERR_PLIB,"last cannot be null");
+                  PetscCheck(last,PETSC_COMM_SELF,PETSC_ERR_PLIB,"last cannot be null");
                   CHKERRQ(PetscCDRemoveNextNode(aggs_2, oldslidj, last));
                   /* ghost (PetscScalar)statej will add this later */
                   hav = 1;
@@ -423,7 +423,7 @@ static PetscErrorCode smoothAggs(PC pc,Mat Gmat_2, Mat Gmat_1,PetscCoarsenData *
                 CHKERRQ(PetscCDGetNextPos(aggs_2,oldslidj,&pos));
               }
               if (hav != 1) {
-                PetscCheckFalse(!hav,PETSC_COMM_SELF,PETSC_ERR_PLIB,"failed to find adj in 'selected' lists - structurally unsymmetric matrix");
+                PetscCheck(hav,PETSC_COMM_SELF,PETSC_ERR_PLIB,"failed to find adj in 'selected' lists - structurally unsymmetric matrix");
                 SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"found node %D times???",hav);
               }
             } else {
@@ -890,7 +890,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc,Mat *a_Gmat1,PetscCoarsenData **
     CHKERRQ(MatDestroy(&Gmat1));
     *a_Gmat1 = Gmat2; /* output */
     CHKERRQ(PetscCDGetMat(llist, &mat));
-    PetscCheckFalse(mat,comm,PETSC_ERR_ARG_WRONG, "Auxilary matrix with squared graph????");
+    PetscCheck(!mat,comm,PETSC_ERR_ARG_WRONG, "Auxilary matrix with squared graph????");
   } else {
     const PetscCoarsenData *llist = *agg_lists;
     /* see if we have a matrix that takes precedence (returned from MatCoarsenApply) */

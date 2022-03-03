@@ -33,7 +33,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_AMD(Mat mat,MatOrderingType type,IS *
      at least in so far as computing orderings for A+A^T.
   */
   CHKERRQ(MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&nrow,&ia,&ja,&done));
-  PetscCheckFalse(!done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get rows for matrix type %s",((PetscObject)mat)->type_name);
+  PetscCheck(done,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get rows for matrix type %s",((PetscObject)mat)->type_name);
 
   amd_AMD_defaults(Control);
   ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)mat),((PetscObject)mat)->prefix,"AMD Options","Mat");CHKERRQ(ierr);

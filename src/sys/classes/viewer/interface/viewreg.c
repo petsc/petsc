@@ -136,7 +136,7 @@ PetscErrorCode  PetscOptionsPushGetViewerOff(PetscBool flg)
 PetscErrorCode  PetscOptionsPopGetViewerOff(void)
 {
   PetscFunctionBegin;
-  PetscCheckFalse(!inoviewers,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptionsPopGetViewerOff(), perhaps you forgot PetscOptionsPushGetViewerOff()?");
+  PetscCheck(inoviewers,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptionsPopGetViewerOff(), perhaps you forgot PetscOptionsPushGetViewerOff()?");
   noviewer = noviewers[--inoviewers];
   PetscFunctionReturn(0);
 }
@@ -323,7 +323,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
             fmode = FILE_MODE_WRITE;
             if (loc3_fmode && *loc3_fmode) { /* Has non-empty file mode ("write" or "append") */
               CHKERRQ(PetscEnumFind(PetscFileModes,loc3_fmode,(PetscEnum*)&fmode,&flag));
-              PetscCheckFalse(!flag,comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown file mode: %s",loc3_fmode);
+              PetscCheck(flag,comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown file mode: %s",loc3_fmode);
             }
             if (loc2_fmt) {
               PetscBool tk,im;
@@ -351,7 +351,7 @@ PetscErrorCode  PetscOptionsGetViewer(MPI_Comm comm,PetscOptions options,const c
 
         CHKERRQ(PetscEnumFind(PetscViewerFormats,loc2_fmt,(PetscEnum*)&tfmt,&flag));
         if (format) *format = tfmt;
-        PetscCheckFalse(!flag,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer format %s",loc2_fmt);
+        PetscCheck(flag,PETSC_COMM_SELF,PETSC_ERR_SUP,"Unknown viewer format %s",loc2_fmt);
       } else if (viewer && (cnt == 6) && format) { /* Get format from VTK viewer */
         CHKERRQ(PetscViewerGetFormat(*viewer,format));
       }
@@ -432,7 +432,7 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
   CHKERRQ(PetscMemzero(viewer->ops,sizeof(struct _PetscViewerOps)));
 
   CHKERRQ(PetscFunctionListFind(PetscViewerList,type,&r));
-  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscViewer type given: %s",type);
+  PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscViewer type given: %s",type);
 
   CHKERRQ(PetscObjectChangeTypeName((PetscObject)viewer,type));
   CHKERRQ((*r)(viewer));

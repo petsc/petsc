@@ -132,7 +132,7 @@ PetscErrorCode SNESSolve_Shell(SNES snes)
   SNES_Shell     *shell = (SNES_Shell*) snes->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!shell->solve,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Must call SNESShellSetSolve() first");
+  PetscCheck(shell->solve,PetscObjectComm((PetscObject)snes),PETSC_ERR_ARG_WRONGSTATE,"Must call SNESShellSetSolve() first");
   snes->reason = SNES_CONVERGED_ITS;
   CHKERRQ((*shell->solve)(snes,snes->vec_sol));
   PetscFunctionReturn(0);

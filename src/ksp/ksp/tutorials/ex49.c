@@ -266,7 +266,7 @@ static PetscErrorCode DMDACoordViewGnuplot2d(DM da,const char prefix[])
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank));
   CHKERRQ(PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp));
-  PetscCheckFalse(!fp,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
+  PetscCheck(fp,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
   CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"### Element geometry for processor %1.4d ### \n",rank));
 
   CHKERRQ(DMGetCoordinateDM(da,&cda));
@@ -305,7 +305,7 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],co
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   CHKERRQ(PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank));
   CHKERRQ(PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp));
-  PetscCheckFalse(!fp,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
+  PetscCheck(fp,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
 
   CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"### %s (processor %1.4d) ### \n",comment,rank));
   CHKERRQ(DMDAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0,0,0));
@@ -368,7 +368,7 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da,Vec fields,const char 
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscSNPrintf(fname,sizeof(fname),"%s-p%1.4d.dat",prefix,rank));
   CHKERRQ(PetscFOpen(PETSC_COMM_SELF,fname,"w",&fp));
-  PetscCheckFalse(!fp,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
+  PetscCheck(fp,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
 
   CHKERRQ(PetscFPrintf(PETSC_COMM_SELF,fp,"### %s (processor %1.4d) ### \n",comment,rank));
   CHKERRQ(DMDAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0,0,0));
@@ -859,12 +859,12 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
         maxnbricks = 10;
         CHKERRQ(PetscOptionsGetRealArray(NULL,NULL, "-brick_E",values_E,&maxnbricks,&flg));
         nbricks    = maxnbricks;
-        PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply a list of E values for each brick");
+        PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply a list of E values for each brick");
 
         flg        = PETSC_FALSE;
         maxnbricks = 10;
         CHKERRQ(PetscOptionsGetRealArray(NULL,NULL, "-brick_nu",values_nu,&maxnbricks,&flg));
-        PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply a list of nu values for each brick");
+        PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply a list of nu values for each brick");
         PetscCheckFalse(maxnbricks != nbricks,PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply equal numbers of values for E and nu");
 
         span = 1;

@@ -390,7 +390,7 @@ PetscErrorCode PCBDDCSetDivergenceMat(PC pc, Mat divudotp, PetscBool trans, IS v
   PetscValidLogicalCollectiveBool(pc,trans,3);
   if (vl2l) PetscValidHeaderSpecific(vl2l,IS_CLASSID,4);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)divudotp,MATIS,&ismatis));
-  PetscCheckFalse(!ismatis,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Divergence matrix needs to be of type MATIS");
+  PetscCheck(ismatis,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"Divergence matrix needs to be of type MATIS");
   CHKERRQ(PetscTryMethod(pc,"PCBDDCSetDivergenceMat_C",(PC,Mat,PetscBool,IS),(pc,divudotp,trans,vl2l)));
   PetscFunctionReturn(0);
 }
@@ -1546,7 +1546,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectTypeCompare((PetscObject)pc->pmat,MATIS,&ismatis));
-  PetscCheckFalse(!ismatis,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner requires matrix of type MATIS");
+  PetscCheck(ismatis,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner requires matrix of type MATIS");
   CHKERRQ(MatGetSize(pc->pmat,&nrows,&ncols));
   PetscCheckFalse(nrows != ncols,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCBDDC preconditioner requires a square preconditioning matrix");
   CHKERRMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size));
@@ -1666,7 +1666,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
     if (pcbddc->compute_nonetflux) {
       MatNullSpace nnfnnsp;
 
-      PetscCheckFalse(!pcbddc->divudotp,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Missing divudotp operator");
+      PetscCheck(pcbddc->divudotp,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Missing divudotp operator");
       CHKERRQ(PCBDDCComputeNoNetFlux(pc->pmat,pcbddc->divudotp,pcbddc->divudotp_trans,pcbddc->divudotp_vl2l,pcbddc->mat_graph,&nnfnnsp));
       /* TODO what if a nearnullspace is already attached? */
       if (nnfnnsp) {
@@ -1924,7 +1924,7 @@ PetscErrorCode PCApply_BDDC(PC pc,Vec r,Vec z)
     }
   }
   if (pcbddc->interface_extension == PC_BDDC_INTERFACE_EXT_LUMP) {
-    PetscCheckFalse(!pcbddc->switch_static,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"You forgot to pass -pc_bddc_switch_static");
+    PetscCheck(pcbddc->switch_static,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"You forgot to pass -pc_bddc_switch_static");
     CHKERRQ(VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD));
     CHKERRQ(VecScatterEnd(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD));
   }
@@ -2497,7 +2497,7 @@ static PetscErrorCode PCSetUp_BDDCIPC(PC pc)
   PetscFunctionBegin;
   CHKERRQ(PCShellGetContext(pc,&bddcipc_ctx));
   CHKERRQ(PetscObjectTypeCompare((PetscObject)bddcipc_ctx->bddc,PCBDDC,&isbddc));
-  PetscCheckFalse(!isbddc,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid type %s. Must be of type bddc",((PetscObject)bddcipc_ctx->bddc)->type_name);
+  PetscCheck(isbddc,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid type %s. Must be of type bddc",((PetscObject)bddcipc_ctx->bddc)->type_name);
   CHKERRQ(PCSetUp(bddcipc_ctx->bddc));
 
   /* create interface scatter */

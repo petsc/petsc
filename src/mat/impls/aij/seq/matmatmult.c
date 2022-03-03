@@ -1202,8 +1202,8 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   char                *alg;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!product,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing product struct");
-  PetscCheckFalse(product->data,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Extra product struct not empty");
+  PetscCheck(product,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing product struct");
+  PetscCheck(!product->data,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Extra product struct not empty");
 
   /* create symbolic Bt */
   CHKERRQ(MatGetSymbolicTranspose_SeqAIJ(B,&bti,&btj));
@@ -1291,9 +1291,9 @@ PetscErrorCode MatMatTransposeMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   Mat_Product         *product = C->product;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!product,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing product struct");
+  PetscCheck(product,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing product struct");
   abt = (Mat_MatMatTransMult *)product->data;
-  PetscCheckFalse(!abt,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing product struct");
+  PetscCheck(abt,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing product struct");
   /* clear old values in C */
   if (!c->a) {
     CHKERRQ(PetscCalloc1(ci[cm]+1,&ca));
@@ -1408,7 +1408,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   if (flg || def) {
     Mat_MatTransMatMult *atb;
 
-    PetscCheckFalse(product->data,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Extra product struct not empty");
+    PetscCheck(!product->data,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Extra product struct not empty");
     CHKERRQ(PetscNew(&atb));
     if (!square) {
       CHKERRQ(MatTranspose_SeqAIJ(A,MAT_INITIAL_MATRIX,&At));
@@ -1679,7 +1679,7 @@ static PetscErrorCode MatProductSetFromOptions_SeqXBAIJ_SeqDense_AB(Mat C)
   if (!baij) { /* A is seqsbaij */
     PetscBool sbaij;
     CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATSEQSBAIJ,&sbaij));
-    PetscCheckFalse(!sbaij,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"Mat must be either seqbaij or seqsbaij format");
+    PetscCheck(sbaij,PetscObjectComm((PetscObject)C),PETSC_ERR_ARG_WRONGSTATE,"Mat must be either seqbaij or seqsbaij format");
 
     C->ops->matmultsymbolic = MatMatMultSymbolic_SeqSBAIJ_SeqDense;
   } else { /* A is seqbaij */
@@ -1696,7 +1696,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqXBAIJ_SeqDense(Mat C)
 
   PetscFunctionBegin;
   MatCheckProduct(C,1);
-  PetscCheckFalse(!product->A,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing A");
+  PetscCheck(product->A,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing A");
   if (product->type == MATPRODUCT_AB || (product->type == MATPRODUCT_AtB && product->A->symmetric)) {
     CHKERRQ(MatProductSetFromOptions_SeqXBAIJ_SeqDense_AB(C));
   }
@@ -1940,7 +1940,7 @@ static PetscErrorCode MatProductNumeric_AtB_SeqAIJ_SeqAIJ(Mat C)
     Mat_MatTransMatMult *atb = (Mat_MatTransMatMult *)product->data;
     Mat                 At;
 
-    PetscCheckFalse(!atb,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing product struct");
+    PetscCheck(atb,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing product struct");
     At = atb->At;
     if (atb->updateAt && At) { /* At is computed in MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ() */
       CHKERRQ(MatTranspose_SeqAIJ(A,MAT_REUSE_MATRIX,&At));

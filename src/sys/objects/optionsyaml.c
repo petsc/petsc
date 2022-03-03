@@ -37,8 +37,8 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
     yaml_node_t *valnode = yaml_document_get_node(doc, pair->value);
     PetscBool   isMergeKey,isDummyKey,isIncludeTag;
 
-    PetscCheckFalse(!keynode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
-    PetscCheckFalse(!valnode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
+    PetscCheck(keynode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
+    PetscCheck(valnode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
     PetscCheckFalse(keynode->type != YAML_SCALAR_NODE,comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected scalar");
 
     /* "<<" is the merge key: don't increment the prefix */
@@ -47,7 +47,7 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
       if (valnode->type == YAML_SEQUENCE_NODE) {
         for (yaml_node_item_t *item = SEQ(valnode).start; item < SEQ(valnode).top; item++) {
           yaml_node_t *itemnode = yaml_document_get_node(doc, *item);
-          PetscCheckFalse(!itemnode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
+          PetscCheck(itemnode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
           PetscCheckFalse(itemnode->type != YAML_MAPPING_NODE,comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected mapping");
           CHKERRQ(PetscParseLayerYAML(options, doc, itemnode));
         }
@@ -82,7 +82,7 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
         const char  *itemstr = NULL;
         size_t       itemlen;
 
-        PetscCheckFalse(!itemnode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
+        PetscCheck(itemnode,comm, PETSC_ERR_LIB, "Corrupt YAML document");
 
         if (itemnode->type == YAML_SCALAR_NODE) {
           itemstr = STR(itemnode);
@@ -96,12 +96,12 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
             yaml_node_t *kn = yaml_document_get_node(doc, kvn->key);
             yaml_node_t *vn = yaml_document_get_node(doc, kvn->value);
 
-            PetscCheckFalse(!kn,comm, PETSC_ERR_LIB, "Corrupt YAML document");
-            PetscCheckFalse(!vn,comm, PETSC_ERR_LIB, "Corrupt YAML document");
+            PetscCheck(kn,comm, PETSC_ERR_LIB, "Corrupt YAML document");
+            PetscCheck(vn,comm, PETSC_ERR_LIB, "Corrupt YAML document");
             PetscCheckFalse(kn->type != YAML_SCALAR_NODE,comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected scalar");
 
             CHKERRQ(PetscStrcmp(STR(kn), "<<", &isMergeKey));
-            PetscCheckFalse(isMergeKey,comm, PETSC_ERR_SUP, "Unsupported YAML node value: merge key '<<' not supported here");
+            PetscCheck(!isMergeKey,comm, PETSC_ERR_SUP, "Unsupported YAML node value: merge key '<<' not supported here");
 
             CHKERRQ(PetscStrbeginswith(STR(kn), "$$", &isDummyKey));
             if (isDummyKey) continue;
@@ -174,10 +174,10 @@ PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options,const char in_s
 
   PetscFunctionBegin;
   if (!in_str) in_str = "";
-  ierr = !yaml_parser_initialize(&parser); PetscCheckFalse(ierr,comm, PETSC_ERR_LIB, "YAML parser initialization error");
+  ierr = !yaml_parser_initialize(&parser); PetscCheck(!ierr,comm, PETSC_ERR_LIB, "YAML parser initialization error");
   yaml_parser_set_input_string(&parser, (const unsigned char *)in_str, strlen(in_str));
   do {
-    ierr = !yaml_parser_load(&parser, &doc); PetscCheckFalse(ierr,comm, PETSC_ERR_LIB, "YAML parser loading error");
+    ierr = !yaml_parser_load(&parser, &doc); PetscCheck(!ierr,comm, PETSC_ERR_LIB, "YAML parser loading error");
     root = yaml_document_get_root_node(&doc);
     if (root) {
       CHKERRQ(PetscParseLayerYAML(options, &doc, root));

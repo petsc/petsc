@@ -26,7 +26,7 @@ PetscErrorCode  PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   PetscValidCharPointer(text,5);
-  PetscCheckFalse(!draw->ops->string,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing strings",((PetscObject)draw)->type_name);
+  PetscCheck(draw->ops->string,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing strings",((PetscObject)draw)->type_name);
   CHKERRQ((*draw->ops->string)(draw,xl,yl,cl,text));
   PetscFunctionReturn(0);
 }
@@ -225,7 +225,7 @@ PetscErrorCode  PetscDrawStringGetSize(PetscDraw draw,PetscReal *width,PetscReal
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscCheckFalse(!draw->ops->stringgetsize,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support getting string size",((PetscObject)draw)->type_name);
+  PetscCheck(draw->ops->stringgetsize,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support getting string size",((PetscObject)draw)->type_name);
   CHKERRQ((*draw->ops->stringgetsize)(draw,width,height));
   PetscFunctionReturn(0);
 }

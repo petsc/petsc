@@ -22,7 +22,7 @@ PetscErrorCode  PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,Pets
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  PetscCheckFalse(!draw->ops->triangle,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing triangles",((PetscObject)draw)->type_name);
+  PetscCheck(draw->ops->triangle,PETSC_COMM_SELF,PETSC_ERR_SUP,"This draw type %s does not support drawing triangles",((PetscObject)draw)->type_name);
   CHKERRQ((*draw->ops->triangle)(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3));
   PetscFunctionReturn(0);
 }

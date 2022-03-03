@@ -79,7 +79,7 @@ int main(int argc, char **args)
     CHKERRQ(MatPartitioningSetUseEdgeWeights(part,use_edge_weights));
 
     CHKERRQ(MatPartitioningGetUseEdgeWeights(part,&use_edge_weights));
-    PetscCheckFalse(!use_edge_weights,comm,PETSC_ERR_ARG_INCOMP, "use_edge_weights flag does not setup correctly ");
+    PetscCheck(use_edge_weights,comm,PETSC_ERR_ARG_INCOMP, "use_edge_weights flag does not setup correctly ");
   }
   CHKERRQ(MatPartitioningSetFromOptions(part));
   CHKERRQ(MatPartitioningApply(part, &is));

@@ -951,7 +951,7 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
   CHKERRQ(PetscHSetICreate(&cht));
 
   CHKERRQ(PCGetDM(pc, &dm));
-  PetscCheckFalse(!dm,PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_WRONGSTATE, "DM not yet set on patch PC");
+  PetscCheck(dm,PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_WRONGSTATE, "DM not yet set on patch PC");
   CHKERRQ(DMConvert(dm, DMPLEX, &plex));
   dm = plex;
   CHKERRQ(DMPlexGetChart(dm, &pStart, &pEnd));
@@ -1927,7 +1927,7 @@ static PetscErrorCode PCPatchComputeFunction_DMPlex_Private(PC pc, PetscInt patc
   PetscInt        Nf = patch->nsubspaces, Np, poff, p, f;
 
   PetscFunctionBegin;
-  PetscCheckFalse(patch->precomputeElementTensors,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Precomputing element tensors not implemented with DMPlex compute operator");
+  PetscCheck(!patch->precomputeElementTensors,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Precomputing element tensors not implemented with DMPlex compute operator");
   CHKERRQ(PCGetDM(pc, &dm));
   CHKERRQ(DMConvert(dm, DMPLEX, &plex));
   dm = plex;
@@ -1967,7 +1967,7 @@ PetscErrorCode PCPatchComputeFunction_Internal(PC pc, Vec x, Vec F, PetscInt poi
 
   PetscFunctionBegin;
   CHKERRQ(PetscLogEventBegin(PC_Patch_ComputeOp, pc, 0, 0, 0));
-  PetscCheckFalse(!patch->usercomputeop,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PCPatchSetComputeOperator() to set user callback");
+  PetscCheck(patch->usercomputeop,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PCPatchSetComputeOperator() to set user callback");
   CHKERRQ(ISGetIndices(patch->dofs, &dofsArray));
   CHKERRQ(ISGetIndices(patch->dofsWithAll, &dofsArrayWithAll));
   CHKERRQ(ISGetIndices(patch->cells, &cellsArray));
@@ -2056,7 +2056,7 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
   PetscFunctionBegin;
   CHKERRQ(PetscLogEventBegin(PC_Patch_ComputeOp, pc, 0, 0, 0));
   isNonlinear = patch->isNonlinear;
-  PetscCheckFalse(!patch->usercomputeop,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PCPatchSetComputeOperator() to set user callback");
+  PetscCheck(patch->usercomputeop,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call PCPatchSetComputeOperator() to set user callback");
   if (withArtificial) {
     CHKERRQ(ISGetIndices(patch->dofsWithArtificial, &dofsArray));
   } else {
@@ -2190,7 +2190,7 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
     MatFactorInfo info;
     PetscBool     flg;
     CHKERRQ(PetscObjectTypeCompare((PetscObject)mat, MATSEQDENSE, &flg));
-    PetscCheckFalse(!flg,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Invalid Mat type for dense inverse");
+    PetscCheck(flg,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Invalid Mat type for dense inverse");
     CHKERRQ(MatFactorInfoInitialize(&info));
     CHKERRQ(MatLUFactor(mat, NULL, NULL, &info));
     CHKERRQ(MatSeqDenseInvertFactors_Private(mat));
@@ -2535,7 +2535,7 @@ static PetscErrorCode PCSetUp_PATCH(PC pc)
       PetscInt     cStart, cEnd, c, Nf, f, numGlobalBcs = 0, *globalBcs, *Nb, **cellDofs;
 
       CHKERRQ(PCGetDM(pc, &dm));
-      PetscCheckFalse(!dm,PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_WRONG, "Must set DM for PCPATCH or call PCPatchSetDiscretisationInfo()");
+      PetscCheck(dm,PetscObjectComm((PetscObject) pc), PETSC_ERR_ARG_WRONG, "Must set DM for PCPATCH or call PCPatchSetDiscretisationInfo()");
       CHKERRQ(DMConvert(dm, DMPLEX, &plex));
       dm = plex;
       CHKERRQ(DMGetLocalSection(dm, &s));

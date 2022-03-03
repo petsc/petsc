@@ -96,9 +96,9 @@ PetscErrorCode  MatCoarsenApply(MatCoarsen coarser)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
   PetscValidPointer(coarser,1);
-  PetscCheckFalse(!coarser->graph->assembled,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  PetscCheckFalse(coarser->graph->factortype,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  PetscCheckFalse(!coarser->ops->apply,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatCoarsenSetFromOptions() or MatCoarsenSetType()");
+  PetscCheck(coarser->graph->assembled,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  PetscCheck(!coarser->graph->factortype,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  PetscCheck(coarser->ops->apply,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"Must set type with MatCoarsenSetFromOptions() or MatCoarsenSetType()");
   CHKERRQ(PetscLogEventBegin(MAT_Coarsen,coarser,0,0,0));
   CHKERRQ((*coarser->ops->apply)(coarser));
   CHKERRQ(PetscLogEventEnd(MAT_Coarsen,coarser,0,0,0));
@@ -365,7 +365,7 @@ PetscErrorCode MatCoarsenGetData(MatCoarsen coarser, PetscCoarsenData **llist)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarser,MAT_COARSEN_CLASSID,1);
-  PetscCheckFalse(!coarser->agg_lists,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"No linked list - generate it or call ApplyCoarsen");
+  PetscCheck(coarser->agg_lists,PetscObjectComm((PetscObject)coarser),PETSC_ERR_ARG_WRONGSTATE,"No linked list - generate it or call ApplyCoarsen");
   *llist             = coarser->agg_lists;
   coarser->agg_lists = NULL; /* giving up ownership */
   PetscFunctionReturn(0);

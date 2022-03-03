@@ -102,7 +102,7 @@ int main(int argc,char **args)
   /* Now see if the serial and parallel case have the same answers */
   for (i=0; i<nd; ++i) {
     CHKERRQ(MatEqual(submatA[i],submatB[i],&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"%" PetscInt_FMT "-th paralle submatA != seq submatB",i);
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"%" PetscInt_FMT "-th paralle submatA != seq submatB",i);
   }
 
   /* Free Allocated Memory */

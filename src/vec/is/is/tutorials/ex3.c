@@ -56,7 +56,7 @@ int main(int argc,char **argv)
     Check if this is really a block index set
   */
   CHKERRQ(PetscObjectTypeCompare((PetscObject)set,ISBLOCK,&isblock));
-  PetscCheckFalse(!isblock,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index set is not blocked!");
+  PetscCheck(isblock,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Index set is not blocked!");
 
   /*
     Determine the block size of the index set

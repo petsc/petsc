@@ -30,7 +30,7 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp,void **ctx)
   PetscFunctionBegin;
   CHKERRQ(PetscNewLog(ksp,&mon));
   mon->viewer = PETSC_VIEWER_SAWS_(PetscObjectComm((PetscObject)ksp));
-  PetscCheckFalse(!mon->viewer,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Cannot create SAWs default viewer");
+  PetscCheck(mon->viewer,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Cannot create SAWs default viewer");
   *ctx = (void*)mon;
   PetscFunctionReturn(0);
 }

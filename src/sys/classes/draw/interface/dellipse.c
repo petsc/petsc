@@ -23,7 +23,7 @@ PetscErrorCode  PetscDrawEllipse(PetscDraw draw, PetscReal x, PetscReal y, Petsc
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID,1);
-  PetscCheckFalse(!draw->ops->ellipse,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for drawing ellipses");
+  PetscCheck(draw->ops->ellipse,PETSC_COMM_SELF,PETSC_ERR_SUP,"No support for drawing ellipses");
   CHKERRQ((*draw->ops->ellipse)(draw, x, y, a, b, c));
   PetscFunctionReturn(0);
 }

@@ -751,7 +751,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponentsLocal(PCBDDCGraph graph)
   PetscMPIInt    commsize;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!graph->setupcalled,PetscObjectComm((PetscObject)graph->l2gmap),PETSC_ERR_ORDER,"PCBDDCGraphSetUp should be called first");
+  PetscCheck(graph->setupcalled,PetscObjectComm((PetscObject)graph->l2gmap),PETSC_ERR_ORDER,"PCBDDCGraphSetUp should be called first");
   /* quiet return if there isn't any local info */
   if (!graph->xadj && !graph->n_local_subs) {
     PetscFunctionReturn(0);
@@ -1256,7 +1256,7 @@ PetscErrorCode PCBDDCGraphInit(PCBDDCGraph graph, ISLocalToGlobalMapping l2gmap,
   PetscValidLogicalCollectiveInt(l2gmap,N,3);
   PetscValidLogicalCollectiveInt(l2gmap,maxcount,4);
   /* raise an error if already allocated */
-  PetscCheckFalse(graph->nvtxs_global,PetscObjectComm((PetscObject)l2gmap),PETSC_ERR_PLIB,"BDDCGraph already initialized");
+  PetscCheck(!graph->nvtxs_global,PetscObjectComm((PetscObject)l2gmap),PETSC_ERR_PLIB,"BDDCGraph already initialized");
   /* set number of vertices */
   CHKERRQ(PetscObjectReference((PetscObject)l2gmap));
   graph->l2gmap = l2gmap;

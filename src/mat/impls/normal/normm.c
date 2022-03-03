@@ -362,7 +362,7 @@ PetscErrorCode MatProductNumeric_Normal_Dense(Mat C)
   a = (Mat_Normal*)A->data;
   B = C->product->B;
   contents = (Normal_Dense*)C->product->data;
-  PetscCheckFalse(!contents,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
+  PetscCheck(contents,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data empty");
   if (a->right) {
     CHKERRQ(MatCopy(B,C,SAME_NONZERO_PATTERN));
     CHKERRQ(MatDiagonalScale(C,a->right,NULL));
@@ -401,10 +401,10 @@ PetscErrorCode MatProductSymbolic_Normal_Dense(Mat C)
 
   PetscFunctionBegin;
   MatCheckProduct(C,4);
-  PetscCheckFalse(C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
+  PetscCheck(!C->product->data,PetscObjectComm((PetscObject)C),PETSC_ERR_PLIB,"Product data not empty");
   A = C->product->A;
   a = (Mat_Normal*)A->data;
-  PetscCheckFalse(a->left,PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"Not implemented");
+  PetscCheck(!a->left,PetscObjectComm((PetscObject)C),PETSC_ERR_SUP,"Not implemented");
   B = C->product->B;
   CHKERRQ(MatGetLocalSize(C,&m,&n));
   CHKERRQ(MatGetSize(C,&M,&N));

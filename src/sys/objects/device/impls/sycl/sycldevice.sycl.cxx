@@ -64,7 +64,7 @@ public:
     PetscBool      iascii;
 
     PetscFunctionBegin;
-    PetscCheckFalse(!devInitialized_,PETSC_COMM_SELF,PETSC_ERR_COR,"Device %d being viewed before it was initialized or configured",id_);
+    PetscCheck(devInitialized_,PETSC_COMM_SELF,PETSC_ERR_COR,"Device %d being viewed before it was initialized or configured",id_);
     CHKERRQ(PetscObjectTypeCompare(reinterpret_cast<PetscObject>(viewer),PETSCVIEWERASCII,&iascii));
     CHKERRQ(PetscObjectGetComm(reinterpret_cast<PetscObject>(viewer),&comm));
     if (iascii) {

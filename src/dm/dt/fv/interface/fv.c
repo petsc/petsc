@@ -83,7 +83,7 @@ PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name)
 
   CHKERRQ(PetscLimiterRegisterAll());
   CHKERRQ(PetscFunctionListFind(PetscLimiterList, name, &r));
-  PetscCheckFalse(!r,PetscObjectComm((PetscObject) lim), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscLimiter type: %s", name);
+  PetscCheck(r,PetscObjectComm((PetscObject) lim), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscLimiter type: %s", name);
 
   if (lim->ops->destroy) {
     CHKERRQ((*lim->ops->destroy)(lim));
@@ -953,7 +953,7 @@ PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name)
 
   CHKERRQ(PetscFVRegisterAll());
   CHKERRQ(PetscFunctionListFind(PetscFVList, name, &r));
-  PetscCheckFalse(!r,PetscObjectComm((PetscObject) fvm), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscFV type: %s", name);
+  PetscCheck(r,PetscObjectComm((PetscObject) fvm), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscFV type: %s", name);
 
   if (fvm->ops->destroy) {
     CHKERRQ((*fvm->ops->destroy)(fvm));
@@ -1944,7 +1944,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscIn
   CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info));
   CHKERRQ(PetscFPTrapPop());
-  PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRF error");
+  PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRF error");
   R = A; /* Upper triangular part of A now contains R, the rest contains the elementary reflectors */
 
   /* Extract an explicit representation of Q */
@@ -1952,7 +1952,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m,PetscIn
   CHKERRQ(PetscArraycpy(Q,A,mstride*n));
   K    = N;                     /* full rank */
   PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&M,&N,&K,Q,&lda,tau,work,&ldwork,&info));
-  PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR/xUNGQR error");
+  PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR/xUNGQR error");
 
   /* Compute A^{-T} = (R^{-1} Q^T)^T = Q R^{-T} */
   Alpha = 1.0;
@@ -2020,7 +2020,7 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m,Pets
   PetscStackCallBLAS("LAPACKgelss",LAPACKgelss_(&M,&N,&nrhs,A,&lda,Brhs,&ldb, (PetscReal *) tau,&rcond,&irank,tmpwork,&ldwork,&info));
   CHKERRQ(PetscFPTrapPop());
 #endif
-  PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xGELSS error");
+  PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xGELSS error");
   /* The following check should be turned into a diagnostic as soon as someone wants to do this intentionally */
   PetscCheckFalse(irank < PetscMin(M,N),PETSC_COMM_SELF,PETSC_ERR_USER,"Rank deficient least squares fit, indicates an isolated cell with two colinear points");
   PetscFunctionReturn(0);

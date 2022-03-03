@@ -52,7 +52,7 @@ PetscErrorCode MatMult_Scatter(Mat A,Vec x,Vec y)
   Mat_Scatter    *scatter = (Mat_Scatter*)A->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!scatter->scatter,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
+  PetscCheck(scatter->scatter,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
   CHKERRQ(VecZeroEntries(y));
   CHKERRQ(VecScatterBegin(scatter->scatter,x,y,ADD_VALUES,SCATTER_FORWARD));
   CHKERRQ(VecScatterEnd(scatter->scatter,x,y,ADD_VALUES,SCATTER_FORWARD));
@@ -64,7 +64,7 @@ PetscErrorCode MatMultAdd_Scatter(Mat A,Vec x,Vec y,Vec z)
   Mat_Scatter    *scatter = (Mat_Scatter*)A->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!scatter->scatter,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
+  PetscCheck(scatter->scatter,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
   if (z != y) CHKERRQ(VecCopy(y,z));
   CHKERRQ(VecScatterBegin(scatter->scatter,x,z,ADD_VALUES,SCATTER_FORWARD));
   CHKERRQ(VecScatterEnd(scatter->scatter,x,z,ADD_VALUES,SCATTER_FORWARD));
@@ -76,7 +76,7 @@ PetscErrorCode MatMultTranspose_Scatter(Mat A,Vec x,Vec y)
   Mat_Scatter    *scatter = (Mat_Scatter*)A->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!scatter->scatter,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
+  PetscCheck(scatter->scatter,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
   CHKERRQ(VecZeroEntries(y));
   CHKERRQ(VecScatterBegin(scatter->scatter,x,y,ADD_VALUES,SCATTER_REVERSE));
   CHKERRQ(VecScatterEnd(scatter->scatter,x,y,ADD_VALUES,SCATTER_REVERSE));
@@ -88,7 +88,7 @@ PetscErrorCode MatMultTransposeAdd_Scatter(Mat A,Vec x,Vec y,Vec z)
   Mat_Scatter    *scatter = (Mat_Scatter*)A->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!scatter->scatter,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
+  PetscCheck(scatter->scatter,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
   if (z != y) CHKERRQ(VecCopy(y,z));
   CHKERRQ(VecScatterBegin(scatter->scatter,x,z,ADD_VALUES,SCATTER_REVERSE));
   CHKERRQ(VecScatterEnd(scatter->scatter,x,z,ADD_VALUES,SCATTER_REVERSE));

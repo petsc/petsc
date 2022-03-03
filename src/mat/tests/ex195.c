@@ -71,7 +71,7 @@ int main(int argc,char **args)
   CHKERRQ(MatMatMult(nest,B,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&C));
   CHKERRQ(MatMatMult(nest,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C));
   CHKERRQ(MatMatMultEqual(nest,B,C,10,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in C != nest*B_dense");
+  PetscCheck(equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in C != nest*B_dense");
 
   /* Test B = nest*C, reuse C and B with MatProductCreateWithMat() */
   /* C has been obtained from nest*B. Clear internal data structures related to factors to prevent circular references */
@@ -82,10 +82,10 @@ int main(int argc,char **args)
   CHKERRQ(MatProductSymbolic(B));
   CHKERRQ(MatProductNumeric(B));
   CHKERRQ(MatMatMultEqual(nest,C,B,10,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in B != nest*C_dense");
+  PetscCheck(equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in B != nest*C_dense");
   CHKERRQ(MatConvert(nest,MATAIJ,MAT_INPLACE_MATRIX,&nest));
   CHKERRQ(MatEqual(nest,aij,&equal));
-  PetscCheckFalse(!equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in aij != nest");
+  PetscCheck(equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in aij != nest");
   CHKERRQ(MatDestroy(&nest));
 
   if (size > 1) { /* Do not know why this test fails for size = 1 */
@@ -99,7 +99,7 @@ int main(int argc,char **args)
     CHKERRQ(MatMatMult(nest,B,MAT_REUSE_MATRIX,PETSC_DEFAULT,&C1));
 
     CHKERRQ(MatMatMultEqual(nest,B,C1,10,&equal));
-    PetscCheckFalse(!equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in C1 != C");
+    PetscCheck(equal,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Error in C1 != C");
     CHKERRQ(MatDestroy(&C1));
     CHKERRQ(MatDestroy(&A5));
     CHKERRQ(MatDestroy(&nest));

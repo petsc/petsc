@@ -746,7 +746,7 @@ int GetLocalOrdering(GRID *grid)
         CHKERRQ(PetscStrcpy(spart_file,part_file));
       }
       fptr = fopen(spart_file,"r");
-      PetscCheckFalse(!fptr,PETSC_COMM_SELF,1,"Cannot open file %s",part_file);
+      PetscCheck(fptr,PETSC_COMM_SELF,1,"Cannot open file %s",part_file);
       for (inode = 0; inode < nnodes; inode++) {
         fscanf(fptr,"%d\n",&node1);
         v2p[inode] = node1;

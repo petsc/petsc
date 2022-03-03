@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-test2",&int2,&flg2));
   PetscCheckFalse(!flg2 || int2 != 2,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unable to locate option test2 or it has the wrong value");
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-test1",&int1,&flg1));
-  PetscCheckFalse(flg1,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Able to access test1 from a different options database");
+  PetscCheck(!flg1,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Able to access test1 from a different options database");
 
   CHKERRQ(PetscOptionsPop());
   CHKERRQ(PetscOptionsPop());

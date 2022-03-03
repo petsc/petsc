@@ -341,9 +341,9 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
 
     CHKERRQ(PetscArraycpy(Jinvs, Js, m * m));
     PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bm, &bm, Jinvs, &bm, pivots, &info));
-    PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %D",(PetscInt)info);
+    PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %D",(PetscInt)info);
     PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&bm, Jinvs, &bm, pivots, W, &bm, &info));
-    PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %D",(PetscInt)info);
+    PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %D",(PetscInt)info);
     CHKERRQ(PetscFree2(pivots, W));
   } else if (m < n) {
     PetscScalar *JJT;
@@ -362,9 +362,9 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
     }
 
     PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bm, &bm, JJT, &bm, pivots, &info));
-    PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %D",(PetscInt)info);
+    PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %D",(PetscInt)info);
     PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&bm, JJT, &bm, pivots, W, &bm, &info));
-    PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %D",(PetscInt)info);
+    PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %D",(PetscInt)info);
     for (i = 0; i < n; i++) {
       for (j = 0; j < m; j++) {
         PetscScalar val = 0.;
@@ -392,9 +392,9 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
     }
 
     PetscStackCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bn, &bn, JTJ, &bn, pivots, &info));
-    PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %D",(PetscInt)info);
+    PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetrf %D",(PetscInt)info);
     PetscStackCallBLAS("LAPACKgetri", LAPACKgetri_(&bn, JTJ, &bn, pivots, W, &bn, &info));
-    PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %D",(PetscInt)info);
+    PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error returned from LAPACKgetri %D",(PetscInt)info);
     for (i = 0; i < n; i++) {
       for (j = 0; j < m; j++) {
         PetscScalar val = 0.;
@@ -1388,14 +1388,14 @@ static PetscErrorCode PetscDTSymmetricTridiagonalEigensolve(PetscInt n, PetscRea
   lwork = -1;
   liwork = -1;
   PetscStackCallBLAS("LAPACKstegr",LAPACKstegr_(&jobz,&range,&bn,diag,subdiag,&VL,&VU,&IL,&IU,&abstol,&bm,eigs,V,&ldz,isuppz,&workquery,&lwork,&iworkquery,&liwork,&info));
-  PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_PLIB,"xSTEGR error");
+  PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_PLIB,"xSTEGR error");
   lwork = (PetscBLASInt) workquery;
   liwork = (PetscBLASInt) iworkquery;
   CHKERRQ(PetscMalloc2(lwork, &work, liwork, &iwork));
   CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   PetscStackCallBLAS("LAPACKstegr",LAPACKstegr_(&jobz,&range,&bn,diag,subdiag,&VL,&VU,&IL,&IU,&abstol,&bm,eigs,V,&ldz,isuppz,work,&lwork,iwork,&liwork,&info));
   CHKERRQ(PetscFPTrapPop());
-  PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_PLIB,"xSTEGR error");
+  PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_PLIB,"xSTEGR error");
   CHKERRQ(PetscFree2(work, iwork));
   CHKERRQ(PetscFree(isuppz));
 #elif !defined(PETSC_MISSING_LAPACK_STEQR)
@@ -1405,7 +1405,7 @@ static PetscErrorCode PetscDTSymmetricTridiagonalEigensolve(PetscInt n, PetscRea
   CHKERRQ(PetscMalloc1(PetscMax(1,2*n-2),&work));
   PetscStackCallBLAS("LAPACKsteqr",LAPACKsteqr_("I",&bn,diag,subdiag,V,&ldz,work,&info));
   CHKERRQ(PetscFPTrapPop());
-  PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_PLIB,"xSTEQR error");
+  PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_PLIB,"xSTEQR error");
   CHKERRQ(PetscFree(work));
   CHKERRQ(PetscArraycpy(eigs,diag,n));
 #endif
@@ -2012,7 +2012,7 @@ PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, Pet
 
   PetscFunctionBegin;
   PetscCheckFalse(dim > 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Dimension %d not yet implemented", dim);
-  PetscCheckFalse(!level,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a number of significant digits");
+  PetscCheck(level,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a number of significant digits");
   /* Find K such that the weights are < 32 digits of precision */
   for (K = 1; PetscAbsReal(PetscLog10Real(wk)) < 2*p; ++K) {
     wk = 0.5*h*PETSC_PI*PetscCoshReal(K*h)/PetscSqr(PetscCoshReal(0.5*PETSC_PI*PetscSinhReal(K*h)));
@@ -2316,7 +2316,7 @@ static PetscErrorCode PetscDTPseudoInverseQR(PetscInt m,PetscInt mstride,PetscIn
   CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   PetscStackCallBLAS("LAPACKgeqrf",LAPACKgeqrf_(&M,&N,A,&lda,tau,work,&ldwork,&info));
   CHKERRQ(PetscFPTrapPop());
-  PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRF error");
+  PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRF error");
   R = A; /* Upper triangular part of A now contains R, the rest contains the elementary reflectors */
 
   /* Extract an explicit representation of Q */
@@ -2324,7 +2324,7 @@ static PetscErrorCode PetscDTPseudoInverseQR(PetscInt m,PetscInt mstride,PetscIn
   CHKERRQ(PetscArraycpy(Q,A,mstride*n));
   K = N;                        /* full rank */
   PetscStackCallBLAS("LAPACKorgqr",LAPACKorgqr_(&M,&N,&K,Q,&lda,tau,work,&ldwork,&info));
-  PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR/xUNGQR error");
+  PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR/xUNGQR error");
 
   /* Compute A^{-T} = (R^{-1} Q^T)^T = Q R^{-T} */
   Alpha = 1.0;

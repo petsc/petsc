@@ -426,7 +426,7 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   CHKERRQ(VecSetErrorIfLocked(y,3));
 
   CHKERRQ(PCSetUp(pc));
-  PetscCheckFalse(!pc->ops->apply,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply");
+  PetscCheck(pc->ops->apply,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply");
   CHKERRQ(VecLockReadPush(x));
   CHKERRQ(PetscLogEventBegin(PC_Apply,pc,x,y,0));
   CHKERRQ((*pc->ops->apply)(pc,x,y));
@@ -477,9 +477,9 @@ PetscErrorCode  PCMatApply(PC pc,Mat X,Mat Y)
   PetscCheckFalse(m2 != m3 || M2 != M3,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible layout between block of input vectors (m,M) = (%D,%D) and Pmat (m,M)x(n,N) = (%D,%D)x(%D,%D)", m2, M2, m3, M3, n3, N3);
   PetscCheckFalse(m1 != n3 || M1 != N3,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible layout between block of output vectors (m,M) = (%D,%D) and Pmat (m,M)x(n,N) = (%D,%D)x(%D,%D)", m1, M1, m3, M3, n3, N3);
   CHKERRQ(PetscObjectBaseTypeCompareAny((PetscObject)Y, &match, MATSEQDENSE, MATMPIDENSE, ""));
-  PetscCheckFalse(!match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of output vectors not stored in a dense Mat");
+  PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of output vectors not stored in a dense Mat");
   CHKERRQ(PetscObjectBaseTypeCompareAny((PetscObject)X, &match, MATSEQDENSE, MATMPIDENSE, ""));
-  PetscCheckFalse(!match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of input vectors not stored in a dense Mat");
+  PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of input vectors not stored in a dense Mat");
   CHKERRQ(PCSetUp(pc));
   if (pc->ops->matapply) {
     CHKERRQ(PetscLogEventBegin(PC_MatApply, pc, X, Y, 0));
@@ -526,7 +526,7 @@ PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   PetscCheckFalse(x == y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->erroriffailure) CHKERRQ(VecValidValues(x,2,PETSC_TRUE));
   CHKERRQ(PCSetUp(pc));
-  PetscCheckFalse(!pc->ops->applysymmetricleft,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have left symmetric apply");
+  PetscCheck(pc->ops->applysymmetricleft,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have left symmetric apply");
   CHKERRQ(VecLockReadPush(x));
   CHKERRQ(PetscLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0));
   CHKERRQ((*pc->ops->applysymmetricleft)(pc,x,y));
@@ -564,7 +564,7 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
   PetscCheckFalse(x == y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->erroriffailure) CHKERRQ(VecValidValues(x,2,PETSC_TRUE));
   CHKERRQ(PCSetUp(pc));
-  PetscCheckFalse(!pc->ops->applysymmetricright,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have left symmetric apply");
+  PetscCheck(pc->ops->applysymmetricright,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have left symmetric apply");
   CHKERRQ(VecLockReadPush(x));
   CHKERRQ(PetscLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0));
   CHKERRQ((*pc->ops->applysymmetricright)(pc,x,y));
@@ -605,7 +605,7 @@ PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
   PetscCheckFalse(x == y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->erroriffailure) CHKERRQ(VecValidValues(x,2,PETSC_TRUE));
   CHKERRQ(PCSetUp(pc));
-  PetscCheckFalse(!pc->ops->applytranspose,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply transpose");
+  PetscCheck(pc->ops->applytranspose,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply transpose");
   CHKERRQ(VecLockReadPush(x));
   CHKERRQ(PetscLogEventBegin(PC_Apply,pc,x,y,0));
   CHKERRQ((*pc->ops->applytranspose)(pc,x,y));
@@ -842,7 +842,7 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
   PetscValidHeaderSpecific(w,VEC_CLASSID,4);
   PetscCheckFalse(b == y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"b and y must be different vectors");
   CHKERRQ(PCSetUp(pc));
-  PetscCheckFalse(!pc->ops->applyrichardson,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply richardson");
+  PetscCheck(pc->ops->applyrichardson,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply richardson");
   CHKERRQ((*pc->ops->applyrichardson)(pc,b,y,w,rtol,abstol,dtol,its,guesszero,outits,reason));
   PetscFunctionReturn(0);
 }
@@ -947,7 +947,7 @@ PetscErrorCode  PCSetUp(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscCheckFalse(!pc->mat,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Matrix must be set first");
+  PetscCheck(pc->mat,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Matrix must be set first");
 
   if (pc->setupcalled && pc->reusepreconditioner) {
     CHKERRQ(PetscInfo(pc,"Leaving PC with identical preconditioner since reuse preconditioner is set\n"));
@@ -1623,7 +1623,7 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
   PetscValidHeaderSpecific(newdm,PC_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary));
-  PetscCheckFalse(!isbinary,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+  PetscCheck(isbinary,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
   CHKERRQ(PetscViewerBinaryRead(viewer,&classid,1,NULL,PETSC_INT));
   PetscCheckFalse(classid != PC_FILE_CLASSID,PetscObjectComm((PetscObject)newdm),PETSC_ERR_ARG_WRONG,"Not PC next in file");

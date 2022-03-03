@@ -391,7 +391,7 @@ PetscErrorCode SNESPatchSetDiscretisationInfo(SNES snes, PetscInt nsubspaces, DM
 
   PetscFunctionBegin;
   CHKERRQ(SNESGetDM(snes, &dm));
-  PetscCheckFalse(!dm,PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "DM not yet set on patch SNES");
+  PetscCheck(dm,PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "DM not yet set on patch SNES");
   CHKERRQ(PCSetDM(patch->pc, dm));
   CHKERRQ(PCPatchSetDiscretisationInfo(patch->pc, nsubspaces, dms, bs, nodesPerCell, cellNodeMap, subspaceOffsets, numGhostBcs, ghostBcNodes, numGlobalBcs, globalBcNodes));
   PetscFunctionReturn(0);

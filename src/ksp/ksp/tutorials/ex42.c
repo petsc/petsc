@@ -1303,7 +1303,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da,Vec FIELD,const char f
 
   /* open file and write header */
   vtk_fp = fopen(vtk_filename,"w");
-  PetscCheckFalse(!vtk_fp,PETSC_COMM_SELF,PETSC_ERR_SYS,"Cannot open file = %s ",vtk_filename);
+  PetscCheck(vtk_fp,PETSC_COMM_SELF,PETSC_ERR_SYS,"Cannot open file = %s ",vtk_filename);
 
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<?xml version=\"1.0\"?>\n");
 
@@ -1510,7 +1510,7 @@ PetscErrorCode DAView_3DVTK_PStructuredGrid(DM da,const char file_prefix[],const
   /* create file name */
   CHKERRQ(PetscSNPrintf(vtk_filename,sizeof(vtk_filename),"%s.pvts",file_prefix));
   vtk_fp = fopen(vtk_filename,"w");
-  PetscCheckFalse(!vtk_fp,PETSC_COMM_SELF,PETSC_ERR_SYS,"Cannot open file = %s ",vtk_filename);
+  PetscCheck(vtk_fp,PETSC_COMM_SELF,PETSC_ERR_SYS,"Cannot open file = %s ",vtk_filename);
 
   /* (VTK) generate pvts header */
   PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<?xml version=\"1.0\"?>\n");

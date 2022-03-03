@@ -322,7 +322,7 @@ static PetscErrorCode CheckSubcells(DM dm, DM odm, PetscInt p, PetscInt o, AppCt
           /* The last four interior faces do not map into themselves under the group action */
           if (r > 3 && ctNew == DM_POLYTOPE_TETRAHEDRON) {restore = PETSC_FALSE; ro = r; oo = 0;}
         }
-        PetscCheckFalse(restore,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unable to find matching %s %D orientation for cell orientation %D", DMPolytopeTypes[ctNew], r, o);
+        PetscCheck(!restore,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unable to find matching %s %D orientation for cell orientation %D", DMPolytopeTypes[ctNew], r, o);
       }
       if (user->printTable) CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "%D, %D, ", ro, oo));
       CHKERRQ(DMPlexTransformGetSubcellOrientation(tr, ct, p, oi, ctNew, r, 0, &pr, &fo));

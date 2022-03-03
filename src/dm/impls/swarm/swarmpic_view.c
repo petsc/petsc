@@ -104,7 +104,7 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm,PetscViewer viewer)
   } else SETERRQ(PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Valid to find attached data XDMFViewerContext");
 
   CHKERRQ(PetscObjectTypeCompare((PetscObject)dm,DMSWARM,&isswarm));
-  PetscCheckFalse(!isswarm,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Only valid for DMSwarm");
+  PetscCheck(isswarm,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Only valid for DMSwarm");
 
   CHKERRQ(PetscObjectCompose((PetscObject)viewer,"DMSwarm",(PetscObject)dm));
 
@@ -205,7 +205,7 @@ PetscErrorCode private_VecView_Swarm_XDMF(Vec x,PetscViewer viewer)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectQuery((PetscObject)viewer,"XDMFViewerContext",(PetscObject*)&container));
-  PetscCheckFalse(!container,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unable to find attached data XDMFViewerContext");
+  PetscCheck(container,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unable to find attached data XDMFViewerContext");
   CHKERRQ(PetscContainerGetPointer(container,(void**)&bytes));
   CHKERRQ(PetscViewerFileGetName(viewer,&viewername));
   CHKERRQ(private_CreateDataFileNameXDMF(viewername,datafile));
@@ -269,7 +269,7 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is,PetscViewer viewer)
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectQuery((PetscObject)viewer,"XDMFViewerContext",(PetscObject*)&container));
-  PetscCheckFalse(!container,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unable to find attached data XDMFViewerContext");
+  PetscCheck(container,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"Unable to find attached data XDMFViewerContext");
   CHKERRQ(PetscContainerGetPointer(container,(void**)&bytes));
   CHKERRQ(PetscViewerFileGetName(viewer,&viewername));
   CHKERRQ(private_CreateDataFileNameXDMF(viewername,datafile));

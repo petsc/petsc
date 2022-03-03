@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   }
 
   CHKERRQ(ISEqual(is[0],is[1],&flg));
-  PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"is[0] should be equal to is[1]");
+  PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"is[0] should be equal to is[1]");
 
   CHKERRQ(ISComplement(is[0],rstart,rend,&isc));
   CHKERRQ(ISView(is[0],PETSC_VIEWER_STDOUT_WORLD));

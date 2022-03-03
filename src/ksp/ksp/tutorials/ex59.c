@@ -480,7 +480,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
       pm1  = p-1;
       CHKERRQ(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
       PetscStackCallBLAS("LAPACKsteqr",LAPACKsteqr_("N",&pm1,&glldata->zGL[1],M,&x,&pm1,M,&lierr));
-      PetscCheckFalse(lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in STERF Lapack routine %d",(int)lierr);
+      PetscCheck(!lierr,PETSC_COMM_SELF,PETSC_ERR_LIB,"Error in STERF Lapack routine %d",(int)lierr);
       CHKERRQ(PetscFPTrapPop());
       CHKERRQ(PetscFree(M));
     }

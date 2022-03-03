@@ -41,7 +41,7 @@ int main(int argc, char** argv)
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only");
   CHKERRQ(PetscOptionsGetString(NULL, NULL, "-f", file, PETSC_MAX_PATH_LEN, &flg));
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate binary file with the -f option");
+  PetscCheck(flg,PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate binary file with the -f option");
   CHKERRQ(PetscOptionsGetInt(NULL, NULL, "-trial", &trial, NULL));
   CHKERRQ(PetscOptionsGetIntArray(NULL, NULL, "-bs", bs, &nbs, &flg));
   if (!flg) {
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
     CHKERRQ(MatLoad(A, viewer));
     CHKERRQ(PetscViewerDestroy(&viewer));
     CHKERRQ(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJ, MATMPIAIJ, ""));
-    PetscCheckFalse(!flg,PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate a MatAIJ input matrix");
+    PetscCheck(flg,PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate a MatAIJ input matrix");
     CHKERRQ(MatGetSize(A, &m, &M));
     if (m == M) {
       Mat oA;
@@ -157,10 +157,10 @@ int main(int argc, char** argv)
         PetscBool      done;
 
         CHKERRQ(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJ, MATSEQBAIJ, MATSEQSBAIJ, ""));
-        PetscCheckFalse(!flg,PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Not implemented");
+        PetscCheck(flg,PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Not implemented");
         CHKERRQ(PetscObjectTypeCompare((PetscObject)A, MATSEQAIJ, &flg));
         CHKERRQ(MatGetRowIJ(A, 0, PETSC_FALSE, flg ? PETSC_FALSE : PETSC_TRUE, &An, &Ai, &Aj, &done));
-        PetscCheckFalse(!done,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes");
+        PetscCheck(done,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes");
         CHKERRQ(PetscMalloc1(An + 1, &ia_ptr));
         CHKERRQ(PetscMalloc1(Ai[An], &ja_ptr));
         if (flg) { /* SeqAIJ */

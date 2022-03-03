@@ -22,9 +22,9 @@ static PetscErrorCode PCBDDCMatTransposeMatSolve_SeqDense(Mat A,Mat B,Mat X)
   PetscFunctionBegin;
   CHKERRQ(PetscBLASIntCast(A->rmap->n,&m));
   CHKERRQ(PetscObjectTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,NULL));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
+  PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
   CHKERRQ(PetscObjectTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,NULL));
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
+  PetscCheck(flg,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
 
   CHKERRQ(MatGetSize(B,NULL,&n));
   CHKERRQ(PetscBLASIntCast(n,&nrhs));
@@ -35,7 +35,7 @@ static PetscErrorCode PCBDDCMatTransposeMatSolve_SeqDense(Mat A,Mat B,Mat X)
 
   if (A->factortype == MAT_FACTOR_LU) {
     PetscStackCallBLAS("LAPACKgetrs",LAPACKgetrs_("T",&m,&nrhs,mat->v,&mat->lda,mat->pivots,x,&m,&info));
-    PetscCheckFalse(info,PETSC_COMM_SELF,PETSC_ERR_LIB,"GETRS - Bad solve");
+    PetscCheck(!info,PETSC_COMM_SELF,PETSC_ERR_LIB,"GETRS - Bad solve");
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only LU factor supported");
 
   CHKERRQ(MatDenseRestoreArray(X,&x));
@@ -466,7 +466,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
   PetscBool              newsetup = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!sub_schurs,PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Missing PCBDDCSubSchurs");
+  PetscCheck(sub_schurs,PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Missing PCBDDCSubSchurs");
   if (!sub_schurs->n_subs) PetscFunctionReturn(0);
 
   /* Allocate arrays for subproblems */
@@ -544,7 +544,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
       CHKERRQ(MatDestroy(&X));
       if (deluxe_ctx->change) {
         Mat C,CY;
-        PetscCheckFalse(!deluxe_ctx->change_with_qr,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only QR based change of basis");
+        PetscCheck(deluxe_ctx->change_with_qr,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only QR based change of basis");
         CHKERRQ(KSPGetOperators(deluxe_ctx->change[i],&C,NULL));
         CHKERRQ(MatMatMult(C,Y,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&CY));
         CHKERRQ(MatMatTransposeMult(CY,C,MAT_REUSE_MATRIX,PETSC_DEFAULT,&Y));

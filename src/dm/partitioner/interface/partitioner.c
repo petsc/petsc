@@ -35,7 +35,7 @@ PetscErrorCode PetscPartitionerSetType(PetscPartitioner part, PetscPartitionerTy
 
   CHKERRQ(PetscPartitionerRegisterAll());
   CHKERRQ(PetscFunctionListFind(PetscPartitionerList, name, &r));
-  PetscCheckFalse(!r,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscPartitioner type: %s", name);
+  PetscCheck(r,PetscObjectComm((PetscObject) part), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown PetscPartitioner type: %s", name);
 
   if (part->ops->destroy) {
     CHKERRQ((*part->ops->destroy)(part));
@@ -329,7 +329,7 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
     CHKERRQ(PetscSectionSetDof(partSection, 0, numVertices));
     CHKERRQ(ISCreateStride(PetscObjectComm((PetscObject)part),numVertices,0,1,partition));
   } else {
-    PetscCheckFalse(!part->ops->partition,PetscObjectComm((PetscObject) part), PETSC_ERR_SUP, "PetscPartitioner %s has no partitioning method", ((PetscObject)part)->type_name);
+    PetscCheck(part->ops->partition,PetscObjectComm((PetscObject) part), PETSC_ERR_SUP, "PetscPartitioner %s has no partitioning method", ((PetscObject)part)->type_name);
     CHKERRQ((*part->ops->partition)(part, nparts, numVertices, start, adjacency, vertexSection, targetSection, partSection, partition));
   }
   CHKERRQ(PetscSectionSetUp(partSection));

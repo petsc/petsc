@@ -234,7 +234,7 @@ PetscErrorCode PCTFS_grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, P
   if ((PCTFS_num_nodes<2)||(!n)||(dim<=0)) PetscFunctionReturn(0);
 
   /* the error msg says it all!!! */
-  PetscCheckFalse(modfl_num_nodes,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_grop_hc() :: PCTFS_num_nodes not a power of 2!?!");
+  PetscCheck(!modfl_num_nodes,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_grop_hc() :: PCTFS_num_nodes not a power of 2!?!");
 
   /* a negative number of items to send ==> fatal */
   PetscCheckFalse(n<0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_grop_hc() :: n=%D<0?",n);
@@ -311,7 +311,7 @@ PetscErrorCode PCTFS_ssgl_radd(PetscScalar *vals,  PetscScalar *work,  PetscInt 
       dest = edge_node[level-edge-1];
       type = MSGTAG6 + PCTFS_my_id + (PCTFS_num_nodes*edge);
       CHKERRMPI(MPI_Comm_get_attr(MPI_COMM_WORLD,MPI_TAG_UB,&maxval,&flg));
-      PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI error: MPI_Comm_get_attr() is not returning a MPI_TAG_UB");
+      PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI error: MPI_Comm_get_attr() is not returning a MPI_TAG_UB");
       PetscCheckFalse(*maxval <= type,PETSC_COMM_SELF,PETSC_ERR_PLIB,"MPI_TAG_UB for your current MPI implementation is not large enough to use PCTFS");
       if (PCTFS_my_id<dest) {
         CHKERRMPI(MPI_Send(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,dest,type,MPI_COMM_WORLD));
@@ -347,7 +347,7 @@ PetscErrorCode PCTFS_giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscIn
   if ((PCTFS_num_nodes<2)||(!n)||(dim<=0)) PetscFunctionReturn(0);
 
   /* the error msg says it all!!! */
-  PetscCheckFalse(modfl_num_nodes,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_giop_hc() :: PCTFS_num_nodes not a power of 2!?!");
+  PetscCheck(!modfl_num_nodes,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_giop_hc() :: PCTFS_num_nodes not a power of 2!?!");
 
   /* a negative number of items to send ==> fatal */
   PetscCheckFalse(n<0,PETSC_COMM_SELF,PETSC_ERR_PLIB,"PCTFS_giop_hc() :: n=%D<0?",n);

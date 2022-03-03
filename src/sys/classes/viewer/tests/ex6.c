@@ -110,7 +110,7 @@ static PetscErrorCode TestEOF(PetscViewer viewer)
 
   PetscFunctionBegin;
   CHKERRQ(PetscViewerRead(viewer,&data,1,&count,PETSC_CHAR));
-  PetscCheckFalse(count,comm,PETSC_ERR_FILE_UNEXPECTED,"Expected EOF");
+  PetscCheck(!count,comm,PETSC_ERR_FILE_UNEXPECTED,"Expected EOF");
   PetscFunctionReturn(0);
 }
 

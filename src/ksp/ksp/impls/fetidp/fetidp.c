@@ -201,7 +201,7 @@ PetscErrorCode KSPFETIDPSetInnerBDDC(KSP ksp, PC pc)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidHeaderSpecific(pc,PC_CLASSID,2);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCBDDC,&isbddc));
-  PetscCheckFalse(!isbddc,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONG,"KSPFETIDPSetInnerBDDC need a PCBDDC preconditioner");
+  PetscCheck(isbddc,PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_WRONG,"KSPFETIDPSetInnerBDDC need a PCBDDC preconditioner");
   CHKERRQ(PetscTryMethod(ksp,"KSPFETIDPSetInnerBDDC_C",(KSP,PC),(ksp,pc)));
   PetscFunctionReturn(0);
 }
@@ -271,7 +271,7 @@ static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCheckSameComm(ksp,1,viewer,2);
   CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii));
-  PetscCheckFalse(!isascii,comm,PETSC_ERR_SUP,"Unsupported viewer");
+  PetscCheck(isascii,comm,PETSC_ERR_SUP,"Unsupported viewer");
   CHKERRQ(PetscViewerASCIIPrintf(viewer,"----------FETI-DP MAT  --------------\n"));
   CHKERRQ(PetscViewerASCIIAddTab(viewer,2));
   CHKERRQ(KSPGetOperators(fetidp->innerksp,&F,NULL));
@@ -537,7 +537,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
 
   CHKERRQ(KSPGetOperators(ksp,&A,&Ap));
   CHKERRQ(PetscObjectTypeCompare((PetscObject)A,MATIS,&ismatis));
-  PetscCheckFalse(!ismatis,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Amat should be of type MATIS");
+  PetscCheck(ismatis,PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Amat should be of type MATIS");
 
   /* Quiet return if the matrix states are unchanged.
      Needed only for the saddle point case since it uses MatZeroRows
@@ -735,7 +735,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       if (!ploc) {
         PetscInt *widxs2;
 
-        PetscCheckFalse(!pP,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Missing parallel pressure IS");
+        PetscCheck(pP,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Missing parallel pressure IS");
         CHKERRQ(ISGetLocalSize(pP,&ni));
         CHKERRQ(ISGetIndices(pP,&idxs));
         for (i=0;i<ni;i++) matis->sf_rootdata[idxs[i]-rst] = 1;
@@ -751,7 +751,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         CHKERRQ(PetscObjectCompose((PetscObject)fetidp->innerbddc,"__KSPFETIDP_gP",(PetscObject)is1));
         CHKERRQ(ISDestroy(&is1));
       } else {
-        PetscCheckFalse(!lP,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing sequential pressure IS");
+        PetscCheck(lP,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing sequential pressure IS");
         CHKERRQ(ISGetLocalSize(lP,&ni));
         CHKERRQ(ISGetIndices(lP,&idxs));
         for (i=0;i<ni;i++)
@@ -1063,7 +1063,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
             C    = PPmat;
           }
         } else if (pIg == PAM) { /* global ordering for selected pressure only */
-          PetscCheckFalse(schp,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Need the entire matrix");
+          PetscCheck(!schp,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"Need the entire matrix");
           CHKERRQ(PetscObjectReference((PetscObject)PPmat));
           C    = PPmat;
         } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_USER,"Unable to use the pressure matrix");

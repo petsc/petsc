@@ -813,11 +813,11 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem)
 
   /* Init Platform */
   CHKERRQ(clGetPlatformIDs(42, platform_ids, &num_platforms));
-  PetscCheckFalse(!num_platforms,PetscObjectComm((PetscObject) fem), PETSC_ERR_SUP, "No OpenCL platform found.");
+  PetscCheck(num_platforms,PetscObjectComm((PetscObject) fem), PETSC_ERR_SUP, "No OpenCL platform found.");
   ocl->pf_id = platform_ids[0];
   /* Init Device */
   CHKERRQ(clGetDeviceIDs(ocl->pf_id, CL_DEVICE_TYPE_ALL, 42, device_ids, &num_devices));
-  PetscCheckFalse(!num_devices,PetscObjectComm((PetscObject) fem), PETSC_ERR_SUP, "No OpenCL device found.");
+  PetscCheck(num_devices,PetscObjectComm((PetscObject) fem), PETSC_ERR_SUP, "No OpenCL device found.");
   ocl->dev_id = device_ids[0];
   /* Create context with one command queue */
   ocl->ctx_id   = clCreateContext(0, 1, &(ocl->dev_id), NULL, NULL, &err);CHKERRQ(err);

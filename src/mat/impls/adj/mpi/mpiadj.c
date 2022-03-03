@@ -394,8 +394,8 @@ static PetscErrorCode MatRestoreRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscBool sym
   PetscCheckFalse(ia && a->i != *ia,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"ia passed back is not one obtained with MatGetRowIJ()");
   PetscCheckFalse(ja && a->j != *ja,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"ja passed back is not one obtained with MatGetRowIJ()");
   if (oshift) {
-    PetscCheckFalse(!ia,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"If oshift then you must passed in inia[] argument");
-    PetscCheckFalse(!ja,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"If oshift then you must passed in inja[] argument");
+    PetscCheck(ia,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"If oshift then you must passed in inia[] argument");
+    PetscCheck(ja,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"If oshift then you must passed in inja[] argument");
     for (i=0; i<=(*m); i++) (*ia)[i]--;
     for (i=0; i<(*ia)[*m]; i++) {
       (*ja)[i]--;

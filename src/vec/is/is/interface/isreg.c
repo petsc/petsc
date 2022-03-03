@@ -69,7 +69,7 @@ PetscErrorCode  ISSetType(IS is, ISType method)
 
   CHKERRQ(ISRegisterAll());
   CHKERRQ(PetscFunctionListFind(ISList,method,&r));
-  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown IS type: %s", method);
+  PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown IS type: %s", method);
   if (is->ops->destroy) {
     CHKERRQ((*is->ops->destroy)(is));
     is->ops->destroy = NULL;

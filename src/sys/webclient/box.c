@@ -50,7 +50,7 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
     CHKERRQ(PetscStrcat(keyfile,"/"));
     CHKERRQ(PetscStrcat(keyfile,"sslclient.pem"));
     CHKERRQ(PetscTestFile(keyfile,'r',&exists));
-    PetscCheckFalse(!exists,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate sslclient.pem file in current directory or home directory");
+    PetscCheck(exists,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to locate sslclient.pem file in current directory or home directory");
   }
 
   options[2] = "ssl_certificate";
@@ -61,7 +61,7 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
   CHKERRQ(PetscMemzero(&callbacks, sizeof(callbacks)));
   callbacks.begin_request = PetscBoxWebServer_Private;
   ctx = mg_start(&callbacks, NULL, options);
-  PetscCheckFalse(!ctx,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to start up webserver");
+  PetscCheck(ctx,PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to start up webserver");
   while (!result) {};
   PetscFunctionReturn(0);
 }
@@ -128,7 +128,7 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_
                             "\n\n");CHKERRQ(ierr);
     CHKERRQ(PetscBoxStartWebServer_Private());
     CHKERRQ(PetscStrbeginswith((const char*)result,"state=PETScState&code=",&flg));
-    PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_LIB,"Did not get expected string from Box got %s",result);
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_LIB,"Did not get expected string from Box got %s",result);
     CHKERRQ(PetscStrncpy(buff,(const char*)result+22,sizeof(buff)));
 
     CHKERRQ(PetscSSLInitializeContext(&ctx));
@@ -146,9 +146,9 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm,char access_token[],char refresh_
     close(sock);
 
     CHKERRQ(PetscPullJSONValue(buff,"access_token",access_token,tokensize,&found));
-    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Box did not return access token");
+    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Box did not return access token");
     CHKERRQ(PetscPullJSONValue(buff,"refresh_token",refresh_token,tokensize,&found));
-    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Box did not return refresh token");
+    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Box did not return refresh token");
 
     CHKERRQ(PetscPrintf(comm,"Here is your Box refresh token, save it in a save place, in the future you can run PETSc\n"));
     CHKERRQ(PetscPrintf(comm,"programs with the option -box_refresh_token %s\n",refresh_token));
@@ -203,7 +203,7 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm,const char refresh_token[],char acc
         PetscFunctionReturn(0);
       }
 #else
-      PetscCheckFalse(!set,PETSC_COMM_SELF,PETSC_ERR_LIB,"Must provide refresh token with -box_refresh_token XXX");
+      PetscCheck(set,PETSC_COMM_SELF,PETSC_ERR_LIB,"Must provide refresh token with -box_refresh_token XXX");
 #endif
     }
     CHKERRQ(PetscSSLInitializeContext(&ctx));
@@ -222,9 +222,9 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm,const char refresh_token[],char acc
     close(sock);
 
     CHKERRQ(PetscPullJSONValue(buff,"access_token",access_token,tokensize,&found));
-    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Box did not return access token");
+    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Box did not return access token");
     CHKERRQ(PetscPullJSONValue(buff,"refresh_token",new_refresh_token,tokensize,&found));
-    PetscCheckFalse(!found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Box did not return refresh token");
+    PetscCheck(found,PETSC_COMM_SELF,PETSC_ERR_LIB,"Box did not return refresh token");
 
     CHKERRQ(PetscPrintf(comm,"Here is your new Box refresh token, save it in a save place, in the future you can run PETSc\n"));
     CHKERRQ(PetscPrintf(comm,"programs with the option -box_refresh_token %s\n",new_refresh_token));
@@ -295,7 +295,7 @@ PetscErrorCode PetscBoxUpload(MPI_Comm comm,const char access_token[],const char
     CHKERRQ(PetscStrcat(head,"uploadType: multipart\r\n"));
 
     err = stat(filename,&sb);
-    PetscCheckFalse(err,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to stat file: %s",filename);
+    PetscCheck(!err,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to stat file: %s",filename);
     len = 1024 + sb.st_size;
     CHKERRQ(PetscMalloc1(len,&body));
     ierr = PetscStrcpy(body,"--foo_bar_baz\r\n"
@@ -311,7 +311,7 @@ PetscErrorCode PetscBoxUpload(MPI_Comm comm,const char access_token[],const char
                              "Content-Type: text/html\r\n\r\n");CHKERRQ(ierr);
     CHKERRQ(PetscStrlen(body,&blen));
     fd = fopen (filename, "r");
-    PetscCheckFalse(!fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file: %s",filename);
+    PetscCheck(fd,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file: %s",filename);
     rd = fread (body+blen, sizeof (unsigned char), sb.st_size, fd);
     PetscCheckFalse(rd != (size_t)sb.st_size,PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to read entire file: %s %d %d",filename,(int)rd,(int)sb.st_size);
     fclose(fd);
@@ -325,7 +325,7 @@ PetscErrorCode PetscBoxUpload(MPI_Comm comm,const char access_token[],const char
     CHKERRQ(PetscSSLDestroyContext(ctx));
     close(sock);
     CHKERRQ(PetscStrstr(buff,"\"title\"",&title));
-    PetscCheckFalse(!title,PETSC_COMM_SELF,PETSC_ERR_LIB,"Upload of file %s failed",filename);
+    PetscCheck(title,PETSC_COMM_SELF,PETSC_ERR_LIB,"Upload of file %s failed",filename);
   }
   PetscFunctionReturn(0);
 }

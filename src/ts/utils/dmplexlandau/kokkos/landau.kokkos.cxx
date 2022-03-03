@@ -463,7 +463,7 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
   PetscFunctionBegin;
   CHKERRQ(PetscLogEventBegin(events[3],0,0,0,0));
   CHKERRQ(DMGetApplicationContext(plex[0], &ctx));
-  PetscCheckFalse(!ctx,PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
+  PetscCheck(ctx,PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
   CHKERRQ(DMGetDimension(plex[0], &dim));
   PetscCheckFalse(LANDAU_DIM != dim,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dim %D != LANDAU_DIM %d",dim,LANDAU_DIM);
   if (ctx->gpu_assembly) {

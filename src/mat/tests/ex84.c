@@ -46,7 +46,7 @@ static PetscErrorCode GetReader(MPI_Comm comm, const char option[], PetscViewer 
     CHKERRQ(PetscViewerFileGetMode(*r, &mode));
     flg = (PetscBool) (mode == FILE_MODE_READ);
   }
-  PetscCheckFalse(!flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Need to specify %s viewer_type:file:format:read", option);
+  PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Need to specify %s viewer_type:file:format:read", option);
   PetscFunctionReturn(0);
 }
 

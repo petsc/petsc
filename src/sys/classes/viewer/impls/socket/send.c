@@ -69,7 +69,7 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 #else
     ierr = close(vmatlab->port);
 #endif
-    PetscCheckFalse(ierr,PETSC_COMM_SELF,PETSC_ERR_SYS,"System error closing socket");
+    PetscCheck(!ierr,PETSC_COMM_SELF,PETSC_ERR_SYS,"System error closing socket");
   }
   CHKERRQ(PetscFree(vmatlab));
   PetscFunctionReturn(0);
@@ -186,7 +186,7 @@ PETSC_INTERN PetscErrorCode PetscSocketEstablish(int portnum,int *ss)
   CHKERRQ(PetscMemzero(&sa,sizeof(struct sockaddr_in)));
 
   hp = gethostbyname(myname);
-  PetscCheckFalse(!hp,PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to get hostent information from system");
+  PetscCheck(hp,PETSC_COMM_SELF,PETSC_ERR_SYS,"Unable to get hostent information from system");
 
   sa.sin_family = hp->h_addrtype;
   sa.sin_port   = htons((u_short)portnum);
