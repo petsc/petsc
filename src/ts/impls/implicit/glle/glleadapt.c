@@ -185,10 +185,10 @@ PetscErrorCode  TSGLLEAdaptChoose(TSGLLEAdapt adapt,PetscInt n,const PetscInt or
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSGLLEADAPT_CLASSID,1);
   PetscValidIntPointer(orders,3);
-  PetscValidPointer(errors,4);
-  PetscValidPointer(cost,5);
+  PetscValidRealPointer(errors,4);
+  PetscValidRealPointer(cost,5);
   PetscValidIntPointer(next_sc,9);
-  PetscValidPointer(next_h,10);
+  PetscValidRealPointer(next_h,10);
   PetscValidBoolPointer(finish,11);
   CHKERRQ((*adapt->ops->choose)(adapt,n,orders,errors,cost,cur,h,tleft,next_sc,next_h,finish));
   PetscFunctionReturn(0);

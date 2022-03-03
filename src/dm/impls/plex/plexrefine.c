@@ -190,7 +190,7 @@ PetscErrorCode DMPlexGetRefinementUniform(DM dm, PetscBool *refinementUniform)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
-  PetscValidPointer(refinementUniform,  2);
+  PetscValidBoolPointer(refinementUniform,  2);
   *refinementUniform = mesh->refinementUniform;
   PetscFunctionReturn(0);
 }
@@ -235,7 +235,7 @@ PetscErrorCode DMPlexGetRefinementLimit(DM dm, PetscReal *refinementLimit)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(refinementLimit,  2);
+  PetscValidRealPointer(refinementLimit,  2);
   /* if (mesh->refinementLimit < 0) = getMaxVolume()/2.0; */
   *refinementLimit = mesh->refinementLimit;
   PetscFunctionReturn(0);

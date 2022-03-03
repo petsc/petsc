@@ -1859,7 +1859,7 @@ PetscErrorCode VecBoundToCPU(Vec v,PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  PetscValidPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
 #if defined(PETSC_HAVE_DEVICE)
   *flg = v->boundtocpu;
 #else

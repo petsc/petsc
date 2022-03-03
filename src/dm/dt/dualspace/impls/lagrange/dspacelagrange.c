@@ -2884,7 +2884,7 @@ static PetscErrorCode PetscDualSpaceLagrangeGetContinuity_Lagrange(PetscDualSpac
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(continuous, 2);
+  PetscValidBoolPointer(continuous, 2);
   *continuous = lag->continuous;
   PetscFunctionReturn(0);
 }
@@ -2918,7 +2918,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace sp, PetscBool 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(continuous, 2);
+  PetscValidBoolPointer(continuous, 2);
   CHKERRQ(PetscTryMethod(sp, "PetscDualSpaceLagrangeGetContinuity_C", (PetscDualSpace,PetscBool*),(sp,continuous)));
   PetscFunctionReturn(0);
 }
@@ -3062,7 +3062,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetTensor(PetscDualSpace sp, PetscBool *ten
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(tensor, 2);
+  PetscValidBoolPointer(tensor, 2);
   CHKERRQ(PetscTryMethod(sp,"PetscDualSpaceLagrangeGetTensor_C",(PetscDualSpace,PetscBool *),(sp,tensor)));
   PetscFunctionReturn(0);
 }
@@ -3107,7 +3107,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetTrimmed(PetscDualSpace sp, PetscBool *tr
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscValidPointer(trimmed, 2);
+  PetscValidBoolPointer(trimmed, 2);
   CHKERRQ(PetscTryMethod(sp,"PetscDualSpaceLagrangeGetTrimmed_C",(PetscDualSpace,PetscBool *),(sp,trimmed)));
   PetscFunctionReturn(0);
 }
@@ -3158,8 +3158,8 @@ PetscErrorCode PetscDualSpaceLagrangeGetNodeType(PetscDualSpace sp, PetscDTNodeT
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   if (nodeType) PetscValidPointer(nodeType, 2);
-  if (boundary) PetscValidPointer(boundary, 3);
-  if (exponent) PetscValidPointer(exponent, 4);
+  if (boundary) PetscValidBoolPointer(boundary, 3);
+  if (exponent) PetscValidRealPointer(exponent, 4);
   CHKERRQ(PetscTryMethod(sp,"PetscDualSpaceLagrangeGetNodeType_C",(PetscDualSpace,PetscDTNodeType *,PetscBool *,PetscReal *),(sp,nodeType,boundary,exponent)));
   PetscFunctionReturn(0);
 }

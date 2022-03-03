@@ -526,7 +526,7 @@ PetscErrorCode SNESMSSetType(SNES snes,SNESMSType mstype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidPointer(mstype,2);
+  PetscValidCharPointer(mstype,2);
   CHKERRQ(PetscTryMethod(snes,"SNESMSSetType_C",(SNES,SNESMSType),(snes,mstype)));
   PetscFunctionReturn(0);
 }
@@ -568,7 +568,7 @@ PetscErrorCode SNESMSGetDamping(SNES snes,PetscReal *damping)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidPointer(damping,2);
+  PetscValidRealPointer(damping,2);
   CHKERRQ(PetscUseMethod(snes,"SNESMSGetDamping_C",(SNES,PetscReal*),(snes,damping)));
   PetscFunctionReturn(0);
 }

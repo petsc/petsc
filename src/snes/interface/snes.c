@@ -2017,7 +2017,7 @@ PetscErrorCode SNESGetFunctionNorm(SNES snes, PetscReal *norm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidPointer(norm, 2);
+  PetscValidRealPointer(norm, 2);
   *norm = snes->norm;
   PetscFunctionReturn(0);
 }
@@ -2041,7 +2041,7 @@ PetscErrorCode SNESGetUpdateNorm(SNES snes, PetscReal *ynorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidPointer(ynorm, 2);
+  PetscValidRealPointer(ynorm, 2);
   *ynorm = snes->ynorm;
   PetscFunctionReturn(0);
 }
@@ -2065,7 +2065,7 @@ PetscErrorCode SNESGetSolutionNorm(SNES snes, PetscReal *xnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidPointer(xnorm, 2);
+  PetscValidRealPointer(xnorm, 2);
   *xnorm = snes->xnorm;
   PetscFunctionReturn(0);
 }
@@ -4235,7 +4235,7 @@ PetscErrorCode SNESGetConvergedReasonString(SNES snes, const char** strreason)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidCharPointer(strreason,2);
+  PetscValidPointer(strreason,2);
   *strreason = SNESConvergedReasons[snes->reason];
   PetscFunctionReturn(0);
 }

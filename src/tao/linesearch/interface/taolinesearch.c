@@ -875,7 +875,7 @@ PetscErrorCode TaoLineSearchComputeObjective(TaoLineSearch ls, Vec x, PetscReal 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
-  PetscValidPointer(f,3);
+  PetscValidRealPointer(f,3);
   PetscCheckSameComm(ls,1,x,2);
   if (ls->usetaoroutines) {
     CHKERRQ(TaoComputeObjective(ls->tao,x,f));
@@ -925,7 +925,7 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGradient(TaoLineSearch ls, Vec x,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
-  PetscValidPointer(f,3);
+  PetscValidRealPointer(f,3);
   PetscValidHeaderSpecific(g,VEC_CLASSID,4);
   PetscCheckSameComm(ls,1,x,2);
   PetscCheckSameComm(ls,1,g,4);
@@ -1028,8 +1028,8 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGTS(TaoLineSearch ls, Vec x, Pets
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
-  PetscValidPointer(f,3);
-  PetscValidPointer(gts,4);
+  PetscValidRealPointer(f,3);
+  PetscValidRealPointer(gts,4);
   PetscCheckSameComm(ls,1,x,2);
   PetscCheck(ls->ops->computeobjectiveandgts,PetscObjectComm((PetscObject)ls),PETSC_ERR_ARG_WRONGSTATE,"Line Search does not have objective and gts function set");
   CHKERRQ(PetscLogEventBegin(TAOLINESEARCH_Eval,ls,0,0,0));
@@ -1080,7 +1080,7 @@ PetscErrorCode TaoLineSearchGetSolution(TaoLineSearch ls, Vec x, PetscReal *f, V
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
-  PetscValidPointer(f,3);
+  PetscValidRealPointer(f,3);
   PetscValidHeaderSpecific(g,VEC_CLASSID,4);
   PetscValidIntPointer(reason,6);
   if (ls->new_x) {

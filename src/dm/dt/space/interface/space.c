@@ -326,7 +326,7 @@ PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(dim, 2);
+  PetscValidIntPointer(dim, 2);
   if (sp->dim == PETSC_DETERMINE) {
     if (sp->ops->getdimension) CHKERRQ((*sp->ops->getdimension)(sp, &sp->dim));
   }
@@ -352,8 +352,8 @@ PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PetscInt *minDegree, PetscInt 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  if (minDegree) PetscValidPointer(minDegree, 2);
-  if (maxDegree) PetscValidPointer(maxDegree, 3);
+  if (minDegree) PetscValidIntPointer(minDegree, 2);
+  if (maxDegree) PetscValidIntPointer(maxDegree, 3);
   if (minDegree) *minDegree = sp->degree;
   if (maxDegree) *maxDegree = sp->maxDegree;
   PetscFunctionReturn(0);
@@ -399,7 +399,7 @@ PetscErrorCode PetscSpaceGetNumComponents(PetscSpace sp, PetscInt *Nc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(Nc, 2);
+  PetscValidIntPointer(Nc, 2);
   *Nc = sp->Nc;
   PetscFunctionReturn(0);
 }
@@ -459,7 +459,7 @@ PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscValidPointer(n, 2);
+  PetscValidIntPointer(n, 2);
   *n = sp->Nv;
   PetscFunctionReturn(0);
 }
@@ -489,10 +489,10 @@ PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscRe
   PetscFunctionBegin;
   if (!npoints) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  if (sp->Nv) PetscValidPointer(points, 3);
-  if (B) PetscValidPointer(B, 4);
-  if (D) PetscValidPointer(D, 5);
-  if (H) PetscValidPointer(H, 6);
+  if (sp->Nv) PetscValidRealPointer(points, 3);
+  if (B) PetscValidRealPointer(B, 4);
+  if (D) PetscValidRealPointer(D, 5);
+  if (H) PetscValidRealPointer(H, 6);
   if (sp->ops->evaluate) CHKERRQ((*sp->ops->evaluate)(sp, npoints, points, B, D, H));
   PetscFunctionReturn(0);
 }

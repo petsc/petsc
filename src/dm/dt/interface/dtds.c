@@ -620,7 +620,7 @@ PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidPointer(Nf, 2);
+  PetscValidIntPointer(Nf, 2);
   *Nf = prob->Nf;
   PetscFunctionReturn(0);
 }
@@ -644,7 +644,7 @@ PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidPointer(dim, 2);
+  PetscValidIntPointer(dim, 2);
   *dim = 0;
   if (prob->Nf) {
     PetscObject  obj;
@@ -680,7 +680,7 @@ PetscErrorCode PetscDSGetCoordinateDimension(PetscDS prob, PetscInt *dimEmbed)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidPointer(dimEmbed, 2);
+  PetscValidIntPointer(dimEmbed, 2);
   PetscCheckFalse(prob->dimEmbed < 0,PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONGSTATE, "No coordinate dimension set for this DS");
   *dimEmbed = prob->dimEmbed;
   PetscFunctionReturn(0);
@@ -727,7 +727,7 @@ PetscErrorCode PetscDSIsCohesive(PetscDS ds, PetscBool *isCohesive)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscValidPointer(isCohesive, 2);
+  PetscValidBoolPointer(isCohesive, 2);
   *isCohesive = ds->isCohesive;
   PetscFunctionReturn(0);
 }
@@ -753,7 +753,7 @@ PetscErrorCode PetscDSGetNumCohesive(PetscDS ds, PetscInt *numCohesive)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscValidPointer(numCohesive, 2);
+  PetscValidIntPointer(numCohesive, 2);
   *numCohesive = 0;
   for (f = 0;  f < ds->Nf; ++f) *numCohesive += ds->cohesive[f] ? 1 : 0;
   PetscFunctionReturn(0);
@@ -779,7 +779,7 @@ PetscErrorCode PetscDSGetCohesive(PetscDS ds, PetscInt f, PetscBool *isCohesive)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscValidPointer(isCohesive, 3);
+  PetscValidBoolPointer(isCohesive, 3);
   PetscCheckFalse((f < 0) || (f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
   *isCohesive = ds->cohesive[f];
   PetscFunctionReturn(0);
@@ -832,7 +832,7 @@ PetscErrorCode PetscDSGetTotalDimension(PetscDS prob, PetscInt *dim)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   CHKERRQ(PetscDSSetUp(prob));
-  PetscValidPointer(dim, 2);
+  PetscValidIntPointer(dim, 2);
   *dim = prob->totDim;
   PetscFunctionReturn(0);
 }
@@ -857,7 +857,7 @@ PetscErrorCode PetscDSGetTotalComponents(PetscDS prob, PetscInt *Nc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   CHKERRQ(PetscDSSetUp(prob));
-  PetscValidPointer(Nc, 2);
+  PetscValidIntPointer(Nc, 2);
   *Nc = prob->totComp;
   PetscFunctionReturn(0);
 }
@@ -1046,7 +1046,7 @@ PetscErrorCode PetscDSGetImplicit(PetscDS prob, PetscInt f, PetscBool *implicit)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidPointer(implicit, 3);
+  PetscValidBoolPointer(implicit, 3);
   PetscCheckFalse((f < 0) || (f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
   *implicit = prob->implicit[f];
   PetscFunctionReturn(0);
@@ -1095,7 +1095,7 @@ PetscErrorCode PetscDSGetJetDegree(PetscDS ds, PetscInt f, PetscInt *k)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscValidPointer(k, 3);
+  PetscValidIntPointer(k, 3);
   PetscCheckFalse((f < 0) || (f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
   *k = ds->jetDegree[f];
   PetscFunctionReturn(0);
@@ -2884,7 +2884,7 @@ PetscErrorCode PetscDSGetConstants(PetscDS prob, PetscInt *numConstants, const P
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  if (numConstants) {PetscValidPointer(numConstants, 2); *numConstants = prob->numConstants;}
+  if (numConstants) {PetscValidIntPointer(numConstants, 2); *numConstants = prob->numConstants;}
   if (constants)    {PetscValidPointer(constants, 3);    *constants    = prob->constants;}
   PetscFunctionReturn(0);
 }
@@ -2917,7 +2917,7 @@ PetscErrorCode PetscDSSetConstants(PetscDS prob, PetscInt numConstants, PetscSca
     }
   }
   if (prob->numConstants) {
-    PetscValidPointer(constants, 3);
+    PetscValidScalarPointer(constants, 3);
     CHKERRQ(PetscArraycpy(prob->constants, constants, prob->numConstants));
   }
   PetscFunctionReturn(0);
@@ -2945,7 +2945,7 @@ PetscErrorCode PetscDSGetFieldIndex(PetscDS prob, PetscObject disc, PetscInt *f)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidPointer(f, 3);
+  PetscValidIntPointer(f, 3);
   *f = -1;
   for (g = 0; g < prob->Nf; ++g) {if (disc == prob->disc[g]) break;}
   PetscCheckFalse(g == prob->Nf,PetscObjectComm((PetscObject) prob), PETSC_ERR_ARG_WRONG, "Field not found in PetscDS.");
@@ -2973,7 +2973,7 @@ PetscErrorCode PetscDSGetFieldSize(PetscDS prob, PetscInt f, PetscInt *size)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidPointer(size, 3);
+  PetscValidIntPointer(size, 3);
   PetscCheckFalse((f < 0) || (f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
   CHKERRQ(PetscDSSetUp(prob));
   *size = prob->Nb[f];
@@ -3002,7 +3002,7 @@ PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidPointer(off, 3);
+  PetscValidIntPointer(off, 3);
   PetscCheckFalse((f < 0) || (f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
   *off = 0;
   for (g = 0; g < f; ++g) {
@@ -3034,7 +3034,7 @@ PetscErrorCode PetscDSGetFieldOffsetCohesive(PetscDS ds, PetscInt f, PetscInt *o
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscValidPointer(off, 3);
+  PetscValidIntPointer(off, 3);
   PetscCheckFalse((f < 0) || (f >= ds->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, ds->Nf);
   *off = 0;
   for (g = 0; g < f; ++g) {
@@ -3117,7 +3117,7 @@ PetscErrorCode PetscDSGetComponentOffset(PetscDS prob, PetscInt f, PetscInt *off
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  PetscValidPointer(off, 3);
+  PetscValidIntPointer(off, 3);
   PetscCheckFalse((f < 0) || (f >= prob->Nf),PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %d must be in [0, %d)", f, prob->Nf);
   CHKERRQ(PetscDSSetUp(prob));
   *off = prob->off[f];
@@ -3631,7 +3631,7 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscValidPointer(numBd, 2);
+  PetscValidIntPointer(numBd, 2);
   *numBd = 0;
   while (b) {++(*numBd); b = b->next;}
   PetscFunctionReturn(0);
@@ -3853,7 +3853,7 @@ PetscErrorCode PetscDSSelectDiscretizations(PetscDS prob, PetscInt numFields, co
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  if (fields) PetscValidPointer(fields, 3);
+  if (fields) PetscValidIntPointer(fields, 3);
   PetscValidHeaderSpecific(newprob, PETSCDS_CLASSID, 4);
   CHKERRQ(PetscDSGetNumFields(prob, &Nf));
   CHKERRQ(PetscDSGetNumFields(newprob, &Nfn));
@@ -3892,7 +3892,7 @@ PetscErrorCode PetscDSSelectEquations(PetscDS prob, PetscInt numFields, const Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  if (fields) PetscValidPointer(fields, 3);
+  if (fields) PetscValidIntPointer(fields, 3);
   PetscValidHeaderSpecific(newprob, PETSCDS_CLASSID, 4);
   CHKERRQ(PetscDSGetNumFields(prob, &Nf));
   CHKERRQ(PetscDSGetNumFields(newprob, &Nfn));

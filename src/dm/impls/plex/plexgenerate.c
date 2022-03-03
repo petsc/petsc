@@ -87,7 +87,7 @@ PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(opts, 2);
+  PetscValidCharPointer(opts, 2);
   CHKERRQ(PetscFree(mesh->triangleOpts));
   CHKERRQ(PetscStrallocpy(opts, &mesh->triangleOpts));
   PetscFunctionReturn(0);
@@ -112,7 +112,7 @@ PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(opts, 2);
+  PetscValidCharPointer(opts, 2);
   CHKERRQ(PetscFree(mesh->tetgenOpts));
   CHKERRQ(PetscStrallocpy(opts, &mesh->tetgenOpts));
   PetscFunctionReturn(0);

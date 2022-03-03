@@ -864,7 +864,7 @@ PetscErrorCode MatCompositeGetNumberMat(Mat mat,PetscInt *nmat)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidPointer(nmat,2);
+  PetscValidIntPointer(nmat,2);
   CHKERRQ(PetscUseMethod(mat,"MatCompositeGetNumberMat_C",(Mat,PetscInt*),(mat,nmat)));
   PetscFunctionReturn(0);
 }
@@ -942,7 +942,7 @@ PetscErrorCode MatCompositeSetScalings(Mat mat,const PetscScalar *scalings)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidPointer(scalings,2);
+  PetscValidScalarPointer(scalings,2);
   PetscValidLogicalCollectiveScalar(mat,*scalings,2);
   CHKERRQ(PetscUseMethod(mat,"MatCompositeSetScalings_C",(Mat,const PetscScalar*),(mat,scalings)));
   PetscFunctionReturn(0);

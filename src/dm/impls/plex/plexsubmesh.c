@@ -955,7 +955,7 @@ PetscErrorCode DMPlexConstructGhostCells(DM dm, const char labelName[], PetscInt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (numGhostCells) PetscValidPointer(numGhostCells, 3);
+  if (numGhostCells) PetscValidIntPointer(numGhostCells, 3);
   PetscValidPointer(dmGhosted, 4);
   CHKERRQ(DMCreate(PetscObjectComm((PetscObject)dm), &gdm));
   CHKERRQ(DMSetType(gdm, DMPLEX));

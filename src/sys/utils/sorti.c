@@ -398,7 +398,7 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscI
   PetscFunctionBegin;
   PetscValidIntPointer(loc,4);
   if (!n) {*loc = -1; PetscFunctionReturn(0);}
-  PetscValidPointer(X,3);
+  PetscValidIntPointer(X,3);
   PetscCheckSorted(n,X);
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo)/2;
@@ -469,9 +469,9 @@ PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscInt n, const PetscMPIInt X[
   PetscInt lo = 0,hi = n;
 
   PetscFunctionBegin;
-  PetscValidPointer(loc,4);
+  PetscValidIntPointer(loc,4);
   if (!n) {*loc = -1; PetscFunctionReturn(0);}
-  PetscValidPointer(X,3);
+  PetscValidIntPointer(X,3);
   PetscCheckSorted(n,X);
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo)/2;
@@ -883,8 +883,8 @@ PetscErrorCode  PetscMergeIntArrayPair(PetscInt an,const PetscInt aI[], const Pe
   PetscInt       n_, *L_, *J_, ak, bk, k;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(L,8);
-  PetscValidIntPointer(J,9);
+  PetscValidPointer(L,8);
+  PetscValidPointer(J,9);
   n_ = an + bn;
   *n = n_;
   if (!*L) {

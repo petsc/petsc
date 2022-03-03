@@ -748,7 +748,7 @@ PetscErrorCode  MatMFFDGetH(Mat mat,PetscScalar *h)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
-  PetscValidPointer(h,2);
+  PetscValidScalarPointer(h,2);
   CHKERRQ(PetscUseMethod(mat,"MatMFFDGetH_C",(Mat,PetscScalar*),(mat,h)));
   PetscFunctionReturn(0);
 }
@@ -932,7 +932,7 @@ PetscErrorCode  MatMFFDSetHHistory(Mat J,PetscScalar history[],PetscInt nhistory
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_CLASSID,1);
-  if (history) PetscValidPointer(history,2);
+  if (history) PetscValidScalarPointer(history,2);
   PetscValidLogicalCollectiveInt(J,nhistory,3);
   CHKERRQ(PetscUseMethod(J,"MatMFFDSetHHistory_C",(Mat,PetscScalar[],PetscInt),(J,history,nhistory)));
   PetscFunctionReturn(0);
@@ -1060,7 +1060,7 @@ PetscErrorCode  MatMFFDCheckPositivity(void *dummy,Vec U,Vec a,PetscScalar *h)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(U,VEC_CLASSID,2);
   PetscValidHeaderSpecific(a,VEC_CLASSID,3);
-  PetscValidPointer(h,4);
+  PetscValidScalarPointer(h,4);
   CHKERRQ(PetscObjectGetComm((PetscObject)U,&comm));
   CHKERRQ(VecGetArray(U,&u_vec));
   CHKERRQ(VecGetArray(a,&a_vec));

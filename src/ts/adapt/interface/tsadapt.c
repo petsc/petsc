@@ -879,7 +879,7 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   PetscValidHeaderSpecific(ts,TS_CLASSID,2);
   if (next_sc) PetscValidIntPointer(next_sc,4);
-  PetscValidPointer(next_h,5);
+  PetscValidRealPointer(next_h,5);
   PetscValidBoolPointer(accept,6);
   if (next_sc) *next_sc = 0;
 

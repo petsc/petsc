@@ -232,7 +232,7 @@ PetscErrorCode  PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool  *vecSeen)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  PetscValidPointer(vecSeen,2);
+  PetscValidBoolPointer(vecSeen,2);
   *vecSeen = vu->vecSeen;
   PetscFunctionReturn(0);
 }

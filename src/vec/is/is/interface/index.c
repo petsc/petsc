@@ -1218,7 +1218,7 @@ PetscErrorCode  ISGetIndices(IS is,const PetscInt *ptr[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  PetscValidIntPointer(ptr,2);
+  PetscValidPointer(ptr,2);
   CHKERRQ((*is->ops->getindices)(is,ptr));
   PetscFunctionReturn(0);
 }

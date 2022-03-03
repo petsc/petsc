@@ -261,7 +261,7 @@ PetscErrorCode PetscFECompositeGetMapping(PetscFE fem, PetscInt *numSubelements,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  if (numSubelements) {PetscValidPointer(numSubelements, 2); *numSubelements = cmp->numSubelements;}
+  if (numSubelements) {PetscValidIntPointer(numSubelements, 2); *numSubelements = cmp->numSubelements;}
   if (v0)             {PetscValidPointer(v0, 3);             *v0             = cmp->v0;}
   if (jac)            {PetscValidPointer(jac, 4);            *jac            = cmp->jac;}
   if (invjac)         {PetscValidPointer(invjac, 5);         *invjac         = cmp->invjac;}

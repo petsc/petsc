@@ -359,8 +359,8 @@ PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PetscInt *minDegree, P
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field,DMFIELD_CLASSID,1);
   PetscValidHeaderSpecific(cellIS,IS_CLASSID,2);
-  if (minDegree) PetscValidPointer(minDegree,3);
-  if (maxDegree) PetscValidPointer(maxDegree,4);
+  if (minDegree) PetscValidIntPointer(minDegree,3);
+  if (maxDegree) PetscValidIntPointer(maxDegree,4);
 
   if (minDegree) *minDegree = -1;
   if (maxDegree) *maxDegree = PETSC_MAX_INT;

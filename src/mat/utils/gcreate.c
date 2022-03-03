@@ -488,7 +488,7 @@ PetscErrorCode MatBoundToCPU(Mat A,PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
 #if defined(PETSC_HAVE_DEVICE)
   *flg = A->boundtocpu;
 #else

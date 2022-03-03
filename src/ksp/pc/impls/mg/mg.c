@@ -1618,7 +1618,7 @@ PetscErrorCode PCMGGetAdaptInterpolation(PC pc, PetscBool *adapt)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(adapt, 2);
+  PetscValidBoolPointer(adapt, 2);
   CHKERRQ(PetscUseMethod(pc,"PCMGGetAdaptInterpolation_C",(PC,PetscBool*),(pc,adapt)));
   PetscFunctionReturn(0);
 }
@@ -1668,7 +1668,7 @@ PetscErrorCode PCMGGetAdaptCR(PC pc, PetscBool *cr)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(cr, 2);
+  PetscValidBoolPointer(cr, 2);
   CHKERRQ(PetscUseMethod(pc,"PCMGGetAdaptCR_C",(PC,PetscBool*),(pc,cr)));
   PetscFunctionReturn(0);
 }

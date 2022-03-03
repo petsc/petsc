@@ -1314,7 +1314,7 @@ PetscErrorCode TSARKIMEXGetFullyImplicit(TS ts,PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidPointer(flg,2);
+  PetscValidBoolPointer(flg,2);
   CHKERRQ(PetscUseMethod(ts,"TSARKIMEXGetFullyImplicit_C",(TS,PetscBool*),(ts,flg)));
   PetscFunctionReturn(0);
 }

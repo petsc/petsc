@@ -254,7 +254,7 @@ PetscErrorCode VecTaggerGetBlockSize(VecTagger tagger, PetscInt *blocksize)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
-  PetscValidPointer(blocksize,2);
+  PetscValidIntPointer(blocksize,2);
   *blocksize = tagger->blocksize;
   PetscFunctionReturn(0);
 }
@@ -302,7 +302,7 @@ PetscErrorCode VecTaggerGetInvert(VecTagger tagger, PetscBool *invert)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tagger,VEC_TAGGER_CLASSID,1);
-  PetscValidPointer(invert,2);
+  PetscValidBoolPointer(invert,2);
   *invert = tagger->invert;
   PetscFunctionReturn(0);
 }

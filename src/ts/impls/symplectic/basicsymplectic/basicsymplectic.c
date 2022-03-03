@@ -160,8 +160,8 @@ PetscErrorCode TSBasicSymplecticRegister(TSRosWType name,PetscInt order,PetscInt
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,1);
-  PetscValidPointer(c,4);
-  PetscValidPointer(d,5);
+  PetscValidRealPointer(c,4);
+  PetscValidRealPointer(d,5);
 
   CHKERRQ(TSBasicSymplecticInitializePackage());
   CHKERRQ(PetscNew(&link));

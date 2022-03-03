@@ -157,7 +157,7 @@ PetscErrorCode DMDAGetDof(DM da, PetscInt *dof)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
-  PetscValidPointer(dof,2);
+  PetscValidIntPointer(dof,2);
   *dof = dd->w;
   PetscFunctionReturn(0);
 }
@@ -521,7 +521,7 @@ PetscErrorCode DMDAGetStencilWidth(DM da, PetscInt *width)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
-  PetscValidPointer(width,2);
+  PetscValidIntPointer(width,2);
   *width = dd->s;
   PetscFunctionReturn(0);
 }

@@ -896,7 +896,7 @@ PetscErrorCode SNESLineSearchGetType(SNESLineSearch linesearch, SNESLineSearchTy
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch,SNESLINESEARCH_CLASSID,1);
-  PetscValidCharPointer(type,2);
+  PetscValidPointer(type,2);
   *type = ((PetscObject)linesearch)->type_name;
   PetscFunctionReturn(0);
 }

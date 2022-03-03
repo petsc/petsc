@@ -275,7 +275,7 @@ PetscErrorCode PetscOptionsValidKey(const char key[],PetscBool *valid)
 
   PetscFunctionBegin;
   if (key) PetscValidCharPointer(key,1);
-  PetscValidPointer(valid,2);
+  PetscValidBoolPointer(valid,2);
   *valid = PETSC_FALSE;
   if (!key) PetscFunctionReturn(0);
   if (key[0] != '-') PetscFunctionReturn(0);
@@ -1587,7 +1587,7 @@ PetscErrorCode PetscOptionsReject(PetscOptions options,const char pre[],const ch
 PetscErrorCode PetscOptionsHasHelp(PetscOptions options,PetscBool *set)
 {
   PetscFunctionBegin;
-  PetscValidPointer(set,2);
+  PetscValidBoolPointer(set,2);
   options = options ? options : defaultoptions;
   *set = options->help;
   PetscFunctionReturn(0);
@@ -1596,7 +1596,7 @@ PetscErrorCode PetscOptionsHasHelp(PetscOptions options,PetscBool *set)
 PetscErrorCode PetscOptionsHasHelpIntro_Internal(PetscOptions options,PetscBool *set)
 {
   PetscFunctionBegin;
-  PetscValidPointer(set,2);
+  PetscValidBoolPointer(set,2);
   options = options ? options : defaultoptions;
   *set = options->help_intro;
   PetscFunctionReturn(0);
@@ -1717,7 +1717,7 @@ PetscErrorCode PetscOptionsUsed(PetscOptions options,const char *name,PetscBool 
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,2);
-  PetscValidPointer(used,3);
+  PetscValidBoolPointer(used,3);
   options = options ? options : defaultoptions;
   *used = PETSC_FALSE;
   for (i=0; i<options->N; i++) {

@@ -1989,7 +1989,7 @@ PetscErrorCode DMPlexComputeCellGeometryFEM(DM dm, PetscInt cell, PetscQuadratur
   PetscFE        fe = NULL;
 
   PetscFunctionBegin;
-  PetscValidPointer(detJ, 7);
+  PetscValidRealPointer(detJ, 7);
   CHKERRQ(DMGetCoordinateDM(dm, &cdm));
   if (cdm) {
     PetscClassId id;
@@ -2535,7 +2535,7 @@ PetscErrorCode DMPlexGetMinRadius(DM dm, PetscReal *minradius)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(minradius,2);
+  PetscValidRealPointer(minradius,2);
   *minradius = ((DM_Plex*) dm->data)->minradius;
   PetscFunctionReturn(0);
 }

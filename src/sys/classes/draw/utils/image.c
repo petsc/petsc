@@ -352,7 +352,7 @@ PetscErrorCode PetscDrawImageSave(const char basename[],const char ext[],unsigne
   PetscFunctionBegin;
   PetscValidCharPointer(basename,1);
   if (ext) PetscValidCharPointer(ext,2);
-  if (palette) PetscValidCharPointer(palette,3);
+  if (palette) PetscValidPointer(palette,3);
   PetscValidCharPointer(pixels,6);
 
   CHKERRQ(PetscDrawImageCheckFormat(&ext));

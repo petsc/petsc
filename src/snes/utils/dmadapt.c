@@ -214,7 +214,7 @@ PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
-  PetscValidPointer(num, 2);
+  PetscValidIntPointer(num, 2);
   *num = adaptor->numSeq;
   PetscFunctionReturn(0);
 }

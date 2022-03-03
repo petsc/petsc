@@ -1982,7 +1982,7 @@ PetscErrorCode DMCreateSubDM(DM dm, PetscInt numFields, const PetscInt fields[],
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidPointer(fields,3);
+  PetscValidIntPointer(fields,3);
   if (is) PetscValidPointer(is,4);
   if (subdm) PetscValidPointer(subdm,5);
   PetscCheck(dm->ops->createsubdm,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"DM type %s does not implement DMCreateSubDM",((PetscObject)dm)->type_name);
@@ -2062,7 +2062,7 @@ PetscErrorCode DMCreateDomainDecomposition(DM dm, PetscInt *len, char ***namelis
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (len)           {PetscValidPointer(len,2);            *len         = 0;}
+  if (len)           {PetscValidIntPointer(len,2);            *len         = 0;}
   if (namelist)      {PetscValidPointer(namelist,3);       *namelist    = NULL;}
   if (innerislist)   {PetscValidPointer(innerislist,4);    *innerislist = NULL;}
   if (outerislist)   {PetscValidPointer(outerislist,5);    *outerislist = NULL;}
@@ -5540,7 +5540,7 @@ PetscErrorCode DMFindRegionNum(DM dm, PetscDS ds, PetscInt *num)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 2);
-  PetscValidPointer(num, 3);
+  PetscValidIntPointer(num, 3);
   CHKERRQ(DMGetNumDS(dm, &Nds));
   for (n = 0; n < Nds; ++n) if (ds == dm->probs[n].ds) break;
   if (n >= Nds) *num = -1;
@@ -8149,8 +8149,8 @@ PetscErrorCode DMGetLabelOutput(DM dm, const char name[], PetscBool *output)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(name, 2);
-  PetscValidPointer(output, 3);
+  PetscValidCharPointer(name, 2);
+  PetscValidBoolPointer(output, 3);
   while (next) {
     PetscBool flg;
 
@@ -9795,8 +9795,8 @@ PetscErrorCode DMGetAuxiliaryLabels(DM dm, DMLabel labels[], PetscInt values[], 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(labels, 2);
-  PetscValidPointer(values, 3);
-  PetscValidPointer(parts,  4);
+  PetscValidIntPointer(values, 3);
+  PetscValidIntPointer(parts,  4);
   CHKERRQ(DMGetNumAuxiliaryVec(dm, &n));
   CHKERRQ(PetscMalloc1(n, &keys));
   CHKERRQ(PetscHMapAuxGetKeys(dm->auxData, &off, keys));

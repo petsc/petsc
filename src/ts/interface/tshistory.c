@@ -49,7 +49,7 @@ struct _n_TSHistory {
 PetscErrorCode TSHistoryGetNumSteps(TSHistory tsh, PetscInt *n)
 {
   PetscFunctionBegin;
-  PetscValidPointer(n,2);
+  PetscValidIntPointer(n,2);
   *n = tsh->n;
   PetscFunctionReturn(0);
 }

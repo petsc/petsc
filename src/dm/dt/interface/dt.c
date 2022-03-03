@@ -148,7 +148,7 @@ PetscErrorCode PetscQuadratureGetOrder(PetscQuadrature q, PetscInt *order)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
-  PetscValidPointer(order, 2);
+  PetscValidIntPointer(order, 2);
   *order = q->order;
   PetscFunctionReturn(0);
 }
@@ -195,7 +195,7 @@ PetscErrorCode PetscQuadratureGetNumComponents(PetscQuadrature q, PetscInt *Nc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
-  PetscValidPointer(Nc, 2);
+  PetscValidIntPointer(Nc, 2);
   *Nc = q->Nc;
   PetscFunctionReturn(0);
 }
@@ -250,15 +250,15 @@ PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt
   PetscFunctionBegin;
   PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
   if (dim) {
-    PetscValidPointer(dim, 2);
+    PetscValidIntPointer(dim, 2);
     *dim = q->dim;
   }
   if (Nc) {
-    PetscValidPointer(Nc, 3);
+    PetscValidIntPointer(Nc, 3);
     *Nc = q->Nc;
   }
   if (npoints) {
-    PetscValidPointer(npoints, 4);
+    PetscValidIntPointer(npoints, 4);
     *npoints = q->numPoints;
   }
   if (points) {
@@ -513,11 +513,11 @@ PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt 
   if (Nc >= 0)      q->Nc        = Nc;
   if (npoints >= 0) q->numPoints = npoints;
   if (points) {
-    PetscValidPointer(points, 5);
+    PetscValidRealPointer(points, 5);
     q->points = points;
   }
   if (weights) {
-    PetscValidPointer(weights, 6);
+    PetscValidRealPointer(weights, 6);
     q->weights = weights;
   }
   PetscFunctionReturn(0);
@@ -611,8 +611,8 @@ PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature q, PetscInt numSub
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
-  PetscValidPointer(v0, 3);
-  PetscValidPointer(jac, 4);
+  PetscValidRealPointer(v0, 3);
+  PetscValidRealPointer(jac, 4);
   PetscValidPointer(qref, 5);
   CHKERRQ(PetscQuadratureCreate(PETSC_COMM_SELF, qref));
   CHKERRQ(PetscQuadratureGetOrder(q, &order));

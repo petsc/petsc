@@ -131,7 +131,7 @@ PetscErrorCode PetscViewerGLVisSetFields(PetscViewer viewer, PetscInt nf, const 
   PetscValidLogicalCollectiveInt(viewer,nf,2);
   PetscCheck(fec_type,PetscObjectComm((PetscObject)viewer),PETSC_ERR_SUP,"You need to provide the FiniteElementCollection names for the fields");
   PetscValidPointer(fec_type,3);
-  PetscValidPointer(dim,4);
+  PetscValidIntPointer(dim,4);
   PetscValidPointer(Vfield,6);
   CHKERRQ(PetscTryMethod(viewer,"PetscViewerGLVisSetFields_C",(PetscViewer,PetscInt,const char*[],PetscInt[],PetscErrorCode(*)(PetscObject,PetscInt,PetscObject[],void*),PetscObject[],void*,PetscErrorCode(*)(void*)),(viewer,nf,fec_type,dim,g2l,Vfield,ctx,destroyctx)));
   PetscFunctionReturn(0);
@@ -780,7 +780,7 @@ static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm,const char* hostn
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(hostname,2);
+  PetscValidCharPointer(hostname,2);
   PetscValidPointer(viewer,4);
 #if defined(PETSC_USE_SOCKET_VIEWER)
   ierr = PetscOpenSocket(hostname,port,&fd);

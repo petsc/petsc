@@ -25,8 +25,8 @@ PetscErrorCode DMPlexGetPointLocal(DM dm, PetscInt point, PetscInt *start, Petsc
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (start) PetscValidPointer(start, 3);
-  if (end)   PetscValidPointer(end,   4);
+  if (start) PetscValidIntPointer(start, 3);
+  if (end)   PetscValidIntPointer(end,   4);
   CHKERRQ(DMGetLocalOffset_Private(dm, point, &s, &e));
   if (start) *start = s;
   if (end)   *end   = e;
@@ -133,8 +133,8 @@ PetscErrorCode DMPlexGetPointLocalField(DM dm, PetscInt point, PetscInt field, P
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  if (start) PetscValidPointer(start, 4);
-  if (end)   PetscValidPointer(end,   5);
+  if (start) PetscValidIntPointer(start, 4);
+  if (end)   PetscValidIntPointer(end,   5);
   CHKERRQ(DMGetLocalFieldOffset_Private(dm, point, field, &s, &e));
   if (start) *start = s;
   if (end)   *end   = e;
@@ -228,8 +228,8 @@ PetscErrorCode DMPlexGetPointGlobal(DM dm, PetscInt point, PetscInt *start, Pets
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (start) PetscValidPointer(start, 3);
-  if (end)   PetscValidPointer(end,   4);
+  if (start) PetscValidIntPointer(start, 3);
+  if (end)   PetscValidIntPointer(end,   4);
   CHKERRQ(DMGetGlobalOffset_Private(dm, point, &s, &e));
   if (start) *start = s;
   if (end)   *end   = e;
@@ -336,8 +336,8 @@ PetscErrorCode DMPlexGetPointGlobalField(DM dm, PetscInt point, PetscInt field, 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (start) PetscValidPointer(start, 4);
-  if (end)   PetscValidPointer(end,   5);
+  if (start) PetscValidIntPointer(start, 4);
+  if (end)   PetscValidIntPointer(end,   5);
   CHKERRQ(DMGetGlobalFieldOffset_Private(dm, point, field, &s, &e));
   if (start) *start = s;
   if (end)   *end   = e;

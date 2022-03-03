@@ -288,7 +288,7 @@ PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt
 
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(adjSize,3);
+  PetscValidIntPointer(adjSize,3);
   PetscValidPointer(adj,4);
   CHKERRQ(DMGetBasicAdjacency(dm, &useCone, &useClosure));
   CHKERRQ(DMPlexGetAdjacencyUseAnchors(dm, &useAnchors));
@@ -2064,7 +2064,7 @@ PetscErrorCode DMPlexIsDistributed(DM dm, PetscBool *distributed)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(distributed,2);
+  PetscValidBoolPointer(distributed,2);
   CHKERRQ(PetscObjectGetComm((PetscObject)dm,&comm));
   CHKERRMPI(MPI_Comm_size(comm,&size));
   if (size == 1) { *distributed = PETSC_FALSE; PetscFunctionReturn(0); }

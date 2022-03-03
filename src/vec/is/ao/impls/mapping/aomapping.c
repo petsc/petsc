@@ -145,7 +145,7 @@ PetscErrorCode  AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool  *h
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID,1);
-  PetscValidPointer(hasIndex,3);
+  PetscValidBoolPointer(hasIndex,3);
   aomap = (AO_Mapping*) ao->data;
   app   = aomap->app;
   /* Use bisection since the array is sorted */
@@ -184,7 +184,7 @@ PetscErrorCode  AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool  *hasInde
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID,1);
-  PetscValidPointer(hasIndex,3);
+  PetscValidBoolPointer(hasIndex,3);
   aomap = (AO_Mapping*) ao->data;
   petsc = aomap->petsc;
   /* Use bisection since the array is sorted */

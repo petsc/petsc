@@ -98,7 +98,7 @@ PetscErrorCode  ISGetType(IS is, ISType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID,1);
-  PetscValidCharPointer(type,2);
+  PetscValidPointer(type,2);
   if (!ISRegisterAllCalled) {
     CHKERRQ(ISRegisterAll());
   }

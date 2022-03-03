@@ -1695,7 +1695,7 @@ PetscErrorCode KSPGetConvergedReasonString(KSP ksp,const char** strreason)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidCharPointer(strreason,2);
+  PetscValidPointer(strreason,2);
   *strreason = KSPConvergedReasons[ksp->reason];
   PetscFunctionReturn(0);
 }

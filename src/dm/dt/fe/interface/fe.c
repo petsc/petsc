@@ -396,7 +396,7 @@ PetscErrorCode PetscFEGetSpatialDimension(PetscFE fem, PetscInt *dim)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidPointer(dim, 2);
+  PetscValidIntPointer(dim, 2);
   CHKERRQ(PetscDualSpaceGetDM(fem->dualSpace, &dm));
   CHKERRQ(DMGetDimension(dm, dim));
   PetscFunctionReturn(0);
@@ -442,7 +442,7 @@ PetscErrorCode PetscFEGetNumComponents(PetscFE fem, PetscInt *comp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidPointer(comp, 2);
+  PetscValidIntPointer(comp, 2);
   *comp = fem->numComponents;
   PetscFunctionReturn(0);
 }
@@ -496,10 +496,10 @@ PetscErrorCode PetscFEGetTileSizes(PetscFE fem, PetscInt *blockSize, PetscInt *n
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  if (blockSize)  PetscValidPointer(blockSize,  2);
-  if (numBlocks)  PetscValidPointer(numBlocks,  3);
-  if (batchSize)  PetscValidPointer(batchSize,  4);
-  if (numBatches) PetscValidPointer(numBatches, 5);
+  if (blockSize)  PetscValidIntPointer(blockSize,  2);
+  if (numBlocks)  PetscValidIntPointer(numBlocks,  3);
+  if (batchSize)  PetscValidIntPointer(batchSize,  4);
+  if (numBatches) PetscValidIntPointer(numBatches, 5);
   if (blockSize)  *blockSize  = fem->blockSize;
   if (numBlocks)  *numBlocks  = fem->numBlocks;
   if (batchSize)  *batchSize  = fem->batchSize;
@@ -940,7 +940,7 @@ PetscErrorCode PetscFECreateTabulation(PetscFE fem, PetscInt nrepl, PetscInt npo
     PetscFunctionReturn(0);
   }
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidPointer(points, 4);
+  PetscValidRealPointer(points, 4);
   PetscValidPointer(T, 6);
   CHKERRQ(PetscFEGetDualSpace(fem, &Q));
   CHKERRQ(PetscDualSpaceGetDM(Q, &dm));
@@ -991,7 +991,7 @@ PetscErrorCode PetscFEComputeTabulation(PetscFE fem, PetscInt npoints, const Pet
   PetscFunctionBeginHot;
   if (!npoints || !fem->dualSpace || K < 0) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidPointer(points, 3);
+  PetscValidRealPointer(points, 3);
   PetscValidPointer(T, 5);
   if (PetscDefined(USE_DEBUG)) {
     DM               dm;
@@ -1141,7 +1141,7 @@ PetscErrorCode PetscFEGetDimension(PetscFE fem, PetscInt *dim)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscValidPointer(dim, 2);
+  PetscValidIntPointer(dim, 2);
   if (fem->ops->getdimension) CHKERRQ((*fem->ops->getdimension)(fem, dim));
   PetscFunctionReturn(0);
 }

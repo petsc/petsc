@@ -685,10 +685,10 @@ PetscErrorCode TSRosWRegister(TSRosWType name,PetscInt order,PetscInt s,const Pe
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,1);
-  PetscValidPointer(A,4);
-  PetscValidPointer(Gamma,5);
-  PetscValidPointer(b,6);
-  if (bembed) PetscValidPointer(bembed,7);
+  PetscValidRealPointer(A,4);
+  PetscValidRealPointer(Gamma,5);
+  PetscValidRealPointer(b,6);
+  if (bembed) PetscValidRealPointer(bembed,7);
 
   CHKERRQ(TSRosWInitializePackage());
   CHKERRQ(PetscNew(&link));
