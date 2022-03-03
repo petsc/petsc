@@ -1122,12 +1122,13 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
           if (bs < 0)          {bs = bdof;}
           else if (bs != bdof) {bs = 1;}
         }
+
         for (c = 0, cind = 0; c < dof; ++c, ++l) {
-          if ((cind < cdof) && (c == cdofs[cind])) {
+          if (cind < cdof && c == cdofs[cind]) {
             ltog[l] = off < 0 ? off-c : -(off+c+1);
             cind++;
           } else {
-            ltog[l] = (off < 0 ? -(off+1) : off) + c;
+            ltog[l] = (off < 0 ? -(off+1) : off) + c - cind;
           }
         }
       }
