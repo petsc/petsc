@@ -790,7 +790,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         if (ischeb) {
           KSP_Chebyshev *cheb = (KSP_Chebyshev*)smoother->data;
 
-          ierr = KSPSetFromOptions(smoother);CHKERRQ(ierr); /* let command line emax override using SA's eigenvalues */
+          // The command line will override these settings because KSPSetFromOptions is called in PCSetUp_MG
           if (mg->max_eigen_DinvA[level] > 0 && cheb->emax == 0.) {
             PC        subpc;
             PetscBool isjac;
