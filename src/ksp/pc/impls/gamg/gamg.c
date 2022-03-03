@@ -703,7 +703,6 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
   ierr             = PCMGSetLevels(pc,pc_gamg->Nlevels,NULL);CHKERRQ(ierr);
 
   if (pc_gamg->Nlevels > 1) { /* don't setup MG if one level */
-    PetscErrorCode (*savesetfromoptions[PETSC_MG_MAXLEVELS])(PetscOptionItems*,KSP);
 
     /* set default smoothers & set operators */
     for (lidx = 1, level = pc_gamg->Nlevels-2; lidx <= fine_level; lidx++, level--) {
@@ -784,7 +783,6 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
         KSP       smoother;
         PetscBool ischeb;
 
-        savesetfromoptions[level] = NULL;
         ierr = PCMGGetSmoother(pc, lidx, &smoother);CHKERRQ(ierr);
         ierr = PetscObjectTypeCompare((PetscObject)smoother,KSPCHEBYSHEV,&ischeb);CHKERRQ(ierr);
         if (ischeb) {
@@ -804,15 +802,8 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
               emin = mg->min_eigen_DinvA[level];
               emax = mg->max_eigen_DinvA[level];
               ierr = PetscInfo(pc,"PCSetUp_GAMG: call KSPChebyshevSetEigenvalues on level %D (N=%D) with emax = %g emin = %g\n",level,Aarr[level]->rmap->N,(double)emax,(double)emin);CHKERRQ(ierr);
-              cheb->emin_computed = emin;
-              cheb->emax_computed = emax;
-              ierr = KSPChebyshevSetEigenvalues(smoother, cheb->tform[2]*emin + cheb->tform[3]*emax, cheb->tform[0]*emin + cheb->tform[1]*emax);CHKERRQ(ierr);
-
-              /* We have set the eigenvalues and consumed the transformation values
-                 prevent from flagging the recomputation of the eigenvalues again in PCSetUp_MG
-                 below when setfromoptions will be called again */
-              savesetfromoptions[level] = smoother->ops->setfromoptions;
-              smoother->ops->setfromoptions = NULL;
+              cheb->emin_provided = emin;
+              cheb->emax_provided = emax;
             }
           }
         }
@@ -820,17 +811,6 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
     }
 
     ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
-
-    /* restore Chebyshev smoother for next calls */
-    if (pc_gamg->use_sa_esteig) {
-      for (lidx = 1, level = pc_gamg->Nlevels-2; level >= 0 ; lidx++, level--) {
-        if (savesetfromoptions[level]) {
-          KSP smoother;
-          ierr = PCMGGetSmoother(pc, lidx, &smoother);CHKERRQ(ierr);
-          smoother->ops->setfromoptions = savesetfromoptions[level];
-        }
-      }
-    }
 
     /* clean up */
     for (level=1; level<pc_gamg->Nlevels; level++) {
