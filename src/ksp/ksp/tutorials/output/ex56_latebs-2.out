@@ -54,9 +54,9 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.451919, max = 2.37258
-        eigenvalues estimate via cg min 0.032078, max 2.2596
-        eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        eigenvalue targets used: min 0.451919, max 2.37258
+        eigenvalues estimated via cg: min 0.032078, max 2.2596
+        eigenvalues estimated using cg with transform: [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
           maximum iterations=10, initial guess is zero
@@ -174,9 +174,9 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.451919, max = 2.37258
-        eigenvalues estimate via cg min 0.032078, max 2.2596
-        eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        eigenvalue targets used: min 0.451919, max 2.37258
+        eigenvalues estimated via cg: min 0.032078, max 2.2596
+        eigenvalues estimated using cg with transform: [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
           maximum iterations=10, initial guess is zero
@@ -294,9 +294,9 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.451919, max = 2.37258
-        eigenvalues estimate via cg min 0.032078, max 2.2596
-        eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        eigenvalue targets used: min 0.451919, max 2.37258
+        eigenvalues estimated via cg: min 0.032078, max 2.2596
+        eigenvalues estimated using cg with transform: [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
           type: cg
           maximum iterations=10, initial guess is zero

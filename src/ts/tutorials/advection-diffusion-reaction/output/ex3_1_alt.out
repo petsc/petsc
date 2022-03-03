@@ -11,30 +11,30 @@
 10 TS dt 0.0134319 time 0.0890911
 11 TS dt 0.0134682 time 0.102523
 12 TS dt 0.0134977 time 0.115991
-13 TS dt 0.0135236 time 0.129489
-14 TS dt 0.00491532 time 0.133791
-15 TS dt 0.0100884 time 0.138707
-16 TS dt 0.013571 time 0.148795
-17 TS dt 0.0136063 time 0.162366
-18 TS dt 0.00442247 time 0.165985
-19 TS dt 0.00846809 time 0.170407
-20 TS dt 0.0135282 time 0.178875
-21 TS dt 0.0136938 time 0.192404
-22 TS dt 0.00540085 time 0.197146
-23 TS dt 0.0109811 time 0.202547
-24 TS dt 0.0137461 time 0.213528
-25 TS dt 0.0137561 time 0.227274
-26 TS dt 0.00356535 time 0.229735
-27 TS dt 0.00560121 time 0.233301
-28 TS dt 0.0108003 time 0.238902
-29 TS dt 0.0138261 time 0.249702
-30 TS dt 0.0138162 time 0.263528
-31 TS dt 0.00331016 time 0.265692
-32 TS dt 0.0049224 time 0.269002
-33 TS dt 0.00908228 time 0.273924
-34 TS dt 0.0138439 time 0.283007
-35 TS dt 0.013972 time 0.296851
-36 TS dt 0.00449515 time 0.300149
+13 TS dt 0.0135238 time 0.129489
+14 TS dt 0.00492864 time 0.133807
+15 TS dt 0.0101278 time 0.138735
+16 TS dt 0.0135716 time 0.148863
+17 TS dt 0.0136056 time 0.162435
+18 TS dt 0.00439871 time 0.166038
+19 TS dt 0.00840205 time 0.170437
+20 TS dt 0.013518 time 0.178839
+21 TS dt 0.0136938 time 0.192357
+22 TS dt 0.00546476 time 0.19723
+23 TS dt 0.0109614 time 0.202694
+24 TS dt 0.0137452 time 0.213656
+25 TS dt 0.013756 time 0.227401
+26 TS dt 0.00349335 time 0.229813
+27 TS dt 0.00543395 time 0.233306
+28 TS dt 0.0103961 time 0.23874
+29 TS dt 0.0138226 time 0.249136
+30 TS dt 0.0138435 time 0.262959
+31 TS dt 0.00357575 time 0.265381
+32 TS dt 0.0055737 time 0.268957
+33 TS dt 0.010729 time 0.274531
+34 TS dt 0.0139273 time 0.28526
+35 TS dt 0.0138959 time 0.299187
+36 TS dt 0.00330856 time 0.30133
 TS Object: 1 MPI processes
   type: arkimex
     ARK IMEX 3
@@ -111,9 +111,9 @@ SNES Object: 1 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
         type: chebyshev
-          eigenvalue estimates used:  min = 0.1, max = 1.1
-          eigenvalues estimate via gmres min 1., max 1.
-          eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+          eigenvalue targets used: min 0.1, max 1.1
+          eigenvalues estimated via gmres: min 1., max 1.
+          eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_1_esteig_) 1 MPI processes
             type: gmres
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -140,9 +140,9 @@ SNES Object: 1 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object: (mg_levels_2_) 1 MPI processes
         type: chebyshev
-          eigenvalue estimates used:  min = 0.1, max = 1.1
-          eigenvalues estimate via gmres min 1., max 1.
-          eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+          eigenvalue targets used: min 0.1, max 1.1
+          eigenvalues estimated via gmres: min 1., max 1.
+          eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_2_esteig_) 1 MPI processes
             type: gmres
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement

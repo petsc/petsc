@@ -10,7 +10,7 @@ SNES Object: 1 MPI processes
   total number of function evaluations=4
   norm schedule ALWAYS
   Jacobian is built using colored finite differences on a DMDA
-SNESLineSearch Object: 1 MPI processes
+  SNESLineSearch Object: 1 MPI processes
     type: bt
       interpolation: cubic
       alpha=1.000000e-04
@@ -60,9 +60,9 @@ SNESLineSearch Object: 1 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
         type: chebyshev
-          eigenvalue estimates used:  min = 0.5, max = 1.1
-          eigenvalues estimate via gmres min 0.38553, max 0.999999
-          eigenvalues estimated using gmres with translations  [0. 0.5; 0. 1.1]
+          eigenvalue targets used: min 0.5, max 1.1
+          eigenvalues estimated via gmres: min 0.38553, max 0.999999
+          eigenvalues estimated using gmres with transform: [0. 0.5; 0. 1.1]
           KSP Object: (mg_levels_1_esteig_) 1 MPI processes
             type: gmres
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement

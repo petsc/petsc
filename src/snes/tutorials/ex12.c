@@ -1214,7 +1214,7 @@ int main(int argc, char **argv)
   test:
     suffix: 39
     requires: triangle !single
-    args: -run_type full -dm_refine_volume_limit_pre 0.015625 -petscspace_degree 2 -pc_type gamg -ksp_rtol 1.0e-10 -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason ::ascii_info_detail
+    args: -run_type full -dm_refine_volume_limit_pre 0.015625 -petscspace_degree 2 -pc_type gamg -pc_gamg_esteig_ksp_type cg -pc_gamg_esteig_ksp_max_it 10 -ksp_rtol 1.0e-10 -ksp_monitor_short -ksp_converged_reason -snes_monitor_short -snes_converged_reason ::ascii_info_detail
   test:
     suffix: 40
     requires: triangle !single

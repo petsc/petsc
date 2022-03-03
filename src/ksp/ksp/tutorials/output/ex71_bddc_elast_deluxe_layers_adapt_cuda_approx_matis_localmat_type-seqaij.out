@@ -121,16 +121,8 @@ PC Object: 8 MPI processes
       Down solver (pre-smoother) on level 1 -------------------------------
         KSP Object: (pc_bddc_dirichlet_mg_levels_1_) 1 MPI processes
           type: chebyshev
-            eigenvalue estimates used:  min = 0.234693, max = 2.58162
-            eigenvalues estimate via cg min 0.273728, max 2.34693
-            eigenvalues estimated using cg with translations  [0. 0.1; 0. 1.1]
-            KSP Object: (pc_bddc_dirichlet_mg_levels_1_esteig_) 1 MPI processes
-              type: cg
-              maximum iterations=10, initial guess is zero
-              tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
-              left preconditioning
-              using PRECONDITIONED norm type for convergence test
-            estimating eigenvalues using noisy right hand side
+            eigenvalue targets used: min 0.234692, max 2.58161
+            eigenvalues provided (min 0.312797, max 2.34692) with transform: [0. 0.1; 0. 1.1]
           maximum iterations=2, nonzero initial guess
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -219,16 +211,8 @@ PC Object: 8 MPI processes
       Down solver (pre-smoother) on level 1 -------------------------------
         KSP Object: (pc_bddc_neumann_mg_levels_1_) 1 MPI processes
           type: chebyshev
-            eigenvalue estimates used:  min = 0.262061, max = 2.88267
-            eigenvalues estimate via cg min 0.100732, max 2.62061
-            eigenvalues estimated using cg with translations  [0. 0.1; 0. 1.1]
-            KSP Object: (pc_bddc_neumann_mg_levels_1_esteig_) 1 MPI processes
-              type: cg
-              maximum iterations=10, initial guess is zero
-              tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
-              left preconditioning
-              using PRECONDITIONED norm type for convergence test
-            estimating eigenvalues using noisy right hand side
+            eigenvalue targets used: min 0.263367, max 2.89704
+            eigenvalues provided (min 0.0547782, max 2.63367) with transform: [0. 0.1; 0. 1.1]
           maximum iterations=2, nonzero initial guess
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning

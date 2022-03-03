@@ -262,6 +262,7 @@ int main(int argc,char **args)
 /*TEST
 
    test:
+      suffix: 1
       nsize: 4
       args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -use_coordinates -ksp_converged_reason -pc_gamg_esteig_ksp_max_it 5 -ksp_rtol 1.e-3 -ksp_monitor_short -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.2
       output_file: output/ex55_sa.out

@@ -56,9 +56,9 @@ SNES Object: 1 MPI processes
     Down solver (pre-smoother) on level 1 -------------------------------
       KSP Object: (mg_levels_1_) 1 MPI processes
         type: chebyshev
-          eigenvalue estimates used:  min = 0.0996438, max = 1.09608
-          eigenvalues estimate via gmres min 0.139653, max 0.996438
-          eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+          eigenvalue targets used: min 0.0996438, max 1.09608
+          eigenvalues estimated via gmres: min 0.139653, max 0.996438
+          eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_1_esteig_) 1 MPI processes
             type: gmres
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -86,9 +86,9 @@ SNES Object: 1 MPI processes
     Down solver (pre-smoother) on level 2 -------------------------------
       KSP Object: (mg_levels_2_) 1 MPI processes
         type: chebyshev
-          eigenvalue estimates used:  min = 0.0990486, max = 1.08953
-          eigenvalues estimate via gmres min 0.0626846, max 0.990486
-          eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+          eigenvalue targets used: min 0.0990486, max 1.08953
+          eigenvalues estimated via gmres: min 0.0626846, max 0.990486
+          eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
           KSP Object: (mg_levels_2_esteig_) 1 MPI processes
             type: gmres
               restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
