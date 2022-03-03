@@ -46,6 +46,22 @@ if [ ! -f "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files" ]; then
   exit 1
 fi
 
+if [ -f makefile ]; then
+  OMAKE=`grep "OMAKE " "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | cut -f2 -d=`
+  if [ "X${PETSC_ARCH}" != "X" ]; then
+    pushd ${PETSC_DIR} > /dev/null
+    ${OMAKE} -q -f gmakefile libs
+    if [ $? = 1 ]; then
+      echo "Warning: ************** The PETSc libraries are out of date"
+    fi
+    popd  > /dev/null
+  fi
+  ${OMAKE} -q $1
+  if [ $? = 1 ]; then
+    echo "Warning: ************** The executable $1 is out of date"
+  fi
+fi
+
 MPI_BUILD_HOME=$(grep MPI_BUILD_HOME "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | grep -v mpiexec | grep -v include | grep -v lib | grep -v "#MPI_HOME" | cut -f2 -d=)
 MPI_HOME=$(grep "MPI_HOME " "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | grep -v build | grep -v include | grep -v "#MPI_HOME" | grep -v mpe  | cut -f2 -d=)
 run=$(grep MPIEXEC "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | grep -v "#MPIEXEC" | cut -f2 -d=)
