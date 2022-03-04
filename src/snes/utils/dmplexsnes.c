@@ -513,6 +513,40 @@ PetscErrorCode DMInterpolationRestoreVector(DMInterpolationInfo ctx, Vec *v)
   PetscFunctionReturn(0);
 }
 
+static inline PetscErrorCode DMInterpolate_Segment_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
+{
+  PetscReal          v0, J, invJ, detJ;
+  const PetscInt     dof = ctx->dof;
+  const PetscScalar *coords;
+  PetscScalar       *a;
+  PetscInt           p;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(ctx->coords, &coords);CHKERRQ(ierr);
+  ierr = VecGetArray(v, &a);CHKERRQ(ierr);
+  for (p = 0; p < ctx->n; ++p) {
+    PetscInt     c = ctx->cells[p];
+    PetscScalar *x = NULL;
+    PetscReal    xir[1];
+    PetscInt     xSize, comp;
+
+    ierr = DMPlexComputeCellGeometryFEM(dm, c, NULL, &v0, &J, &invJ, &detJ);CHKERRQ(ierr);
+    PetscCheck(detJ > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT, (double) detJ, c);
+    xir[0] = invJ*PetscRealPart(coords[p] - v0);
+    ierr = DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
+    if (2*dof == xSize) {
+      for (comp = 0; comp < dof; ++comp) a[p*dof+comp] = x[0*dof+comp]*(1 - xir[0]) + x[1*dof+comp]*xir[0];
+    } else if (dof == xSize) {
+      for (comp = 0; comp < dof; ++comp) a[p*dof+comp] = x[0*dof+comp];
+    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Input closure size %" PetscInt_FMT " must be either %" PetscInt_FMT " or %" PetscInt_FMT, xSize, 2*dof, dof);
+    ierr = DMPlexVecRestoreClosure(dm, NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(ctx->coords, &coords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static inline PetscErrorCode DMInterpolate_Triangle_Private(DMInterpolationInfo ctx, DM dm, Vec xLocal, Vec v)
 {
   PetscReal      *v0, *J, *invJ, detJ;
@@ -679,8 +713,12 @@ static inline PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx,
   PetscFunctionBegin;
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   if (Nf) {
-    ierr = DMGetField(dm, 0, NULL, (PetscObject *) &fem);CHKERRQ(ierr);
-    ierr = PetscFECreateTabulation(fem, 1, 1, xir, 0, &T);CHKERRQ(ierr);
+    PetscObject  obj;
+    PetscClassId id;
+
+    ierr = DMGetField(dm, 0, NULL, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID) {fem = (PetscFE) obj; ierr = PetscFECreateTabulation(fem, 1, 1, xir, 0, &T);CHKERRQ(ierr);}
   }
   ierr = DMGetCoordinatesLocal(dm, &coordsLocal);CHKERRQ(ierr);
   ierr = DMGetCoordinateDM(dm, &dmCoord);CHKERRQ(ierr);
@@ -723,7 +761,12 @@ static inline PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx,
     ierr   = VecGetArray(ref, &xi);CHKERRQ(ierr);
     xir[0] = PetscRealPart(xi[0]);
     xir[1] = PetscRealPart(xi[1]);
-    if (4*dof != xSize) {
+    if (4*dof == xSize) {
+      for (comp = 0; comp < dof; ++comp)
+        a[p*dof+comp] = x[0*dof+comp]*(1 - xir[0])*(1 - xir[1]) + x[1*dof+comp]*xir[0]*(1 - xir[1]) + x[2*dof+comp]*xir[0]*xir[1] + x[3*dof+comp]*(1 - xir[0])*xir[1];
+    } else if (dof == xSize) {
+      for (comp = 0; comp < dof; ++comp) a[p*dof+comp] = x[0*dof+comp];
+    } else {
       PetscInt d;
 
       PetscCheck(fem, ctx->comm, PETSC_ERR_ARG_WRONG, "Cannot have a higher order interpolant if the discretization is not PetscFE");
@@ -735,9 +778,6 @@ static inline PetscErrorCode DMInterpolate_Quad_Private(DMInterpolationInfo ctx,
           a[p*dof+comp] += x[d*dof+comp]*T->T[0][d*dof+comp];
         }
       }
-    } else {
-      for (comp = 0; comp < dof; ++comp)
-        a[p*dof+comp] = x[0*dof+comp]*(1 - xir[0])*(1 - xir[1]) + x[1*dof+comp]*xir[0]*(1 - xir[1]) + x[2*dof+comp]*xir[0]*xir[1] + x[3*dof+comp]*(1 - xir[0])*xir[1];
     }
     ierr = VecRestoreArray(ref, &xi);CHKERRQ(ierr);
     ierr = DMPlexVecRestoreClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
@@ -939,9 +979,9 @@ static inline PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, 
 
     /* Can make this do all points at once */
     ierr = DMPlexVecGetClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
-    PetscCheckFalse(8*3 != coordSize,ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %D should be %d", coordSize, 8*3);
+    PetscCheck(8*3 == coordSize,ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid coordinate closure size %" PetscInt_FMT " should be %d", coordSize, 8*3);
     ierr = DMPlexVecGetClosure(dm, NULL, xLocal, c, &xSize, &x);CHKERRQ(ierr);
-    PetscCheckFalse(8*ctx->dof != xSize,ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid closure size %D should be %D", xSize, 8*ctx->dof);
+    PetscCheck((8*ctx->dof == xSize) || (ctx->dof == xSize),ctx->comm, PETSC_ERR_ARG_SIZ, "Invalid input closure size %" PetscInt_FMT " should be %" PetscInt_FMT " or %" PetscInt_FMT, xSize, 8*ctx->dof, ctx->dof);
     ierr   = SNESSetFunction(snes, NULL, NULL, vertices);CHKERRQ(ierr);
     ierr   = SNESSetJacobian(snes, NULL, NULL, NULL, vertices);CHKERRQ(ierr);
     ierr   = VecGetArray(real, &xi);CHKERRQ(ierr);
@@ -954,16 +994,20 @@ static inline PetscErrorCode DMInterpolate_Hex_Private(DMInterpolationInfo ctx, 
     xir[0] = PetscRealPart(xi[0]);
     xir[1] = PetscRealPart(xi[1]);
     xir[2] = PetscRealPart(xi[2]);
-    for (comp = 0; comp < ctx->dof; ++comp) {
-      a[p*ctx->dof+comp] =
-        x[0*ctx->dof+comp]*(1-xir[0])*(1-xir[1])*(1-xir[2]) +
-        x[3*ctx->dof+comp]*    xir[0]*(1-xir[1])*(1-xir[2]) +
-        x[2*ctx->dof+comp]*    xir[0]*    xir[1]*(1-xir[2]) +
-        x[1*ctx->dof+comp]*(1-xir[0])*    xir[1]*(1-xir[2]) +
-        x[4*ctx->dof+comp]*(1-xir[0])*(1-xir[1])*   xir[2] +
-        x[5*ctx->dof+comp]*    xir[0]*(1-xir[1])*   xir[2] +
-        x[6*ctx->dof+comp]*    xir[0]*    xir[1]*   xir[2] +
-        x[7*ctx->dof+comp]*(1-xir[0])*    xir[1]*   xir[2];
+    if (8*ctx->dof == xSize) {
+      for (comp = 0; comp < ctx->dof; ++comp) {
+        a[p*ctx->dof+comp] =
+          x[0*ctx->dof+comp]*(1-xir[0])*(1-xir[1])*(1-xir[2]) +
+          x[3*ctx->dof+comp]*    xir[0]*(1-xir[1])*(1-xir[2]) +
+          x[2*ctx->dof+comp]*    xir[0]*    xir[1]*(1-xir[2]) +
+          x[1*ctx->dof+comp]*(1-xir[0])*    xir[1]*(1-xir[2]) +
+          x[4*ctx->dof+comp]*(1-xir[0])*(1-xir[1])*   xir[2] +
+          x[5*ctx->dof+comp]*    xir[0]*(1-xir[1])*   xir[2] +
+          x[6*ctx->dof+comp]*    xir[0]*    xir[1]*   xir[2] +
+          x[7*ctx->dof+comp]*(1-xir[0])*    xir[1]*   xir[2];
+      }
+    } else {
+      for (comp = 0; comp < ctx->dof; ++comp) a[p*ctx->dof+comp] = x[0*ctx->dof+comp];
     }
     ierr = VecRestoreArray(ref, &xi);CHKERRQ(ierr);
     ierr = DMPlexVecRestoreClosure(dmCoord, NULL, coordsLocal, c, &coordSize, &vertices);CHKERRQ(ierr);
@@ -1076,11 +1120,12 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
     /* TODO Check each cell individually */
     ierr = DMPlexGetCellType(dm, ctx->cells[0], &ct);CHKERRQ(ierr);
     switch (ct) {
+      case DM_POLYTOPE_SEGMENT:       ierr = DMInterpolate_Segment_Private(ctx, dm, x, v);CHKERRQ(ierr);break;
       case DM_POLYTOPE_TRIANGLE:      ierr = DMInterpolate_Triangle_Private(ctx, dm, x, v);CHKERRQ(ierr);break;
       case DM_POLYTOPE_QUADRILATERAL: ierr = DMInterpolate_Quad_Private(ctx, dm, x, v);CHKERRQ(ierr);break;
       case DM_POLYTOPE_TETRAHEDRON:   ierr = DMInterpolate_Tetrahedron_Private(ctx, dm, x, v);CHKERRQ(ierr);break;
       case DM_POLYTOPE_HEXAHEDRON:    ierr = DMInterpolate_Hex_Private(ctx, dm, x, v);CHKERRQ(ierr);break;
-      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for cell type %s", DMPolytopeTypes[ct]);
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for cell type %s", DMPolytopeTypes[PetscMax(0, PetscMin(ct, DM_NUM_POLYTOPES))]);
     }
   }
   PetscFunctionReturn(0);

@@ -1848,19 +1848,11 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const 
         PetscInt       fdof = 0, cfdof = 0, fc, numConst = 0, fOff = 0;
 
         for (f = 0; f < len; ++f) {
-          PetscInt oldFoff = 0, oldf;
-
           ierr = PetscSectionGetFieldDof(s, p, fields[f], &fdof);CHKERRQ(ierr);
           ierr = PetscSectionGetFieldConstraintDof(s, p, fields[f], &cfdof);CHKERRQ(ierr);
           ierr = PetscSectionGetFieldConstraintIndices(s, p, fields[f], &oldIndices);CHKERRQ(ierr);
-          /* This can be sped up if we assume sorted fields */
-          for (oldf = 0; oldf < fields[f]; ++oldf) {
-            PetscInt oldfdof = 0;
-            ierr = PetscSectionGetFieldDof(s, p, oldf, &oldfdof);CHKERRQ(ierr);
-            oldFoff += oldfdof;
-          }
-          for (fc = 0; fc < cfdof; ++fc) indices[numConst+fc] = oldIndices[fc] + (fOff - oldFoff);
-          ierr = PetscSectionSetFieldConstraintIndices(*subs, p, f, &indices[numConst]);CHKERRQ(ierr);
+          ierr = PetscSectionSetFieldConstraintIndices(*subs, p, f, oldIndices);CHKERRQ(ierr);
+          for (fc = 0; fc < cfdof; ++fc) indices[numConst+fc] = oldIndices[fc] + fOff;
           numConst += cfdof;
           fOff     += fdof;
         }
