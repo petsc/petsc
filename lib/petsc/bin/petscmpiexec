@@ -47,6 +47,14 @@ if [ ! -f "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files" ]; then
 fi
 
 if [ -f makefile ]; then
+  file=`echo $1 |sed s'?^\./??g'`
+  if [ -f \#${file}.[cxF90]*\# ]; then
+    echo "Warning: ************** Emacs has a changes in the source file that have not been saved to the disk"
+  fi
+  if [ -f .${file}.[cxF90]*.swp ]; then
+    echo "Warning: ************** VIM has a changes in the source file that have not been saved to the disk"
+  fi
+
   OMAKE=`grep "OMAKE " "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | cut -f2 -d=`
   if [ "X${PETSC_ARCH}" != "X" ]; then
     pushd ${PETSC_DIR} > /dev/null
