@@ -19,28 +19,28 @@ using DefaultMemorySpace      = Kokkos::DefaultExecutionSpace::memory_space;
 /* 1 to 4D PetscScalar Kokkos Views */
 template<class MemorySpace> using PetscScalarKokkosViewType                  = Kokkos::View<PetscScalar*,MemorySpace>;
 template<class MemorySpace> using PetscScalarKokkosView1DType                = Kokkos::View<PetscScalar*,MemorySpace>;
-template<class MemorySpace> using PetscScalarKokkosView2DType                = Kokkos::View<PetscScalar**,MemorySpace>;
-template<class MemorySpace> using PetscScalarKokkosView3DType                = Kokkos::View<PetscScalar***,MemorySpace>;
-template<class MemorySpace> using PetscScalarKokkosView4DType                = Kokkos::View<PetscScalar****,MemorySpace>;
+template<class MemorySpace> using PetscScalarKokkosView2DType                = Kokkos::View<PetscScalar**,Kokkos::LayoutRight,MemorySpace>;
+template<class MemorySpace> using PetscScalarKokkosView3DType                = Kokkos::View<PetscScalar***,Kokkos::LayoutRight,MemorySpace>;
+template<class MemorySpace> using PetscScalarKokkosView4DType                = Kokkos::View<PetscScalar****,Kokkos::LayoutRight,MemorySpace>;
 
 template<class MemorySpace> using ConstPetscScalarKokkosViewType             = Kokkos::View<const PetscScalar*,MemorySpace>;
 template<class MemorySpace> using ConstPetscScalarKokkosView1DType           = Kokkos::View<const PetscScalar*,MemorySpace>;
-template<class MemorySpace> using ConstPetscScalarKokkosView2DType           = Kokkos::View<const PetscScalar**,MemorySpace>;
-template<class MemorySpace> using ConstPetscScalarKokkosView3DType           = Kokkos::View<const PetscScalar***,MemorySpace>;
-template<class MemorySpace> using ConstPetscScalarKokkosView4DType           = Kokkos::View<const PetscScalar****,MemorySpace>;
+template<class MemorySpace> using ConstPetscScalarKokkosView2DType           = Kokkos::View<const PetscScalar**,Kokkos::LayoutRight,MemorySpace>;
+template<class MemorySpace> using ConstPetscScalarKokkosView3DType           = Kokkos::View<const PetscScalar***,Kokkos::LayoutRight,MemorySpace>;
+template<class MemorySpace> using ConstPetscScalarKokkosView4DType           = Kokkos::View<const PetscScalar****,Kokkos::LayoutRight,MemorySpace>;
 
 /* 1 to 4D PetscScalar Kokkos OffsetViews */
 template<class MemorySpace> using PetscScalarKokkosOffsetViewType            = Kokkos::Experimental::OffsetView<PetscScalar*,MemorySpace>;
 template<class MemorySpace> using PetscScalarKokkosOffsetView1DType          = Kokkos::Experimental::OffsetView<PetscScalar*,MemorySpace>;
-template<class MemorySpace> using PetscScalarKokkosOffsetView2DType          = Kokkos::Experimental::OffsetView<PetscScalar**,MemorySpace>;
-template<class MemorySpace> using PetscScalarKokkosOffsetView3DType          = Kokkos::Experimental::OffsetView<PetscScalar***,MemorySpace>;
-template<class MemorySpace> using PetscScalarKokkosOffsetView4DType          = Kokkos::Experimental::OffsetView<PetscScalar****,MemorySpace>;
+template<class MemorySpace> using PetscScalarKokkosOffsetView2DType          = Kokkos::Experimental::OffsetView<PetscScalar**,Kokkos::LayoutRight,MemorySpace>;
+template<class MemorySpace> using PetscScalarKokkosOffsetView3DType          = Kokkos::Experimental::OffsetView<PetscScalar***,Kokkos::LayoutRight,MemorySpace>;
+template<class MemorySpace> using PetscScalarKokkosOffsetView4DType          = Kokkos::Experimental::OffsetView<PetscScalar****,Kokkos::LayoutRight,MemorySpace>;
 
 template<class MemorySpace> using ConstPetscScalarKokkosOffsetViewType       = Kokkos::Experimental::OffsetView<const PetscScalar*,MemorySpace>;
 template<class MemorySpace> using ConstPetscScalarKokkosOffsetView1DType     = Kokkos::Experimental::OffsetView<const PetscScalar*,MemorySpace>;
-template<class MemorySpace> using ConstPetscScalarKokkosOffsetView2DType     = Kokkos::Experimental::OffsetView<const PetscScalar**,MemorySpace>;
-template<class MemorySpace> using ConstPetscScalarKokkosOffsetView3DType     = Kokkos::Experimental::OffsetView<const PetscScalar***,MemorySpace>;
-template<class MemorySpace> using ConstPetscScalarKokkosOffsetView4DType     = Kokkos::Experimental::OffsetView<const PetscScalar****,MemorySpace>;
+template<class MemorySpace> using ConstPetscScalarKokkosOffsetView2DType     = Kokkos::Experimental::OffsetView<const PetscScalar**,Kokkos::LayoutRight,MemorySpace>;
+template<class MemorySpace> using ConstPetscScalarKokkosOffsetView3DType     = Kokkos::Experimental::OffsetView<const PetscScalar***,Kokkos::LayoutRight,MemorySpace>;
+template<class MemorySpace> using ConstPetscScalarKokkosOffsetView4DType     = Kokkos::Experimental::OffsetView<const PetscScalar****,Kokkos::LayoutRight,MemorySpace>;
 
 using PetscScalarKokkosDualView                  = Kokkos::DualView<PetscScalar*>;
 

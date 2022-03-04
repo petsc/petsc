@@ -258,6 +258,16 @@ static PetscErrorCode VecSetOps_MPIKokkos(Vec v)
   PetscFunctionReturn(0);
 }
 
+/*MC
+   VECMPIKOKKOS - VECMPIKOKKOS = "mpikokkos" - The basic parallel vector, modified to use Kokkos
+
+   Options Database Keys:
+. -vec_type mpikokkos - sets the vector type to VECMPIKOKKOS during a call to VecSetFromOptions()
+
+  Level: beginner
+
+.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMPIKokkosWithArray(), VECMPI, VecType, VecCreateMPI()
+M*/
 PetscErrorCode VecCreate_MPIKokkos(Vec v)
 {
   PetscErrorCode ierr;
@@ -393,6 +403,16 @@ PetscErrorCode  VecCreateMPIKokkosWithArrays_Private(MPI_Comm comm,PetscInt bs,P
   PetscFunctionReturn(0);
 }
 
+/*MC
+   VECKOKKOS - VECKOKKOS = "kokkos" - The basic vector, modified to use Kokkos
+
+   Options Database Keys:
+. -vec_type kokkos - sets the vector type to VECKOKKOS during a call to VecSetFromOptions()
+
+  Level: beginner
+
+.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMPIKokkosWithArray(), VECMPI, VecType, VecCreateMPI()
+M*/
 PetscErrorCode VecCreate_Kokkos(Vec v)
 {
   PetscErrorCode ierr;

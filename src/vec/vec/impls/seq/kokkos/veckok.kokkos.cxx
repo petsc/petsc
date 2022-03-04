@@ -419,7 +419,7 @@ PetscErrorCode VecCopy_SeqKokkos(Vec xin,Vec yin)
       /* y is also a VecKokkos */
       Vec_Kokkos *ykok = static_cast<Vec_Kokkos*>(yin->spptr);
       /* Kokkos rule: if x's host has newer data, it will copy to y's host view; otherwise to y's device view
-        In case x's host ins newer, y's device is newer, it will error (though should not, I think). So we just
+        In case x's host is newer, y's device is newer, it will error (though should not, I think). So we just
         clear y's sync state.
        */
       ykok->v_dual.clear_sync_state();
@@ -1115,6 +1115,16 @@ static PetscErrorCode VecSetOps_SeqKokkos(Vec v)
   PetscFunctionReturn(0);
 }
 
+/*MC
+   VECSEQKOKKOS - VECSEQKOKKOS = "seqkokkos" - The basic sequential vector, modified to use Kokkos
+
+   Options Database Keys:
+. -vec_type seqkokkos - sets the vector type to VECSEQKOKKOS during a call to VecSetFromOptions()
+
+  Level: beginner
+
+.seealso: VecCreate(), VecSetType(), VecSetFromOptions(), VecCreateMPIWithArray(), VECMPI, VecType, VecCreateMPI()
+M*/
 PetscErrorCode VecCreate_SeqKokkos(Vec v)
 {
   PetscErrorCode ierr;

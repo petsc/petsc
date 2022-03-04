@@ -1375,7 +1375,18 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat A, MatType mtype,
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatSetValuesCOO_C",          MatSetValuesCOO_MPIAIJKokkos);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+/*MC
+   MATSMPIAIJKOKKOS - MATAIJKOKKOS = "(mpi)aijkokkos" - A matrix type to be used for sparse matrices with Kokkos
 
+   A matrix type type using Kokkos-Kernels CrsMatrix type for portability across different device types
+
+   Options Database Keys:
+.  -mat_type aijkokkos - sets the matrix type to "aijkokkos" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MatCreateAIJKokkos(), MATSEQAIJKOKKOS
+M*/
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJKokkos(Mat A)
 {
   PetscErrorCode ierr;

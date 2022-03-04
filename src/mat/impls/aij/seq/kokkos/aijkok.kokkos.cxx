@@ -555,6 +555,18 @@ static PetscErrorCode MatDestroy_SeqAIJKokkos(Mat A)
   PetscFunctionReturn(0);
 }
 
+/*MC
+   MATSEQAIJKOKKOS - MATAIJKOKKOS = "(seq)aijkokkos" - A matrix type to be used for sparse matrices with Kokkos
+
+   A matrix type type using Kokkos-Kernels CrsMatrix type for portability across different device types
+
+   Options Database Keys:
+.  -mat_type aijkokkos - sets the matrix type to "aijkokkos" during a call to MatSetFromOptions()
+
+  Level: beginner
+
+.seealso: MatCreateSeqAIJKokkos(), MATMPIAIJKOKKOS
+M*/
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJKokkos(Mat A)
 {
   PetscErrorCode ierr;
@@ -1729,7 +1741,7 @@ static PetscErrorCode MatFactorGetSolverType_seqaij_kokkos_device(Mat A,MatSolve
 
   Level: beginner
 
-.seealso: PCFactorSetMatSolverType(), MatSolverType, MatCreateSeqAIJKokkos(), MATAIJKOKKOS, MatCreateAIJKokkos(), MatKokkosSetFormat(), MatKokkosStorageFormat, MatKokkosFormatOperation
+.seealso: PCFactorSetMatSolverType(), MatSolverType, MatCreateSeqAIJKokkos(), MATAIJKOKKOS, MatKokkosSetFormat(), MatKokkosStorageFormat, MatKokkosFormatOperation
 M*/
 PETSC_EXTERN PetscErrorCode MatGetFactor_SeqAIJKokkos_Kokkos(Mat A,MatFactorType ftype,Mat *B) /* MatGetFactor_<MatType>_<MatSolverType> */
 {
