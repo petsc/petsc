@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '3972301c607e94e4250aff5cd9c964b1251c7a88' # jolivet/fix-compilation-3.17.0-ter feb-14-2022
+    self.gitcommit        = '4cd500fcb44f0ef5cdc67df5cbe93dd7c2764f81' # jolivet/fix-compilation-3.17.0 mar-23-2022
     self.download         = ['git://https://github.com/prj-/ParMmg.git','https://github.com/prj-/ParMmg/archive/'+self.gitcommit+'.tar.gz']
     self.versionname      = 'PMMG_VERSION_RELEASE'
     self.includes         = ['parmmg/libparmmg.h']
