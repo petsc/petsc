@@ -70,17 +70,17 @@ if [ -f makefile ]; then
   fi
 fi
 
-MPI_BUILD_HOME=$(grep MPI_BUILD_HOME "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | grep -v mpiexec | grep -v include | grep -v lib | grep -v "#MPI_HOME" | cut -f2 -d=)
-MPI_HOME=$(grep "MPI_HOME " "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | grep -v build | grep -v include | grep -v "#MPI_HOME" | grep -v mpe  | cut -f2 -d=)
-run=$(grep MPIEXEC "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | grep -v "#MPIEXEC" | cut -f2 -d=)
+MPI_BUILD_HOME=`grep MPI_BUILD_HOME "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | grep -v mpiexec | grep -v include | grep -v lib | grep -v "#MPI_HOME" | cut -f2 -d=`
+MPI_HOME=`grep "MPI_HOME " "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | grep -v build | grep -v include | grep -v "#MPI_HOME" | grep -v mpe  | cut -f2 -d=`
+run=`grep MPIEXEC "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables" | grep -v "#MPIEXEC" | cut -f2 -d=`
 
-trun=$(echo ${run} | sed -e "s,\$MPI_BUILD_HOME,${MPI_BUILD_HOME},")
-nrun=$(echo ${trun} | sed -e "s,\$MPI_HOME,${MPI_HOME},")
-qrun=$(echo ${nrun} | sed -e "s,\$PETSC_DIR,${PETSC_DIR},")
-qrun=$(echo ${qrun} | sed -e "s,\${PETSC_DIR},${PETSC_DIR},")
+trun=`echo ${run} | sed -e "s,\\$MPI_BUILD_HOME,${MPI_BUILD_HOME},"`
+nrun=`echo ${trun} | sed -e "s,\\$MPI_HOME,${MPI_HOME},"`
+qrun=`echo ${nrun} | sed -e "s,\\$PETSC_DIR,${PETSC_DIR},"`
+qrun=`echo ${qrun} | sed -e "s,\\${PETSC_DIR},${PETSC_DIR},"`
 
 if [ ${valgrind} = "1" ]; then
-  VALGRIND_CMD=$(which valgrind)
+  VALGRIND_CMD=`which valgrind`
   VALGRIND_OPTIONS="-q --tool=memcheck  --num-callers=20 --track-origins=yes --suppressions=${PETSC_DIR}/share/petsc/valgrind/petsc-val.supp --error-exitcode=10 ${PETSCVALGRIND_OPTIONS}"
   if [ ${debugger} = "1" ]; then
     VALGRIND_CMD="xterm -e ${VALGRIND_CMD}"
