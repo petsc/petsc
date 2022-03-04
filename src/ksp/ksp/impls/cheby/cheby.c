@@ -48,8 +48,17 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
   PetscObjectState amatstate, pmatstate;
   PetscFunctionBegin;
   ierr = KSPSetWorkVecs(ksp,3);CHKERRQ(ierr);
-  if ((cheb->emin == 0. || cheb->emax == 0.) && !cheb->kspest) { /* We need to estimate eigenvalues */
-    ierr = KSPChebyshevEstEigSet(ksp,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  if (cheb->emin == 0. || cheb->emax == 0.) { // User did not specify eigenvalues
+    PC pc;
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)pc,PCJACOBI,&flg);CHKERRQ(ierr);
+    if (!flg) { // Provided estimates are only relevant for Jacobi
+      cheb->emax_provided = 0;
+      cheb->emin_provided = 0;
+    }
+    if (!cheb->kspest) { /* We need to estimate eigenvalues */
+      ierr = KSPChebyshevEstEigSet(ksp,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    }
   }
   if (cheb->kspest) {
     ierr = KSPGetOperators(ksp,&Amat,&Pmat);CHKERRQ(ierr);

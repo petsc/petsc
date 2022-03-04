@@ -49,7 +49,6 @@ typedef struct gamg_TAG {
   char       esteig_type[32];
   PetscInt   esteig_max_it;
   PetscBool  use_sa_esteig;
-  PetscBool  use_sa_esteig_set;
   PetscReal  emin,emax;
 } PC_GAMG;
 

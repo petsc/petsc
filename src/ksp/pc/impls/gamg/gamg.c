@@ -789,22 +789,16 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
           KSP_Chebyshev *cheb = (KSP_Chebyshev*)smoother->data;
 
           // The command line will override these settings because KSPSetFromOptions is called in PCSetUp_MG
-          if (mg->max_eigen_DinvA[level] > 0 && cheb->emax == 0.) {
-            PC        subpc;
-            PetscBool isjac;
-            ierr = KSPGetPC(smoother, &subpc);CHKERRQ(ierr);
-            ierr = PetscObjectTypeCompare((PetscObject)subpc,PCJACOBI,&isjac);CHKERRQ(ierr);
-            if (isjac || pc_gamg->use_sa_esteig_set) {
-              // SA uses Jacobi for P; we use SA estimates if the smoother is also Jacobi or if the user explicitly requested it.
-              // TODO: This should test whether it's the same Jacobi variant (DIAG, ROWSUM, etc.)
-              PetscReal emax,emin;
+          if (mg->max_eigen_DinvA[level] > 0) {
+            // SA uses Jacobi for P; we use SA estimates if the smoother is also Jacobi or if the user explicitly requested it.
+            // TODO: This should test whether it's the same Jacobi variant (DIAG, ROWSUM, etc.)
+            PetscReal emax,emin;
 
-              emin = mg->min_eigen_DinvA[level];
-              emax = mg->max_eigen_DinvA[level];
-              ierr = PetscInfo(pc,"PCSetUp_GAMG: call KSPChebyshevSetEigenvalues on level %D (N=%D) with emax = %g emin = %g\n",level,Aarr[level]->rmap->N,(double)emax,(double)emin);CHKERRQ(ierr);
-              cheb->emin_provided = emin;
-              cheb->emax_provided = emax;
-            }
+            emin = mg->min_eigen_DinvA[level];
+            emax = mg->max_eigen_DinvA[level];
+            ierr = PetscInfo(pc,"PCSetUp_GAMG: call KSPChebyshevSetEigenvalues on level %D (N=%D) with emax = %g emin = %g\n",level,Aarr[level]->rmap->N,(double)emax,(double)emin);CHKERRQ(ierr);
+            cheb->emin_provided = emin;
+            cheb->emax_provided = emax;
           }
         }
       }
@@ -1029,7 +1023,8 @@ static PetscErrorCode PCGAMGSetEstEigKSPMaxIt_GAMG(PC pc, PetscInt n)
    Smoothed aggregation constructs the smoothed prolongator $P = (I - \omega D^{-1} A) T$ where $T$ is the tentative prolongator and $D$ is the diagonal of $A$.
    Eigenvalue estimates (based on a few CG or GMRES iterations) are computed to choose $\omega$ so that this is a stable smoothing operation.
    If Chebyshev with Jacobi (diagonal) preconditioning is used for smoothing, then the eigenvalue estimates can be reused.
-   This option became default in PETSc 3.17 when the smoother uses Jacobi, otherwise it's off by default.
+   This option is only used when the smoother uses Jacobi, and should be turned off if a different PCJacobiType is used.
+   It became default in PETSc 3.17.
 
    Level: advanced
 
@@ -1052,7 +1047,6 @@ static PetscErrorCode PCGAMGSetUseSAEstEig_GAMG(PC pc, PetscBool n)
 
   PetscFunctionBegin;
   pc_gamg->use_sa_esteig = n;
-  pc_gamg->use_sa_esteig_set = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -1632,8 +1626,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PetscOptionItems *PetscOptionsObject,PC pc)
     ierr = PCGAMGSetEstEigKSPType(pc,tname);CHKERRQ(ierr);
   }
   ierr = PetscOptionsBool("-pc_gamg_repartition","Repartion coarse grids","PCGAMGSetRepartition",pc_gamg->repart,&pc_gamg->repart,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-pc_gamg_use_sa_esteig","Use eigen estimate from Smoothed aggregation for smoother","PCGAMGSetUseSAEstEig",pc_gamg->use_sa_esteig,&pc_gamg->use_sa_esteig,&flag);CHKERRQ(ierr);
-  if (flag) pc_gamg->use_sa_esteig_set = PETSC_TRUE;
+  ierr = PetscOptionsBool("-pc_gamg_use_sa_esteig","Use eigen estimate from Smoothed aggregation for smoother","PCGAMGSetUseSAEstEig",pc_gamg->use_sa_esteig,&pc_gamg->use_sa_esteig,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_gamg_reuse_interpolation","Reuse prolongation operator","PCGAMGReuseInterpolation",pc_gamg->reuse_prol,&pc_gamg->reuse_prol,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_gamg_asm_use_agg","Use aggregation aggregates for ASM smoother","PCGAMGASMSetUseAggs",pc_gamg->use_aggs_in_asm,&pc_gamg->use_aggs_in_asm,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_gamg_use_parallel_coarse_grid_solver","Use parallel coarse grid solver (otherwise put last grid on one process)","PCGAMGSetUseParallelCoarseGridSolve",pc_gamg->use_parallel_coarse_grid_solver,&pc_gamg->use_parallel_coarse_grid_solver,NULL);CHKERRQ(ierr);
