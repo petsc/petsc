@@ -66,7 +66,17 @@ int main(int argc,char **argv)
   PetscCheckFalse(!isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatPtAP(reuse): C != B^T*A*B");
 
   ierr = MatDestroy(&C);CHKERRQ(ierr);
-  ierr = MatDestroy(&B);CHKERRQ(ierr);
+
+  /* Test MatPtAP with A as a dense matrix */
+  {
+    Mat Adense;
+    ierr = MatConvert(A,MATDENSE,MAT_INITIAL_MATRIX,&Adense);CHKERRQ(ierr);
+    ierr = MatPtAP(Adense,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+
+    ierr = MatPtAPMultEqual(Adense,B,C,10,&isequal);CHKERRQ(ierr);
+    PetscCheck(isequal,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"MatPtAP(reuse): C != B^T*Adense*B");
+    ierr = MatDestroy(&Adense);CHKERRQ(ierr);
+  }
 
   if (size == 1) {
     /* A test contributed by Tobias Neckel <neckel@in.tum.de> */
