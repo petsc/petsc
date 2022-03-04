@@ -898,6 +898,12 @@
        PetscErrorCode :: ierr
       end subroutine
 
+      subroutine MatDestroy(m,ierr)
+       import tMat
+       Mat m
+       PetscErrorCode :: ierr
+      end subroutine MatDestroy
+
       end interface
 
 ! revert MAT_INFO_SIZE and MAT_FACTORINFO_SIZE defines

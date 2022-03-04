@@ -286,6 +286,12 @@
           PetscErrorCode ierr
         End Subroutine
 
+        Subroutine VecDestroy(a,ierr)
+          import tVec
+          Vec a
+          PetscErrorCode ierr
+        End Subroutine
+
         subroutine VecSetType(a,b,ierr)
          import tVec
          Vec a
