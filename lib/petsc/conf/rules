@@ -552,7 +552,7 @@ exampleconcepts:
 # which is processed to generate HTML.
 #
 manimplementations:
-	-@git grep "struct\s\+_p_[^\s]\+.*{" -- *.cu *.c *.h *.cxx | grep -v -e ";" -e "/tests/" -e "/tutorials/" > implsClassAll.txt ; \
+	-@git grep "struct\s\+_[pn]_[^\s]\+.*{" -- *.cu *.c *.h *.cxx | grep -v -e ";" -e "/tests/" -e "/tutorials/" > implsClassAll.txt ; \
   git grep -n "^\(static \)\?\(PETSC_EXTERN \)\?\(PETSC_INTERN \)\?\(extern \)\?PetscErrorCode \+[^_ ]\+_[^_ ]\+(" -- '*/impls/*.c' '*/impls/*.cu' '*/impls/*.cxx' '*/impls/*.h' | grep -v -e ";" -e "_[Pp]rivate" > implsFuncAll.txt ; \
   for i in ${LOC}/docs/manualpages/*/*.html foo; do \
        if [ "$$i" != "foo" ] ; then \
@@ -602,7 +602,13 @@ simplehtml: chk_c2html
               idir=`dirname $$i`;\
               if [ ! -d $${loc}/$${idir} ]; then ${MKDIR} -p $${loc}/$${idir}; fi ; \
               ${RM} $${loc}/$$i.html; \
-              sed -e "s/CHKERRMPI(ierr);//g" -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g" -e "s/ierr [ ]*= //g" -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
+              sed -E -e "s/CHKERR[A-Z_]+\((.*)\)\;/\1;/g" \
+                     -e "s/\;ierr\;/;/g" \
+                     -e "/\s*PetscFunctionBegin\;/d" \
+                     -e "s/PetscFunctionReturn\((\w+)\)/return \1/g" \
+                     -e "s/PetscFunctionReturnVoid\(\)/return/g" \
+                     -e "s/ierr\s+=\s+//g" \
+                     -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
               awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }' > $${loc}/$$i.html ; \
 	    fi; \
          done
@@ -629,7 +635,13 @@ html: chk_c2html
               fi;\
               ${RM} $${loc}/$$i.html; \
               echo "<center><a href=\"https://gitlab.com/petsc/petsc/-/blob/$$current_git_sha/$$rel_dir/$$i\">Actual source code: $${iroot}</a></center><br>" > $${loc}/$$i.html; \
-              sed -e "s/CHKERRMPI(ierr);//g" -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g" -e "s/ierr [ ]*= //g" -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
+              sed -E -e "s/CHKERR[A-Z_]+\((.*)\)\;/\1;/g" \
+                     -e "s/\;ierr\;/;/g" \
+                     -e "/\s*PetscFunctionBegin\;/d" \
+                     -e "s/PetscFunctionReturn\((\w+)\)/return \1/g" \
+                     -e "s/PetscFunctionReturnVoid\(\)/return/g" \
+                     -e "s/ierr\s+=\s+//g" \
+                     -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
               awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }' | ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/fixinclude.py $$i $${PETSC_DIR} | \
               egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C )' | \
               ${MAPNAMES} -map $$htmlmap_tmp -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
