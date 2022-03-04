@@ -9,22 +9,22 @@ Number of SNES iterations = 2
 ./ex19 on a arch-ubuntu-mb-double-extra-opt named pdsbox with 4 processors, by patrick Fri Jul 27 15:30:00 2018
 Using Petsc Development GIT revision: v3.9.3-921-gfc2aa81  GIT Date: 2018-07-27 11:07:58 +0200
 
-                         Max       Max/Min     Avg       Total 
+                         Max       Max/Min     Avg       Total
 Time (sec):           1.200e+00     1.000   1.200e+00
 Objects:              9.900e+01     1.000   9.900e+01
-Flop:                 9.349e+08     1.042   9.158e+08  3.663e+09
-Flop/sec:             7.789e+08     1.042   7.631e+08  3.053e+09
-MPI Messages:         1.453e+03     1.000   1.453e+03  5.811e+03
-MPI Message Lengths:  2.266e+06     1.021   1.544e+03  8.972e+06
+Flops:                9.349e+08     1.042   9.158e+08  3.663e+09
+Flops/sec:            7.789e+08     1.042   7.631e+08  3.053e+09
+MPI Msg Count:        1.453e+03     1.000   1.453e+03  5.811e+03
+MPI Msg Len (bytes):  2.266e+06     1.021   1.544e+03  8.972e+06
 MPI Reductions:       1.535e+03     1.000
 
 Flop counting convention: 1 flop = 1 real number operation of type (multiply/divide/add/subtract)
-                            e.g., VecAXPY() for real vectors of length N --> 2N flop
-                            and VecAXPY() for complex vectors of length N --> 8N flop
+                            e.g., VecAXPY() for real vectors of length N --> 2N flops
+                            and VecAXPY() for complex vectors of length N --> 8N flops
 
 Summary of Stages:   ----- Time ------  ----- Flop ------  --- Messages ---  -- Message Lengths --  -- Reductions --
-                        Avg     %Total     Avg     %Total    Count   %Total     Avg         %Total    Count   %Total 
- 0:      Main Stage: 1.2001e+00 100.0%  3.6633e+09 100.0%  5.811e+03 100.0%  1.544e+03      100.0%  1.528e+03  99.5% 
+                        Avg     %Total     Avg     %Total    Count   %Total     Avg         %Total    Count   %Total
+ 0:      Main Stage: 1.2001e+00 100.0%  3.6633e+09 100.0%  5.811e+03 100.0%  1.544e+03      100.0%  1.528e+03  99.5%
 
 ------------------------------------------------------------------------------------------------------------------------
 See the 'Profiling' chapter of the users' manual for details on interpreting output.
@@ -124,14 +124,14 @@ Compiled with full precision matrices (default)
 sizeof(short) 2 sizeof(int) 4 sizeof(long) 8 sizeof(void*) 8 sizeof(PetscScalar) 8 sizeof(PetscInt) 4
 Configure options: PETSC_DIR=/home/patrick/petsc-mb PETSC_ARCH=arch-ubuntu-mb-double-extra-opt --with-debugging=0 --with-precision=double --with-scalar-type=real --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-mpich --COPTFLAGS="-g -O3 -march=native " --CXXOPTFLAGS="-g -O3 -march=native " --FOPTFLAGS="-g -O3 -march=native " --download-c2html --download-suitesparse --download-yaml --download-hdf5 --download-scalapack --download-metis --download-parmetis --download-mumps --download-superlu_dist --download-triangle --download-ctetgen --download-sundials --download-ml --download-exodusii --download-hdf5 --download-netcdf --download-pnetcdf
 -----------------------------------------
-Libraries compiled on 2018-07-27 13:01:14 on pdsbox 
+Libraries compiled on 2018-07-27 13:01:14 on pdsbox
 Machine characteristics: Linux-4.13.0-39-generic-x86_64-with-Ubuntu-16.04-xenial
 Using PETSc directory: /home/patrick/petsc-mb
 Using PETSc arch: arch-ubuntu-mb-double-extra-opt
 -----------------------------------------
 
-Using C compiler: /home/patrick/petsc-mb/arch-ubuntu-mb-double-extra-opt/bin/mpicc    -Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fvisibility=hidden  
-Using Fortran compiler: /home/patrick/petsc-mb/arch-ubuntu-mb-double-extra-opt/bin/mpif90   -Wall -ffree-line-length-0 -Wno-unused-dummy-argument    
+Using C compiler: /home/patrick/petsc-mb/arch-ubuntu-mb-double-extra-opt/bin/mpicc    -Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fvisibility=hidden
+Using Fortran compiler: /home/patrick/petsc-mb/arch-ubuntu-mb-double-extra-opt/bin/mpif90   -Wall -ffree-line-length-0 -Wno-unused-dummy-argument
 -----------------------------------------
 
 Using include paths: -I/home/patrick/petsc-mb/include -I/home/patrick/petsc-mb/arch-ubuntu-mb-double-extra-opt/include
