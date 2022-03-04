@@ -281,7 +281,7 @@ PETSC_EXTERN PetscErrorCode (*PetscLogPLE)(PetscLogEvent,int,PetscObject,PetscOb
 PETSC_EXTERN PetscErrorCode (*PetscLogPHC)(PetscObject);
 PETSC_EXTERN PetscErrorCode (*PetscLogPHD)(PetscObject);
 
-#define PetscLogObjectParents(p,n,d)  0;do{for (int _i=0; _i<(n); ++_i) CHKERRQ(PetscLogObjectParent((PetscObject)(p),(PetscObject)(d)[_i]));}while (0)
+#define PetscLogObjectParents(p,n,d)  PetscMacroReturnStandard(for (int _i=0; _i<(n); ++_i) CHKERRQ(PetscLogObjectParent((PetscObject)(p),(PetscObject)(d)[_i]));)
 #define PetscLogObjectCreate(h)      ((PetscLogPHC) ? (*PetscLogPHC)((PetscObject)(h)) : 0)
 #define PetscLogObjectDestroy(h)     ((PetscLogPHD) ? (*PetscLogPHD)((PetscObject)(h)) : 0)
 PETSC_EXTERN PetscErrorCode PetscLogObjectState(PetscObject, const char[], ...) PETSC_ATTRIBUTE_FORMAT(2,3);

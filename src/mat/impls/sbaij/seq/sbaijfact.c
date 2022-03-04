@@ -261,7 +261,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const M
       i       = *(aj + ai[k] + j);
       cols[j] = i;
     }
-    CHKERRQ(PetscLLAdd(ncols,cols,mbs,nlnk,lnk,lnkbt));
+    CHKERRQ(PetscLLAdd(ncols,cols,mbs,&nlnk,lnk,lnkbt));
     nzk += nlnk;
 
     /* update lnk by computing fill-in for each pivot row to be merged in */
@@ -274,7 +274,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const M
       jmax   = ui[prow+1];
       ncols  = jmax-jmin;
       uj_ptr = ui_ptr[prow] + jmin - ui[prow]; /* points to the 2nd nzero entry in U(prow,k:mbs-1) */
-      CHKERRQ(PetscLLAddSorted(ncols,uj_ptr,mbs,nlnk,lnk,lnkbt));
+      CHKERRQ(PetscLLAddSorted(ncols,uj_ptr,mbs,&nlnk,lnk,lnkbt));
       nzk   += nlnk;
 
       /* update il and jl for prow */
@@ -434,7 +434,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm
       i       = *(aj + ai[rip[k]] + j);
       cols[j] = rip[i];
     }
-    CHKERRQ(PetscLLAdd(ncols,cols,mbs,nlnk,lnk,lnkbt));
+    CHKERRQ(PetscLLAdd(ncols,cols,mbs,&nlnk,lnk,lnkbt));
     nzk += nlnk;
 
     /* update lnk by computing fill-in for each pivot row to be merged in */
@@ -447,7 +447,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm
       jmax   = ui[prow+1];
       ncols  = jmax-jmin;
       uj_ptr = ui_ptr[prow] + jmin - ui[prow]; /* points to the 2nd nzero entry in U(prow,k:mbs-1) */
-      CHKERRQ(PetscLLAddSorted(ncols,uj_ptr,mbs,nlnk,lnk,lnkbt));
+      CHKERRQ(PetscLLAddSorted(ncols,uj_ptr,mbs,&nlnk,lnk,lnkbt));
       nzk   += nlnk;
 
       /* update il and jl for prow */
@@ -461,8 +461,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm
 
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nzk) {
-      i    = mbs - k + 1; /* num of unfactored rows */
-      i    = PetscMin(PetscIntMultTruncate(i,nzk), PetscIntMultTruncate(i,i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
+      i = mbs - k + 1;          /* num of unfactored rows */
+      i = PetscMin(PetscIntMultTruncate(i,nzk), PetscIntMultTruncate(i,i-1)); /* i*nzk, i*(i-1): estimated and max additional space needed */
       CHKERRQ(PetscFreeSpaceGet(i,&current_space));
       reallocs++;
     }

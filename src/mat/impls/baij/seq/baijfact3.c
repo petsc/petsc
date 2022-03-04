@@ -200,9 +200,9 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   PetscBool          missing;
 
   PetscFunctionBegin;
-  PetscCheckFalse(A->rmap->N != A->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix must be square");
+  PetscCheck(A->rmap->N == A->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix must be square");
   CHKERRQ(MatMissingDiagonal(A,&missing,&i));
-  PetscCheckFalse(missing,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %" PetscInt_FMT,i);
+  PetscCheck(!missing,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %" PetscInt_FMT,i);
 
   if (bs>1) {  /* check shifttype */
     PetscCheckFalse(info->shifttype == MAT_SHIFT_NONZERO || info->shifttype == MAT_SHIFT_POSITIVE_DEFINITE,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only MAT_SHIFT_NONE and MAT_SHIFT_INBLOCKS are supported for BAIJ matrix");
@@ -234,7 +234,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
     nzi = 0;
     nnz = ai[r[i]+1] - ai[r[i]];
     ajtmp = aj + ai[r[i]];
-    CHKERRQ(PetscLLAddPerm(nnz,ajtmp,ic,n,nlnk,lnk,lnkbt));
+    CHKERRQ(PetscLLAddPerm(nnz,ajtmp,ic,n,&nlnk,lnk,lnkbt));
     nzi  += nlnk;
 
     /* add pivot rows into linked list */
@@ -242,7 +242,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
     while (row < i) {
       nzbd  = bdiag[row] + 1;   /* num of entries in the row with column index <= row */
       ajtmp = bi_ptr[row] + nzbd;   /* points to the entry next to the diagonal */
-      CHKERRQ(PetscLLAddSortedLU(ajtmp,row,nlnk,lnk,lnkbt,i,nzbd,im));
+      CHKERRQ(PetscLLAddSortedLU(ajtmp,row,&nlnk,lnk,lnkbt,i,nzbd,im));
       nzi  += nlnk;
       row   = lnk[row];
     }
@@ -359,9 +359,9 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
   PetscBool          missing;
 
   PetscFunctionBegin;
-  PetscCheckFalse(A->rmap->N != A->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix must be square");
+  PetscCheck(A->rmap->N == A->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"matrix must be square");
   CHKERRQ(MatMissingDiagonal(A,&missing,&i));
-  PetscCheckFalse(missing,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %" PetscInt_FMT,i);
+  PetscCheck(!missing,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %" PetscInt_FMT,i);
 
   CHKERRQ(ISInvertPermutation(iscol,PETSC_DECIDE,&isicol));
   CHKERRQ(ISGetIndices(isrow,&r));
@@ -389,7 +389,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
     nzi = 0;
     nnz = ai[r[i]+1] - ai[r[i]];
     ajtmp = aj + ai[r[i]];
-    CHKERRQ(PetscLLAddPerm(nnz,ajtmp,ic,n,nlnk,lnk,lnkbt));
+    CHKERRQ(PetscLLAddPerm(nnz,ajtmp,ic,n,&nlnk,lnk,lnkbt));
     nzi  += nlnk;
 
     /* add pivot rows into linked list */
@@ -397,7 +397,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol
     while (row < i) {
       nzbd  = bdiag[row] - bi[row] + 1;   /* num of entries in the row with column index <= row */
       ajtmp = bi_ptr[row] + nzbd;   /* points to the entry next to the diagonal */
-      CHKERRQ(PetscLLAddSortedLU(ajtmp,row,nlnk,lnk,lnkbt,i,nzbd,im));
+      CHKERRQ(PetscLLAddSortedLU(ajtmp,row,&nlnk,lnk,lnkbt,i,nzbd,im));
       nzi  += nlnk;
       row   = lnk[row];
     }

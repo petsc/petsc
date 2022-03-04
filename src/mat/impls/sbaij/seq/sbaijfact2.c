@@ -2411,7 +2411,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
       ncols = ai[k+1] - ai[k];
       PetscCheck(ncols,PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Empty row %" PetscInt_FMT " in matrix ",k);
       cols = aj+ai[k];
-      CHKERRQ(PetscIncompleteLLInit(ncols,cols,am,rip,nlnk,lnk,lnk_lvl,lnkbt));
+      CHKERRQ(PetscIncompleteLLInit(ncols,cols,am,rip,&nlnk,lnk,lnk_lvl,lnkbt));
       nzk += nlnk;
 
       /* update lnk by computing fill-in for each pivot row to be merged in */
@@ -2429,7 +2429,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFac
         cols = uj_ptr[prow] + i;  /* points to the 2nd nzero entry in U(prow,k:am-1) */
         uj   = uj_lvl_ptr[prow] + i;  /* levels of cols */
         j    = *(uj - 1);
-        CHKERRQ(PetscICCLLAddSorted(ncols,cols,levels,uj,am,nlnk,lnk,lnk_lvl,lnkbt,j));
+        CHKERRQ(PetscICCLLAddSorted(ncols,cols,levels,uj,am,&nlnk,lnk,lnk_lvl,lnkbt,j));
         nzk += nlnk;
 
         /* update il and jl for prow */
@@ -2610,7 +2610,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
       nzk   = 0;
       ncols = ai[rip[k]+1] - ai[rip[k]];
       cols  = aj+ai[rip[k]];
-      CHKERRQ(PetscIncompleteLLInit(ncols,cols,am,rip,nlnk,lnk,lnk_lvl,lnkbt));
+      CHKERRQ(PetscIncompleteLLInit(ncols,cols,am,rip,&nlnk,lnk,lnk_lvl,lnkbt));
       nzk  += nlnk;
 
       /* update lnk by computing fill-in for each pivot row to be merged in */
@@ -2627,7 +2627,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_inplace(Mat fact,Mat A,IS perm,cons
         cols     = uj_ptr[prow] + i; /* points to the 2nd nzero entry in U(prow,k:am-1) */
         j        = *(uj_lvl_ptr[prow] + i - 1);
         cols_lvl = uj_lvl_ptr[prow]+i;
-        CHKERRQ(PetscICCLLAddSorted(ncols,cols,levels,cols_lvl,am,nlnk,lnk,lnk_lvl,lnkbt,j));
+        CHKERRQ(PetscICCLLAddSorted(ncols,cols,levels,cols_lvl,am,&nlnk,lnk,lnk_lvl,lnkbt,j));
         nzk     += nlnk;
 
         /* update il and jl for prow */

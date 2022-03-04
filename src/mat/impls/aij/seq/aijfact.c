@@ -181,7 +181,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,
     nzi = 0;
     nnz = ai[r[i]+1] - ai[r[i]];
     ajtmp = aj + ai[r[i]];
-    CHKERRQ(PetscLLAddPerm(nnz,ajtmp,ic,n,nlnk,lnk,lnkbt));
+    CHKERRQ(PetscLLAddPerm(nnz,ajtmp,ic,n,&nlnk,lnk,lnkbt));
     nzi  += nlnk;
 
     /* add pivot rows into linked list */
@@ -189,7 +189,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B,Mat A,IS isrow,IS iscol,
     while (row < i) {
       nzbd  = bdiag[row] - bi[row] + 1;   /* num of entries in the row with column index <= row */
       ajtmp = bi_ptr[row] + nzbd;   /* points to the entry next to the diagonal */
-      CHKERRQ(PetscLLAddSortedLU(ajtmp,row,nlnk,lnk,lnkbt,i,nzbd,im));
+      CHKERRQ(PetscLLAddSortedLU(ajtmp,row,&nlnk,lnk,lnkbt,i,nzbd,im));
       nzi  += nlnk;
       row   = lnk[row];
     }
@@ -329,7 +329,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
     nzi = 0;
     nnz = ai[r[i]+1] - ai[r[i]];
     ajtmp = aj + ai[r[i]];
-    CHKERRQ(PetscLLAddPerm(nnz,ajtmp,ic,n,nlnk,lnk,lnkbt));
+    CHKERRQ(PetscLLAddPerm(nnz,ajtmp,ic,n,&nlnk,lnk,lnkbt));
     nzi  += nlnk;
 
     /* add pivot rows into linked list */
@@ -337,7 +337,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
     while (row < i) {
       nzbd  = bdiag[row] + 1; /* num of entries in the row with column index <= row */
       ajtmp = bi_ptr[row] + nzbd; /* points to the entry next to the diagonal */
-      CHKERRQ(PetscLLAddSortedLU(ajtmp,row,nlnk,lnk,lnkbt,i,nzbd,im));
+      CHKERRQ(PetscLLAddSortedLU(ajtmp,row,&nlnk,lnk,lnkbt,i,nzbd,im));
       nzi  += nlnk;
       row   = lnk[row];
     }
@@ -1714,7 +1714,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
     PetscCheckFalse(!nnz,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %" PetscInt_FMT " in permuted ordering %" PetscInt_FMT,r[i],i);
     cols   = aj + ai[r[i]];
     lnk[i] = -1; /* marker to indicate if diagonal exists */
-    CHKERRQ(PetscIncompleteLLInit(nnz,cols,n,ic,nlnk,lnk,lnk_lvl,lnkbt));
+    CHKERRQ(PetscIncompleteLLInit(nnz,cols,n,ic,&nlnk,lnk,lnk_lvl,lnkbt));
     nzi   += nlnk;
 
     /* make sure diagonal entry is included */
@@ -1735,7 +1735,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
       cols     = bj_ptr[prow] + nnz + 1;
       cols_lvl = bjlvl_ptr[prow] + nnz + 1;
       nnz      = bi[prow+1] - bi[prow] - nnz - 1;
-      CHKERRQ(PetscILULLAddSorted(nnz,cols,levels,cols_lvl,prow,nlnk,lnk,lnk_lvl,lnkbt,prow));
+      CHKERRQ(PetscILULLAddSorted(nnz,cols,levels,cols_lvl,prow,&nlnk,lnk,lnk_lvl,lnkbt,prow));
       nzi     += nlnk;
       prow     = lnk[prow];
       nzbd++;
@@ -1907,7 +1907,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS isrow,IS is
     PetscCheckFalse(!nnz,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %" PetscInt_FMT " in permuted ordering %" PetscInt_FMT,r[i],i);
     cols   = aj + ai[r[i]];
     lnk[i] = -1; /* marker to indicate if diagonal exists */
-    CHKERRQ(PetscIncompleteLLInit(nnz,cols,n,ic,nlnk,lnk,lnk_lvl,lnkbt));
+    CHKERRQ(PetscIncompleteLLInit(nnz,cols,n,ic,&nlnk,lnk,lnk_lvl,lnkbt));
     nzi   += nlnk;
 
     /* make sure diagonal entry is included */
@@ -1928,7 +1928,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS isrow,IS is
       cols     = bj_ptr[prow] + nnz + 1;
       cols_lvl = bjlvl_ptr[prow] + nnz + 1;
       nnz      = bi[prow+1] - bi[prow] - nnz - 1;
-      CHKERRQ(PetscILULLAddSorted(nnz,cols,levels,cols_lvl,prow,nlnk,lnk,lnk_lvl,lnkbt,prow));
+      CHKERRQ(PetscILULLAddSorted(nnz,cols,levels,cols_lvl,prow,&nlnk,lnk,lnk_lvl,lnkbt,prow));
       nzi     += nlnk;
       prow     = lnk[prow];
       nzbd++;
@@ -2422,7 +2422,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFacto
           ncols_upper++;
         }
       }
-      CHKERRQ(PetscIncompleteLLInit(ncols_upper,ajtmp,am,riip,nlnk,lnk,lnk_lvl,lnkbt));
+      CHKERRQ(PetscIncompleteLLInit(ncols_upper,ajtmp,am,riip,&nlnk,lnk,lnk_lvl,lnkbt));
       nzk += nlnk;
 
       /* update lnk by computing fill-in for each pivot row to be merged in */
@@ -2439,7 +2439,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFacto
         cols  = uj_ptr[prow] + i; /* points to the 2nd nzero entry in U(prow,k:am-1) */
         uj    = uj_lvl_ptr[prow] + i; /* levels of cols */
         j     = *(uj - 1);
-        CHKERRQ(PetscICCLLAddSorted(ncols,cols,levels,uj,am,nlnk,lnk,lnk_lvl,lnkbt,j));
+        CHKERRQ(PetscICCLLAddSorted(ncols,cols,levels,uj,am,&nlnk,lnk,lnk_lvl,lnkbt,j));
         nzk  += nlnk;
 
         /* update il and jl for prow */
@@ -2622,7 +2622,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,const 
           ncols_upper++;
         }
       }
-      CHKERRQ(PetscIncompleteLLInit(ncols_upper,ajtmp,am,riip,nlnk,lnk,lnk_lvl,lnkbt));
+      CHKERRQ(PetscIncompleteLLInit(ncols_upper,ajtmp,am,riip,&nlnk,lnk,lnk_lvl,lnkbt));
       nzk += nlnk;
 
       /* update lnk by computing fill-in for each pivot row to be merged in */
@@ -2639,7 +2639,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,const 
         cols  = uj_ptr[prow] + i; /* points to the 2nd nzero entry in U(prow,k:am-1) */
         uj    = uj_lvl_ptr[prow] + i; /* levels of cols */
         j     = *(uj - 1);
-        CHKERRQ(PetscICCLLAddSorted(ncols,cols,levels,uj,am,nlnk,lnk,lnk_lvl,lnkbt,j));
+        CHKERRQ(PetscICCLLAddSorted(ncols,cols,levels,uj,am,&nlnk,lnk,lnk_lvl,lnkbt,j));
         nzk  += nlnk;
 
         /* update il and jl for prow */
@@ -2803,7 +2803,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
         ncols_upper++;
       }
     }
-    CHKERRQ(PetscLLAdd(ncols_upper,cols,am,nlnk,lnk,lnkbt));
+    CHKERRQ(PetscLLAdd(ncols_upper,cols,am,&nlnk,lnk,lnkbt));
     nzk += nlnk;
 
     /* update lnk by computing fill-in for each pivot row to be merged in */
@@ -2816,7 +2816,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
       jmax   = ui[prow+1];
       ncols  = jmax-jmin;
       uj_ptr = ui_ptr[prow] + jmin - ui[prow]; /* points to the 2nd nzero entry in U(prow,k:am-1) */
-      CHKERRQ(PetscLLAddSorted(ncols,uj_ptr,am,nlnk,lnk,lnkbt));
+      CHKERRQ(PetscLLAddSorted(ncols,uj_ptr,am,&nlnk,lnk,lnkbt));
       nzk   += nlnk;
 
       /* update il and jl for prow */
@@ -2963,7 +2963,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,c
     /* initialize lnk by the column indices of row rip[k] of A */
     nzk   = 0;
     ncols = ai[rip[k]+1] - ai[rip[k]];
-    PetscCheckFalse(!ncols,PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Empty row in matrix: row in original ordering %" PetscInt_FMT " in permuted ordering %" PetscInt_FMT,rip[k],k);
+    PetscCheck(ncols,PETSC_COMM_SELF,PETSC_ERR_MAT_CH_ZRPVT,"Empty row in matrix: row in original ordering %" PetscInt_FMT " in permuted ordering %" PetscInt_FMT,rip[k],k);
     ncols_upper = 0;
     for (j=0; j<ncols; j++) {
       i = riip[*(aj + ai[rip[k]] + j)];
@@ -2972,7 +2972,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,c
         ncols_upper++;
       }
     }
-    CHKERRQ(PetscLLAdd(ncols_upper,cols,am,nlnk,lnk,lnkbt));
+    CHKERRQ(PetscLLAdd(ncols_upper,cols,am,&nlnk,lnk,lnkbt));
     nzk += nlnk;
 
     /* update lnk by computing fill-in for each pivot row to be merged in */
@@ -2985,7 +2985,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ_inplace(Mat fact,Mat A,IS perm,c
       jmax   = ui[prow+1];
       ncols  = jmax-jmin;
       uj_ptr = ui_ptr[prow] + jmin - ui[prow]; /* points to the 2nd nzero entry in U(prow,k:am-1) */
-      CHKERRQ(PetscLLAddSorted(ncols,uj_ptr,am,nlnk,lnk,lnkbt));
+      CHKERRQ(PetscLLAddSorted(ncols,uj_ptr,am,&nlnk,lnk,lnkbt));
       nzk   += nlnk;
 
       /* update il and jl for prow */
@@ -3273,11 +3273,11 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   for (i=0; i<n; i++) {
     /* copy initial fill into linked list */
     nzi = ai[r[i]+1] - ai[r[i]];
-    PetscCheckFalse(!nzi,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %" PetscInt_FMT " in permuted ordering %" PetscInt_FMT,r[i],i);
+    PetscCheck(nzi,PETSC_COMM_SELF,PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %" PetscInt_FMT " in permuted ordering %" PetscInt_FMT,r[i],i);
     nzi_al = adiag[r[i]] - ai[r[i]];
     nzi_au = ai[r[i]+1] - adiag[r[i]] -1;
     ajtmp  = aj + ai[r[i]];
-    CHKERRQ(PetscLLAddPerm(nzi,ajtmp,ic,n,nlnk,lnk,lnkbt));
+    CHKERRQ(PetscLLAddPerm(nzi,ajtmp,ic,n,&nlnk,lnk,lnkbt));
 
     /* load in initial (unfactored row) */
     aatmp = a->a + ai[r[i]];
@@ -3290,7 +3290,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
     while (row < i) {
       nzi_bl = bi[row+1] - bi[row] + 1;
       bjtmp  = bj + bdiag[row+1]+1; /* points to 1st column next to the diagonal in U */
-      CHKERRQ(PetscLLAddSortedLU(bjtmp,row,nlnk,lnk,lnkbt,i,nzi_bl,im));
+      CHKERRQ(PetscLLAddSortedLU(bjtmp,row,&nlnk,lnk,lnkbt,i,nzi_bl,im));
       nzi   += nlnk;
       row    = lnk[row];
     }

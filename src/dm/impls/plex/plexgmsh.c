@@ -210,15 +210,12 @@ static PetscErrorCode GmshCellInfoSetUp(void)
   PetscFunctionReturn(0);
 }
 
-#define GmshCellTypeCheck(ct) 0; do { \
-    const int _ct_ = (int)ct; \
-    if (_ct_ < 0 || _ct_ >= (int)(sizeof(GmshCellMap)/sizeof(GmshCellMap[0]))) \
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid Gmsh element type %d", _ct_); \
-    if (GmshCellMap[_ct_].cellType != _ct_) \
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported Gmsh element type %d", _ct_); \
-    if (GmshCellMap[_ct_].polytope == -1) \
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported Gmsh element type %d", _ct_); \
-  } while (0)
+#define GmshCellTypeCheck(ct) PetscMacroReturnStandard(                                        \
+    const int _ct_ = (int)ct;                                                                  \
+    PetscCheck(_ct_ >= 0 && _ct_ < (int)(sizeof(GmshCellMap)/sizeof(GmshCellMap[0])), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid Gmsh element type %d", _ct_); \
+    PetscCheck(GmshCellMap[_ct_].cellType == _ct_, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported Gmsh element type %d", _ct_); \
+    PetscCheck(GmshCellMap[_ct_].polytope != -1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported Gmsh element type %d", _ct_); \
+  )
 
 typedef struct {
   PetscViewer  viewer;

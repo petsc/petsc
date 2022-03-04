@@ -108,6 +108,7 @@ typedef struct _p_PetscOptionItems {
 } PetscOptionItems;
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
+extern PetscOptionItems* PetscOptionsObject; /* declare this so that the PetscOptions stubs work */
 PetscErrorCode PetscOptionsBegin(MPI_Comm,const char*,const char*,const char*);
 PetscErrorCode PetscObjectOptionsBegin(PetscObject);
 PetscErrorCode PetscOptionsEnd(void);

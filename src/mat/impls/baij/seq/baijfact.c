@@ -1063,7 +1063,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
         ncols_upper++;
       }
     }
-    CHKERRQ(PetscIncompleteLLAdd(ncols_upper,cols,levels,cols_lvl,am,nlnk,lnk,lnk_lvl,lnkbt));
+    CHKERRQ(PetscIncompleteLLAdd(ncols_upper,cols,levels,cols_lvl,am,&nlnk,lnk,lnk_lvl,lnkbt));
     nzk += nlnk;
 
     /* update lnk by computing fill-in for each pivot row to be merged in */
@@ -1079,7 +1079,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFact
       i     = jmin - ui[prow];
       cols  = uj_ptr[prow] + i; /* points to the 2nd nzero entry in U(prow,k:am-1) */
       for (j=0; j<ncols; j++) cols_lvl[j] = *(uj_lvl_ptr[prow] + i + j);
-      CHKERRQ(PetscIncompleteLLAddSorted(ncols,cols,levels,cols_lvl,am,nlnk,lnk,lnk_lvl,lnkbt));
+      CHKERRQ(PetscIncompleteLLAddSorted(ncols,cols,levels,cols_lvl,am,&nlnk,lnk,lnk_lvl,lnkbt));
       nzk += nlnk;
 
       /* update il and jl for prow */
@@ -1255,7 +1255,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
         ncols_upper++;
       }
     }
-    CHKERRQ(PetscLLAdd(ncols_upper,cols,mbs,nlnk,lnk,lnkbt));
+    CHKERRQ(PetscLLAdd(ncols_upper,cols,mbs,&nlnk,lnk,lnkbt));
     nzk += nlnk;
 
     /* update lnk by computing fill-in for each pivot row to be merged in */
@@ -1268,7 +1268,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const Ma
       jmax   = ui[prow+1];
       ncols  = jmax-jmin;
       uj_ptr = ui_ptr[prow] + jmin - ui[prow]; /* points to the 2nd nzero entry in U(prow,k:mbs-1) */
-      CHKERRQ(PetscLLAddSorted(ncols,uj_ptr,mbs,nlnk,lnk,lnkbt));
+      CHKERRQ(PetscLLAddSorted(ncols,uj_ptr,mbs,&nlnk,lnk,lnkbt));
       nzk   += nlnk;
 
       /* update il and jl for prow */
@@ -1596,19 +1596,17 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
 
     /* load in initial unfactored row */
     ajtmp = aj + ai[r[i]];
-    CHKERRQ(PetscLLAddPerm(nzi,ajtmp,ic,mbs,nlnk,lnk,lnkbt));
+    CHKERRQ(PetscLLAddPerm(nzi,ajtmp,ic,mbs,&nlnk,lnk,lnkbt));
     CHKERRQ(PetscArrayzero(rtmp,mbs*bs2));
     aatmp = a->a + bs2*ai[r[i]];
-    for (j=0; j<nzi; j++) {
-      CHKERRQ(PetscArraycpy(rtmp+bs2*ic[ajtmp[j]],aatmp+bs2*j,bs2));
-    }
+    for (j=0; j<nzi; j++) CHKERRQ(PetscArraycpy(rtmp+bs2*ic[ajtmp[j]],aatmp+bs2*j,bs2));
 
     /* add pivot rows into linked list */
     row = lnk[mbs];
     while (row < i) {
       nzi_bl = bi[row+1] - bi[row] + 1;
       bjtmp  = bj + bdiag[row+1]+1; /* points to 1st column next to the diagonal in U */
-      CHKERRQ(PetscLLAddSortedLU(bjtmp,row,nlnk,lnk,lnkbt,i,nzi_bl,im));
+      CHKERRQ(PetscLLAddSortedLU(bjtmp,row,&nlnk,lnk,lnkbt,i,nzi_bl,im));
       nzi   += nlnk;
       row    = lnk[row];
     }
@@ -1707,7 +1705,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A,IS isrow,IS iscol,const MatFactorInf
   CHKERRQ(PetscFree3(v_work,multiplier,v_pivots));
 
   /* printf("end of L %d, beginning of U %d\n",bi[mbs],bdiag[mbs]); */
-  PetscCheckFalse(bi[mbs] >= bdiag[mbs],PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"end of L array %" PetscInt_FMT " cannot >= the beginning of U array %" PetscInt_FMT,bi[mbs],bdiag[mbs]);
+  PetscCheck(bi[mbs] < bdiag[mbs],PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"end of L array %" PetscInt_FMT " cannot >= the beginning of U array %" PetscInt_FMT,bi[mbs],bdiag[mbs]);
 
   CHKERRQ(ISRestoreIndices(isrow,&r));
   CHKERRQ(ISRestoreIndices(isicol,&ic));
