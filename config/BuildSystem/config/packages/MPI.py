@@ -387,9 +387,8 @@ Unable to run hostname to check the network')
     if self.checkLink('#include <mpi.h>\n', 'int flag;if (MPI_Finalized(&flag));\n'):
       self.haveFinalized = 1
       self.addDefine('HAVE_MPI_FINALIZED', 1)
-    if self.checkLink('#include <mpi.h>\n', 'if (MPI_Allreduce(MPI_IN_PLACE,0, 1, MPI_INT, MPI_SUM, MPI_COMM_SELF));\n'):
-      self.haveInPlace = 1
-      self.addDefine('HAVE_MPI_IN_PLACE', 1)
+    if not self.checkLink('#include <mpi.h>\n', 'if (MPI_Allreduce(MPI_IN_PLACE,0,1,MPI_INT,MPI_SUM,MPI_COMM_SELF));\n'):
+      raise RuntimeError('PETSc requires MPI_IN_PLACE (introduced in MPI-2.0 in 1997). Please update or switch to MPI that supports MPI_IN_PLACE. Let us know at petsc-maint@mcs.anl.gov if this is not possible')
     if self.checkLink('#include <mpi.h>\n', 'int count=2; int blocklens[2]={0,1}; MPI_Aint indices[2]={0,1}; MPI_Datatype old_types[2]={MPI_INT,MPI_DOUBLE}; MPI_Datatype *newtype = 0;\n \
                                              if (MPI_Type_create_struct(count, blocklens, indices, old_types, newtype));\n'):
       self.haveTypeCreateStruct = 1
@@ -537,7 +536,6 @@ Unable to run hostname to check the network')
     self.mpiexec = '${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni'
     self.mpiexecseq = '${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni'
     self.addMakeMacro('MPIEXEC','${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni')
-    self.addDefine('HAVE_MPI_IN_PLACE', 1)
     self.addDefine('HAVE_MPI_TYPE_DUP', 1)
     self.addDefine('HAVE_MPI_TYPE_GET_ENVELOPE', 1)
     self.framework.saveLog()

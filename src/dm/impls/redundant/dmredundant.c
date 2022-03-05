@@ -111,22 +111,14 @@ static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm,Vec l,InsertMode imod
     PetscScalar *buffer;
     PetscInt    i;
     if (rank == red->rank) {
-#if defined(PETSC_HAVE_MPI_IN_PLACE)
       buffer = gv;
       source = MPI_IN_PLACE;
-#else
-      ierr   = PetscMalloc1(red->N,&buffer);CHKERRQ(ierr);
-      source = buffer;
-#endif
       if (imode == ADD_VALUES) for (i=0; i<red->N; i++) buffer[i] = gv[i] + lv[i];
 #if !defined(PETSC_USE_COMPLEX)
       if (imode == MAX_VALUES) for (i=0; i<red->N; i++) buffer[i] = PetscMax(gv[i],lv[i]);
 #endif
     } else source = (void*)lv;
     ierr = MPI_Reduce(source,gv,red->N,MPIU_SCALAR,(imode == ADD_VALUES) ? MPIU_SUM : MPIU_MAX,red->rank,PetscObjectComm((PetscObject)dm));CHKERRMPI(ierr);
-#if !defined(PETSC_HAVE_MPI_IN_PLACE)
-    if (rank == red->rank) {ierr = PetscFree(buffer);CHKERRQ(ierr);}
-#endif
   } break;
   case INSERT_VALUES:
     ierr = PetscArraycpy(gv,lv,red->n);CHKERRQ(ierr);
