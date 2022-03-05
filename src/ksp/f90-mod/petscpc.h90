@@ -36,4 +36,11 @@
        end subroutine
       end Interface
 
+      Interface
+        subroutine PCDestroy(a,z)
+          import tPC
+          PC a
+          PetscErrorCode z
+        end subroutine
+      end Interface
 

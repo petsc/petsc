@@ -15,4 +15,9 @@
           PetscInt,       intent(out) :: s
           PetscErrorCode, intent(out) :: ierr
        end Subroutine DMGetStratumSize
+       subroutine DMDestroy(a,ierr)
+          import tDM
+          DM a
+          PetscErrorCode ierr
+       end subroutine
       end Interface
