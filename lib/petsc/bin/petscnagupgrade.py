@@ -21,13 +21,14 @@ def naggedtoday(file):
   return 1
 
 def parse_version_h(pv):
+  release  = int(re.compile(' PETSC_VERSION_RELEASE[ ]*([0-9]*)').search(pv).group(1))
   major    = int(re.compile(' PETSC_VERSION_MAJOR[ ]*([0-9]*)').search(pv).group(1))
   minor    = int(re.compile(' PETSC_VERSION_MINOR[ ]*([0-9]*)').search(pv).group(1))
   subminor = int(re.compile(' PETSC_VERSION_SUBMINOR[ ]*([0-9]*)').search(pv).group(1))
-  if subminor != 0:           # Maintenance releases are numbered x.y.z
+  if release:
     return Version('%d.%d.%d' % (major, minor, subminor))
-  else:                         # Feature releases are x.y
-    return Version('%d.%d' % (major, minor))
+  else:
+    return Version('%d.%d.0rc0' % (major,minor+1))
 
 def currentversion(petscdir):
   try:
