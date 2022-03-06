@@ -1183,8 +1183,13 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
     ierr = VecGetLocalSize(u, &Np);CHKERRQ(ierr);
     Np /= dim*2;
     ierr = PetscDrawSPGetAxis(ctx->sp,&axis);CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetLabels(axis,"Particles","X","V");CHKERRQ(ierr);
-    ierr = PetscDrawAxisSetLimits(axis, dmboxlower[0], dmboxupper[0], -5, 5);CHKERRQ(ierr);
+    if (ctx->phase) {
+      ierr = PetscDrawAxisSetLabels(axis,"Particles","X","V");CHKERRQ(ierr);
+      ierr = PetscDrawAxisSetLimits(axis, dmboxlower[0], dmboxupper[0], -5, 5);CHKERRQ(ierr);
+    } else {
+      ierr = PetscDrawAxisSetLabels(axis,"Particles","X","Y");CHKERRQ(ierr);
+      ierr = PetscDrawAxisSetLimits(axis, dmboxlower[0], dmboxupper[0], dmboxlower[1], dmboxupper[1]);CHKERRQ(ierr);
+    }
     ierr = PetscDrawAxisSetHoldLimits(axis, PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscDrawSPSetDimension(ctx->sp, Np);CHKERRQ(ierr);
     ierr = PetscDrawSPReset(ctx->sp);CHKERRQ(ierr);

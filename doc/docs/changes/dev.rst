@@ -71,6 +71,8 @@ Changes: Development
 
 .. rubric:: PetscDraw:
 
+- Add ``PetscDrawSPAddPointColorized()`` to change scatter point color based on third input value
+
 .. rubric:: AO:
 
 .. rubric:: IS:
@@ -146,6 +148,7 @@ Changes: Development
   - Add ``TSDiscGradIsGonzalez()`` to check flag for whether to use additional conservative terms in discrete gradient formulation
   - Add ``TSDiscGradUseGonzalez()`` to set discrete gradient formulation with or without additional conservative terms.  Without flag, the discrete gradients timestepper is just backwards euler
 - Add ``TSRemoveTrajectory`` to destroy and remove the internal TSTrajectory object from TS
+- Change ``TSMonitorSPSwarmSolution()`` to have correct axes labels and bounds
 
 .. rubric:: Tao:
 
