@@ -2425,7 +2425,7 @@ PetscErrorCode  DMSetRefineLevel(DM dm,PetscInt level)
 
   Collective on dm
 
-  Input Parameter:
+  Input Parameters:
 + dm     - the DM object
 - layers - the number of extruded cell layers
 
@@ -5672,7 +5672,7 @@ PetscErrorCode DMFindRegionNum(DM dm, PetscDS ds, PetscInt *num)
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + dm     - The DM
 . Nc     - The number of components for the field
 . prefix - The options prefix for the output PetscFE, or NULL

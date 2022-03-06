@@ -577,7 +577,8 @@ PetscErrorCode DMLabelDuplicate(DMLabel label, DMLabel *labelnew)
   Collective on comm
 
   Input Parameters:
-+ l0 - First DMLabel
++ comm - Comm over which to compare labels
+. l0 - First DMLabel
 - l1 - Second DMLabel
 
   Output Parameters

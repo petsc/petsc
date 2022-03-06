@@ -641,7 +641,7 @@ PetscErrorCode TaoGetObjectiveAndGradient(Tao tao, Vec *g, PetscErrorCode (**fun
 . tao - the Tao context
 
   Output Parameter:
-- flg - PETSC_TRUE if function routine is set by user, PETSC_FALSE otherwise
+. flg - PETSC_TRUE if function routine is set by user, PETSC_FALSE otherwise
 
   Level: developer
 
@@ -668,7 +668,7 @@ PetscErrorCode TaoIsObjectiveDefined(Tao tao, PetscBool *flg)
 . tao - the Tao context
 
   Output Parameter:
-- flg - PETSC_TRUE if function routine is set by user, PETSC_FALSE otherwise
+. flg - PETSC_TRUE if function routine is set by user, PETSC_FALSE otherwise
 
   Level: developer
 
@@ -695,7 +695,7 @@ PetscErrorCode TaoIsGradientDefined(Tao tao, PetscBool *flg)
 . tao - the Tao context
 
   Output Parameter:
-- flg - PETSC_TRUE if function routine is set by user, PETSC_FALSE otherwise
+. flg - PETSC_TRUE if function routine is set by user, PETSC_FALSE otherwise
 
   Level: developer
 

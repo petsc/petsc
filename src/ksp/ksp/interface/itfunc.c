@@ -146,12 +146,9 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
 .  ritz  - PETSC_TRUE or PETSC_FALSE for ritz pairs or harmonic Ritz pairs, respectively
 -  small - PETSC_TRUE or PETSC_FALSE for smallest or largest (harmonic) Ritz values, respectively
 
-   Input/Output Parameter:
-.  nrit  - number of (harmonic) Ritz pairs to compute; on output,
-           actual number of computed (harmonic) Ritz pairs
-
    Output Parameters:
-+  S     - multidimensional vector with Ritz vectors
++  nrit  - On input number of (harmonic) Ritz pairs to compute; on output, actual number of computed (harmonic) Ritz pairs
+.  S     - an array of the Ritz vectors
 .  tetar - real part of the Ritz values
 -  tetai - imaginary part of the Ritz values
 
@@ -162,7 +159,7 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
    parameter for GMRES if a complete cycle has been performed or less or equal to the number of GMRES
    iterations.
    -Moreover, for real matrices, the (harmonic) Ritz pairs are possibly complex-valued. In such a case,
-   the routine selects the complex (harmonic) Ritz value and its conjugate, and two successive columns of S
+   the routine selects the complex (harmonic) Ritz value and its conjugate, and two successive entries of S
    are equal to the real and the imaginary parts of the associated vectors.
    -the (harmonic) Ritz pairs are given in order of increasing (harmonic) Ritz values in modulus
    -this is currently not implemented when PETSc is built with complex numbers

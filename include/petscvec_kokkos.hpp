@@ -49,7 +49,7 @@
   template<class MemorySpace> PetscErrorCode VecGetKokkosView (Vec,Kokkos::View<PetscScalar*,MemorySpace>*);
 
 /*@C
-       VecRestoreKokkosView - Returns a Kokkos View gotten by VecGetKokkosView().
+   VecRestoreKokkosView - Returns a Kokkos View gotten by VecGetKokkosView().
 
    Synopsis:
    #include <petscvec_kokkos.hpp>
@@ -58,7 +58,7 @@
 
    Logically Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v  - the vector in type of VECKOKKOS
 -  kv - the Kokkos View with a user-specified template parameter MemorySpace
 
@@ -76,7 +76,7 @@
 
 
 /*@C
-     VecGetKokkosViewWrite - Returns a Kokkos View that contains the array of a vector in the specified memory space.
+   VecGetKokkosViewWrite - Returns a Kokkos View that contains the array of a vector in the specified memory space.
 
    Synopsis:
    #include <petscvec_kokkos.hpp>
@@ -105,7 +105,7 @@
   template<class MemorySpace> PetscErrorCode VecGetKokkosViewWrite    (Vec,Kokkos::View<PetscScalar*,MemorySpace>*);
 
 /*@C
-     VecRestoreKokkosViewWrite - Returns a Kokkos View gotten by VecGetKokkosViewWrite().
+   VecRestoreKokkosViewWrite - Returns a Kokkos View gotten by VecGetKokkosViewWrite().
 
    Synopsis:
    #include <petscvec_kokkos.hpp>
@@ -113,7 +113,7 @@
 
    Logically Collective on Vec
 
-   Input Parameter:
+   Input Parameters:
 +  v  - the vector in type of VECKOKKOS
 -  kv - the Kokkos View with a user-specified template parameter MemorySpace
 

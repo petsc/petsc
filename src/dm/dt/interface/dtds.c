@@ -780,7 +780,7 @@ PetscErrorCode PetscDSGetNumCohesive(PetscDS ds, PetscInt *numCohesive)
 
   Not collective
 
-  Input Parameter:
+  Input Parameters:
 + ds - The PetscDS object
 - f  - The field index
 

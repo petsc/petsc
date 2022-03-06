@@ -421,6 +421,8 @@ static PetscErrorCode TSDiscGradSetFormulation_DiscGrad(TS ts, PetscErrorCode (*
 $ u_t = S(u) grad F(u)
   where S(u) is a linear operator, and F is a functional of u.
 
+  Level: intermediate
+
 .seealso: TSCreate(), TSSetType(), TS, TSDISCGRAD, TSDiscGradSetFormulation()
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS ts)
@@ -467,7 +469,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS ts)
   Output Parameters:
 + Sfunc - constructor for the S matrix from the formulation
 . Ffunc - functional F from the formulation
-- Gfunc - constructor for the gradient of F from the formulation
+. Gfunc - constructor for the gradient of F from the formulation
+- ctx   - the user context
 
   Calling sequence of Sfunc:
 $ PetscErrorCode func(TS ts, PetscReal time, Vec u, Mat S, void *)
@@ -562,12 +565,12 @@ PetscErrorCode TSDiscGradIsGonzalez(TS ts,PetscBool *gonzalez)
 
   Not Collective
 
-  Input Parameter:
-+  ts - timestepping context
--  flg - PETSC_TRUE to use the Gonzalez term
+  Input Parameters:
++ ts - timestepping context
+- flg - PETSC_TRUE to use the Gonzalez term
 
   Options Database:
-.  -ts_discgrad_gonzalez <flg>
+. -ts_discgrad_gonzalez <flg>
 
   Level: Intermediate
 

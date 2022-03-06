@@ -1368,7 +1368,7 @@ PetscErrorCode DMPlexMetricNormalize(DM dm, Vec metricIn, PetscBool restrictSize
 /*@
   DMPlexMetricAverage - Compute the average of a list of metrics
 
-  Input Parameter:
+  Input Parameters:
 + dm         - The DM
 . numMetrics - The number of metrics to be averaged
 . weights    - Weights for the average
@@ -1426,7 +1426,7 @@ PetscErrorCode DMPlexMetricAverage(DM dm, PetscInt numMetrics, PetscReal weights
 /*@
   DMPlexMetricAverage2 - Compute the unweighted average of two metrics
 
-  Input Parameter:
+  Input Parameters:
 + dm         - The DM
 . metric1    - The first metric to be averaged
 - metric2    - The second metric to be averaged
@@ -1452,7 +1452,7 @@ PetscErrorCode DMPlexMetricAverage2(DM dm, Vec metric1, Vec metric2, Vec *metric
 /*@
   DMPlexMetricAverage3 - Compute the unweighted average of three metrics
 
-  Input Parameter:
+  Input Parameters:
 + dm         - The DM
 . metric1    - The first metric to be averaged
 . metric2    - The second metric to be averaged
@@ -1606,7 +1606,7 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
 /*@
   DMPlexMetricIntersection - Compute the intersection of a list of metrics
 
-  Input Parameter:
+  Input Parameters:
 + dm         - The DM
 . numMetrics - The number of metrics to be intersected
 - metrics    - The metrics to be intersected
@@ -1688,7 +1688,7 @@ PetscErrorCode DMPlexMetricIntersection(DM dm, PetscInt numMetrics, Vec metrics[
 /*@
   DMPlexMetricIntersection2 - Compute the intersection of two metrics
 
-  Input Parameter:
+  Input Parameters:
 + dm        - The DM
 . metric1   - The first metric to be intersected
 - metric2   - The second metric to be intersected
@@ -1713,7 +1713,7 @@ PetscErrorCode DMPlexMetricIntersection2(DM dm, Vec metric1, Vec metric2, Vec *m
 /*@
   DMPlexMetricIntersection3 - Compute the intersection of three metrics
 
-  Input Parameter:
+  Input Parameters:
 + dm        - The DM
 . metric1   - The first metric to be intersected
 . metric2   - The second metric to be intersected
