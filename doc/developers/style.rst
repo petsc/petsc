@@ -436,19 +436,19 @@ Usage of PETSc Functions and Macros
    ``PetscCallocN()``, ``PetscNew()``, and ``PetscFree()``, not
    ``malloc()`` and ``free()``.
 
-#. MPI routines and macros that are not part of the 1.0 or 1.1 standard
+#. MPI routines and macros that are not part of the 2.1 standard
    should not be used in PETSc without appropriate ``configure``
-   checks and ``#if defined()`` checks. Code should also be provided
+   checks and ``#if PetscDefined()`` checks. Code should also be provided
    that works if the MPI feature is not available, for example,
+
 
    ::
 
-       #if defined(PETSC_HAVE_MPI_IN_PLACE)
-         ierr = MPI_Allgatherv(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,lens,
-                               recvcounts,displs,MPIU_INT,comm);CHKERRQ(ierr);
+       #if PetscDefined(HAVE_MPI_REDUCE_LOCAL)
+         ierr = MPI_Reduce_local(inbuf,inoutbuf,count,MPIU_INT,MPI_SUM);CHKERRMPI(ierr);
        #else
-         ierr = MPI_Allgatherv(lens,sendcount,MPIU_INT,lens,recvcounts,
-                               displs,MPIU_INT,comm);CHKERRQ(ierr);
+         ierr = MPI_Reduce(inbuf,inoutbuf,count,MPIU_INT,
+                           MPI_SUM,0,PETSC_COMM_SELF);CHKERRMPI(ierr);
        #endif
 
 #. Do not introduce PETSc routines that provide essentially the same

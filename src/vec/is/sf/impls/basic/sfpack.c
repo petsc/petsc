@@ -1429,7 +1429,6 @@ PetscErrorCode PetscSFSetUpPackFields(PetscSF sf)
   if (!bas->rootcontig[0]) {ierr = PetscSFCreatePackOpt(bas->ndiranks,              bas->ioffset,               bas->irootloc, &bas->rootpackopt[0]);CHKERRQ(ierr);}
   if (!bas->rootcontig[1]) {ierr = PetscSFCreatePackOpt(bas->niranks-bas->ndiranks, bas->ioffset+bas->ndiranks, bas->irootloc, &bas->rootpackopt[1]);CHKERRQ(ierr);}
 
- #if defined(PETSC_HAVE_DEVICE)
     /* Check dups in indices so that CUDA unpacking kernels can use cheaper regular instructions instead of atomics when they know there are no data race chances */
   if (PetscDefined(HAVE_DEVICE)) {
     PetscBool ismulti = (sf->multi == sf) ? PETSC_TRUE : PETSC_FALSE;
@@ -1438,7 +1437,6 @@ PetscErrorCode PetscSFSetUpPackFields(PetscSF sf)
     if (!bas->rootcontig[0] && !ismulti) {ierr = PetscCheckDupsInt(bas->rootbuflen[0], bas->irootloc,                             &bas->rootdups[0]);CHKERRQ(ierr);}
     if (!bas->rootcontig[1] && !ismulti) {ierr = PetscCheckDupsInt(bas->rootbuflen[1], bas->irootloc+bas->ioffset[bas->ndiranks], &bas->rootdups[1]);CHKERRQ(ierr);}
   }
-#endif
   PetscFunctionReturn(0);
 }
 

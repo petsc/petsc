@@ -2160,12 +2160,7 @@ PetscErrorCode MatGetSeqNonzeroStructure_MPIBAIJ(Mat A,Mat *newmat)
     recvcounts[i] = A->rmap->range[i+1]/bs - A->rmap->range[i]/bs;
     displs[i]     = A->rmap->range[i]/bs;
   }
-#if defined(PETSC_HAVE_MPI_IN_PLACE)
   ierr = MPI_Allgatherv(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,lens,recvcounts,displs,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
-#else
-  sendcount = A->rmap->rend/bs - A->rmap->rstart/bs;
-  ierr = MPI_Allgatherv(lens+A->rmap->rstart/bs,sendcount,MPIU_INT,lens,recvcounts,displs,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
-#endif
   /* ---------------------------------------------------------------
      Create the sequential matrix of the same type as the local block diagonal
   */
@@ -2220,11 +2215,7 @@ PetscErrorCode MatGetSeqNonzeroStructure_MPIBAIJ(Mat A,Mat *newmat)
   for (i=1; i<size; i++) {
     displs[i] = displs[i-1] + recvcounts[i-1];
   }
-#if defined(PETSC_HAVE_MPI_IN_PLACE)
   ierr = MPI_Allgatherv(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,b->j,recvcounts,displs,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
-#else
-  ierr = MPI_Allgatherv(jsendbuf,sendcount,MPIU_INT,b->j,recvcounts,displs,MPIU_INT,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
-#endif
   /*--------------------------------------------------------------------
     Assemble the matrix into useable form (note numerical values not yet set)
   */
