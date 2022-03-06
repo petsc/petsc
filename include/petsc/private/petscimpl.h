@@ -234,59 +234,33 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
     PetscCheck(_7_same,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong subtype object:Parameter # %d must have implementation %s it is %s",arg,t,((PetscObject)(h))->type_name); \
   } while (0)
 
-#define PetscValidHeaderSpecific(h,ck,arg)                              \
-  do {                                                                  \
-    PetscCheck((h),PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Object: Parameter # %d",arg); \
-    PetscCheck(PetscCheckPointer(h,PETSC_OBJECT),PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Invalid Pointer to Object: Parameter # %d",arg); \
-    if (((PetscObject)(h))->classid != ck) {                            \
+#define PetscValidPointer_Internal(ptr,arg,ptype,...) do {                                     \
+    PetscCheck((ptr),PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);   \
+    PetscCheck(PetscCheckPointer((ptr),(ptype)),PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer" __VA_ARGS__ ": Parameter # %d",arg); \
+} while (0)
+
+#define PetscValidPointerToType_Internal(ptr,arg,ptype,name) PetscValidPointer_Internal(ptr,arg,ptype," to ",PetscStringize(name))
+
+#define PetscValidHeaderSpecific(h,ck,arg) do {                                                \
+    PetscValidPointerToType_Internal(h,arg,PETSC_OBJECT,PetscObject);                          \
+    if (((PetscObject)(h))->classid != ck) {                                                   \
       PetscCheck(((PetscObject)(h))->classid != PETSCFREEDHEADER,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Object already free: Parameter # %d",arg); \
       else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Wrong type of object: Parameter # %d",arg); \
-    }                                                                   \
+    }                                                                                          \
   } while (0)
 
-#define PetscValidHeader(h,arg)                                         \
-  do {                                                                  \
-    PetscCheck((h),PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Object: Parameter # %d",arg); \
-    PetscCheck(PetscCheckPointer(h,PETSC_OBJECT),PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Invalid Pointer to Object: Parameter # %d",arg); \
+#define PetscValidHeader(h,arg) do {                                    \
+    PetscValidPointerToType_Internal(h,arg,PETSC_OBJECT,PetscObject);   \
     PetscCheck(((PetscObject)(h))->classid != PETSCFREEDHEADER,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Object already free: Parameter # %d",arg); \
-    else PetscCheck(((PetscObject)(h))->classid >= PETSC_SMALLEST_CLASSID && ((PetscObject)(h))->classid <= PETSC_LARGEST_CLASSID,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Invalid type of object: Parameter # %d",arg); \
-  } while (0)
+    PetscCheck(((PetscObject)(h))->classid >= PETSC_SMALLEST_CLASSID && ((PetscObject)(h))->classid <= PETSC_LARGEST_CLASSID,PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Invalid type of object: Parameter # %d",arg); \
+} while (0)
 
-#define PetscValidPointer(h,arg)                                        \
-  do {                                                                  \
-    PetscCheck((h),PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg); \
-    PetscCheck(PetscCheckPointer(h,PETSC_CHAR),PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer: Parameter # %d",arg); \
-  } while (0)
-
-#define PetscValidCharPointer(h,arg)                                    \
-  do {                                                                  \
-    PetscCheck((h),PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);\
-    PetscCheck(PetscCheckPointer(h,PETSC_CHAR),PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to char: Parameter # %d",arg); \
-  } while (0)
-
-#define PetscValidIntPointer(h,arg)                                     \
-  do {                                                                  \
-    PetscCheck((h),PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Null Pointer: Parameter # %d",arg); \
-    PetscCheck(PetscCheckPointer(h,PETSC_INT),PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscInt: Parameter # %d",arg); \
-  } while (0)
-
-#define PetscValidBoolPointer(h,arg)                                    \
-  do {                                                                  \
-    PetscCheck((h),PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Null Pointer: Parameter # %d",arg); \
-    PetscCheck(PetscCheckPointer(h,PETSC_BOOL),PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscBool: Parameter # %d",arg); \
-  } while (0)
-
-#define PetscValidScalarPointer(h,arg)                                  \
-  do {                                                                  \
-    PetscCheck((h),PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg); \
-    PetscCheck(PetscCheckPointer(h,PETSC_SCALAR),PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscScalar: Parameter # %d",arg); \
-  } while (0)
-
-#define PetscValidRealPointer(h,arg)                                    \
-  do {                                                                  \
-    PetscCheck((h),PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg); \
-    PetscCheck(PetscCheckPointer(h,PETSC_REAL),PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscReal: Parameter # %d",arg); \
-  } while (0)
+#define PetscValidPointer(h,arg)       PetscValidPointer_Internal(h,arg,PETSC_CHAR,"")
+#define PetscValidCharPointer(h,arg)   PetscValidPointerToType_Internal(h,arg,PETSC_CHAR,char)
+#define PetscValidIntPointer(h,arg)    PetscValidPointerToType_Internal(h,arg,PETSC_INT,PetscInt)
+#define PetscValidBoolPointer(h,arg)   PetscValidPointerToType_Internal(h,arg,PETSC_BOOL,PetscBool)
+#define PetscValidScalarPointer(h,arg) PetscValidPointerToType_Internal(h,arg,PETSC_SCALAR,PetscScalar)
+#define PetscValidRealPointer(h,arg)   PetscValidPointerToType_Internal(h,arg,PETSC_REAL,PetscReal)
 
 #define PetscValidFunction(f,arg)                                       \
   do {                                                                  \
