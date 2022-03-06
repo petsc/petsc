@@ -1,4 +1,3 @@
-
 /*
        Contains the data structure for drawing scatter plots
     graphs in a window with an axis. This is intended for scatter
@@ -51,16 +50,19 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
   ierr = PetscObjectReference((PetscObject)draw);CHKERRQ(ierr);
   sp->win = draw;
 
-  sp->view    = NULL;
-  sp->destroy = NULL;
-  sp->nopts   = 0;
-  sp->dim     = dim;
-  sp->xmin    = 1.e20;
-  sp->ymin    = 1.e20;
-  sp->xmax    = -1.e20;
-  sp->ymax    = -1.e20;
+  sp->view      = NULL;
+  sp->destroy   = NULL;
+  sp->nopts     = 0;
+  sp->dim       = dim;
+  sp->xmin      = 1.e20;
+  sp->ymin      = 1.e20;
+  sp->xmax      = -1.e20;
+  sp->ymax      = -1.e20;
+  sp->zmax      = 1.;
+  sp->zmin      = 1.e20;
+  sp->colorized = PETSC_FALSE;
 
-  ierr = PetscMalloc2(dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->x,dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->y);CHKERRQ(ierr);
+  ierr = PetscMalloc3(dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->x,dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->y,dim*PETSC_DRAW_SP_CHUNK_SIZE,&sp->z);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory((PetscObject)sp,2*dim*PETSC_DRAW_SP_CHUNK_SIZE*sizeof(PetscReal));CHKERRQ(ierr);
 
   sp->len     = dim*PETSC_DRAW_SP_CHUNK_SIZE;
@@ -122,8 +124,10 @@ PetscErrorCode  PetscDrawSPReset(PetscDrawSP sp)
   PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
   sp->xmin  = 1.e20;
   sp->ymin  = 1.e20;
+  sp->zmin  = 1.e20;
   sp->xmax  = -1.e20;
   sp->ymax  = -1.e20;
+  sp->zmax  = -1.e20;
   sp->loc   = 0;
   sp->nopts = 0;
   PetscFunctionReturn(0);
@@ -151,7 +155,7 @@ PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP *sp)
   PetscValidHeaderSpecific(*sp,PETSC_DRAWSP_CLASSID,1);
   if (--((PetscObject)(*sp))->refct > 0) {*sp = NULL; PetscFunctionReturn(0);}
 
-  ierr = PetscFree2((*sp)->x,(*sp)->y);CHKERRQ(ierr);
+  ierr = PetscFree3((*sp)->x,(*sp)->y,(*sp)->z);CHKERRQ(ierr);
   ierr = PetscDrawAxisDestroy(&(*sp)->axis);CHKERRQ(ierr);
   ierr = PetscDrawDestroy(&(*sp)->win);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(sp);CHKERRQ(ierr);
@@ -172,7 +176,7 @@ PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP *sp)
    Notes:
     the new points will not be displayed until a call to PetscDrawSPDraw() is made
 
-.seealso: PetscDrawSPAddPoints(), PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPReset(), PetscDrawSPDraw()
+.seealso: PetscDrawSPAddPoints(), PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPReset(), PetscDrawSPDraw(), PetscDrawSPAddPointColorized()
 
 @*/
 PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
@@ -223,7 +227,7 @@ PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP sp,PetscReal *x,PetscReal *y)
    Notes:
     the new points will not be displayed until a call to PetscDrawSPDraw() is made
 
-.seealso: PetscDrawSPAddPoint(), PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPReset(), PetscDrawSPDraw()
+.seealso: PetscDrawSPAddPoint(), PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPReset(), PetscDrawSPDraw(), PetscDrawSPAddPointColorized()
 @*/
 PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscReal **yy)
 {
@@ -268,6 +272,62 @@ PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP sp,int n,PetscReal **xx,PetscRe
 }
 
 /*@
+   PetscDrawSPAddPointColorized - Adds another point to each of the scatter plots as well as a numeric value to be used to colorize the scatter point.
+
+   Logically Collective on PetscDrawSP
+
+   Input Parameters:
++  sp - the scatter plot data structure
+. x, y - two arrays of length dim containing the new x and y coordinate values for each of the curves. Here  dim is the number of curves passed to PetscDrawSPCreate()
+- z - array of length dim containing the numeric values that will be mapped to [0,255] and used for scatter point colors.
+
+   Level: intermediate
+
+   Notes:
+    the new points will not be displayed until a call to PetscDrawSPDraw() is made
+
+.seealso: PetscDrawSPAddPoints(), PetscDrawSP, PetscDrawSPCreate(), PetscDrawSPReset(), PetscDrawSPDraw(), PetscDrawSPAddPoint()
+
+@*/
+PetscErrorCode  PetscDrawSPAddPointColorized(PetscDrawSP sp,PetscReal *x,PetscReal *y,PetscReal *z)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp,PETSC_DRAWSP_CLASSID,1);
+  sp->colorized = PETSC_TRUE;
+  if (sp->loc+sp->dim >= sp->len) { /* allocate more space */
+    PetscReal *tmpx,*tmpy,*tmpz;
+    ierr     = PetscMalloc3(sp->len+sp->dim*PETSC_DRAW_SP_CHUNK_SIZE,&tmpx,sp->len+sp->dim*PETSC_DRAW_SP_CHUNK_SIZE,&tmpy,sp->len+sp->dim*PETSC_DRAW_SP_CHUNK_SIZE,&tmpz);CHKERRQ(ierr);
+    ierr     = PetscLogObjectMemory((PetscObject)sp,2*sp->dim*PETSC_DRAW_SP_CHUNK_SIZE*sizeof(PetscReal));CHKERRQ(ierr);
+    ierr     = PetscArraycpy(tmpx,sp->x,sp->len);CHKERRQ(ierr);
+    ierr     = PetscArraycpy(tmpy,sp->y,sp->len);CHKERRQ(ierr);
+    ierr     = PetscArraycpy(tmpz,sp->z,sp->len);CHKERRQ(ierr);
+    ierr     = PetscFree3(sp->x,sp->y,sp->z);CHKERRQ(ierr);
+    sp->x    = tmpx;
+    sp->y    = tmpy;
+    sp->z    = tmpz;
+    sp->len += sp->dim*PETSC_DRAW_SP_CHUNK_SIZE;
+  }
+  for (i=0; i<sp->dim; i++) {
+    if (x[i] > sp->xmax) sp->xmax = x[i];
+    if (x[i] < sp->xmin) sp->xmin = x[i];
+    if (y[i] > sp->ymax) sp->ymax = y[i];
+    if (y[i] < sp->ymin) sp->ymin = y[i];
+    if (z[i] < sp->zmin) sp->zmin = z[i];
+    if (z[i] > sp->zmax) sp->zmax = z[i];
+    // if (z[i] > sp->zmax && z[i] < 5.) sp->zmax = z[i];
+
+    sp->x[sp->loc]   = x[i];
+    sp->y[sp->loc]   = y[i];
+    sp->z[sp->loc++] = z[i];
+  }
+  sp->nopts++;
+  PetscFunctionReturn(0);
+}
+
+/*@
    PetscDrawSPDraw - Redraws a scatter plot.
 
    Collective on PetscDrawSP
@@ -286,6 +346,7 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
   PetscReal      xmin,xmax,ymin,ymax;
   PetscErrorCode ierr;
   PetscMPIInt    rank;
+  PetscInt       color;
   PetscBool      isnull;
   PetscDraw      draw;
 
@@ -313,7 +374,12 @@ PetscErrorCode  PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
     int i,j,dim=sp->dim,nopts=sp->nopts;
     for (i=0; i<dim; i++) {
       for (j=0; j<nopts; j++) {
-        ierr = PetscDrawPoint(draw,sp->x[j*dim+i],sp->y[j*dim+i],PETSC_DRAW_RED);CHKERRQ(ierr);
+        if (sp->colorized) {
+          color = PetscDrawRealToColor(sp->z[j*dim],sp->zmin,sp->zmax);
+          ierr = PetscDrawPoint(draw,sp->x[j*dim+i],sp->y[j*dim+i],color);CHKERRQ(ierr);
+        } else {
+          ierr = PetscDrawPoint(draw,sp->x[j*dim+i],sp->y[j*dim+i],PETSC_DRAW_RED);CHKERRQ(ierr);
+        }
       }
     }
   }

@@ -143,7 +143,9 @@ struct _p_PetscDrawSP {
   PetscDraw      win;
   PetscDrawAxis  axis;
   PetscReal      xmin,xmax,ymin,ymax,*x,*y;
+  PetscReal      zmax,zmin,*z;
   int            nopts,dim;
+  PetscBool      colorized;
 };
 #define PETSC_DRAW_SP_CHUNK_SIZE 100
 

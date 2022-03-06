@@ -278,6 +278,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawSPGetAxis(PetscDrawSP,PetscDrawAxis*);
 PETSC_EXTERN PetscErrorCode PetscDrawSPGetDraw(PetscDrawSP,PetscDraw*);
 PETSC_EXTERN PetscErrorCode PetscDrawSPSetLimits(PetscDrawSP,PetscReal,PetscReal,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawLGSPDraw(PetscDrawLG,PetscDrawSP);
+PETSC_EXTERN PetscErrorCode PetscDrawSPAddPointColorized(PetscDrawSP,PetscReal*,PetscReal*,PetscReal*);
 
 PETSC_EXTERN PetscClassId PETSC_DRAWHG_CLASSID;
 
