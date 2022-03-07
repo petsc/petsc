@@ -38,7 +38,6 @@ PETSC_EXTERN PetscErrorCode LandauCUDACreateMatMaps(P4estVertexMaps maps[], poin
   h_maps.deviceType = maps[grid].deviceType;
   h_maps.Nf = Nf[grid];
   h_maps.numgrids = maps[grid].numgrids;
-  h_maps.Nq = Nq;
   cerr = cudaMalloc((void **)&h_maps.c_maps,                    maps[grid].num_reduced  * sizeof *pointMaps);CHKERRCUDA(cerr);
   cerr = cudaMemcpy(          h_maps.c_maps, maps[grid].c_maps, maps[grid].num_reduced  * sizeof *pointMaps, cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
   cerr = cudaMalloc((void **)&h_maps.gIdx,                 maps[grid].num_elements * sizeof *maps[grid].gIdx);CHKERRCUDA(cerr);
