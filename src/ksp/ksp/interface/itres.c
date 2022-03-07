@@ -68,6 +68,10 @@ PetscErrorCode  KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Ve
       ierr = PCApplySymmetricLeft(ksp->pc, vb, vres);CHKERRQ(ierr);
     } else SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP, "Invalid preconditioning side %d", (int)ksp->pc_side);
   }
+  /* This may be true only on a subset of MPI ranks; setting it here so it will be detected by the first norm computaion in the Krylov method */
+  if (ksp->reason == KSP_DIVERGED_PC_FAILED) {
+    ierr = VecSetInf(vres);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

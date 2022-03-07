@@ -240,9 +240,8 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
 
   itcount     = 0;
   gmres->fullcycle = 0;
-  ksp->reason = KSP_CONVERGED_ITERATING;
   ksp->rnorm  = -1.0; /* special marker for KSPGMRESCycle() */
-  while (!ksp->reason) {
+  while (!ksp->reason || (ksp->rnorm == -1 && ksp->reason == KSP_DIVERGED_PC_FAILED)) {
     ierr = KSPInitialResidual(ksp,ksp->vec_sol,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),ksp->vec_rhs);CHKERRQ(ierr);
     ierr = KSPGMRESCycle(&its,ksp);CHKERRQ(ierr);
     /* Store the Hessenberg matrix and the basis vectors of the Krylov subspace

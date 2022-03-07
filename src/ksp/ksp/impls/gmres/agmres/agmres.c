@@ -532,7 +532,6 @@ static PetscErrorCode KSPSolve_AGMRES(KSP ksp)
   ksp->its = 0;
   ierr     = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
-  ksp->reason = KSP_CONVERGED_ITERATING;
   if (!agmres->HasShifts) { /* Compute Shifts for the Newton basis */
     ierr = KSPComputeShifts_DGMRES(ksp);CHKERRQ(ierr);
   }
