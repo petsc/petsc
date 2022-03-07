@@ -316,6 +316,38 @@ PetscErrorCode  PetscSortedRemoveDupsInt(PetscInt *n,PetscInt X[])
 }
 
 /*@
+   PetscSortedCheckDupsInt - Checks if a sorted integer array has duplicates
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+-  X  - sorted array of integers
+
+   Output Parameter:
+.  dups - True if the array has dups, otherwise false
+
+   Level: intermediate
+
+.seealso: PetscSortInt(), PetscCheckDupsInt(), PetscSortRemoveDupsInt(), PetscSortedRemoveDupsInt()
+@*/
+PetscErrorCode  PetscSortedCheckDupsInt(PetscInt n,const PetscInt X[],PetscBool *flg)
+{
+  PetscInt i;
+
+  PetscFunctionBegin;
+  PetscCheckSorted(n,X);
+  *flg = PETSC_FALSE;
+  for (i=0; i<n-1; i++) {
+    if (X[i+1] == X[i]) {
+      *flg = PETSC_TRUE;
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
    PetscSortRemoveDupsInt - Sorts an array of integers in place in increasing order removes all duplicate entries
 
    Not Collective
@@ -390,7 +422,7 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscInt n, const PetscInt X[], PetscI
 
    Level: intermediate
 
-.seealso: PetscSortRemoveDupsInt()
+.seealso: PetscSortRemoveDupsInt(), PetscSortedCheckDupsInt()
 @*/
 PetscErrorCode PetscCheckDupsInt(PetscInt n,const PetscInt X[],PetscBool *dups)
 {
