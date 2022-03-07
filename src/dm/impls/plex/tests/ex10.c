@@ -163,7 +163,7 @@ int main(int argc, char **argv)
     PetscInt  len = (dim+1) * PetscMax(1, user.numFields);
     PetscBool flg;
 
-    ierr = PetscMalloc1(len, &user.numDof);CHKERRQ(ierr);
+    ierr = PetscCalloc1(len, &user.numDof);CHKERRQ(ierr);
     ierr = PetscOptionsBegin(PETSC_COMM_SELF, "", "Meshing Problem Options", "DMPLEX");CHKERRQ(ierr);
     ierr = PetscOptionsIntArray("-num_dof", "The dof signature for the section", "ex10.c", user.numDof, &len, &flg);CHKERRQ(ierr);
     PetscCheckFalse(flg && (len != (dim+1) * PetscMax(1, user.numFields)),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Length of dof array is %D should be %D", len, (dim+1) * PetscMax(1, user.numFields));
