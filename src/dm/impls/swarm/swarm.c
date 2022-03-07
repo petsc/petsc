@@ -1406,6 +1406,7 @@ PetscErrorCode DMSwarmSetUpPIC(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMSwarmSetNumSpecies(dm, 1);CHKERRQ(ierr);
   ierr = DMGetDimension(dm,&dim);CHKERRQ(ierr);
   PetscCheckFalse(dim < 1,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Dimension must be 1,2,3 - found %D",dim);
   PetscCheckFalse(dim > 3,PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Dimension must be 1,2,3 - found %D",dim);

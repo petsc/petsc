@@ -2,6 +2,7 @@
 #define PETSCDMSWARM_H
 
 #include <petscdm.h>
+#include <petscdt.h>
 
 /*E
    DMSwarmType - Defines the type of swarm
@@ -115,7 +116,14 @@ PETSC_EXTERN PetscErrorCode DMSwarmSortGetSizes(DM,PetscInt*,PetscInt*);
 PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM,PetscInt,const char**,Vec**,PetscBool);
 PETSC_EXTERN PetscErrorCode DMSwarmCreateMassMatrixSquare(DM,DM,Mat*);
 
-PETSC_EXTERN PetscErrorCode DMSwarmGetCellSwarm(DM sw, PetscInt cellID, DM cellswarm);
-PETSC_EXTERN PetscErrorCode DMSwarmRestoreCellSwarm(DM sw, PetscInt cellID, DM cellswarm);
+PETSC_EXTERN PetscErrorCode DMSwarmGetCellSwarm(DM, PetscInt, DM);
+PETSC_EXTERN PetscErrorCode DMSwarmRestoreCellSwarm(DM, PetscInt, DM);
+PETSC_EXTERN PetscErrorCode DMSwarmGetNumSpecies(DM, PetscInt*);
+PETSC_EXTERN PetscErrorCode DMSwarmSetNumSpecies(DM, PetscInt);
+PETSC_EXTERN PetscErrorCode DMSwarmComputeLocalSize(DM, PetscInt, PetscProbFunc);
+PETSC_EXTERN PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM);
+PETSC_EXTERN PetscErrorCode DMSwarmInitializeCoordinates(DM);
+PETSC_EXTERN PetscErrorCode DMSwarmInitializeVelocities(DM, PetscProbFunc, const PetscReal[]);
+PETSC_EXTERN PetscErrorCode DMSwarmInitializeVelocitiesFromOptions(DM, const PetscReal[]);
 
 #endif

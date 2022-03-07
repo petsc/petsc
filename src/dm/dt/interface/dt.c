@@ -2027,7 +2027,7 @@ PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscReal *sol)
+PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(const PetscReal[], void *, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, void *ctx, PetscReal *sol)
 {
   const PetscInt  p     = 16;        /* Digits of precision in the evaluation */
   const PetscReal alpha = (b-a)/2.;  /* Half-width of the integration interval */
@@ -2046,7 +2046,7 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), Pe
   PetscFunctionBegin;
   PetscCheckFalse(digits <= 0,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must give a positive number of significant digits");
   /* Center term */
-  func(beta, &lval);
+  func(&beta, ctx, &lval);
   sum = 0.5*alpha*PETSC_PI*lval;
   /* */
   do {
@@ -2065,8 +2065,8 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), Pe
       yk = 1.0/(PetscExpReal(0.5*PETSC_PI*PetscSinhReal(k*h)) * PetscCoshReal(0.5*PETSC_PI*PetscSinhReal(k*h)));
       lx = -alpha*(1.0 - yk)+beta;
       rx =  alpha*(1.0 - yk)+beta;
-      func(lx, &lval);
-      func(rx, &rval);
+      func(&lx, ctx, &lval);
+      func(&rx, ctx, &rval);
       lterm   = alpha*wk*lval;
       maxTerm = PetscMax(PetscAbsReal(lterm), maxTerm);
       sum    += lterm;
@@ -2091,7 +2091,7 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(PetscReal, PetscReal *), Pe
 }
 
 #if defined(PETSC_HAVE_MPFR)
-PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscReal *sol)
+PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(const PetscReal[], void *, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, void *ctx, PetscReal *sol)
 {
   const PetscInt  safetyFactor = 2;  /* Calculate abcissa until 2*p digits */
   PetscInt        l            = 0;  /* Level of refinement, h = 2^{-l} */
@@ -2104,7 +2104,7 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *)
   mpfr_t          yk;                /* Quadrature point 1 - x_k on reference domain [-1, 1] */
   mpfr_t          lx, rx;            /* Quadrature points to the left and right of 0 on the real domain [a, b] */
   mpfr_t          wk;                /* Quadrature weight at x_k */
-  PetscReal       lval, rval;        /* Terms in the quadature sum to the left and right of 0 */
+  PetscReal       lval, rval, tmp;   /* Terms in the quadature sum to the left and right of 0 */
   PetscInt        d;                 /* Digits of precision in the integral */
   mpfr_t          pi2, kh, msinh, mcosh, maxTerm, curTerm, tmp;
 
@@ -2121,7 +2121,8 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *)
   mpfr_const_pi(pi2, MPFR_RNDN);
   mpfr_mul_d(pi2, pi2, 0.5, MPFR_RNDN);
   /* Center term */
-  func(0.5*(b+a), &lval);
+  tmp = 0.5*(b+a);
+  func(&tmp, ctx, &lval);
   mpfr_set(sum, pi2, MPFR_RNDN);
   mpfr_mul(sum, sum, alpha, MPFR_RNDN);
   mpfr_mul_d(sum, sum, lval, MPFR_RNDN);
@@ -2164,8 +2165,10 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *)
       mpfr_mul(rx, rx, alpha, MPFR_RNDD);
       mpfr_add(rx, rx, beta, MPFR_RNDD);
       /* Evaluation */
-      func(mpfr_get_d(lx, MPFR_RNDU), &lval);
-      func(mpfr_get_d(rx, MPFR_RNDD), &rval);
+      tmp = mpfr_get_d(lx, MPFR_RNDU);
+      func(&tmp, ctx, &lval);
+      tmp = mpfr_get_d(rx, MPFR_RNDD);
+      func(&tmp, ctx, &rval);
       /* Update */
       mpfr_mul(tmp, wk, alpha, MPFR_RNDN);
       mpfr_mul_d(tmp, tmp, lval, MPFR_RNDN);
@@ -2206,7 +2209,7 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *)
 }
 #else
 
-PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(PetscReal, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, PetscReal *sol)
+PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(const PetscReal[], void *, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, void *ctx, PetscReal *sol)
 {
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "This method will not work without MPFR. Reconfigure using --download-mpfr --download-gmp");
 }

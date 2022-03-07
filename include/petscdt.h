@@ -80,8 +80,8 @@ PETSC_EXTERN PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt,PetscInt,Petsc
 PETSC_EXTERN PetscErrorCode PetscDTStroudConicalQuadrature(PetscInt,PetscInt,PetscInt,PetscReal,PetscReal,PetscQuadrature*);
 
 PETSC_EXTERN PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt, PetscInt, PetscReal, PetscReal, PetscQuadrature *);
-PETSC_EXTERN PetscErrorCode PetscDTTanhSinhIntegrate(void (*)(PetscReal, PetscReal *), PetscReal, PetscReal, PetscInt, PetscReal *);
-PETSC_EXTERN PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*)(PetscReal, PetscReal *), PetscReal, PetscReal, PetscInt, PetscReal *);
+PETSC_EXTERN PetscErrorCode PetscDTTanhSinhIntegrate(void (*)(const PetscReal[], void *, PetscReal *), PetscReal, PetscReal, PetscInt, void *, PetscReal *);
+PETSC_EXTERN PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*)(const PetscReal[], void *, PetscReal *), PetscReal, PetscReal, PetscInt, void *, PetscReal *);
 
 PETSC_EXTERN PetscErrorCode PetscGaussLobattoLegendreIntegrate(PetscInt, PetscReal *, PetscReal *, const PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode PetscGaussLobattoLegendreElementLaplacianCreate(PetscInt, PetscReal *, PetscReal *, PetscReal ***);
@@ -482,5 +482,30 @@ struct _p_PetscTabulation {
                        T[2] = H[Nr*Np][Nb][Nc][cdim][cdim]: The basis function second derivatives at quadrature points */
 };
 typedef struct _p_PetscTabulation *PetscTabulation;
+
+typedef PetscErrorCode (*PetscProbFunc)(const PetscReal[], const PetscReal[], PetscReal[]);
+
+typedef enum {DTPROB_DENSITY_CONSTANT, DTPROB_DENSITY_GAUSSIAN, DTPROB_DENSITY_MAXWELL_BOLTZMANN, DTPROB_NUM_DENSITY} DTProbDensityType;
+PETSC_EXTERN const char * const DTProbDensityTypes[];
+
+PETSC_EXTERN PetscErrorCode PetscPDFMaxwellBoltzmann1D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscCDFMaxwellBoltzmann1D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscPDFMaxwellBoltzmann2D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscCDFMaxwellBoltzmann2D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscPDFMaxwellBoltzmann3D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscCDFMaxwellBoltzmann3D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscPDFGaussian1D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscCDFGaussian1D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscPDFGaussian2D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscPDFConstant1D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscCDFConstant1D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscPDFSampleConstant1D(const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscProbCreateFromOptions(PetscInt, const char[], const char[], PetscProbFunc *, PetscProbFunc *, PetscProbFunc *);
+
+#include <petscvec.h>
+
+PETSC_EXTERN PetscErrorCode PetscProbComputeKSStatistic(Vec, PetscProbFunc, PetscReal *);
 
 #endif

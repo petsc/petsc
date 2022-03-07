@@ -32,6 +32,7 @@ configure_options = [
   '--download-netcdf=1',
   '--download-moab=1',
   '--download-saws',
+  '--download-ks',
   '--download-codipack=1',
   '--download-adblaslapack=1',
   '--download-hpddm=1'

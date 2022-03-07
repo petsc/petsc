@@ -174,6 +174,9 @@ Changes: Development
 
 .. rubric:: DMSwarm:
 
+- Add ``DMSwarmGetNumSpecies()`` and ``DMSwarmSetNumSpecies()`` to support PIC
+- Add ``DMSwarmComputeLocalSize()``, ``DMSwarmComputeLocalSizeFromOptions()``, ``DMSwarmInitializeCoordinates()``, ``DMSwarmInitializeVelocities()``, ``DMSwarmInitializeVelocitiesFromOptions()`` to assist initialization of PIC methods
+
 .. rubric:: DMPlex:
 
 - Add ``DMExtrude()`` which now the default extrusion
@@ -258,6 +261,8 @@ Changes: Development
 - Add ``PetscDTPTrimmedEvalJet()`` to evaluate a stable basis for trimmed polynomials, and ``PetscDTPTrimmedSize()`` for the size of that space
 - Add ``PetscDSGetRHSResidual()`` and ``PetscDSSetRHSResidual()`` to support explicit timestepping
 - Add ``PetscDTTensorQuadratureCreate()`` to combine different quadratures, such as on a prism
+- Add ``PetscProbComputeKSStatistic()`` to apply the Kolmogorov-Smirnov test
+- Add probability distributions ``PetscPDFMaxwellBoltzmann1D()``, ``PetscCDFMaxwellBoltzmann1D()``, ``PetscPDFMaxwellBoltzmann2D()``, ``PetscCDFMaxwellBoltzmann2D()``, ``PetscPDFMaxwellBoltzmann3D()``, ``PetscCDFMaxwellBoltzmann3D()``, ``PetscPDFGaussian1D()``, ``PetscCDFGaussian1D()``, ``PetscPDFSampleGaussian1D()``, ``PetscPDFGaussian2D()``, ``PetscPDFSampleGaussian2D()``, ``PetscPDFConstant1D()``, ``PetscCDFConstant1D()``
 
 .. rubric:: Fortran:
 
