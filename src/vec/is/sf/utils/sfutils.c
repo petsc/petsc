@@ -206,7 +206,7 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   ierr = PetscMalloc1(numFields+2, &sub);CHKERRQ(ierr);
   sub[1] = rootSection->bc ? PETSC_TRUE : PETSC_FALSE;
   for (f = 0; f < numFields; ++f) {
-    PetscSectionSym sym;
+    PetscSectionSym sym, dsym = NULL;
     const char      *name   = NULL;
     PetscInt        numComp = 0;
 
@@ -214,9 +214,11 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
     ierr = PetscSectionGetFieldComponents(rootSection, f, &numComp);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldName(rootSection, f, &name);CHKERRQ(ierr);
     ierr = PetscSectionGetFieldSym(rootSection, f, &sym);CHKERRQ(ierr);
+    if (sym) {ierr = PetscSectionSymDistribute(sym, sf, &dsym);CHKERRQ(ierr);}
     ierr = PetscSectionSetFieldComponents(leafSection, f, numComp);CHKERRQ(ierr);
     ierr = PetscSectionSetFieldName(leafSection, f, name);CHKERRQ(ierr);
-    ierr = PetscSectionSetFieldSym(leafSection, f, sym);CHKERRQ(ierr);
+    ierr = PetscSectionSetFieldSym(leafSection, f, dsym);CHKERRQ(ierr);
+    ierr = PetscSectionSymDestroy(&dsym);CHKERRQ(ierr);
     for (c = 0; c < rootSection->numFieldComponents[f]; ++c) {
       ierr = PetscSectionGetComponentName(rootSection, f, c, &name);CHKERRQ(ierr);
       ierr = PetscSectionSetComponentName(leafSection, f, c, name);CHKERRQ(ierr);

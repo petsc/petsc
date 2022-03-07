@@ -3412,6 +3412,60 @@ PetscErrorCode PetscSectionRestoreFieldPointSyms(PetscSection section, PetscInt 
 }
 
 /*@
+  PetscSectionSymCopy - Copy the symmetries, assuming that the point structure is compatible
+
+  Not collective
+
+  Input Parameter:
+. sym - the PetscSectionSym
+
+  Output Parameter:
+. nsym - the equivalent symmetries
+
+  Level: developer
+
+.seealso: PetscSectionSymCreate(), PetscSectionSetSym(), PetscSectionGetSym(), PetscSectionSymLabelSetStratum(), PetscSectionGetPointSyms()
+@*/
+PetscErrorCode PetscSectionSymCopy(PetscSectionSym sym, PetscSectionSym nsym)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sym, PETSC_SECTION_SYM_CLASSID, 1);
+  PetscValidHeaderSpecific(nsym, PETSC_SECTION_SYM_CLASSID, 2);
+  if (sym->ops->copy) {ierr = (*sym->ops->copy)(sym, nsym);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+/*@
+  PetscSectionSymDistribute - Distribute the symmetries in accordance with the input SF
+
+  Collective
+
+  Input Parameters:
++ sym - the PetscSectionSym
+- migrationSF - the distribution map from roots to leaves
+
+  Output Parameters:
+. dsym - the redistributed symmetries
+
+  Level: developer
+
+.seealso: PetscSectionSymCreate(), PetscSectionSetSym(), PetscSectionGetSym(), PetscSectionSymLabelSetStratum(), PetscSectionGetPointSyms()
+@*/
+PetscErrorCode PetscSectionSymDistribute(PetscSectionSym sym, PetscSF migrationSF, PetscSectionSym *dsym)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sym, PETSC_SECTION_SYM_CLASSID, 1);
+  PetscValidHeaderSpecific(migrationSF, PETSCSF_CLASSID, 2);
+  PetscValidPointer(dsym, 3);
+  if (sym->ops->distribute) {ierr = (*sym->ops->distribute)(sym, migrationSF, dsym);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+/*@
   PetscSectionGetUseFieldOffsets - Get the flag to use field offsets directly in a global section, rather than just the point offset
 
   Not collective

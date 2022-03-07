@@ -55,6 +55,8 @@ struct _p_PetscSection {
 
 struct _PetscSectionSymOps {
   PetscErrorCode (*getpoints)(PetscSectionSym,PetscSection,PetscInt,const PetscInt *,const PetscInt **,const PetscScalar **);
+  PetscErrorCode (*distribute)(PetscSectionSym,PetscSF,PetscSectionSym*);
+  PetscErrorCode (*copy)(PetscSectionSym,PetscSectionSym);
   PetscErrorCode (*destroy)(PetscSectionSym);
   PetscErrorCode (*view)(PetscSectionSym,PetscViewer);
 };

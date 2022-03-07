@@ -56,6 +56,7 @@ PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection, P
 #define PETSCSECTIONSYMLABEL "label"
 PETSC_EXTERN PetscErrorCode PetscSectionSymCreateLabel(MPI_Comm,DMLabel,PetscSectionSym *);
 PETSC_EXTERN PetscErrorCode PetscSectionSymLabelSetLabel(PetscSectionSym,DMLabel);
-PETSC_EXTERN PetscErrorCode PetscSectionSymLabelSetStratum(PetscSectionSym,PetscInt,PetscInt,PetscInt,PetscInt,PetscCopyMode,const PetscInt **,const PetscScalar **);
+PETSC_EXTERN PetscErrorCode PetscSectionSymLabelGetStratum(PetscSectionSym, PetscInt, PetscInt*, PetscInt*, PetscInt*, const PetscInt ***, const PetscScalar ***);
+PETSC_EXTERN PetscErrorCode PetscSectionSymLabelSetStratum(PetscSectionSym, PetscInt, PetscInt, PetscInt, PetscInt, PetscCopyMode, const PetscInt **, const PetscScalar **);
 
 #endif
