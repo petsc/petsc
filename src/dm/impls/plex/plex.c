@@ -1263,7 +1263,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     PetscInt      *sizes, *hybsizes, *ghostsizes;
     PetscInt       locDepth, depth, cellHeight, dim, d;
     PetscInt       pStart, pEnd, p, gcStart, gcEnd, gcNum;
-    PetscInt       numLabels, l;
+    PetscInt       numLabels, l, maxSize = 17;
     DMPolytopeType ct0 = DM_POLYTOPE_UNKNOWN;
     MPI_Comm       comm;
     PetscMPIInt    size, rank;
@@ -1281,7 +1281,8 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     ierr = MPIU_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm);CHKERRMPI(ierr);
     ierr = DMPlexGetGhostCellStratum(dm, &gcStart, &gcEnd);CHKERRQ(ierr);
     gcNum = gcEnd - gcStart;
-    ierr = PetscCalloc3(size,&sizes,size,&hybsizes,size,&ghostsizes);CHKERRQ(ierr);
+    if (size < maxSize) {ierr = PetscCalloc3(size, &sizes, size, &hybsizes, size, &ghostsizes);CHKERRQ(ierr);}
+    else                {ierr = PetscCalloc3(3,    &sizes, 3,    &hybsizes, 3,    &ghostsizes);CHKERRQ(ierr);}
     for (d = 0; d <= depth; d++) {
       PetscInt Nc[2] = {0, 0}, ict;
 
@@ -1297,20 +1298,37 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
         if (ct == ct0) ++Nc[0];
         else           ++Nc[1];
       }
-      ierr = MPI_Gather(&Nc[0], 1, MPIU_INT, sizes,    1, MPIU_INT, 0, comm);CHKERRMPI(ierr);
-      ierr = MPI_Gather(&Nc[1], 1, MPIU_INT, hybsizes, 1, MPIU_INT, 0, comm);CHKERRMPI(ierr);
-      if (d == depth) {ierr = MPI_Gather(&gcNum, 1, MPIU_INT, ghostsizes, 1, MPIU_INT, 0, comm);CHKERRMPI(ierr);}
-      ierr = PetscViewerASCIIPrintf(viewer, "  Number of %D-cells per rank:", (depth == 1) && d ? dim : d);CHKERRQ(ierr);
-      for (p = 0; p < size; ++p) {
-        if (rank == 0) {
-          ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]+hybsizes[p]);CHKERRQ(ierr);
-          if (hybsizes[p]   > 0) {ierr = PetscViewerASCIIPrintf(viewer, " (%D)", hybsizes[p]);CHKERRQ(ierr);}
-          if (ghostsizes[p] > 0) {ierr = PetscViewerASCIIPrintf(viewer, " [%D]", ghostsizes[p]);CHKERRQ(ierr);}
+      if (size < maxSize) {
+        ierr = MPI_Gather(&Nc[0], 1, MPIU_INT, sizes,    1, MPIU_INT, 0, comm);CHKERRMPI(ierr);
+        ierr = MPI_Gather(&Nc[1], 1, MPIU_INT, hybsizes, 1, MPIU_INT, 0, comm);CHKERRMPI(ierr);
+        if (d == depth) {ierr = MPI_Gather(&gcNum, 1, MPIU_INT, ghostsizes, 1, MPIU_INT, 0, comm);CHKERRMPI(ierr);}
+        ierr = PetscViewerASCIIPrintf(viewer, "  Number of %D-cells per rank:", (depth == 1) && d ? dim : d);CHKERRQ(ierr);
+        for (p = 0; p < size; ++p) {
+          if (rank == 0) {
+            ierr = PetscViewerASCIIPrintf(viewer, " %D", sizes[p]+hybsizes[p]);CHKERRQ(ierr);
+            if (hybsizes[p]   > 0) {ierr = PetscViewerASCIIPrintf(viewer, " (%D)", hybsizes[p]);CHKERRQ(ierr);}
+            if (ghostsizes[p] > 0) {ierr = PetscViewerASCIIPrintf(viewer, " [%D]", ghostsizes[p]);CHKERRQ(ierr);}
+          }
         }
+      } else {
+        PetscInt locMinMax[2];
+
+        locMinMax[0] = Nc[0]+Nc[1]; locMinMax[1] = Nc[0]+Nc[1];
+        ierr = PetscGlobalMinMaxInt(comm, locMinMax, sizes);CHKERRQ(ierr);
+        locMinMax[0] = Nc[1]; locMinMax[1] = Nc[1];
+        ierr = PetscGlobalMinMaxInt(comm, locMinMax, hybsizes);CHKERRQ(ierr);
+        if (d == depth) {
+          locMinMax[0] = gcNum; locMinMax[1] = gcNum;
+          ierr = PetscGlobalMinMaxInt(comm, locMinMax, ghostsizes);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer, "  Min/Max of %D-cells per rank:", (depth == 1) && d ? dim : d);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, " %" PetscInt_FMT "/%" PetscInt_FMT, sizes[0], sizes[1]);CHKERRQ(ierr);
+        if (hybsizes[0]   > 0) {ierr = PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT "/%" PetscInt_FMT ")", hybsizes[0], hybsizes[1]);CHKERRQ(ierr);}
+        if (ghostsizes[0] > 0) {ierr = PetscViewerASCIIPrintf(viewer, " [%" PetscInt_FMT "/%" PetscInt_FMT "]", ghostsizes[0], ghostsizes[1]);CHKERRQ(ierr);}
       }
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     }
-    ierr = PetscFree3(sizes,hybsizes,ghostsizes);CHKERRQ(ierr);
+    ierr = PetscFree3(sizes, hybsizes, ghostsizes);CHKERRQ(ierr);
     {
       const PetscReal      *maxCell;
       const PetscReal      *L;
