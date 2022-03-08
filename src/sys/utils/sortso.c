@@ -834,12 +834,6 @@ static inline PetscErrorCode PetscTimSortBuildRun_Private(char *arr, char *tarr,
       ++ri;
     }
   }
-#if defined(PETSC_USE_DEBUG)
-  {
-    PetscErrorCode ierr;
-    ierr = PetscInfo(NULL, "natural run length = %" PetscInt_FMT "\n", ri-runstart+1);CHKERRQ(ierr);
-  }
-#endif
   if (ri < re) {
     /* the attempt failed, this section likely contains random data. If ri got close to minrun (within 50%) then we try
      binary search */
@@ -881,12 +875,6 @@ static inline PetscErrorCode PetscTimSortBuildRunWithArray_Private(char *arr, ch
       ++ri;
     }
   }
-#if defined(PETSC_USE_DEBUG)
-  {
-    PetscErrorCode ierr;
-    ierr = PetscInfo(NULL, "natural run length = %" PetscInt_FMT "\n", ri-runstart+1);CHKERRQ(ierr);
-  }
-#endif
   if (ri < re) {
     /* the attempt failed, this section likely contains random data. If ri got close to minrun (within 50%) then we try
      binary search */
