@@ -237,9 +237,11 @@ class Configure(config.package.Package):
         self.checkingMKLROOTautomatically = 1
 
     if self.argDB['with-64-bit-blas-indices']:
+      flexiblas = 'libflexiblas64.a'
       ILP64 = '_ilp64'
       known = '64'
     else:
+      flexiblas = 'libflexiblas.a'
       ILP64 = '_lp64'
       known = '32'
 
@@ -387,6 +389,10 @@ class Configure(config.package.Package):
       # NEC
       yield ('User specified NEC lib dir', os.path.join(dir, 'lib', 'libblas_sequential.a'), [os.path.join(dir, 'lib', 'liblapack.a'), os.path.join(dir, 'lib', 'libasl_sequential.a')], 'unknown', 'unknown')
       yield ('User specified NEC lib dir', os.path.join(dir, 'lib', 'libblas_sequential.a'), os.path.join(dir, 'lib', 'liblapack.a'), 'unknown', 'unknown')
+      # Search for FlexiBLAS
+      for libdir in ['lib64', 'lib', '']:
+        if os.path.exists(os.path.join(dir,libdir)):
+            yield ('User specified FlexiBLAS',None,os.path.join(dir,libdir,flexiblas),known,'unknown')
       # Search for OpenBLAS
       for libdir in ['lib','']:
         if os.path.exists(os.path.join(dir,libdir)):
@@ -418,6 +424,7 @@ class Configure(config.package.Package):
     yield ('Default compiler libraries', '', '','unknown','unknown')
     yield ('Default NEC', 'libblas_sequential.a', ['liblapack.a','libasl_sequential.a'],'unknown','unknown')
     yield ('Default NEC', 'libblas_sequential.a', 'liblapack.a','unknown','unknown')
+    yield ('Default FlexiBLAS', None, flexiblas, known, 'unknown')
     for lib in blislib:
       for lapack in ['libflame.a','liblapack.a']:
         yield ('Default BLIS/AMD-AOCL', lib, lapack,'unknown','unknown')

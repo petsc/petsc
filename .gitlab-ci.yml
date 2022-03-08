@@ -577,6 +577,7 @@ linux-cmplx-single:
   tags:
     - name:si
   variables:
+    FLEXIBLAS: netlib
     TEST_ARCH: arch-ci-linux-cmplx-single
 
 linux-gcc-cxx-avx2:
