@@ -13,6 +13,12 @@ chk_petscdir:
           printf "******************************************************"${PETSC_TEXT_NORMAL}"\n" ; \
         fi
 
+chk_in_petscdir:
+	@if [ ! -f include/petscversion.h ]; then \
+	  printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR **********************************************\n" ; \
+	  echo " This target should be involed in top level PETSc source dir!"; \
+	  printf "****************************************************************************"${PETSC_TEXT_NORMAL}"\n" ;  false; fi
+
 chk_upgrade:
 	-@PETSC_DIR=${PETSC_DIR} ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/petscnagupgrade.py
 
