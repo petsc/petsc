@@ -47,7 +47,7 @@ check-ci-settings:
   extends: .test-basic
   stage: .pre
   tags:
-    - check-ci-settings
+    - gce-stage1
   script:
     - lib/petsc/bin/maint/check-ci-settings.sh
 #
@@ -59,7 +59,7 @@ check-ci-settings:
   extends: .test
   stage: stage-1
   tags:
-    - stage1
+    - gce-stage1
   before_script:
     - date
     - hostname
@@ -115,17 +115,13 @@ ompi-cuda:
 
 mpich-cxx-py3:
   extends: .stage-1
-  tags:
-  - stage1, fedora
   variables:
     PYTHON: python3
-    CONFIG_OPTS: --with-mpi-dir=/home/glci/soft/mpich-3.3.2 --with-clanguage=cxx --with-fc=0 CXXFLAGS=-std=c++11
+    CONFIG_OPTS: --with-clanguage=cxx --with-fc=0 CXXFLAGS=-std=c++11
     TEST_SEARCH: snes_tutorials-ex48%
 
 uni-complex-float-int64:
   extends: .stage-1
-  tags:
-  - stage1, name:pj02
   variables:
     PYTHON: python3
     CONFIG_OPTS: --with-mpi=0 --with-scalar-type=complex --with-precision=single --with-64-bit-indices
@@ -133,18 +129,16 @@ uni-complex-float-int64:
 
 c99-mlib-static-py2:
   extends: .stage-1
-  tags:
-  - stage1, fedora
   variables:
     PYTHON: python2
-    CONFIG_OPTS: --with-mpi-dir=/home/glci/soft/mpich-3.3.2 --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c99
+    CONFIG_OPTS: --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c99
     TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f90t%
     MAKE_TEST_FFLAGS: -Werror -std=f2008
 
 petsc4py-install:
   extends: .stage-2
   tags:
-    - linux-stage2
+    - gce-stage2
   variables:
     PYTHON: python3
     T_PREFIX: petsc-install
@@ -155,7 +149,7 @@ petsc4py-install:
     - printf "PATH:$PATH\n"
     - mkdir hide
     - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
-    - ${PYTHON} ./configure --prefix="${PWD}/${T_PREFIX}" --with-petsc4py=1 --with-debugging=0 --with-mpi-dir=/home/glci/soft/mpich-3.3.2
+    - ${PYTHON} ./configure --prefix="${PWD}/${T_PREFIX}" --with-petsc4py=1 --with-debugging=0
     - make CFLAGS=-Werror CXXFLAGS="-Werror -Wzero-as-null-pointer-constant" FFLAGS=-Werror
     - printf "====== Test A. Install into staging directory then into prefix directory (mimics distro package recipe) =====\n"
     - make install DESTDIR="${PWD}/${T_DESTDIR}"
@@ -183,7 +177,7 @@ checksource:
   extends: .test-basic
   stage: .pre
   tags:
-    - stage1
+    - gce-stage1
   script:
     - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
     - vermin --version
@@ -196,7 +190,7 @@ pause-for-approval:
   extends: .test
   stage: .pre
   tags:
-    - stage1
+    - gce-stage1
   only:
     refs:
       - merge_requests
@@ -386,7 +380,7 @@ linux-gcc-quad-64idx-dbg:
     - .stage-2
     - .linux_test
   tags:
-    - linux-stage2
+    - gce-stage2
   variables:
     TEST_ARCH: arch-ci-linux-gcc-quad-64idx-dbg
 
@@ -395,7 +389,7 @@ linux-gcc-pkgs-opt:
     - .stage-2
     - .linux_test
   tags:
-    - linux-stage2
+    - gce-stage2
   variables:
     TEST_ARCH: arch-ci-linux-gcc-pkgs-opt
 
@@ -404,7 +398,7 @@ linux-gcc-complex-opt-32bit:
     - .stage-2
     - .linux_test
   tags:
-    - linux-stage2
+    - gce-stage2
   variables:
     TEST_ARCH: arch-ci-linux-gcc-complex-opt-32bit
 
@@ -760,7 +754,7 @@ linux-analyzer:
     - .stage-2
     - .linux_test
   tags:
-    - gce-nfs-short
+    - gce-stage2
   script:
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
@@ -773,8 +767,8 @@ linux-analyzer:
     - make LINTER_OPTIONS="${LINTER_OPTIONS}" lint
   variables:
     TEST_ARCH: arch-ci-linux-analyzer
-    LOAD_MODULES: llvm/11.0.0-snbtima cmake/3.20.0-vov726r
-    LINTER_OPTIONS: "--PETSC_ARCH=${TEST_ARCH} --clang_lib=`llvm-config --libdir`/libclang.so.11 --verbose --werror"
+    LOAD_MODULES: llvm/12.0.0-hgg7qmu cmake/3.20.5-zyz2eld
+    LINTER_OPTIONS: "--PETSC_ARCH=${TEST_ARCH} --clang_lib=`llvm-config --libdir`/libclang.so.12 --verbose --werror"
   artifacts:
     paths:
     - ${TEST_ARCH}/lib/petsc/conf/*.log
@@ -985,7 +979,7 @@ analyze-pipeline:
 .docs:
   stage: stage-2
   tags:
-    - name:pj02
+    - gce-stage2
   before_script:
     - VENV=venv-petsc-docs &&
       python3 -m venv $VENV &&
