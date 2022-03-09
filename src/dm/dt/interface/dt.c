@@ -2104,7 +2104,7 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(const PetscReal[], void
   mpfr_t          yk;                /* Quadrature point 1 - x_k on reference domain [-1, 1] */
   mpfr_t          lx, rx;            /* Quadrature points to the left and right of 0 on the real domain [a, b] */
   mpfr_t          wk;                /* Quadrature weight at x_k */
-  PetscReal       lval, rval, tmp;   /* Terms in the quadature sum to the left and right of 0 */
+  PetscReal       lval, rval, rtmp;  /* Terms in the quadature sum to the left and right of 0 */
   PetscInt        d;                 /* Digits of precision in the integral */
   mpfr_t          pi2, kh, msinh, mcosh, maxTerm, curTerm, tmp;
 
@@ -2121,8 +2121,8 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(const PetscReal[], void
   mpfr_const_pi(pi2, MPFR_RNDN);
   mpfr_mul_d(pi2, pi2, 0.5, MPFR_RNDN);
   /* Center term */
-  tmp = 0.5*(b+a);
-  func(&tmp, ctx, &lval);
+  rtmp = 0.5*(b+a);
+  func(&rtmp, ctx, &lval);
   mpfr_set(sum, pi2, MPFR_RNDN);
   mpfr_mul(sum, sum, alpha, MPFR_RNDN);
   mpfr_mul_d(sum, sum, lval, MPFR_RNDN);
@@ -2165,10 +2165,10 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(const PetscReal[], void
       mpfr_mul(rx, rx, alpha, MPFR_RNDD);
       mpfr_add(rx, rx, beta, MPFR_RNDD);
       /* Evaluation */
-      tmp = mpfr_get_d(lx, MPFR_RNDU);
-      func(&tmp, ctx, &lval);
-      tmp = mpfr_get_d(rx, MPFR_RNDD);
-      func(&tmp, ctx, &rval);
+      rtmp = mpfr_get_d(lx, MPFR_RNDU);
+      func(&rtmp, ctx, &lval);
+      rtmp = mpfr_get_d(rx, MPFR_RNDD);
+      func(&rtmp, ctx, &rval);
       /* Update */
       mpfr_mul(tmp, wk, alpha, MPFR_RNDN);
       mpfr_mul_d(tmp, tmp, lval, MPFR_RNDN);

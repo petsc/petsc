@@ -173,7 +173,7 @@ int main(int argc, char **argv)
   for (f = 0; f < 14; ++f) {
     PetscReal integral;
 
-    ierr = PetscDTTanhSinhIntegrateMPFR(funcs[f], bounds[f*2+0], bounds[f*2+1], digits, &integral);CHKERRQ(ierr);
+    ierr = PetscDTTanhSinhIntegrateMPFR(funcs[f], bounds[f*2+0], bounds[f*2+1], digits, NULL, &integral);CHKERRQ(ierr);
     if (PetscAbsReal(integral - analytic[f]) > PetscPowRealInt(10.0, -digits)) {
       ierr = PetscPrintf(PETSC_COMM_SELF, "The integral of func%2d is wrong: %g (%g)\n", f+1, (double)integral, (double)PetscAbsReal(integral - analytic[f]));CHKERRQ(ierr);
     }
