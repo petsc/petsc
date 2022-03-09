@@ -402,100 +402,108 @@ int main(int argc, char **argv)
 
 /*TEST
 
-  test:
-    suffix: segment
-    args: -dm_plex_reference_cell_domain -dm_plex_cell segment -gen_arrangements \
-          -gen_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0 -dm_plex_view_colors_depth 1,0 -dm_plex_view_tikzscale 0.5
+  testset:
+    args: -dm_coord_space 0 -dm_plex_reference_cell_domain -gen_arrangements \
+          -gen_dm_view ::ascii_latex -dm_plex_view_tikzscale 0.5
 
-  test:
-    suffix: triangle
-    args: -dm_plex_reference_cell_domain -dm_plex_cell triangle -gen_arrangements \
-          -gen_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,1,0 -dm_plex_view_colors_depth 1,1,0 -dm_plex_view_tikzscale 0.5
+    test:
+      suffix: segment
+      args: -dm_plex_cell segment \
+            -dm_plex_view_numbers_depth 1,0 -dm_plex_view_colors_depth 1,0
 
-  test:
-    suffix: quadrilateral
-    args: -dm_plex_reference_cell_domain -dm_plex_cell quadrilateral -gen_arrangements \
-          -gen_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,1,0 -dm_plex_view_colors_depth 1,1,0 -dm_plex_view_tikzscale 0.5
+    test:
+      suffix: triangle
+      args: -dm_plex_cell triangle \
+            -dm_plex_view_numbers_depth 1,1,0 -dm_plex_view_colors_depth 1,1,0
 
-  test:
-    suffix: tensor_segment
-    args: -dm_plex_reference_cell_domain -dm_plex_cell tensor_quad -gen_arrangements \
-          -gen_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,1,0 -dm_plex_view_colors_depth 1,1,0 -dm_plex_view_tikzscale 0.5
+    test:
+      suffix: quadrilateral
+      args: -dm_plex_cell quadrilateral \
+            -dm_plex_view_numbers_depth 1,1,0 -dm_plex_view_colors_depth 1,1,0
 
-  test:
-    suffix: tetrahedron
-    args: -dm_plex_reference_cell_domain -dm_plex_cell tetrahedron -gen_arrangements \
-          -gen_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 0.5
+    test:
+      suffix: tensor_segment
+      args: -dm_plex_cell tensor_quad \
+            -dm_plex_view_numbers_depth 1,1,0 -dm_plex_view_colors_depth 1,1,0
 
-  test:
-    suffix: hexahedron
-    args: -dm_plex_reference_cell_domain -dm_plex_cell hexahedron -gen_arrangements \
-          -gen_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 0.3
+    test:
+      suffix: tetrahedron
+      args: -dm_plex_cell tetrahedron \
+            -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0
 
-  test:
-    suffix: triangular_prism
-    args: -dm_plex_reference_cell_domain -dm_plex_cell triangular_prism -gen_arrangements \
-          -gen_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 0.5
+    test:
+      suffix: hexahedron
+      args: -dm_plex_cell hexahedron \
+            -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 0.3
 
-  test:
-    suffix: tensor_triangular_prism
-    args: -dm_plex_reference_cell_domain -dm_plex_cell tensor_triangular_prism -gen_arrangements \
-          -gen_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 0.5
+    test:
+      suffix: triangular_prism
+      args: -dm_plex_cell triangular_prism \
+            -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0
 
-  test:
-    suffix: tensor_quadrilateral_prism
-    args: -dm_plex_reference_cell_domain -dm_plex_cell tensor_quadrilateral_prism -gen_arrangements \
-          -gen_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 0.5
+    test:
+      suffix: tensor_triangular_prism
+      args: -dm_plex_cell tensor_triangular_prism \
+            -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0
 
-  test:
-    suffix: pyramid
-    args: -dm_plex_reference_cell_domain -dm_plex_cell pyramid -gen_arrangements \
-          -gen_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 0.5
+    test:
+      suffix: tensor_quadrilateral_prism
+      args: -dm_plex_cell tensor_quadrilateral_prism \
+            -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0
 
-  test:
-    suffix: ref_segment
-    args: -dm_plex_reference_cell_domain -dm_plex_cell segment -ref_arrangements -dm_plex_check_all \
-          -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0 -dm_plex_view_colors_depth 1,0 -dm_plex_view_tikzscale 1.0
+    test:
+      suffix: pyramid
+      args: -dm_plex_cell pyramid \
+            -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0
 
-  test:
-    suffix: ref_triangle
-    args: -dm_plex_reference_cell_domain -dm_plex_cell triangle -ref_arrangements -dm_plex_check_all \
-          -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,1,0 -dm_plex_view_colors_depth 1,1,0 -dm_plex_view_tikzscale 1.0
+  testset:
+    args: -dm_coord_space 0 -dm_plex_reference_cell_domain -ref_arrangements -dm_plex_check_all \
+          -ref_dm_view ::ascii_latex -dm_plex_view_tikzscale 1.0
 
-  test:
-    suffix: ref_quadrilateral
-    args: -dm_plex_reference_cell_domain -dm_plex_cell quadrilateral -ref_arrangements -dm_plex_check_all \
-          -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,1,0 -dm_plex_view_colors_depth 1,1,0 -dm_plex_view_tikzscale 1.0
+    test:
+      suffix: ref_segment
+      args: -dm_plex_cell segment \
+            -dm_plex_view_numbers_depth 1,0 -dm_plex_view_colors_depth 1,0
 
-  test:
-    suffix: ref_tensor_segment
-    args: -dm_plex_reference_cell_domain -dm_plex_cell tensor_quad -ref_arrangements -dm_plex_check_all \
-          -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,1,0 -dm_plex_view_colors_depth 1,1,0 -dm_plex_view_tikzscale 1.0
+    test:
+      suffix: ref_triangle
+      args: -dm_plex_cell triangle \
+            -dm_plex_view_numbers_depth 1,1,0 -dm_plex_view_colors_depth 1,1,0
 
-  test:
-    suffix: ref_tetrahedron
-    args: -dm_plex_reference_cell_domain -dm_plex_cell tetrahedron -ref_arrangements -dm_plex_check_all \
-          -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 1.0
+    test:
+      suffix: ref_quadrilateral
+      args: -dm_plex_cell quadrilateral \
+            -dm_plex_view_numbers_depth 1,1,0 -dm_plex_view_colors_depth 1,1,0
 
-  test:
-    suffix: ref_hexahedron
-    args: -dm_plex_reference_cell_domain -dm_plex_cell hexahedron -ref_arrangements -dm_plex_check_all \
-          -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 1.0
+    test:
+      suffix: ref_tensor_segment
+      args: -dm_plex_cell tensor_quad \
+            -dm_plex_view_numbers_depth 1,1,0 -dm_plex_view_colors_depth 1,1,0
 
-  test:
-    suffix: ref_triangular_prism
-    args: -dm_plex_reference_cell_domain -dm_plex_cell triangular_prism -ref_arrangements -dm_plex_check_all \
-          -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 1.0
+    test:
+      suffix: ref_tetrahedron
+      args: -dm_plex_cell tetrahedron \
+            -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0
 
-  test:
-    suffix: ref_tensor_triangular_prism
-    args: -dm_plex_reference_cell_domain -dm_plex_cell tensor_triangular_prism -ref_arrangements -dm_plex_check_all \
-          -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 1.0
+    test:
+      suffix: ref_hexahedron
+      args: -dm_plex_cell hexahedron \
+            -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0
 
-  test:
-    suffix: ref_tensor_quadrilateral_prism
-    args: -dm_plex_reference_cell_domain -dm_plex_cell tensor_quadrilateral_prism -ref_arrangements -dm_plex_check_all \
-          -ref_dm_view ::ascii_latex -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0 -dm_plex_view_tikzscale 1.0
+    test:
+      suffix: ref_triangular_prism
+      args: -dm_plex_cell triangular_prism \
+            -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0
+
+    test:
+      suffix: ref_tensor_triangular_prism
+      args: -dm_plex_cell tensor_triangular_prism \
+            -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0
+
+    test:
+      suffix: ref_tensor_quadrilateral_prism
+      args: -dm_plex_cell tensor_quadrilateral_prism \
+            -dm_plex_view_numbers_depth 1,0,0,0 -dm_plex_view_colors_depth 1,0,0,0
 
   # ToBox should recreate the coordinate space since the cell shape changes
   testset:
