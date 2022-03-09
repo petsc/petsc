@@ -783,5 +783,9 @@ int main(int argc, char **argv)
       suffix: kokkos_batch
       requires: kokkos_kernels
       args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos -ksp_type preonly -pc_type bjkokkos -pc_bjkokkos_ksp_type tfqmr -pc_bjkokkos_pc_type jacobi
+    test:
+      suffix: kokkos_batch_coo
+      requires: kokkos_kernels
+      args: -dm_landau_device_type kokkos -dm_mat_type aijkokkos -dm_vec_type kokkos -ksp_type preonly -pc_type bjkokkos -pc_bjkokkos_ksp_type tfqmr -pc_bjkokkos_pc_type jacobi -dm_landau_use_coo_assembly
 
 TEST*/

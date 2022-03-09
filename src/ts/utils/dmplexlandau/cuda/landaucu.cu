@@ -38,7 +38,6 @@ PETSC_EXTERN PetscErrorCode LandauCUDACreateMatMaps(P4estVertexMaps maps[], poin
   h_maps.deviceType = maps[grid].deviceType;
   h_maps.Nf = Nf[grid];
   h_maps.numgrids = maps[grid].numgrids;
-  h_maps.Nq = Nq;
   cerr = cudaMalloc((void **)&h_maps.c_maps,                    maps[grid].num_reduced  * sizeof *pointMaps);CHKERRCUDA(cerr);
   cerr = cudaMemcpy(          h_maps.c_maps, maps[grid].c_maps, maps[grid].num_reduced  * sizeof *pointMaps, cudaMemcpyHostToDevice);CHKERRCUDA(cerr);
   cerr = cudaMalloc((void **)&h_maps.gIdx,                 maps[grid].num_elements * sizeof *maps[grid].gIdx);CHKERRCUDA(cerr);
@@ -718,7 +717,7 @@ void __launch_bounds__(256,4) landau_mass(const PetscInt dim, const PetscInt Nb,
 }
 
 PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt batch_sz, const PetscInt num_grids, const PetscInt a_numCells[], PetscReal a_Eq_m[], PetscScalar a_elem_closure[],
-                                  const PetscScalar a_xarray[], const LandauStaticData *SData_d, const PetscInt num_sub_blocks, const PetscReal shift,
+                                  const PetscScalar a_xarray[], const LandauStaticData *SData_d, const PetscReal shift,
                                   const PetscLogEvent events[], const PetscInt a_mat_offset[], const PetscInt a_species_offset[], Mat subJ[], Mat JacP)
 {
   PetscErrorCode    ierr;
