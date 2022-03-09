@@ -1847,7 +1847,7 @@ PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],
   for (k=0; k<m; k++) { /* loop over added rows */
     row = im[k];
     if (row < 0) continue;
-    PetscAssertFalse(row >= a->mbs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block row index too large %" PetscInt_FMT " max %" PetscInt_FMT,row,a->mbs-1);
+    PetscCheck(row < a->mbs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block row index too large %" PetscInt_FMT " max %" PetscInt_FMT,row,a->mbs-1);
     rp   = aj + ai[row];
     if (!A->structure_only) ap = aa + bs2*ai[row];
     rmax = imax[row];
@@ -1856,7 +1856,7 @@ PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],
     high = nrow;
     for (l=0; l<n; l++) { /* loop over added columns */
       if (in[l] < 0) continue;
-      PetscAssertFalse(in[l] >= a->nbs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block column index too large %" PetscInt_FMT " max %" PetscInt_FMT,in[l],a->nbs-1);
+      PetscCheck(in[l] < a->nbs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block column index too large %" PetscInt_FMT " max %" PetscInt_FMT,in[l],a->nbs-1);
       col = in[l];
       if (!A->structure_only) {
         if (roworiented) {
@@ -2118,7 +2118,7 @@ PetscErrorCode MatZeroRows_SeqBAIJ(Mat A,PetscInt is_n,const PetscInt is_idx[],P
         baij->ilen[row/bs] = 0;
       } /* end (diag == 0.0) */
     } else { /* (sizes[i] != bs) */
-      PetscAssertFalse(sizes[i] != 1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal Error. Value should be 1");
+      PetscAssert(sizes[i] == 1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal Error. Value should be 1");
       for (k=0; k<count; k++) {
         aa[0] =  zero;
         aa   += bs;
@@ -2214,7 +2214,7 @@ PetscErrorCode MatSetValues_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscIn
     row  = im[k];
     brow = row/bs;
     if (row < 0) continue;
-    PetscAssertFalse(row >= A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,row,A->rmap->N-1);
+    PetscCheck(row < A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,row,A->rmap->N-1);
     rp   = aj + ai[brow];
     if (!A->structure_only) ap = aa + bs2*ai[brow];
     rmax = imax[brow];
@@ -2223,7 +2223,7 @@ PetscErrorCode MatSetValues_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscIn
     high = nrow;
     for (l=0; l<n; l++) { /* loop over added columns */
       if (in[l] < 0) continue;
-      PetscAssertFalse(in[l] >= A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,in[l],A->cmap->n-1);
+      PetscCheck(in[l] < A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,in[l],A->cmap->n-1);
       col  = in[l]; bcol = col/bs;
       ridx = row % bs; cidx = col % bs;
       if (!A->structure_only) {
@@ -3693,12 +3693,12 @@ PetscErrorCode  MatCreateSeqBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m,
 
   for (ii=0; ii<m; ii++) {
     baij->ilen[ii] = baij->imax[ii] = i[ii+1] - i[ii];
-    PetscAssertFalse(i[ii+1] - i[ii] < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row length in i (row indices) row = %" PetscInt_FMT " length = %" PetscInt_FMT,ii,i[ii+1] - i[ii]);
+    PetscCheck(i[ii+1] - i[ii] >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row length in i (row indices) row = %" PetscInt_FMT " length = %" PetscInt_FMT,ii,i[ii+1] - i[ii]);
   }
   if (PetscDefined(USE_DEBUG)) {
     for (ii=0; ii<baij->i[m]; ii++) {
-      PetscCheckFalse(j[ii] < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative column index at location = %" PetscInt_FMT " index = %" PetscInt_FMT,ii,j[ii]);
-      PetscCheckFalse(j[ii] > n - 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column index to large at location = %" PetscInt_FMT " index = %" PetscInt_FMT,ii,j[ii]);
+      PetscCheck(j[ii] >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative column index at location = %" PetscInt_FMT " index = %" PetscInt_FMT,ii,j[ii]);
+      PetscCheck(j[ii] <= n - 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column index to large at location = %" PetscInt_FMT " index = %" PetscInt_FMT,ii,j[ii]);
     }
   }
 

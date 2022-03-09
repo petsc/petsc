@@ -2062,7 +2062,7 @@ general_assembly:
         PetscInt r;
 
         for (i=0,r=0;i<nb;i++) {
-          PetscAssertFalse(blocks[i] != xadj[r+1] - xadj[r],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid block sizes prescribed for block %" PetscInt_FMT ": expected %" PetscInt_FMT ", got %" PetscInt_FMT,i,blocks[i],xadj[r+1] - xadj[r]);
+          PetscAssert(blocks[i] == xadj[r+1] - xadj[r],PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid block sizes prescribed for block %" PetscInt_FMT ": expected %" PetscInt_FMT ", got %" PetscInt_FMT,i,blocks[i],xadj[r+1] - xadj[r]);
           ierr = MatSetValuesLocal(MT,blocks[i],adjncy+xadj[r],blocks[i],adjncy+xadj[r],sarray+xadj[r],ADD_VALUES);CHKERRQ(ierr);
           r   += blocks[i];
         }

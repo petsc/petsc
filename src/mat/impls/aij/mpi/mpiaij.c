@@ -7572,7 +7572,7 @@ PETSC_EXTERN void matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[]
     ierr = MatSeqAIJGetArray(B,&ba);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
       if (im[i] < 0) continue;
-      PetscAssertFalse(im[i] >= mat->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],mat->rmap->N-1);
+      PetscCheck(im[i] < mat->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,im[i],mat->rmap->N-1);
       if (im[i] >= rstart && im[i] < rend) {
         row      = im[i] - rstart;
         lastcol1 = -1;

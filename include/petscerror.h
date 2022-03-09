@@ -274,32 +274,6 @@ MC*/
 #define PetscAssert(cond,comm,ierr,...) if (PetscUnlikelyDebug(!(cond))) SETERRQ(comm,ierr,__VA_ARGS__)
 
 /*MC
-  PetscAssertFalse - Assert that a particular condition is false
-
-  Synopsis:
-  #include <petscerror.h>
-  void PetscAssertFalse(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
-
-  Collective
-
-  Input Parameters:
-+ cond    - The boolean condition
-. comm    - The communicator on which the check can be collective on
-. ierr    - A nonzero error code, see include/petscerror.h for the complete list
-- message - Error message in printf format
-
-  Notes:
-  Invert your boolean condition and use PetscAssert() instead. This macro is a temporary
-  stopgap to converting to PetscAssert() and is subject to removal without deprecation in a
-  future release.
-
-  Level: deprecated
-
-.seealso: PetscAssert()
-MC*/
-#define PetscAssertFalse(cond,comm,ierr,...) PetscAssert(!(cond),comm,ierr,__VA_ARGS__)
-
-/*MC
    CHKERRQ - Checks error code returned from PETSc function, if non-zero it calls the error handler and then returns. Use CHKERRMPI() for checking errors from MPI calls
 
    Synopsis:

@@ -663,7 +663,7 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
   for (k=0; k<m; k++) { /* loop over added rows */
     row = im[k];
     if (row < 0) continue;
-    PetscAssertFalse(row >= a->mbs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block index row too large %" PetscInt_FMT " max %" PetscInt_FMT,row,a->mbs-1);
+    PetscCheck(row < a->mbs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block index row too large %" PetscInt_FMT " max %" PetscInt_FMT,row,a->mbs-1);
     rp   = aj + ai[row];
     ap   = aa + bs2*ai[row];
     rmax = imax[row];
@@ -673,7 +673,7 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[]
     for (l=0; l<n; l++) { /* loop over added columns */
       if (in[l] < 0) continue;
       col = in[l];
-      PetscAssertFalse(col >= a->nbs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block index column too large %" PetscInt_FMT " max %" PetscInt_FMT,col,a->nbs-1);
+      PetscCheck(col < a->nbs,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Block index column too large %" PetscInt_FMT " max %" PetscInt_FMT,col,a->nbs-1);
       if (col < row) {
         if (a->ignore_ltriangular) continue; /* ignore lower triangular block */
         else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
@@ -957,7 +957,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
     row  = im[k];       /* row number */
     brow = row/bs;      /* block row number */
     if (row < 0) continue;
-    PetscAssertFalse(row >= A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,row,A->rmap->N-1);
+    PetscCheck(row < A->rmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT,row,A->rmap->N-1);
     rp   = aj + ai[brow]; /*ptr to beginning of column value of the row block*/
     ap   = aa + bs2*ai[brow]; /*ptr to beginning of element value of the row block*/
     rmax = imax[brow];  /* maximum space allocated for this row */
@@ -966,7 +966,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
     high = nrow;
     for (l=0; l<n; l++) { /* loop over added columns */
       if (in[l] < 0) continue;
-      PetscAssertFalse(in[l] >= A->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,in[l],A->cmap->N-1);
+      PetscCheck(in[l] < A->cmap->N,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT,in[l],A->cmap->N-1);
       col  = in[l];
       bcol = col/bs;              /* block col number */
 
@@ -2388,12 +2388,12 @@ PetscErrorCode  MatCreateSeqSBAIJWithArrays(MPI_Comm comm,PetscInt bs,PetscInt m
 
   for (ii=0; ii<m; ii++) {
     sbaij->ilen[ii] = sbaij->imax[ii] = i[ii+1] - i[ii];
-    PetscAssertFalse(i[ii+1] - i[ii] < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row length in i (row indices) row = %" PetscInt_FMT " length = %" PetscInt_FMT,ii,i[ii+1] - i[ii]);
+    PetscCheck(i[ii+1] >= i[ii],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row length in i (row indices) row = %" PetscInt_FMT " length = %" PetscInt_FMT,ii,i[ii+1] - i[ii]);
   }
   if (PetscDefined(USE_DEBUG)) {
     for (ii=0; ii<sbaij->i[m]; ii++) {
-      PetscCheckFalse(j[ii] < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative column index at location = %" PetscInt_FMT " index = %" PetscInt_FMT,ii,j[ii]);
-      PetscCheckFalse(j[ii] > n - 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column index to large at location = %" PetscInt_FMT " index = %" PetscInt_FMT,ii,j[ii]);
+      PetscCheck(j[ii] >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative column index at location = %" PetscInt_FMT " index = %" PetscInt_FMT,ii,j[ii]);
+      PetscCheck(j[ii] < n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column index too large at location = %" PetscInt_FMT " index = %" PetscInt_FMT,ii,j[ii]);
     }
   }
 
