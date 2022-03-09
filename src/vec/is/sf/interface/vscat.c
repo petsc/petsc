@@ -640,10 +640,10 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
    Options Database Keys:
 +  -vecscatter_view         - Prints detail of communications
 .  -vecscatter_view ::ascii_info    - Print less details about communication
-.  -vecscatter_merge        - VecScatterBegin() handles all of the communication, VecScatterEnd() is a nop
+-  -vecscatter_merge        - VecScatterBegin() handles all of the communication, VecScatterEnd() is a nop
                               eliminates the chance for overlap of computation and communication
 
-    Level: intermediate
+  Level: intermediate
 
   Notes:
    If both xin and yin are parallel, their communicator must be on the same

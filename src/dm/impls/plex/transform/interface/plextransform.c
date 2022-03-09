@@ -297,7 +297,7 @@ static PetscErrorCode DMPlexTransformView_Ascii(DMPlexTransform tr, PetscViewer 
 
   Collective on tr
 
-  Input Parameter:
+  Input Parameters:
 + tr - the DMPlexTransform object to view
 - v  - the viewer
 
@@ -1440,7 +1440,10 @@ PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform 
 }
 
 /*@
-  DMPlexTransformMapCoordinates -
+  DMPlexTransformMapCoordinates - Calculate new coordinates for produced points
+
+  Not collective
+
   Input Parameters:
 + cr   - The DMPlexCellRefiner
 . pct  - The cell type of the parent, from whom the new cell is being produced
@@ -1451,10 +1454,12 @@ PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform 
 . dE   - Spatial dimension
 - in   - array of size Nv*dE, holding coordinates of the vertices in the closure of the parent cell
 
-  Output Parameters:
+  Output Parameter:
 . out - The coordinates of the new vertices
 
   Level: intermediate
+
+.seealso: DMPlexTransformApply()
 @*/
 PetscErrorCode DMPlexTransformMapCoordinates(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
 {

@@ -1153,7 +1153,7 @@ PetscErrorCode VecCreate_SeqKokkos(Vec v)
 
    Collective
 
-   Input Parameter:
+   Input Parameters:
 +  comm - the communicator, should be PETSC_COMM_SELF
 .  bs - the block size
 .  n - the vector length

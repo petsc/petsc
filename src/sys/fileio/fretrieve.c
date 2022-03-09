@@ -203,42 +203,37 @@ PetscErrorCode  PetscSharedTmp(MPI_Comm comm,PetscBool  *shared)
 }
 
 /*@C
-   PetscSharedWorkingDirectory - Determines if all processors in a communicator share a
-         working directory or have different ones.
+  PetscSharedWorkingDirectory - Determines if all processors in a communicator share a working directory or have different ones.
 
-   Collective
+  Collective
 
-   Input Parameter:
-.  comm - MPI_Communicator that may share working directory
+  Input Parameter:
+. comm - MPI_Communicator that may share working directory
 
-   Output Parameter:
-.  shared - PETSC_TRUE or PETSC_FALSE
+  Output Parameter:
+. shared - PETSC_TRUE or PETSC_FALSE
 
-   Options Database Keys:
-+    -shared_working_directory - indicates the directory is shared among the MPI ranks
--    -not_shared_working_directory - indicates the directory is shared among the MPI ranks
+  Options Database Keys:
++ -shared_working_directory - indicates the directory is shared among the MPI ranks
+- -not_shared_working_directory - indicates the directory is shared among the MPI ranks
 
-   Environmental Variables:
-+     PETSC_SHARED_WORKING_DIRECTORY - indicates the directory is shared among the MPI ranks
--     PETSC_NOT_SHARED_WORKING_DIRECTORY - indicates the directory is shared among the MPI ranks
+  Environmental Variables:
++ PETSC_SHARED_WORKING_DIRECTORY - indicates the directory is shared among the MPI ranks
+- PETSC_NOT_SHARED_WORKING_DIRECTORY - indicates the directory is shared among the MPI ranks
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   Stores the status as a MPI attribute so it does not have
-    to be redetermined each time.
+  Notes:
+  Stores the status as a MPI attribute so it does not have to be redetermined each time.
 
-      Assumes that all processors in a communicator either
-       1) have a common working directory or
-       2) each has a separate working directory
-      eventually we can write a fancier one that determines which processors
-      share a common working directory.
+  Assumes that all processors in a communicator either
+$   1) have a common working directory or
+$   2) each has a separate working directory
+  eventually we can write a fancier one that determines which processors share a common working directory.
 
-   This will be very slow on runs with a large number of processors since
-   it requires O(p*p) file opens.
-
+  This will be very slow on runs with a large number of processors since it requires O(p*p) file opens.
 @*/
-PetscErrorCode  PetscSharedWorkingDirectory(MPI_Comm comm,PetscBool  *shared)
+PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
 {
   PetscErrorCode     ierr;
   PetscMPIInt        size,rank,*tagvalp,sum,cnt,i;

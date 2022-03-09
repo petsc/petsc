@@ -155,11 +155,11 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj,TS ts,PetscInt stepnum,PetscReal 
 - stepnum - the requested step number
 
   Input/Output Parameter:
-. time - the time associated with the step number
 
   Output Parameters:
-+ U       - state vector (can be NULL)
-- Udot    - time derivative of state vector (can be NULL)
++ time - On input time for the step if step number is PETSC_DECIDE, on output the time associated with the step number
+. U    - state vector (can be NULL)
+- Udot - time derivative of state vector (can be NULL)
 
   Level: developer
 

@@ -5620,23 +5620,21 @@ PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A,Mat P,PetscInt dof,MatReuse reus
 }
 
 /*@C
-    MatGetBrowsOfAcols - Creates a SeqAIJ matrix by taking rows of B that equal to nonzero columns of local A
+  MatGetBrowsOfAcols - Creates a SeqAIJ matrix by taking rows of B that equal to nonzero columns of local A
 
-    Collective on Mat
+  Collective on Mat
 
-   Input Parameters:
-+    A - the first matrix in mpiaij format
-.    B - the second matrix in mpiaij format
--    scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+  Input Parameters:
++ A - the first matrix in mpiaij format
+. B - the second matrix in mpiaij format
+- scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
-   Input/Output Parameters:
-+    rowb - index sets of rows of B to extract (or NULL), modified on output
--    colb - index sets of columns of B to extract (or NULL), modified on output
+  Output Parameters:
++ rowb - On input index sets of rows of B to extract (or NULL), modified on output
+. colb - On input index sets of columns of B to extract (or NULL), modified on output
+- B_seq - the sequential matrix generated
 
-   Output Parameter:
-.    B_seq - the sequential matrix generated
-
-    Level: developer
+  Level: developer
 
 @*/
 PetscErrorCode MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,Mat *B_seq)

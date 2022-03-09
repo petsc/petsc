@@ -90,9 +90,9 @@ static_assert(
 
   Not Collective, Possibly Synchronous
 
-  Input Parameter:
-. type  - The type of PetscDevice
-. devid - The numeric ID# of the device (pass PETSC_DECIDE to assign automatically)
+  Input Parameters:
++ type  - The type of PetscDevice
+- devid - The numeric ID# of the device (pass PETSC_DECIDE to assign automatically)
 
   Output Parameter:
 . device - The PetscDevice

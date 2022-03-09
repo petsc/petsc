@@ -166,7 +166,7 @@ PetscErrorCode TaoSetInequalityBounds(Tao tao, Vec IL, Vec IU)
   Logically collective on Tao
 
   Input Parameter:
-+ tao - the Tao context
+. tao - the Tao context
 
   Output Parameters:
 + IL  - vector of lower bounds
