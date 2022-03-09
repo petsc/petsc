@@ -5458,6 +5458,15 @@ PetscErrorCode DMPlexSetClosurePermutationTensor(DM dm, PetscInt point, PetscSec
       ierr = PetscFree(check);CHKERRQ(ierr);
     }
     ierr = PetscSectionSetClosurePermutation_Internal(section, (PetscObject) dm, d, size, PETSC_OWN_POINTER, perm);CHKERRQ(ierr);
+    if (d == dim) { // Add permutation for localized (in case this is a coordinate DM)
+      PetscInt *loc_perm;
+      ierr = PetscMalloc1(size*2, &loc_perm);CHKERRQ(ierr);
+      for (PetscInt i=0; i<size; i++) {
+        loc_perm[i] = perm[i];
+        loc_perm[size+i] = size + perm[i];
+      }
+      ierr = PetscSectionSetClosurePermutation_Internal(section, (PetscObject) dm, d, size*2, PETSC_OWN_POINTER, loc_perm);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }

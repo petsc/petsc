@@ -112,12 +112,18 @@ int main(int argc, char **argv)
     args: -dm_plex_dim 3 -petscspace_degree 1 -dm_plex_simplex 0 -dm_plex_box_faces 1,1,1
   test:
     suffix: 1d_q1_periodic
+    requires: !complex
     args: -dm_plex_dim 1 -petscspace_degree 1 -dm_plex_simplex 0 -dm_plex_box_faces 3 -dm_plex_box_bd periodic -dm_view -view_coord
   test:
     suffix: 2d_q1_periodic
+    requires: !complex
     args: -dm_plex_dim 2 -petscspace_degree 1 -dm_plex_simplex 0 -dm_plex_box_faces 3,2 -dm_plex_box_bd periodic,none -dm_view -view_coord
   test:
-    suffix: 3d_q2_periodic
+    suffix: 3d_q1_periodic
+    requires: !complex
+    args: -dm_plex_dim 3 -petscspace_degree 1 -dm_plex_simplex 0 -dm_plex_box_faces 3,2,1 -dm_plex_box_bd periodic,none,none -dm_view -view_coord
+  test:
+    suffix: 3d_q2_periodic  # not actually periodic because only 2 cells
     args: -dm_plex_dim 3 -petscspace_degree 2 -dm_plex_simplex 0 -dm_plex_box_faces 2,2,2 -dm_plex_box_bd periodic,none,periodic -dm_view
 
 TEST*/
