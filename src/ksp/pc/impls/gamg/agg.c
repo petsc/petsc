@@ -1116,6 +1116,8 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
       ierr = KSPGetPC(eksp, &epc);CHKERRQ(ierr);
       ierr = PCSetType(epc, PCJACOBI);CHKERRQ(ierr);  /* smoother in smoothed agg. */
 
+      ierr = KSPSetTolerances(eksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT, 10);CHKERRQ(ierr); // 10 is safer, but 5 is often fine, can override with -pc_gamg_esteig_ksp_max_it -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.2
+
       ierr = KSPSetFromOptions(eksp);CHKERRQ(ierr);
       ierr = KSPSetComputeSingularValues(eksp,PETSC_TRUE);CHKERRQ(ierr);
       ierr = KSPSolve(eksp, bb, xx);CHKERRQ(ierr);
