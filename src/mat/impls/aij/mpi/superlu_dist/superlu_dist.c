@@ -187,18 +187,28 @@ static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
       } else
 #endif
         PetscStackCall("SuperLU_DIST:superlu_gridexit",superlu_gridexit(&lu->grid));
-      ierr = PetscCommRestoreComm(PetscObjectComm((PetscObject)A),&lu->comm_superlu);CHKERRQ(ierr);
-    } else {
-      PetscSuperLU_DIST *context;
-      MPI_Comm          comm;
-      PetscMPIInt       flg;
-
-      ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-      ierr = MPI_Comm_get_attr(comm,Petsc_Superlu_dist_keyval,&context,&flg);CHKERRMPI(ierr);
-      PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Communicator does not have expected Petsc_Superlu_dist_keyval attribute");
-      context->busy = PETSC_FALSE;
     }
   }
+  /*
+   * We always need to release the communicator that was created in MatGetFactor_aij_superlu_dist.
+   * lu->CleanUpSuperLU_Dist was turned on in MatLUFactorSymbolic_SuperLU_DIST. There are some use
+   * cases where we only create a matrix but do not solve mat. In these cases, lu->CleanUpSuperLU_Dist
+   * is off, and the communicator was not released or marked as "not busy " in the old code.
+   * Here we try to release comm regardless.
+  */
+  if (lu->comm_superlu) {
+    ierr = PetscCommRestoreComm(PetscObjectComm((PetscObject)A),&lu->comm_superlu);CHKERRQ(ierr);
+  } else {
+    PetscSuperLU_DIST *context;
+    MPI_Comm          comm;
+    PetscMPIInt       flg;
+
+    ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_get_attr(comm,Petsc_Superlu_dist_keyval,&context,&flg);CHKERRMPI(ierr);
+    PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Communicator does not have expected Petsc_Superlu_dist_keyval attribute");
+    context->busy = PETSC_FALSE;
+  }
+
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   /* clear composed functions */
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL);CHKERRQ(ierr);
