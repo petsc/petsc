@@ -44,7 +44,8 @@ static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(PetscOptionItems *Pe
   Nc = 3;
   PetscCall(PetscOptionsRealArray("-dm_plex_transform_extrude_normal", "Input normal vector for extrusion", "DMPlexTransformExtrudeSetNormal", normal, &Nc, &flg));
   if (flg) {
-    PetscCheck(Nc == ex->cdimEx,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_SIZ, "Input normal has size %" PetscInt_FMT " != %" PetscInt_FMT " extruded coordinate dimension", Nc, ex->cdimEx);
+    // Extrusion dimension might not yet be determined
+    PetscCheck(!ex->cdimEx || Nc == ex->cdimEx,PetscObjectComm((PetscObject) tr), PETSC_ERR_ARG_SIZ, "Input normal has size %" PetscInt_FMT " != %" PetscInt_FMT " extruded coordinate dimension", Nc, ex->cdimEx);
     PetscCall(DMPlexTransformExtrudeSetNormal(tr, normal));
   }
   PetscCall(PetscOptionsString("-dm_plex_transform_extrude_normal_function", "Function to determine normal vector", "DMPlexTransformExtrudeSetNormalFunction", funcname, funcname, sizeof(funcname), &flg));
@@ -63,6 +64,39 @@ static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(PetscOptionItems *Pe
   }
   PetscCall(PetscFree(thicknesses));
   PetscOptionsHeadEnd();
+  PetscFunctionReturn(0);
+}
+
+/* Determine the implicit dimension pre-extrusion (either the implicit dimension of the DM or of a point in the active set for the transform).
+   If that dimension is the same as the current coordinate dimension (ex->dim), the extruded mesh will have a coordinate dimension one greater;
+   Otherwise the coordinate dimension will be kept. */
+static PetscErrorCode DMPlexTransformExtrudeComputeExtrusionDim(DMPlexTransform tr)
+{
+  DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *) tr->data;
+  DM                       dm;
+  DMLabel                  active;
+  PetscInt                 dim;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexTransformGetActive(tr, &active));
+  if (active) {
+    PetscInt pStart, pEnd, p;
+
+    PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+    for (p = pStart; p < pEnd; ++p) {
+      DMPolytopeType ct;
+      PetscInt       val;
+
+      PetscCall(DMLabelGetValue(active, p, &val));
+      if (val < 0) continue;
+      PetscCall(DMPlexGetCellType(dm, p, &ct));
+      dim = DMPolytopeTypeGetDim(ct);
+      break;
+    }
+  }
+  ex->cdimEx = ex->cdim == dim ? ex->cdim+1 : ex->cdim;
   PetscFunctionReturn(0);
 }
 
@@ -93,6 +127,7 @@ static PetscErrorCode DMPlexTransformSetUp_Extrude(DMPlexTransform tr)
   PetscInt                 Nl = ex->layers, l, i, ict, Nc, No, coff, ooff;
 
   PetscFunctionBegin;
+  PetscCall(DMPlexTransformExtrudeComputeExtrusionDim(tr));
   PetscCall(DMPlexTransformGetDM(tr, &dm));
   PetscCall(DMPlexTransformGetActive(tr, &active));
   if (active) {
@@ -496,6 +531,7 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, 
 {
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *) tr->data;
   DM                       dm;
+  DMLabel                  active;
   PetscReal                ones2[2]  = {0., 1.}, ones3[3] = { 0., 0., 1.};
   PetscReal                normal[3] = {0., 0., 0.}, norm;
   PetscBool                computeNormal;
@@ -509,6 +545,7 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, 
 
   PetscCall(DMPlexTransformGetDM(tr, &dm));
   PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexTransformGetActive(tr, &active));
   computeNormal = dim != ex->cdim && !ex->useNormal ? PETSC_TRUE : PETSC_FALSE;
   if (computeNormal) {
     PetscInt *closure = NULL;
@@ -527,6 +564,37 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, 
     PetscCall(DMPlexRestoreTransitiveClosure(dm, p, PETSC_FALSE, &closureSize, &closure));
   } else if (ex->useNormal) {
     for (d = 0; d < dEx; ++d) normal[d] = ex->normal[d];
+  } else if (active) { // find an active point in the closure of p and use its coordinate normal as the extrusion direction
+    PetscInt *closure = NULL;
+    PetscInt  closureSize, cl, pStart, pEnd;
+
+    PetscCall(DMPlexGetDepthStratum(dm, ex->cdimEx-1, &pStart, &pEnd));
+    PetscCall(DMPlexGetTransitiveClosure(dm, p, PETSC_FALSE, &closureSize, &closure));
+    for (cl = 0; cl < closureSize*2; cl += 2) {
+      if ((closure[cl] >= pStart) && (closure[cl] < pEnd)) {
+        PetscReal       cnormal[3] = {0, 0, 0};
+        const PetscInt *supp;
+        PetscInt        suppSize;
+
+        PetscCall(DMPlexComputeCellGeometryFVM(dm, closure[cl], NULL, NULL, cnormal));
+        PetscCall(DMPlexGetSupportSize(dm, closure[cl], &suppSize));
+        PetscCall(DMPlexGetSupport(dm, closure[cl], &supp));
+        // Only use external faces, so I can get the orientation from any cell
+        if (suppSize == 1) {
+          const PetscInt *cone, *ornt;
+          PetscInt        coneSize, c;
+
+          PetscCall(DMPlexGetConeSize(dm, supp[0], &coneSize));
+          PetscCall(DMPlexGetCone(dm, supp[0], &cone));
+          PetscCall(DMPlexGetConeOrientation(dm, supp[0], &ornt));
+          for (c = 0; c < coneSize; ++c) if (cone[c] == closure[cl]) break;
+          PetscCheck(c < coneSize, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Asymmetry in cone/support");
+          if (ornt[c] < 0) for (d = 0; d < dEx; ++d) cnormal[d] *= -1.;
+          for (d = 0; d < dEx; ++d) normal[d] += cnormal[d];
+        }
+      }
+    }
+    PetscCall(DMPlexRestoreTransitiveClosure(dm, p, PETSC_FALSE, &closureSize, &closure));
   } else if (ex->cdimEx == 2) {
     for (d = 0; d < dEx; ++d) normal[d] = ones2[d];
   } else if (ex->cdimEx == 3) {
@@ -543,7 +611,7 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, 
   }
 
   for (d = 0, norm = 0.0; d < dEx; ++d) norm += PetscSqr(normal[d]);
-  for (d = 0; d < dEx; ++d) normal[d] *= 1./PetscSqrtReal(norm);
+  for (d = 0; d < dEx; ++d) normal[d] *= norm == 0.0 ? 1.0 : 1./PetscSqrtReal(norm);
   for (d = 0; d < dEx;      ++d) out[d]  = normal[d]*ex->layerPos[r];
   for (d = 0; d < ex->cdim; ++d) out[d] += in[d];
   PetscFunctionReturn(0);
@@ -581,7 +649,6 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Extrude(DMPlexTransform tr)
   PetscCall(DMPlexTransformGetDM(tr, &dm));
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetCoordinateDim(dm, &ex->cdim));
-  ex->cdimEx = ex->cdim == dim ? ex->cdim+1 : ex->cdim;
   PetscCall(DMPlexTransformExtrudeSetLayers(tr, 1));
   PetscCall(DMPlexTransformInitialize_Extrude(tr));
   PetscFunctionReturn(0);
