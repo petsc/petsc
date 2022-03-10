@@ -2345,7 +2345,7 @@ static PetscErrorCode TPSNearestPoint(TPSEvaluateFunc feval, PetscScalar x[])
 
 const char *const DMPlexTPSTypes[] = {"SCHWARZ_P", "GYROID", "DMPlexTPSType", "DMPLEX_TPS_", NULL};
 
-static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype, const PetscInt extent[], const DMBoundaryType periodic[], PetscInt refinements, PetscInt layers, PetscReal thickness)
+static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype, const PetscInt extent[], const DMBoundaryType periodic[], PetscBool tps_distribute, PetscInt refinements, PetscInt layers, PetscReal thickness)
 {
   PetscErrorCode ierr;
   PetscMPIInt rank;
@@ -2758,6 +2758,19 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
   }
   ierr = PetscFree(edges);CHKERRQ(ierr);
   ierr = PetscFree(edgeSets);CHKERRQ(ierr);
+  if (tps_distribute) {
+    DM               pdm = NULL;
+    PetscPartitioner part;
+
+    ierr = DMPlexGetPartitioner(dm, &part);CHKERRQ(ierr);
+    ierr = PetscPartitionerSetFromOptions(part);CHKERRQ(ierr);
+    ierr = DMPlexDistribute(dm, 0, NULL, &pdm);CHKERRQ(ierr);
+    if (pdm) {
+      ierr = DMPlexReplace_Static(dm, &pdm);CHKERRQ(ierr);
+    }
+    // Do not auto-distribute again
+    ierr = DMPlexDistributeSetDefault(dm, PETSC_FALSE);CHKERRQ(ierr);
+  }
 
   ierr = DMPlexSetRefinementUniform(dm, PETSC_TRUE);CHKERRQ(ierr);
   for (PetscInt refine=0; refine<refinements; refine++) {
@@ -2799,8 +2812,10 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
 . tpstype - Type of triply-periodic surface
 . extent - Array of length 3 containing number of periods in each direction
 . periodic - array of length 3 with periodicity, or NULL for non-periodic
+. tps_distribute - Distribute 2D manifold mesh prior to refinement and extrusion (more scalable)
+- refinements - Number of factor-of-2 refinements of 2D manifold mesh
+. layers - Number of cell layers extruded in normal direction
 . thickness - Thickness in normal direction
-- refinements - Number of factor-of-2 refinements
 
   Output Parameter:
 . dm  - The DM object
@@ -2826,14 +2841,14 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
 
 .seealso: DMPlexCreateSphereMesh(), DMSetType(), DMCreate()
 @*/
-PetscErrorCode DMPlexCreateTPSMesh(MPI_Comm comm, DMPlexTPSType tpstype, const PetscInt extent[], const DMBoundaryType periodic[], PetscInt refinements, PetscInt layers, PetscReal thickness, DM *dm)
+PetscErrorCode DMPlexCreateTPSMesh(MPI_Comm comm, DMPlexTPSType tpstype, const PetscInt extent[], const DMBoundaryType periodic[], PetscBool tps_distribute, PetscInt refinements, PetscInt layers, PetscReal thickness, DM *dm)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMCreate(comm, dm);CHKERRQ(ierr);
   ierr = DMSetType(*dm, DMPLEX);CHKERRQ(ierr);
-  ierr = DMPlexCreateTPSMesh_Internal(*dm, tpstype, extent, periodic, refinements, layers, thickness);CHKERRQ(ierr);
+  ierr = DMPlexCreateTPSMesh_Internal(*dm, tpstype, extent, periodic, tps_distribute, refinements, layers, thickness);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3297,13 +3312,15 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
         PetscReal      thickness = 0.;
         DMBoundaryType periodic[3] = {DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
         DMPlexTPSType  tps_type = shape == DM_SHAPE_SCHWARZ_P ? DMPLEX_TPS_SCHWARZ_P : DMPLEX_TPS_GYROID;
+        PetscBool      tps_distribute;
         ierr = PetscOptionsIntArray("-dm_plex_tps_extent", "Number of replicas for each of three dimensions", NULL, extent, (three=3, &three), NULL);CHKERRQ(ierr);
         ierr = PetscOptionsInt("-dm_plex_tps_refine", "Number of refinements", NULL, refine, &refine, NULL);CHKERRQ(ierr);
         ierr = PetscOptionsEnumArray("-dm_plex_tps_periodic", "Periodicity in each of three dimensions", NULL, DMBoundaryTypes, (PetscEnum*)periodic, (three=3, &three), NULL);CHKERRQ(ierr);
         ierr = PetscOptionsInt("-dm_plex_tps_layers", "Number of layers in volumetric extrusion (or zero to not extrude)", NULL, layers, &layers, NULL);CHKERRQ(ierr);
         ierr = PetscOptionsReal("-dm_plex_tps_thickness", "Thickness of volumetric extrusion", NULL, thickness, &thickness, NULL);CHKERRQ(ierr);
-
-        ierr = DMPlexCreateTPSMesh_Internal(dm, tps_type, extent, periodic, refine, layers, thickness);CHKERRQ(ierr);
+        ierr = DMPlexDistributeGetDefault(dm, &tps_distribute);CHKERRQ(ierr);
+        ierr = PetscOptionsBool("-dm_plex_tps_distribute", "Distribute the 2D mesh prior to refinement and extrusion", NULL, tps_distribute, &tps_distribute, NULL);CHKERRQ(ierr);
+        ierr = DMPlexCreateTPSMesh_Internal(dm, tps_type, extent, periodic, tps_distribute, refine, layers, thickness);CHKERRQ(ierr);
       }
       break;
       default: SETERRQ(comm, PETSC_ERR_SUP, "Domain shape %s is unsupported", DMPlexShapes[shape]);
