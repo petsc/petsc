@@ -29,6 +29,8 @@ else
   LINK.kokkos.cxx = $(CXXLINKER) $(CXX_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS)
 endif
 
+LINK.hip.cpp = $(HIPC) $(HIPC_FLAGS) $(HIPPP_FLAGS) $(HIPOPTFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS) $(MPICXX_INCLUDES) $(MPICXX_LIBS)
+
 ifneq ($(RAJA_USE_CUDA_COMPILER),)
   PETSC_RAJACOMPILE_SINGLE  = ${CUDAC} -o $*.o $(MPICXX_INCLUDES) ${CUDAC_FLAGS} ${CUFLAGS} -x cu -Xcudafe "--display_error_number" -c --compiler-options="${PETSC_CCPPFLAGS} ${PETSC_CC_INCLUDES} ${CUDA_CXXFLAGS}" --expt-extended-lambda --expt-relaxed-constexpr
 else
@@ -43,6 +45,8 @@ LDLIBS += $(PETSC_LIB)
 	$(LINK.kokkos.cxx) $^ $(LOADLIBES) $(LDLIBS) -o $@
 % : %.cxx
 	$(LINK.cc) $^ $(LOADLIBES) $(LDLIBS) -o $@
+% : %.hip.cpp
+	$(LINK.hip.cpp) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
 ifneq (,$(findstring -TP,$(PCC_FLAGS)))
 % : %.c

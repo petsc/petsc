@@ -172,6 +172,9 @@ $(TESTDIR)/%.o : $(EXAMPLESDIR)/%.cu | $$(@D)/.DIR
 	$(PETSC_COMPILE.cu) $(abspath $<) -o $@ # Compile first so that if there is an error, it comes from a normal compile
 	@$(PETSC_GENDEPS.cu) $(abspath $<) -o $(@:%.o=%.d) # Generate the dependencies for later
 
+$(TESTDIR)/%.o : $(EXAMPLESDIR)/%.hip.cpp | $$(@D)/.DIR
+	$(PETSC_COMPILE.hip.cpp) $(abspath $<) -o $@
+
 # Test modules go in the same directory as the target *.o
 TESTMODDIR = $(@D)
 FCMOD = cd
@@ -244,6 +247,10 @@ $(testexe.F) $(testexe.F90) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
 	-$(call macos-firewall-register,$@)
 
 $(testexe.c) $(testexe.cu) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
+	$(call quiet,CLINKER) -o $@ $^ $(PETSC_TEST_LIB)
+	-$(call macos-firewall-register,$@)
+
+$(testexe.hip.cpp) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
 	$(call quiet,CLINKER) -o $@ $^ $(PETSC_TEST_LIB)
 	-$(call macos-firewall-register,$@)
 

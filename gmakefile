@@ -193,7 +193,6 @@ $(OBJDIR)/%.o : src/%.kokkos.cxx | $$(@D)/.DIR
 $(OBJDIR)/%.o : src/%.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.cxx) $(abspath $<) -o $@
 
-#$(OBJDIR)/%.hip.o : src/%.hip.cpp | $$(@D)/.DIR
 $(OBJDIR)/%.o : src/%.hip.cpp | $$(@D)/.DIR
 	$(PETSC_COMPILE.hip.cpp) $(abspath $<) -o $@
 
