@@ -79,7 +79,7 @@ static inline PetscErrorCode PetscBTNegate(PetscBT array, PetscInt index)
 static inline PetscErrorCode PetscBTClear(PetscBT array, PetscInt index)
 {
   PetscFunctionBegin;
-  array[PetscBTIndex_Internal(index)] &= ~PetscBTMask_Internal(index);
+  array[PetscBTIndex_Internal(index)] &= (char) ~PetscBTMask_Internal(index);
   PetscFunctionReturn(0);
 }
 
