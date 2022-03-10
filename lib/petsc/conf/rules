@@ -563,10 +563,11 @@ manimplementations:
             sed "s?\(.*\.[ch]x*u*\):.*\(_p_$${itemName}\)\b.*{?<A HREF=\"../../../\1.html#\2\">\2 in \1</A><BR>?" implsClass.txt >> $$i ; \
           fi ; \
           if [ -s implsFunc.txt ] || [ -s implsClass.txt ] ; then \
-            grep -v /BODY $$i > tmp; \
-            printf "</BODY></HTML>" >> tmp; \
-            mv tmp $$i ; \
-            ${RM} tmp ; \
+            export atmpfile=$$(mktemp) ; \
+            grep -v /BODY $$i > $$atmpfile; \
+            printf "</BODY></HTML>" >> $$atmpfile; \
+            mv $$atmpfile $$i ; \
+            ${RM} $$atmpfile ; \
           fi ; \
           ${RM} implsFunc.txt implsClass.txt; \
        fi ; \
