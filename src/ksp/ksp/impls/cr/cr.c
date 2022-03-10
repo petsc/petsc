@@ -40,6 +40,10 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
   } else {
     ierr = VecCopy(B,R);CHKERRQ(ierr);                  /*   R <- B (X is 0)    */
   }
+  /* This may be true only on a subset of MPI ranks; setting it here so it will be detected by the first norm computation below */
+  if (ksp->reason == KSP_DIVERGED_PC_FAILED) {
+    ierr = VecSetInf(R);CHKERRQ(ierr);
+  }
   ierr = KSP_PCApply(ksp,R,P);CHKERRQ(ierr);     /*   P   <- B*R         */
   ierr = KSP_MatMult(ksp,Amat,P,AP);CHKERRQ(ierr);      /*   AP  <- A*P         */
   ierr = VecCopy(P,RT);CHKERRQ(ierr);                   /*   RT  <- P           */

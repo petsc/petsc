@@ -344,7 +344,6 @@ PetscErrorCode KSPSolve_LGMRES(KSP ksp)
 
   /* initialize */
   itcount     = 0;
-  ksp->reason = KSP_CONVERGED_ITERATING;
   /*LGMRES_MOD*/
   for (ii=0; ii<lgmres->aug_dim; ii++) lgmres->aug_order[ii] = 0;
 

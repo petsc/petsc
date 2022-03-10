@@ -530,10 +530,12 @@ M*/
         ierr = PCSetFailedReason(ksp->pc,(PCFailedReason)recvbuf);CHKERRQ(ierr); \
         ksp->reason = KSP_DIVERGED_PC_FAILED;                         \
         ierr        = VecSetInf(ksp->vec_sol);CHKERRQ(ierr);\
+        ksp->rnorm  = beta; \
       } else {\
         ierr = PCSetFailedReason(ksp->pc,PC_NOERROR);CHKERRQ(ierr); \
         ksp->reason = KSP_DIVERGED_NANORINF;\
-      }\
+        ksp->rnorm  = beta; \
+      }                                       \
       PetscFunctionReturn(0);\
     }\
   } } while (0)

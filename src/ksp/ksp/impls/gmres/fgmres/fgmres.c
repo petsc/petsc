@@ -280,6 +280,11 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
   } else { /* guess is 0 so residual is F (which is in ksp->vec_rhs) */
     ierr = VecCopy(ksp->vec_rhs,VEC_VV(0));CHKERRQ(ierr);
   }
+  /* This may be true only on a subset of MPI ranks; setting it here so it will be detected by the first norm computaion in the Krylov method */
+  if (ksp->reason == KSP_DIVERGED_PC_FAILED) {
+    ierr = VecSetInf(VEC_VV(0));CHKERRQ(ierr);
+  }
+
   /* now the residual is in VEC_VV(0) - which is what
      KSPFGMRESCycle expects... */
 

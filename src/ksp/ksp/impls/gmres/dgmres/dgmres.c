@@ -271,7 +271,6 @@ PetscErrorCode KSPSolve_DGMRES(KSP ksp)
   ierr            = PetscObjectSAWsGrantAccess((PetscObject)ksp);CHKERRQ(ierr);
 
   itcount     = 0;
-  ksp->reason = KSP_CONVERGED_ITERATING;
   while (!ksp->reason) {
     ierr = KSPInitialResidual(ksp,ksp->vec_sol,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),ksp->vec_rhs);CHKERRQ(ierr);
     if (ksp->pc_side == PC_LEFT) {
