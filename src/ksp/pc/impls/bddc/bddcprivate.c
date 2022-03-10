@@ -5105,7 +5105,7 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
       ierr = VecRestoreArrayRead(matis->x,&x);CHKERRQ(ierr);
       ierr = VecRestoreArrayRead(matis->y,&y);CHKERRQ(ierr);
       ierr = VecRestoreArrayRead(matis->counter,&v);CHKERRQ(ierr);
-      ierr = MPIU_Allreduce(&lerror,&error,1,MPIU_REAL,MPI_MAX,PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
+      ierr = MPIU_Allreduce(&lerror,&error,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)pc));CHKERRMPI(ierr);
       if (error > PETSC_SMALL) {
         if (!pcbddc->user_ChangeOfBasisMatrix || pcbddc->current_level) {
           SETERRQ(PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"Error global vs local change on I: %1.6e",error);
