@@ -975,13 +975,13 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
   /* can get all points "removed" */
   ierr =  MatGetSize(Prol, &kk, &ii);CHKERRQ(ierr);
   if (!ii) {
-    ierr = PetscInfo(pc,"No selected points on coarse grid\n");CHKERRQ(ierr);
+    ierr = PetscInfo(pc,"%s: No selected points on coarse grid\n");CHKERRQ(ierr);
     ierr = MatDestroy(&Prol);CHKERRQ(ierr);
     *a_P_out = NULL;  /* out */
     ierr = PetscLogEventEnd(PC_GAMGProlongator_AGG,0,0,0,0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscInfo(pc,"New grid %D nodes\n",ii/col_bs);CHKERRQ(ierr);
+  ierr = PetscInfo(pc,"%s: New grid %D nodes\n",((PetscObject)pc)->prefix,ii/col_bs);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(Prol, &myCrs0, &kk);CHKERRQ(ierr);
 
   PetscCheckFalse((kk-myCrs0) % col_bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"(kk %D -myCrs0 %D) not divisible by col_bs %D",kk,myCrs0,col_bs);
@@ -1124,7 +1124,7 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
       ierr = KSPCheckSolve(eksp,pc,xx);CHKERRQ(ierr);
 
       ierr = KSPComputeExtremeSingularValues(eksp, &emax, &emin);CHKERRQ(ierr);
-      ierr = PetscInfo(pc,"Smooth P0: max eigen=%e min=%e PC=%s\n",(double)emax,(double)emin,PCJACOBI);CHKERRQ(ierr);
+      ierr = PetscInfo(pc,"%s: Smooth P0: max eigen=%e min=%e PC=%s\n",((PetscObject)pc)->prefix,(double)emax,(double)emin,PCJACOBI);CHKERRQ(ierr);
       ierr = VecDestroy(&xx);CHKERRQ(ierr);
       ierr = VecDestroy(&bb);CHKERRQ(ierr);
       ierr = KSPDestroy(&eksp);CHKERRQ(ierr);
@@ -1132,7 +1132,7 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
     if (pc_gamg->use_sa_esteig) {
       mg->min_eigen_DinvA[pc_gamg->current_level] = emin;
       mg->max_eigen_DinvA[pc_gamg->current_level] = emax;
-      ierr = PetscInfo(pc,"Smooth P0: level %D, cache spectra %g %g\n",pc_gamg->current_level,(double)emin,(double)emax);CHKERRQ(ierr);
+      ierr = PetscInfo(pc,"%s: Smooth P0: level %D, cache spectra %g %g\n",((PetscObject)pc)->prefix,pc_gamg->current_level,(double)emin,(double)emax);CHKERRQ(ierr);
     } else {
       mg->min_eigen_DinvA[pc_gamg->current_level] = 0;
       mg->max_eigen_DinvA[pc_gamg->current_level] = 0;
