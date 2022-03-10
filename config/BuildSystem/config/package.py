@@ -1817,6 +1817,11 @@ class CMakePackage(Package):
   def formCMakeConfigureArgs(self):
     import os
     import shlex
+    #  If user has set, for example, CMAKE_GENERATOR Ninja then CMake calls from configure will generate the wrong external package tools for building
+    try:
+      del os.environ['CMAKE_GENERATOR']
+    except:
+      pass
 
     args = ['-DCMAKE_INSTALL_PREFIX='+self.installDir]
     args.append('-DCMAKE_INSTALL_NAME_DIR:STRING="'+os.path.join(self.installDir,self.libdir)+'"')
