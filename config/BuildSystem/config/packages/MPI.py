@@ -34,7 +34,8 @@ class Configure(config.package.Package):
                              ['liblammpi++.a','libmpi.a','liblam.a'],
                              ['libmpi.a','liblam.a']]
     liblist_msmpi         = [[os.path.join('amd64','msmpifec.lib'),os.path.join('amd64','msmpi.lib')],
-                             [os.path.join('i386','msmpifec.lib'),os.path.join('i386','msmpi.lib')]]
+                             [os.path.join('i386','msmpifec.lib'),os.path.join('i386','msmpi.lib')],
+                             ['msmpi.lib']]
     liblist_other         = [['libmpich.a','libpthread.a'],['libmpi++.a','libmpi.a']]
     liblist_single        = [['libmpi.a'],['libmpich.a'],['mpi.lib'],['mpich2.lib'],['mpich.lib'],
                              [os.path.join('amd64','msmpi.lib')],[os.path.join('i386','msmpi.lib')]]
