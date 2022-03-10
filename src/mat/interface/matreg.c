@@ -31,15 +31,13 @@ PetscErrorCode MatGetRootType_Private(Mat mat, MatType *rootType)
   PetscBool      found = PETSC_FALSE;
   MatRootName    names = MatRootNameList;
   MatType        inType;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   ierr = MatGetType(mat,&inType);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRMPI(ierr);
   while (names) {
-    if (size > 1) {ierr = PetscStrcmp(inType,names->mname,&found);CHKERRQ(ierr);}
-    else {ierr = PetscStrcmp(inType,names->sname,&found);CHKERRQ(ierr);}
+    ierr = PetscStrcmp(inType,names->mname,&found);CHKERRQ(ierr);
+    if (!found) { ierr = PetscStrcmp(inType,names->sname,&found);CHKERRQ(ierr); }
     if (found) {
       found     = PETSC_TRUE;
       *rootType = names->rname;

@@ -59,7 +59,6 @@ PETSC_INTERN PetscErrorCode MatSeqAIJKokkosSyncDevice(Mat A)
 
   PetscFunctionBegin;
   PetscCheckFalse(A->factortype != MAT_FACTOR_NONE,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Cann't sync factorized matrix from host to device");
-  PetscCheckFalse(!A->assembled,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Cann't sync unassembled matrix from host to device");
   PetscCheckFalse(!aijkok,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unexpected NULL (Mat_SeqAIJKokkos*)A->spptr");
   if (aijkok->a_dual.need_sync_device()) {
     aijkok->a_dual.sync_device();
@@ -92,7 +91,7 @@ static PetscErrorCode MatSeqAIJKokkosSyncHost(Mat A)
 
   PetscFunctionBegin;
   PetscCheckTypeName(A,MATSEQAIJKOKKOS);
-   /* We do not expect one needs factors on host  */
+  /* We do not expect one needs factors on host  */
   PetscCheckFalse(A->factortype != MAT_FACTOR_NONE,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Cann't sync factorized matrix from device to host");
   PetscCheckFalse(!aijkok,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing AIJKOK");
   aijkok->a_dual.sync_host();
@@ -547,11 +546,11 @@ static PetscErrorCode MatDestroy_SeqAIJKokkos(Mat A)
   } else {
     delete static_cast<Mat_SeqAIJKokkosTriFactors*>(A->spptr);
   }
-  ierr     = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL);CHKERRQ(ierr);
-  ierr     = PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOO_C",NULL);CHKERRQ(ierr);
-  ierr     = PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",       NULL);CHKERRQ(ierr);
   A->spptr = NULL;
-  ierr     = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatFactorGetSolverType_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOO_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",NULL);CHKERRQ(ierr);
+  ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1043,20 +1042,16 @@ static PetscErrorCode MatAXPY_SeqAIJKokkos(Mat Y,PetscScalar alpha,Mat X,MatStru
 static PetscErrorCode MatSetPreallocationCOO_SeqAIJKokkos(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
 {
   PetscErrorCode            ierr;
-  Mat                       newmat;
   Mat_SeqAIJKokkos          *akok;
   Mat_SeqAIJ                *aseq;
 
   PetscFunctionBegin;
-  ierr = MatCreate(PetscObjectComm((PetscObject)mat),&newmat);CHKERRQ(ierr);
-  ierr = MatSetSizes(newmat,mat->rmap->n,mat->cmap->n,mat->rmap->N,mat->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetType(newmat,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatSetPreallocationCOO_SeqAIJ(newmat,coo_n,coo_i,coo_j);CHKERRQ(ierr);
-  ierr = MatConvert(newmat,MATSEQAIJKOKKOS,MAT_INPLACE_MATRIX,&newmat);CHKERRQ(ierr);
-  ierr = MatHeaderMerge(mat,&newmat);CHKERRQ(ierr);
-  ierr = MatZeroEntries(mat);CHKERRQ(ierr); /* Zero matrix on device */
+  ierr = MatSetPreallocationCOO_SeqAIJ(mat,coo_n,coo_i,coo_j);CHKERRQ(ierr);
   aseq = static_cast<Mat_SeqAIJ*>(mat->data);
   akok = static_cast<Mat_SeqAIJKokkos*>(mat->spptr);
+  delete akok;
+  mat->spptr = akok = new Mat_SeqAIJKokkos(mat->rmap->n,mat->cmap->n,aseq->nz,aseq->i,aseq->j,aseq->a,mat->nonzerostate+1,PETSC_FALSE);
+  ierr = MatZeroEntries_SeqAIJKokkos(mat);CHKERRQ(ierr);
   akok->SetUpCOO(aseq);
   PetscFunctionReturn(0);
 }
@@ -1074,7 +1069,6 @@ static PetscErrorCode MatSetValuesCOO_SeqAIJKokkos(Mat A,const PetscScalar v[],I
   PetscMemType                memtype;
 
   PetscFunctionBegin;
-  PetscAssert(A->assembled,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected matrix to be already assembled in MatSetPreallocationCOO()");
   ierr = PetscGetMemType(v,&memtype);CHKERRQ(ierr);
   if (PetscMemTypeHost(memtype)) { /* If user gave v[] in host, we might need to copy it to device if any */
     kv = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),ConstMatScalarKokkosViewHost(v,aseq->coo_n));
@@ -1082,14 +1076,12 @@ static PetscErrorCode MatSetValuesCOO_SeqAIJKokkos(Mat A,const PetscScalar v[],I
     kv = ConstMatScalarKokkosView(v,aseq->coo_n); /* Directly use v[]'s memory */
   }
 
-  if (imode == INSERT_VALUES) {ierr = MatSeqAIJGetKokkosViewWrite(A,&Aa);CHKERRQ(ierr);} /* write matrix values */
-  else {ierr = MatSeqAIJGetKokkosView(A,&Aa);CHKERRQ(ierr);} /* read & write matrix values */
+  if (imode == INSERT_VALUES) {
+    ierr = MatSeqAIJGetKokkosViewWrite(A,&Aa);CHKERRQ(ierr); /* write matrix values */
+    Kokkos::deep_copy(Aa,0.0); /* Zero matrix values since INSERT_VALUES still requires summing replicated values in v[] */
+  } else {ierr = MatSeqAIJGetKokkosView(A,&Aa);CHKERRQ(ierr);} /* read & write matrix values */
 
-  Kokkos::parallel_for(Annz,KOKKOS_LAMBDA(const PetscCount i) {
-    PetscScalar sum = 0.0;
-    for (PetscCount k=jmap(i); k<jmap(i+1); k++) sum += kv(perm(k));
-    Aa(i) = (imode == INSERT_VALUES? 0.0 : Aa(i)) + sum;
-  });
+  Kokkos::parallel_for(Annz,KOKKOS_LAMBDA(const PetscCount i) {for (PetscCount k=jmap(i); k<jmap(i+1); k++) Aa(i) += kv(perm(k));});
 
   if (imode == INSERT_VALUES) {ierr = MatSeqAIJRestoreKokkosViewWrite(A,&Aa);CHKERRQ(ierr);}
   else {ierr = MatSeqAIJRestoreKokkosView(A,&Aa);CHKERRQ(ierr);}
@@ -1140,7 +1132,7 @@ static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat A)
   a->ops->restorearraywrite         = MatSeqAIJRestoreArrayWrite_SeqAIJKokkos;
 
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOO_C",MatSetPreallocationCOO_SeqAIJKokkos);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",       MatSetValuesCOO_SeqAIJKokkos);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",MatSetValuesCOO_SeqAIJKokkos);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
