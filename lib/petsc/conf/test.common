@@ -5,12 +5,13 @@ TESTMODE = testexamples
 ALLTESTS_CHECK_FAILURES = no
 ALLTESTS_MAKEFILE = ${PETSC_DIR}/gmakefile.test
 VALGRIND=0
-alltests: ${PETSC_DIR}/${PETSC_ARCH}/tests/testfiles
+alltests: chk_in_petscdir ${PETSC_DIR}/${PETSC_ARCH}/tests/testfiles
 	-@${RM} -rf ${PETSC_ARCH}/lib/petsc/conf/alltests.log alltests.log
 	+@if [ -f ${PETSC_DIR}/share/petsc/examples/gmakefile.test ] ; then \
             ALLTESTS_MAKEFILE=${PETSC_DIR}/share/petsc/examples/gmakefile.test ; \
             ALLTESTSLOG=alltests.log ;\
           else \
+            ALLTESTS_MAKEFILE=${PETSC_DIR}/gmakefile.test; \
             ALLTESTSLOG=${PETSC_ARCH}/lib/petsc/conf/alltests.log ;\
             ln -s $${ALLTESTSLOG} alltests.log ;\
           fi; \
