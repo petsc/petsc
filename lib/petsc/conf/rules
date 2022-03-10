@@ -16,7 +16,7 @@ chk_petscdir:
 chk_in_petscdir:
 	@if [ ! -f include/petscversion.h ]; then \
 	  printf ${PETSC_TEXT_HILIGHT}"*********************** ERROR **********************************************\n" ; \
-	  echo " This target should be involed in top level PETSc source dir!"; \
+	  echo " This target should be invoked in top level PETSc source dir!"; \
 	  printf "****************************************************************************"${PETSC_TEXT_NORMAL}"\n" ;  false; fi
 
 chk_upgrade:
