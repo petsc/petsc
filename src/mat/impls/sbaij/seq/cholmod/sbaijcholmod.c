@@ -388,6 +388,7 @@ static PetscErrorCode MatSolve_CHOLMOD(Mat F,Vec B,Vec X)
   ierr = !cholmod_X_free_dense(&E_handle,chol->common);CHKERRQ(ierr);
   ierr = VecUnWrapCholmod(B,GET_ARRAY_READ,&cholB);CHKERRQ(ierr);
   ierr = VecUnWrapCholmod(X,GET_ARRAY_WRITE,&cholX);CHKERRQ(ierr);
+  ierr = PetscLogFlops(4.0*chol->common->lnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -407,6 +408,7 @@ static PetscErrorCode MatMatSolve_CHOLMOD(Mat F,Mat B,Mat X)
   ierr = !cholmod_X_free_dense(&E_handle,chol->common);CHKERRQ(ierr);
   ierr = MatDenseUnWrapCholmod(B,GET_ARRAY_READ,&cholB);CHKERRQ(ierr);
   ierr = MatDenseUnWrapCholmod(X,GET_ARRAY_WRITE,&cholX);CHKERRQ(ierr);
+  ierr = PetscLogFlops(4.0*B->cmap->n*chol->common->lnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -424,6 +426,7 @@ static PetscErrorCode MatCholeskyFactorNumeric_CHOLMOD(Mat F,Mat A,const MatFact
   PetscCheckFalse(ierr,PetscObjectComm((PetscObject)F),PETSC_ERR_LIB,"CHOLMOD factorization failed with status %d",chol->common->status);
   PetscCheckFalse(chol->common->status == CHOLMOD_NOT_POSDEF,PetscObjectComm((PetscObject)F),PETSC_ERR_MAT_CH_ZRPVT,"CHOLMOD detected that the matrix is not positive definite, failure at column %u",(unsigned)chol->factor->minor);
 
+  ierr = PetscLogFlops(chol->common->fl);CHKERRQ(ierr);
   if (aijalloc) {ierr = PetscFree2(cholA.p,cholA.i);CHKERRQ(ierr);}
   if (valloc) {ierr = PetscFree(cholA.x);CHKERRQ(ierr);}
 #if defined(PETSC_USE_SUITESPARSE_GPU)
