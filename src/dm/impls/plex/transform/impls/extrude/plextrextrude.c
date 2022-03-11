@@ -384,6 +384,46 @@ static PetscErrorCode DMPlexTransformDestroy_Extrude(DMPlexTransform tr)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode DMPlexTransformGetSubcellOrientation_Extrude(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
+{
+  DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *) tr->data;
+
+  PetscFunctionBeginHot;
+  *rnew = r;
+  *onew = DMPolytopeTypeComposeOrientation(tct, o, so);
+  if (!so) PetscFunctionReturn(0);
+  if (ex->useTensor) {
+    switch (sct) {
+      case DM_POLYTOPE_POINT: break;
+      case DM_POLYTOPE_SEGMENT:
+      switch (tct) {
+        case DM_POLYTOPE_SEGMENT: break;
+        case DM_POLYTOPE_SEG_PRISM_TENSOR:
+          *onew = DMPolytopeTypeComposeOrientation(tct, o, so ? -1 : 0);
+          break;
+        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      }
+      break;
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported cell type %s", DMPolytopeTypes[sct]);
+    }
+  } else {
+    switch (sct) {
+      case DM_POLYTOPE_POINT: break;
+      case DM_POLYTOPE_SEGMENT:
+      switch (tct) {
+        case DM_POLYTOPE_SEGMENT: break;
+        case DM_POLYTOPE_QUADRILATERAL:
+          *onew = DMPolytopeTypeComposeOrientation(tct, o, so ? -3 : 0);
+          break;
+        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      }
+      break;
+      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported cell type %s", DMPolytopeTypes[sct]);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode DMPlexTransformCellTransform_Extrude(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
 {
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *) tr->data;
@@ -466,7 +506,7 @@ static PetscErrorCode DMPlexTransformInitialize_Extrude(DMPlexTransform tr)
   tr->ops->destroy        = DMPlexTransformDestroy_Extrude;
   tr->ops->setdimensions  = DMPlexTransformSetDimensions_Extrude;
   tr->ops->celltransform  = DMPlexTransformCellTransform_Extrude;
-  tr->ops->getsubcellorientation = DMPlexTransformGetSubcellOrientationIdentity;
+  tr->ops->getsubcellorientation = DMPlexTransformGetSubcellOrientation_Extrude;
   tr->ops->mapcoordinates = DMPlexTransformMapCoordinates_Extrude;
   PetscFunctionReturn(0);
 }
