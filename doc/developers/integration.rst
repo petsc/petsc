@@ -24,8 +24,7 @@ Integration branches
 
 The ``release`` branch contains the latest PETSc release including bug-fixes.
 
-Bug-fix branches for the release should start from ``release``, along
-with most :any:`documentation fixes <sec_docs_only_MRs>`.
+Bug-fixes, along with most :any:`documentation fixes <sec_docs_only_MRs>`, should start from ``release``.
 
 .. code-block:: console
 
@@ -33,7 +32,7 @@ with most :any:`documentation fixes <sec_docs_only_MRs>`.
    $ git checkout -b yourname/fix-component-name origin/release
 
 
-Bug-fix updates, about every month or so, (e.g. 3.14.1) are tagged on ``release`` (e.g. v3.14.1).
+Bug-fix updates, about every month, (e.g. 3.17.1) are tagged on ``release`` (e.g. v3.17.1).
 
 .. _sec_main_branch:
 
@@ -41,11 +40,11 @@ Bug-fix updates, about every month or so, (e.g. 3.14.1) are tagged on ``release`
 ``main``
 ----------
 
-The ``main`` branch contains all features and bug-fixes that are believed to be
-stable and will be in the next release (e.g. version 3.15). Users developing software based
+The ``main`` branch contains everything in the release branch as well as new features that have passed all testing
+and will be in the next release (e.g. version 3.18). Users developing software based
 on recently-added features in PETSc should follow ``main``.
 
-New feature branches and bug-fixes for ``main`` :any:`should start  <sec_developing_a_new_feature>` from ``main``.
+New feature branches :any:`should start  <sec_developing_a_new_feature>` from ``main``.
 
 .. code-block:: console
 
@@ -57,7 +56,9 @@ Before filing an MR
 
 -  Read the :any:`style`.
 -  :any:`Set up your git environment <sec_setup_git>`.
--  :any:`Start a new feature branch <sec_developing_a_new_feature>` and make your changes.
+-  Start a new branch and make your changes. Only use a GitLab fork of PETSc if you do not have
+   developer (write access) to the PETSc GitLab repository.
+
 -  If your contribution can be logically decomposed into 2 or more
    separate contributions, submit them in sequence with different
    branches and merge requests instead of all at once.
@@ -87,19 +88,20 @@ Alternatively, use `GitLab's web interface <https://docs.gitlab.com/ee/user/proj
 - The default target branch is ``main``; if your branch started from ``release``, select that as the target branch.
 - If the merge request resolves an outstanding `issue <https://gitlab.com/petsc/petsc/issues>`__,
   include a `closing pattern <https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#default-closing-pattern>`__
-  such as ``Closes #123`` in the MR’s description to close the issue once the MR is merged [#closing_patterns_release]_ .
+  such as ``Closes #123`` in the MR’s description to automatically have the issue closed when the MR is merged [#closing_patterns_release]_ .
+
+If you have developer access (that is you are not contributing from a fork):
+
+- Select appropriate `labels <https://gitlab.com/petsc/petsc/-/labels>`__ including a :any:`workflow label <sec_workflow_labels>`.
+- Assign yourself to the MR.
+- Select reviewers for the MR; clicking on ``> Approval Rules`` will list appropriate reviewers.
+- If the branch started from ``release`` select the ``milestone`` of ``Vxx.yy-release-fixes``
+- If appropriate, once the MR has been submitted, refresh the browser and then select Pipelines to examine and run testing, see :doc:`/developers/pipelines`.
 
 For MRs from forks:
 
 -  Select the correct target repository ``petsc/petsc`` along with the target branch.
-
-If you have developer access:
-
-- Select appropriate `labels <https://gitlab.com/petsc/petsc/-/labels>`__ including a :any:`workflow label <sec_workflow_labels>`.
-
-If you do not have developer access:
-
--  Once submitted, if needbe, `@`-mention one of the developers in a comment so that they can assign someone to the MR. This person is responsible for adding labels, running pipelines, and generally assisting with the MR.
+-  GitLab does not allow you to set labels so  `@`-mention one of the developers in a comment so that they can assign someone to the MR to add labels, run pipelines, and generally assist with the MR. Both the submitter and the this assignee should be listed in the upper right corner as an assigned to the MR.
 
 .. _sec_docs_only_MRs:
 
@@ -108,18 +110,11 @@ Docs-only MRs
 
 For changes only to documentation, add the ``docs-only`` label, which will
 trigger a modified pipeline to automatically build a preview of the documentation.
-Any warnings from Sphinx will cause the pipeline to fail. Once completed, click "View App".
+Any warnings from Sphinx will cause the pipeline to fail. Once completed, click "View App" which is to the right side in the middle of the MR page.
 
 Documentation changes should be made to the :any:`release branch <sec_release_branch>`
 in the typical case that they apply to the release version of PETSc (including changes for the website).
 Changes related only to new features in the :any:`main branch <sec_main_branch>` should be applied there.
-
-Testing
-=======
-
-The PETSc continuous integration (CI) pipeline runs the entire test suite on around 60 configurations of compilers, options, and machines, and takes about 3 hours. Pipelines can be started and controlled from the "Pipelines" tab on the MR page. This requires developer access, so if needbe, @-mention the assigned developer to remind them.
-
-Since the full pipeline requires many resources, when a merge request is created, a pipeline is triggered but you must manually un-pause it for the tests to run. For detailed instructions and help diagnosing failures, see :doc:`/developers/pipelines`.
 
 .. _sec_mr_reviewing:
 
@@ -127,34 +122,37 @@ MR reviewing
 ============
 
 Once the MR has passed the pipeline, it is ready for review.
-The submitter (or assignee for MRs from forks) must change the :any:`workflow label <sec_workflow_labels>` to ``workflow::Review``.
+The submitter/assignee must change the :any:`workflow label <sec_workflow_labels>` to ``workflow::Review``.
 
-It is the **submitter’s** responsibility to track the progress of the MR
+It is the **submitter/assigner’s** responsibility to track the progress of the MR
 and ensure it gets merged.
 
-If the pipeline detect problems it is the **submitter’s**
+If the pipeline detects problems it is the **submitter/assignee’s**
 responsibility to fix the errors.
 
-Reviewers will comment on the MR, either in the overview or by clicking next to specific lines
-in the changes for a commit or the overall MR [#review_click_comment]_ [#review_on_line]_.
-Often, the submitter will need to update their branch in response to these comments,
-and re-run the pipeline.
+Reviewers comment on the MR, either
 
-Gitlab MRs use "threads" to track these discussions.
-When responding to a thread make sure to use "Reply" box for that
+- by clicking on the left end of a specific line in the changes. A useful feature is the `"insert suggestion" <https://docs.gitlab.com/ee/user/project/merge_requests/reviews/suggestions.html>`__ button in the comment box, to suggest an exact replacement on a line or several adjacent lines.
+- or in the overview if it is a general comment.  When introducing a new topic (thread) in reviewing an MR, one should submit with "Start Review" and not "Comment".
+
+Gitlab MRs use "threads" to track discussions.
+When responding to a thread make sure to use the "Reply" box for that
 thread; do not introduce a new thread or a comment.
 
-The **submitter** must mark threads as resolved as they fix the related
+The **submitter/assignee** must mark threads as resolved when they fix the related
 problem.
 
-If the **submitter** feels the MR is not getting reviewed in a timely
-manner they may assign potential reviewers to the MR and request in the discussion these same people to review by @-mentioning them.
+Often, the submitter/assignee will need to update their branch in response to these comments,
+and re-run the pipeline.
+
+If the **submitter/assignee** feels the MR is not getting reviewed in a timely
+manner they may assign additional reviewers to the MR and request in the discussion these same people to review by @-mentioning them.
 
 When reviewers believe an MR is ready to be merged, they approve it.
-You can determine who must approve your MR by clicking on the "Viewer eligible reviewers" towards the top of the "Overview" page.
+You can determine who must approve your MR by clicking on the "View eligible reviewers" towards the top of the "Overview" page.
 
-When the merge has been approved by a sufficient number of reviewers, the pipeline passes, new commits have been :any:`properly rearranged <sec_clean_commit_history>` if needbe, and all threads have been resolved,
-the **submitter** (or assignee for MRs from forks) must set the label to  :any:`workflow::Ready-For-Merge <sec_workflow_labels>`.
+When the merge has been approved by a sufficient number of reviewers, the pipeline passes, new commits have been :any:`properly rearranged <sec_clean_commit_history>` if needed, and all threads have been resolved,
+the **submitter/assignee** must set the label to  :any:`workflow::Ready-For-Merge <sec_workflow_labels>`.
 An integrator will then merge the MR.
 
 .. _sec_workflow_labels:
@@ -170,8 +168,7 @@ The standard workflow has three steps.
 -  ``workflow::Review`` The user would like their branch reviewed.
 -  ``workflow::Ready-For-Merge`` The MR has passed all tests, passed the review, has no outstanding threads, and has a :any:`clean commit history <sec_clean_commit_history>`.
 
-For MRs within the PETSc repository, the submitter of the MR is responsible for changing the ``workflow`` label  appropriately during the MR process.
-For MRs from forks, the assignee is responsible.
+The submitter/assignee of the MR is responsible for changing the ``workflow`` label  appropriately during the MR process.
 
 Some MRs may begin with either of the following ``workflow`` states.
 
@@ -198,15 +195,15 @@ examining open merge requests and taking appropriate action.
 
       * - MR State
         - Action
-      * - Missing a :any:`workflow label <sec_workflow_labels>`
-        - Add an appropriate label, or label ``workflow::Waiting-on-Submitter`` and ask the submitter to update
-      * - From an external person without an assignee
-        - Assign an appropriate developer or ask the submitter to choose someone
-      * - From an external person who seems stuck
-        - Remind the assignee
+      * - Missing a :any:`workflow label <sec_workflow_labels>` and other labels
+        - Add an appropriate label, or label ``workflow::Waiting-on-Submitter`` and ask the submitter/assignee to update
+      * - Without an assignee
+        - Assign the submitter (if the MR is from a fork also list an appropriate developer)
+      * - Without reviewers
+        - Assign reviewers
 
-If MRs are inactive for too long, remind the submitter, assignee(s), reviewer(s), or integrator(s) of actions to take.
-If the submitter must take action, change the label to ``workflow::Waiting-on-Submitter``.
+If MRs are inactive for too long, remind the submitter/assignee, reviewer(s), or integrator(s) of actions to take.
+If the submitter/assignee must take action, change the label to ``workflow::Waiting-on-Submitter``.
 
 .. list-table:: MR Inactivity Thresholds
       :widths: 50 50
@@ -238,7 +235,3 @@ and let the submitter know that they may reopen if desired.
 .. rubric:: Footnotes
 
 .. [#closing_patterns_release] Unfortunately, these closing patterns `only work for MRs to a single default branch <https://gitlab.com/gitlab-org/gitlab/-/issues/14289>`__ (``main``), so you must manually close related issues for MRs to ``release``.
-
-.. [#review_click_comment] When introducing a new topic (thread) in reviewing an MR, one should submit with "Start Review" and not "Comment".
-
-.. [#review_on_line] A particularly useful feature is the `"insert suggestion" <https://docs.gitlab.com/ee/user/project/merge_requests/reviews/suggestions.html>`__ button in the comment box, to suggest an exact replacement on a line.
