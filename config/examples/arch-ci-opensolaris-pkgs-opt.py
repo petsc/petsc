@@ -12,7 +12,7 @@ configure_options = [
   '--with-debugging=0',
   'FFLAGS=-ftrap=%none',
 
-  '--download-mpich=https://www.mpich.org/static/downloads/3.4.2/mpich-3.4.2.tar.gz', # workaround for mat_tests-ex16_mpiio_4 failure with MPICH 4.0.1 and above
+  '--download-mpich=https://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich-3.4.2.tar.gz', # workaround for mat_tests-ex16_mpiio_4 failure with MPICH 4.0.1 and above
   '--download-mpich-device=ch3:sock',
 
   '--with-c2html=0',
