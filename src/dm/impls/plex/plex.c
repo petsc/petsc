@@ -2431,25 +2431,13 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
   ierr = PetscStrcmp(mtype, MATMPISBAIJ, &isSymMPIBlock);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATIS, &isMatIS);CHKERRQ(ierr);
   if (!isShell) {
-    PetscSection subSection;
-    PetscBool    fillMatrix = (PetscBool)(!dm->prealloc_only && !isMatIS);
-    PetscInt    *dnz, *onz, *dnzu, *onzu, bsLocal[2], bsMinMax[2], *ltogidx, lsize;
-    PetscInt     pStart, pEnd, p, dof, cdof;
+    PetscBool fillMatrix = (PetscBool)(!dm->prealloc_only && !isMatIS);
+    PetscInt  *dnz, *onz, *dnzu, *onzu, bsLocal[2], bsMinMax[2];
+    PetscInt  pStart, pEnd, p, dof, cdof;
 
-    /* Set localtoglobalmapping on the matrix for MatSetValuesLocal() to work (it also creates the local matrices in case of MATIS) */
-    if (isMatIS) { /* need a different l2g map than the one computed by DMGetLocalToGlobalMapping */
-      PetscSection section;
-      PetscInt     size;
-
-      ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
-      ierr = PetscSectionGetStorageSize(section, &size);CHKERRQ(ierr);
-      ierr = PetscMalloc1(size,&ltogidx);CHKERRQ(ierr);
-      ierr = DMPlexGetSubdomainSection(dm, &subSection);CHKERRQ(ierr);
-    } else {
-      ierr = DMGetLocalToGlobalMapping(dm,&ltog);CHKERRQ(ierr);
-    }
+    ierr = DMGetLocalToGlobalMapping(dm,&ltog);CHKERRQ(ierr);
     ierr = PetscSectionGetChart(sectionGlobal, &pStart, &pEnd);CHKERRQ(ierr);
-    for (p = pStart, lsize = 0; p < pEnd; ++p) {
+    for (p = pStart; p < pEnd; ++p) {
       PetscInt bdof;
 
       ierr = PetscSectionGetDof(sectionGlobal, p, &dof);CHKERRQ(ierr);
@@ -2458,32 +2446,17 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
       bdof = cdof && (dof-cdof) ? 1 : dof;
       if (dof) {
         if (bs < 0)          {bs = bdof;}
-        else if (bs != bdof) {bs = 1; if (!isMatIS) break;}
-      }
-      if (isMatIS) {
-        PetscInt loff,c,off;
-        ierr = PetscSectionGetOffset(subSection, p, &loff);CHKERRQ(ierr);
-        ierr = PetscSectionGetOffset(sectionGlobal, p, &off);CHKERRQ(ierr);
-        for (c = 0; c < dof-cdof; ++c, ++lsize) ltogidx[loff+c] = off > -1 ? off+c : -(off+1)+c;
+        else if (bs != bdof) {bs = 1; break;}
       }
     }
     /* Must have same blocksize on all procs (some might have no points) */
-    bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs; bsLocal[1] = bs;
+    bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs;
+    bsLocal[1] = bs;
     ierr = PetscGlobalMinMaxInt(PetscObjectComm((PetscObject) dm), bsLocal, bsMinMax);CHKERRQ(ierr);
-    if (bsMinMax[0] != bsMinMax[1]) {bs = 1;}
-    else                            {bs = bsMinMax[0];}
+    if (bsMinMax[0] != bsMinMax[1]) bs = 1;
+    else bs = bsMinMax[0];
     bs = PetscMax(1,bs);
-    if (isMatIS) { /* Must reduce indices by blocksize */
-      PetscInt l;
-
-      lsize = lsize/bs;
-      if (bs > 1) for (l = 0; l < lsize; ++l) ltogidx[l] = ltogidx[l*bs]/bs;
-      ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)dm), bs, lsize, ltogidx, PETSC_OWN_POINTER, &ltog);CHKERRQ(ierr);
-    }
     ierr = MatSetLocalToGlobalMapping(*J,ltog,ltog);CHKERRQ(ierr);
-    if (isMatIS) {
-      ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
-    }
     ierr = PetscCalloc4(localSize/bs, &dnz, localSize/bs, &onz, localSize/bs, &dnzu, localSize/bs, &onzu);CHKERRQ(ierr);
     ierr = DMPlexPreallocateOperator(dm, bs, dnz, onz, dnzu, onzu, *J, fillMatrix);CHKERRQ(ierr);
     ierr = PetscFree4(dnz, onz, dnzu, onzu);CHKERRQ(ierr);

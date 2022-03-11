@@ -1,10 +1,11 @@
 Test MatGetInfo
-Process   0: 24 24 0 2 0
-Process   1: 24 24 0 1 0
-Process   2: 24 24 0 1 0
-Process   3: 24 24 0 1 0
-GlobalMax  : 24 24 0 2 0
-GlobalSum  : 96 96 0 1 0
+Process   0: 24 48 24 1 0
+Process   1: 24 48 24 1 0
+Process   2: 24 48 24 1 0
+Process   3: 24 48 24 1 0
+GlobalMax  : 24 48 24 1 0
+GlobalSum  : 96 192 96 1 0
+Test MatIsSymmetric: 0
 Test MatView
 Mat Object: 4 MPI processes
   type: is
@@ -48,6 +49,16 @@ row 4: (3, -5.)  (4, 10.)  (5, -5.)
 row 5: (4, -6.)  (5, 12.)  (6, -6.) 
 row 6: (5, -7.)  (6, 14.)  (7, -7.) 
 row 7: (0, -8.)  (6, -8.)  (7, 16.) 
+Mat Object: 4 MPI processes
+  type: mpiaij
+row 0: (0, 8.)  (1, -4.)  (7, -4.) 
+row 1: (0, -8.)  (1, 16.)  (2, -8.) 
+row 2: (1, -12.)  (2, 24.)  (3, -12.) 
+row 3: (2, -16.)  (3, 32.)  (4, -16.) 
+row 4: (3, -20.)  (4, 40.)  (5, -20.) 
+row 5: (4, -24.)  (5, 48.)  (6, -24.) 
+row 6: (5, -28.)  (6, 56.)  (7, -28.) 
+row 7: (0, -32.)  (6, -32.)  (7, 64.) 
 Test CheckMat
 Test MatDuplicate and MatAXPY
 Test MatConvert_IS_XAIJ

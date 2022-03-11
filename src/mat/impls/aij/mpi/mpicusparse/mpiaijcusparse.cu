@@ -21,6 +21,39 @@ struct VecCUDAEquals
   }
 };
 
+static PetscErrorCode MatResetPreallocationCOO_MPIAIJCUSPARSE(Mat mat)
+{
+  cudaError_t        cerr;
+  Mat_MPIAIJ         *aij = (Mat_MPIAIJ*)mat->data;
+  Mat_MPIAIJCUSPARSE *cusparseStruct = (Mat_MPIAIJCUSPARSE*)aij->spptr;
+
+  PetscFunctionBegin;
+  if (!cusparseStruct) PetscFunctionReturn(0);
+  if (cusparseStruct->use_extended_coo) {
+    cerr = cudaFree(cusparseStruct->Aimap1_d);CHKERRCUDA(cerr);
+    cerr = cudaFree(cusparseStruct->Ajmap1_d);CHKERRCUDA(cerr);
+    cerr = cudaFree(cusparseStruct->Aperm1_d);CHKERRCUDA(cerr);
+    cerr = cudaFree(cusparseStruct->Bimap1_d);CHKERRCUDA(cerr);
+    cerr = cudaFree(cusparseStruct->Bjmap1_d);CHKERRCUDA(cerr);
+    cerr = cudaFree(cusparseStruct->Bperm1_d);CHKERRCUDA(cerr);
+    cerr = cudaFree(cusparseStruct->Aimap2_d);CHKERRCUDA(cerr);
+    cerr = cudaFree(cusparseStruct->Ajmap2_d);CHKERRCUDA(cerr);
+    cerr = cudaFree(cusparseStruct->Aperm2_d);CHKERRCUDA(cerr);
+    cerr = cudaFree(cusparseStruct->Bimap2_d);CHKERRCUDA(cerr);
+    cerr = cudaFree(cusparseStruct->Bjmap2_d);CHKERRCUDA(cerr);
+    cerr = cudaFree(cusparseStruct->Bperm2_d);CHKERRCUDA(cerr);
+    cerr = cudaFree(cusparseStruct->Cperm1_d);CHKERRCUDA(cerr);
+    cerr = cudaFree(cusparseStruct->sendbuf_d);CHKERRCUDA(cerr);
+    cerr = cudaFree(cusparseStruct->recvbuf_d);CHKERRCUDA(cerr);
+  }
+  cusparseStruct->use_extended_coo = PETSC_FALSE;
+  delete cusparseStruct->coo_p;
+  delete cusparseStruct->coo_pw;
+  cusparseStruct->coo_p = NULL;
+  cusparseStruct->coo_pw = NULL;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE_Basic(Mat A, const PetscScalar v[], InsertMode imode)
 {
   Mat_MPIAIJ         *a = (Mat_MPIAIJ*)A->data;
@@ -56,11 +89,6 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE_Basic(Mat A, const PetscSca
     ierr = MatSetValuesCOO_SeqAIJCUSPARSE_Basic(a->A,v,imode);CHKERRQ(ierr);
     ierr = MatSetValuesCOO_SeqAIJCUSPARSE_Basic(a->B,v ? v+cusp->coo_nd : NULL,imode);CHKERRQ(ierr);
   }
-  ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
-  A->num_ass++;
-  A->assembled        = PETSC_TRUE;
-  A->ass_nonzerostate = A->nonzerostate;
-  A->offloadmask      = PETSC_OFFLOAD_GPU;
   PetscFunctionReturn(0);
 }
 
@@ -116,18 +144,12 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE_Basic(Mat B, PetscCo
   PetscFunctionBegin;
   if (b->A) { ierr = MatCUSPARSEClearHandle(b->A);CHKERRQ(ierr); }
   if (b->B) { ierr = MatCUSPARSEClearHandle(b->B);CHKERRQ(ierr); }
-  ierr = PetscFree(b->garray);CHKERRQ(ierr);
-  ierr = VecDestroy(&b->lvec);CHKERRQ(ierr);
   ierr = MatDestroy(&b->A);CHKERRQ(ierr);
   ierr = MatDestroy(&b->B);CHKERRQ(ierr);
 
   ierr = PetscLogCpuToGpu(2.*n*sizeof(PetscInt));CHKERRQ(ierr);
   d_i.assign(coo_i,coo_i+n);
   d_j.assign(coo_j,coo_j+n);
-  delete cusp->coo_p;
-  delete cusp->coo_pw;
-  cusp->coo_p = NULL;
-  cusp->coo_pw = NULL;
   ierr = PetscLogGpuTimeBegin();CHKERRQ(ierr);
   auto firstoffd = thrust::find_if(thrust::device,d_j.begin(),d_j.end(),IsOffDiag(B->cmap->rstart,B->cmap->rend));
   auto firstdiag = thrust::find_if_not(thrust::device,firstoffd,d_j.end(),IsOffDiag(B->cmap->rstart,B->cmap->rend));
@@ -158,6 +180,7 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE_Basic(Mat B, PetscCo
   auto wit = thrust::unique(thrust::device,o_j,d_j.end()); /* return end iter of the unique range */
   ierr = PetscLogGpuTimeEnd();CHKERRQ(ierr);
   noff = thrust::distance(o_j,wit);
+  /* allocate the garray, the columns of B will not be mapped in the multiply setup */
   ierr = PetscMalloc1(noff,&b->garray);CHKERRQ(ierr);
   cerr = cudaMemcpy(b->garray,d_j.data().get()+cusp->coo_nd,noff*sizeof(PetscInt),cudaMemcpyDeviceToHost);CHKERRCUDA(cerr);
   ierr = PetscLogGpuToCpu((noff+cusp->coo_no)*sizeof(PetscInt));CHKERRQ(ierr);
@@ -189,59 +212,56 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE_Basic(Mat B, PetscCo
   ierr = MatCUSPARSESetStream(b->A,cusp->stream);CHKERRQ(ierr);
   ierr = MatCUSPARSESetStream(b->B,cusp->stream);CHKERRQ(ierr);
   */
-  ierr = MatSetUpMultiply_MPIAIJ(B);CHKERRQ(ierr);
-  B->preallocated = PETSC_TRUE;
-  B->nonzerostate++;
 
   ierr = MatBindToCPU(b->A,B->boundtocpu);CHKERRQ(ierr);
   ierr = MatBindToCPU(b->B,B->boundtocpu);CHKERRQ(ierr);
-  B->offloadmask = PETSC_OFFLOAD_CPU;
-  B->assembled = PETSC_FALSE;
-  B->was_assembled = PETSC_FALSE;
+  ierr = MatSetUpMultiply_MPIAIJ(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
 {
   PetscErrorCode         ierr;
-  Mat                    newmat;
-  Mat_MPIAIJ             *mpiaij;
+  Mat_MPIAIJ             *mpiaij = (Mat_MPIAIJ*)mat->data;
   Mat_MPIAIJCUSPARSE     *mpidev;
-  PetscInt               coo_basic = 1;
+  PetscBool              coo_basic = PETSC_TRUE;
   PetscMemType           mtype = PETSC_MEMTYPE_DEVICE;
   PetscInt               rstart,rend;
   cudaError_t            cerr;
 
   PetscFunctionBegin;
+  ierr = PetscFree(mpiaij->garray);CHKERRQ(ierr);
+  ierr = VecDestroy(&mpiaij->lvec);CHKERRQ(ierr);
+#if defined(PETSC_USE_CTABLE)
+  ierr = PetscTableDestroy(&mpiaij->colmap);CHKERRQ(ierr);
+#else
+  ierr = PetscFree(mpiaij->colmap);CHKERRQ(ierr);
+#endif
+  ierr = VecScatterDestroy(&mpiaij->Mvctx);CHKERRQ(ierr);
+  mat->assembled = PETSC_FALSE;
+  mat->was_assembled = PETSC_FALSE;
+  ierr = MatResetPreallocationCOO_MPIAIJ(mat);CHKERRQ(ierr);
+  ierr = MatResetPreallocationCOO_MPIAIJCUSPARSE(mat);CHKERRQ(ierr);
   if (coo_i) {
     ierr = PetscLayoutGetRange(mat->rmap,&rstart,&rend);CHKERRQ(ierr);
     ierr = PetscGetMemType(coo_i,&mtype);CHKERRQ(ierr);
     if (PetscMemTypeHost(mtype)) {
       for (PetscCount k=0; k<coo_n; k++) { /* Are there negative indices or remote entries? */
-        if (coo_i[k]<0 || coo_i[k]<rstart || coo_i[k]>=rend || coo_j[k]<0) {coo_basic = 0; break;}
+        if (coo_i[k]<0 || coo_i[k]<rstart || coo_i[k]>=rend || coo_j[k]<0) {coo_basic = PETSC_FALSE; break;}
       }
     }
   }
   /* All ranks must agree on the value of coo_basic */
-  ierr = MPI_Allreduce(MPI_IN_PLACE,&coo_basic,1,MPIU_INT,MPI_LAND,PetscObjectComm((PetscObject)mat));CHKERRMPI(ierr);
-
+  ierr = MPI_Allreduce(MPI_IN_PLACE,&coo_basic,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)mat));CHKERRMPI(ierr);
   if (coo_basic) {
     ierr = MatSetPreallocationCOO_MPIAIJCUSPARSE_Basic(mat,coo_n,coo_i,coo_j);CHKERRQ(ierr);
   } else {
-    mpiaij = static_cast<Mat_MPIAIJ*>(mat->data);
-    ierr = MatCreate(PetscObjectComm((PetscObject)mat),&newmat);CHKERRQ(ierr);
-    ierr = MatSetSizes(newmat,mat->rmap->n,mat->cmap->n,mat->rmap->N,mat->cmap->N);CHKERRQ(ierr);
-    ierr = MatSetType(newmat,MATMPIAIJ);CHKERRQ(ierr);
-    ierr = MatSetOption(newmat,MAT_IGNORE_OFF_PROC_ENTRIES,mpiaij->donotstash);CHKERRQ(ierr); /* Inherit the two options that we respect from mat */
-    ierr = MatSetOption(newmat,MAT_NO_OFF_PROC_ENTRIES,mat->nooffprocentries);CHKERRQ(ierr);
-    ierr = MatSetPreallocationCOO_MPIAIJ(newmat,coo_n,coo_i,coo_j);CHKERRQ(ierr);
-    ierr = MatConvert(newmat,MATMPIAIJCUSPARSE,MAT_INPLACE_MATRIX,&newmat);CHKERRQ(ierr);
-    ierr = MatHeaderMerge(mat,&newmat);CHKERRQ(ierr);
-    mpiaij = static_cast<Mat_MPIAIJ*>(mat->data); /* mat->data was changed in MatHeaderReplace() */
-    mpidev = static_cast<Mat_MPIAIJCUSPARSE*>(mpiaij->spptr);
+    ierr = MatSetPreallocationCOO_MPIAIJ(mat,coo_n,coo_i,coo_j);CHKERRQ(ierr);
+    mat->offloadmask = PETSC_OFFLOAD_CPU;
+    /* creates the GPU memory */
     ierr = MatSeqAIJCUSPARSECopyToGPU(mpiaij->A);CHKERRQ(ierr);
     ierr = MatSeqAIJCUSPARSECopyToGPU(mpiaij->B);CHKERRQ(ierr);
-    ierr = MatZeroEntries(mat);CHKERRQ(ierr); /* Zero matrix on device */
+    mpidev = static_cast<Mat_MPIAIJCUSPARSE*>(mpiaij->spptr);
     mpidev->use_extended_coo = PETSC_TRUE;
 
     cerr = cudaMalloc((void**)&mpidev->Aimap1_d,mpiaij->Annz1*sizeof(PetscCount));CHKERRCUDA(cerr);
@@ -307,7 +327,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE(Mat mat,const PetscScalar v
   Mat_MPIAIJCUSPARSE             *mpidev = static_cast<Mat_MPIAIJCUSPARSE*>(mpiaij->spptr);
   Mat                            A = mpiaij->A,B = mpiaij->B;
   PetscCount                     Annz1 = mpiaij->Annz1,Annz2 = mpiaij->Annz2,Bnnz1 = mpiaij->Bnnz1,Bnnz2 = mpiaij->Bnnz2;
-  PetscScalar                    *Aa,*Ba;
+  PetscScalar                    *Aa,*Ba = NULL;
   PetscScalar                    *vsend = mpidev->sendbuf_d,*v2 = mpidev->recvbuf_d;
   const PetscScalar              *v1 = v;
   const PetscCount               *Ajmap1 = mpidev->Ajmap1_d,*Ajmap2 = mpidev->Ajmap2_d,*Aimap1 = mpidev->Aimap1_d,*Aimap2 = mpidev->Aimap2_d;
@@ -318,6 +338,9 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE(Mat mat,const PetscScalar v
 
   PetscFunctionBegin;
   if (mpidev->use_extended_coo) {
+    PetscMPIInt size;
+
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)mat),&size);CHKERRMPI(ierr);
     ierr = PetscGetMemType(v,&memtype);CHKERRQ(ierr);
     if (PetscMemTypeHost(memtype)) { /* If user gave v[] in host, we need to copy it to device */
       cerr = cudaMalloc((void**)&v1,mpiaij->coo_n*sizeof(PetscScalar));CHKERRCUDA(cerr);
@@ -326,39 +349,57 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE(Mat mat,const PetscScalar v
 
     if (imode == INSERT_VALUES) {
       ierr = MatSeqAIJCUSPARSEGetArrayWrite(A,&Aa);CHKERRQ(ierr); /* write matrix values */
-      ierr = MatSeqAIJCUSPARSEGetArrayWrite(B,&Ba);CHKERRQ(ierr);
       cerr = cudaMemset(Aa,0,((Mat_SeqAIJ*)A->data)->nz*sizeof(PetscScalar));CHKERRCUDA(cerr);
-      cerr = cudaMemset(Ba,0,((Mat_SeqAIJ*)B->data)->nz*sizeof(PetscScalar));CHKERRCUDA(cerr);
+      if (size > 1) {
+        ierr = MatSeqAIJCUSPARSEGetArrayWrite(B,&Ba);CHKERRQ(ierr);
+        cerr = cudaMemset(Ba,0,((Mat_SeqAIJ*)B->data)->nz*sizeof(PetscScalar));CHKERRCUDA(cerr);
+      }
     } else {
       ierr = MatSeqAIJCUSPARSEGetArray(A,&Aa);CHKERRQ(ierr); /* read & write matrix values */
-      ierr = MatSeqAIJCUSPARSEGetArray(B,&Ba);CHKERRQ(ierr);
+      if (size > 1) { ierr = MatSeqAIJCUSPARSEGetArray(B,&Ba);CHKERRQ(ierr); }
     }
 
     /* Pack entries to be sent to remote */
-    MatPackCOOValues<<<(mpiaij->sendlen+255)/256,256>>>(v1,mpiaij->sendlen,Cperm1,vsend);
+    if (mpiaij->sendlen) {
+      MatPackCOOValues<<<(mpiaij->sendlen+255)/256,256>>>(v1,mpiaij->sendlen,Cperm1,vsend);
+      CHKERRCUDA(cudaPeekAtLastError());
+    }
 
     /* Send remote entries to their owner and overlap the communication with local computation */
-    ierr = PetscSFReduceWithMemTypeBegin(mpiaij->coo_sf,MPIU_SCALAR,PETSC_MEMTYPE_CUDA,vsend,PETSC_MEMTYPE_CUDA,v2,MPI_REPLACE);CHKERRQ(ierr);
+    if (size > 1) { ierr = PetscSFReduceWithMemTypeBegin(mpiaij->coo_sf,MPIU_SCALAR,PETSC_MEMTYPE_CUDA,vsend,PETSC_MEMTYPE_CUDA,v2,MPI_REPLACE);CHKERRQ(ierr); }
     /* Add local entries to A and B */
-    MatAddCOOValues<<<(Annz1+255)/256,256>>>(v1,Annz1,Aimap1,Ajmap1,Aperm1,Aa);
-    MatAddCOOValues<<<(Bnnz1+255)/256,256>>>(v1,Bnnz1,Bimap1,Bjmap1,Bperm1,Ba);
-    ierr = PetscSFReduceEnd(mpiaij->coo_sf,MPIU_SCALAR,vsend,v2,MPI_REPLACE);CHKERRQ(ierr);
+    if (Annz1) {
+      MatAddCOOValues<<<(Annz1+255)/256,256>>>(v1,Annz1,Aimap1,Ajmap1,Aperm1,Aa);
+      CHKERRCUDA(cudaPeekAtLastError());
+    }
+    if (Bnnz1) {
+      MatAddCOOValues<<<(Bnnz1+255)/256,256>>>(v1,Bnnz1,Bimap1,Bjmap1,Bperm1,Ba);
+      CHKERRCUDA(cudaPeekAtLastError());
+    }
+    if (size > 1) { ierr = PetscSFReduceEnd(mpiaij->coo_sf,MPIU_SCALAR,vsend,v2,MPI_REPLACE);CHKERRQ(ierr); }
 
     /* Add received remote entries to A and B */
-    MatAddCOOValues<<<(Annz2+255)/256,256>>>(v2,Annz2,Aimap2,Ajmap2,Aperm2,Aa);
-    MatAddCOOValues<<<(Bnnz2+255)/256,256>>>(v2,Bnnz2,Bimap2,Bjmap2,Bperm2,Ba);
+    if (Annz2) {
+      MatAddCOOValues<<<(Annz2+255)/256,256>>>(v2,Annz2,Aimap2,Ajmap2,Aperm2,Aa);
+      CHKERRCUDA(cudaPeekAtLastError());
+    }
+    if (Bnnz2) {
+      MatAddCOOValues<<<(Bnnz2+255)/256,256>>>(v2,Bnnz2,Bimap2,Bjmap2,Bperm2,Ba);
+      CHKERRCUDA(cudaPeekAtLastError());
+    }
 
     if (imode == INSERT_VALUES) {
       ierr = MatSeqAIJCUSPARSERestoreArrayWrite(A,&Aa);CHKERRQ(ierr);
-      ierr = MatSeqAIJCUSPARSERestoreArrayWrite(B,&Ba);CHKERRQ(ierr);
+      if (size > 1) { ierr = MatSeqAIJCUSPARSERestoreArrayWrite(B,&Ba);CHKERRQ(ierr); }
     } else {
       ierr = MatSeqAIJCUSPARSERestoreArray(A,&Aa);CHKERRQ(ierr);
-      ierr = MatSeqAIJCUSPARSERestoreArray(B,&Ba);CHKERRQ(ierr);
+      if (size > 1) { ierr = MatSeqAIJCUSPARSERestoreArray(B,&Ba);CHKERRQ(ierr); }
     }
     if (PetscMemTypeHost(memtype)) {cerr = cudaFree((void*)v1);CHKERRCUDA(cerr);}
   } else {
     ierr = MatSetValuesCOO_MPIAIJCUSPARSE_Basic(mat,v,imode);CHKERRQ(ierr);
   }
+  mat->offloadmask = PETSC_OFFLOAD_GPU;
   PetscFunctionReturn(0);
 }
 
@@ -437,10 +478,6 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJCUSPARSE(Mat B,PetscInt d_nz,cons
   ierr = MatCUSPARSESetFormat(b->B,MAT_CUSPARSE_MULT,cusparseStruct->offdiagGPUMatFormat);CHKERRQ(ierr);
   ierr = MatCUSPARSESetHandle(b->A,cusparseStruct->handle);CHKERRQ(ierr);
   ierr = MatCUSPARSESetHandle(b->B,cusparseStruct->handle);CHKERRQ(ierr);
-  /* Let A, B use b's handle with pre-set stream
-  ierr = MatCUSPARSESetStream(b->A,cusparseStruct->stream);CHKERRQ(ierr);
-  ierr = MatCUSPARSESetStream(b->B,cusparseStruct->stream);CHKERRQ(ierr);
-  */
   B->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -449,13 +486,8 @@ PetscErrorCode MatMult_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       nt;
 
   PetscFunctionBegin;
-  ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
-  PetscCheckFalse(nt != A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of A (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",A->cmap->n,nt);
-  /* If A is bound to the CPU, the local vector used in the matrix multiplies should also be bound to the CPU. */
-  if (A->boundtocpu) {ierr = VecBindToCPU(a->lvec,PETSC_TRUE);CHKERRQ(ierr);}
   ierr = VecScatterBegin(a->Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = (*a->A->ops->mult)(a->A,xx,yy);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -478,11 +510,8 @@ PetscErrorCode MatMultAdd_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       nt;
 
   PetscFunctionBegin;
-  ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
-  PetscCheckFalse(nt != A->cmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of A (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",A->cmap->n,nt);
   ierr = VecScatterBegin(a->Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = (*a->A->ops->multadd)(a->A,xx,yy,zz);CHKERRQ(ierr);
   ierr = VecScatterEnd(a->Mvctx,xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -494,11 +523,8 @@ PetscErrorCode MatMultTranspose_MPIAIJCUSPARSE(Mat A,Vec xx,Vec yy)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       nt;
 
   PetscFunctionBegin;
-  ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
-  PetscCheckFalse(nt != A->rmap->n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Incompatible partition of A (%" PetscInt_FMT ") and xx (%" PetscInt_FMT ")",A->rmap->n,nt);
   ierr = (*a->B->ops->multtranspose)(a->B,xx,a->lvec);CHKERRQ(ierr);
   ierr = (*a->A->ops->multtranspose)(a->A,xx,yy);CHKERRQ(ierr);
   ierr = VecScatterBegin(a->Mvctx,a->lvec,yy,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -630,27 +656,8 @@ PetscErrorCode MatDestroy_MPIAIJCUSPARSE(Mat A)
       cudaError_t err = cudaStreamDestroy(cusparseStruct->stream);CHKERRCUDA(err);
     }
     */
-    /* Extended COO */
-    if (cusparseStruct->use_extended_coo) {
-      cerr = cudaFree(cusparseStruct->Aimap1_d);CHKERRCUDA(cerr);
-      cerr = cudaFree(cusparseStruct->Ajmap1_d);CHKERRCUDA(cerr);
-      cerr = cudaFree(cusparseStruct->Aperm1_d);CHKERRCUDA(cerr);
-      cerr = cudaFree(cusparseStruct->Bimap1_d);CHKERRCUDA(cerr);
-      cerr = cudaFree(cusparseStruct->Bjmap1_d);CHKERRCUDA(cerr);
-      cerr = cudaFree(cusparseStruct->Bperm1_d);CHKERRCUDA(cerr);
-      cerr = cudaFree(cusparseStruct->Aimap2_d);CHKERRCUDA(cerr);
-      cerr = cudaFree(cusparseStruct->Ajmap2_d);CHKERRCUDA(cerr);
-      cerr = cudaFree(cusparseStruct->Aperm2_d);CHKERRCUDA(cerr);
-      cerr = cudaFree(cusparseStruct->Bimap2_d);CHKERRCUDA(cerr);
-      cerr = cudaFree(cusparseStruct->Bjmap2_d);CHKERRCUDA(cerr);
-      cerr = cudaFree(cusparseStruct->Bperm2_d);CHKERRCUDA(cerr);
-      cerr = cudaFree(cusparseStruct->Cperm1_d);CHKERRCUDA(cerr);
-      cerr = cudaFree(cusparseStruct->sendbuf_d);CHKERRCUDA(cerr);
-      cerr = cudaFree(cusparseStruct->recvbuf_d);CHKERRCUDA(cerr);
-    } else {
-      delete cusparseStruct->coo_p;
-      delete cusparseStruct->coo_pw;
-    }
+    /* Free COO */
+    ierr = MatResetPreallocationCOO_MPIAIJCUSPARSE(A);CHKERRQ(ierr);
     delete cusparseStruct;
   } catch(char *ex) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Mat_MPIAIJCUSPARSE error: %s", ex);

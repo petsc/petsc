@@ -1790,6 +1790,7 @@ PETSC_EXTERN PetscErrorCode MatISFixLocalEmpty(Mat,PetscBool);
 PETSC_EXTERN PetscErrorCode MatISGetLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatISRestoreLocalMat(Mat,Mat*);
 PETSC_EXTERN PetscErrorCode MatISSetLocalMat(Mat,Mat);
+PETSC_EXTERN PetscErrorCode MatISGetLocalToGlobalMapping(Mat,ISLocalToGlobalMapping*,ISLocalToGlobalMapping*);
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use the MatConvert() interface (since version 3.10)") PetscErrorCode MatISGetMPIXAIJ(Mat,MatReuse,Mat*);
 
 /*S

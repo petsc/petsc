@@ -529,8 +529,6 @@ PetscErrorCode MatSetValuesCOO_Basic(Mat A,const PetscScalar coo_v[],InsertMode 
   }
   ierr = ISRestoreIndices(is_coo_i,&coo_i);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is_coo_j,&coo_j);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -602,6 +600,7 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscCount ncoo,const PetscInt coo_i
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatSetPreallocationCOO_C",&f);CHKERRQ(ierr);
+
   ierr = PetscLogEventBegin(MAT_PreallCOO,A,0,0,0);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,ncoo,coo_i,coo_j);CHKERRQ(ierr);
@@ -609,6 +608,8 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscCount ncoo,const PetscInt coo_i
     ierr = MatSetPreallocationCOO_Basic(A,ncoo,coo_i,coo_j);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_PreallCOO,A,0,0,0);CHKERRQ(ierr);
+  A->preallocated = PETSC_TRUE;
+  A->nonzerostate++;
   PetscFunctionReturn(0);
 }
 
@@ -642,20 +643,29 @@ PetscErrorCode MatSetPreallocationCOO(Mat A,PetscCount ncoo,const PetscInt coo_i
 PetscErrorCode MatSetPreallocationCOOLocal(Mat A,PetscCount ncoo,PetscInt coo_i[],PetscInt coo_j[])
 {
   PetscErrorCode ierr;
-  ISLocalToGlobalMapping ltog_row,ltog_col;
+  PetscErrorCode (*f)(Mat,PetscCount,PetscInt[],PetscInt[]) = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
   if (ncoo) PetscValidIntPointer(coo_i,3);
   if (ncoo) PetscValidIntPointer(coo_j,4);
+  PetscCheck(ncoo <= PETSC_MAX_INT,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support",ncoo);
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
-  ierr = MatGetLocalToGlobalMapping(A, &ltog_row, &ltog_col);CHKERRQ(ierr);
-  PetscCheck(ncoo <= PETSC_MAX_INT,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support",ncoo);
-  ierr = ISLocalToGlobalMappingApply(ltog_row, ncoo, coo_i, coo_i);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(ltog_col, ncoo, coo_j, coo_j);CHKERRQ(ierr);
-  ierr = MatSetPreallocationCOO(A, ncoo, coo_i, coo_j);CHKERRQ(ierr);
+
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSetPreallocationCOOLocal_C",&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(A,ncoo,coo_i,coo_j);CHKERRQ(ierr);
+    A->nonzerostate++;
+  } else {
+    ISLocalToGlobalMapping ltog_row,ltog_col;
+    ierr = MatGetLocalToGlobalMapping(A,&ltog_row,&ltog_col);CHKERRQ(ierr);
+    if (ltog_row) { ierr = ISLocalToGlobalMappingApply(ltog_row,ncoo,coo_i,coo_i);CHKERRQ(ierr); }
+    if (ltog_col) { ierr = ISLocalToGlobalMappingApply(ltog_col,ncoo,coo_j,coo_j);CHKERRQ(ierr); }
+    ierr = MatSetPreallocationCOO(A,ncoo,coo_i,coo_j);CHKERRQ(ierr);
+  }
+  A->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -696,7 +706,8 @@ PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imod
     ierr = MatSetValuesCOO_Basic(A,coo_v,imode);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetVCOO,A,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)A);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -192,7 +192,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
       ierr = PetscLayoutSetUp(play);CHKERRQ(ierr);
     } else {
       ierr = PetscObjectReference((PetscObject)fetidpmat_ctx->C);CHKERRQ(ierr);
-      ierr = MatGetLocalToGlobalMapping(fetidpmat_ctx->C,&l2gmap_p,NULL);CHKERRQ(ierr);
+      ierr = MatISGetLocalToGlobalMapping(fetidpmat_ctx->C,&l2gmap_p,NULL);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)l2gmap_p);CHKERRQ(ierr);
       ierr = MatGetSize(fetidpmat_ctx->C,&nPg,NULL);CHKERRQ(ierr);
       ierr = MatGetLocalSize(fetidpmat_ctx->C,NULL,&nPgl);CHKERRQ(ierr);

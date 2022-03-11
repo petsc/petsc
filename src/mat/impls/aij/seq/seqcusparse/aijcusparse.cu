@@ -1908,9 +1908,9 @@ PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
           ridx = NULL;
         }
         PetscCheckFalse(!ii,PETSC_COMM_SELF,PETSC_ERR_GPU,"Missing CSR row data");
-        PetscCheckFalse(m && !a->j,PETSC_COMM_SELF,PETSC_ERR_GPU,"Missing CSR column data");
         if (!a->a) { nnz = ii[m]; both = PETSC_FALSE; }
         else nnz = a->nz;
+        PetscCheckFalse(nnz && !a->j,PETSC_COMM_SELF,PETSC_ERR_GPU,"Missing CSR column data");
 
         /* create cusparse matrix */
         cusparsestruct->nrows = m;
@@ -3075,7 +3075,7 @@ static PetscErrorCode MatMultAddKernel_SeqAIJCUSPARSE(Mat A,Vec xx,Vec yy,Vec zz
 
   PetscFunctionBegin;
   PetscCheckFalse(herm && !trans,PetscObjectComm((PetscObject)A),PETSC_ERR_GPU,"Hermitian and not transpose not supported");
-  if (!a->nonzerorowcnt) {
+  if (!a->nz) {
     if (!yy) {ierr = VecSet_SeqCUDA(zz,0);CHKERRQ(ierr);}
     else {ierr = VecCopy_SeqCUDA(yy,zz);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
@@ -3516,7 +3516,6 @@ static PetscErrorCode MatZeroEntries_SeqAIJCUSPARSE(Mat A)
       }
     }
   }
-  //ierr = MatZeroEntries_SeqAIJ(A);CHKERRQ(ierr);
   ierr = PetscArrayzero(a->a,a->i[A->rmap->n]);CHKERRQ(ierr);
   ierr = MatSeqAIJInvalidateDiagonal(A);CHKERRQ(ierr);
   if (both) A->offloadmask = PETSC_OFFLOAD_BOTH;
@@ -3694,6 +3693,25 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSPARSE(void)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatResetPreallocationCOO_SeqAIJCUSPARSE(Mat mat)
+{
+  Mat_SeqAIJCUSPARSE* cusp = (Mat_SeqAIJCUSPARSE*)mat->spptr;
+  cudaError_t         cerr;
+
+  PetscFunctionBegin;
+  if (!cusp) PetscFunctionReturn(0);
+  delete cusp->cooPerm;
+  delete cusp->cooPerm_a;
+  cusp->cooPerm = NULL;
+  cusp->cooPerm_a = NULL;
+  if (cusp->use_extended_coo) {
+    cerr = cudaFree(cusp->jmap_d);CHKERRCUDA(cerr);
+    cerr = cudaFree(cusp->perm_d);CHKERRCUDA(cerr);
+  }
+  cusp->use_extended_coo = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatSeqAIJCUSPARSE_Destroy(Mat_SeqAIJCUSPARSE **cusparsestruct)
 {
   PetscErrorCode   ierr;
@@ -3709,11 +3727,9 @@ static PetscErrorCode MatSeqAIJCUSPARSE_Destroy(Mat_SeqAIJCUSPARSE **cusparsestr
     delete (*cusparsestruct)->cooPerm;
     delete (*cusparsestruct)->cooPerm_a;
     delete (*cusparsestruct)->csr2csc_i;
-    if ((*cusparsestruct)->handle) {stat = cusparseDestroy((*cusparsestruct)->handle);CHKERRCUSPARSE(stat);}
-    if ((*cusparsestruct)->use_extended_coo) {
-      cerr = cudaFree((*cusparsestruct)->jmap_d);CHKERRCUDA(cerr);
-      cerr = cudaFree((*cusparsestruct)->perm_d);CHKERRCUDA(cerr);
-    }
+    if ((*cusparsestruct)->handle) { stat = cusparseDestroy((*cusparsestruct)->handle);CHKERRCUSPARSE(stat); }
+    if ((*cusparsestruct)->jmap_d) { cerr = cudaFree((*cusparsestruct)->jmap_d);CHKERRCUDA(cerr); }
+    if ((*cusparsestruct)->perm_d) { cerr = cudaFree((*cusparsestruct)->perm_d);CHKERRCUDA(cerr); }
     ierr = PetscFree(*cusparsestruct);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -4087,12 +4103,8 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(Mat A, PetscCount n, 
   ierr = PetscArrayzero(a->a,a->nz);CHKERRQ(ierr);
   ierr = MatCheckCompressedRow(A,nzr,&a->compressedrow,a->i,A->rmap->n,0.6);CHKERRQ(ierr);
   A->offloadmask = PETSC_OFFLOAD_CPU;
-  A->nonzerostate++;
   ierr = MatSeqAIJCUSPARSECopyToGPU(A);CHKERRQ(ierr);
   ierr = MatSeqAIJCUSPARSEInvalidateTranspose(A,PETSC_TRUE);CHKERRQ(ierr);
-
-  A->assembled = PETSC_FALSE;
-  A->was_assembled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -4102,16 +4114,17 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat mat, PetscCount coo_n, 
   cudaError_t        cerr;
   Mat_SeqAIJ         *seq;
   Mat_SeqAIJCUSPARSE *dev;
-  Mat                newmat;
-  PetscInt           coo_basic = 1;
+  PetscBool          coo_basic = PETSC_TRUE;
   PetscMemType       mtype = PETSC_MEMTYPE_DEVICE;
 
   PetscFunctionBegin;
+  ierr = MatResetPreallocationCOO_SeqAIJ(mat);CHKERRQ(ierr);
+  ierr = MatResetPreallocationCOO_SeqAIJCUSPARSE(mat);CHKERRQ(ierr);
   if (coo_i) {
     ierr = PetscGetMemType(coo_i,&mtype);CHKERRQ(ierr);
     if (PetscMemTypeHost(mtype)) {
       for (PetscCount k=0; k<coo_n; k++) {
-        if (coo_i[k] < 0 || coo_j[k] < 0) {coo_basic = 0; break;}
+        if (coo_i[k] < 0 || coo_j[k] < 0) {coo_basic = PETSC_FALSE; break;}
       }
     }
   }
@@ -4119,15 +4132,9 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat mat, PetscCount coo_n, 
   if (coo_basic) { /* i,j are on device or do not contain negative indices */
     ierr = MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(mat,coo_n,coo_i,coo_j);CHKERRQ(ierr);
   } else {
-    ierr = MatCreate(PetscObjectComm((PetscObject)mat),&newmat);CHKERRQ(ierr);
-    ierr = MatSetSizes(newmat,mat->rmap->n,mat->cmap->n,mat->rmap->N,mat->cmap->N);CHKERRQ(ierr);
-    ierr = MatSetType(newmat,MATSEQAIJ);CHKERRQ(ierr);
-    ierr = MatSetPreallocationCOO_SeqAIJ(newmat,coo_n,coo_i,coo_j);CHKERRQ(ierr);
-    ierr = MatConvert(newmat,MATSEQAIJCUSPARSE,MAT_INPLACE_MATRIX,&newmat);CHKERRQ(ierr);
-    ierr = MatHeaderMerge(mat,&newmat);CHKERRQ(ierr);
+    ierr = MatSetPreallocationCOO_SeqAIJ(mat,coo_n,coo_i,coo_j);CHKERRQ(ierr);
+    mat->offloadmask = PETSC_OFFLOAD_CPU;
     ierr = MatSeqAIJCUSPARSECopyToGPU(mat);CHKERRQ(ierr);
-    ierr = MatZeroEntries(mat);CHKERRQ(ierr); /* Zero matrix on device */
-
     seq  = static_cast<Mat_SeqAIJ*>(mat->data);
     dev  = static_cast<Mat_SeqAIJCUSPARSE*>(mat->spptr);
     cerr = cudaMalloc((void**)&dev->jmap_d,(seq->nz+1)*sizeof(PetscCount));CHKERRCUDA(cerr);
@@ -4172,7 +4179,10 @@ PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[], Inse
     if (imode == INSERT_VALUES) {ierr = MatSeqAIJCUSPARSEGetArrayWrite(A,&Aa);CHKERRQ(ierr);}
     else {ierr = MatSeqAIJCUSPARSEGetArray(A,&Aa);CHKERRQ(ierr);}
 
-    MatAddCOOValues<<<(Annz+255)/256,256>>>(v1,Annz,dev->jmap_d,dev->perm_d,imode,Aa);
+    if (Annz) {
+      MatAddCOOValues<<<(Annz+255)/256,256>>>(v1,Annz,dev->jmap_d,dev->perm_d,imode,Aa);
+      CHKERRCUDA(cudaPeekAtLastError());
+    }
 
     if (imode == INSERT_VALUES) {ierr = MatSeqAIJCUSPARSERestoreArrayWrite(A,&Aa);CHKERRQ(ierr);}
     else {ierr = MatSeqAIJCUSPARSERestoreArray(A,&Aa);CHKERRQ(ierr);}

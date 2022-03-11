@@ -20,6 +20,11 @@ typedef struct {
   PetscBool   storel2l;                    /* carry over local-to-local inherited in MatPtAP */
   char        *lmattype;
   PetscScalar *bdiag;                      /* Used by MatInvertBlockDiagonal_IS */
+
+  /* Support for negative or repeated entries in l2map
+     These maps can be different than the ones passed in by the user via
+     MatSetLocalToGlobalMapping */
+  ISLocalToGlobalMapping rmapping, cmapping;
 } Mat_IS;
 
 struct _MatISLocalFields {

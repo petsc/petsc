@@ -1192,7 +1192,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       default:
         ierr = MatConvert(P, MATMPIAIJ, MAT_INITIAL_MATRIX, &C);CHKERRQ(ierr);
       }
-      ierr = MatGetLocalToGlobalMapping(P, &l2g, NULL);CHKERRQ(ierr);
+      ierr = MatISGetLocalToGlobalMapping(P, &l2g, NULL);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)P);CHKERRQ(ierr);
       ierr = KSPSetOperators(data->levels[0]->ksp, A, C);CHKERRQ(ierr);
       std::swap(C, P);

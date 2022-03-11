@@ -100,7 +100,7 @@ PetscErrorCode DMCreateNeumannOverlap_Plex(DM dm, IS *ovl, Mat *J, PetscErrorCod
   ierr = PetscObjectReference((PetscObject)*J);CHKERRQ(ierr);
 
   /* overlap IS */
-  ierr = MatGetLocalToGlobalMapping(pJ, &l2g, NULL);CHKERRQ(ierr);
+  ierr = MatISGetLocalToGlobalMapping(pJ, &l2g, NULL);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetSize(l2g, &n);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetIndices(l2g, &idxs);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PetscObjectComm((PetscObject)odm), n, idxs, PETSC_COPY_VALUES, ovl);CHKERRQ(ierr);

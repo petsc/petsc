@@ -1,30 +1,37 @@
 static char help[] = "Test MatSetPreallocationCOO and MatSetValuesCOO\n\n";
 
 #include <petscmat.h>
-#define MyMatView(a,b) PetscPrintf(PetscObjectComm((PetscObject)(a)),"LINE %d\n",__LINE__),MatView(a,b);
-#define MyVecView(a,b) PetscPrintf(PetscObjectComm((PetscObject)(a)),"LINE %d\n",__LINE__),VecView(a,b);
+#define MyMatView(a,b) (PetscPrintf(PetscObjectComm((PetscObject)(a)),"LINE %d\n",__LINE__),MatView(a,b));
+#define MyVecView(a,b) (PetscPrintf(PetscObjectComm((PetscObject)(a)),"LINE %d\n",__LINE__),VecView(a,b));
 int main(int argc,char **args)
 {
-  Mat            A,At,AAt;
-  Vec            x,y,z;
-  PetscLayout    rmap,cmap;
-  PetscInt       n1 = 11, n2 = 9;
-  PetscInt       i1[] = {   7,  6,  2,  0,  4,  1,  1,  0,  2,  2,  1 };
-  PetscInt       j1[] = {   1,  4,  3,  5,  3,  3,  4,  5,  0,  3,  1 };
-  PetscInt       i2[] = {   7,  6,  2,  0,  4,  1,  1,  2, 1 };
-  PetscInt       j2[] = {   1,  4,  3,  5,  3,  3,  4,  0, 1 };
-  PetscScalar    v1[] = { -1., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10.};
-  PetscScalar    v2[] = {  1.,-1.,-2.,-3.,-4.,-5.,-6.,-7.,-8.,-9.,-10.};
-  PetscInt       N = 6, m = 8, rstart, cstart, i;
-  PetscMPIInt    size;
-  PetscBool      loc = PETSC_FALSE;
-  PetscBool      locdiag = PETSC_TRUE, ismpiaij;
-  PetscErrorCode ierr;
+  Mat                    A,At,AAt;
+  Vec                    x,y,z;
+  ISLocalToGlobalMapping rl2g,cl2g;
+  IS                     is;
+  PetscLayout            rmap,cmap;
+  PetscInt               *it,*jt;
+  PetscInt               n1 = 11, n2 = 9;
+  PetscInt               i1[] = {   7,  6,  2,  0,  4,  1,  1,  0,  2,  2,  1 , -1, -1};
+  PetscInt               j1[] = {   1,  4,  3,  5,  3,  3,  4,  5,  0,  3,  1 , -1, -1};
+  PetscInt               i2[] = {   7,  6,  2,  0,  4,  1,  1,  2,  1, -1, -1};
+  PetscInt               j2[] = {   1,  4,  3,  5,  3,  3,  4,  0,  1, -1, -1};
+  PetscScalar            v1[] = { -1., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., PETSC_MAX_REAL, PETSC_MAX_REAL};
+  PetscScalar            v2[] = {  1.,-1.,-2.,-3.,-4.,-5.,-6.,-7.,-8.,-9.,-10., PETSC_MAX_REAL, PETSC_MAX_REAL};
+  PetscInt               N = 6, m = 8, M, rstart, cstart, i;
+  PetscMPIInt            size;
+  PetscBool              loc = PETSC_FALSE;
+  PetscBool              locdiag = PETSC_TRUE;
+  PetscBool              localapi = PETSC_FALSE;
+  PetscBool              neg = PETSC_FALSE;
+  PetscBool              ismatis, ismpiaij;
+  PetscErrorCode         ierr;
 
   ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-neg",&neg,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-loc",&loc,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(NULL,NULL,"-locdiag",&locdiag,NULL);CHKERRQ(ierr);
-
+  ierr = PetscOptionsGetBool(NULL,NULL,"-localapi",&localapi,NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   if (loc) {
     if (locdiag) {
@@ -39,14 +46,30 @@ int main(int argc,char **args)
   ierr = MatGetLayouts(A,&rmap,&cmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRange(rmap,&rstart,NULL);CHKERRQ(ierr);
+  ierr = PetscLayoutGetRange(cmap,&cstart,NULL);CHKERRQ(ierr);
+  ierr = PetscLayoutGetSize(rmap,&M);CHKERRQ(ierr);
+  ierr = PetscLayoutGetSize(cmap,&N);CHKERRQ(ierr);
+
+  ierr = PetscObjectTypeCompare((PetscObject)A,MATIS,&ismatis);CHKERRQ(ierr);
+
+  /* create fake l2g maps to test the local API */
+  ierr = ISCreateStride(PETSC_COMM_WORLD,M-rstart,rstart,1,&is);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreateIS(is,&rl2g);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_WORLD,N,0,1,&is);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreateIS(is,&cl2g);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(A,rl2g,cl2g);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&rl2g);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&cl2g);CHKERRQ(ierr);
+
   ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
   ierr = MatCreateVecs(A,NULL,&z);CHKERRQ(ierr);
   ierr = VecSet(x,1.);CHKERRQ(ierr);
   ierr = VecSet(z,2.);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRange(rmap,&rstart,NULL);CHKERRQ(ierr);
-  ierr = PetscLayoutGetRange(cmap,&cstart,NULL);CHKERRQ(ierr);
-  for (i = 0; i < n1; i++) i1[i] += rstart;
-  for (i = 0; i < n2; i++) i2[i] += rstart;
+  if (!localapi) for (i = 0; i < n1; i++) i1[i] += rstart;
+  if (!localapi) for (i = 0; i < n2; i++) i2[i] += rstart;
   if (loc) {
     if (locdiag) {
       for (i = 0; i < n1; i++) j1[i] += cstart;
@@ -56,59 +79,84 @@ int main(int argc,char **args)
       for (i = 0; i < n2; i++) j2[i] += cstart + m;
     }
   }
-
+  if (neg) { n1 += 2; n2 += 2; }
+  /* MatSetPreallocationCOOLocal maps the indices! */
+  ierr = PetscMalloc2(PetscMax(n1,n2),&it,PetscMax(n1,n2),&jt);CHKERRQ(ierr);
   /* test with repeated entries */
-  ierr = MatSetPreallocationCOO(A,n1,i1,j1);CHKERRQ(ierr);
+  if (!localapi) {
+    ierr = MatSetPreallocationCOO(A,n1,i1,j1);CHKERRQ(ierr);
+  } else {
+    ierr = PetscArraycpy(it,i1,n1);CHKERRQ(ierr);
+    ierr = PetscArraycpy(jt,j1,n1);CHKERRQ(ierr);
+    ierr = MatSetPreallocationCOOLocal(A,n1,it,jt);CHKERRQ(ierr);
+  }
   ierr = MatSetValuesCOO(A,v1,ADD_VALUES);CHKERRQ(ierr);
-  ierr = MyMatView(A,NULL);CHKERRQ(ierr);
   ierr = MatMult(A,x,y);CHKERRQ(ierr);
+  ierr = MyMatView(A,NULL);CHKERRQ(ierr);
   ierr = MyVecView(y,NULL);CHKERRQ(ierr);
   ierr = MatSetValuesCOO(A,v2,ADD_VALUES);CHKERRQ(ierr);
-  ierr = MyMatView(A,NULL);CHKERRQ(ierr);
   ierr = MatMultAdd(A,x,y,y);CHKERRQ(ierr);
+  ierr = MyMatView(A,NULL);CHKERRQ(ierr);
   ierr = MyVecView(y,NULL);CHKERRQ(ierr);
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
-  ierr = MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt);CHKERRQ(ierr);
-  ierr = MyMatView(AAt,NULL);CHKERRQ(ierr);
-  ierr = MatDestroy(&AAt);CHKERRQ(ierr);
-  ierr = MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt);CHKERRQ(ierr);
-  ierr = MyMatView(AAt,NULL);CHKERRQ(ierr);
-  ierr = MatDestroy(&AAt);CHKERRQ(ierr);
+  if (!ismatis) {
+    ierr = MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt);CHKERRQ(ierr);
+    ierr = MyMatView(AAt,NULL);CHKERRQ(ierr);
+    ierr = MatDestroy(&AAt);CHKERRQ(ierr);
+    ierr = MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt);CHKERRQ(ierr);
+    ierr = MyMatView(AAt,NULL);CHKERRQ(ierr);
+    ierr = MatDestroy(&AAt);CHKERRQ(ierr);
+  }
   ierr = MatDestroy(&At);CHKERRQ(ierr);
+
   /* INSERT_VALUES will overwrite matrix entries but
      still perform the sum of the repeated entries */
   ierr = MatSetValuesCOO(A,v2,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MyMatView(A,NULL);CHKERRQ(ierr);
 
   /* test with unique entries */
-  ierr = MatSetPreallocationCOO(A,n2,i2,j2);CHKERRQ(ierr);
+  if (!localapi) {
+    ierr = MatSetPreallocationCOO(A,n2,i2,j2);CHKERRQ(ierr);
+  } else {
+    ierr = PetscArraycpy(it,i2,n2);CHKERRQ(ierr);
+    ierr = PetscArraycpy(jt,j2,n2);CHKERRQ(ierr);
+    ierr = MatSetPreallocationCOOLocal(A,n2,it,jt);CHKERRQ(ierr);
+  }
   ierr = MatSetValuesCOO(A,v1,ADD_VALUES);CHKERRQ(ierr);
-  ierr = MyMatView(A,NULL);CHKERRQ(ierr);
   ierr = MatMult(A,x,y);CHKERRQ(ierr);
+  ierr = MyMatView(A,NULL);CHKERRQ(ierr);
   ierr = MyVecView(y,NULL);CHKERRQ(ierr);
   ierr = MatSetValuesCOO(A,v2,ADD_VALUES);CHKERRQ(ierr);
-  ierr = MyMatView(A,NULL);CHKERRQ(ierr);
   ierr = MatMultAdd(A,x,y,z);CHKERRQ(ierr);
-  ierr = MyVecView(z,NULL);CHKERRQ(ierr);
-  ierr = MatSetPreallocationCOO(A,n2,i2,j2);CHKERRQ(ierr);
-  ierr = MatSetValuesCOO(A,v1,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MyMatView(A,NULL);CHKERRQ(ierr);
+  ierr = MyVecView(z,NULL);CHKERRQ(ierr);
+  if (!localapi) {
+    ierr = MatSetPreallocationCOO(A,n2,i2,j2);CHKERRQ(ierr);
+  } else {
+    ierr = PetscArraycpy(it,i2,n2);CHKERRQ(ierr);
+    ierr = PetscArraycpy(jt,j2,n2);CHKERRQ(ierr);
+    ierr = MatSetPreallocationCOOLocal(A,n2,it,jt);CHKERRQ(ierr);
+  }
+  ierr = MatSetValuesCOO(A,v1,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatMult(A,x,y);CHKERRQ(ierr);
+  ierr = MyMatView(A,NULL);CHKERRQ(ierr);
   ierr = MyVecView(y,NULL);CHKERRQ(ierr);
   ierr = MatSetValuesCOO(A,v2,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MyMatView(A,NULL);CHKERRQ(ierr);
   ierr = MatMultAdd(A,x,y,z);CHKERRQ(ierr);
+  ierr = MyMatView(A,NULL);CHKERRQ(ierr);
   ierr = MyVecView(z,NULL);CHKERRQ(ierr);
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
-  ierr = MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt);CHKERRQ(ierr);
-  ierr = MyMatView(AAt,NULL);CHKERRQ(ierr);
-  ierr = MatDestroy(&AAt);CHKERRQ(ierr);
-  ierr = MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt);CHKERRQ(ierr);
-  ierr = MyMatView(AAt,NULL);CHKERRQ(ierr);
-  ierr = MatDestroy(&AAt);CHKERRQ(ierr);
+  if (!ismatis) {
+    ierr = MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt);CHKERRQ(ierr);
+    ierr = MyMatView(AAt,NULL);CHKERRQ(ierr);
+    ierr = MatDestroy(&AAt);CHKERRQ(ierr);
+    ierr = MatMatMult(At,A,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt);CHKERRQ(ierr);
+    ierr = MyMatView(AAt,NULL);CHKERRQ(ierr);
+    ierr = MatDestroy(&AAt);CHKERRQ(ierr);
+  }
   ierr = MatDestroy(&At);CHKERRQ(ierr);
 
-  /* test providing diagonal first, the offdiagonal */
+  /* test providing diagonal first, then offdiagonal */
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)A),&size);CHKERRMPI(ierr);
   ierr = PetscObjectBaseTypeCompare((PetscObject)A,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
   if (ismpiaij && size > 1) {
@@ -149,12 +197,12 @@ int main(int argc,char **args)
 
     ierr = MatSetPreallocationCOO(A,nnz,coo_i,coo_j);CHKERRQ(ierr);
     ierr = MatSetValuesCOO(A,coo_v,ADD_VALUES);CHKERRQ(ierr);
-    ierr = MyMatView(A,NULL);CHKERRQ(ierr);
     ierr = MatMult(A,x,y);CHKERRQ(ierr);
+    ierr = MyMatView(A,NULL);CHKERRQ(ierr);
     ierr = MyVecView(y,NULL);CHKERRQ(ierr);
     ierr = MatSetValuesCOO(A,coo_v,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MyMatView(A,NULL);CHKERRQ(ierr);
     ierr = MatMult(A,x,y);CHKERRQ(ierr);
+    ierr = MyMatView(A,NULL);CHKERRQ(ierr);
     ierr = MyVecView(y,NULL);CHKERRQ(ierr);
     ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
     ierr = MatMatMult(A,At,MAT_INITIAL_MATRIX,PETSC_DEFAULT,&AAt);CHKERRQ(ierr);
@@ -167,6 +215,7 @@ int main(int argc,char **args)
 
     ierr = PetscFree3(coo_i,coo_j,coo_v);CHKERRQ(ierr);
   }
+  ierr = PetscFree2(it,jt);CHKERRQ(ierr);
   ierr = VecDestroy(&z);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&y);CHKERRQ(ierr);
@@ -181,14 +230,22 @@ int main(int argc,char **args)
      suffix: 1
      filter: grep -v type
      diff_args: -j
-     args: -mat_type {{seqaij mpiaij}}
+     args: -mat_type {{seqaij mpiaij}} -localapi {{0 1}} -neg {{0 1}}
 
    test:
      requires: cuda
      suffix: 1_cuda
      filter: grep -v type
      diff_args: -j
-     args: -mat_type {{seqaijcusparse mpiaijcusparse}}
+     args: -mat_type {{seqaijcusparse mpiaijcusparse}} -localapi {{0 1}} -neg {{0 1}}
+     output_file: output/ex123_1.out
+
+   test:
+     requires: kokkos_kernels !sycl
+     suffix: 1_kokkos
+     filter: grep -v type
+     diff_args: -j
+     args: -mat_type {{seqaijkokkos mpiaijkokkos}} -localapi {{0 1}} -neg {{0 1}}
      output_file: output/ex123_1.out
 
    test:
@@ -196,7 +253,7 @@ int main(int argc,char **args)
      nsize: 7
      filter: grep -v type
      diff_args: -j
-     args: -mat_type mpiaij
+     args: -mat_type mpiaij -localapi {{0 1}} -neg {{0 1}}
 
    test:
      requires: cuda
@@ -204,7 +261,16 @@ int main(int argc,char **args)
      nsize: 7
      filter: grep -v type
      diff_args: -j
-     args: -mat_type mpiaijcusparse
+     args: -mat_type mpiaijcusparse -localapi {{0 1}} -neg {{0 1}}
+     output_file: output/ex123_2.out
+
+   test:
+     requires: kokkos_kernels !sycl
+     suffix: 2_kokkos
+     nsize: 7
+     filter: grep -v type
+     diff_args: -j
+     args: -mat_type mpiaijkokkos -localapi {{0 1}} -neg {{0 1}}
      output_file: output/ex123_2.out
 
    test:
@@ -212,7 +278,7 @@ int main(int argc,char **args)
      nsize: 3
      filter: grep -v type
      diff_args: -j
-     args: -mat_type mpiaij -loc
+     args: -mat_type mpiaij -loc -localapi {{0 1}} -neg {{0 1}}
 
    test:
      requires: cuda
@@ -220,24 +286,8 @@ int main(int argc,char **args)
      nsize: 3
      filter: grep -v type
      diff_args: -j
-     args: -mat_type mpiaijcusparse -loc
+     args: -mat_type mpiaijcusparse -loc -localapi {{0 1}} -neg {{0 1}}
      output_file: output/ex123_3.out
-
-   test:
-     suffix: 4
-     nsize: 4
-     filter: grep -v type
-     diff_args: -j
-     args: -mat_type mpiaij -loc -locdiag 0
-
-   test:
-     requires: cuda
-     suffix: 4_cuda
-     nsize: 4
-     filter: grep -v type
-     diff_args: -j
-     args: -mat_type mpiaijcusparse -loc -locdiag 0
-     output_file: output/ex123_4.out
 
    test:
      requires: !sycl kokkos_kernels
@@ -245,8 +295,24 @@ int main(int argc,char **args)
      nsize: 3
      filter: grep -v type
      diff_args: -j
-     args: -mat_type aijkokkos -loc
+     args: -mat_type aijkokkos -loc -localapi {{0 1}} -neg {{0 1}}
      output_file: output/ex123_3.out
+
+   test:
+     suffix: 4
+     nsize: 4
+     filter: grep -v type
+     diff_args: -j
+     args: -mat_type mpiaij -loc -locdiag 0 -localapi {{0 1}} -neg {{0 1}}
+
+   test:
+     requires: cuda
+     suffix: 4_cuda
+     nsize: 4
+     filter: grep -v type
+     diff_args: -j
+     args: -mat_type mpiaijcusparse -loc -locdiag 0 -localapi {{0 1}} -neg {{0 1}}
+     output_file: output/ex123_4.out
 
    test:
      requires: !sycl kokkos_kernels
@@ -254,7 +320,14 @@ int main(int argc,char **args)
      nsize: 4
      filter: grep -v type
      diff_args: -j
-     args: -mat_type aijkokkos -loc -locdiag 0
+     args: -mat_type aijkokkos -loc -locdiag 0 -localapi {{0 1}} -neg {{0 1}}
      output_file: output/ex123_4.out
+
+   test:
+     suffix: matis
+     nsize: 3
+     filter: grep -v type
+     diff_args: -j
+     args: -mat_type is -localapi {{0 1}} -neg {{0 1}}
 
 TEST*/

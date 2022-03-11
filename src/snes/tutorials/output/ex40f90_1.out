@@ -2,7 +2,7 @@
   1 SNES Function norm 21.1059 
   2 SNES Function norm 1.48791 
   3 SNES Function norm 0.0100216 
-  4 SNES Function norm 4.67469e-07 
+  4 SNES Function norm 4.67479e-07 
 SNES Object: 1 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
@@ -55,7 +55,7 @@ SNES Object: 1 MPI processes
         Mat Object: 1 MPI processes
           type: seqaij
           rows=200, cols=200, bs=2
-          total: nonzeros=3136, allocated nonzeros=0
+          total: nonzeros=3136, allocated nonzeros=3136
           total number of mallocs used during MatSetValues calls=0
             using I-node routines: found 100 nodes, limit used is 5
     Down solver (pre-smoother) on level 1 -------------------------------

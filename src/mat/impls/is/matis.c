@@ -10,6 +10,7 @@
 #include <../src/mat/impls/is/matis.h>      /*I "petscmat.h" I*/
 #include <petsc/private/sfimpl.h>
 #include <petsc/private/vecimpl.h>
+#include <petsc/private/hashseti.h>
 
 #define MATIS_MAX_ENTRIES_INSERTION 2048
 static PetscErrorCode MatSetValuesLocal_IS(Mat,PetscInt,const PetscInt*,PetscInt,const PetscInt*,const PetscScalar*,InsertMode);
@@ -195,7 +196,7 @@ static PetscErrorCode MatPtAPSymbolic_IS_XAIJ(Mat A,Mat P,PetscReal fill,Mat C)
   ierr = PetscContainerDestroy(&c);CHKERRQ(ierr);
   ptap->fill = fill;
 
-  ierr = MatGetLocalToGlobalMapping(A,&rl2g,&cl2g);CHKERRQ(ierr);
+  ierr = MatISGetLocalToGlobalMapping(A,&rl2g,&cl2g);CHKERRQ(ierr);
 
   ierr = ISLocalToGlobalMappingGetBlockSize(cl2g,&ibs);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingGetSize(cl2g,&N);CHKERRQ(ierr);
@@ -376,7 +377,7 @@ static PetscErrorCode MatISScaleDisassembling_Private(Mat A)
   PetscFunctionBegin;
   ierr = MatGetRowIJ(matis->A,0,PETSC_FALSE,PETSC_FALSE,&m,&ii,&jj,&flg);CHKERRQ(ierr);
   PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get IJ structure");
-  ierr = ISLocalToGlobalMappingGetNodeInfo(A->rmap->mapping,&n,&ecount,&eneighs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetNodeInfo(matis->rmapping,&n,&ecount,&eneighs);CHKERRQ(ierr);
   PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected %" PetscInt_FMT " != %" PetscInt_FMT,m,n);
   ierr = MatSeqAIJGetArray(matis->A,&aa);CHKERRQ(ierr);
   for (i=0;i<n;i++) {
@@ -396,7 +397,7 @@ static PetscErrorCode MatISScaleDisassembling_Private(Mat A)
       }
     }
   }
-  ierr = ISLocalToGlobalMappingRestoreNodeInfo(A->rmap->mapping,&n,&ecount,&eneighs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreNodeInfo(matis->rmapping,&n,&ecount,&eneighs);CHKERRQ(ierr);
   ierr = MatSeqAIJRestoreArray(matis->A,&aa);CHKERRQ(ierr);
   ierr = MatRestoreRowIJ(matis->A,0,PETSC_FALSE,PETSC_FALSE,&m,&ii,&jj,&flg);CHKERRQ(ierr);
   PetscCheckFalse(!flg,PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot restore IJ structure");
@@ -662,7 +663,7 @@ PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat A,MatType type,MatReuse reuse
     PetscInt       rbs, cbs, nr, nc;
 
     if (!B) B = *newmat;
-    ierr = MatGetLocalToGlobalMapping(B,&rl2g,&cl2g);CHKERRQ(ierr);
+    ierr = MatISGetLocalToGlobalMapping(B,&rl2g,&cl2g);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetBlockIndices(rl2g,&ridx);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetBlockIndices(cl2g,&cidx);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetSize(rl2g,&nr);CHKERRQ(ierr);
@@ -898,9 +899,9 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A,MatType type,MatReuse reuse
           Mat T;
 
           ierr = MatTransposeGetMat(nest[i][j],&T);CHKERRQ(ierr);
-          ierr = MatGetLocalToGlobalMapping(T,NULL,&cl2g);CHKERRQ(ierr);
+          ierr = MatISGetLocalToGlobalMapping(T,NULL,&cl2g);CHKERRQ(ierr);
         } else {
-          ierr = MatGetLocalToGlobalMapping(nest[i][j],&cl2g,NULL);CHKERRQ(ierr);
+          ierr = MatISGetLocalToGlobalMapping(nest[i][j],&cl2g,NULL);CHKERRQ(ierr);
         }
         ierr = ISLocalToGlobalMappingGetSize(cl2g,&n1);CHKERRQ(ierr);
         if (!n1) continue;
@@ -932,9 +933,9 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A,MatType type,MatReuse reuse
           Mat T;
 
           ierr = MatTransposeGetMat(nest[j][i],&T);CHKERRQ(ierr);
-          ierr = MatGetLocalToGlobalMapping(T,&cl2g,NULL);CHKERRQ(ierr);
+          ierr = MatISGetLocalToGlobalMapping(T,&cl2g,NULL);CHKERRQ(ierr);
         } else {
-          ierr = MatGetLocalToGlobalMapping(nest[j][i],NULL,&cl2g);CHKERRQ(ierr);
+          ierr = MatISGetLocalToGlobalMapping(nest[j][i],NULL,&cl2g);CHKERRQ(ierr);
         }
         ierr = ISLocalToGlobalMappingGetSize(cl2g,&n1);CHKERRQ(ierr);
         if (!n1) continue;
@@ -1266,13 +1267,12 @@ static PetscErrorCode MatTranspose_IS(Mat A,MatReuse reuse,Mat *B)
     ierr = MatSetType(C,MATIS);CHKERRQ(ierr);
     ierr = MatGetLocalToGlobalMapping(A,&rl2g,&cl2g);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMapping(C,cl2g,rl2g);CHKERRQ(ierr);
-  } else {
-    C = *B;
-  }
+  } else C = *B;
 
   /* perform local transposition */
   ierr = MatISGetLocalMat(A,&lA);CHKERRQ(ierr);
   ierr = MatTranspose(lA,MAT_INITIAL_MATRIX,&lC);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(lC,lA->cmap->mapping,lA->rmap->mapping);CHKERRQ(ierr);
   ierr = MatISSetLocalMat(C,lC);CHKERRQ(ierr);
   ierr = MatDestroy(&lC);CHKERRQ(ierr);
 
@@ -1541,17 +1541,17 @@ static PetscErrorCode MatISSetUpSF_IS(Mat B)
   PetscFunctionBegin;
   if (matis->sf) PetscFunctionReturn(0);
   ierr = PetscSFCreate(PetscObjectComm((PetscObject)B),&matis->sf);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetIndices(B->rmap->mapping,&gidxs);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetSize(B->rmap->mapping,&nleaves);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(matis->rmapping,&gidxs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(matis->rmapping,&nleaves);CHKERRQ(ierr);
   ierr = PetscSFSetGraphLayout(matis->sf,B->rmap,nleaves,NULL,PETSC_OWN_POINTER,gidxs);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRestoreIndices(B->rmap->mapping,&gidxs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(matis->rmapping,&gidxs);CHKERRQ(ierr);
   ierr = PetscMalloc2(matis->sf->nroots,&matis->sf_rootdata,matis->sf->nleaves,&matis->sf_leafdata);CHKERRQ(ierr);
-  if (B->rmap->mapping != B->cmap->mapping) { /* setup SF for columns */
-    ierr = ISLocalToGlobalMappingGetSize(B->cmap->mapping,&nleaves);CHKERRQ(ierr);
+  if (matis->rmapping != matis->cmapping) { /* setup SF for columns */
+    ierr = ISLocalToGlobalMappingGetSize(matis->cmapping,&nleaves);CHKERRQ(ierr);
     ierr = PetscSFCreate(PetscObjectComm((PetscObject)B),&matis->csf);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetIndices(B->cmap->mapping,&gidxs);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(matis->cmapping,&gidxs);CHKERRQ(ierr);
     ierr = PetscSFSetGraphLayout(matis->csf,B->cmap,nleaves,NULL,PETSC_OWN_POINTER,gidxs);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingRestoreIndices(B->cmap->mapping,&gidxs);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(matis->cmapping,&gidxs);CHKERRQ(ierr);
     ierr = PetscMalloc2(matis->csf->nroots,&matis->csf_rootdata,matis->csf->nleaves,&matis->csf_leafdata);CHKERRQ(ierr);
   } else {
     matis->csf = matis->sf;
@@ -1746,9 +1746,9 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
   ierr = MatGetSize(matis->A,&local_rows,&local_cols);CHKERRQ(ierr);
   ierr = PetscObjectBaseTypeCompare((PetscObject)matis->A,MATSEQDENSE,&isdense);CHKERRQ(ierr);
   ierr = PetscObjectBaseTypeCompare((PetscObject)matis->A,MATSEQSBAIJ,&issbaij);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetIndices(A->rmap->mapping,&global_indices_r);CHKERRQ(ierr);
-  if (A->rmap->mapping != A->cmap->mapping) {
-    ierr = ISLocalToGlobalMappingGetIndices(A->cmap->mapping,&global_indices_c);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetIndices(matis->rmapping,&global_indices_r);CHKERRQ(ierr);
+  if (matis->rmapping != matis->cmapping) {
+    ierr = ISLocalToGlobalMappingGetIndices(matis->cmapping,&global_indices_c);CHKERRQ(ierr);
   } else global_indices_c = global_indices_r;
 
   if (issbaij) {
@@ -1844,9 +1844,9 @@ PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, P
     }
   }
   if (global_indices_c != global_indices_r) {
-    ierr = ISLocalToGlobalMappingRestoreIndices(A->cmap->mapping,&global_indices_c);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(matis->cmapping,&global_indices_c);CHKERRQ(ierr);
   }
-  ierr = ISLocalToGlobalMappingRestoreIndices(A->rmap->mapping,&global_indices_r);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreIndices(matis->rmapping,&global_indices_r);CHKERRQ(ierr);
   ierr = PetscFree(row_ownership);CHKERRQ(ierr);
 
   /* Reduce my_dnz and my_onz */
@@ -1912,15 +1912,15 @@ PETSC_INTERN PetscErrorCode MatConvert_IS_XAIJ(Mat mat, MatType mtype, MatReuse 
     IS       irows = NULL,icols = NULL;
     PetscInt rbs,cbs;
 
-    ierr = ISLocalToGlobalMappingGetBlockSize(mat->rmap->mapping,&rbs);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetBlockSize(mat->cmap->mapping,&cbs);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetBlockSize(matis->rmapping,&rbs);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetBlockSize(matis->cmapping,&cbs);CHKERRQ(ierr);
     if (reuse != MAT_REUSE_MATRIX) { /* check if l2g maps are one-to-one */
       IS             rows,cols;
       const PetscInt *ridxs,*cidxs;
       PetscInt       i,nw,*work;
 
-      ierr = ISLocalToGlobalMappingGetBlockIndices(mat->rmap->mapping,&ridxs);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingGetSize(mat->rmap->mapping,&nw);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingGetBlockIndices(matis->rmapping,&ridxs);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingGetSize(matis->rmapping,&nw);CHKERRQ(ierr);
       nw   = nw/rbs;
       ierr = PetscCalloc1(nw,&work);CHKERRQ(ierr);
       for (i=0;i<nw;i++) work[ridxs[i]] += 1;
@@ -1931,11 +1931,11 @@ PETSC_INTERN PetscErrorCode MatConvert_IS_XAIJ(Mat mat, MatType mtype, MatReuse 
         ierr = ISInvertPermutation(rows,PETSC_DECIDE,&irows);CHKERRQ(ierr);
         ierr = ISDestroy(&rows);CHKERRQ(ierr);
       }
-      ierr = ISLocalToGlobalMappingRestoreBlockIndices(mat->rmap->mapping,&ridxs);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingRestoreBlockIndices(matis->rmapping,&ridxs);CHKERRQ(ierr);
       ierr = PetscFree(work);CHKERRQ(ierr);
-      if (irows && mat->rmap->mapping != mat->cmap->mapping) {
-        ierr = ISLocalToGlobalMappingGetBlockIndices(mat->cmap->mapping,&cidxs);CHKERRQ(ierr);
-        ierr = ISLocalToGlobalMappingGetSize(mat->cmap->mapping,&nw);CHKERRQ(ierr);
+      if (irows && matis->rmapping != matis->cmapping) {
+        ierr = ISLocalToGlobalMappingGetBlockIndices(matis->cmapping,&cidxs);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingGetSize(matis->cmapping,&nw);CHKERRQ(ierr);
         nw   = nw/cbs;
         ierr = PetscCalloc1(nw,&work);CHKERRQ(ierr);
         for (i=0;i<nw;i++) work[cidxs[i]] += 1;
@@ -1946,7 +1946,7 @@ PETSC_INTERN PetscErrorCode MatConvert_IS_XAIJ(Mat mat, MatType mtype, MatReuse 
           ierr = ISInvertPermutation(cols,PETSC_DECIDE,&icols);CHKERRQ(ierr);
           ierr = ISDestroy(&cols);CHKERRQ(ierr);
         }
-        ierr = ISLocalToGlobalMappingRestoreBlockIndices(mat->cmap->mapping,&cidxs);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingRestoreBlockIndices(matis->cmapping,&cidxs);CHKERRQ(ierr);
         ierr = PetscFree(work);CHKERRQ(ierr);
       } else if (irows) {
         ierr  = PetscObjectReference((PetscObject)irows);CHKERRQ(ierr);
@@ -1981,8 +1981,8 @@ PETSC_INTERN PetscErrorCode MatConvert_IS_XAIJ(Mat mat, MatType mtype, MatReuse 
   }
 general_assembly:
   ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockSize(mat->rmap->mapping,&rbs);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockSize(mat->cmap->mapping,&cbs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetBlockSize(matis->rmapping,&rbs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetBlockSize(matis->cmapping,&cbs);CHKERRQ(ierr);
   ierr = MatGetLocalSize(mat,&lrows,&lcols);CHKERRQ(ierr);
   ierr = MatGetSize(matis->A,&local_rows,&local_cols);CHKERRQ(ierr);
   ierr = PetscObjectBaseTypeCompare((PetscObject)matis->A,MATSEQDENSE,&isseqdense);CHKERRQ(ierr);
@@ -2033,7 +2033,7 @@ general_assembly:
   }
 
   /* Set values */
-  ierr = MatSetLocalToGlobalMapping(MT,mat->rmap->mapping,mat->cmap->mapping);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(MT,matis->rmapping,matis->cmapping);CHKERRQ(ierr);
   if (isseqdense) { /* special case for dense local matrices */
     PetscInt          i,*dummy;
 
@@ -2158,6 +2158,7 @@ static PetscErrorCode MatDuplicate_IS(Mat mat,MatDuplicateOption op,Mat *newmat)
   ierr = MatISSetLocalMatType(B,matis->lmattype);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(B,mat->rmap->mapping,mat->cmap->mapping);CHKERRQ(ierr);
   ierr = MatDuplicate(matis->A,op,&localmat);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(localmat,matis->A->rmap->mapping,matis->A->cmap->mapping);CHKERRQ(ierr);
   ierr = MatISSetLocalMat(B,localmat);CHKERRQ(ierr);
   ierr = MatDestroy(&localmat);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2178,26 +2179,30 @@ static PetscErrorCode MatIsHermitian_IS(Mat A,PetscReal tol,PetscBool  *flg)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatIsSymmetric_IS(Mat A,PetscReal tol,PetscBool  *flg)
+static PetscErrorCode MatIsSymmetric_IS(Mat A,PetscReal tol,PetscBool *flg)
 {
   PetscErrorCode ierr;
   Mat_IS         *matis = (Mat_IS*)A->data;
   PetscBool      local_sym;
 
   PetscFunctionBegin;
+  if (matis->rmapping != matis->cmapping) {
+    *flg = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
   ierr = MatIsSymmetric(matis->A,tol,&local_sym);CHKERRQ(ierr);
   ierr = MPIU_Allreduce(&local_sym,flg,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatIsStructurallySymmetric_IS(Mat A,PetscBool  *flg)
+static PetscErrorCode MatIsStructurallySymmetric_IS(Mat A,PetscBool *flg)
 {
   PetscErrorCode ierr;
   Mat_IS         *matis = (Mat_IS*)A->data;
   PetscBool      local_sym;
 
   PetscFunctionBegin;
-  if (A->rmap->mapping != A->cmap->mapping) {
+  if (matis->rmapping != matis->cmapping) {
     *flg = PETSC_FALSE;
     PetscFunctionReturn(0);
   }
@@ -2228,6 +2233,8 @@ static PetscErrorCode MatDestroy_IS(Mat A)
   } else b->csf = NULL;
   ierr = PetscSFDestroy(&b->sf);CHKERRQ(ierr);
   ierr = PetscFree2(b->sf_rootdata,b->sf_leafdata);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&b->rmapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&b->cmapping);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetLocalMatType_C",NULL);CHKERRQ(ierr);
@@ -2237,6 +2244,7 @@ static PetscErrorCode MatDestroy_IS(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetPreallocation_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISStoreL2L_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISFixLocalEmpty_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalToGlobalMapping_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_is_mpiaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_is_mpibaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_is_mpisbaij_C",NULL);CHKERRQ(ierr);
@@ -2244,6 +2252,9 @@ static PetscErrorCode MatDestroy_IS(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_is_seqbaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_is_seqsbaij_C",NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_is_aij_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOOLocal_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOO_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2381,14 +2392,14 @@ static PetscErrorCode MatISSetUpScatters_Private(Mat A)
   PetscScalar    sum;
   const PetscInt *garray;
   PetscInt       nr,rbs,nc,cbs;
-  PetscBool      iscuda;
+  VecType        rtype;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = ISLocalToGlobalMappingGetSize(A->rmap->mapping,&nr);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockSize(A->rmap->mapping,&rbs);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetSize(A->cmap->mapping,&nc);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockSize(A->cmap->mapping,&cbs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(is->rmapping,&nr);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetBlockSize(is->rmapping,&rbs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(is->cmapping,&nc);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetBlockSize(is->cmapping,&cbs);CHKERRQ(ierr);
   ierr = VecDestroy(&is->x);CHKERRQ(ierr);
   ierr = VecDestroy(&is->y);CHKERRQ(ierr);
   ierr = VecDestroy(&is->counter);CHKERRQ(ierr);
@@ -2396,23 +2407,21 @@ static PetscErrorCode MatISSetUpScatters_Private(Mat A)
   ierr = VecScatterDestroy(&is->cctx);CHKERRQ(ierr);
   ierr = MatCreateVecs(is->A,&is->x,&is->y);CHKERRQ(ierr);
   ierr = VecBindToCPU(is->y,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)is->y,VECSEQCUDA,&iscuda);CHKERRQ(ierr);
-  if (iscuda) {
-    ierr = PetscFree(A->defaultvectype);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(VECCUDA,&A->defaultvectype);CHKERRQ(ierr);
-  }
+  ierr = VecGetRootType_Private(is->y,&rtype);CHKERRQ(ierr);
+  ierr = PetscFree(A->defaultvectype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(rtype,&A->defaultvectype);CHKERRQ(ierr);
   ierr = MatCreateVecs(A,&cglobal,&rglobal);CHKERRQ(ierr);
   ierr = VecBindToCPU(rglobal,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockIndices(A->rmap->mapping,&garray);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetBlockIndices(is->rmapping,&garray);CHKERRQ(ierr);
   ierr = ISCreateBlock(PetscObjectComm((PetscObject)A),rbs,nr/rbs,garray,PETSC_USE_POINTER,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(rglobal,from,is->y,NULL,&is->rctx);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingRestoreBlockIndices(A->rmap->mapping,&garray);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreBlockIndices(is->rmapping,&garray);CHKERRQ(ierr);
   ierr = ISDestroy(&from);CHKERRQ(ierr);
-  if (A->rmap->mapping != A->cmap->mapping) {
-    ierr = ISLocalToGlobalMappingGetBlockIndices(A->cmap->mapping,&garray);CHKERRQ(ierr);
+  if (is->rmapping != is->cmapping) {
+    ierr = ISLocalToGlobalMappingGetBlockIndices(is->cmapping,&garray);CHKERRQ(ierr);
     ierr = ISCreateBlock(PetscObjectComm((PetscObject)A),cbs,nc/cbs,garray,PETSC_USE_POINTER,&from);CHKERRQ(ierr);
     ierr = VecScatterCreate(cglobal,from,is->x,NULL,&is->cctx);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingRestoreBlockIndices(A->cmap->mapping,&garray);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreBlockIndices(is->cmapping,&garray);CHKERRQ(ierr);
     ierr = ISDestroy(&from);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectReference((PetscObject)is->rctx);CHKERRQ(ierr);
@@ -2433,11 +2442,8 @@ static PetscErrorCode MatISSetUpScatters_Private(Mat A)
 
   /* special functions for block-diagonal matrices */
   ierr = VecSum(rglobal,&sum);CHKERRQ(ierr);
-  if ((PetscInt)(PetscRealPart(sum)) == A->rmap->N && A->rmap->N == A->cmap->N && A->rmap->mapping == A->cmap->mapping) {
-    A->ops->invertblockdiagonal = MatInvertBlockDiagonal_IS;
-  } else {
-    A->ops->invertblockdiagonal = NULL;
-  }
+  A->ops->invertblockdiagonal = NULL;
+  if ((PetscInt)(PetscRealPart(sum)) == A->rmap->N && A->rmap->N == A->cmap->N && is->rmapping == is->cmapping) A->ops->invertblockdiagonal = MatInvertBlockDiagonal_IS;
   ierr = VecDestroy(&rglobal);CHKERRQ(ierr);
 
   /* setup SF for general purpose shared indices based communications */
@@ -2445,21 +2451,76 @@ static PetscErrorCode MatISSetUpScatters_Private(Mat A)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatISFilterL2GMap(Mat A, ISLocalToGlobalMapping map, ISLocalToGlobalMapping *nmap, ISLocalToGlobalMapping *lmap)
+{
+  IS                         is;
+  ISLocalToGlobalMappingType l2gtype;
+  const PetscInt             *idxs;
+  PetscHSetI                 ht;
+  PetscInt                   *nidxs;
+  PetscInt                   i,n,bs,c;
+  PetscBool                  flg[] = {PETSC_FALSE,PETSC_FALSE};
+  PetscErrorCode             ierr;
+
+  PetscFunctionBegin;
+  ierr = ISLocalToGlobalMappingGetSize(map,&n);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetBlockSize(map,&bs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetBlockIndices(map,&idxs);CHKERRQ(ierr);
+  ierr = PetscHSetICreate(&ht);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n/bs,&nidxs);CHKERRQ(ierr);
+  for (i=0,c=0;i<n/bs;i++) {
+    PetscBool missing;
+    if (idxs[i] < 0) { flg[0] = PETSC_TRUE; continue; }
+    ierr = PetscHSetIQueryAdd(ht,idxs[i],&missing);CHKERRQ(ierr);
+    if (!missing) flg[1] = PETSC_TRUE;
+    else nidxs[c++] = idxs[i];
+  }
+  ierr = PetscHSetIDestroy(&ht);CHKERRQ(ierr);
+  ierr = MPIU_Allreduce(MPI_IN_PLACE,flg,2,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
+  if (!flg[0] && !flg[1]) { /* Entries are all non negative and unique */
+    *nmap = NULL;
+    *lmap = NULL;
+    ierr = PetscFree(nidxs);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreBlockIndices(map,&idxs);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  /* New l2g map without negative or repeated indices */
+  ierr = ISCreateBlock(PetscObjectComm((PetscObject)A),bs,c,nidxs,PETSC_USE_POINTER,&is);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreateIS(is,nmap);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetType(map,&l2gtype);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingSetType(*nmap,l2gtype);CHKERRQ(ierr);
+
+  /* New local l2g map for repeated indices */
+  ierr = ISGlobalToLocalMappingApplyBlock(*nmap,IS_GTOLM_MASK,n/bs,idxs,NULL,nidxs);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_SELF,bs,n/bs,nidxs,PETSC_USE_POINTER,&is);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreateIS(is,lmap);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+
+  ierr = PetscFree(nidxs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingRestoreBlockIndices(map,&idxs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmapping,ISLocalToGlobalMapping cmapping)
 {
-  PetscErrorCode ierr;
-  PetscInt       nr,rbs,nc,cbs;
-  Mat_IS         *is = (Mat_IS*)A->data;
-  PetscBool      cong, same = PETSC_FALSE;
+  Mat_IS                 *is = (Mat_IS*)A->data;
+  ISLocalToGlobalMapping localrmapping = NULL, localcmapping = NULL;
+  PetscBool              cong, freem[] = { PETSC_FALSE, PETSC_FALSE };
+  PetscInt               nr,rbs,nc,cbs;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   if (rmapping) PetscCheckSameComm(A,1,rmapping,2);
   if (cmapping) PetscCheckSameComm(A,1,cmapping,3);
+
+  ierr = ISLocalToGlobalMappingDestroy(&is->rmapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&is->cmapping);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(A->cmap);CHKERRQ(ierr);
   ierr = MatHasCongruentLayouts(A,&cong);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)cmapping);CHKERRQ(ierr);
+
   /* If NULL, local space matches global space */
   if (!rmapping) {
     IS is;
@@ -2468,10 +2529,15 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping
     ierr = ISLocalToGlobalMappingCreateIS(is,&rmapping);CHKERRQ(ierr);
     if (A->rmap->bs > 0) { ierr = ISLocalToGlobalMappingSetBlockSize(rmapping,A->rmap->bs);CHKERRQ(ierr); }
     ierr = ISDestroy(&is);CHKERRQ(ierr);
-
-    if (!cmapping && cong) {
-      ierr = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
-      cmapping = rmapping;
+    freem[0] = PETSC_TRUE;
+    if (!cmapping && cong && A->rmap->bs == A->cmap->bs) cmapping = rmapping;
+  } else if (!is->islocalref) { /* check if the l2g map has negative or repeated entries */
+    ierr = MatISFilterL2GMap(A,rmapping,&is->rmapping,&localrmapping);CHKERRQ(ierr);
+    if (rmapping == cmapping) {
+      ierr = PetscObjectReference((PetscObject)is->rmapping);CHKERRQ(ierr);
+      is->cmapping = is->rmapping;
+      ierr = PetscObjectReference((PetscObject)localrmapping);CHKERRQ(ierr);
+      localcmapping = localrmapping;
     }
   }
   if (!cmapping) {
@@ -2481,6 +2547,17 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping
     ierr = ISLocalToGlobalMappingCreateIS(is,&cmapping);CHKERRQ(ierr);
     if (A->cmap->bs > 0) { ierr = ISLocalToGlobalMappingSetBlockSize(cmapping,A->cmap->bs);CHKERRQ(ierr); }
     ierr = ISDestroy(&is);CHKERRQ(ierr);
+    freem[1] = PETSC_TRUE;
+  } else if (cmapping != rmapping && !is->islocalref) { /* check if the l2g map has negative or repeated entries */
+    ierr = MatISFilterL2GMap(A,cmapping,&is->cmapping,&localcmapping);CHKERRQ(ierr);
+  }
+  if (!is->rmapping) {
+    ierr = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
+    is->rmapping = rmapping;
+  }
+  if (!is->cmapping) {
+    ierr = PetscObjectReference((PetscObject)cmapping);CHKERRQ(ierr);
+    is->cmapping = cmapping;
   }
 
   /* Clean up */
@@ -2495,28 +2572,35 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping
 
   /* check if the two mappings are actually the same for square matrices since MATIS has some optimization for this case
      (DOLFIN passes 2 different objects) */
-  ierr = ISLocalToGlobalMappingGetSize(rmapping,&nr);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockSize(rmapping,&rbs);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetSize(cmapping,&nc);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingGetBlockSize(cmapping,&cbs);CHKERRQ(ierr);
-  if (rmapping != cmapping && cong) {
+  ierr = ISLocalToGlobalMappingGetSize(is->rmapping,&nr);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetBlockSize(is->rmapping,&rbs);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetSize(is->cmapping,&nc);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingGetBlockSize(is->cmapping,&cbs);CHKERRQ(ierr);
+  if (is->rmapping != is->cmapping && cong) {
+    PetscBool same = PETSC_FALSE;
     if (nr == nc && cbs == rbs) {
       const PetscInt *idxs1,*idxs2;
 
-      ierr = ISLocalToGlobalMappingGetBlockIndices(rmapping,&idxs1);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingGetBlockIndices(cmapping,&idxs2);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingGetBlockIndices(is->rmapping,&idxs1);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingGetBlockIndices(is->cmapping,&idxs2);CHKERRQ(ierr);
       ierr = PetscArraycmp(idxs1,idxs2,nr/rbs,&same);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingRestoreBlockIndices(rmapping,&idxs1);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingRestoreBlockIndices(cmapping,&idxs2);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingRestoreBlockIndices(is->rmapping,&idxs1);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingRestoreBlockIndices(is->cmapping,&idxs2);CHKERRQ(ierr);
     }
     ierr = MPIU_Allreduce(MPI_IN_PLACE,&same,1,MPIU_BOOL,MPI_LAND,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
+    if (same) {
+      ierr = ISLocalToGlobalMappingDestroy(&is->cmapping);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)is->rmapping);CHKERRQ(ierr);
+      is->cmapping = is->rmapping;
+    }
   }
   ierr = PetscLayoutSetBlockSize(A->rmap,rbs);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(A->cmap,cbs);CHKERRQ(ierr);
+  /* Pass the user defined maps to the layout */
   ierr = PetscLayoutSetISLocalToGlobalMapping(A->rmap,rmapping);CHKERRQ(ierr);
-  ierr = PetscLayoutSetISLocalToGlobalMapping(A->cmap,same ? rmapping : cmapping);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&rmapping);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&cmapping);CHKERRQ(ierr);
+  ierr = PetscLayoutSetISLocalToGlobalMapping(A->cmap,cmapping);CHKERRQ(ierr);
+  if (freem[0]) { ierr = ISLocalToGlobalMappingDestroy(&rmapping);CHKERRQ(ierr); }
+  if (freem[1]) { ierr = ISLocalToGlobalMappingDestroy(&cmapping);CHKERRQ(ierr); }
 
   /* Create the local matrix A */
   ierr = MatCreate(PETSC_COMM_SELF,&is->A);CHKERRQ(ierr);
@@ -2527,11 +2611,12 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping
   ierr = MatAppendOptionsPrefix(is->A,((PetscObject)A)->prefix);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(is->A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(is->A->cmap);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(is->A,localrmapping,localcmapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&localrmapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&localcmapping);CHKERRQ(ierr);
 
   /* setup scatters and local vectors for MatMult */
-  if (!is->islocalref) {
-    ierr = MatISSetUpScatters_Private(A);CHKERRQ(ierr);
-  }
+  if (!is->islocalref) { ierr = MatISSetUpScatters_Private(A);CHKERRQ(ierr); }
   A->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -2543,8 +2628,6 @@ static PetscErrorCode MatSetUp_IS(Mat A)
 
   PetscFunctionBegin;
   ierr = MatGetLocalToGlobalMapping(A,&rmap,&cmap);CHKERRQ(ierr);
-  PetscCheckFalse(rmap && !cmap,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing column mapping");
-  PetscCheckFalse(cmap && !rmap,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing row mapping");
   if (!rmap && !cmap) {
     ierr = MatSetLocalToGlobalMapping(A,NULL,NULL);CHKERRQ(ierr);
   }
@@ -2555,26 +2638,16 @@ static PetscErrorCode MatSetValues_IS(Mat mat, PetscInt m,const PetscInt *rows, 
 {
   Mat_IS         *is = (Mat_IS*)mat->data;
   PetscErrorCode ierr;
-  PetscInt       i,zm,zn;
   PetscInt       rows_l[MATIS_MAX_ENTRIES_INSERTION],cols_l[MATIS_MAX_ENTRIES_INSERTION];
 
   PetscFunctionBegin;
-  if (PetscDefined(USE_DEBUG)) {
-    PetscCheckFalse(m > MATIS_MAX_ENTRIES_INSERTION || n > MATIS_MAX_ENTRIES_INSERTION,PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of row/column indices must be <= %d: they are %" PetscInt_FMT " %" PetscInt_FMT,MATIS_MAX_ENTRIES_INSERTION,m,n);
-    /* count negative indices */
-    for (i=0,zm=0;i<m;i++) if (rows[i] < 0) zm++;
-    for (i=0,zn=0;i<n;i++) if (cols[i] < 0) zn++;
+  ierr = ISGlobalToLocalMappingApply(is->rmapping,IS_GTOLM_MASK,m,rows,&m,rows_l);CHKERRQ(ierr);
+  if (m != n || rows != cols || is->cmapping != is->rmapping) {
+    ierr = ISGlobalToLocalMappingApply(is->cmapping,IS_GTOLM_MASK,n,cols,&n,cols_l);CHKERRQ(ierr);
+    ierr = MatSetValues(is->A,m,rows_l,n,cols_l,values,addv);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetValues(is->A,m,rows_l,m,rows_l,values,addv);CHKERRQ(ierr);
   }
-  ierr = ISGlobalToLocalMappingApply(mat->rmap->mapping,IS_GTOLM_MASK,m,rows,&m,rows_l);CHKERRQ(ierr);
-  ierr = ISGlobalToLocalMappingApply(mat->cmap->mapping,IS_GTOLM_MASK,n,cols,&n,cols_l);CHKERRQ(ierr);
-  if (PetscDefined(USE_DEBUG)) {
-    /* count negative indices (should be the same as before) */
-    for (i=0;i<m;i++) if (rows_l[i] < 0) zm--;
-    for (i=0;i<n;i++) if (cols_l[i] < 0) zn--;
-    PetscCheckFalse(!is->A->rmap->mapping && zm,PETSC_COMM_SELF,PETSC_ERR_SUP,"Some of the row indices can not be mapped! Maybe you should not use MATIS");
-    PetscCheckFalse(!is->A->cmap->mapping && zn,PETSC_COMM_SELF,PETSC_ERR_SUP,"Some of the column indices can not be mapped! Maybe you should not use MATIS");
-  }
-  ierr = MatSetValues(is->A,m,rows_l,n,cols_l,values,addv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2582,26 +2655,16 @@ static PetscErrorCode MatSetValuesBlocked_IS(Mat mat, PetscInt m,const PetscInt 
 {
   Mat_IS         *is = (Mat_IS*)mat->data;
   PetscErrorCode ierr;
-  PetscInt       i,zm,zn;
   PetscInt       rows_l[MATIS_MAX_ENTRIES_INSERTION],cols_l[MATIS_MAX_ENTRIES_INSERTION];
 
   PetscFunctionBegin;
-  if (PetscDefined(USE_DEBUG)) {
-    PetscCheckFalse(m > MATIS_MAX_ENTRIES_INSERTION || n > MATIS_MAX_ENTRIES_INSERTION,PETSC_COMM_SELF,PETSC_ERR_SUP,"Number of row/column block indices must be <= %d: they are %" PetscInt_FMT " %" PetscInt_FMT,MATIS_MAX_ENTRIES_INSERTION,m,n);
-    /* count negative indices */
-    for (i=0,zm=0;i<m;i++) if (rows[i] < 0) zm++;
-    for (i=0,zn=0;i<n;i++) if (cols[i] < 0) zn++;
+  ierr = ISGlobalToLocalMappingApplyBlock(is->rmapping,IS_GTOLM_MASK,m,rows,&m,rows_l);CHKERRQ(ierr);
+  if (m != n || rows != cols || is->cmapping != is->rmapping) {
+    ierr = ISGlobalToLocalMappingApply(is->cmapping,IS_GTOLM_MASK,n,cols,&n,cols_l);CHKERRQ(ierr);
+    ierr = MatSetValuesBlocked(is->A,m,rows_l,n,cols_l,values,addv);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetValuesBlocked(is->A,m,rows_l,n,rows_l,values,addv);CHKERRQ(ierr);
   }
-  ierr = ISGlobalToLocalMappingApplyBlock(mat->rmap->mapping,IS_GTOLM_MASK,m,rows,&m,rows_l);CHKERRQ(ierr);
-  ierr = ISGlobalToLocalMappingApplyBlock(mat->cmap->mapping,IS_GTOLM_MASK,n,cols,&n,cols_l);CHKERRQ(ierr);
-  if (PetscDefined(USE_DEBUG)) {
-    /* count negative indices (should be the same as before) */
-    for (i=0;i<m;i++) if (rows_l[i] < 0) zm--;
-    for (i=0;i<n;i++) if (cols_l[i] < 0) zn--;
-    PetscCheckFalse(!is->A->rmap->mapping && zm,PETSC_COMM_SELF,PETSC_ERR_SUP,"Some of the row indices can not be mapped! Maybe you should not use MATIS");
-    PetscCheckFalse(!is->A->cmap->mapping && zn,PETSC_COMM_SELF,PETSC_ERR_SUP,"Some of the column indices can not be mapped! Maybe you should not use MATIS");
-  }
-  ierr = MatSetValuesBlocked(is->A,m,rows_l,n,cols_l,values,addv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2611,7 +2674,7 @@ static PetscErrorCode MatSetValuesLocal_IS(Mat A,PetscInt m,const PetscInt *rows
   Mat_IS         *is = (Mat_IS*)A->data;
 
   PetscFunctionBegin;
-  if (is->A->rmap->mapping) {
+  if (is->A->rmap->mapping || is->A->cmap->mapping) {
     ierr = MatSetValuesLocal(is->A,m,rows,n,cols,values,addv);CHKERRQ(ierr);
   } else {
     ierr = MatSetValues(is->A,m,rows,n,cols,values,addv);CHKERRQ(ierr);
@@ -2625,14 +2688,7 @@ static PetscErrorCode MatSetValuesBlockedLocal_IS(Mat A,PetscInt m,const PetscIn
   Mat_IS         *is = (Mat_IS*)A->data;
 
   PetscFunctionBegin;
-  if (is->A->rmap->mapping) {
-    if (PetscDefined(USE_DEBUG)) {
-      PetscInt ibs,bs;
-
-      ierr = ISLocalToGlobalMappingGetBlockSize(is->A->rmap->mapping,&ibs);CHKERRQ(ierr);
-      ierr = MatGetBlockSize(is->A,&bs);CHKERRQ(ierr);
-      PetscCheckFalse(ibs != bs,PETSC_COMM_SELF,PETSC_ERR_SUP,"Different block sizes! local mat %" PetscInt_FMT ", local l2g map %" PetscInt_FMT,bs,ibs);
-    }
+  if (is->A->rmap->mapping || is->A->cmap->mapping) {
     ierr = MatSetValuesBlockedLocal(is->A,m,rows,n,cols,values,addv);CHKERRQ(ierr);
   } else {
     ierr = MatSetValuesBlocked(is->A,m,rows,n,cols,values,addv);CHKERRQ(ierr);
@@ -2770,89 +2826,51 @@ static PetscErrorCode MatAssemblyEnd_IS(Mat A,MatAssemblyType type)
     }
     ierr = ISGetSize(nzr,&nnzr);CHKERRQ(ierr);
     ierr = ISGetSize(nzc,&nnzc);CHKERRQ(ierr);
-    if (nnzr != nr || nnzc != nc) {
-      ISLocalToGlobalMapping l2g;
-      IS                     is1,is2;
-
-      /* need new global l2g map */
+    if (nnzr != nr || nnzc != nc) { /* need new global l2g map */
       lnewl2g = PETSC_TRUE;
       ierr    = MPI_Allreduce(&lnewl2g,&newl2g,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
 
       /* extract valid submatrix */
       ierr = MatCreateSubMatrix(is->A,nzr,nzc,MAT_INITIAL_MATRIX,&newlA);CHKERRQ(ierr);
-
-      /* attach local l2g maps for successive calls of MatSetValues on the local matrix */
-      ierr = ISLocalToGlobalMappingCreateIS(nzr,&l2g);CHKERRQ(ierr);
-      ierr = ISCreateStride(PetscObjectComm((PetscObject)is->A),nr,0,1,&is1);CHKERRQ(ierr);
-      ierr = ISGlobalToLocalMappingApplyIS(l2g,IS_GTOLM_MASK,is1,&is2);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingDestroy(&l2g);CHKERRQ(ierr);
-      if (is->A->rmap->mapping) { /* the matrix has a local-to-local map already attached (probably DMDA generated) */
-        const PetscInt *idxs1,*idxs2;
-        PetscInt       j,i,nl,*tidxs;
-
-        ierr = ISLocalToGlobalMappingGetSize(is->A->rmap->mapping,&nl);CHKERRQ(ierr);
-        ierr = ISLocalToGlobalMappingGetIndices(is->A->rmap->mapping,&idxs1);CHKERRQ(ierr);
-        ierr = PetscMalloc1(nl,&tidxs);CHKERRQ(ierr);
-        ierr = ISGetIndices(is2,&idxs2);CHKERRQ(ierr);
-        for (i=0,j=0;i<nl;i++) tidxs[i] = idxs1[i] < 0 ? -1 : idxs2[j++];
-        PetscCheckFalse(j != nr,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected count %" PetscInt_FMT " != %" PetscInt_FMT,j,nr);
-        ierr = ISLocalToGlobalMappingRestoreIndices(is->A->rmap->mapping,&idxs1);CHKERRQ(ierr);
-        ierr = ISRestoreIndices(is2,&idxs2);CHKERRQ(ierr);
-        ierr = ISDestroy(&is2);CHKERRQ(ierr);
-        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is->A->rmap->mapping),nl,tidxs,PETSC_OWN_POINTER,&is2);CHKERRQ(ierr);
-      }
-      ierr = ISLocalToGlobalMappingCreateIS(is2,&rl2g);CHKERRQ(ierr);
-      ierr = ISDestroy(&is1);CHKERRQ(ierr);
-      ierr = ISDestroy(&is2);CHKERRQ(ierr);
-
-      ierr = ISLocalToGlobalMappingCreateIS(nzc,&l2g);CHKERRQ(ierr);
-      ierr = ISCreateStride(PetscObjectComm((PetscObject)is->A),nc,0,1,&is1);CHKERRQ(ierr);
-      ierr = ISGlobalToLocalMappingApplyIS(l2g,IS_GTOLM_MASK,is1,&is2);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingDestroy(&l2g);CHKERRQ(ierr);
-      if (is->A->cmap->mapping) { /* the matrix has a local-to-local map already attached (probably DMDA generated) */
-        const PetscInt *idxs1,*idxs2;
-        PetscInt       j,i,nl,*tidxs;
-
-        ierr = ISLocalToGlobalMappingGetSize(is->A->cmap->mapping,&nl);CHKERRQ(ierr);
-        ierr = ISLocalToGlobalMappingGetIndices(is->A->cmap->mapping,&idxs1);CHKERRQ(ierr);
-        ierr = PetscMalloc1(nl,&tidxs);CHKERRQ(ierr);
-        ierr = ISGetIndices(is2,&idxs2);CHKERRQ(ierr);
-        for (i=0,j=0;i<nl;i++) tidxs[i] = idxs1[i] < 0 ? -1 : idxs2[j++];
-        PetscCheckFalse(j != nc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected count %" PetscInt_FMT " != %" PetscInt_FMT,j,nc);
-        ierr = ISLocalToGlobalMappingRestoreIndices(is->A->cmap->mapping,&idxs1);CHKERRQ(ierr);
-        ierr = ISRestoreIndices(is2,&idxs2);CHKERRQ(ierr);
-        ierr = ISDestroy(&is2);CHKERRQ(ierr);
-        ierr = ISCreateGeneral(PetscObjectComm((PetscObject)is->A->cmap->mapping),nl,tidxs,PETSC_OWN_POINTER,&is2);CHKERRQ(ierr);
-      }
-      ierr = ISLocalToGlobalMappingCreateIS(is2,&cl2g);CHKERRQ(ierr);
-      ierr = ISDestroy(&is1);CHKERRQ(ierr);
-      ierr = ISDestroy(&is2);CHKERRQ(ierr);
-
-      ierr = MatSetLocalToGlobalMapping(newlA,rl2g,cl2g);CHKERRQ(ierr);
-
-      ierr = ISLocalToGlobalMappingDestroy(&rl2g);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingDestroy(&cl2g);CHKERRQ(ierr);
     } else { /* local matrix fully populated */
       lnewl2g = PETSC_FALSE;
       ierr    = MPI_Allreduce(&lnewl2g,&newl2g,1,MPIU_BOOL,MPI_LOR,PetscObjectComm((PetscObject)A));CHKERRMPI(ierr);
       ierr    = PetscObjectReference((PetscObject)is->A);CHKERRQ(ierr);
       newlA   = is->A;
     }
+
     /* attach new global l2g map if needed */
     if (newl2g) {
-      IS             gnzr,gnzc;
-      const PetscInt *grid,*gcid;
+      IS              zr,zc;
+      const  PetscInt *ridxs,*cidxs,*zridxs,*zcidxs;
+      PetscInt        *nidxs,i;
 
-      ierr = ISLocalToGlobalMappingApplyIS(A->rmap->mapping,nzr,&gnzr);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingApplyIS(A->cmap->mapping,nzc,&gnzc);CHKERRQ(ierr);
-      ierr = ISGetIndices(gnzr,&grid);CHKERRQ(ierr);
-      ierr = ISGetIndices(gnzc,&gcid);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)A),1,nnzr,grid,PETSC_COPY_VALUES,&rl2g);CHKERRQ(ierr);
-      ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)A),1,nnzc,gcid,PETSC_COPY_VALUES,&cl2g);CHKERRQ(ierr);
-      ierr = ISRestoreIndices(gnzr,&grid);CHKERRQ(ierr);
-      ierr = ISRestoreIndices(gnzc,&gcid);CHKERRQ(ierr);
-      ierr = ISDestroy(&gnzr);CHKERRQ(ierr);
-      ierr = ISDestroy(&gnzc);CHKERRQ(ierr);
+      ierr = ISComplement(nzr,0,nr,&zr);CHKERRQ(ierr);
+      ierr = ISComplement(nzc,0,nc,&zc);CHKERRQ(ierr);
+      ierr = PetscMalloc1(PetscMax(nr,nc),&nidxs);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingGetIndices(is->rmapping,&ridxs);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingGetIndices(is->cmapping,&cidxs);CHKERRQ(ierr);
+      ierr = ISGetIndices(zr,&zridxs);CHKERRQ(ierr);
+      ierr = ISGetIndices(zc,&zcidxs);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(zr,&nnzr);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(zc,&nnzc);CHKERRQ(ierr);
+
+      ierr = PetscArraycpy(nidxs,ridxs,nr);CHKERRQ(ierr);
+      for (i = 0; i < nnzr; i++) nidxs[zridxs[i]] = -1;
+      ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)A),1,nr,nidxs,PETSC_COPY_VALUES,&rl2g);CHKERRQ(ierr);
+      ierr = PetscArraycpy(nidxs,cidxs,nc);CHKERRQ(ierr);
+      for (i = 0; i < nnzc; i++) nidxs[zcidxs[i]] = -1;
+      ierr = ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)A),1,nc,nidxs,PETSC_COPY_VALUES,&cl2g);CHKERRQ(ierr);
+
+      ierr = ISRestoreIndices(zr,&zridxs);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(zc,&zcidxs);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingRestoreIndices(is->rmapping,&ridxs);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingRestoreIndices(is->cmapping,&cidxs);CHKERRQ(ierr);
+      ierr = ISDestroy(&nzr);CHKERRQ(ierr);
+      ierr = ISDestroy(&nzc);CHKERRQ(ierr);
+      ierr = ISDestroy(&zr);CHKERRQ(ierr);
+      ierr = ISDestroy(&zc);CHKERRQ(ierr);
+      ierr = PetscFree(nidxs);CHKERRQ(ierr);
       ierr = MatSetLocalToGlobalMapping(A,rl2g,cl2g);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(&rl2g);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(&cl2g);CHKERRQ(ierr);
@@ -2983,7 +3001,7 @@ static PetscErrorCode MatISSetLocalMat_IS(Mat mat,Mat local)
   PetscBool      sametype = PETSC_TRUE;
 
   PetscFunctionBegin;
-  if (is->A) {
+  if (is->A && !is->islocalref) {
     ierr = MatGetSize(is->A,&orows,&ocols);CHKERRQ(ierr);
     ierr = MatGetSize(local,&nrows,&ncols);CHKERRQ(ierr);
     PetscCheckFalse(orows != nrows || ocols != ncols,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local MATIS matrix should be of size %" PetscInt_FMT "x%" PetscInt_FMT " (you passed a %" PetscInt_FMT "x%" PetscInt_FMT " matrix)",orows,ocols,nrows,ncols);
@@ -3098,7 +3116,7 @@ static PetscErrorCode MatAXPY_IS(Mat Y,PetscScalar a,Mat X,MatStructure str)
 static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
 {
   Mat                    lA;
-  Mat_IS                 *matis;
+  Mat_IS                 *matis = (Mat_IS*)(A->data);
   ISLocalToGlobalMapping rl2g,cl2g;
   IS                     is;
   const PetscInt         *rg,*rl;
@@ -3124,7 +3142,7 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
   ierr = ISLocalToGlobalMappingCreateIS(is,&rl2g);CHKERRQ(ierr);
   ierr = ISDestroy(&is);CHKERRQ(ierr);
   /* compute new l2g map for columns */
-  if (col != row || A->rmap->mapping != A->cmap->mapping) {
+  if (col != row || matis->rmapping != matis->cmapping || matis->A->rmap->mapping != matis->A->cmap->mapping) {
     const PetscInt *cg,*cl;
     PetscInt       ncg;
     PetscInt       ncl;
@@ -3164,6 +3182,7 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A,IS row,IS col,Mat *submat)
   ierr = MatAssemblyEnd(*submat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&rl2g);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&cl2g);CHKERRQ(ierr);
+
   /* remove unsupported ops */
   ierr = PetscMemzero((*submat)->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   (*submat)->ops->destroy               = MatDestroy_IS;
@@ -3247,6 +3266,95 @@ static PetscErrorCode MatHasOperation_IS(Mat A, MatOperation op, PetscBool *has)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatSetValuesCOO_IS(Mat A,const PetscScalar v[],InsertMode imode)
+{
+  Mat_IS         *a = (Mat_IS*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSetValuesCOO(a->A,v,imode);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatSetPreallocationCOOLocal_IS(Mat A,PetscCount ncoo,PetscInt coo_i[],PetscInt coo_j[])
+{
+  Mat_IS         *a = (Mat_IS*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscCheck(a->A,PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to provide l2g map first via MatSetLocalToGlobalMapping");
+  if (a->A->rmap->mapping || a->A->cmap->mapping) {
+    ierr = MatSetPreallocationCOOLocal(a->A,ncoo,coo_i,coo_j);CHKERRQ(ierr);
+  } else {
+    ierr = MatSetPreallocationCOO(a->A,ncoo,coo_i,coo_j);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",MatSetValuesCOO_IS);CHKERRQ(ierr);
+  A->preallocated = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatSetPreallocationCOO_IS(Mat A,PetscCount ncoo,const PetscInt coo_i[],const PetscInt coo_j[])
+{
+  Mat_IS         *a = (Mat_IS*)A->data;
+  PetscInt       *coo_il, *coo_jl, incoo;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscCheck(a->A,PetscObjectComm((PetscObject)A),PETSC_ERR_ORDER,"Need to provide l2g map first via MatSetLocalToGlobalMapping");
+  PetscCheck(ncoo <= PETSC_MAX_INT,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support",ncoo);
+  ierr = PetscMalloc2(ncoo,&coo_il,ncoo,&coo_jl);CHKERRQ(ierr);
+  ierr = ISGlobalToLocalMappingApply(a->rmapping,IS_GTOLM_MASK,ncoo,coo_i,&incoo,coo_il);CHKERRQ(ierr);
+  ierr = ISGlobalToLocalMappingApply(a->cmapping,IS_GTOLM_MASK,ncoo,coo_j,&incoo,coo_jl);CHKERRQ(ierr);
+  ierr = MatSetPreallocationCOO(a->A,ncoo,coo_il,coo_jl);CHKERRQ(ierr);
+  ierr = PetscFree2(coo_il,coo_jl);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",MatSetValuesCOO_IS);CHKERRQ(ierr);
+  A->preallocated = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatISGetLocalToGlobalMapping - Gets the local-to-global numbering of the MATIS object
+
+   Not Collective
+
+   Input Parameter:
+.  A - the matrix
+
+   Output Parameters:
++  rmapping - row mapping
+-  cmapping - column mapping
+
+   Notes: The returned map can be different from the one used to construct the MATIS object, since it will not contain negative or repeated indices.
+
+   Level: advanced
+
+.seealso:  MatSetLocalToGlobalMapping()
+@*/
+PetscErrorCode MatISGetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping *rmapping,ISLocalToGlobalMapping *cmapping)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  PetscValidType(A,1);
+  if (rmapping) PetscValidPointer(rmapping,2);
+  if (cmapping) PetscValidPointer(cmapping,3);
+  ierr = PetscUseMethod(A,"MatISGetLocalToGlobalMapping_C",(Mat,ISLocalToGlobalMapping*,ISLocalToGlobalMapping*),(A,rmapping,cmapping));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatISGetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping *r, ISLocalToGlobalMapping *c)
+{
+  Mat_IS *a = (Mat_IS*)A->data;
+
+  PetscFunctionBegin;
+  if (r) *r = a->rmapping;
+  if (c) *c = a->cmapping;
+  PetscFunctionReturn(0);
+}
+
 /*MC
    MATIS - MATIS = "is" - A matrix type to be used for using the non-overlapping domain decomposition methods (e.g. PCBDDC or KSPFETIDP).
    This stores the matrices in globally unassembled form. Each processor assembles only its local Neumann problem and the parallel matrix vector
@@ -3273,12 +3381,12 @@ M*/
 PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
 {
   PetscErrorCode ierr;
-  Mat_IS         *b;
+  Mat_IS         *a;
 
   PetscFunctionBegin;
-  ierr    = PetscNewLog(A,&b);CHKERRQ(ierr);
-  ierr    = PetscStrallocpy(MATAIJ,&b->lmattype);CHKERRQ(ierr);
-  A->data = (void*)b;
+  ierr    = PetscNewLog(A,&a);CHKERRQ(ierr);
+  ierr    = PetscStrallocpy(MATAIJ,&a->lmattype);CHKERRQ(ierr);
+  A->data = (void*)a;
 
   /* matrix ops */
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
@@ -3328,6 +3436,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISSetPreallocation_C",MatISSetPreallocation_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISStoreL2L_C",MatISStoreL2L_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISFixLocalEmpty_C",MatISFixLocalEmpty_IS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalToGlobalMapping_C",MatISGetLocalToGlobalMapping_IS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_is_mpiaij_C",MatConvert_IS_XAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_is_mpibaij_C",MatConvert_IS_XAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_is_mpisbaij_C",MatConvert_IS_XAIJ);CHKERRQ(ierr);
@@ -3335,6 +3444,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_IS(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_is_seqbaij_C",MatConvert_IS_XAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_is_seqsbaij_C",MatConvert_IS_XAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_is_aij_C",MatConvert_IS_XAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOOLocal_C",MatSetPreallocationCOOLocal_IS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOO_C",MatSetPreallocationCOO_IS);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

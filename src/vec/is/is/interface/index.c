@@ -12,17 +12,19 @@ PetscLogEvent IS_View;
 PetscLogEvent IS_Load;
 
 /*@
-   ISRenumber - Renumbers an index set (with multiplicities) in a contiguous way.
+   ISRenumber - Renumbers the non-negative entries of an index set in a contiguous way, starting from 0.
 
    Collective on IS
 
    Input Parameters:
 +  subset - the index set
--  subset_mult - the multiplcity of each entry in subset (optional, can be NULL)
+-  subset_mult - the multiplicity of each entry in subset (optional, can be NULL)
 
    Output Parameters:
 +  N - the maximum entry of the new IS
 -  subset_n - the new IS
+
+   Notes: All negative entries are mapped to -1. Indices with non positive multiplicities are skipped.
 
    Level: intermediate
 
@@ -32,12 +34,12 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
 {
   PetscSF        sf;
   PetscLayout    map;
-  const PetscInt *idxs;
-  PetscInt       *leaf_data,*root_data,*gidxs;
-  PetscInt       N_n,n,i,lbounds[2],gbounds[2],Nl;
-  PetscInt       n_n,nlocals,start,first_index;
+  const PetscInt *idxs, *idxs_mult = NULL;
+  PetscInt       *leaf_data,*root_data,*gidxs,*ilocal,*ilocalneg;
+  PetscInt       N_n,n,i,lbounds[2],gbounds[2],Nl,ibs;
+  PetscInt       n_n,nlocals,start,first_index,npos,nneg;
   PetscMPIInt    commsize;
-  PetscBool      first_found;
+  PetscBool      first_found,isblock;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -48,51 +50,72 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   ierr = ISGetLocalSize(subset,&n);CHKERRQ(ierr);
   if (subset_mult) {
     ierr = ISGetLocalSize(subset_mult,&i);CHKERRQ(ierr);
-    PetscCheckFalse(i != n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local subset and multiplicity sizes don't match! %" PetscInt_FMT " != %" PetscInt_FMT,n,i);
+    PetscCheck(i == n,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Local subset and multiplicity sizes don't match! %" PetscInt_FMT " != %" PetscInt_FMT,n,i);
   }
   /* create workspace layout for computing global indices of subset */
+  ierr = PetscMalloc1(n,&ilocal);CHKERRQ(ierr);
+  ierr = PetscMalloc1(n,&ilocalneg);CHKERRQ(ierr);
   ierr = ISGetIndices(subset,&idxs);CHKERRQ(ierr);
-  lbounds[0] = lbounds[1] = 0;
-  for (i=0;i<n;i++) {
+  ierr = ISGetBlockSize(subset,&ibs);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)subset,ISBLOCK,&isblock);CHKERRQ(ierr);
+  if (subset_mult) { ierr = ISGetIndices(subset_mult,&idxs_mult);CHKERRQ(ierr); }
+  lbounds[0] = PETSC_MAX_INT;
+  lbounds[1] = PETSC_MIN_INT;
+  for (i=0,npos=0,nneg=0;i<n;i++) {
+    if (idxs[i] < 0) { ilocalneg[nneg++] = i; continue; }
     if (idxs[i] < lbounds[0]) lbounds[0] = idxs[i];
-    else if (idxs[i] > lbounds[1]) lbounds[1] = idxs[i];
+    if (idxs[i] > lbounds[1]) lbounds[1] = idxs[i];
+    ilocal[npos++] = i;
   }
-  lbounds[0] = -lbounds[0];
-  ierr = MPIU_Allreduce(lbounds,gbounds,2,MPIU_INT,MPI_MAX,PetscObjectComm((PetscObject)subset));CHKERRMPI(ierr);
-  gbounds[0] = -gbounds[0];
-  N_n  = gbounds[1] - gbounds[0] + 1;
+  if (npos == n) {
+    ierr = PetscFree(ilocal);CHKERRQ(ierr);
+    ierr = PetscFree(ilocalneg);CHKERRQ(ierr);
+  }
 
+  /* create sf : leaf_data == multiplicity of indexes, root data == global index in layout */
+  ierr = PetscMalloc1(n,&leaf_data);CHKERRQ(ierr);
+  for (i=0;i<n;i++) leaf_data[i] = idxs_mult ? PetscMax(idxs_mult[i],0) : 1;
+
+  /* local size of new subset */
+  n_n = 0;
+  for (i=0;i<n;i++) n_n += leaf_data[i];
+  if (ilocalneg) for (i=0;i<nneg;i++) leaf_data[ilocalneg[i]] = 0;
+  ierr = PetscFree(ilocalneg);CHKERRQ(ierr);
+  ierr = PetscMalloc1(PetscMax(n_n,n),&gidxs);CHKERRQ(ierr); /* allocating extra space to reuse gidxs */
+  /* check for early termination (all negative) */
+  ierr = PetscGlobalMinMaxInt(PetscObjectComm((PetscObject)subset),lbounds,gbounds);CHKERRQ(ierr);
+  if (gbounds[1] < gbounds[0]) {
+    if (N) *N = 0;
+    if (subset_n) { /* all negative */
+      for (i=0;i<n_n;i++) gidxs[i] = -1;
+      ierr = ISCreateGeneral(PetscObjectComm((PetscObject)subset),n_n,gidxs,PETSC_COPY_VALUES,subset_n);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(leaf_data);CHKERRQ(ierr);
+    ierr = PetscFree(gidxs);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(subset,&idxs);CHKERRQ(ierr);
+    if (subset_mult) { ierr = ISRestoreIndices(subset_mult,&idxs_mult);CHKERRQ(ierr); }
+    ierr = PetscFree(ilocal);CHKERRQ(ierr);
+    ierr = PetscFree(ilocalneg);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  /* split work */
+  N_n  = gbounds[1] - gbounds[0] + 1;
   ierr = PetscLayoutCreate(PetscObjectComm((PetscObject)subset),&map);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(map,1);CHKERRQ(ierr);
   ierr = PetscLayoutSetSize(map,N_n);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
   ierr = PetscLayoutGetLocalSize(map,&Nl);CHKERRQ(ierr);
 
-  /* create sf : leaf_data == multiplicity of indexes, root data == global index in layout */
-  ierr = PetscMalloc2(n,&leaf_data,Nl,&root_data);CHKERRQ(ierr);
-  if (subset_mult) {
-    const PetscInt* idxs_mult;
-
-    ierr = ISGetIndices(subset_mult,&idxs_mult);CHKERRQ(ierr);
-    ierr = PetscArraycpy(leaf_data,idxs_mult,n);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(subset_mult,&idxs_mult);CHKERRQ(ierr);
-  } else {
-    for (i=0;i<n;i++) leaf_data[i] = 1;
-  }
-  /* local size of new subset */
-  n_n = 0;
-  for (i=0;i<n;i++) n_n += leaf_data[i];
-
   /* global indexes in layout */
-  ierr = PetscMalloc1(n_n,&gidxs);CHKERRQ(ierr); /* allocating possibly extra space in gidxs which will be used later */
-  for (i=0;i<n;i++) gidxs[i] = idxs[i] - gbounds[0];
+  for (i=0;i<npos;i++) gidxs[i] = (ilocal ? idxs[ilocal[i]] : idxs[i]) - gbounds[0];
   ierr = ISRestoreIndices(subset,&idxs);CHKERRQ(ierr);
   ierr = PetscSFCreate(PetscObjectComm((PetscObject)subset),&sf);CHKERRQ(ierr);
-  ierr = PetscSFSetGraphLayout(sf,map,n,NULL,PETSC_COPY_VALUES,gidxs);CHKERRQ(ierr);
+  ierr = PetscSFSetGraphLayout(sf,map,npos,ilocal,PETSC_USE_POINTER,gidxs);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&map);CHKERRQ(ierr);
 
   /* reduce from leaves to roots */
-  ierr = PetscArrayzero(root_data,Nl);CHKERRQ(ierr);
+  ierr = PetscCalloc1(Nl,&root_data);CHKERRQ(ierr);
   ierr = PetscSFReduceBegin(sf,MPIU_INT,leaf_data,root_data,MPI_MAX);CHKERRQ(ierr);
   ierr = PetscSFReduceEnd(sf,MPIU_INT,leaf_data,root_data,MPI_MAX);CHKERRQ(ierr);
 
@@ -126,7 +149,10 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   if (!subset_n) {
     ierr = PetscFree(gidxs);CHKERRQ(ierr);
     ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
-    ierr = PetscFree2(leaf_data,root_data);CHKERRQ(ierr);
+    ierr = PetscFree(leaf_data);CHKERRQ(ierr);
+    ierr = PetscFree(root_data);CHKERRQ(ierr);
+    ierr = PetscFree(ilocal);CHKERRQ(ierr);
+    if (subset_mult) { ierr = ISRestoreIndices(subset_mult,&idxs_mult);CHKERRQ(ierr); }
     PetscFunctionReturn(0);
   }
 
@@ -150,24 +176,25 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
   ierr = PetscSFDestroy(&sf);CHKERRQ(ierr);
 
   /* create new IS with global indexes without holes */
+  for (i=0;i<n_n;i++) gidxs[i] = -1;
   if (subset_mult) {
-    const PetscInt* idxs_mult;
-    PetscInt        cum;
+    PetscInt cum;
 
-    cum = 0;
-    ierr = ISGetIndices(subset_mult,&idxs_mult);CHKERRQ(ierr);
-    for (i=0;i<n;i++) {
-      PetscInt j;
-      for (j=0;j<idxs_mult[i];j++) gidxs[cum++] = leaf_data[i] - idxs_mult[i] + j;
-    }
-    ierr = ISRestoreIndices(subset_mult,&idxs_mult);CHKERRQ(ierr);
+    isblock = PETSC_FALSE;
+    for (i=0,cum=0;i<n;i++) for (PetscInt j=0;j<idxs_mult[i];j++) gidxs[cum++] = leaf_data[i] - idxs_mult[i] + j;
+  } else for (i=0;i<n;i++) gidxs[i] = leaf_data[i]-1;
+
+  if (isblock) {
+    if (ibs > 1) for (i=0;i<n_n/ibs;i++) gidxs[i] = gidxs[i*ibs]/ibs;
+    ierr = ISCreateBlock(PetscObjectComm((PetscObject)subset),ibs,n_n/ibs,gidxs,PETSC_COPY_VALUES,subset_n);CHKERRQ(ierr);
   } else {
-    for (i=0;i<n;i++) {
-      gidxs[i] = leaf_data[i]-1;
-    }
+    ierr = ISCreateGeneral(PetscObjectComm((PetscObject)subset),n_n,gidxs,PETSC_COPY_VALUES,subset_n);CHKERRQ(ierr);
   }
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject)subset),n_n,gidxs,PETSC_OWN_POINTER,subset_n);CHKERRQ(ierr);
-  ierr = PetscFree2(leaf_data,root_data);CHKERRQ(ierr);
+  if (subset_mult) { ierr = ISRestoreIndices(subset_mult,&idxs_mult);CHKERRQ(ierr); }
+  ierr = PetscFree(gidxs);CHKERRQ(ierr);
+  ierr = PetscFree(leaf_data);CHKERRQ(ierr);
+  ierr = PetscFree(root_data);CHKERRQ(ierr);
+  ierr = PetscFree(ilocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1453,6 +1480,7 @@ PetscErrorCode  ISRestoreTotalIndices(IS is, const PetscInt *indices[])
   }
   PetscFunctionReturn(0);
 }
+
 /*@C
    ISGetNonlocalIndices - Retrieve an array of indices from remote processors
                        in this communicator.

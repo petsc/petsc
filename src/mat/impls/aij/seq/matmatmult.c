@@ -30,7 +30,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm comm,PetscIn
   PetscErrorCode ierr;
   PetscInt       ii;
   Mat_SeqAIJ     *aij;
-  PetscBool      isseqaij;
+  PetscBool      isseqaij, osingle, ofree_a, ofree_ij;
 
   PetscFunctionBegin;
   PetscCheckFalse(m > 0 && i[0],PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
@@ -42,22 +42,43 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm comm,PetscIn
   } else {
     ierr = MatSetType(mat,mtype);CHKERRQ(ierr);
   }
-  ierr = MatSeqAIJSetPreallocation_SeqAIJ(mat,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
+
   aij  = (Mat_SeqAIJ*)(mat)->data;
+  osingle = aij->singlemalloc;
+  ofree_a = aij->free_a;
+  ofree_ij = aij->free_ij;
+  /* changes the free flags */
+  ierr = MatSeqAIJSetPreallocation_SeqAIJ(mat,MAT_SKIP_ALLOCATION,NULL);CHKERRQ(ierr);
+
+  ierr = PetscFree(aij->ilen);CHKERRQ(ierr);
+  ierr = PetscFree(aij->imax);CHKERRQ(ierr);
   ierr = PetscMalloc1(m,&aij->imax);CHKERRQ(ierr);
   ierr = PetscMalloc1(m,&aij->ilen);CHKERRQ(ierr);
+  for (ii=0,aij->nonzerorowcnt=0,aij->rmax = 0; ii<m; ii++) {
+    const PetscInt rnz = i[ii+1] - i[ii];
+    aij->nonzerorowcnt += !!rnz;
+    aij->rmax = PetscMax(aij->rmax,rnz);
+    aij->ilen[ii] = aij->imax[ii] = i[ii+1] - i[ii];
+  }
+  aij->maxnz = i[m];
+  aij->nz = i[m];
 
+  if (osingle) {
+    ierr = PetscFree3(aij->a,aij->j,aij->i);CHKERRQ(ierr);
+  } else {
+    if (ofree_a)  { ierr = PetscFree(aij->a);CHKERRQ(ierr); }
+    if (ofree_ij) { ierr = PetscFree(aij->j);CHKERRQ(ierr); }
+    if (ofree_ij) { ierr = PetscFree(aij->i);CHKERRQ(ierr); }
+  }
   aij->i            = i;
   aij->j            = j;
   aij->a            = a;
+  aij->nonew        = -1; /* this indicates that inserting a new value in the matrix that generates a new nonzero is an error */
+  /* default to not retain ownership */
   aij->singlemalloc = PETSC_FALSE;
-  aij->nonew        = -1; /*this indicates that inserting a new value in the matrix that generates a new nonzero is an error*/
   aij->free_a       = PETSC_FALSE;
   aij->free_ij      = PETSC_FALSE;
-
-  for (ii=0; ii<m; ii++) {
-    aij->ilen[ii] = aij->imax[ii] = i[ii+1] - i[ii];
-  }
+  ierr = MatCheckCompressedRow(mat,aij->nonzerorowcnt,&aij->compressedrow,aij->i,m,0.6);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -225,8 +246,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat A,Mat B,PetscRea
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
   if (afill < 1.0) afill = 1.0;
-  c->maxnz                  = ci[am];
-  c->nz                     = ci[am];
   C->info.mallocs           = ndouble;
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;
@@ -473,8 +492,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(Mat A,Mat B,PetscR
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
   if (afill < 1.0) afill = 1.0;
-  c->maxnz                     = ci[am];
-  c->nz                        = ci[am];
   C->info.mallocs           = ndouble;
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;
@@ -583,8 +600,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A,Mat B,PetscReal f
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
   if (afill < 1.0) afill = 1.0;
-  c->maxnz                     = ci[am];
-  c->nz                        = ci[am];
   C->info.mallocs           = ndouble;
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;
@@ -689,8 +704,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Heap(Mat A,Mat B,PetscReal fill,
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
   if (afill < 1.0) afill = 1.0;
-  c->maxnz                     = ci[am];
-  c->nz                        = ci[am];
   C->info.mallocs           = ndouble;
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;
@@ -809,8 +822,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_BTHeap(Mat A,Mat B,PetscReal fil
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
   if (afill < 1.0) afill = 1.0;
-  c->maxnz                     = ci[am];
-  c->nz                        = ci[am];
   C->info.mallocs           = ndouble;
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;
@@ -1067,8 +1078,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_RowMerge(Mat A,Mat B,PetscReal f
   /* set MatInfo */
   afill = (PetscReal)ci[am]/(ai[am]+bi[bm]) + 1.e-5;
   if (afill < 1.0) afill = 1.0;
-  c->maxnz                  = ci[am];
-  c->nz                     = ci[am];
   C->info.mallocs           = ndouble;
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;
@@ -1170,8 +1179,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Sorted(Mat A,Mat B,PetscReal fil
   /* set MatInfo */
   afill = (PetscReal)ci[am]/PetscMax(ai[am]+bi[bm],1) + 1.e-5;
   if (afill < 1.0) afill = 1.0;
-  c->maxnz                  = ci[am];
-  c->nz                     = ci[am];
   C->info.mallocs           = ndouble;
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;

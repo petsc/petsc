@@ -73,8 +73,7 @@ PetscErrorCode  VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,2);
-
+  if (mapping) PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,2);
   if (x->ops->setlocaltoglobalmapping) {
     ierr = (*x->ops->setlocaltoglobalmapping)(x,mapping);CHKERRQ(ierr);
   } else {

@@ -1832,11 +1832,9 @@ PetscErrorCode MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pets
   if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
   PetscValidIntPointer(idxm,3);
   PetscValidIntPointer(idxn,5);
-  PetscValidScalarPointer(v,6);
   MatCheckPreallocated(mat,1);
-  if (mat->insertmode == NOT_SET_VALUES) {
-    mat->insertmode = addv;
-  } else PetscCheckFalse(mat->insertmode != addv,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
+  if (mat->insertmode == NOT_SET_VALUES) mat->insertmode = addv;
+  else PetscCheckFalse(mat->insertmode != addv,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
   if (PetscDefined(USE_DEBUG)) {
     PetscCheckFalse(mat->factortype,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
     PetscCheckFalse(!mat->ops->setvaluesblocked && !mat->ops->setvalues,PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
@@ -1862,23 +1860,28 @@ PetscErrorCode MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pets
   } else {
     PetscInt buf[8192],*bufr=NULL,*bufc=NULL,*iidxm,*iidxn;
     PetscInt i,j,bs,cbs;
+
     ierr = MatGetBlockSizes(mat,&bs,&cbs);CHKERRQ(ierr);
     if (m*bs+n*cbs <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
-      iidxm = buf; iidxn = buf + m*bs;
+      iidxm = buf;
+      iidxn = buf + m*bs;
     } else {
       ierr  = PetscMalloc2(m*bs,&bufr,n*cbs,&bufc);CHKERRQ(ierr);
-      iidxm = bufr; iidxn = bufc;
+      iidxm = bufr;
+      iidxn = bufc;
     }
     for (i=0; i<m; i++) {
       for (j=0; j<bs; j++) {
         iidxm[i*bs+j] = bs*idxm[i] + j;
       }
     }
-    for (i=0; i<n; i++) {
-      for (j=0; j<cbs; j++) {
-        iidxn[i*cbs+j] = cbs*idxn[i] + j;
+    if (m != n || bs != cbs || idxm != idxn) {
+      for (i=0; i<n; i++) {
+        for (j=0; j<cbs; j++) {
+          iidxn[i*cbs+j] = cbs*idxn[i] + j;
+        }
       }
-    }
+    } else iidxn = iidxm;
     ierr = MatSetValues(mat,m*bs,iidxm,n*cbs,iidxn,v,addv);CHKERRQ(ierr);
     ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
   }
@@ -2221,9 +2224,7 @@ PetscErrorCode MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pet
   if (!nrow || !ncol) PetscFunctionReturn(0); /* no values to insert */
   PetscValidIntPointer(irow,3);
   PetscValidIntPointer(icol,5);
-  if (mat->insertmode == NOT_SET_VALUES) {
-    mat->insertmode = addv;
-  }
+  if (mat->insertmode == NOT_SET_VALUES) mat->insertmode = addv;
   else PetscCheckFalse(mat->insertmode != addv,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
   if (PetscDefined(USE_DEBUG)) {
     PetscCheckFalse(mat->factortype,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
@@ -2238,19 +2239,28 @@ PetscErrorCode MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pet
   if (mat->ops->setvalueslocal) {
     ierr = (*mat->ops->setvalueslocal)(mat,nrow,irow,ncol,icol,y,addv);CHKERRQ(ierr);
   } else {
-    PetscInt buf[8192],*bufr=NULL,*bufc=NULL,*irowm,*icolm;
-    if ((nrow+ncol) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
-      irowm = buf; icolm = buf+nrow;
+    PetscInt       buf[8192],*bufr=NULL,*bufc=NULL;
+    const PetscInt *irowm,*icolm;
+
+    if ((!mat->rmap->mapping && !mat->cmap->mapping) || (nrow+ncol) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
+      bufr  = buf;
+      bufc  = buf + nrow;
+      irowm = bufr;
+      icolm = bufc;
     } else {
       ierr  = PetscMalloc2(nrow,&bufr,ncol,&bufc);CHKERRQ(ierr);
-      irowm = bufr; icolm = bufc;
+      irowm = bufr;
+      icolm = bufc;
     }
-    PetscCheckFalse(!mat->rmap->mapping,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"MatSetValuesLocal() cannot proceed without local-to-global row mapping (See MatSetLocalToGlobalMapping()).");
-    PetscCheckFalse(!mat->cmap->mapping,PetscObjectComm((PetscObject)mat),PETSC_ERR_ARG_WRONGSTATE,"MatSetValuesLocal() cannot proceed without local-to-global column mapping (See MatSetLocalToGlobalMapping()).");
-    ierr = ISLocalToGlobalMappingApply(mat->rmap->mapping,nrow,irow,irowm);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingApply(mat->cmap->mapping,ncol,icol,icolm);CHKERRQ(ierr);
+    if (mat->rmap->mapping) { ierr = ISLocalToGlobalMappingApply(mat->rmap->mapping,nrow,irow,bufr);CHKERRQ(ierr); }
+    else irowm = irow;
+    if (mat->cmap->mapping) {
+      if (mat->cmap->mapping != mat->rmap->mapping || ncol != nrow || icol != irow) {
+        ierr = ISLocalToGlobalMappingApply(mat->cmap->mapping,ncol,icol,bufc);CHKERRQ(ierr);
+      } else icolm = irowm;
+    } else icolm = icol;
     ierr = MatSetValues(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
-    ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
+    if (bufr != buf) { ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr); }
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2305,10 +2315,8 @@ PetscErrorCode MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt iro
   if (!nrow || !ncol) PetscFunctionReturn(0); /* no values to insert */
   PetscValidIntPointer(irow,3);
   PetscValidIntPointer(icol,5);
-  PetscValidScalarPointer(y,6);
-  if (mat->insertmode == NOT_SET_VALUES) {
-    mat->insertmode = addv;
-  } else PetscCheckFalse(mat->insertmode != addv,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
+  if (mat->insertmode == NOT_SET_VALUES) mat->insertmode = addv;
+  else PetscCheckFalse(mat->insertmode != addv,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
   if (PetscDefined(USE_DEBUG)) {
     PetscCheckFalse(mat->factortype,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
     PetscCheckFalse(!mat->ops->setvaluesblockedlocal && !mat->ops->setvaluesblocked && !mat->ops->setvalueslocal && !mat->ops->setvalues,PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
@@ -2334,17 +2342,28 @@ PetscErrorCode MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt iro
   if (mat->ops->setvaluesblockedlocal) {
     ierr = (*mat->ops->setvaluesblockedlocal)(mat,nrow,irow,ncol,icol,y,addv);CHKERRQ(ierr);
   } else {
-    PetscInt buf[8192],*bufr=NULL,*bufc=NULL,*irowm,*icolm;
-    if ((nrow+ncol) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
-      irowm = buf; icolm = buf + nrow;
+    PetscInt       buf[8192],*bufr=NULL,*bufc=NULL;
+    const PetscInt *irowm,*icolm;
+
+    if ((!mat->rmap->mapping && !mat->cmap->mapping) || (nrow+ncol) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
+      bufr  = buf;
+      bufc  = buf + nrow;
+      irowm = bufr;
+      icolm = bufc;
     } else {
       ierr  = PetscMalloc2(nrow,&bufr,ncol,&bufc);CHKERRQ(ierr);
-      irowm = bufr; icolm = bufc;
+      irowm = bufr;
+      icolm = bufc;
     }
-    ierr = ISLocalToGlobalMappingApplyBlock(mat->rmap->mapping,nrow,irow,irowm);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingApplyBlock(mat->cmap->mapping,ncol,icol,icolm);CHKERRQ(ierr);
+    if (mat->rmap->mapping) { ierr = ISLocalToGlobalMappingApplyBlock(mat->rmap->mapping,nrow,irow,bufr);CHKERRQ(ierr); }
+    else irowm = irow;
+    if (mat->cmap->mapping) {
+      if (mat->cmap->mapping != mat->rmap->mapping || ncol != nrow || icol != irow) {
+        ierr = ISLocalToGlobalMappingApplyBlock(mat->cmap->mapping,ncol,icol,bufc);CHKERRQ(ierr);
+      } else icolm = irowm;
+    } else icolm = icol;
     ierr = MatSetValuesBlocked(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
-    ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
+    if (bufr != buf) { ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr); }
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -5468,6 +5487,7 @@ PetscErrorCode MatDiagonalScale(Mat mat,Vec l,Vec r)
   ierr = (*mat->ops->diagonalscale)(mat,l,r);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+  if (l != r && mat->symmetric) mat->symmetric = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -8996,7 +9016,7 @@ PetscErrorCode MatSolves(Mat mat,Vecs b,Vecs x)
 
 .seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption(), MatIsSymmetricKnown()
 @*/
-PetscErrorCode MatIsSymmetric(Mat A,PetscReal tol,PetscBool  *flg)
+PetscErrorCode MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
 {
   PetscErrorCode ierr;
 
@@ -9046,7 +9066,7 @@ PetscErrorCode MatIsSymmetric(Mat A,PetscReal tol,PetscBool  *flg)
 .seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption(),
           MatIsSymmetricKnown(), MatIsSymmetric()
 @*/
-PetscErrorCode MatIsHermitian(Mat A,PetscReal tol,PetscBool  *flg)
+PetscErrorCode MatIsHermitian(Mat A,PetscReal tol,PetscBool *flg)
 {
   PetscErrorCode ierr;
 
@@ -10906,6 +10926,8 @@ PetscErrorCode MatHasCongruentLayouts(Mat mat,PetscBool *cong)
     PetscFunctionReturn(0);
   }
   if (mat->congruentlayouts == PETSC_DECIDE) { /* first time we compare rows and cols layouts */
+    ierr = PetscLayoutSetUp(mat->rmap);CHKERRQ(ierr);
+    ierr = PetscLayoutSetUp(mat->cmap);CHKERRQ(ierr);
     ierr = PetscLayoutCompare(mat->rmap,mat->cmap,cong);CHKERRQ(ierr);
     if (*cong) mat->congruentlayouts = 1;
     else       mat->congruentlayouts = 0;

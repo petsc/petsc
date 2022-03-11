@@ -606,7 +606,7 @@ PetscErrorCode MatSeqAIJSetTotalPreallocation(Mat A,PetscInt nztotal)
     a->singlemalloc = PETSC_TRUE;
     a->free_a       = PETSC_TRUE;
   }
-  a->free_ij         = PETSC_TRUE;
+  a->free_ij        = PETSC_TRUE;
   A->ops->setvalues = MatSetValues_SeqAIJ_SortedFullNoPreallocation;
   A->preallocated   = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -1249,6 +1249,17 @@ PetscErrorCode MatZeroEntries_SeqAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_SeqAIJ(Mat A)
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(a->perm);CHKERRQ(ierr);
+  ierr = PetscFree(a->jmap);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatDestroy_SeqAIJ(Mat A)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -1259,6 +1270,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   PetscLogObjectState((PetscObject)A,"Rows=%" PetscInt_FMT ", Cols=%" PetscInt_FMT ", NZ=%" PetscInt_FMT,A->rmap->n,A->cmap->n,a->nz);
 #endif
   ierr = MatSeqXAIJFreeAIJ(A,&a->a,&a->j,&a->i);CHKERRQ(ierr);
+  ierr = MatResetPreallocationCOO_SeqAIJ(A);CHKERRQ(ierr);
   ierr = ISDestroy(&a->row);CHKERRQ(ierr);
   ierr = ISDestroy(&a->col);CHKERRQ(ierr);
   ierr = PetscFree(a->diag);CHKERRQ(ierr);
@@ -1271,8 +1283,6 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   ierr = ISDestroy(&a->icol);CHKERRQ(ierr);
   ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
   ierr = PetscFree2(a->compressedrow.i,a->compressedrow.rindex);CHKERRQ(ierr);
-  ierr = PetscFree(a->perm);CHKERRQ(ierr);
-  ierr = PetscFree(a->jmap);CHKERRQ(ierr);
   ierr = MatDestroy_SeqAIJ_Inode(A);CHKERRQ(ierr);
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
@@ -4130,7 +4140,7 @@ PetscErrorCode  MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscInt nz,const PetscIn
     b->free_ij = PETSC_FALSE;
   }
 
-  if (b->ipre && nnz != b->ipre  && b->imax) {
+  if (b->ipre && nnz != b->ipre && b->imax) {
     /* reserve user-requested sparsity */
     ierr = PetscArraycpy(b->ipre,b->imax,B->rmap->n);CHKERRQ(ierr);
   }
@@ -4705,11 +4715,12 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, const Pe
   PetscInt                  *Ai; /* Change to PetscCount once we use it for row pointers */
   PetscInt                  *Aj;
   PetscScalar               *Aa;
-  Mat_SeqAIJ                *seqaij;
-  Mat                       newmat;
+  Mat_SeqAIJ                *seqaij = (Mat_SeqAIJ*)(mat->data);
+  MatType                   rtype;
   PetscCount                *perm,*jmap;
 
   PetscFunctionBegin;
+  ierr = MatResetPreallocationCOO_SeqAIJ(mat);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
   ierr = PetscMalloc2(coo_n,&i,coo_n,&j);CHKERRQ(ierr);
@@ -4784,17 +4795,17 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, const Pe
 
   if (nneg) { /* Discard heading entries with negative indices in perm[], as we'll access it from index 0 in MatSetValuesCOO */
     PetscCount *perm_new;
+
     ierr = PetscMalloc1(coo_n-nneg,&perm_new);CHKERRQ(ierr);
     ierr = PetscArraycpy(perm_new,perm+nneg,coo_n-nneg);CHKERRQ(ierr);
     ierr = PetscFree(perm);CHKERRQ(ierr);
     perm = perm_new;
   }
 
+  ierr = MatGetRootType_Private(mat,&rtype);CHKERRQ(ierr);
   ierr = PetscCalloc1(nnz,&Aa);CHKERRQ(ierr); /* Zero the matrix */
-  ierr = MatCreateSeqAIJWithArrays(comm,M,N,Ai,Aj,Aa,&newmat);CHKERRQ(ierr);
-  ierr = MatHeaderMerge(mat,&newmat);CHKERRQ(ierr);
+  ierr = MatSetSeqAIJWithArrays_private(PETSC_COMM_SELF,M,N,Ai,Aj,Aa,rtype,mat);CHKERRQ(ierr);
 
-  seqaij = (Mat_SeqAIJ*)(mat->data);
   seqaij->singlemalloc = PETSC_FALSE; /* Ai, Aj and Aa are not allocated in one big malloc */
   seqaij->free_a       = seqaij->free_ij = PETSC_TRUE; /* Let newmat own Ai, Aj and Aa */
   /* Record COO fields */
@@ -5226,7 +5237,7 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
   aij->free_a       = PETSC_FALSE;
   aij->free_ij      = PETSC_FALSE;
 
-  for (ii=0; ii<m; ii++) {
+  for (ii=0,aij->nonzerorowcnt=0,aij->rmax=0; ii<m; ii++) {
     aij->ilen[ii] = aij->imax[ii] = i[ii+1] - i[ii];
     if (PetscDefined(USE_DEBUG)) {
       PetscCheckFalse(i[ii+1] - i[ii] < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row length in i (row indices) row = %" PetscInt_FMT " length = %" PetscInt_FMT,ii,i[ii+1] - i[ii]);
@@ -5247,6 +5258,7 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 /*@C
      MatCreateSeqAIJFromTriple - Creates an sequential AIJ matrix using matrix elements (in COO format)
               provided by the user.

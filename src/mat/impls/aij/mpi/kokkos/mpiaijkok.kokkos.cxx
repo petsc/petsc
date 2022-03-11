@@ -1244,21 +1244,18 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJKokkos(Mat mat)
 
 static PetscErrorCode MatSetPreallocationCOO_MPIAIJKokkos(Mat mat, PetscCount coo_n, const PetscInt coo_i[], const PetscInt coo_j[])
 {
-  PetscErrorCode            ierr;
-  Mat                       newmat;
   Mat_MPIAIJ                *mpiaij = (Mat_MPIAIJ*)mat->data;
+  Mat_MPIAIJKokkos          *mpikok;
+  PetscErrorCode            ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreate(PetscObjectComm((PetscObject)mat),&newmat);CHKERRQ(ierr);
-  ierr = MatSetSizes(newmat,mat->rmap->n,mat->cmap->n,mat->rmap->N,mat->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetType(newmat,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatSetOption(newmat,MAT_IGNORE_OFF_PROC_ENTRIES,mpiaij->donotstash);CHKERRQ(ierr);  /* Inherit the two options that we respect from mat */
-  ierr = MatSetOption(newmat,MAT_NO_OFF_PROC_ENTRIES,mat->nooffprocentries);CHKERRQ(ierr);
-  ierr = MatSetPreallocationCOO_MPIAIJ(newmat,coo_n,coo_i,coo_j);CHKERRQ(ierr);
-  ierr = MatConvert(newmat,MATMPIAIJKOKKOS,MAT_INPLACE_MATRIX,&newmat);CHKERRQ(ierr);
-  ierr = MatHeaderMerge(mat,&newmat);CHKERRQ(ierr); /* Not MatHeaderReplace() since we want to keep some mat's info */
-  ierr = MatZeroEntries(mat);CHKERRQ(ierr); /* Zero matrix on device */
-  mpiaij = static_cast<Mat_MPIAIJ*>(mat->data); /* mat->data was changed in MatHeaderReplace() */
+  ierr = MatSetPreallocationCOO_MPIAIJ(mat,coo_n,coo_i,coo_j);CHKERRQ(ierr);
+  mat->preallocated = PETSC_TRUE;
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatZeroEntries(mat);CHKERRQ(ierr);
+  mpikok = static_cast<Mat_MPIAIJKokkos*>(mpiaij->spptr);
+  delete mpikok;
   mpiaij->spptr = new Mat_MPIAIJKokkos(mpiaij);
   PetscFunctionReturn(0);
 }
@@ -1281,7 +1278,6 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat,const PetscScalar v[]
   PetscMemType                   memtype;
 
   PetscFunctionBegin;
-  PetscAssert(mat->assembled,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Expected matrix to be already assembled in MatSetPreallocationCOO()");
   ierr = PetscGetMemType(v,&memtype);CHKERRQ(ierr); /* Return PETSC_MEMTYPE_HOST when v is NULL */
   if (PetscMemTypeHost(memtype)) { /* If user gave v[] in host, we need to copy it to device if any */
     v1 = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(),MatScalarKokkosViewHost((PetscScalar*)v,mpiaij->coo_n));

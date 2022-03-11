@@ -171,8 +171,6 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A,Mat P,PetscReal fi
   /* set MatInfo */
   afill = (PetscReal)ci[pn]/(ai[am]+pi[pm] + 1.e-5);
   if (afill < 1.0) afill = 1.0;
-  c->maxnz                     = ci[pn];
-  c->nz                        = ci[pn];
   C->info.mallocs           = nspacedouble;
   C->info.fill_ratio_given  = fill;
   C->info.fill_ratio_needed = afill;
