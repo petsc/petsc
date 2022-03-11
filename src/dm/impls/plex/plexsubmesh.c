@@ -654,12 +654,7 @@ static PetscErrorCode DMPlexShiftSF_Internal(DM dm, PetscInt depthShift[], DM dm
 
 static PetscErrorCode DMPlexShiftLabels_Internal(DM dm, PetscInt depthShift[], DM dmNew)
 {
-  PetscSF            sfPoint;
-  DMLabel            vtkLabel, ghostLabel;
-  const PetscSFNode *leafRemote;
-  const PetscInt    *leafLocal;
-  PetscInt           depth = 0, numLeaves, numLabels, l, cStart, cEnd, c, fStart, fEnd, f;
-  PetscMPIInt        rank;
+  PetscInt           depth = 0, numLabels, l;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -706,15 +701,32 @@ static PetscErrorCode DMPlexShiftLabels_Internal(DM dm, PetscInt depthShift[], D
     ierr = ISRestoreIndices(valueIS, &values);CHKERRQ(ierr);
     ierr = ISDestroy(&valueIS);CHKERRQ(ierr);
   }
-  /* Step 11: Make label for output (vtk) and to mark ghost points (ghost) */
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexCreateVTKLabel_Internal(DM dm, PetscBool createGhostLabel, DM dmNew)
+{
+  PetscSF            sfPoint;
+  DMLabel            vtkLabel, ghostLabel = NULL;
+  const PetscSFNode *leafRemote;
+  const PetscInt    *leafLocal;
+  PetscInt           cellHeight, cStart, cEnd, c, fStart, fEnd, f, numLeaves, l;
+  PetscMPIInt        rank;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+   /* Step 11: Make label for output (vtk) and to mark ghost points (ghost) */
   ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank);CHKERRMPI(ierr);
   ierr = DMGetPointSF(dm, &sfPoint);CHKERRQ(ierr);
-  ierr = DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetVTKCellHeight(dmNew, &cellHeight);CHKERRQ(ierr);
+  ierr = DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd);CHKERRQ(ierr);
   ierr = PetscSFGetGraph(sfPoint, NULL, &numLeaves, &leafLocal, &leafRemote);CHKERRQ(ierr);
   ierr = DMCreateLabel(dmNew, "vtk");CHKERRQ(ierr);
-  ierr = DMCreateLabel(dmNew, "ghost");CHKERRQ(ierr);
   ierr = DMGetLabel(dmNew, "vtk", &vtkLabel);CHKERRQ(ierr);
-  ierr = DMGetLabel(dmNew, "ghost", &ghostLabel);CHKERRQ(ierr);
+  if (createGhostLabel) {
+    ierr = DMCreateLabel(dmNew, "ghost");CHKERRQ(ierr);
+    ierr = DMGetLabel(dmNew, "ghost", &ghostLabel);CHKERRQ(ierr);
+  }
   for (l = 0, c = cStart; l < numLeaves && c < cEnd; ++l, ++c) {
     for (; c < leafLocal[l] && c < cEnd; ++c) {
       ierr = DMLabelSetValue(vtkLabel, c, 1);CHKERRQ(ierr);
@@ -722,28 +734,30 @@ static PetscErrorCode DMPlexShiftLabels_Internal(DM dm, PetscInt depthShift[], D
     if (leafLocal[l] >= cEnd) break;
     if (leafRemote[l].rank == rank) {
       ierr = DMLabelSetValue(vtkLabel, c, 1);CHKERRQ(ierr);
-    } else {
+    } else if (ghostLabel) {
       ierr = DMLabelSetValue(ghostLabel, c, 2);CHKERRQ(ierr);
     }
   }
   for (; c < cEnd; ++c) {
     ierr = DMLabelSetValue(vtkLabel, c, 1);CHKERRQ(ierr);
   }
-  ierr = DMPlexGetHeightStratum(dmNew, 1, &fStart, &fEnd);CHKERRQ(ierr);
-  for (f = fStart; f < fEnd; ++f) {
-    PetscInt numCells;
+  if (ghostLabel) {
+    ierr = DMPlexGetHeightStratum(dmNew, 1, &fStart, &fEnd);CHKERRQ(ierr);
+    for (f = fStart; f < fEnd; ++f) {
+      PetscInt numCells;
 
-    ierr = DMPlexGetSupportSize(dmNew, f, &numCells);CHKERRQ(ierr);
-    if (numCells < 2) {
-      ierr = DMLabelSetValue(ghostLabel, f, 1);CHKERRQ(ierr);
-    } else {
-      const PetscInt *cells = NULL;
-      PetscInt        vA, vB;
+      ierr = DMPlexGetSupportSize(dmNew, f, &numCells);CHKERRQ(ierr);
+      if (numCells < 2) {
+        ierr = DMLabelSetValue(ghostLabel, f, 1);CHKERRQ(ierr);
+      } else {
+        const PetscInt *cells = NULL;
+        PetscInt        vA, vB;
 
-      ierr = DMPlexGetSupport(dmNew, f, &cells);CHKERRQ(ierr);
-      ierr = DMLabelGetValue(vtkLabel, cells[0], &vA);CHKERRQ(ierr);
-      ierr = DMLabelGetValue(vtkLabel, cells[1], &vB);CHKERRQ(ierr);
-      if (vA != 1 && vB != 1) {ierr = DMLabelSetValue(ghostLabel, f, 1);CHKERRQ(ierr);}
+        ierr = DMPlexGetSupport(dmNew, f, &cells);CHKERRQ(ierr);
+        ierr = DMLabelGetValue(vtkLabel, cells[0], &vA);CHKERRQ(ierr);
+        ierr = DMLabelGetValue(vtkLabel, cells[1], &vB);CHKERRQ(ierr);
+        if (vA != 1 && vB != 1) {ierr = DMLabelSetValue(ghostLabel, f, 1);CHKERRQ(ierr);}
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -919,6 +933,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
   ierr = DMPlexShiftCoordinates_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
   ierr = DMPlexShiftSF_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
   ierr = DMPlexShiftLabels_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
+  ierr = DMPlexCreateVTKLabel_Internal(dm, PETSC_TRUE, gdm);CHKERRQ(ierr);
   ierr = DMPlexShiftTree_Internal(dm, depthShift, gdm);CHKERRQ(ierr);
   ierr = PetscFree(depthShift);CHKERRQ(ierr);
   for (c = cEnd; c < cEnd + Ng; ++c) {
@@ -1584,6 +1599,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
   ierr = DMPlexShiftSF_Internal(dm, depthShift, sdm);CHKERRQ(ierr);
   /* Step 9: Labels */
   ierr = DMPlexShiftLabels_Internal(dm, depthShift, sdm);CHKERRQ(ierr);
+  ierr = DMPlexCreateVTKLabel_Internal(dm, PETSC_FALSE, sdm);CHKERRQ(ierr);
   ierr = DMGetNumLabels(sdm, &numLabels);CHKERRQ(ierr);
   for (dep = 0; dep <= depth; ++dep) {
     for (p = 0; p < numSplitPoints[dep]; ++p) {
@@ -3054,7 +3070,7 @@ static PetscErrorCode DMPlexFilterLabels_Internal(DM dm, const PetscInt numSubPo
   for (l = 0; l < Nl; ++l) {
     DMLabel         label, newlabel;
     const char     *lname;
-    PetscBool       isDepth, isDim, isCelltype;
+    PetscBool       isDepth, isDim, isCelltype, isVTK;
     IS              valueIS;
     const PetscInt *values;
     PetscInt        Nv, v;
@@ -3063,7 +3079,8 @@ static PetscErrorCode DMPlexFilterLabels_Internal(DM dm, const PetscInt numSubPo
     ierr = PetscStrcmp(lname, "depth", &isDepth);CHKERRQ(ierr);
     ierr = PetscStrcmp(lname, "dim", &isDim);CHKERRQ(ierr);
     ierr = PetscStrcmp(lname, "celltype", &isCelltype);CHKERRQ(ierr);
-    if (isDepth || isDim || isCelltype) continue;
+    ierr = PetscStrcmp(lname, "vtk", &isVTK);CHKERRQ(ierr);
+    if (isDepth || isDim || isCelltype || isVTK) continue;
     ierr = DMCreateLabel(subdm, lname);CHKERRQ(ierr);
     ierr = DMGetLabel(dm, lname, &label);CHKERRQ(ierr);
     ierr = DMGetLabel(subdm, lname, &newlabel);CHKERRQ(ierr);
