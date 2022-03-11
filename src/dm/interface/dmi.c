@@ -1,6 +1,16 @@
 #include <petsc/private/dmimpl.h>     /*I      "petscdm.h"     I*/
 #include <petscds.h>
 
+// Greatest common divisor of two nonnegative integers
+PetscInt PetscGCD(PetscInt a, PetscInt b) {
+  while (b != 0) {
+    PetscInt tmp = b;
+    b = a % b;
+    a = tmp;
+  }
+  return a;
+}
+
 PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
 {
   PetscSection   gSection;
@@ -17,14 +27,12 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm,Vec *vec)
     ierr = PetscSectionGetDof(gSection, p, &dof);CHKERRQ(ierr);
     ierr = PetscSectionGetConstraintDof(gSection, p, &cdof);CHKERRQ(ierr);
 
-    if (dof > 0) {
-      if (blockSize < 0 && dof-cdof > 0) {
+    if (dof - cdof > 0) {
+      if (blockSize < 0) {
         /* set blockSize */
         blockSize = dof-cdof;
-      } else if (dof-cdof != blockSize) {
-        /* non-identical blockSize, set it as 1 */
-        blockSize = 1;
-        break;
+      } else {
+        blockSize = PetscGCD(dof - cdof, blockSize);
       }
     }
   }
@@ -67,10 +75,7 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm,Vec *vec)
 
     ierr = PetscSectionGetDof(section, p, &dof);CHKERRQ(ierr);
     if ((blockSize < 0) && (dof > 0)) blockSize = dof;
-    if ((dof > 0) && (dof != blockSize)) {
-      blockSize = 1;
-      break;
-    }
+    if (dof > 0) blockSize = PetscGCD(dof, blockSize);
   }
   ierr = PetscSectionGetStorageSize(section, &localSize);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_SELF, vec);CHKERRQ(ierr);

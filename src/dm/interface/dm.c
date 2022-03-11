@@ -1120,8 +1120,7 @@ PetscErrorCode DMGetLocalToGlobalMapping(DM dm,ISLocalToGlobalMapping *ltog)
         /* If you have dofs, and constraints, and they are unequal, we set the blocksize to 1 */
         bdof = cdof && (dof-cdof) ? 1 : dof;
         if (dof) {
-          if (bs < 0)          {bs = bdof;}
-          else if (bs != bdof) {bs = 1;}
+          bs = bs < 0 ? bdof : PetscGCD(bs, bdof);
         }
 
         for (c = 0, cind = 0; c < dof; ++c, ++l) {
