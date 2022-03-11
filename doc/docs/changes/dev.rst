@@ -175,6 +175,7 @@ Changes: Development
 - Add ``-dm_bind_below`` option for specifying size threshold below which GPU is not used for ``Vec`` and ``Mat`` objects associated with a DM
 - Add ``DMCreateMassMatrixLumped()`` to support explicit timestepping, also add ``DMTSCreateRHSMassMatrix()``, ``DMTSCreateRHSMassMatrixLumped()``, and ``DMTSDestroyRHSMassMatrix()``
 - Promote ``DMGetFirstLabelEntry()`` to public API and rename
+- Add bias vector argument to ``DMGetDefaultConstraints()`` and ``DMSetDefaultConstraints()``.  Passing ``bias=NULL`` recovers prior behavior.
 
 .. rubric:: DMSwarm:
 

@@ -257,8 +257,11 @@ struct _p_DM {
   PetscSection            globalSection;        /* Layout for global vectors */
   PetscLayout             map;
   /* Constraints */
-  PetscSection            defaultConstraintSection;
-  Mat                     defaultConstraintMat;
+  struct {
+    PetscSection section;
+    Mat          mat;
+    Vec          bias;
+  } defaultConstraint;
   /* Basis transformation */
   DM                      transformDM;          /* Layout for basis transformation */
   Vec                     transform;            /* Basis transformation matrices */

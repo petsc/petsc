@@ -70,8 +70,9 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   v->celltypeLabel            = NULL;
   v->localSection             = NULL;
   v->globalSection            = NULL;
-  v->defaultConstraintSection = NULL;
-  v->defaultConstraintMat     = NULL;
+  v->defaultConstraint.section = NULL;
+  v->defaultConstraint.mat    = NULL;
+  v->defaultConstraint.bias   = NULL;
   v->L                        = NULL;
   v->maxCell                  = NULL;
   v->bdtype                   = NULL;
@@ -731,8 +732,8 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = PetscSectionDestroy(&(*dm)->localSection);CHKERRQ(ierr);
   ierr = PetscSectionDestroy(&(*dm)->globalSection);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&(*dm)->map);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&(*dm)->defaultConstraintSection);CHKERRQ(ierr);
-  ierr = MatDestroy(&(*dm)->defaultConstraintMat);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&(*dm)->defaultConstraint.section);CHKERRQ(ierr);
+  ierr = MatDestroy(&(*dm)->defaultConstraint.mat);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->sf);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&(*dm)->sectionSF);CHKERRQ(ierr);
   if ((*dm)->useNatural) {
@@ -2614,14 +2615,14 @@ PetscErrorCode DMGlobalToLocalHookAdd(DM dm,PetscErrorCode (*beginhook)(DM,Vec,I
 static PetscErrorCode DMGlobalToLocalHook_Constraints(DM dm, Vec g, InsertMode mode, Vec l, void *ctx)
 {
   Mat cMat;
-  Vec cVec;
+  Vec cVec, cBias;
   PetscSection section, cSec;
   PetscInt pStart, pEnd, p, dof;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetDefaultConstraints(dm,&cSec,&cMat);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(dm,&cSec,&cMat,&cBias);CHKERRQ(ierr);
   if (cMat && (mode == INSERT_VALUES || mode == INSERT_ALL_VALUES || mode == INSERT_BC_VALUES)) {
     PetscInt nRows;
 
@@ -2630,6 +2631,7 @@ static PetscErrorCode DMGlobalToLocalHook_Constraints(DM dm, Vec g, InsertMode m
     ierr = DMGetLocalSection(dm,&section);CHKERRQ(ierr);
     ierr = MatCreateVecs(cMat,NULL,&cVec);CHKERRQ(ierr);
     ierr = MatMult(cMat,l,cVec);CHKERRQ(ierr);
+    if (cBias) {ierr = VecAXPY(cVec,1.,cBias);CHKERRQ(ierr);}
     ierr = PetscSectionGetChart(cSec,&pStart,&pEnd);CHKERRQ(ierr);
     for (p = pStart; p < pEnd; p++) {
       ierr = PetscSectionGetDof(cSec,p,&dof);CHKERRQ(ierr);
@@ -2832,7 +2834,7 @@ static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode m
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMGetDefaultConstraints(dm,&cSec,&cMat);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(dm,&cSec,&cMat,NULL);CHKERRQ(ierr);
   if (cMat && (mode == ADD_VALUES || mode == ADD_ALL_VALUES || mode == ADD_BC_VALUES)) {
     PetscInt nRows;
 
@@ -4417,47 +4419,50 @@ PetscErrorCode DMSetLocalSection(DM dm, PetscSection section)
 
   Output Parameters:
 + section - The PetscSection describing the range of the constraint matrix: relates rows of the constraint matrix to dofs of the default section.  Returns NULL if there are no local constraints.
-- mat - The Mat that interpolates local constraints: its width should be the layout size of the default section.  Returns NULL if there are no local constraints.
+. mat - The Mat that interpolates local constraints: its width should be the layout size of the default section.  Returns NULL if there are no local constraints.
+- bias - Vector containing bias to be added to constrained dofs
 
   Level: advanced
 
-  Note: This gets borrowed references, so the user should not destroy the PetscSection or the Mat.
+  Note: This gets borrowed references, so the user should not destroy the PetscSection, Mat, or Vec.
 
 .seealso: DMSetDefaultConstraints()
 @*/
-PetscErrorCode DMGetDefaultConstraints(DM dm, PetscSection *section, Mat *mat)
+PetscErrorCode DMGetDefaultConstraints(DM dm, PetscSection *section, Mat *mat, Vec *bias)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (!dm->defaultConstraintSection && !dm->defaultConstraintMat && dm->ops->createdefaultconstraints) {ierr = (*dm->ops->createdefaultconstraints)(dm);CHKERRQ(ierr);}
-  if (section) {*section = dm->defaultConstraintSection;}
-  if (mat) {*mat = dm->defaultConstraintMat;}
+  if (!dm->defaultConstraint.section && !dm->defaultConstraint.mat && dm->ops->createdefaultconstraints) {ierr = (*dm->ops->createdefaultconstraints)(dm);CHKERRQ(ierr);}
+  if (section) *section = dm->defaultConstraint.section;
+  if (mat) *mat = dm->defaultConstraint.mat;
+  if (bias) *bias = dm->defaultConstraint.bias;
   PetscFunctionReturn(0);
 }
 
 /*@
   DMSetDefaultConstraints - Set the PetscSection and Mat that specify the local constraint interpolation.
 
-  If a constraint matrix is specified, then it is applied during DMGlobalToLocalEnd() when mode is INSERT_VALUES, INSERT_BC_VALUES, or INSERT_ALL_VALUES.  Without a constraint matrix, the local vector l returned by DMGlobalToLocalEnd() contains values that have been scattered from a global vector without modification; with a constraint matrix A, l is modified by computing c = A * l, l[s[i]] = c[i], where the scatter s is defined by the PetscSection returned by DMGetDefaultConstraintMatrix().
+  If a constraint matrix is specified, then it is applied during DMGlobalToLocalEnd() when mode is INSERT_VALUES, INSERT_BC_VALUES, or INSERT_ALL_VALUES.  Without a constraint matrix, the local vector l returned by DMGlobalToLocalEnd() contains values that have been scattered from a global vector without modification; with a constraint matrix A, l is modified by computing c = A * l + bias, l[s[i]] = c[i], where the scatter s is defined by the PetscSection returned by DMGetDefaultConstraints().
 
-  If a constraint matrix is specified, then its adjoint is applied during DMLocalToGlobalBegin() when mode is ADD_VALUES, ADD_BC_VALUES, or ADD_ALL_VALUES.  Without a constraint matrix, the local vector l is accumulated into a global vector without modification; with a constraint matrix A, l is first modified by computing c[i] = l[s[i]], l[s[i]] = 0, l = l + A'*c, which is the adjoint of the operation described above.
+  If a constraint matrix is specified, then its adjoint is applied during DMLocalToGlobalBegin() when mode is ADD_VALUES, ADD_BC_VALUES, or ADD_ALL_VALUES.  Without a constraint matrix, the local vector l is accumulated into a global vector without modification; with a constraint matrix A, l is first modified by computing c[i] = l[s[i]], l[s[i]] = 0, l = l + A'*c, which is the adjoint of the operation described above.  Any bias, if specified, is ignored when accumulating.
 
   collective on dm
 
   Input Parameters:
 + dm - The DM
-+ section - The PetscSection describing the range of the constraint matrix: relates rows of the constraint matrix to dofs of the default section.  Must have a local communicator (PETSC_COMM_SELF or derivative).
-- mat - The Mat that interpolates local constraints: its width should be the layout size of the default section:  NULL indicates no constraints.  Must have a local communicator (PETSC_COMM_SELF or derivative).
+. section - The PetscSection describing the range of the constraint matrix: relates rows of the constraint matrix to dofs of the default section.  Must have a local communicator (PETSC_COMM_SELF or derivative).
+. mat - The Mat that interpolates local constraints: its width should be the layout size of the default section:  NULL indicates no constraints.  Must have a local communicator (PETSC_COMM_SELF or derivative).
+- bias - A bias vector to be added to constrained values in the local vector.  NULL indicates no bias.  Must have a local communicator (PETSC_COMM_SELF or derivative).
 
   Level: advanced
 
-  Note: This increments the references of the PetscSection and the Mat, so they user can destroy them
+  Note: This increments the references of the PetscSection, Mat, and Vec, so they user can destroy them.
 
 .seealso: DMGetDefaultConstraints()
 @*/
-PetscErrorCode DMSetDefaultConstraints(DM dm, PetscSection section, Mat mat)
+PetscErrorCode DMSetDefaultConstraints(DM dm, PetscSection section, Mat mat, Vec bias)
 {
   PetscMPIInt result;
   PetscErrorCode ierr;
@@ -4474,12 +4479,20 @@ PetscErrorCode DMSetDefaultConstraints(DM dm, PetscSection section, Mat mat)
     ierr = MPI_Comm_compare(PETSC_COMM_SELF,PetscObjectComm((PetscObject)mat),&result);CHKERRMPI(ierr);
     PetscCheckFalse(result != MPI_CONGRUENT && result != MPI_IDENT,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"constraint matrix must have local communicator");
   }
+  if (bias) {
+    PetscValidHeaderSpecific(bias,VEC_CLASSID,4);
+    ierr = MPI_Comm_compare(PETSC_COMM_SELF,PetscObjectComm((PetscObject)bias),&result);CHKERRMPI(ierr);
+    PetscCheck(result == MPI_CONGRUENT || result == MPI_IDENT,PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"constraint bias must have local communicator");
+  }
   ierr = PetscObjectReference((PetscObject)section);CHKERRQ(ierr);
-  ierr = PetscSectionDestroy(&dm->defaultConstraintSection);CHKERRQ(ierr);
-  dm->defaultConstraintSection = section;
+  ierr = PetscSectionDestroy(&dm->defaultConstraint.section);CHKERRQ(ierr);
+  dm->defaultConstraint.section = section;
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
-  ierr = MatDestroy(&dm->defaultConstraintMat);CHKERRQ(ierr);
-  dm->defaultConstraintMat = mat;
+  ierr = MatDestroy(&dm->defaultConstraint.mat);CHKERRQ(ierr);
+  dm->defaultConstraint.mat = mat;
+  ierr = PetscObjectReference((PetscObject)bias);CHKERRQ(ierr);
+  ierr = VecDestroy(&dm->defaultConstraint.bias);CHKERRQ(ierr);
+  dm->defaultConstraint.bias = bias;
   PetscFunctionReturn(0);
 }
 
@@ -8873,7 +8886,7 @@ $        PetscReal time, const PetscReal x[], PetscScalar bcval[])
 . constants - constant parameters
 - bcval - output values at the current point
 
-  Level: developer
+  Level: intermediate
 
 .seealso: DSGetBoundary(), PetscDSAddBoundary()
 @*/

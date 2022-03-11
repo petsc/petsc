@@ -2222,12 +2222,12 @@ static PetscErrorCode DMShareDiscretization(DM dmA, DM dmB)
     ierr = PetscObjectReference((PetscObject)dmA->globalSection);CHKERRQ(ierr);
     ierr = PetscSectionDestroy(&(dmB->globalSection));CHKERRQ(ierr);
     dmB->globalSection = dmA->globalSection;
-    ierr = PetscObjectReference((PetscObject)dmA->defaultConstraintSection);CHKERRQ(ierr);
-    ierr = PetscSectionDestroy(&(dmB->defaultConstraintSection));CHKERRQ(ierr);
-    dmB->defaultConstraintSection = dmA->defaultConstraintSection;
-    ierr = PetscObjectReference((PetscObject)dmA->defaultConstraintMat);CHKERRQ(ierr);
-    ierr = MatDestroy(&(dmB->defaultConstraintMat));CHKERRQ(ierr);
-    dmB->defaultConstraintMat = dmA->defaultConstraintMat;
+    ierr = PetscObjectReference((PetscObject)dmA->defaultConstraint.section);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&(dmB->defaultConstraint.section));CHKERRQ(ierr);
+    dmB->defaultConstraint.section = dmA->defaultConstraint.section;
+    ierr = PetscObjectReference((PetscObject)dmA->defaultConstraint.mat);CHKERRQ(ierr);
+    ierr = MatDestroy(&(dmB->defaultConstraint.mat));CHKERRQ(ierr);
+    dmB->defaultConstraint.mat = dmA->defaultConstraint.mat;
     if (dmA->map) {ierr = PetscLayoutReference(dmA->map, &dmB->map);CHKERRQ(ierr);}
   }
   if (dmB->sectionSF != dmA->sectionSF) {
@@ -5107,14 +5107,15 @@ static PetscErrorCode DMCreateDefaultConstraints_pforest(DM dm)
 {
   DM             plex;
   Mat            mat;
+  Vec            bias;
   PetscSection   section;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = DMPforestGetPlex(dm,&plex);CHKERRQ(ierr);
-  ierr = DMGetDefaultConstraints(plex,&section,&mat);CHKERRQ(ierr);
-  ierr = DMSetDefaultConstraints(dm,section,mat);CHKERRQ(ierr);
+  ierr = DMGetDefaultConstraints(plex,&section,&mat,&bias);CHKERRQ(ierr);
+  ierr = DMSetDefaultConstraints(dm,section,mat,bias);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
