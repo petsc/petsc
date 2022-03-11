@@ -5040,7 +5040,9 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     ierr = MatSetBlockSizesFromMats(*B,A,A);CHKERRQ(ierr);
   }
   ierr = MatSetType(*B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatDuplicateNoCreate_SeqAIJ(*B,A,cpvalues,PETSC_TRUE);CHKERRQ(ierr);
+  if (A->assembled) {
+    ierr = MatDuplicateNoCreate_SeqAIJ(*B,A,cpvalues,PETSC_TRUE);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
