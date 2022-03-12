@@ -481,7 +481,7 @@ manexamples:
 	-@base=`basename ${LOCDIR}`; \
         if [ "$${base}" = "tutorials" ] ; then \
           echo "Generating manual example links" ; \
-          for i in ${EXAMPLESC} ${EXAMPLESF} foo ; do \
+          for i in ${EXAMPLESALL} foo ; do \
             if [ "$$i" != "foo" ] ; then \
               a=`cat $$i | ${MAPNAMES} -map ${LOC}/docs/manualpages/manualpages.cit \
                    -printmatch-link -o /dev/null| cut -f 2 | cut -d '#' -f 1 |sed -e s~^../~~ | grep \\.html$$ | sort | uniq` ;  \
@@ -509,7 +509,7 @@ exampleconcepts:
 	-@base=`basename ${LOCDIR}`; \
         if [ "$${base}" = "tutorials" ] ; then \
           echo "Generating concepts list" ; \
-          for i in ${EXAMPLESC} ${EXAMPLESF} foo ; do \
+          for i in ${EXAMPLESALL} foo ; do \
             if [ "$$i" != "foo" ] ; then \
               grep Concepts: $$i | sed -e s?Concepts:??g -e s?\!??g > ltmp;  \
               line=`cat ltmp | wc -l`; \
@@ -585,8 +585,8 @@ getexlist:
 #   Rules for generating html code from C and Fortran
 #
 checkmakefilelist:
-	-@ls makefile ${SOURCEALL} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} 2>/dev/null | grep -v \\.\\. |  sort | uniq > /tmp/$$USER.$$.make ;\
-	ls makefile *.{c,cxx,cu,F,F90,h,h90,m} 2>/dev/null | sort | uniq > /tmp/$$USER.$$.ls; \
+	-@ls makefile ${SOURCEALL} ${EXAMPLESALL} 2>/dev/null | grep -v \\.\\. |  sort | uniq > /tmp/$$USER.$$.make ;\
+	ls makefile *.{c,cxx,cpp,cu,F,F90,h,h90,m} 2>/dev/null | sort | uniq > /tmp/$$USER.$$.ls; \
 	${DIFF} /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls; \
 	${RM}  /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls
 
@@ -612,7 +612,7 @@ html: chk_c2html
           ${MKDIR} -p $${loc} ;\
           current_git_sha=$$(git rev-parse HEAD) ;\
           rel_dir=$$(echo ${PWD} | sed "s%^${PETSC_DIR}/%%") ;\
-          for i in ${SOURCEALL} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB}  foo ; do\
+          for i in ${SOURCEALL} ${EXAMPLESALL} foo ; do\
             if [ -f $$i ]; then \
               idir=`dirname $$i`;\
               if [ ! -d $${loc}/$${idir} ]; then ${MKDIR} -p $${loc}/$${idir}; fi ; \
@@ -869,13 +869,13 @@ sourcelist:
 #
 # Remove trailing blanks from source code
 rmtrailingblanks:
-	@for i in ${SOURCEALL} ${EXAMPLESC} ${EXAMPLESF}; do \
+	@for i in ${SOURCEALL} ${EXAMPLESALL}; do \
 	  sed -i '' s"/[ ]*$$//"g $$i; \
 	done
 
 #
 uncrustify:
-	@for i in ${SOURCED} ${EXAMPLESC}; do \
+	@for i in ${SOURCED} ${EXAMPLESALL}; do \
 	  uncrustify -c ${PETSC_DIR}/lib/petsc/conf/uncrustify.cfg $$i; \
 	done
 
