@@ -1718,11 +1718,9 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscSpinlockDestroy(&PetscCommSpinLock);CHKERRQ(ierr);
 
   if (PetscBeganMPI) {
-#if defined(PETSC_HAVE_MPI_FINALIZED)
     PetscMPIInt flag;
     ierr = MPI_Finalized(&flag);CHKERRMPI(ierr);
     PetscCheckFalse(flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"MPI_Finalize() has already been called, even though MPI_Init() was called by PetscInitialize()");
-#endif
     ierr = MPI_Finalize();CHKERRMPI(ierr);
   }
 /*
