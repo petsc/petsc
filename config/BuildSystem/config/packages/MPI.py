@@ -851,9 +851,9 @@ You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to preve
     self.executeTest(self.PetscArchMPICheck)
     # deadlock AO tests ex1 with test 3
     if not (hasattr(self, 'isNecMPI')):
-      funcs = '''MPI_Init_thread MPI_Iallreduce MPI_Ibarrier MPI_Exscan MPI_Reduce_scatter MPI_Reduce_scatter_block'''.split()
+      funcs = '''MPI_Init_thread MPI_Iallreduce MPI_Ibarrier MPI_Reduce_scatter_block'''.split()
     else:
-      funcs = '''MPI_Init_thread MPI_Iallreduce MPI_Ibarrier MPI_Exscan MPI_Reduce_scatter'''.split()
+      funcs = '''MPI_Init_thread MPI_Iallreduce MPI_Ibarrier '''.split()
     found, missing = self.libraries.checkClassify(self.dlib, funcs)
     for f in found:
       self.addDefine('HAVE_' + f.upper(),1)
