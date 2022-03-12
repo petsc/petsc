@@ -1,9 +1,5 @@
 #include <petsc/private/sfimpl.h>
 
-#if !defined(PETSC_HAVE_MPI_TYPE_GET_ENVELOPE)
-#define MPI_Type_get_envelope(datatype,num_ints,num_addrs,num_dtypes,combiner) (*(num_ints)=0,*(num_addrs)=0,*(num_dtypes)=0,*(combiner)=0,1);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#define MPI_Type_get_contents(datatype,num_ints,num_addrs,num_dtypes,ints,addrs,dtypes) (*(ints)=0,*(addrs)=0,*(dtypes)=0,1);SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP_SYS,"Need an MPI-2 implementation")
-#endif
 #if !defined(PETSC_HAVE_MPI_COMBINER_DUP) && !defined(MPI_COMBINER_DUP)  /* We have no way to interpret output of MPI_Type_get_envelope without this. */
 #  define MPI_COMBINER_DUP   0
 #endif

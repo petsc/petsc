@@ -534,7 +534,6 @@ Unable to run hostname to check the network')
     self.mpiexec = '${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni'
     self.mpiexecseq = '${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni'
     self.addMakeMacro('MPIEXEC','${PETSC_DIR}/lib/petsc/bin/petsc-mpiexec.uni')
-    self.addDefine('HAVE_MPI_TYPE_GET_ENVELOPE', 1)
     self.framework.saveLog()
     self.framework.addDefine('MPI_Type_create_struct(count,lens,displs,types,newtype)', 'MPI_Type_struct((count),(lens),(displs),(types),(newtype))')
     self.framework.addDefine('MPI_Comm_create_errhandler(p_err_fun,p_errhandler)', 'MPI_Errhandler_create((p_err_fun),(p_errhandler))')
@@ -852,9 +851,9 @@ You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to preve
     self.executeTest(self.PetscArchMPICheck)
     # deadlock AO tests ex1 with test 3
     if not (hasattr(self, 'isNecMPI')):
-      funcs = '''MPI_Type_get_envelope MPI_Init_thread MPI_Iallreduce MPI_Ibarrier MPI_Exscan MPI_Reduce_scatter MPI_Reduce_scatter_block'''.split()
+      funcs = '''MPI_Init_thread MPI_Iallreduce MPI_Ibarrier MPI_Exscan MPI_Reduce_scatter MPI_Reduce_scatter_block'''.split()
     else:
-      funcs = '''MPI_Type_get_envelope MPI_Init_thread MPI_Iallreduce MPI_Ibarrier MPI_Exscan MPI_Reduce_scatter'''.split()
+      funcs = '''MPI_Init_thread MPI_Iallreduce MPI_Ibarrier MPI_Exscan MPI_Reduce_scatter'''.split()
     found, missing = self.libraries.checkClassify(self.dlib, funcs)
     for f in found:
       self.addDefine('HAVE_' + f.upper(),1)

@@ -1021,15 +1021,15 @@ int main(int argc, char **argv)
   # 2D Q_1 on a quadrilaterial DA
   test:
     suffix: q1_2d_da_0
-    requires: mpi_type_get_envelope broken
+    requires: broken
     args: -use_da 1 -petscspace_degree 1 -qorder 1 -convergence
   test:
     suffix: q1_2d_da_1
-    requires: mpi_type_get_envelope broken
+    requires: broken
     args: -use_da 1 -petscspace_degree 1 -qorder 1 -porder 1
   test:
     suffix: q1_2d_da_2
-    requires: mpi_type_get_envelope broken
+    requires: broken
     args: -use_da 1 -petscspace_degree 1 -qorder 1 -porder 2
 
   # 2D Q_1 on a quadrilaterial Plex
@@ -1061,34 +1061,27 @@ int main(int argc, char **argv)
   # 2D Q_2 on a quadrilaterial
   test:
     suffix: q2_2d_plex_0
-    requires: mpi_type_get_envelope
     args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 2 -convergence
   test:
     suffix: q2_2d_plex_1
-    requires: mpi_type_get_envelope
     args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 2 -porder 1
   test:
     suffix: q2_2d_plex_2
-    requires: mpi_type_get_envelope
     args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 2 -porder 2
   test:
     suffix: q2_2d_plex_3
     args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 2 -porder 1 -shear_coords
   test:
     suffix: q2_2d_plex_4
-    requires: mpi_type_get_envelope
     args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 2 -porder 2 -shear_coords
   test:
     suffix: q2_2d_plex_5
-    requires: mpi_type_get_envelope
     args: -dm_plex_simplex 0 -petscspace_degree 2 -petscspace_type tensor -qorder 2 -porder 0 -non_affine_coords -convergence
   test:
     suffix: q2_2d_plex_6
-    requires: mpi_type_get_envelope
     args: -dm_plex_simplex 0 -petscspace_degree 2 -petscspace_type tensor -qorder 2 -porder 1 -non_affine_coords -convergence
   test:
     suffix: q2_2d_plex_7
-    requires: mpi_type_get_envelope
     args: -dm_plex_simplex 0 -petscspace_degree 2 -petscspace_type tensor -qorder 2 -porder 2 -non_affine_coords -convergence
 
   # 2D P_3 on a triangle
@@ -1124,19 +1117,19 @@ int main(int argc, char **argv)
   # 2D Q_3 on a quadrilaterial
   test:
     suffix: q3_2d_0
-    requires: mpi_type_get_envelope !single
+    requires: !single
     args: -dm_plex_simplex 0 -petscspace_degree 3 -qorder 3 -convergence
   test:
     suffix: q3_2d_1
-    requires: mpi_type_get_envelope !single
+    requires: !single
     args: -dm_plex_simplex 0 -petscspace_degree 3 -qorder 3 -porder 1
   test:
     suffix: q3_2d_2
-    requires: mpi_type_get_envelope !single
+    requires: !single
     args: -dm_plex_simplex 0 -petscspace_degree 3 -qorder 3 -porder 2
   test:
     suffix: q3_2d_3
-    requires: mpi_type_get_envelope !single
+    requires: !single
     args: -dm_plex_simplex 0 -petscspace_degree 3 -qorder 3 -porder 3
 
   # 2D P_1disc on a triangle/quadrilateral
@@ -1222,19 +1215,15 @@ int main(int argc, char **argv)
     args: -petscspace_degree 2 -qorder 5 -porder 2
   test:
     suffix: q1_quad_2
-    requires: mpi_type_get_envelope
     args: -dm_plex_simplex 0 -petscspace_degree 1 -qorder 2 -porder 1
   test:
     suffix: q1_quad_5
-    requires: mpi_type_get_envelope
     args: -dm_plex_simplex 0 -petscspace_degree 1 -qorder 5 -porder 1
   test:
     suffix: q2_quad_3
-    requires: mpi_type_get_envelope
     args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 3 -porder 1
   test:
     suffix: q2_quad_5
-    requires: mpi_type_get_envelope
     args: -dm_plex_simplex 0 -petscspace_degree 2 -qorder 5 -porder 1
 
   # Nonconforming tests
