@@ -981,12 +981,12 @@ PetscErrorCode elem_3d_elast_v_25(PetscScalar *dd)
 
    test:
       suffix: nns
-      args: -ne 9 -alpha 1.e-3 -ksp_converged_reason -ksp_type cg -ksp_max_it 50 -pc_type gamg -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 1000 -mg_levels_ksp_type chebyshev -mg_levels_pc_type sor -pc_gamg_reuse_interpolation true -two_solves -use_mat_nearnullspace -mg_levels_esteig_ksp_max_it 10
+      args: -ne 9 -alpha 1.e-3 -ksp_converged_reason -ksp_type cg -ksp_max_it 50 -pc_type gamg -pc_gamg_esteig_ksp_type cg -pc_gamg_esteig_ksp_max_it 10 -pc_gamg_type agg -pc_gamg_agg_nsmooths 1 -pc_gamg_coarse_eq_limit 1000 -mg_levels_ksp_type chebyshev -mg_levels_pc_type sor -pc_gamg_reuse_interpolation true -two_solves -use_mat_nearnullspace -pc_gamg_use_sa_esteig 0 -mg_levels_esteig_ksp_max_it 10
 
    test:
       suffix: nns_telescope
       nsize: 2
-      args: -use_mat_nearnullspace -ksp_monitor_short -pc_type telescope -pc_telescope_reduction_factor 2 -telescope_pc_type gamg
+      args: -use_mat_nearnullspace -ksp_monitor_short -pc_type telescope -pc_telescope_reduction_factor 2 -telescope_pc_type gamg -telescope_pc_gamg_esteig_ksp_type cg -telescope_pc_gamg_esteig_ksp_max_it 10
 
    test:
       suffix: seqaijmkl

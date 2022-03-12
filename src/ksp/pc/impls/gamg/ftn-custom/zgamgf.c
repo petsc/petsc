@@ -30,12 +30,3 @@ PETSC_EXTERN void pcgamgsettype_(PC *pc,char* type,PetscErrorCode *ierr,PETSC_FO
   FREECHAR(type,t);
 }
 
-PETSC_EXTERN void pcgamgsetesteigksptype_(PC *pc,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
-{
-  char *t;
-
-  FIXCHAR(type,len,t);
-  *ierr = PCGAMGSetEstEigKSPType(*pc,t);if (*ierr) return;
-  FREECHAR(type,t);
-}
-

@@ -1,9 +1,9 @@
-  0 KSP Residual norm 3.57974 
-  1 KSP Residual norm 0.498886 
-  2 KSP Residual norm 0.0205212 
-  3 KSP Residual norm 0.000949791 
-  4 KSP Residual norm 0.000103597 
-  5 KSP Residual norm 5.6789e-06 
+  0 KSP Residual norm 4.48162 
+  1 KSP Residual norm 0.192055 
+  2 KSP Residual norm 0.0183482 
+  3 KSP Residual norm 0.00104954 
+  4 KSP Residual norm 0.000110871 
+  5 KSP Residual norm 6.59975e-06 
 KSP Object: 2 MPI processes
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -74,18 +74,8 @@ PC Object: 2 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 2 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.185488, max = 2.04037
-        eigenvalues estimate via gmres min 0.145059, max 1.85488
-        eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
-        KSP Object: (mg_levels_1_esteig_) 2 MPI processes
-          type: gmres
-            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-            happy breakdown tolerance 1e-30
-          maximum iterations=10, initial guess is zero
-          tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
-          left preconditioning
-          using PRECONDITIONED norm type for convergence test
-        estimating eigenvalues using noisy right hand side
+        eigenvalue targets used: min 0.185488, max 2.04037
+        eigenvalues provided (min 0.145059, max 1.85488) with transform: [0. 0.1; 0. 1.1]
       maximum iterations=2, nonzero initial guess
       tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
@@ -108,4 +98,4 @@ PC Object: 2 MPI processes
     total: nonzeros=100, allocated nonzeros=240
     total number of mallocs used during MatSetValues calls=0
       not using I-node (on process 0) routines
-Norm of error 7.2428e-06 iterations 5
+Norm of error 7.25557e-06 iterations 5

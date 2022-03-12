@@ -291,7 +291,7 @@ int main(int argc,char **args)
       args: -ksp_monitor_short -mat_type aijcusparse -sub_pc_factor_mat_solver_type cusparse
 
    testset:
-      args: -ksp_monitor_short -pc_type gamg -ksp_view
+      args: -ksp_monitor_short -pc_type gamg -ksp_view -pc_gamg_esteig_ksp_type cg -pc_gamg_esteig_ksp_max_it 10
       test:
         suffix: gamg_cuda
         nsize: {{1 2}separate output}

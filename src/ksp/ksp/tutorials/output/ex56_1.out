@@ -54,13 +54,11 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.361587, max = 1.89833
-        eigenvalues estimate via gmres min 0.0618981, max 1.80793
-        eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.05]
+        eigenvalue targets used: min 0.361578, max 1.89829
+        eigenvalues estimated via cg: min 0.0586155, max 1.80789
+        eigenvalues estimated using cg with transform: [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
-          type: gmres
-            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-            happy breakdown tolerance 1e-30
+          type: cg
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -113,9 +111,9 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.386231, max = 2.02771
-        eigenvalues estimate via cg min 0.0227137, max 1.93116
-        eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        eigenvalue targets used: min 0.386231, max 2.02771
+        eigenvalues estimated via cg: min 0.0227137, max 1.93116
+        eigenvalues estimated using cg with transform: [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_2_esteig_) 8 MPI processes
           type: cg
           maximum iterations=10, initial guess is zero
@@ -233,13 +231,11 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.361587, max = 1.89833
-        eigenvalues estimate via gmres min 0.0618981, max 1.80793
-        eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.05]
+        eigenvalue targets used: min 0.361578, max 1.89829
+        eigenvalues estimated via cg: min 0.0586155, max 1.80789
+        eigenvalues estimated using cg with transform: [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
-          type: gmres
-            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-            happy breakdown tolerance 1e-30
+          type: cg
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -293,9 +289,9 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.386231, max = 2.02771
-        eigenvalues estimate via cg min 0.0227137, max 1.93116
-        eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        eigenvalue targets used: min 0.386231, max 2.02771
+        eigenvalues estimated via cg: min 0.0227137, max 1.93116
+        eigenvalues estimated using cg with transform: [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_2_esteig_) 8 MPI processes
           type: cg
           maximum iterations=10, initial guess is zero
@@ -413,13 +409,11 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.361587, max = 1.89833
-        eigenvalues estimate via gmres min 0.0618981, max 1.80793
-        eigenvalues estimated using gmres with translations  [0. 0.2; 0. 1.05]
+        eigenvalue targets used: min 0.361578, max 1.89829
+        eigenvalues estimated via cg: min 0.0586155, max 1.80789
+        eigenvalues estimated using cg with transform: [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_1_esteig_) 8 MPI processes
-          type: gmres
-            restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-            happy breakdown tolerance 1e-30
+          type: cg
           maximum iterations=10, initial guess is zero
           tolerances:  relative=1e-12, absolute=1e-50, divergence=10000.
           left preconditioning
@@ -473,9 +467,9 @@ PC Object: 8 MPI processes
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 8 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.386231, max = 2.02771
-        eigenvalues estimate via cg min 0.0227137, max 1.93116
-        eigenvalues estimated using cg with translations  [0. 0.2; 0. 1.05]
+        eigenvalue targets used: min 0.386231, max 2.02771
+        eigenvalues estimated via cg: min 0.0227137, max 1.93116
+        eigenvalues estimated using cg with transform: [0. 0.2; 0. 1.05]
         KSP Object: (mg_levels_2_esteig_) 8 MPI processes
           type: cg
           maximum iterations=10, initial guess is zero

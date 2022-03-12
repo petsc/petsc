@@ -288,11 +288,11 @@ PetscErrorCode InitialConditions(DM da,Vec U)
 
    test:
       suffix: gamg1
-      args: -pc_type gamg -pc_mg_levels 2 -mg_levels_pc_type jacobi -ksp_monitor_short -ts_max_steps 2 -ts_monitor -ts_adjoint_monitor -ts_trajectory_type memory
-      output_file: output/ex5adj_gamg_1.out
+      args: -pc_type gamg -pc_gamg_esteig_ksp_type gmres -pc_gamg_esteig_ksp_max_it 10 -pc_mg_levels 2 -ksp_monitor_short -ts_max_steps 2 -ts_monitor -ts_adjoint_monitor -ts_trajectory_type memory -ksp_rtol 1e-2 -pc_gamg_use_sa_esteig 0
+      output_file: output/ex5adj_gamg.out
 
    test:
       suffix: gamg2
-      args: -pc_type gamg -pc_mg_levels 2 -mg_levels_pc_type jacobi -ksp_monitor_short -ts_max_steps 2 -ts_monitor -ts_adjoint_monitor -ts_trajectory_type memory -ksp_use_explicittranspose
-      output_file: output/ex5adj_gamg_2.out
+      args: -pc_type gamg -pc_gamg_esteig_ksp_type gmres -pc_gamg_esteig_ksp_max_it 10 -pc_mg_levels 2 -ksp_monitor_short -ts_max_steps 2 -ts_monitor -ts_adjoint_monitor -ts_trajectory_type memory -ksp_use_explicittranspose -ksp_rtol 1e-2 -pc_gamg_use_sa_esteig 0
+      output_file: output/ex5adj_gamg.out
 TEST*/

@@ -656,7 +656,7 @@ int main(int argc, char **argv)
     args: -sol quadratic -dm_refine_hierarchy 2 -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
       -ksp_type fgmres -ksp_atol 1e-9 -snes_error_if_not_converged -pc_use_amat \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_fact_type full -pc_fieldsplit_off_diag_use_amat \
-        -fieldsplit_velocity_pc_type mg -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type gamg -fieldsplit_pressure_mg_levels_pc_type sor -fieldsplit_pressure_mg_coarse_pc_type svd
+        -fieldsplit_velocity_pc_type mg -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type gamg -fieldsplit_pressure_pc_gamg_esteig_ksp_max_it 10 -fieldsplit_pressure_mg_levels_pc_type sor -fieldsplit_pressure_mg_coarse_pc_type svd
   #   SIMPLE \begin{pmatrix} I & 0 \\ B^T A^{-1} & I \end{pmatrix} \begin{pmatrix} A & 0 \\ 0 & B^T diag(A)^{-1} B \end{pmatrix} \begin{pmatrix} I & diag(A)^{-1} B \\ 0 & I \end{pmatrix}
   test:
     suffix: 2d_p2_p1_simple

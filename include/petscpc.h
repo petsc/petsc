@@ -296,8 +296,6 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetProcEqLim(PC,PetscInt);
 
 PETSC_EXTERN PetscErrorCode PCGAMGSetRepartition(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetUseSAEstEig(PC,PetscBool);
-PETSC_EXTERN PetscErrorCode PCGAMGSetEstEigKSPMaxIt(PC,PetscInt);
-PETSC_EXTERN PetscErrorCode PCGAMGSetEstEigKSPType(PC,char[]);
 PETSC_EXTERN PetscErrorCode PCGAMGSetEigenvalues(PC,PetscReal,PetscReal);
 PETSC_EXTERN PetscErrorCode PCGAMGASMSetUseAggs(PC,PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve(PC,PetscBool);

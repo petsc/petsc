@@ -49,9 +49,9 @@ PC Object: 4 MPI processes
   Down solver (pre-smoother) on level 1 -------------------------------
     KSP Object: (mg_levels_1_) 4 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.149851, max = 1.64836
-        eigenvalues estimate via gmres min 0.0385457, max 1.49851
-        eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+        eigenvalue targets used: min 0.149851, max 1.64836
+        eigenvalues estimated via gmres: min 0.0385457, max 1.49851
+        eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
         KSP Object: (mg_levels_1_esteig_) 4 MPI processes
           type: gmres
             restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -79,9 +79,9 @@ PC Object: 4 MPI processes
   Down solver (pre-smoother) on level 2 -------------------------------
     KSP Object: (mg_levels_2_) 4 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.149921, max = 1.64913
-        eigenvalues estimate via gmres min 0.014084, max 1.49921
-        eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+        eigenvalue targets used: min 0.149921, max 1.64913
+        eigenvalues estimated via gmres: min 0.014084, max 1.49921
+        eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
         KSP Object: (mg_levels_2_esteig_) 4 MPI processes
           type: gmres
             restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -109,9 +109,9 @@ PC Object: 4 MPI processes
   Down solver (pre-smoother) on level 3 -------------------------------
     KSP Object: (mg_levels_3_) 4 MPI processes
       type: chebyshev
-        eigenvalue estimates used:  min = 0.149339, max = 1.64273
-        eigenvalues estimate via gmres min 0.0116105, max 1.49339
-        eigenvalues estimated using gmres with translations  [0. 0.1; 0. 1.1]
+        eigenvalue targets used: min 0.149339, max 1.64273
+        eigenvalues estimated via gmres: min 0.0116105, max 1.49339
+        eigenvalues estimated using gmres with transform: [0. 0.1; 0. 1.1]
         KSP Object: (mg_levels_3_esteig_) 4 MPI processes
           type: gmres
             restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement

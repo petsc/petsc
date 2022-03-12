@@ -5,6 +5,7 @@
 #include <../src/ksp/pc/impls/gamg/gamg.h>        /*I "petscpc.h" I*/
 #include <petscblaslapack.h>
 #include <petscdm.h>
+#include <petsc/private/kspimpl.h>
 
 typedef struct {
   PetscInt  nsmooths;
@@ -974,13 +975,13 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc,Mat Amat,Mat Gmat,PetscCoarsen
   /* can get all points "removed" */
   ierr =  MatGetSize(Prol, &kk, &ii);CHKERRQ(ierr);
   if (!ii) {
-    ierr = PetscInfo(pc,"No selected points on coarse grid\n");CHKERRQ(ierr);
+    ierr = PetscInfo(pc,"%s: No selected points on coarse grid\n");CHKERRQ(ierr);
     ierr = MatDestroy(&Prol);CHKERRQ(ierr);
     *a_P_out = NULL;  /* out */
     ierr = PetscLogEventEnd(PC_GAMGProlongator_AGG,0,0,0,0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscInfo(pc,"New grid %D nodes\n",ii/col_bs);CHKERRQ(ierr);
+  ierr = PetscInfo(pc,"%s: New grid %D nodes\n",((PetscObject)pc)->prefix,ii/col_bs);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(Prol, &myCrs0, &kk);CHKERRQ(ierr);
 
   PetscCheckFalse((kk-myCrs0) % col_bs,PETSC_COMM_SELF,PETSC_ERR_PLIB,"(kk %D -myCrs0 %D) not divisible by col_bs %D",kk,myCrs0,col_bs);
@@ -1093,37 +1094,20 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
 
       ierr = MatCreateVecs(Amat, &bb, NULL);CHKERRQ(ierr);
       ierr = MatCreateVecs(Amat, &xx, NULL);CHKERRQ(ierr);
-      ierr = VecSetRandom(bb,NULL);CHKERRQ(ierr);
+      ierr = KSPSetNoisy_Private(bb);CHKERRQ(ierr);
 
       ierr = KSPCreate(comm,&eksp);CHKERRQ(ierr);
       ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(eksp,prefix);CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix(eksp,"pc_gamg_smoothprolongator_");CHKERRQ(ierr);
-      if (pc_gamg->esteig_type[0] == '\0') {
-        PetscBool sflg,hflg;
+      ierr = KSPAppendOptionsPrefix(eksp,"pc_gamg_esteig_");CHKERRQ(ierr);
+      {
+        PetscBool sflg;
         ierr = MatGetOption(Amat, MAT_SPD, &sflg);CHKERRQ(ierr);
         if (sflg) {
-          ierr = KSPGetOptionsPrefix(eksp,&prefix);CHKERRQ(ierr);
-          ierr = PetscOptionsHasName(NULL,prefix,"-ksp_type",&sflg);CHKERRQ(ierr);
-          if (!sflg) {
-            ierr = KSPSetType(eksp, KSPCG);CHKERRQ(ierr);
-          }
-        } else {
-          ierr = MatGetOption(Amat, MAT_HERMITIAN, &hflg);CHKERRQ(ierr);
-          ierr = MatGetOption(Amat, MAT_SYMMETRIC, &sflg);CHKERRQ(ierr);
-          if (sflg || hflg) {
-            ierr = KSPGetOptionsPrefix(eksp,&prefix);CHKERRQ(ierr);
-            ierr = PetscOptionsHasName(NULL,prefix,"-ksp_type",&sflg);CHKERRQ(ierr);
-            if (!sflg) {
-              ierr = KSPSetType(eksp, KSPCR);CHKERRQ(ierr);
-            }
-          }
+          ierr = KSPSetType(eksp, KSPCG);CHKERRQ(ierr);
         }
-      } else {
-        ierr = KSPSetType(eksp, pc_gamg->esteig_type);CHKERRQ(ierr);
       }
       ierr = KSPSetErrorIfNotConverged(eksp,pc->erroriffailure);CHKERRQ(ierr);
-      ierr = KSPSetTolerances(eksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,pc_gamg->esteig_max_it);CHKERRQ(ierr);
       ierr = KSPSetNormType(eksp, KSP_NORM_NONE);CHKERRQ(ierr);
 
       ierr = KSPSetInitialGuessNonzero(eksp, PETSC_FALSE);CHKERRQ(ierr);
@@ -1132,13 +1116,15 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
       ierr = KSPGetPC(eksp, &epc);CHKERRQ(ierr);
       ierr = PCSetType(epc, PCJACOBI);CHKERRQ(ierr);  /* smoother in smoothed agg. */
 
+      ierr = KSPSetTolerances(eksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT, 10);CHKERRQ(ierr); // 10 is safer, but 5 is often fine, can override with -pc_gamg_esteig_ksp_max_it -mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.2
+
       ierr = KSPSetFromOptions(eksp);CHKERRQ(ierr);
       ierr = KSPSetComputeSingularValues(eksp,PETSC_TRUE);CHKERRQ(ierr);
       ierr = KSPSolve(eksp, bb, xx);CHKERRQ(ierr);
       ierr = KSPCheckSolve(eksp,pc,xx);CHKERRQ(ierr);
 
       ierr = KSPComputeExtremeSingularValues(eksp, &emax, &emin);CHKERRQ(ierr);
-      ierr = PetscInfo(pc,"Smooth P0: max eigen=%e min=%e PC=%s\n",(double)emax,(double)emin,PCJACOBI);CHKERRQ(ierr);
+      ierr = PetscInfo(pc,"%s: Smooth P0: max eigen=%e min=%e PC=%s\n",((PetscObject)pc)->prefix,(double)emax,(double)emin,PCJACOBI);CHKERRQ(ierr);
       ierr = VecDestroy(&xx);CHKERRQ(ierr);
       ierr = VecDestroy(&bb);CHKERRQ(ierr);
       ierr = KSPDestroy(&eksp);CHKERRQ(ierr);
@@ -1146,7 +1132,7 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc,Mat Amat,Mat *a_P)
     if (pc_gamg->use_sa_esteig) {
       mg->min_eigen_DinvA[pc_gamg->current_level] = emin;
       mg->max_eigen_DinvA[pc_gamg->current_level] = emax;
-      ierr = PetscInfo(pc,"Smooth P0: level %D, cache spectra %g %g\n",pc_gamg->current_level,(double)emin,(double)emax);CHKERRQ(ierr);
+      ierr = PetscInfo(pc,"%s: Smooth P0: level %D, cache spectra %g %g\n",((PetscObject)pc)->prefix,pc_gamg->current_level,(double)emin,(double)emax);CHKERRQ(ierr);
     } else {
       mg->min_eigen_DinvA[pc_gamg->current_level] = 0;
       mg->max_eigen_DinvA[pc_gamg->current_level] = 0;

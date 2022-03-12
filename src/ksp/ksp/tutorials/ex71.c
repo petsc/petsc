@@ -504,17 +504,17 @@ int main(int argc,char **args)
    nsize: 8
    filter: grep -v "variant HERMITIAN" | sed -e "s/iterations 1[0-9]/iterations 10/g"
    suffix: bddc_elast_dir_approx
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_dirichlet_pc_type gamg -ksp_converged_reason -pc_bddc_dirichlet_approximate
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_dirichlet_pc_type gamg -pc_bddc_dirichlet_pc_gamg_esteig_ksp_max_it 10 -ksp_converged_reason -pc_bddc_dirichlet_approximate
  test:
    nsize: 8
    filter: grep -v "variant HERMITIAN" | sed -e "s/iterations 1[0-9]/iterations 10/g"
    suffix: bddc_elast_neu_approx
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_neumann_pc_type gamg -ksp_converged_reason -pc_bddc_neumann_approximate
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_neumann_pc_type gamg -pc_bddc_neumann_pc_gamg_esteig_ksp_max_it 10 -ksp_converged_reason -pc_bddc_neumann_approximate
  test:
    nsize: 8
    filter: grep -v "variant HERMITIAN" | sed -e "s/iterations 1[0-9]/iterations 10/g"
    suffix: bddc_elast_both_approx
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_dirichlet_pc_type gamg -pc_bddc_neumann_pc_type gamg -ksp_converged_reason -pc_bddc_neumann_approximate -pc_bddc_dirichlet_approximate
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -pc_bddc_dirichlet_pc_type gamg -pc_bddc_dirichlet_pc_gamg_esteig_ksp_max_it 10 -pc_bddc_neumann_pc_type gamg -pc_bddc_neumann_pc_gamg_esteig_ksp_max_it 10 -ksp_converged_reason -pc_bddc_neumann_approximate -pc_bddc_dirichlet_approximate
  test:
    nsize: 8
    filter: grep -v "variant HERMITIAN"
@@ -624,7 +624,7 @@ int main(int argc,char **args)
    filter: grep -v "variant HERMITIAN" | grep -v "I-node routines" | sed -e "s/seqaijcusparse/seqaij/g"
    suffix: bddc_elast_deluxe_layers_adapt_cuda_approx
    requires: !complex mumps cuda defined(PETSC_HAVE_CUSOLVERDNDPOTRI)
-   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mumps -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers 1 -matis_localmat_type {{seqaij seqaijcusparse}separate output} -sub_schurs_schur_mat_type {{seqdensecuda seqdense}} -pc_bddc_dirichlet_pc_type gamg -pc_bddc_dirichlet_approximate -pc_bddc_neumann_pc_type gamg -pc_bddc_neumann_approximate
+   args: -pde_type Elasticity -cells 7,9,8 -dim 3 -ksp_view -pc_bddc_coarse_redundant_pc_type svd -ksp_error_if_not_converged -pc_bddc_monolithic -sub_schurs_mat_solver_type mumps -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2.0 -pc_bddc_schur_layers 1 -matis_localmat_type {{seqaij seqaijcusparse}separate output} -sub_schurs_schur_mat_type {{seqdensecuda seqdense}} -pc_bddc_dirichlet_pc_type gamg -pc_bddc_dirichlet_approximate -pc_bddc_neumann_pc_type gamg -pc_bddc_neumann_approximate -pc_bddc_dirichlet_pc_gamg_esteig_ksp_max_it 10 -pc_bddc_neumann_pc_gamg_esteig_ksp_max_it 10
  test:
    nsize: 8
    suffix: bddc_elast_deluxe_layers_adapt_mkl_pardiso_cuda

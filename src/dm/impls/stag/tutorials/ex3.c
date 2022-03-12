@@ -758,7 +758,7 @@ static PetscErrorCode CheckSolution(Vec sol,Vec solRef)
       suffix: 2
       requires: !single
       nsize: 4
-      args: -ksp_monitor_short -ksp_converged_reason -pc_fieldsplit_schur_fact_type diag -fieldsplit_0_ksp_type preonly -fieldsplit_1_pc_type none -fieldsplit_0_pc_type gamg -fieldsplit_0_mg_levels_ksp_max_it 3 -fieldsplit_1_ksp_type gmres -fieldsplit_1_ksp_max_it 20 -fieldsplit_0_pc_gamg_esteig_ksp_type gmres
+      args: -ksp_monitor_short -ksp_converged_reason -pc_fieldsplit_schur_fact_type diag -fieldsplit_0_ksp_type preonly -fieldsplit_1_pc_type none -fieldsplit_0_pc_type gamg -fieldsplit_0_ksp_type gmres -fieldsplit_0_pc_gamg_esteig_ksp_max_it 5
 
    test:
       suffix: direct_umfpack

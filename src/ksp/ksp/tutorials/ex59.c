@@ -1172,7 +1172,7 @@ int main(int argc,char **args)
  testset:
    nsize: 8
    suffix: bddc_fetidp_approximate
-   args: -npx 2 -npy 2 -npz 2 -p 2 -nex 8 -ney 7 -nez 9 -physical_ksp_max_it 20 -subdomain_mat_type aij -physical_pc_bddc_switch_static -physical_pc_bddc_dirichlet_approximate -physical_pc_bddc_neumann_approximate -physical_pc_bddc_dirichlet_pc_type gamg -physical_pc_bddc_dirichlet_mg_levels_ksp_max_it 3 -physical_pc_bddc_neumann_pc_type sor -physical_pc_bddc_neumann_approximate_scale -testfetidp 0
+   args: -npx 2 -npy 2 -npz 2 -p 2 -nex 8 -ney 7 -nez 9 -physical_ksp_max_it 20 -subdomain_mat_type aij -physical_pc_bddc_switch_static -physical_pc_bddc_dirichlet_approximate -physical_pc_bddc_neumann_approximate -physical_pc_bddc_dirichlet_pc_type gamg -physical_pc_bddc_dirichlet_pc_gamg_esteig_ksp_type cg -physical_pc_bddc_dirichlet_pc_gamg_esteig_ksp_max_it 10 -physical_pc_bddc_dirichlet_mg_levels_ksp_max_it 3 -physical_pc_bddc_neumann_pc_type sor -physical_pc_bddc_neumann_approximate_scale -testfetidp 0
 
  testset:
    nsize: 4

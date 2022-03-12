@@ -9696,8 +9696,12 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   }
 
   ierr = MatProductNumeric(*C);CHKERRQ(ierr);
-  if (A->symmetric_set && A->symmetric) {
-    ierr = MatSetOption(*C,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+  if (A->symmetric) {
+    if (A->spd) {
+      ierr = MatSetOption(*C,MAT_SPD,PETSC_TRUE);CHKERRQ(ierr);
+    } else {
+      ierr = MatSetOption(*C,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
