@@ -459,16 +459,6 @@ DEF_DumbType(DumbInt,2,0)
 DEF_DumbType(DumbInt,4,0)
 DEF_DumbType(DumbInt,8,0)
 
-#if !defined(PETSC_HAVE_MPI_TYPE_DUP)
-static inline int MPI_Type_dup(MPI_Datatype datatype,MPI_Datatype *newtype)
-{
-  int ierr;
-  ierr = MPI_Type_contiguous(1,datatype,newtype); if (ierr) return ierr;
-  ierr = MPI_Type_commit(newtype); if (ierr) return ierr;
-  return MPI_SUCCESS;
-}
-#endif
-
 PetscErrorCode PetscSFLinkDestroy(PetscSF sf,PetscSFLink link)
 {
   PetscErrorCode    ierr;

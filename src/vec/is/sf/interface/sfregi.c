@@ -1,7 +1,7 @@
 #include <petsc/private/sfimpl.h>     /*I  "petscsf.h"  I*/
 
 PETSC_INTERN PetscErrorCode PetscSFCreate_Basic(PetscSF);
-#if defined(PETSC_HAVE_MPI_WIN_CREATE) && defined(PETSC_HAVE_MPI_TYPE_DUP)
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
 PETSC_INTERN PetscErrorCode PetscSFCreate_Window(PetscSF);
 #endif
 PETSC_INTERN PetscErrorCode PetscSFCreate_Allgatherv(PetscSF);
@@ -33,7 +33,7 @@ PetscErrorCode  PetscSFRegisterAll(void)
   if (PetscSFRegisterAllCalled) PetscFunctionReturn(0);
   PetscSFRegisterAllCalled = PETSC_TRUE;
   ierr = PetscSFRegister(PETSCSFBASIC,  PetscSFCreate_Basic);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MPI_WIN_CREATE) && defined(PETSC_HAVE_MPI_TYPE_DUP)
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
   ierr = PetscSFRegister(PETSCSFWINDOW, PetscSFCreate_Window);CHKERRQ(ierr);
 #endif
   ierr = PetscSFRegister(PETSCSFALLGATHERV,PetscSFCreate_Allgatherv);CHKERRQ(ierr);
