@@ -5,3 +5,4 @@ sphinxcontrib-svg2pdfconverter
 sphinx-copybutton
 pydata-sphinx-theme
 sphinx-panels
+myst-parser

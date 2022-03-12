@@ -58,7 +58,7 @@ needs_sphinx='3.5'
 nitpicky = True  # checks internal links. For external links, use "make linkcheck"
 master_doc = 'index'
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'images', 'Thumbs.db', '.DS_Store']
 highlight_language = 'c'
 numfig = True
 
@@ -70,12 +70,15 @@ extensions = [
     'sphinxcontrib.bibtex',
     'sphinxcontrib.katex',
     'sphinxcontrib.rsvgconverter',
+    'myst_parser',
     'html5_petsc',
 ]
 
 copybutton_prompt_text = '$ '
 
 bibtex_bibfiles = ['petsc.bib']
+
+myst_enable_extensions = ["dollarmath", "amsmath", "deflist"]
 
 # -- Options for HTML output ---------------------------------------------------
 
