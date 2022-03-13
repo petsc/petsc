@@ -1615,6 +1615,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
       ctx->SData_d.n_coo_cellsTot         = 0;
     }
 
+    ctx->SData_d.coo_max_fullnb = 0;
     for (PetscInt grid=0,glb_elem_idx=0;grid<ctx->num_grids;grid++) {
       PetscInt cStart, cEnd, Nfloc = Nf[grid], totDim = Nfloc*Nq;
       if (grid_batch_is_inv[grid]) {
@@ -1707,6 +1708,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
             ctx->SData_d.coo_elem_offsets[glb_elem_idx+1] += fullNb*fullNb; // one species block, adds a block for each species, on this element in this grid
             if (fieldA==0) { // cache full Nb for this element, on this grid per species
               ctx->SData_d.coo_elem_fullNb[glb_elem_idx] = fullNb;
+              if (fullNb>ctx->SData_d.coo_max_fullnb) ctx->SData_d.coo_max_fullnb = fullNb;
             } else PetscCheck(ctx->SData_d.coo_elem_fullNb[glb_elem_idx] == fullNb,PETSC_COMM_SELF, PETSC_ERR_PLIB, "full element size change with species %" PetscInt_FMT " %" PetscInt_FMT,ctx->SData_d.coo_elem_fullNb[glb_elem_idx],fullNb);
           }
         } // field

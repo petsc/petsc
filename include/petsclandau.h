@@ -88,6 +88,7 @@ typedef struct {
   LandauIdx        *coo_elem_fullNb;
   LandauIdx        n_coo_cellsTot;
   LandauIdx        coo_size;
+  LandauIdx        coo_max_fullnb;
 } LandauStaticData;
 
 typedef enum {LANDAU_EX2_TSSOLVE, LANDAU_MATRIX_TOTAL, LANDAU_OPERATOR, LANDAU_JACOBIAN_COUNT, LANDAU_JACOBIAN, LANDAU_MASS, LANDAU_F_DF, LANDAU_KERNEL, KSP_FACTOR, KSP_SOLVE, LANDAU_NUM_TIMERS} LandauOMPTimers;
