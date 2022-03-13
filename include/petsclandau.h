@@ -148,7 +148,7 @@ typedef struct {
   PetscErrorCode (*seqaij_solve)(Mat,Vec,Vec);
   PetscErrorCode (*seqaij_getdiagonal)(Mat,Vec);
   /* COO */
-  PetscBool        use_coo_assembly;
+  PetscBool        coo_assembly;
   /* cache */
   Mat              J;
   Mat              M;

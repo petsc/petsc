@@ -327,7 +327,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
     IPf_sz_glb = ipf_offset[num_grids];
     IPf_sz_tot = IPf_sz_glb*ctx->batch_sz;
     // prep COO
-    if (ctx->use_coo_assembly) {
+    if (ctx->coo_assembly) {
       ierr = PetscMalloc1(ctx->SData_d.coo_size,&coo_vals);CHKERRQ(ierr); // allocate every time?
       ierr = PetscInfo(ctx->plex[0], "COO Allocate %" PetscInt_FMT " values\n",ctx->SData_d.coo_size);CHKERRQ(ierr);
     }
@@ -1355,7 +1355,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   ctx->jacobian_field_major_order     = PETSC_FALSE;
   ctx->SData_d.coo_elem_offsets       = NULL;
   ctx->SData_d.coo_elem_point_offsets = NULL;
-  ctx->use_coo_assembly               = PETSC_FALSE;
+  ctx->coo_assembly                   = PETSC_FALSE;
   ctx->SData_d.coo_elem_fullNb        = NULL;
   ctx->SData_d.coo_size               = 0;
   ierr = PetscOptionsBegin(ctx->comm, prefix, "Options for Fokker-Plank-Landau collision operator", "none");CHKERRQ(ierr);
@@ -1495,8 +1495,8 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   /* processing options */
   ierr = PetscOptionsBool("-dm_landau_gpu_assembly", "Assemble Jacobian on GPU", "plexland.c", ctx->gpu_assembly, &ctx->gpu_assembly, NULL);CHKERRQ(ierr);
   if (ctx->deviceType == LANDAU_CPU || ctx->deviceType == LANDAU_KOKKOS) { // make Kokkos
-    ierr = PetscOptionsBool("-dm_landau_use_coo_assembly", "Assemble Jacobian with Kokkos on 'device'", "plexland.c", ctx->use_coo_assembly, &ctx->use_coo_assembly, NULL);CHKERRQ(ierr);
-    if (ctx->use_coo_assembly) PetscCheck(ctx->gpu_assembly,ctx->comm,PETSC_ERR_ARG_WRONG,"COO assembly requires 'gpu assembly' even if Kokkos 'CPU' back-end %d",ctx->use_coo_assembly);
+    ierr = PetscOptionsBool("-dm_landau_coo_assembly", "Assemble Jacobian with Kokkos on 'device'", "plexland.c", ctx->coo_assembly, &ctx->coo_assembly, NULL);CHKERRQ(ierr);
+    if (ctx->coo_assembly) PetscCheck(ctx->gpu_assembly,ctx->comm,PETSC_ERR_ARG_WRONG,"COO assembly requires 'gpu assembly' even if Kokkos 'CPU' back-end %d",ctx->coo_assembly);
   }
   ierr = PetscOptionsBool("-dm_landau_jacobian_field_major_order", "Reorder Jacobian for GPU assembly with field major, or block diagonal, ordering", "plexland.c", ctx->jacobian_field_major_order, &ctx->jacobian_field_major_order, NULL);CHKERRQ(ierr);
   if (ctx->jacobian_field_major_order) PetscCheck(ctx->gpu_assembly,ctx->comm,PETSC_ERR_ARG_WRONG,"-dm_landau_jacobian_field_major_order requires -dm_landau_gpu_assembly");
@@ -1554,6 +1554,8 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
       ierr = PetscOptionsClearValue(NULL,"-dm_landau_mass_view");CHKERRQ(ierr);
       ierr = PetscOptionsClearValue(NULL,"-dm_landau_jacobian_view");CHKERRQ(ierr);
       ierr = PetscOptionsClearValue(NULL,"-dm_landau_mat_view");CHKERRQ(ierr);
+      ierr = PetscOptionsClearValue(NULL,"-pc_bjkokkos_ksp_converged_reason");CHKERRQ(ierr);
+      ierr = PetscOptionsClearValue(NULL,"-pc_bjkokkos_ksp_monitor");CHKERRQ(ierr);
       ierr = PetscOptionsClearValue(NULL,"-");CHKERRQ(ierr);
       ierr = PetscOptionsClearValue(NULL,"-info");CHKERRQ(ierr);
     }
@@ -1604,7 +1606,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
     ierr = PetscLogEventBegin(ctx->events[2],0,0,0,0);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(*maps)*ctx->num_grids, &maps);CHKERRQ(ierr);
 
-    if (ctx->use_coo_assembly) { // setup COO assembly -- put COO metadata directly in ctx->SData_d
+    if (ctx->coo_assembly) { // setup COO assembly -- put COO metadata directly in ctx->SData_d
       ierr = PetscMalloc3(ncellsTot+1,&ctx->SData_d.coo_elem_offsets,ncellsTot,&ctx->SData_d.coo_elem_fullNb,ncellsTot, &ctx->SData_d.coo_elem_point_offsets);CHKERRQ(ierr); // array of integer pointers
       ctx->SData_d.coo_elem_offsets[0] = 0; // finish later
       ierr = PetscInfo(ctx->plex[0], "COO initialization, %" PetscInt_FMT " cells\n",ncellsTot);CHKERRQ(ierr);
@@ -1703,7 +1705,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
             ierr = DMPlexRestoreClosureIndices(ctx->plex[grid], section[grid], globsection[grid], ej, PETSC_TRUE, &numindices, &indices, NULL, (PetscScalar **) &elMat);CHKERRQ(ierr);
             if (elMat != valuesOrig) {ierr = DMRestoreWorkArray(ctx->plex[grid], numindices*numindices, MPIU_SCALAR, &elMat);CHKERRQ(ierr);}
           }
-          if (ctx->use_coo_assembly) { // setup COO assembly
+          if (ctx->coo_assembly) { // setup COO assembly
             ctx->SData_d.coo_elem_offsets[glb_elem_idx+1] += fullNb*fullNb; // one species block, adds a block for each species, on this element in this grid
             if (fieldA==0) { // cache full Nb for this element, on this grid per species
               ctx->SData_d.coo_elem_fullNb[glb_elem_idx] = fullNb;
@@ -1735,7 +1737,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
       }
     } /* grids */
     // finish COO
-    if (ctx->use_coo_assembly) { // setup COO assembly
+    if (ctx->coo_assembly) { // setup COO assembly
       PetscInt *oor, *ooc;
       ctx->SData_d.coo_size = ctx->SData_d.coo_elem_offsets[ncellsTot]*ctx->batch_sz;
       ierr = PetscMalloc2(ctx->SData_d.coo_size,&oor,ctx->SData_d.coo_size,&ooc);CHKERRQ(ierr);
