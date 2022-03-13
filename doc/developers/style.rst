@@ -19,7 +19,7 @@ important. We use several conventions
 
 #. All enum elements and macro variables are named with all capital
    letters. When they consist of several complete words, there is an
-   underscore between each word. For example, ``mat,MAT_FINAL_ASSEMBLY``.
+   underscore between each word. For example, ``MAT_FINAL_ASSEMBLY``.
 
 #. Functions that are private to PETSc (not callable by the application
    code) either
@@ -210,9 +210,7 @@ C Formatting
 
 #. Use classic block comments (``/* Comment */``) for multi-line comments and
    for *all* comments in headers.  Single-line comments in source files (*not*
-   headers) may use the C99/C++ style (``// Comment``).  The rationale is that
-   it must be possible for users to build applications using strict ``-std=c89``
-   even though PETSc (since v3.14) uses select C99 features internally.
+   headers) may use the C99/C++ style (``// Comment``).
 
 #. All variables must be declared at the beginning of the code block (C89
    style), never mixed in with code.  When variables are only used in a limited
@@ -290,8 +288,7 @@ C Usage
    of system it is used on.
 
 #. Variadic macros may be used in PETSc source files, but must work with MSVC
-   and must not be required in public headers (which must be usable with strict
-   ``-std=c89``).  Most compilers have conforming implementations of the
+   Most compilers have conforming implementations of the
    C99/C++11 rules for ``__VA_ARGS__``, but MSVC's implementation is not
    conforming and may need workarounds.  See ``PetscDefined()`` for an example
    of how to work around MSVC's limitations to write a macro that is usable in
@@ -371,6 +368,7 @@ Usage of PETSc Functions and Macros
 
 #. Do not include ``assert.h`` in PETSc source code. Do not use
    ``assert()``, it doesn’t play well in the parallel MPI world.
+   You may use ``PetscAssert()`` where appropriate.
 
 #. The macros ``SETERRQ()`` and ``CHKERRQ()`` should be on the same line
    as the routine to be checked unless doing so violates the 150
@@ -394,7 +392,7 @@ Usage of PETSc Functions and Macros
    ``PetscCallocN()``, ``PetscNew()``, and ``PetscFree()``, not
    ``malloc()`` and ``free()``.
 
-#. MPI routines and macros that are not part of the 1.0 or 1.1 standard
+#. MPI routines and macros that are not part of the 2.1 standard
    should not be used in PETSc without appropriate ``configure``
    checks and ``#if defined()`` checks. Code should also be provided
    that works if the MPI feature is not available, for example,
@@ -468,7 +466,7 @@ Usage of PETSc Functions and Macros
    release.
 
 #. The format strings in PETSc ASCII output routines, such as
-   ``PetscPrintf``, take a ``%D`` for all PETSc variables of type ``PetscInt``,
+   ``PetscPrintf``, take a ``%" PetscInt_FMT "`` for all PETSc variables of type ``PetscInt``,
    not a ``%d``.
 
 #. All arguments of type ``PetscReal`` to PETSc ASCII output routines,
@@ -489,34 +487,21 @@ http://wgropp.cs.illinois.edu/projects/software/sowing/; in particular,
 see the documentation for ``doctext``.
 
 -  | ``/*@``
-   | a formatted comment of a function that will be used for both
-   | documentation and a Fortran interface.
+   | a formatted comment of a function that will be used for both documentation and a Fortran interface.
 
 -  | ``/*@C``
-   | a formatted comment of a function that will be used only for
-   | documentation, not to generate a Fortran interface. In general, such
-   | labeled C functions should have a custom Fortran interface provided.
-   | Functions that take ``char*`` or function pointer arguments must have
-   | the ``C`` symbol and a custom Fortran interface provided.
+   | a formatted comment of a function that will be used only for documentation, not to generate a Fortran interface. In general, such labeled C functions should have a custom Fortran interface provided. Functions that take ``char*`` or function pointer arguments must have the ``C`` symbol and a custom Fortran interface provided.
 
 -  | ``/*E``
-   | a formatted comment of an enum used for documentation only. Note
-   | that each of these needs to be listed in
-   | ``lib/petsc/conf/bfort-petsc.txt`` as a native and defined in the
-   | corresponding ``include/petsc/finclude/petscxxx.h`` Fortran include
-   | file and the values set as parameters in the file
-   | ``src/SECTION/f90-mod/petscSUBSECTION.h``, for example,
-   | ``src/vec/f90-mod/petscis.h``.
+   | a formatted comment of an enum used for documentation only. Note that each of these needs to be listed in ``lib/petsc/conf/bfort-petsc.txt`` as a native and defined in the corresponding ``include/petsc/finclude/petscxxx.h`` Fortran include file and the values set as parameters in the file ``src/SECTION/f90-mod/petscSUBSECTION.h``, for example, ``src/vec/f90-mod/petscis.h``.
 
 -  | ``/*S``
-   | a formatted comment for a data type such as ``KSP``. Note that each
-   | of these needs to be listed in ``lib/petsc/conf/bfort-petsc.txt`` as
-   | a ``nativeptr``.
+   | a formatted comment for a data type such as ``KSP``. Note that each of these needs to be listed in ``lib/petsc/conf/bfort-petsc.txt`` as a ``nativeptr``.
 
 -  | ``/*MC``
    | a formatted comment of a CPP macro or enum value for documentation.
 
-The Fortran interface files supplied by the user go into the two
+The Fortran interface files supplied manually by developer go into the two
 directories ``ftn-custom`` and ``f90-custom``, while those generated by
 Sowing go into ``ftn-auto``.
 
@@ -558,13 +543,13 @@ where noted, add a newline after the section headings.
       MPI communicator should be noted here.
 
 #. If documenting a function with input parameters, a list of input
-   parameter descriptions in an ``Input Parameters:`` section.
+   parameter descriptions in an ``Input Parameter(s):`` section.
 
 #. If documenting a function with output parameters, a list of output
-   parameter descriptions in an ``Output Parameters:`` section.
+   parameter descriptions in an ``Output Parameter(s):`` section.
 
 #. If documenting a function that interacts with the options database, a
-   list of options database keys in an ``Options Database Keys:``
+   list of options database keys in an ``Options Database Key(s):``
    section.
 
 #. (Optional) a ``Notes:`` section containing in-depth discussion,
@@ -574,6 +559,10 @@ where noted, add a newline after the section headings.
 
 #. (If applicable) a ``Fortran Notes:`` section detailing any relevant
    differences in calling or using the item from Fortran.
+
+#. (If applicable) a ``Developer Notes:`` section detailing any relevant
+   information about the code for developers, for example, why a
+   particular algorithm was implemented.
 
 #. ``Level:`` (no newline) followed by ``beginner``,
    ``intermediate``, ``advanced``, ``developer``, or ``deprecated``.

@@ -31,10 +31,13 @@ contributions, adding new implementations for solver components:
 Documentation fixes
 ===================
 We welcome corrections for our :doc:`documentation </developers/documentation>`.
-You can submit corrections to petsc-maint@mcs.anl.gov or `post an issue <https://gitlab.com/petsc/petsc/-/issues>`__.
-Add the label "docs".
-You can also supply corrections to many web pages directly by clicking "Edit this page",
+
+You can supply corrections to many web pages directly by clicking "Edit this page", on the lower right corner of the page, and
 making your edits, following the instructions to make a merge request, and following the :doc:`integration process </developers/integration>`.
+Add the label "docs-only".
+
+You can also submit corrections to petsc-maint@mcs.anl.gov or `post an issue <https://gitlab.com/petsc/petsc/-/issues>`__.
+
 
 Browsing Source
 ===============
@@ -53,7 +56,7 @@ Obtaining the development version of PETSc
   $ git clone https://gitlab.com/petsc/petsc.git
   $ cd petsc
 
-PETSc can now be configured in the usual way, specified on the
+PETSc can now be configured as specified on the
 `Installation page <https://petsc.org/release/install/>`__
 
 To update your copy of PETSc
@@ -74,7 +77,7 @@ This is a shorthand version of
 
   $ $PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/reconfigure-$PETSC_ARCH.py && make all
 
-If you absolutely cannot use Git then you can access tarballs directly, as in :ref:`other_ways_to_obtain`.
+If you absolutely cannot use Git then you can access tarballs directly, as indicated in :ref:`other_ways_to_obtain`.
 
 .. _sec_git:
 
@@ -135,7 +138,7 @@ Starting a new feature branch
 
      $ git checkout -b barry/snes-removecpp origin/main``
 
-   Use all lowercase and no additional underscores.
+   Use all lowercase and no additional underscores in the branch name.
 
 -  Write code and tests.
 
@@ -172,35 +175,23 @@ Writing commit messages
 
    ComponentName: one-line explanation of commit
 
-   After a blank line, write a more detailed explanation of the commit.
-   Many tools do not auto-wrap this part, so wrap paragraph text at a
-   reasonable length. Commit messages are meant for other people to read,
-   possibly months or years later, so describe the rationale for the change
-   in a manner that will make sense later, and which will be provide helpful
-   search terms.
+   After a blank line, write a more detailed explanation of the commit. Many tools do not auto-wrap this part, so wrap paragraph text at a reasonable length. Commit messages are meant for other people to read, possibly months or years later, so describe the rationale for the change in a manner that will make sense later, and which will be provide helpful search terms.
 
    Use the imperative, e.g. "Fix bug", not "Fixed bug".
 
-   If any interfaces have changed, the commit should fix occurrences in
-   PETSc itself and the message should state its impact on users.
+   If any interfaces have changed, the commit should fix occurrences in PETSc itself and the message should state its impact on users.
 
-   We have defined several standard commit message tags you should use; this makes it easy
-   to search for specific types of contributions. Multiple tags may be used
-   in the same commit message.
+   We have defined several standard commit message tags you should use; this makes it easy to search for specific types of contributions. Multiple tags may be used in the same commit message.
 
-   \spend 1h or 30m
+   /spend 1h or 30m
 
-   * If other people contributed significantly to a commit, perhaps by
-   reporting bugs or by writing an initial version of the patch,
-   acknowledge them using tags at the end of the commit message.
+   If other people contributed significantly to a commit, perhaps by reporting bugs or by writing an initial version of the patch, acknowledge them using tags at the end of the commit message.
 
    Reported-by: Helpful User <helpful@example.com>
    Based-on-patch-by: Original Idea <original@example.com>
    Thanks-to: Incremental Improver <improver@example.com>
 
-   * If work is done for a particular well defined funding
-   source or project you should label the commit with one
-   or more of the tags
+   If work is done for a particular well defined funding source or project you should label the commit with one or more of the tags
 
    Funded-by: My funding source
    Project: My project name
@@ -215,6 +206,16 @@ Extra commits from bug-fixes or tiny improvements may accumulate. One commit may
 
 Ideally, each commit in a submitted branch will allow PETSc to build, compile, and pass its tests, while presenting a small-as-possible set of very closely related changes.
 However, especially prioritize rewriting to avoid commits which change the content of previous commits, as this makes reviewing on a per-commit basis difficult.
+
+Use different commits for:
+
+- fixing formatting and spelling mistakes,
+
+- fixing a bug,
+
+- adding a new feature,
+
+- adding another new feature.
 
 Rewriting history can be done in `several ways <https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History>`__; the easiest is often with the interactive ``rebase`` command, which allows one to combine ("squash"), rearrange, and edit commits.
 
@@ -261,7 +262,7 @@ You may also want to `rebase <https://git-scm.com/book/en/v2/Git-Branching-Rebas
 Other ways to obtain PETSc
 ==========================
 
-Getting a Tarball of the git main branch of PETSc
+Getting a tarball of the git main branch of PETSc
 ---------------------------------------------------
 Use the following URL: https://gitlab.com/petsc/petsc/get/main.tar.gz
 
@@ -278,7 +279,7 @@ After the tarballs is obtained - do the following:
 To update this copy of petsc, re-download the above tarball.
 The URL above gets the latest changes immediately when they are pushed to the repository.
 
-Getting the Nightly tarball of the git main branch of PETSc
+Getting the nightly tarball of the git main branch of PETSc
 -------------------------------------------------------------
 
 The nightly tarball will be equivalent to the release
