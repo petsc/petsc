@@ -928,4 +928,7 @@ int main(int argc, char **argv)
     requires: ctetgen
     args: -dm_plex_dim 3 -dm_plex_shape ball -bd_dm_refine 2 -dm_plex_check_all -dm_view
 
+  test:
+    suffix: schwarz_p_extrude
+    args: -dm_plex_shape schwarz_p -dm_plex_tps_extent 1,1,1 -dm_plex_tps_layers 1 -dm_plex_tps_thickness .2 -dm_view
 TEST*/
