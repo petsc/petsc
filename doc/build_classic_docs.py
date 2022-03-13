@@ -36,11 +36,13 @@ def _mkdir_p(path):
 
 
 def _configure_minimal_petsc(petsc_dir, petsc_arch) -> None:
+    if 'PETSC_ARCH' in os.environ: del os.environ['PETSC_ARCH']
+    if 'MAKEFLAGS' in os.environ: del os.environ['MAKEFLAGS']
     configure = [
         './configure',
         '--with-mpi=0',
         '--with-blaslapack=0',
-        '--with-fortran=0',
+        '--with-fc=0',
         '--with-cxx=0',
         '--with-x=0',
         '--with-cmake=0',
@@ -52,11 +54,11 @@ def _configure_minimal_petsc(petsc_dir, petsc_arch) -> None:
         '--with-mkl_sparse=0',
         'PETSC_ARCH=' + petsc_arch,
     ]
-    print('============================================')
-    print('Performing a minimal PETSc (re-)configuration')
+    print('==================================================================')
+    print('Performing a minimal PETSc (re-)configuration needed to build docs')
     print('PETSC_DIR=%s' % petsc_dir)
     print('PETSC_ARCH=%s' % petsc_arch)
-    print('============================================')
+    print('==================================================================')
     subprocess.run(configure, cwd=petsc_dir, check=True)
     return petsc_arch
 
