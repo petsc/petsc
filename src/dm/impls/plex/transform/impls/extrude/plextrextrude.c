@@ -333,11 +333,11 @@ static PetscErrorCode DMPlexTransformSetUp_Extrude(DMPlexTransform tr)
       ex->cone[ct][coff+22*i+9]  = i;
       ex->cone[ct][coff+22*i+10] = DM_POLYTOPE_QUADRILATERAL;
       ex->cone[ct][coff+22*i+11] = 1;
-      ex->cone[ct][coff+22*i+12] = 1;
+      ex->cone[ct][coff+22*i+12] = 2;
       ex->cone[ct][coff+22*i+13] = i;
       ex->cone[ct][coff+22*i+14] = DM_POLYTOPE_QUADRILATERAL;
       ex->cone[ct][coff+22*i+15] = 1;
-      ex->cone[ct][coff+22*i+16] = 2;
+      ex->cone[ct][coff+22*i+16] = 1;
       ex->cone[ct][coff+22*i+17] = i;
       ex->cone[ct][coff+22*i+18] = DM_POLYTOPE_QUADRILATERAL;
       ex->cone[ct][coff+22*i+19] = 1;
