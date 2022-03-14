@@ -237,11 +237,18 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid,Mat jac)
       nsize: {{1 2}}
       args: -ksp_view_final_residual -ksp_type preonly -pc_type ml -mx 5 -my 5 -ksp_monitor -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}separate output} -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output}
 
-    test:
+    testset:
       requires: hpddm
-      suffix: matcycles_hpddm_mg
-      nsize: {{1 2}}
-      args: -ksp_view_final_residual -ksp_type hpddm -pc_type mg -pc_mg_levels 3 -pc_mg_galerkin -mx 5 -my 5 -ksp_monitor -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -pc_mg_type {{additive multiplicative full kaskade}separate output} -nrhs 7 -ksp_matsolve_batch_size {{4 7}separate output}
+      args: -ksp_view_final_residual -ksp_type hpddm -pc_type mg -pc_mg_levels 3 -pc_mg_galerkin -mx 5 -my 5 -ksp_monitor -mg_levels_ksp_type richardson -mg_levels_pc_type jacobi -nrhs 7
+      test:
+        suffix: matcycles_hpddm_mg
+        nsize: {{1 2}}
+        args: -pc_mg_type {{additive multiplicative full kaskade}separate output} -ksp_matsolve_batch_size {{4 7}separate output}
+      test:
+        suffix: hpddm_mg_mixed_precision
+        nsize: 2
+        output_file: output/ex26_matcycles_hpddm_mg_pc_mg_type-multiplicative_ksp_matsolve_batch_size-4.out
+        args: -ksp_matsolve_batch_size 4 -ksp_hpddm_precision {{single double}shared output}
 
     test:
       requires: hpddm

@@ -15,8 +15,8 @@ PetscLogEvent PC_HPDDM_Strc;
 PetscLogEvent PC_HPDDM_PtAP;
 PetscLogEvent PC_HPDDM_PtBP;
 PetscLogEvent PC_HPDDM_Next;
-PetscLogEvent PC_HPDDM_SetUp[PETSC_HPDDM_MAXLEVELS];
-PetscLogEvent PC_HPDDM_Solve[PETSC_HPDDM_MAXLEVELS];
+PetscLogEvent PC_HPDDM_SetUp[PETSC_PCHPDDM_MAXLEVELS];
+PetscLogEvent PC_HPDDM_Solve[PETSC_PCHPDDM_MAXLEVELS];
 
 const char *const PCHPDDMCoarseCorrectionTypes[] = { "DEFLATED", "ADDITIVE", "BALANCED", "PCHPDDMCoarseCorrectionType", "PC_HPDDM_COARSE_CORRECTION_", NULL };
 
@@ -28,7 +28,7 @@ static PetscErrorCode PCReset_HPDDM(PC pc)
 
   PetscFunctionBegin;
   if (data->levels) {
-    for (i = 0; i < PETSC_HPDDM_MAXLEVELS && data->levels[i]; ++i) {
+    for (i = 0; i < PETSC_PCHPDDM_MAXLEVELS && data->levels[i]; ++i) {
       ierr = KSPDestroy(&data->levels[i]->ksp);CHKERRQ(ierr);
       ierr = PCDestroy(&data->levels[i]->pc);CHKERRQ(ierr);
       ierr = PetscFree(data->levels[i]);CHKERRQ(ierr);
@@ -202,13 +202,13 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObjec
 
   PetscFunctionBegin;
   if (!data->levels) {
-    ierr = PetscCalloc1(PETSC_HPDDM_MAXLEVELS, &levels);CHKERRQ(ierr);
+    ierr = PetscCalloc1(PETSC_PCHPDDM_MAXLEVELS, &levels);CHKERRQ(ierr);
     data->levels = levels;
   }
   ierr = PetscOptionsHead(PetscOptionsObject, "PCHPDDM options");CHKERRQ(ierr);
   ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size);CHKERRMPI(ierr);
   previous = size;
-  while (i < PETSC_HPDDM_MAXLEVELS) {
+  while (i < PETSC_PCHPDDM_MAXLEVELS) {
     PetscInt p = 1;
 
     if (!data->levels[i - 1]) {
@@ -284,7 +284,7 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PetscOptionItems *PetscOptionsObjec
     }
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  while (i < PETSC_HPDDM_MAXLEVELS && data->levels[i]) {
+  while (i < PETSC_PCHPDDM_MAXLEVELS && data->levels[i]) {
     ierr = PetscFree(data->levels[i++]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1065,7 +1065,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
   } else if (data->levels[0]->ksp->pc && data->levels[0]->ksp->pc->setupcalled == 1 && data->levels[0]->ksp->pc->reusepreconditioner) {
     /* if the fine-level PCSHELL exists, its setup has succeeded, and one wants to reuse it, */
     /* then just propagate the appropriate flag to the coarser levels                        */
-    for (n = 0; n < PETSC_HPDDM_MAXLEVELS && data->levels[n]; ++n) {
+    for (n = 0; n < PETSC_PCHPDDM_MAXLEVELS && data->levels[n]; ++n) {
       /* the following KSP and PC may be NULL for some processes, hence the check            */
       if (data->levels[n]->ksp) {
         ierr = KSPSetReusePreconditioner(data->levels[n]->ksp, PETSC_TRUE);CHKERRQ(ierr);
@@ -1078,7 +1078,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
     PetscFunctionReturn(0);
   } else {
     /* reset coarser levels */
-    for (n = 1; n < PETSC_HPDDM_MAXLEVELS && data->levels[n]; ++n) {
+    for (n = 1; n < PETSC_PCHPDDM_MAXLEVELS && data->levels[n]; ++n) {
       if (data->levels[n]->ksp && data->levels[n]->ksp->pc && data->levels[n]->ksp->pc->setupcalled == 1 && data->levels[n]->ksp->pc->reusepreconditioner && n < data->N) {
         reused = data->N - n;
         break;
@@ -1498,7 +1498,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       }
     }
     if (reused) {
-      for (n = reused; n < PETSC_HPDDM_MAXLEVELS && data->levels[n]; ++n) {
+      for (n = reused; n < PETSC_PCHPDDM_MAXLEVELS && data->levels[n]; ++n) {
         ierr = KSPDestroy(&data->levels[n]->ksp);CHKERRQ(ierr);
         ierr = PCDestroy(&data->levels[n]->pc);CHKERRQ(ierr);
       }
@@ -1768,8 +1768,8 @@ PetscErrorCode PCHPDDMInitializePackage(void)
   ierr = PetscLogEventRegister("PCHPDDMPtBP", PC_CLASSID, &PC_HPDDM_PtBP);CHKERRQ(ierr);
   /* next level construction using PtAP and PtBP (not triggered in libpetsc)                */
   ierr = PetscLogEventRegister("PCHPDDMNext", PC_CLASSID, &PC_HPDDM_Next);CHKERRQ(ierr);
-  static_assert(PETSC_HPDDM_MAXLEVELS <= 9, "PETSC_HPDDM_MAXLEVELS value is too high");
-  for (i = 1; i < PETSC_HPDDM_MAXLEVELS; ++i) {
+  static_assert(PETSC_PCHPDDM_MAXLEVELS <= 9, "PETSC_PCHPDDM_MAXLEVELS value is too high");
+  for (i = 1; i < PETSC_PCHPDDM_MAXLEVELS; ++i) {
     ierr = PetscSNPrintf(ename, sizeof(ename), "PCHPDDMSetUp L%1d", i);CHKERRQ(ierr);
     /* events during a PCSetUp() at level #i _except_ the assembly */
     /* of the Galerkin operator of the coarser level #(i + 1)      */
