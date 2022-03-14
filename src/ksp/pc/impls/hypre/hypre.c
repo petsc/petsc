@@ -1431,9 +1431,10 @@ static PetscErrorCode PCHYPRESetDiscreteGradient_HYPRE(PC pc, Mat G)
 
    Notes:
     G should have as many rows as the number of edges and as many columns as the number of vertices in the mesh
-          Each row of G has 2 nonzeros, with column indexes being the global indexes of edge's endpoints: matrix entries are +1 and -1 depending on edge orientation
 
-.seealso:
+    Each row of G has 2 nonzeros, with column indexes being the global indexes of edge's endpoints: matrix entries are +1 and -1 depending on edge orientation
+
+.seealso: PCHYPRESetDiscreteCurl()
 @*/
 PetscErrorCode PCHYPRESetDiscreteGradient(PC pc, Mat G)
 {
@@ -1479,9 +1480,10 @@ static PetscErrorCode PCHYPRESetDiscreteCurl_HYPRE(PC pc, Mat C)
 
    Notes:
     C should have as many rows as the number of faces and as many columns as the number of edges in the mesh
-          Each row of G has as many nonzeros as the number of edges of a face, with column indexes being the global indexes of the corresponding edge: matrix entries are +1 and -1 depending on edge orientation with respect to the face orientation
 
-.seealso:
+    Each row of G has as many nonzeros as the number of edges of a face, with column indexes being the global indexes of the corresponding edge: matrix entries are +1 and -1 depending on edge orientation with respect to the face orientation
+
+.seealso: PCHYPRESetDiscreteGradient()
 @*/
 PetscErrorCode PCHYPRESetDiscreteCurl(PC pc, Mat C)
 {
@@ -1574,10 +1576,11 @@ static PetscErrorCode PCHYPRESetInterpolations_HYPRE(PC pc, PetscInt dim, Mat RT
 
    Notes:
     For AMS, only Nedelec interpolation matrices are needed, the Raviart-Thomas interpolation matrices can be set to NULL.
-          For ADS, both type of interpolation matrices are needed.
+
+    For ADS, both type of interpolation matrices are needed.
+
    Level: intermediate
 
-.seealso:
 @*/
 PetscErrorCode PCHYPRESetInterpolations(PC pc, PetscInt dim, Mat RT_PiFull, Mat RT_Pi[], Mat ND_PiFull, Mat ND_Pi[])
 {
@@ -1669,7 +1672,7 @@ static PetscErrorCode PCHYPRESetPoissonMatrix_HYPRE(PC pc, Mat A, PetscBool isal
    Notes:
     A should be obtained by discretizing the vector valued Poisson problem with linear finite elements
 
-.seealso:
+.seealso: PCHYPRESetDiscreteGradient(), PCHYPRESetDiscreteCurl(), PCHYPRESetBetaPoissonMatrix()
 @*/
 PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PC pc, Mat A)
 {
@@ -1698,7 +1701,7 @@ PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PC pc, Mat A)
     A should be obtained by discretizing the Poisson problem with linear finite elements.
           Following HYPRE convention, the scalar Poisson solver of AMS can be turned off by passing NULL.
 
-.seealso:
+.seealso: PCHYPRESetDiscreteGradient(), PCHYPRESetDiscreteCurl(), PCHYPRESetAlphaPoissonMatrix()
 @*/
 PetscErrorCode PCHYPRESetBetaPoissonMatrix(PC pc, Mat A)
 {
@@ -1738,7 +1741,7 @@ static PetscErrorCode PCHYPRESetEdgeConstantVectors_HYPRE(PC pc,Vec ozz, Vec zoz
 }
 
 /*@
- PCHYPRESetEdgeConstantVectors - Set the representation of the constant vector fields in edge element basis
+ PCHYPRESetEdgeConstantVectors - Set the representation of the constant vector fields in the edge element basis
 
    Collective on PC
 
@@ -1750,9 +1753,6 @@ static PetscErrorCode PCHYPRESetEdgeConstantVectors_HYPRE(PC pc,Vec ozz, Vec zoz
 
    Level: intermediate
 
-   Notes:
-
-.seealso:
 @*/
 PetscErrorCode PCHYPRESetEdgeConstantVectors(PC pc, Vec ozz, Vec zoz, Vec zzo)
 {

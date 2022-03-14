@@ -124,7 +124,7 @@ extern PetscErrorCode PCGetDefaultType_Private(PC,const char*[]);
 .  pc - the preconditioner context
 
    Options Database:
-.   -pc_use_amat true,false see PCSetUseAmat()
+.   -pc_use_amat true,false - see PCSetUseAmat()
 
    Level: developer
 

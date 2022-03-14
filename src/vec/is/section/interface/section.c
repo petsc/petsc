@@ -191,7 +191,7 @@ PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
 . section - the PetscSection
 
   Options Database:
-. -petscsection_point_major the dof order
+. -petscsection_point_major - PETSC_TRUE for point-major order
 
   Level: intermediate
 

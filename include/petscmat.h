@@ -1799,9 +1799,6 @@ PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use the MatConvert() interface (since ve
 
    Level: advanced
 
-  Users manual sections:
-.   sec_singular
-
 .seealso:  MatNullSpaceCreate()
 S*/
 typedef struct _p_MatNullSpace* MatNullSpace;

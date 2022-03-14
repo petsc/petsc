@@ -94,7 +94,7 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm,const char refresh_token[],
 -   filename - file to upload; if you upload multiple times it will have different names each time on Google Drive
 
   Options Database:
-.  -google_refresh_token   XXX
+.  -google_refresh_token XXX - pass the access token for the operation
 
   Usage Patterns:
     With PETSc option -google_refresh_token  XXX given

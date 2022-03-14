@@ -1091,11 +1091,11 @@ PetscErrorCode PCSetFromOptions_ML(PetscOptionItems *PetscOptionsObject,PC pc)
 .  -pc_ml_SpectralNormScheme_Anorm <false> - Method used for estimating spectral radius (ML_Set_SpectralNormScheme_Anorm)
 .  -pc_ml_repartition <false> - Allow ML to repartition levels of the hierarchy (ML_Repartition_Activate)
 .  -pc_ml_repartitionMaxMinRatio <1.3> - Acceptable ratio of repartitioned sizes (ML_Repartition_Set_LargestMinMaxRatio)
-.  -pc_ml_repartitionMinPerProc <512>: Smallest repartitioned size (ML_Repartition_Set_MinPerProc)
+.  -pc_ml_repartitionMinPerProc <512> - Smallest repartitioned size (ML_Repartition_Set_MinPerProc)
 .  -pc_ml_repartitionPutOnSingleProc <5000> - Problem size automatically repartitioned to one processor (ML_Repartition_Set_PutOnSingleProc)
 .  -pc_ml_repartitionType <Zoltan> - Repartitioning library to use (ML_Repartition_Set_Partitioner)
 .  -pc_ml_repartitionZoltanScheme <RCB> - Repartitioning scheme to use (None)
-.  -pc_ml_Aux <false> - Aggregate using auxiliary coordinate-based laplacian (None)
+.  -pc_ml_Aux <false> - Aggregate using auxiliary coordinate-based Laplacian (None)
 -  -pc_ml_AuxThreshold <0.0> - Auxiliary smoother drop tol (None)
 
    Level: intermediate

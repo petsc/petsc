@@ -947,6 +947,7 @@ PetscErrorCode  MatViewFromOptions(Mat A,PetscObject obj,const char name[])
 .  -viewer_socket_port <port> -
 .  -mat_view binary - save matrix to file in binary format
 -  -viewer_binary_filename <name> -
+
    Level: beginner
 
    Notes:
@@ -963,9 +964,11 @@ PetscErrorCode  MatViewFromOptions(Mat A,PetscObject obj,const char name[])
 
       One can use '-mat_view draw -draw_pause -1' to pause the graphical display of matrix nonzero structure,
       and then use the following mouse functions.
-+ left mouse: zoom in
-. middle mouse: zoom out
-- right mouse: continue with the simulation
+.vb
+  left mouse: zoom in
+  middle mouse: zoom out
+  right mouse: continue with the simulation
+.ve
 
 .seealso: PetscViewerPushFormat(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(),
           PetscViewerSocketOpen(), PetscViewerBinaryOpen(), MatLoad()
@@ -8883,7 +8886,7 @@ PetscErrorCode MatICCFactor(Mat mat,IS row,const MatFactorInfo *info)
 
    Input Parameters:
 +  mat - the matrix
--  diag = the diagonal values, including ghost ones
+-  diag - the diagonal values, including ghost ones
 
    Level: developer
 
@@ -10729,7 +10732,7 @@ PetscErrorCode MatSubdomainsCreateCoalesce(Mat A,PetscInt N,PetscInt *n,IS *iss[
 .  A - the Galerkin coarse matrix
 
    Options Database Key:
-.  -pc_mg_galerkin <both,pmat,mat,none>
+.  -pc_mg_galerkin <both,pmat,mat,none> - for what matrices the Galerkin process should be used
 
    Level: developer
 

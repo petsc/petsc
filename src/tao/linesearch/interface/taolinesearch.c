@@ -111,8 +111,8 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
 . newls - the new TaoLineSearch context
 
   Available methods include:
-+ more-thuente
-. gpcg
++ more-thuente - the More-Thuente method
+. gpcg - the GPCG method
 - unit - Do not perform any line search
 
    Options Database Keys:

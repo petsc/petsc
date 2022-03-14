@@ -2462,7 +2462,7 @@ PetscErrorCode MatMumpsGetIcntl_MUMPS(Mat F,PetscInt icntl,PetscInt *ival)
 -  ival - value of MUMPS ICNTL(icntl)
 
   Options Database:
-.   -mat_mumps_icntl_<icntl> <ival>
+.   -mat_mumps_icntl_<icntl> <ival> - change the option numbered icntl to ival
 
    Level: beginner
 
@@ -2470,7 +2470,7 @@ PetscErrorCode MatMumpsGetIcntl_MUMPS(Mat F,PetscInt icntl,PetscInt *ival)
 .  * - MUMPS Users' Guide
 
 .seealso: MatGetFactor(), MatMumpsGetIcntl(), MatMumpsSetCntl(), MatMumpsGetCntl(), MatMumpsGetInfo(), MatMumpsGetInfog(), MatMumpsGetRinfo(), MatMumpsGetRinfog()
- @*/
+@*/
 PetscErrorCode MatMumpsSetIcntl(Mat F,PetscInt icntl,PetscInt ival)
 {
   PetscErrorCode ierr;
@@ -2546,7 +2546,7 @@ PetscErrorCode MatMumpsGetCntl_MUMPS(Mat F,PetscInt icntl,PetscReal *val)
 -  val - value of MUMPS CNTL(icntl)
 
   Options Database:
-.   -mat_mumps_cntl_<icntl> <val>
+.   -mat_mumps_cntl_<icntl> <val>  - change the option numbered icntl to ival
 
    Level: beginner
 

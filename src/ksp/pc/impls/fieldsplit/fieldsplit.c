@@ -1977,7 +1977,7 @@ PetscErrorCode  PCFieldSplitSetFields(PC pc,const char splitname[],PetscInt n,co
 -   flg - boolean flag indicating whether or not to use Amat to extract the diagonal blocks from
 
     Options Database:
-.     -pc_fieldsplit_diag_use_amat
+.   -pc_fieldsplit_diag_use_amat - use the Amat to provide the diagonal blocks
 
     Level: intermediate
 
@@ -2039,7 +2039,7 @@ PetscErrorCode  PCFieldSplitGetDiagUseAmat(PC pc,PetscBool *flg)
 -   flg - boolean flag indicating whether or not to use Amat to extract the off-diagonal blocks from
 
     Options Database:
-.     -pc_fieldsplit_off_diag_use_amat
+.     -pc_fieldsplit_off_diag_use_amat <bool> - use the Amat to extract the off-diagonal blocks
 
     Level: intermediate
 
@@ -2506,23 +2506,26 @@ static PetscErrorCode  PCFieldSplitGetSchurPre_FieldSplit(PC pc,PCFieldSplitSchu
 -   ftype - which blocks of factorization to retain, PC_FIELDSPLIT_SCHUR_FACT_FULL is default
 
     Options Database:
-.     -pc_fieldsplit_schur_fact_type <diag,lower,upper,full> default is full
+.     -pc_fieldsplit_schur_fact_type <diag,lower,upper,full> - default is full
 
     Level: intermediate
 
     Notes:
     The FULL factorization is
 
-$   (A   B)  = (1       0) (A   0) (1  Ainv*B)  = L D U
-$   (C   E)    (C*Ainv  1) (0   S) (0     1)
-
+.vb
+   (A   B)  = (1       0) (A   0) (1  Ainv*B)  = L D U
+   (C   E)    (C*Ainv  1) (0   S) (0     1)
+.vb
     where S = E - C*Ainv*B. In practice, the full factorization is applied via block triangular solves with the grouping L*(D*U). UPPER uses D*U, LOWER uses L*D,
     and DIAG is the diagonal part with the sign of S flipped (because this makes the preconditioner positive definite for many formulations, thus allowing the use of KSPMINRES). Sign flipping of S can be turned off with PCFieldSplitSetSchurScale().
 
-$    If A and S are solved exactly
-$      *) FULL factorization is a direct solver.
-$      *) The preconditioned operator with LOWER or UPPER has all eigenvalues equal to 1 and minimal polynomial of degree 2, so KSPGMRES converges in 2 iterations.
-$      *) With DIAG, the preconditioned operator has three distinct nonzero eigenvalues and minimal polynomial of degree at most 4, so KSPGMRES converges in at most 4 iterations.
+    If A and S are solved exactly
+.vb
+      *) FULL factorization is a direct solver.
+      *) The preconditioned operator with LOWER or UPPER has all eigenvalues equal to 1 and minimal polynomial of degree 2, so KSPGMRES converges in 2 iterations.
+      *) With DIAG, the preconditioned operator has three distinct nonzero eigenvalues and minimal polynomial of degree at most 4, so KSPGMRES converges in at most 4 iterations.
+.ve
 
     If the iteration count is very low, consider using KSPFGMRES or KSPGCR which can use one less preconditioner
     application in this case. Note that the preconditioned operator may be highly non-normal, so such fast convergence may not be observed in practice.
@@ -2954,7 +2957,7 @@ PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
 -  flg  - boolean indicating whether to use field splits defined by the DM
 
    Options Database Key:
-.  -pc_fieldsplit_dm_splits
+.  -pc_fieldsplit_dm_splits <bool> use the field splits defined by the DM
 
    Level: Intermediate
 
@@ -3039,9 +3042,6 @@ PetscErrorCode PCFieldSplitGetDetectSaddlePoint(PC pc,PetscBool *flg)
 
    Logically Collective
 
-   Notes:
-   Also sets the split type to PC_COMPOSITE_SCHUR (see PCFieldSplitSetType()) and the Schur preconditioner type to PC_FIELDSPLIT_SCHUR_PRE_SELF (see PCFieldSplitSetSchurPre()).
-
    Input Parameter:
 .  pc   - the preconditioner context
 
@@ -3049,7 +3049,10 @@ PetscErrorCode PCFieldSplitGetDetectSaddlePoint(PC pc,PetscBool *flg)
 .  flg  - boolean indicating whether to detect fields or not
 
    Options Database Key:
-.  -pc_fieldsplit_detect_saddle_point
+.  -pc_fieldsplit_detect_saddle_point <bool> - detect and use the saddle point
+
+   Notes:
+   Also sets the split type to PC_COMPOSITE_SCHUR (see PCFieldSplitSetType()) and the Schur preconditioner type to PC_FIELDSPLIT_SCHUR_PRE_SELF (see PCFieldSplitSetSchurPre()).
 
    Level: Intermediate
 

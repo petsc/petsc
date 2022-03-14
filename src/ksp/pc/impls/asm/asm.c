@@ -1790,7 +1790,7 @@ PetscErrorCode  PCASMGetLocalSubmatrices(PC pc,PetscInt *n,Mat *mat[])
 -   flg - boolean indicating whether to use subdomains defined by the DM
 
     Options Database Key:
-.   -pc_asm_dm_subdomains
+.   -pc_asm_dm_subdomains <bool> - use subdomains defined by the DM
 
     Level: intermediate
 

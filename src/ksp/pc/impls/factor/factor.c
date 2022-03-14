@@ -354,7 +354,7 @@ PetscErrorCode  PCFactorSetLevels(PC pc,PetscInt levels)
 -  flg - PETSC_TRUE to turn on, PETSC_FALSE to turn off
 
    Options Database Key:
-.  -pc_factor_diagonal_fill
+.  -pc_factor_diagonal_fill <bool> allow the diagonal fill
 
    Notes:
    Does not apply with 0 fill.
@@ -385,9 +385,6 @@ PetscErrorCode  PCFactorSetAllowDiagonalFill(PC pc,PetscBool flg)
    Output Parameter:
 .   flg - PETSC_TRUE to turn on, PETSC_FALSE to turn off
 
-   Options Database Key:
-.  -pc_factor_diagonal_fill
-
    Notes:
    Does not apply with 0 fill.
 
@@ -415,7 +412,7 @@ PetscErrorCode  PCFactorGetAllowDiagonalFill(PC pc,PetscBool *flg)
 -  tol - diagonal entries smaller than this in absolute value are considered zero
 
    Options Database Key:
-.  -pc_factor_nonzeros_along_diagonal <tol>
+.  -pc_factor_nonzeros_along_diagonal <tol> - perform the reordering with the given tolerance
 
    Level: intermediate
 
@@ -640,7 +637,7 @@ PetscErrorCode  PCFactorSetMatOrderingType(PC pc,MatOrderingType ordering)
 -   dtcol - 0.0 implies no pivoting, 1.0 complete pivoting (slower, requires more memory but more stable)
 
     Options Database Key:
-.   -pc_factor_pivoting <dtcol>
+.   -pc_factor_pivoting <dtcol> - perform the pivoting with the given tolerance
 
     Level: intermediate
 

@@ -10,7 +10,7 @@
 -  pyname - full dotted Python name [package].module[.{class|function}]
 
    Options Database Key:
-.  -pc_python_type <pyname>
+.  -pc_python_type <pyname> - use the listed Python name of the type
 
    Level: intermediate
 

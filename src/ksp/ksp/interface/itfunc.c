@@ -143,7 +143,7 @@ PetscErrorCode  KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal r[],PetscReal
 
    Input Parameters:
 +  ksp   - iterative context obtained from KSPCreate()
-.  ritz  - PETSC_TRUE or PETSC_FALSE for ritz pairs or harmonic Ritz pairs, respectively
+.  ritz  - PETSC_TRUE or PETSC_FALSE for Ritz pairs or harmonic Ritz pairs, respectively
 -  small - PETSC_TRUE or PETSC_FALSE for smallest or largest (harmonic) Ritz values, respectively
 
    Output Parameters:

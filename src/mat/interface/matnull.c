@@ -231,11 +231,8 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
    Notes:
     See MatNullSpaceSetFunction() as an alternative way of providing the null space information instead of setting vecs.
 
-      If has_cnst is PETSC_TRUE you do not need to pass a constant vector in as a fourth argument to this routine, nor do you
-       need to pass in a function that eliminates the constant function into MatNullSpaceSetFunction().
-
-  Users manual sections:
-.   sec_singular
+    If has_cnst is PETSC_TRUE you do not need to pass a constant vector in as a fourth argument to this routine, nor do you
+    need to pass in a function that eliminates the constant function into MatNullSpaceSetFunction().
 
 .seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), MatSetNullSpace(), MatNullSpace, MatNullSpaceSetFunction()
 @*/

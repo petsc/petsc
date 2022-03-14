@@ -293,7 +293,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
 . -tao_cmonitor - prints function value, residual, and constraint norm at each iteration
 . -tao_view_solution - prints solution vector at each iteration
 . -tao_view_ls_residual - prints least-squares residual vector at each iteration
-. -tao_view_step - prints step direction vector at each iteration
+. -tao_view_stepdirection - prints step direction vector at each iteration
 . -tao_view_gradient - prints gradient vector at each iteration
 . -tao_draw_solution - graphically view solution vector at each iteration
 . -tao_draw_step - graphically view step vector at each iteration
@@ -696,7 +696,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
 - recycle - boolean flag
 
   Options Database Keys:
-. -tao_recycle_history
+. -tao_recycle_history <true,false> - reuse the history
 
   Level: intermediate
 
@@ -719,13 +719,10 @@ PetscErrorCode TaoSetRecycleHistory(Tao tao, PetscBool recycle)
   Logically collective on Tao
 
   Input Parameters:
-, tao - the Tao context
+. tao - the Tao context
 
   Output Parameters:
-, recycle - boolean flag
-
-  Options Database Keys:
-. -tao_recycle_history
+. recycle - boolean flag
 
   Level: intermediate
 
@@ -1423,7 +1420,9 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void*)
           monitor routine (may be NULL)
 
    Calling sequence of mymonitor:
-$     PetscErrorCode mymonitor(Tao tao,void *mctx)
+.vb
+     PetscErrorCode mymonitor(Tao tao,void *mctx)
+.ve
 
 +    tao - the Tao solver context
 -    mctx - [optional] monitoring context
@@ -1519,7 +1518,7 @@ PetscErrorCode TaoCancelMonitors(Tao tao)
 -  ctx - PetscViewer context or NULL
 
    Options Database Keys:
-.  -tao_monitor
+.  -tao_monitor - turn on default monitoring
 
    Level: advanced
 
@@ -1571,7 +1570,7 @@ PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
 -  ctx - PetscViewer context or NULL
 
    Options Database Keys:
-.  -tao_monitor
+.  -tao_gmonitor - turn on monitoring with globalization information
 
    Level: advanced
 
@@ -1626,7 +1625,7 @@ PetscErrorCode TaoDefaultGMonitor(Tao tao, void *ctx)
 -  ctx - PetscViewer context of type ASCII
 
    Options Database Keys:
-.  -tao_smonitor
+.  -tao_smonitor - turn on default short monitoring
 
    Level: advanced
 
@@ -1674,7 +1673,7 @@ PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
 -  ctx - PetscViewer context or NULL
 
    Options Database Keys:
-.  -tao_cmonitor
+.  -tao_cmonitor - monitor the constraints
 
    Level: advanced
 
@@ -1715,7 +1714,7 @@ PetscErrorCode TaoDefaultCMonitor(Tao tao, void *ctx)
 -  ctx - PetscViewer context or NULL
 
    Options Database Keys:
-.  -tao_view_solution
+.  -tao_view_solution - view the solution
 
    Level: advanced
 
@@ -1745,7 +1744,7 @@ PetscErrorCode TaoSolutionMonitor(Tao tao, void *ctx)
 -  ctx - PetscViewer context or NULL
 
    Options Database Keys:
-.  -tao_view_gradient
+.  -tao_view_gradient - view the gradient at each iteration
 
    Level: advanced
 
@@ -1764,9 +1763,7 @@ PetscErrorCode TaoGradientMonitor(Tao tao, void *ctx)
 }
 
 /*@C
-   TaoStepDirectionMonitor - Views the gradient at each iteration
-   It can be turned on from the command line using the
-   -tao_view_gradient option
+   TaoStepDirectionMonitor - Views the step-direction at each iteration
 
    Collective on Tao
 
@@ -1775,7 +1772,7 @@ PetscErrorCode TaoGradientMonitor(Tao tao, void *ctx)
 -  ctx - PetscViewer context or NULL
 
    Options Database Keys:
-.  -tao_view_gradient
+.  -tao_view_gradient - view the gradient at each iteration
 
    Level: advanced
 
@@ -1805,7 +1802,7 @@ PetscErrorCode TaoStepDirectionMonitor(Tao tao, void *ctx)
 -  ctx - TaoMonitorDraw context
 
    Options Database Keys:
-.  -tao_draw_solution
+.  -tao_draw_solution - draw the solution at each iteration
 
    Level: advanced
 
@@ -1835,7 +1832,7 @@ PetscErrorCode TaoDrawSolutionMonitor(Tao tao, void *ctx)
 -  ctx - PetscViewer context
 
    Options Database Keys:
-.  -tao_draw_gradient
+.  -tao_draw_gradient - draw the gradient at each iteration
 
    Level: advanced
 
@@ -1855,8 +1852,6 @@ PetscErrorCode TaoDrawGradientMonitor(Tao tao, void *ctx)
 
 /*@C
    TaoDrawStepMonitor - Plots the step direction at each iteration
-   It can be turned on from the command line using the
-   -tao_draw_step option
 
    Collective on Tao
 
@@ -1865,7 +1860,7 @@ PetscErrorCode TaoDrawGradientMonitor(Tao tao, void *ctx)
 -  ctx - PetscViewer context
 
    Options Database Keys:
-.  -tao_draw_step
+.  -tao_draw_step - draw the step direction at each iteration
 
    Level: advanced
 
@@ -1885,8 +1880,6 @@ PetscErrorCode TaoDrawStepMonitor(Tao tao, void *ctx)
 
 /*@C
    TaoResidualMonitor - Views the least-squares residual at each iteration
-   It can be turned on from the command line using the
-   -tao_view_ls_residual option
 
    Collective on Tao
 
@@ -1895,7 +1888,7 @@ PetscErrorCode TaoDrawStepMonitor(Tao tao, void *ctx)
 -  ctx - PetscViewer context or NULL
 
    Options Database Keys:
-.  -tao_view_ls_residual
+.  -tao_view_ls_residual - view the least-squares residual at each iteration
 
    Level: advanced
 

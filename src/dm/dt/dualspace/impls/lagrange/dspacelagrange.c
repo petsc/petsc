@@ -2978,7 +2978,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace sp, PetscBool 
 - continuous - flag for element continuity
 
   Options Database:
-. -petscdualspace_lagrange_continuity <bool>
+. -petscdualspace_lagrange_continuity <bool> - use a continuous element
 
   Level: intermediate
 

@@ -1355,7 +1355,7 @@ PetscErrorCode TaoADMMGetDualVector(Tao tao, Vec *Y)
 - type - regularizer type
 
   Options Database:
-.  -tao_admm_regularizer_type <admm_regularizer_user,admm_regularizer_soft_thresh>
+.  -tao_admm_regularizer_type <admm_regularizer_user,admm_regularizer_soft_thresh> - select the regularizer
 
   Level: intermediate
 
@@ -1382,9 +1382,6 @@ PetscErrorCode TaoADMMSetRegularizerType(Tao tao, TaoADMMRegularizerType type)
 
    Output Parameter:
 .  type - the type of regularizer
-
-  Options Database:
-.  -tao_admm_regularizer_type <admm_regularizer_user,admm_regularizer_soft_thresh>
 
    Level: intermediate
 

@@ -27,15 +27,18 @@
        PetscLayoutSetUp(PetscLayout);
 .ve
   Alternatively,
-$      PetscLayoutCreateFromSizes(comm,n,N,bs,&layout);
+.vb
+      PetscLayoutCreateFromSizes(comm,n,N,bs,&layout);
+.ve
 
-  Optionally use any of the following:
-
-+ PetscLayoutGetSize(PetscLayout,PetscInt *);
-. PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
-. PetscLayoutGetRange(PetscLayout,PetscInt *rstart,PetscInt *rend);
-. PetscLayoutGetRanges(PetscLayout,const PetscInt *range[]);
-- PetscLayoutDestroy(PetscLayout*);
+  Optionally use any of the following
+.vb
+  PetscLayoutGetSize(PetscLayout,PetscInt *);
+  PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
+  PetscLayoutGetRange(PetscLayout,PetscInt *rstart,PetscInt *rend);
+  PetscLayoutGetRanges(PetscLayout,const PetscInt *range[]);
+  PetscLayoutDestroy(PetscLayout*);
+.ve
 
   The PetscLayout object and methods are intended to be used in the PETSc Vec and Mat implementions; it is often not needed in
   user codes unless you really gain something in their use.
