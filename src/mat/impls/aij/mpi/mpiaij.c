@@ -5930,42 +5930,6 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscInt **
   PetscFunctionReturn(0);
 }
 
-/*@C
-  MatGetCommunicationStructs - Provides access to the communication structures used in matrix-vector multiplication.
-
-  Not Collective
-
-  Input Parameter:
-. A - The matrix in mpiaij format
-
-  Output Parameters:
-+ lvec - The local vector holding off-process values from the argument to a matrix-vector product
-. colmap - A map from global column index to local index into lvec
-- multScatter - A scatter from the argument of a matrix-vector product to lvec
-
-  Level: developer
-
-@*/
-#if defined(PETSC_USE_CTABLE)
-PetscErrorCode MatGetCommunicationStructs(Mat A, Vec *lvec, PetscTable *colmap, VecScatter *multScatter)
-#else
-PetscErrorCode MatGetCommunicationStructs(Mat A, Vec *lvec, PetscInt *colmap[], VecScatter *multScatter)
-#endif
-{
-  Mat_MPIAIJ *a;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscValidPointer(lvec, 2);
-  PetscValidPointer(colmap, 3);
-  PetscValidPointer(multScatter, 4);
-  a = (Mat_MPIAIJ*) A->data;
-  if (lvec) *lvec = a->lvec;
-  if (colmap) *colmap = a->colmap;
-  if (multScatter) *multScatter = a->Mvctx;
-  PetscFunctionReturn(0);
-}
-
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJPERM(Mat,MatType,MatReuse,Mat*);
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJSELL(Mat,MatType,MatReuse,Mat*);
