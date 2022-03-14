@@ -104,7 +104,7 @@ if [ ${version}foo = foo ]; then
 fi
 echo "Building ~/petsc$version.tar.gz and ~/petsc-with-docs$version.tar.gz"
 
-# build docs (and fortranstubs)
+# build docs
 VENV=$PETSC_DIR/arch-classic-docs/venv-petsc-docs
 python3 -m venv $VENV
 source $VENV/bin/activate
@@ -118,10 +118,10 @@ make clean
 rm -rf images
 
 
-# petsc4py docs and tarball
+# petsc4py docs (and fortranstubs - hence --download-sowing below) and tarball
 cd $PETSC_DIR
 export PETSC_ARCH=arch-pydoc
-python2 ./config/configure.py --with-mpi=0 --with-cxx=0 --with-fc=0
+python2 ./config/configure.py --with-mpi=0 --with-cxx=0 --download-sowing=1
 make all
 cd $PETSC_DIR/src/binding/petsc4py
   make sdist PYTHON=python2 PYTHON2=python2 SHELL=/bin/bash
