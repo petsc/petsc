@@ -211,7 +211,7 @@ PetscErrorCode PetscDeviceConfigure(PetscDevice device)
 
   Collective on viewer, Asynchronous
 
-  Input Parameter:
+  Input Parameters:
 + device - The PetscDevice to view
 - viewer - The PetscViewer to view the device with (NULL for PETSC_VIEWER_STDOUT_WORLD)
 

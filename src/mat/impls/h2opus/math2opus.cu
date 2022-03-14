@@ -375,7 +375,7 @@ static PetscErrorCode MatMultNKernel_H2OPUS(Mat A, PetscBool transA, Mat B, Mat 
       PetscCheckFalse(!h2opus->dist_hmatrix,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing distributed CPU matrix");
       PetscCheckFalse(transA && !A->symmetric,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"MatMultTranspose not yet coded in parallel");
 #if defined(H2OPUS_USE_MPI)
-      distributed_hgemv(/*transA ? H2Opus_Trans : H2Opus_NoTrans, */h2opus->s, *h2opus->dist_hmatrix, uxx, blda, 0.0, uyy, clda, B->cmap->N, h2opus->handle);
+      distributed_hgemv(/* transA ? H2Opus_Trans : H2Opus_NoTrans, */h2opus->s, *h2opus->dist_hmatrix, uxx, blda, 0.0, uyy, clda, B->cmap->N, h2opus->handle);
 #endif
     } else {
       PetscCheckFalse(!h2opus->hmatrix,PetscObjectComm((PetscObject)A),PETSC_ERR_PLIB,"Missing CPU matrix");
@@ -886,7 +886,7 @@ static PetscErrorCode MatAssemblyEnd_H2OPUS(Mat A, MatAssemblyType assemblytype)
   ierr = PetscLogEventBegin(MAT_H2Opus_Build,A,0,0,0);CHKERRQ(ierr);
   if (size > 1) {
 #if defined(H2OPUS_USE_MPI)
-    a->dist_hmatrix = new DistributedHMatrix(A->rmap->n/*,A->symmetric*/);
+    a->dist_hmatrix = new DistributedHMatrix(A->rmap->n/* ,A->symmetric */);
 #else
     a->dist_hmatrix = NULL;
 #endif
@@ -1373,7 +1373,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_H2OPUS(Mat A)
    Level: intermediate
 
 .seealso:  MatCreate(), MATH2OPUS, MatCreateH2OpusFromMat(), MatCreateH2OpusFromKernel(), MatH2OpusCompress()
-*/
+@*/
 PetscErrorCode MatH2OpusOrthogonalize(Mat A)
 {
   PetscErrorCode ierr;
@@ -1458,7 +1458,7 @@ PetscErrorCode MatH2OpusOrthogonalize(Mat A)
    Level: intermediate
 
 .seealso:  MatCreate(), MATH2OPUS, MatCreateH2OpusFromMat(), MatCreateH2OpusFromKernel(), MatH2OpusOrthogonalize()
-*/
+@*/
 PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
 {
   PetscErrorCode ierr;
@@ -1547,7 +1547,7 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
    Level: intermediate
 
 .seealso:  MatCreate(), MATH2OPUS, MatCreateH2OpusFromMat(), MatCreateH2OpusFromKernel(), MatH2OpusCompress(), MatH2OpusOrthogonalize()
-*/
+@*/
 PetscErrorCode MatH2OpusSetSamplingMat(Mat A, Mat B, PetscInt bs, PetscReal tol)
 {
   PetscBool      ish2opus;
@@ -1768,7 +1768,7 @@ PetscErrorCode MatH2OpusGetIndexMap(Mat A, IS *indexmap)
    Level: intermediate
 
 .seealso:  MatCreate(), MATH2OPUS, MatCreateH2OpusFromMat(), MatCreateH2OpusFromKernel()
-*/
+@*/
 PetscErrorCode MatH2OpusMapVec(Mat A, PetscBool nativetopetsc, Vec in, Vec* out)
 {
   PetscBool      ish2opus;
@@ -1822,7 +1822,7 @@ PetscErrorCode MatH2OpusMapVec(Mat A, PetscBool nativetopetsc, Vec in, Vec* out)
    Level: intermediate
 
 .seealso:  MatCreate(), MATH2OPUS, MatCreateH2OpusFromMat(), MatCreateH2OpusFromKernel(), MatH2OpusCompress(), MatH2OpusOrthogonalize(), MATDENSE
-*/
+@*/
 PetscErrorCode MatH2OpusLowRankUpdate(Mat A, Mat U, Mat V, PetscScalar s)
 {
   PetscErrorCode ierr;

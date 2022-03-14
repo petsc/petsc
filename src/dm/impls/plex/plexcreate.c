@@ -2813,9 +2813,9 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
 . extent - Array of length 3 containing number of periods in each direction
 . periodic - array of length 3 with periodicity, or NULL for non-periodic
 . tps_distribute - Distribute 2D manifold mesh prior to refinement and extrusion (more scalable)
-- refinements - Number of factor-of-2 refinements of 2D manifold mesh
+. refinements - Number of factor-of-2 refinements of 2D manifold mesh
 . layers - Number of cell layers extruded in normal direction
-. thickness - Thickness in normal direction
+- thickness - Thickness in normal direction
 
   Output Parameter:
 . dm  - The DM object

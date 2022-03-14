@@ -9,7 +9,7 @@ SOURCEH  =
 LIBBASE  = libpetsctao
 DIRS     =
 LOCDIR   = src/tao/python/
-MANSEC   = TAO
+MANSEC   = Tao
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
