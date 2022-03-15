@@ -64,6 +64,8 @@ Changes: Development
 - Change ``SETERRMPI()`` to be variadic
 - Change ``SETERRABORT()`` to be variadic
 - Add ``PetscCheck()`` and ``PetscAssert()`` for checking a boolean condition is true. The former is always enabled, while the latter is enabled only in debug builds.
+- ``PetscDevice`` initialization for CUDA and HIP will now respect ``CUDA_VISIBILE_DEVICES`` and ``HIP_VISIBLE_DEVICES`` environment variables respectively
+
 
 .. rubric:: PetscViewer:
 

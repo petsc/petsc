@@ -291,6 +291,17 @@ PETSC_CXX_COMPAT_DECL(PETSC_CONSTEXPR_14 const char* device_view_cupmtype())
 }
 
 template <DeviceType T>
+PETSC_CXX_COMPAT_DECL(PETSC_CONSTEXPR_14 const char* CUPM_VISIBLE_DEVICES())
+{
+  switch (T) {
+  case DeviceType::CUDA: return "CUDA_VISIBLE_DEVICES";
+  case DeviceType::HIP:  return "HIP_VISIBLE_DEVICES";
+  }
+  PetscUnreachable();
+  return "PETSC_ERROR_PLIB";
+}
+
+template <DeviceType T>
 PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, PetscDeviceInitType *defaultInitType) noexcept
 {
   PetscInt       initTypeCUPM = *defaultInitType,id = *defaultDeviceId;
@@ -314,18 +325,41 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
   }
 
   cerr = cupmGetDeviceCount(&ndev);
-  // post-process the options and lay the groundwork for initialization if needs be
-  if (PetscUnlikely((cerr == cupmErrorStubLibrary) || (cerr == cupmErrorNoDevice))) {
+  switch (cerr) {
+  case cupmErrorNoDevice: {
+    PetscBool found;
+    PetscBool ignoreCupmError = PETSC_FALSE;
+    auto      buf = std::array<char,PETSC_DEVICE_MAX_DEVICES>{};
+
+    ierr = PetscOptionsGetenv(comm,CUPM_VISIBLE_DEVICES<T>(),buf.data(),buf.size(),&found);CHKERRQ(ierr);
+    if (found) {
+      for (auto it = buf.cbegin(); it != buf.cend(); ++it) {
+        if (!*it) continue;
+        // find out the first non-empty characters in buf are '-<some number>', which indicates
+        // no devices should be visible so we can ignore the errors about not finding devices
+        ignoreCupmError = static_cast<PetscBool>((*it == '-') && (std::next(it) != buf.cend()) && isdigit(*std::next(it)));
+        break;
+      }
+    }
+    id = PETSC_CUPM_DEVICE_NONE; // there are no devices anyway
+    if (ignoreCupmError) {auto PETSC_UNUSED ignored = cupmGetLastError(); break;}
+    // if we don't outright ignore the error we then drop and check if the user tried to
+    // eagerly initialize the device
+  }
+  case cupmErrorStubLibrary:
     if (PetscUnlikely((initTypeCUPM == PETSC_DEVICE_INIT_EAGER) || (view && flg))) {
       const auto name    = cupmGetErrorName(cerr);
       const auto desc    = cupmGetErrorString(cerr);
       const auto backend = cupmName();
       SETERRQ(comm,PETSC_ERR_USER_INPUT,"Cannot eagerly initialize %s, as doing so results in %s error %d (%s) : %s",backend,backend,static_cast<PetscErrorCode>(cerr),name,desc);
     }
-    id   = -cerr;
-    cerr = cupmGetLastError(); // reset error
     initTypeCUPM = PETSC_DEVICE_INIT_NONE;
-  } else CHKERRCUPM(cerr);
+    {auto PETSC_UNUSED ignored = cupmGetLastError();}
+    break;
+  default:
+    CHKERRCUPM(cerr);
+    break;
+  }
 
   if (initTypeCUPM == PETSC_DEVICE_INIT_NONE) {
     if ((id > 0) || (id == PETSC_DECIDE)) id = PETSC_CUPM_DEVICE_NONE;
