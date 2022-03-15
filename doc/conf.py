@@ -15,7 +15,6 @@ import datetime
 sys.path.append(os.getcwd())
 sys.path.append(os.path.abspath('./ext'))
 
-import add_version_header
 import build_classic_docs
 import make_links_relative
 
@@ -58,7 +57,7 @@ needs_sphinx='3.5'
 nitpicky = True  # checks internal links. For external links, use "make linkcheck"
 master_doc = 'index'
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'images', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build*', 'images', 'Thumbs.db', '.DS_Store']
 highlight_language = 'c'
 numfig = True
 
@@ -153,29 +152,21 @@ r'''
 
 # -- Setup and event callbacks -------------------------------------------------
 
-# Trigger a build of the "classic" docs
 def _build_classic_docs(app):
     build_classic_docs.main()
 
 
 def builder_init_handler(app):
     _build_classic_docs(app)
+    _copy_classic_docs(app, None, '.', 'pre')
 
 
-def _add_version_header(app, exception):
+def _copy_classic_docs(app, exception, destination, stage):
     if exception is None and app.builder.name.endswith('html'):
         print("============================================")
-        print("    Adding version to classic man pages, from conf.py")
+        print("    Copying classic docs from conf.py (%s)" % stage)
         print("============================================")
-        add_version_header.add_version_header(os.path.join(app.outdir, "docs", "manualpages"), release)
-
-
-def _copy_classic_docs(app, exception):
-    if exception is None and app.builder.name.endswith('html'):
-        print("============================================")
-        print("    Copying classic docs from conf.py       ")
-        print("============================================")
-        build_classic_docs.copy_classic_docs(app.outdir)
+        build_classic_docs.copy_classic_docs(destination, stage)
 
 
 def _fix_links(app, exception):
@@ -187,9 +178,8 @@ def _fix_links(app, exception):
 
 
 def build_finished_handler(app, exception):
-    _copy_classic_docs(app, exception)
+    _copy_classic_docs(app, exception, app.outdir, 'post')
     _fix_links(app, exception)
-    _add_version_header(app, exception)
     if app.builder.name == 'html':
         print("==========================================================================")
         print("    open %s/index.html in your browser to view the documentation " % app.outdir)

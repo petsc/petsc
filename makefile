@@ -340,44 +340,41 @@ allfortranstubs:
 deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf
 
+# Build just manual pages + prerequisites
+# Also builds citations
 hloc=include/petsc/private
-# Build just citations
-allcite: chk_loc deletemanualpages
+allmanpages: chk_loc deletemanualpages
 	-sed -e 's?<T>?I?g' -e 's?<t>?i?g' -e 's?<Type>?PetscInt?g' ${hloc}/hashset.txt > ${hloc}/generated_hashset.txt
 	-sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<Type>?struct {PetscInt i,j;}?g' ${hloc}/hashset.txt >> ${hloc}/generated_hashset.txt
-	-${OMAKE_SELF} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
-	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > ${LOC}/docs/manualpages/htmlmap
-	-@cat ${PETSC_DIR}/doc/classic/mpi.www.index >> ${LOC}/docs/manualpages/htmlmap
-
-# Build just manual pages + prerequisites
-allmanpages: chk_loc allcite
 	-${RM} ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
 	-${OMAKE_SELF} ACTION=manualpages tree_basic LOC=${LOC}
+	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > ${LOC}/docs/manualpages/htmlmap
+	-@cat ${PETSC_DIR}/doc/classic/mpi.www.index >> ${LOC}/docs/manualpages/htmlmap
 	cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
-	a=`cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err | wc -l`; test ! $$a -gt 0
+	-a=`cat ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err | wc -l`; test ! $$a -gt 0
 
 # Build just manual examples + prerequisites
 allmanexamples: chk_loc allmanpages
 	-${OMAKE_SELF} ACTION=manexamples tree_basic LOC=${LOC}
 
 # Build all classic docs except html sources
-alldoc1: chk_loc allcite allmanpages allmanexamples
+alldoc1: chk_loc allmanpages allmanexamples
 	-${OMAKE_SELF} manimplementations LOC=${LOC}
 	-${PYTHON} lib/petsc/bin/maint/wwwindex.py ${PETSC_DIR} ${LOC}
 
 # Builds .html versions of the source
 # html overwrites some stuff - hence this is done later.
-alldoc2: chk_loc allcite
+alldoc2: chk_loc allmanpages
 	-${OMAKE_SELF} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
 
 alldoc12: alldoc1 alldoc2
 
 alldocclean: deletemanualpages allcleanhtml
 
-# Deletes man pages (HTML version)
+# Deletes man pages (.md version)
 deletemanualpages: chk_loc
 	-@if [ -d ${LOC} -a -d ${LOC}/docs/manualpages ]; then \
-          find ${LOC}/docs/manualpages -type f -name "*.html" -exec ${RM} {} \; ;\
+          find ${LOC}/docs/manualpages -type f -name "*.md" -exec ${RM} {} \; ;\
           ${RM} ${LOC}/docs/manualpages/manualpages.cit ;\
         fi
 

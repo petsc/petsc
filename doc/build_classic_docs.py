@@ -85,15 +85,16 @@ def _build_classic_docs_subset(petsc_dir, petsc_arch):
         subprocess.run(command, cwd=petsc_dir, check=True)
 
 
-def classic_docs_subdirs():
-    return [
-            os.path.join('docs', 'manualpages'),
-            'include',
-            'src',
-            ]
+def classic_docs_subdirs(stage):
+    if stage == 'pre':
+        return [os.path.join('docs', 'manualpages')]
+    if stage == 'post':
+        return ['include', 'src']
+    raise Exception('Unrecognized stage %s' % stage)
 
-def copy_classic_docs(outdir):
-    for subdir in classic_docs_subdirs():
+
+def copy_classic_docs(outdir, stage):
+    for subdir in classic_docs_subdirs(stage):
         source_dir = os.path.join(CLASSIC_DOCS_LOC, subdir)
         target_dir = os.path.join(outdir, subdir)
         print('Copying directory %s to %s' % (source_dir, target_dir))

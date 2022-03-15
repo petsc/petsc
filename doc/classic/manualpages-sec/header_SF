@@ -1,9 +1,0 @@
-<HTML>
-<HEAD>
-<TITLE>Star Forest - SF</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
-
-<H2> Star Forest - SF:</H2>
-
-PetscSF uses the concept of star forests to indicate and determine the communication patterns concisely and efficiently.

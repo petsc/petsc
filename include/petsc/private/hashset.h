@@ -19,9 +19,9 @@
   Level: developer
 
   Developer Notes:
-    Each time this macro is used to create a new hash set type, the make rule for allcites should
+    Each time this macro is used to create a new hash set type, the make rule for allmanpages should
     be modified to cause the automatic generation of appropriate manual pages. The manual pages
-    are generated from the templated version of the documentation in include/petsc/private/hashset.def.
+    are generated from the templated version of the documentation in include/petsc/private/hashset.txt.
 
   References:
     This code uses the standalone and portable C language khash software https://github.com/attractivechaos/klib
