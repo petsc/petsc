@@ -1146,7 +1146,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISELL,
                                        NULL,
                                        MatFDColoringSetUp_MPIXAIJ,
                                        NULL,
-                                /*144*/NULL
+                                /*144*/NULL,
+                                       NULL,
+                                       NULL,
+                                       NULL
 };
 
 /* ----------------------------------------------------------------------------------------*/

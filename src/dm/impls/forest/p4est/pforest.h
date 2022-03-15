@@ -2977,9 +2977,8 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
 static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const PetscInt dofPerDim[], PetscSF *sf, PetscBool transferIdent, PetscInt *childIds[])
 {
   MPI_Comm          comm;
-  PetscMPIInt       rank, size;
+  PetscMPIInt       rank;
   DM_Forest_pforest *pforestC, *pforestF;
-  PetscInt          numClosureIndices;
   DM                plexC, plexF;
   PetscInt          pStartC, pEndC, pStartF, pEndF;
   PetscSF           pointTransferSF;
@@ -2992,16 +2991,7 @@ static PetscErrorCode DMPforestGetTransferSF_Internal(DM coarse, DM fine, const 
   PetscCheckFalse(pforestC->topo != pforestF->topo,PetscObjectComm((PetscObject)coarse),PETSC_ERR_ARG_INCOMP,"DM's must have the same base DM");
   comm = PetscObjectComm((PetscObject)coarse);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
 
-  /* count the number of closure points that have dofs and create a list */
-  numClosureIndices = 0;
-  if (dofPerDim[P4EST_DIM]     > 0) numClosureIndices += 1;
-  if (dofPerDim[P4EST_DIM - 1] > 0) numClosureIndices += P4EST_FACES;
-#if defined(P4_TO_P8)
-  if (dofPerDim[P4EST_DIM - 2] > 0) numClosureIndices += P8EST_EDGES;
-#endif
-  if (dofPerDim[0]             > 0) numClosureIndices += P4EST_CHILDREN;
   {
     PetscInt i;
     for (i = 0; i <= P4EST_DIM; i++) {

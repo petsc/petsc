@@ -53,7 +53,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   IS             cellIS;
   DM             plex;
   PetscInt       depth;
-  PetscFormKey key = {NULL, 0, 0};
+  PetscFormKey key = {NULL, 0, 0, 0};
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

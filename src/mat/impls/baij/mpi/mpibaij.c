@@ -2630,7 +2630,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        NULL,
                                        MatFDColoringSetUp_MPIXAIJ,
                                        NULL,
-                                /*144*/MatCreateMPIMatConcatenateSeqMat_MPIBAIJ
+                                /*144*/MatCreateMPIMatConcatenateSeqMat_MPIBAIJ,
+                                       NULL,
+                                       NULL,
+                                       NULL
 };
 
 PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat,MatType,MatReuse,Mat*);
