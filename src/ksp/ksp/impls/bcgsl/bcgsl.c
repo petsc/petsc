@@ -322,7 +322,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 
    Options Database Keys:
 
-.  -ksp_bcgsl_xres delta
+.  -ksp_bcgsl_xres delta - Threshold used to decide when to refresh computed residuals
 
    Level: intermediate
 
@@ -426,7 +426,7 @@ PetscErrorCode  KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
 
    Options Database Keys:
 
-.  -ksp_bcgsl_ell ell
+.  -ksp_bcgsl_ell ell - Number of Krylov search directions
 
    Level: intermediate
 

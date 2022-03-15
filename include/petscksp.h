@@ -194,8 +194,9 @@ PETSC_EXTERN PetscErrorCode KSPComputeRitz(KSP,PetscBool,PetscBool,PetscInt*,Vec
 
   KSPFCDTruncationType - Define how stored directions are used to orthogonalize in flexible conjugate directions (FCD) methods
 
-  KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
-  KSP_FCD_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
+  Values:
+$ KSP_FCD_TRUNC_TYPE_STANDARD - uses all (up to mmax) stored directions
+$ KSP_FCD_TRUNC_TYPE_NOTAY - uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1..
 
    Level: intermediate
 .seealso : KSPFCG,KSPPIPEFCG,KSPPIPEGCR,KSPFCGSetTruncationType(),KSPFCGGetTruncationType()
@@ -261,14 +262,14 @@ PETSC_DEPRECATED_FUNCTION("Use KSPMatSolve() (since version 3.14)") static inlin
     Level: intermediate
 
     Values:
-+   KSP_HPDDM_TYPE_GMRES (default)
-.   KSP_HPDDM_TYPE_BGMRES
-.   KSP_HPDDM_TYPE_CG
-.   KSP_HPDDM_TYPE_BCG
-.   KSP_HPDDM_TYPE_GCRODR
-.   KSP_HPDDM_TYPE_BGCRODR
-.   KSP_HPDDM_TYPE_BFBCG
--   KSP_HPDDM_TYPE_PREONLY
+$   KSP_HPDDM_TYPE_GMRES (default)
+$   KSP_HPDDM_TYPE_BGMRES
+$   KSP_HPDDM_TYPE_CG
+$   KSP_HPDDM_TYPE_BCG
+$   KSP_HPDDM_TYPE_GCRODR
+$   KSP_HPDDM_TYPE_BGCRODR
+$   KSP_HPDDM_TYPE_BFBCG
+$   KSP_HPDDM_TYPE_PREONLY
 
 .seealso: KSPHPDDM, KSPHPDDMSetType()
 E*/
@@ -289,10 +290,10 @@ PETSC_EXTERN const char *const KSPHPDDMTypes[];
     Level: intermediate
 
     Values:
-+   KSP_HPDDM_PRECISION_HALF (currently unsupported)
-.   KSP_HPDDM_PRECISION_SINGLE (default when PETSc is configured --with-precision=single)
-.   KSP_HPDDM_PRECISION_DOUBLE (default when PETSc is configured --with-precision=double)
--   KSP_HPDDM_PRECISION_QUADRUPLE (currently unsupported)
+$   KSP_HPDDM_PRECISION_HALF (currently unsupported)
+$   KSP_HPDDM_PRECISION_SINGLE (default when PETSc is configured --with-precision=single)
+$   KSP_HPDDM_PRECISION_DOUBLE (default when PETSc is configured --with-precision=double)
+$   KSP_HPDDM_PRECISION_QUADRUPLE (currently unsupported)
 
 .seealso: KSPHPDDM
 E*/

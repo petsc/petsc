@@ -637,7 +637,7 @@ static PetscErrorCode PCBDDCSetCoarseningRatio_BDDC(PC pc,PetscInt k)
 -  k - coarsening ratio (H/h at the coarser level)
 
    Options Database Keys:
-.    -pc_bddc_coarsening_ratio
+.    -pc_bddc_coarsening_ratio <int> - Set coarsening ratio used in multilevel coarsening
 
    Level: intermediate
 
@@ -718,7 +718,7 @@ static PetscErrorCode PCBDDCSetLevels_BDDC(PC pc,PetscInt levels)
 -  levels - the maximum number of levels
 
    Options Database Keys:
-.    -pc_bddc_levels
+.    -pc_bddc_levels <int> - Set maximum number of levels for multilevel
 
    Level: intermediate
 

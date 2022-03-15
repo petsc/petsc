@@ -354,7 +354,7 @@ PetscErrorCode  PCFactorSetLevels(PC pc,PetscInt levels)
 -  flg - PETSC_TRUE to turn on, PETSC_FALSE to turn off
 
    Options Database Key:
-.  -pc_factor_diagonal_fill <bool> allow the diagonal fill
+.  -pc_factor_diagonal_fill <bool> - allow the diagonal fill
 
    Notes:
    Does not apply with 0 fill.
@@ -665,7 +665,7 @@ PetscErrorCode  PCFactorSetColumnPivot(PC pc,PetscReal dtcol)
 -   pivot - PETSC_TRUE or PETSC_FALSE
 
     Options Database Key:
-.   -pc_factor_pivot_in_blocks <true,false>
+.   -pc_factor_pivot_in_blocks <true,false> - Pivot inside matrix dense blocks for BAIJ and SBAIJ
 
     Level: intermediate
 

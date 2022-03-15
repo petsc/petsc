@@ -449,7 +449,7 @@ static PetscErrorCode MatFactorGetSolverType_aij_strumpack(Mat A,MatSolverType *
   Works with AIJ matrices
 
   Options Database Keys:
-+ -mat_strumpack_verbose
++ -mat_strumpack_verbose                    - verbose info
 . -mat_strumpack_hss_rel_tol <1e-2>         - Relative compression tolerance (None)
 . -mat_strumpack_hss_abs_tol <1e-8>         - Absolute compression tolerance (None)
 . -mat_strumpack_colperm <TRUE>             - Permute matrix to make diagonal nonzeros (None)

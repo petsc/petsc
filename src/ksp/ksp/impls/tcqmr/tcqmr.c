@@ -160,7 +160,7 @@ static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
      KSPTCQMR - A variant of QMR (quasi minimal residual) developed by Tony Chan
 
    Options Database Keys:
-.   see KSPSolve()
+    see KSPSolve()
 
    Level: beginner
 

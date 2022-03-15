@@ -1594,10 +1594,10 @@ PetscErrorCode MatH2OpusSetSamplingMat(Mat A, Mat B, PetscInt bs, PetscReal tol)
 .     nA - matrix
 
    Options Database Keys:
-+     -mat_h2opus_leafsize <PetscInt>
-.     -mat_h2opus_eta <PetscReal>
++     -mat_h2opus_leafsize <PetscInt> - Leaf size of cluster tree
+.     -mat_h2opus_eta <PetscReal> - Admissibility condition tolerance
 .     -mat_h2opus_order <PetscInt> - Chebychev approximation order
--     -mat_h2opus_normsamples <PetscInt> - Maximum bumber of samples to be when estimating norms
+-     -mat_h2opus_normsamples <PetscInt> - Maximum number of samples to be used when estimating norms
 
    Level: intermediate
 
@@ -1650,11 +1650,11 @@ PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, 
 .     nA - matrix
 
    Options Database Keys:
-+     -mat_h2opus_leafsize <PetscInt>
-.     -mat_h2opus_eta <PetscReal>
-.     -mat_h2opus_maxrank <PetscInt>
-.     -mat_h2opus_samples <PetscInt>
-.     -mat_h2opus_rtol <PetscReal>
++     -mat_h2opus_leafsize <PetscInt> - Leaf size of cluster tree
+.     -mat_h2opus_eta <PetscReal> - Admissibility condition tolerance
+.     -mat_h2opus_maxrank <PetscInt> - Maximum rank when constructed from matvecs
+.     -mat_h2opus_samples <PetscInt> - Maximum number of samples to be taken concurrently when constructing from matvecs
+.     -mat_h2opus_rtol <PetscReal> - Relative tolerance for construction from sampling
 .     -mat_h2opus_check <PetscBool> - Check error when constructing from sampling during MatAssemblyEnd()
 .     -mat_h2opus_hara_verbose <PetscBool> - Verbose output from hara construction
 -     -mat_h2opus_normsamples <PetscInt> - Maximum bumber of samples to be when estimating norms

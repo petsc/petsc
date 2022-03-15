@@ -433,7 +433,7 @@ PetscErrorCode SNESNGMRESSetRestartType(SNES snes,SNESNGMRESRestartType rtype)
 -   stype - selection type
 
     Options Database:
-.   -snes_ngmres_select_type<difference,none,linesearch>
+.   -snes_ngmres_select_type<difference,none,linesearch> - select type
 
     Level: intermediate
 

@@ -129,7 +129,7 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
      KSPTFQMR - A transpose free QMR (quasi minimal residual),
 
    Options Database Keys:
-.   see KSPSolve()
+   see KSPSolve()
 
    Level: beginner
 

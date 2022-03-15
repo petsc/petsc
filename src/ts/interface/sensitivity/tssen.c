@@ -1722,9 +1722,9 @@ PetscErrorCode TSForwardReset(TS ts)
   TSForwardSetIntegralGradients - Set the vectors holding forward sensitivities of the integral term.
 
   Input Parameters:
-+ ts- the TS context obtained from TSCreate()
-. numfwdint- number of integrals
-- vp = the vectors containing the gradients for each integral w.r.t. parameters
++ ts - the TS context obtained from TSCreate()
+. numfwdint - number of integrals
+- vp - the vectors containing the gradients for each integral w.r.t. parameters
 
   Level: deprecated
 
@@ -1745,10 +1745,10 @@ PetscErrorCode TSForwardSetIntegralGradients(TS ts,PetscInt numfwdint,Vec *vp)
   TSForwardGetIntegralGradients - Returns the forward sensitivities ofthe integral term.
 
   Input Parameter:
-. ts- the TS context obtained from TSCreate()
+. ts - the TS context obtained from TSCreate()
 
   Output Parameter:
-. vp = the vectors containing the gradients for each integral w.r.t. parameters
+. vp - the vectors containing the gradients for each integral w.r.t. parameters
 
   Level: deprecated
 

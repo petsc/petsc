@@ -549,7 +549,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
 -  dummy - an collection of viewers created with KSPViewerCreate()
 
    Options Database Keys:
-.   -ksp_gmres_kyrlov_monitor
+.   -ksp_gmres_krylov_monitor <bool> - Plot the Krylov directions
 
    Notes:
     A new PETSCVIEWERDRAW is created for each Krylov vector so they can all be simultaneously viewed
@@ -718,7 +718,7 @@ PetscErrorCode  KSPGMRESGetCGSRefinementType_GMRES(KSP ksp,KSPGMRESCGSRefinement
 -  type - the type of refinement
 
   Options Database:
-.  -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always>
+.  -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - refinement type
 
    Level: intermediate
 
@@ -749,7 +749,7 @@ PetscErrorCode  KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType t
 .  type - the type of refinement
 
   Options Database:
-.  -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always>
+.  -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - type of refinement
 
    Level: intermediate
 
@@ -776,7 +776,7 @@ PetscErrorCode  KSPGMRESGetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType *
 -  restart - integer restart value
 
   Options Database:
-.  -ksp_gmres_restart <positive integer>
+.  -ksp_gmres_restart <positive integer> - integer restart value
 
     Note: The default value is 30.
 
@@ -831,7 +831,7 @@ PetscErrorCode  KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 -  tol - the tolerance
 
   Options Database:
-.  -ksp_gmres_haptol <positive real value>
+.  -ksp_gmres_haptol <positive real value> - set tolerance for determining happy breakdown
 
    Note: Happy breakdown is the rare case in GMRES where an 'exact' solution is obtained after
          a certain number of iterations. If you attempt more iterations after this point unstable
@@ -861,7 +861,7 @@ PetscErrorCode  KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
 -  tol - the tolerance
 
   Options Database:
-.  -ksp_gmres_breakdown_tolerance <positive real value>
+.  -ksp_gmres_breakdown_tolerance <positive real value> - set tolerance for determining divergence breakdown
 
    Note: divergence breakdown occurs when GMRES residual increases significantly
          during restart

@@ -227,8 +227,8 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
   Level: beginner
 
   Options Database:
-+   -snes_linesearch_type <l2,cp,basic> Line search type.
--   -snes_linesearch_damping<1.0> Damping for the line search.
++   -snes_linesearch_type <l2,cp,basic> - Line search type.
+-   -snes_linesearch_damping<1.0> - Damping for the line search.
 
   Notes:
     If no inner nonlinear preconditioner is provided then solves F(x) - b = 0 using x^{n+1} = x^{n} - lambda

@@ -1378,7 +1378,7 @@ PetscErrorCode  TSThetaGetTheta(TS ts,PetscReal *theta)
 -  theta - stage abscissa
 
   Options Database:
-.  -ts_theta_theta <theta>
+.  -ts_theta_theta <theta> - set theta
 
   Level: Intermediate
 
@@ -1430,7 +1430,7 @@ PetscErrorCode TSThetaGetEndpoint(TS ts,PetscBool *endpoint)
 -  flg - PETSC_TRUE to use the endpoint variant
 
   Options Database:
-.  -ts_theta_endpoint <flg>
+.  -ts_theta_endpoint <flg> - use the endpoint variant
 
   Level: Intermediate
 

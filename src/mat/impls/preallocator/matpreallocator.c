@@ -247,7 +247,9 @@ PetscErrorCode MatPreallocatorPreallocate(Mat mat, PetscBool fill, Mat A)
    MATPREALLOCATOR - MATPREALLOCATOR = "preallocator" - A matrix type to be used for computing a matrix preallocation.
 
    Operations Provided:
-.  MatSetValues()
+.vb
+  MatSetValues()
+.ve
 
    Options Database Keys:
 . -mat_type preallocator - sets the matrix type to "preallocator" during a call to MatSetFromOptions()

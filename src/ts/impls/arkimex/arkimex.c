@@ -63,7 +63,7 @@ typedef struct {
      This method has one explicit stage and one implicit stage.
 
      Options Database:
-.      -ts_arkimex_type ars122
+.      -ts_arkimex_type ars122 - set arkimex type to ars122
 
      References:
 .    * -  U. Ascher, S. Ruuth, R. J. Spiteri, Implicit explicit Runge Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997).
@@ -78,7 +78,7 @@ M*/
      This method has an explicit stage and one implicit stage, and has an A-stable implicit scheme. This method was provided by Emil Constantinescu.
 
      Options Database:
-.      -ts_arkimex_type a2
+.      -ts_arkimex_type a2 - set arkimex type to a2
 
      Level: advanced
 
@@ -90,7 +90,7 @@ M*/
      This method has two implicit stages, and L-stable implicit scheme.
 
      Options Database:
-.      -ts_arkimex_type l2
+.      -ts_arkimex_type l2 - set arkimex type to l2
 
     References:
 .   * -  L. Pareschi, G. Russo, Implicit Explicit Runge Kutta schemes and applications to hyperbolic systems with relaxations. Journal of Scientific Computing Volume: 25, Issue: 1, October, 2005.
@@ -105,7 +105,7 @@ M*/
      This method is aimed at starting the integration of implicit DAEs when explicit first-stage ARK methods are used.
 
      Options Database:
-.      -ts_arkimex_type 1bee
+.      -ts_arkimex_type 1bee - set arkimex type to 1bee
 
      Level: advanced
 
@@ -117,7 +117,7 @@ M*/
      This method has one explicit stage and two implicit stages. The implicit part is the same as in TSARKIMEX2D and TSARKIMEX2E, but the explicit part has a larger stability region on the negative real axis. This method was provided by Emil Constantinescu.
 
      Options Database:
-.      -ts_arkimex_type 2c
+.      -ts_arkimex_type 2c - set arkimex type to 2c
 
      Level: advanced
 
@@ -129,7 +129,7 @@ M*/
      This method has one explicit stage and two implicit stages. The stability function is independent of the explicit part in the infinity limit of the implict component. This method was provided by Emil Constantinescu.
 
      Options Database:
-.      -ts_arkimex_type 2d
+.      -ts_arkimex_type 2d - set arkimex type to 2d
 
      Level: advanced
 
@@ -141,7 +141,7 @@ M*/
      This method has one explicit stage and two implicit stages. It is is an optimal method developed by Emil Constantinescu.
 
      Options Database:
-.      -ts_arkimex_type 2e
+.      -ts_arkimex_type 2e - set arkimex type to 2e
 
     Level: advanced
 
@@ -158,7 +158,7 @@ M*/
      This method is referred to as SSP2-(3,3,2) in https://arxiv.org/abs/1110.4375
 
      Options Database:
-.      -ts_arkimex_type prssp2
+.      -ts_arkimex_type prssp2 - set arkimex type to prssp2
 
      Level: advanced
 
@@ -170,7 +170,7 @@ M*/
      This method has one explicit stage and three implicit stages.
 
      Options Database:
-.      -ts_arkimex_type 3
+.      -ts_arkimex_type 3 - set arkimex type to 3
 
      References:
 .    * -  Kennedy and Carpenter 2003.
@@ -185,7 +185,7 @@ M*/
      This method has one explicit stage and four implicit stages.
 
      Options Database:
-.      -ts_arkimex_type ars443
+.      -ts_arkimex_type ars443 - set arkimex type to ars443
 
      References:
 +    * -  U. Ascher, S. Ruuth, R. J. Spiteri, Implicit explicit Runge Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997).
@@ -201,7 +201,7 @@ M*/
      This method has one explicit stage and four implicit stages.
 
      Options Database:
-.      -ts_arkimex_type bpr3
+.      -ts_arkimex_type bpr3 - set arkimex type to bpr3
 
      References:
 .    * - This method is referred to as ARK3 in https://arxiv.org/abs/1110.4375
@@ -216,7 +216,7 @@ M*/
      This method has one explicit stage and four implicit stages.
 
      Options Database:
-.      -ts_arkimex_type 4
+.      -ts_arkimex_type 4 - set arkimex type to4
 
      References:
 .    * - Kennedy and Carpenter 2003.
@@ -231,7 +231,7 @@ M*/
      This method has one explicit stage and five implicit stages.
 
      Options Database:
-.      -ts_arkimex_type 5
+.      -ts_arkimex_type 5 - set arkimex type to 5
 
      References:
 .    * - Kennedy and Carpenter 2003.
@@ -1262,7 +1262,7 @@ static PetscErrorCode TSLoad_ARKIMEX(TS ts,PetscViewer viewer)
 -  arktype - type of ARK-IMEX scheme
 
   Options Database:
-.  -ts_arkimex_type <1bee,a2,l2,ars122,2c,2d,2e,prssp2,3,bpr3,ars443,4,5>
+.  -ts_arkimex_type <1bee,a2,l2,ars122,2c,2d,2e,prssp2,3,bpr3,ars443,4,5> - set ARK IMEX scheme type
 
   Level: intermediate
 

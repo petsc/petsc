@@ -474,8 +474,8 @@ We solve a series of problems using increasing resolution (refined meshes or dec
 based upon the exact solution in the DS, and then fit the result to our model above using linear regression.
 
   Options database keys:
-+ -snes_convergence_estimate : Execute convergence estimation inside SNESSolve() and print out the rate
-- -ts_convergence_estimate : Execute convergence estimation inside TSSolve() and print out the rate
++ -snes_convergence_estimate - Execute convergence estimation inside SNESSolve() and print out the rate
+- -ts_convergence_estimate - Execute convergence estimation inside TSSolve() and print out the rate
 
   Level: intermediate
 

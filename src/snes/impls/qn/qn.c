@@ -428,7 +428,7 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 -   stype - scale type
 
     Options Database:
-.   -snes_qn_scale_type <diagonal,none,scalar,jacobian>
+.   -snes_qn_scale_type <diagonal,none,scalar,jacobian> - Scaling type
 
     Level: intermediate
 
@@ -481,7 +481,7 @@ PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
 -   qtype - variant type
 
     Options Database:
-.   -snes_qn_type <lbfgs,broyden,badbroyden>
+.   -snes_qn_type <lbfgs,broyden,badbroyden> - quasi-Newton type
 
     Level: beginner
 

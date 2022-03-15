@@ -793,7 +793,7 @@ Input Parameters:
 Level: intermediate
 
 Options Database:
-. -ksp_pipefgmres_shift <shift>
+. -ksp_pipefgmres_shift <shift> - set the shift parameter
 
 .seealso: KSPComputeEigenvalues()
 @*/

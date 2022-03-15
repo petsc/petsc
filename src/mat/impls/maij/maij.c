@@ -154,10 +154,12 @@ PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
   The matrix type is based on MATSEQAIJ for sequential matrices, and MATMPIAIJ for distributed matrices.
 
   Operations provided:
-+ MatMult
-. MatMultTranspose
-. MatMultAdd
-- MatMultTransposeAdd
+.vb
+    MatMult
+    MatMultTranspose
+    MatMultAdd
+    MatMultTransposeAdd
+.ve
 
   Level: advanced
 
@@ -3401,11 +3403,13 @@ PetscErrorCode MatCreateSubMatrices_MAIJ(Mat mat,PetscInt n,const IS irow[],cons
 . maij - the new MAIJ matrix
 
   Operations provided:
-+ MatMult
-. MatMultTranspose
-. MatMultAdd
-. MatMultTransposeAdd
-- MatView
+.vb
+    MatMult
+    MatMultTranspose
+    MatMultAdd
+    MatMultTransposeAdd
+    MatView
+.ve
 
   Level: advanced
 

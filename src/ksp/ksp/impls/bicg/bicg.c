@@ -123,7 +123,7 @@ static PetscErrorCode  KSPSolve_BiCG(KSP ksp)
          gradient on the normal equations).
 
    Options Database Keys:
-.   see KSPSolve()
+   see KSPSolve()
 
    Level: beginner
 

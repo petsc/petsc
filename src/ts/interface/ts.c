@@ -47,10 +47,10 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt,TSAdaptType default_ty
 .  -ts_max_reject <maxrejects> - Maximum number of step rejections before step fails
 .  -ts_error_if_step_fails <true,false> - Error if no step succeeds
 .  -ts_rtol <rtol> - relative tolerance for local truncation error
-.  -ts_atol <atol> Absolute tolerance for local truncation error
+.  -ts_atol <atol> - Absolute tolerance for local truncation error
 .  -ts_rhs_jacobian_test_mult -mat_shell_test_mult_view - test the Jacobian at each iteration against finite difference with RHS function
 .  -ts_rhs_jacobian_test_mult_transpose -mat_shell_test_mult_transpose_view - test the Jacobian at each iteration against finite difference with RHS function
-.  -ts_adjoint_solve <yes,no> After solving the ODE/DAE solve the adjoint problem (requires -ts_save_trajectory)
+.  -ts_adjoint_solve <yes,no> - After solving the ODE/DAE solve the adjoint problem (requires -ts_save_trajectory)
 .  -ts_fd_color - Use finite differences with coloring to compute IJacobian
 .  -ts_monitor - print information at each timestep
 .  -ts_monitor_cancel - Cancel all monitors
@@ -452,7 +452,7 @@ PetscErrorCode  TSGetTrajectory(TS ts,TSTrajectory *tr)
 
    Options Database:
 +  -ts_save_trajectory - saves the trajectory to a file
--  -ts_trajectory_type type
+-  -ts_trajectory_type type - set trajectory type
 
 Note: This routine should be called after all TS options have been set
 
@@ -3215,7 +3215,9 @@ PetscErrorCode  TSSetSolution(TS ts,Vec u)
 - func - The function
 
   Calling sequence of func:
-.   PetscErrorCode func (TS ts);
+.vb
+  PetscErrorCode func (TS ts);
+.ve
 
   Level: intermediate
 
@@ -3280,7 +3282,9 @@ PetscErrorCode  TSPreStep(TS ts)
 - func - The function
 
   Calling sequence of func:
-.    PetscErrorCode func(TS ts, PetscReal stagetime);
+.vb
+  PetscErrorCode func(TS ts, PetscReal stagetime);
+.ve
 
   Level: intermediate
 
@@ -3310,7 +3314,9 @@ PetscErrorCode  TSSetPreStage(TS ts, PetscErrorCode (*func)(TS,PetscReal))
 - func - The function
 
   Calling sequence of func:
-. PetscErrorCode func(TS ts, PetscReal stagetime, PetscInt stageindex, Vec* Y);
+.vb
+  PetscErrorCode func(TS ts, PetscReal stagetime, PetscInt stageindex, Vec* Y);
+.ve
 
   Level: intermediate
 
@@ -3340,7 +3346,9 @@ PetscErrorCode  TSSetPostStage(TS ts, PetscErrorCode (*func)(TS,PetscReal,PetscI
 - func - The function
 
   Calling sequence of func:
-. PetscErrorCode func(TS ts);
+.vb
+  PetscErrorCode func(TS ts);
+.ve
 
   Level: intermediate
 
@@ -4961,7 +4969,7 @@ PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
 
    Options Database keys:
 +  -ts_rtol <rtol> - relative tolerance for local truncation error
--  -ts_atol <atol> Absolute tolerance for local truncation error
+-  -ts_atol <atol> - Absolute tolerance for local truncation error
 
    Notes:
    With PETSc's implicit schemes for DAE problems, the calculation of the local truncation error

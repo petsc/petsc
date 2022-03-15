@@ -184,7 +184,7 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
      KSPSYMMLQ -  This code implements the SYMMLQ method.
 
    Options Database Keys:
-.   see KSPSolve()
+    see KSPSolve()
 
    Level: beginner
 

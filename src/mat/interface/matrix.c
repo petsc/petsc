@@ -1103,7 +1103,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
    Options Database Keys:
    Used with block matrix formats (MATSEQBAIJ,  ...) to specify
    block size
-.    -matload_block_size <bs>
+.    -matload_block_size <bs> - set block size
 
    Level: beginner
 

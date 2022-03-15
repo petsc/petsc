@@ -881,11 +881,11 @@ PetscErrorCode DMPlexP1FieldCreate_Private(DM dm, PetscInt f, PetscInt size, Vec
 . -dm_plex_metric_h_max                     - Maximum tolerated metric magnitude
 . -dm_plex_metric_a_max                     - Maximum tolerated anisotropy
 . -dm_plex_metric_p                         - L-p normalization order
-. -dm_plex_metric_target_complexity         - Target metric complexity
+- -dm_plex_metric_target_complexity         - Target metric complexity
 
   Switching between remeshers can be achieved using
 
-. -dm_adaptor <pragmatic/mmg/parmmg>
+. -dm_adaptor <pragmatic/mmg/parmmg>        - specify dm adaptor to use
 
   Further options that are only relevant to Mmg and ParMmg:
 

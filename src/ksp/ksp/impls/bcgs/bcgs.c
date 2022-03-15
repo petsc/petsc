@@ -200,7 +200,7 @@ PetscErrorCode KSPDestroy_BCGS(KSP ksp)
      KSPBCGS - Implements the BiCGStab (Stabilized version of BiConjugate Gradient) method.
 
    Options Database Keys:
-.   see KSPSolve()
+    see KSPSolve()
 
    Level: beginner
 

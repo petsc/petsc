@@ -102,10 +102,10 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 . adaptor - The DMAdaptor object
 
   Options Database Keys:
-+ -adaptor_monitor <bool>        : Monitor the adaptation process
-. -adaptor_sequence_num <num>    : Number of adaptations to generate an optimal grid
-. -adaptor_target_num <num>      : Set the target number of vertices N_adapt, -1 for automatic determination
-- -adaptor_refinement_factor <r> : Set r such that N_adapt = r^dim N_orig
++ -adaptor_monitor <bool>        - Monitor the adaptation process
+. -adaptor_sequence_num <num>    - Number of adaptations to generate an optimal grid
+. -adaptor_target_num <num>      - Set the target number of vertices N_adapt, -1 for automatic determination
+- -adaptor_refinement_factor <r> - Set r such that N_adapt = r^dim N_orig
 
   Level: beginner
 
@@ -793,10 +793,10 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
 - ax  - The adapted solution
 
   Options database keys:
-+ -snes_adapt <strategy> : initial, sequential, multigrid
-. -adapt_gradient_view : View the Clement interpolant of the solution gradient
-. -adapt_hessian_view : View the Clement interpolant of the solution Hessian
-- -adapt_metric_view : View the metric tensor for adaptive mesh refinement
++ -snes_adapt <strategy> - initial, sequential, multigrid
+. -adapt_gradient_view - View the Clement interpolant of the solution gradient
+. -adapt_hessian_view - View the Clement interpolant of the solution Hessian
+- -adapt_metric_view - View the metric tensor for adaptive mesh refinement
 
   Note: The available adaptation strategies are:
 $ 1) Adapt the initial mesh until a quality metric, e.g., a priori error bound, is satisfied

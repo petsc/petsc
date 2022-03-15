@@ -1311,18 +1311,18 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(PetscOptionItems *PetscOptionsObj
    The FETI-DP linear system (automatically generated constructing an internal PCBDDC object) is solved using an internal KSP object.
 
    Options Database Keys:
-+   -ksp_fetidp_fullyredundant <false>   : use a fully redundant set of Lagrange multipliers
-.   -ksp_fetidp_saddlepoint <false>      : activates support for saddle point problems, see [2]
-.   -ksp_fetidp_saddlepoint_flip <false> : usually, an incompressible Stokes problem is written as
++   -ksp_fetidp_fullyredundant <false>   - use a fully redundant set of Lagrange multipliers
+.   -ksp_fetidp_saddlepoint <false>      - activates support for saddle point problems, see [2]
+.   -ksp_fetidp_saddlepoint_flip <false> - usually, an incompressible Stokes problem is written as
                                            | A B^T | | v | = | f |
                                            | B 0   | | p | = | g |
                                            with B representing -\int_\Omega \nabla \cdot u q.
                                            If -ksp_fetidp_saddlepoint_flip is true, the code assumes that the user provides it as
                                            | A B^T | | v | = | f |
                                            |-B 0   | | p | = |-g |
-.   -ksp_fetidp_pressure_field <-1>      : activates support for saddle point problems, and identifies the pressure field id.
+.   -ksp_fetidp_pressure_field <-1>      - activates support for saddle point problems, and identifies the pressure field id.
                                            If this information is not provided, the pressure field is detected by using MatFindZeroDiagonals().
--   -ksp_fetidp_pressure_all <false>     : if false, uses the interface pressures, as described in [2]. If true, uses the entire pressure field.
+-   -ksp_fetidp_pressure_all <false>     - if false, uses the interface pressures, as described in [2]. If true, uses the entire pressure field.
 
    Level: Advanced
 

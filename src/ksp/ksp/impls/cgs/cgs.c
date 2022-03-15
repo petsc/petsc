@@ -135,7 +135,7 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
      KSPCGS - This code implements the CGS (Conjugate Gradient Squared) method.
 
    Options Database Keys:
-.   see KSPSolve()
+    see KSPSolve()
 
    Level: beginner
 
