@@ -1,8 +1,5 @@
 ! test phase space (Maxwellian) mesh construction (serial)
 !
-!run:
-!       -${MPIEXEC} ....
-!       -@${PETSC_DIR}/lib/petsc/bin/petsc_gen_xdmf.py *.h5
 !
 !
 ! Contributed by Mark Adams
@@ -12,8 +9,8 @@ program DMPlexTestLandauInterface
 #include <petsc/finclude/petscts.h>
 #include <petsc/finclude/petscdmplex.h>
   implicit none
-  external LandauIFunction
-  external LandauIJacobian
+  external DMPlexLandauIFunction
+  external DMPlexLandauIJacobian
   DM             dm
   PetscInt       dim
   PetscInt       ii
@@ -36,7 +33,7 @@ program DMPlexTestLandauInterface
   !  Create mesh (DM), read in parameters, create and add f_0 (X)
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   dim = 2
-  call LandauCreateVelocitySpace(PETSC_COMM_WORLD, dim, '', X, J, dm, ierr);CHKERRA(ierr)
+  call DMPlexLandauCreateVelocitySpace(PETSC_COMM_WORLD, dim, '', X, J, dm, ierr);CHKERRA(ierr)
   call DMSetUp(dm,ierr);CHKERRA(ierr)
   call VecDuplicate(X,X_0,ierr);CHKERRA(ierr)
   call VecCopy(X,X_0,ierr)
@@ -44,7 +41,7 @@ program DMPlexTestLandauInterface
   !  View
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ii = 0
-  call LandauPrintNorms(X,ii,ierr);CHKERRA(ierr)
+  call DMPlexLandauPrintNorms(X,ii,ierr);CHKERRA(ierr)
   mone = 0;
   call DMSetOutputSequenceNumber(dm, ii, mone, ierr);CHKERRA(ierr);
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,8 +54,8 @@ program DMPlexTestLandauInterface
   call SNESSetOptionsPrefix(snes, 'ex1_', ierr);CHKERRA(ierr) ! should get this from the dm or give it to the dm
   call SNESGetLineSearch(snes,linesearch,ierr);CHKERRA(ierr)
   call SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC,ierr);CHKERRA(ierr)
-  call TSSetIFunction(ts,PETSC_NULL_VEC,LandauIFunction,PETSC_NULL_VEC,ierr);CHKERRA(ierr)
-  call TSSetIJacobian(ts,J,J,LandauIJacobian,PETSC_NULL_VEC,ierr);CHKERRA(ierr)
+  call TSSetIFunction(ts,PETSC_NULL_VEC,DMPlexLandauIFunction,PETSC_NULL_VEC,ierr);CHKERRA(ierr)
+  call TSSetIJacobian(ts,J,J,DMPlexLandauIJacobian,PETSC_NULL_VEC,ierr);CHKERRA(ierr)
   call TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER,ierr);CHKERRA(ierr)
 
   call SNESGetKSP(snes,ksp,ierr);CHKERRA(ierr)
@@ -73,7 +70,7 @@ program DMPlexTestLandauInterface
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   call TSSolve(ts,X,ierr);CHKERRA(ierr)
   ii = 1
-  call LandauPrintNorms(X,ii,ierr);CHKERRA(ierr)
+  call DMPlexLandauPrintNorms(X,ii,ierr);CHKERRA(ierr)
   call TSGetTime(ts, mone, ierr);CHKERRA(ierr);
   call DMSetOutputSequenceNumber(dm, ii, mone, ierr);CHKERRA(ierr);
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -81,7 +78,7 @@ program DMPlexTestLandauInterface
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   scalar = -1.
   call VecAXPY(X,scalar,X_0,ierr);CHKERRA(ierr)
-  call LandauDestroyVelocitySpace(dm, ierr);CHKERRA(ierr)
+  call DMPlexLandauDestroyVelocitySpace(dm, ierr);CHKERRA(ierr)
   call TSDestroy(ts, ierr);CHKERRA(ierr)
   call VecDestroy(X, ierr);CHKERRA(ierr)
   call VecDestroy(X_0, ierr);CHKERRA(ierr)

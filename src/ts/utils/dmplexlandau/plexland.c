@@ -1050,7 +1050,7 @@ static PetscErrorCode maxwellian(PetscInt dim, PetscReal time, const PetscReal x
 }
 
 /*@
- LandauAddMaxwellians - Add a Maxwellian distribution to a state
+ DMPlexLandauAddMaxwellians - Add a Maxwellian distribution to a state
 
  Collective on X
 
@@ -1068,9 +1068,9 @@ static PetscErrorCode maxwellian(PetscInt dim, PetscReal time, const PetscReal x
  Level: beginner
 
  .keywords: mesh
- .seealso: LandauCreateVelocitySpace()
+ .seealso: DMPlexLandauCreateVelocitySpace()
  @*/
-PetscErrorCode LandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscReal temps[], PetscReal ns[], PetscInt grid, PetscInt b_id, void *actx)
+PetscErrorCode DMPlexLandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscReal temps[], PetscReal ns[], PetscInt grid, PetscInt b_id, void *actx)
 {
   LandauCtx      *ctx = (LandauCtx*)actx;
   PetscErrorCode (*initu[LANDAU_MAX_SPECIES])(PetscInt, PetscReal, const PetscReal [], PetscInt, PetscScalar [], void *);
@@ -1111,7 +1111,7 @@ PetscErrorCode LandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscReal temp
  Level: beginner
 
  .keywords: mesh
- .seealso: LandauCreateVelocitySpace(), LandauAddMaxwellians()
+ .seealso: DMPlexLandauCreateVelocitySpace(), DMPlexLandauAddMaxwellians()
  */
 static PetscErrorCode LandauSetInitialCondition(DM dm, Vec X, PetscInt grid, PetscInt b_id, void *actx)
 {
@@ -1120,7 +1120,7 @@ static PetscErrorCode LandauSetInitialCondition(DM dm, Vec X, PetscInt grid, Pet
   PetscFunctionBegin;
   if (!ctx) { ierr = DMGetApplicationContext(dm, &ctx);CHKERRQ(ierr); }
   ierr = VecZeroEntries(X);CHKERRQ(ierr);
-  ierr = LandauAddMaxwellians(dm, X, 0.0, ctx->thermal_temps, ctx->n, grid, b_id, ctx);CHKERRQ(ierr);
+  ierr = DMPlexLandauAddMaxwellians(dm, X, 0.0, ctx->thermal_temps, ctx->n, grid, b_id, ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2135,9 +2135,9 @@ static PetscErrorCode LandauCreateMatrix(MPI_Comm comm, Vec X, IS grid_batch_is_
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode LandauCreateMassMatrix(DM pack, Mat *Amat);
+PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat);
 /*@C
- LandauCreateVelocitySpace - Create a DMPlex velocity space mesh
+ DMPlexLandauCreateVelocitySpace - Create a DMPlex velocity space mesh
 
  Collective on comm
 
@@ -2154,9 +2154,9 @@ PetscErrorCode LandauCreateMassMatrix(DM pack, Mat *Amat);
  Level: beginner
 
  .keywords: mesh
- .seealso: DMPlexCreate(), LandauDestroyVelocitySpace()
+ .seealso: DMPlexCreate(), DMPlexLandauDestroyVelocitySpace()
  @*/
-PetscErrorCode LandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, const char prefix[], Vec *X, Mat *J, DM *pack)
+PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, const char prefix[], Vec *X, Mat *J, DM *pack)
 {
   PetscErrorCode ierr;
   LandauCtx      *ctx;
@@ -2280,7 +2280,7 @@ PetscErrorCode LandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, const char
   ierr = PetscLogEventEnd(ctx->events[13],0,0,0,0);CHKERRQ(ierr);
 
   // create mass matrix
-  ierr = LandauCreateMassMatrix(*pack, NULL);CHKERRQ(ierr);
+  ierr = DMPlexLandauCreateMassMatrix(*pack, NULL);CHKERRQ(ierr);
 
   if (J) *J = ctx->J;
 
@@ -2314,7 +2314,7 @@ PetscErrorCode LandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, const char
 }
 
 /*@
- LandauDestroyVelocitySpace - Destroy a DMPlex velocity space mesh
+ DMPlexLandauDestroyVelocitySpace - Destroy a DMPlex velocity space mesh
 
  Collective on dm
 
@@ -2324,9 +2324,9 @@ PetscErrorCode LandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, const char
  Level: beginner
 
  .keywords: mesh
- .seealso: LandauCreateVelocitySpace()
+ .seealso: DMPlexLandauCreateVelocitySpace()
  @*/
-PetscErrorCode LandauDestroyVelocitySpace(DM *dm)
+PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *dm)
 {
   PetscErrorCode ierr,ii;
   LandauCtx      *ctx;
@@ -2465,7 +2465,7 @@ static void f0_s_rv2(PetscInt dim, PetscInt Nf, PetscInt NfAux,
 }
 
 /*@
- LandauPrintNorms - collects moments and prints them
+ DMPlexLandauPrintNorms - collects moments and prints them
 
  Collective on dm
 
@@ -2476,9 +2476,9 @@ static void f0_s_rv2(PetscInt dim, PetscInt Nf, PetscInt NfAux,
  Level: beginner
 
  .keywords: mesh
- .seealso: LandauCreateVelocitySpace()
+ .seealso: DMPlexLandauCreateVelocitySpace()
  @*/
-PetscErrorCode LandauPrintNorms(Vec X, PetscInt stepi)
+PetscErrorCode DMPlexLandauPrintNorms(Vec X, PetscInt stepi)
 {
   PetscErrorCode ierr;
   LandauCtx      *ctx;
@@ -2632,7 +2632,7 @@ PetscErrorCode LandauPrintNorms(Vec X, PetscInt stepi)
 }
 
 /*@
- LandauCreateMassMatrix - Create mass matrix for Landau in Plex space (not field major order of Jacobian)
+ DMPlexLandauCreateMassMatrix - Create mass matrix for Landau in Plex space (not field major order of Jacobian)
 
  Collective on pack
 
@@ -2645,9 +2645,9 @@ PetscErrorCode LandauPrintNorms(Vec X, PetscInt stepi)
  Level: beginner
 
  .keywords: mesh
- .seealso: LandauCreateVelocitySpace()
+ .seealso: DMPlexLandauCreateVelocitySpace()
  @*/
-PetscErrorCode LandauCreateMassMatrix(DM pack, Mat *Amat)
+PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat)
 {
   DM             mass_pack,massDM[LANDAU_MAX_GRIDS];
   PetscDS        prob;
@@ -2745,7 +2745,7 @@ PetscErrorCode LandauCreateMassMatrix(DM pack, Mat *Amat)
 }
 
 /*@
- LandauIFunction - TS residual calculation
+ DMPlexLandauIFunction - TS residual calculation
 
  Collective on ts
 
@@ -2762,9 +2762,9 @@ PetscErrorCode LandauCreateMassMatrix(DM pack, Mat *Amat)
  Level: beginner
 
  .keywords: mesh
- .seealso: LandauCreateVelocitySpace(), LandauIJacobian()
+ .seealso: DMPlexLandauCreateVelocitySpace(), DMPlexLandauIJacobian()
  @*/
-PetscErrorCode LandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t, Vec F, void *actx)
+PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t, Vec F, void *actx)
 {
   PetscErrorCode ierr;
   LandauCtx      *ctx=(LandauCtx*)actx;
@@ -2821,7 +2821,7 @@ PetscErrorCode LandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t, Vec 
 }
 
 /*@
- LandauIJacobian - TS Jacobian construction
+ DMPlexLandauIJacobian - TS Jacobian construction
 
  Collective on ts
 
@@ -2840,9 +2840,9 @@ PetscErrorCode LandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t, Vec 
  Level: beginner
 
  .keywords: mesh
- .seealso: LandauCreateVelocitySpace(), LandauIFunction()
+ .seealso: DMPlexLandauCreateVelocitySpace(), DMPlexLandauIFunction()
  @*/
-PetscErrorCode LandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_tdummy, PetscReal shift, Mat Amat, Mat Pmat, void *actx)
+PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_tdummy, PetscReal shift, Mat Amat, Mat Pmat, void *actx)
 {
   PetscErrorCode ierr;
   LandauCtx      *ctx=NULL;

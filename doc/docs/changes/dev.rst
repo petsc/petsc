@@ -246,6 +246,13 @@ Changes: Development
 - Add ``DMCreateFEDefault()`` as a convenience method for creating the right element on a mesh
 - Add ``DMPlexCreateReferenceCell()``
 
+.. rubric:: DMPlexLandau:
+
+- Add ``DMPlexLandauCreateVelocitySpace()`` Create DMComposite of DMPlex for Landau collision operator
+- Add ``DMPlexLandauDestroyVelocitySpace()`` Destroy DMComposite of DMPlex for Landau collision operator
+- Add ``DMPlexLandauIFunction()`` Landau collision operator
+- Add ``DMPlexLandauIJacobian()`` Landau collision operator
+
 .. rubric:: FE/FV:
 
 - Deprecate ``PetscSpacePolynomialGetSymmetric()`` and ``PetscSpacePolynomialSetSymmetric()``: symmetric polynomials were never supported and support is no longer planned
