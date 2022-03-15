@@ -241,7 +241,7 @@ static PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   ierr = VecGetArray(x,&bptr);CHKERRQ(ierr);
 
   PetscStackCall("SuperLU_DIST:PStatInit",PStatInit(&stat));        /* Initialize the statistics variables. */
-#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
+#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0) && !PetscDefined(MISSING_GETLINE)
   if (lu->use3d)
     PetscStackCall("SuperLU_DIST:pgssvx3d",pgssvx3d(&lu->options,&lu->A_sup,&lu->ScalePermstruct,CASTDOUBLECOMPLEX bptr,m,1,&lu->grid3d,&lu->LUstruct,&lu->SOLVEstruct,berr,&stat,&info));
   else
@@ -295,7 +295,7 @@ static PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
   PetscStackCall("SuperLU_DIST:PStatInit",PStatInit(&stat));        /* Initialize the statistics variables. */
   ierr = MatDenseGetArray(X,&bptr);CHKERRQ(ierr);
 
-#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
+#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0) && !PetscDefined(MISSING_GETLINE)
   if (lu->use3d)
     PetscStackCall("SuperLU_DIST:pgssvx3d",pgssvx3d(&lu->options,&lu->A_sup,&lu->ScalePermstruct,CASTDOUBLECOMPLEX bptr,m,nrhs,&lu->grid3d,&lu->LUstruct,&lu->SOLVEstruct,berr,&stat,&info));
   else
@@ -428,7 +428,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFacto
 
   /* Factor the matrix. */
   PetscStackCall("SuperLU_DIST:PStatInit",PStatInit(&stat));   /* Initialize the statistics variables. */
-#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
+#if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0) && !PetscDefined(MISSING_GETLINE)
   if (lu->use3d) {
     PetscStackCall("SuperLU_DIST:pgssvx3d",pgssvx3d(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, A->rmap->n, 0, &lu->grid3d, &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &sinfo));
   } else
@@ -687,6 +687,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Ma
       ierr = PetscOptionsBegin(PetscObjectComm((PetscObject)A),((PetscObject)A)->prefix,"SuperLU_Dist Options","Mat");CHKERRQ(ierr);
 #if PETSC_PKG_SUPERLU_DIST_VERSION_GE(7,2,0)
       ierr = PetscOptionsBool("-mat_superlu_dist_3d","Use SuperLU_DIST 3D distribution","None",lu->use3d,&lu->use3d,NULL);CHKERRQ(ierr);
+      PetscCheck(!PetscDefined(MISSING_GETLINE) || !lu->use3d,PetscObjectComm((PetscObject)A),PETSC_ERR_SUP_SYS,"-mat_superlu_dist_3d requires a system with a getline() implementation");
       if (lu->use3d) {
         PetscInt t;
         ierr = PetscOptionsInt("-mat_superlu_dist_d","Number of z entries in processor partition","None",lu->npdep,(PetscInt*)&lu->npdep,NULL);CHKERRQ(ierr);
