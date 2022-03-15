@@ -235,8 +235,8 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void*,PetscDataType);
   } while (0)
 
 #define PetscValidPointer_Internal(ptr,arg,ptype,...) do {                                     \
-    PetscCheck((ptr),PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);   \
-    PetscCheck(PetscCheckPointer((ptr),(ptype)),PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer" __VA_ARGS__ ": Parameter # %d",arg); \
+    PetscCheck(ptr,PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);   \
+    PetscCheck(PetscCheckPointer(ptr,ptype),PETSC_COMM_SELF,PETSC_ERR_ARG_BADPTR,"Invalid Pointer" __VA_ARGS__ ": Argument '" PetscStringize(ptr) "' (parameter # %d)",arg); \
 } while (0)
 
 #define PetscValidPointerToType_Internal(ptr,arg,ptype,name) PetscValidPointer_Internal(ptr,arg,ptype," to ",PetscStringize(name))
