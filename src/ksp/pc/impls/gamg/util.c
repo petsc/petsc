@@ -206,7 +206,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
   Vec               diag;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(petsc_gamg_setup_events[SET16],0,0,0,0);CHKERRQ(ierr);
 
   /* TODO GPU: optimization proposal, each class provides fast implementation of this
      procedure via MatAbs API */
@@ -234,7 +234,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
       for (jj = 0; jj<info.nz_used; jj++) avals[jj] = PetscAbsScalar(avals[jj]);
       ierr = MatSeqAIJRestoreArray(aij->B,&avals);CHKERRQ(ierr);
     }
-    ierr = PetscLogEventEnd(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET16],0,0,0,0);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -299,7 +299,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
   } else {
     ierr = MatPropagateSymmetryOptions(Gmat,tGmat);CHKERRQ(ierr);
   }
-  ierr = PetscLogEventEnd(petsc_gamg_setup_events[GRAPH],0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(petsc_gamg_setup_events[SET16],0,0,0,0);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_INFO)
   {
