@@ -428,6 +428,19 @@ Unable to run hostname to check the network')
     # flag broken one-sided tests
     if not 'HAVE_MSMPI' in self.defines and not (hasattr(self, 'mpich_numversion') and int(self.mpich_numversion) <= 30004300) and not (hasattr(self, 'isNecMPI')):
       self.addDefine('HAVE_MPI_ONE_SIDED', 1)
+
+    if self.checkLink('#include <mpi.h>\n', 'int provided; if (MPI_Init_thread(0,0,MPI_THREAD_FUNNELED,&provided)) return 0;'): # MPI-2.1
+      self.addDefine('HAVE_MPI_INIT_THREAD',1)
+
+    # deadlock AO tests ex1 with test 3
+    if (not hasattr(self, 'isNecMPI')) and self.checkLink('#include <mpi.h>\n',
+    '''
+     int sendbuf[2] = {1,2};
+     int recvbuf[1];
+     if (MPI_Reduce_scatter_block(sendbuf,recvbuf,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD)) return 0;
+    '''):
+      self.addDefine('HAVE_MPI_REDUCE_SCATTER_BLOCK',1) # MPI-2.2
+
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     self.logWrite(self.framework.restoreLog())
@@ -863,9 +876,9 @@ You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to preve
     self.executeTest(self.PetscArchMPICheck)
     # deadlock AO tests ex1 with test 3
     if not (hasattr(self, 'isNecMPI')):
-      funcs = '''MPI_Init_thread MPI_Iallreduce MPI_Ibarrier MPI_Reduce_scatter_block'''.split()
+      funcs = '''MPI_Iallreduce MPI_Ibarrier'''.split()
     else:
-      funcs = '''MPI_Init_thread MPI_Iallreduce MPI_Ibarrier '''.split()
+      funcs = '''MPI_Iallreduce MPI_Ibarrier '''.split()
     found, missing = self.libraries.checkClassify(self.dlib, funcs)
     for f in found:
       self.addDefine('HAVE_' + f.upper(),1)
