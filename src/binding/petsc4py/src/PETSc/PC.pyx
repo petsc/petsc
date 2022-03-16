@@ -410,6 +410,32 @@ cdef class PC(Object):
         cdef PetscMat pmat = NULL
         if mat is not None: pmat = mat.mat
         CHKERR( PCHYPRESetBetaPoissonMatrix(self.pc, pmat) )
+    
+    def setHYPRESetInterpolations(self, dim, Mat RT_Pi_Full=None, RT_Pi=None,
+                                  Mat ND_Pi_Full=None, ND_Pi=None):
+        cdef PetscMat RT_full_mat = NULL
+        if RT_Pi_Full is not None: RT_full_mat = RT_Pi_Full.mat
+        cdef PetscMat ND_full_mat = NULL
+        if ND_Pi_Full is not None: ND_full_mat = ND_Pi_Full.mat
+        cdef PetscInt idim = asInt(dim)
+        cdef PetscMat *RT_Pi_mat = NULL
+        if RT_Pi is not None:
+            PetscMalloc(<size_t>dim*sizeof(PetscMat), &RT_Pi_mat)
+            assert len(RT_Pi) == dim
+            for i in range(dim):
+                RT_Pi_mat[i] = (<Mat?>RT_Pi[i]).mat
+        cdef PetscMat *ND_Pi_mat = NULL
+        if ND_Pi is not None:
+            PetscMalloc(<size_t>dim*sizeof(PetscMat), &ND_Pi_mat)
+            assert len(ND_Pi) == dim
+            for i in range(dim):
+                ND_Pi_mat[dim] = (<Mat?>ND_Pi[i]).mat
+        CHKERR (PCHYPRESetInterpolations(self.pc, idim, RT_full_mat, RT_Pi_mat,
+                                         ND_full_mat, ND_Pi_mat))
+        CHKERR (PetscFree(RT_Pi_mat))
+        CHKERR (PetscFree(ND_Pi_mat))
+       
+       
 
     def setHYPRESetEdgeConstantVectors(self, Vec ozz, Vec zoz, Vec zzo=None):
         cdef PetscVec zzo_vec = NULL

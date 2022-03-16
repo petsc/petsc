@@ -185,6 +185,7 @@ cdef extern from * nogil:
     int PCHYPRESetAlphaPoissonMatrix(PetscPC,PetscMat);
     int PCHYPRESetBetaPoissonMatrix(PetscPC,PetscMat);
     int PCHYPRESetEdgeConstantVectors(PetscPC,PetscVec,PetscVec,PetscVec);
+    int PCHYPRESetInterpolations(PetscPC, PetscInt, PetscMat, PetscMat[], PetscMat, PetscMat[]);
 
     int PCFactorGetMatrix(PetscPC,PetscMat*)
     int PCFactorSetZeroPivot(PetscPC,PetscReal)

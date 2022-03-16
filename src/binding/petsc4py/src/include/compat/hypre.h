@@ -14,6 +14,7 @@ PetscErrorCode PCHYPRESetDiscreteCurl(PETSC_UNUSED PC pc,PETSC_UNUSED Mat C){Pet
 PetscErrorCode PCHYPRESetDiscreteGradient(PETSC_UNUSED PC pc,PETSC_UNUSED Mat G){PetscPCHYPREError;}
 PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PETSC_UNUSED PC pc,PETSC_UNUSED Mat A){PetscPCHYPREError;}
 PetscErrorCode PCHYPRESetBetaPoissonMatrix(PETSC_UNUSED PC pc,PETSC_UNUSED Mat B){PetscPCHYPREError;}
+PetscErrorCode PCHYPRESetInterpolations(PETSC_UNUSED PC pc,PETSC_UNUSED PetscInt dim,PETSC_UNUSED Mat RT_Pi_Full,PETSC_UNUSED Mat RT_Pi[],PETSC_UNUSED Mat ND_Pi_Full,PETSC_UNUSED Mat ND_Pi[]){PetscPCHYPREError;}
 PetscErrorCode PCHYPRESetEdgeConstantVectors(PETSC_UNUSED PC pc,PETSC_UNUSED Vec ozz,PETSC_UNUSED Vec zoz,PETSC_UNUSED Vec zzo){PetscPCHYPREError;}
 
 #undef PetscPCHYPREError
