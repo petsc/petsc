@@ -89,7 +89,7 @@ static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess)
 #if defined(PETSC_USE_COMPLEX)
     ierr = PetscMalloc1(7*pod->maxn,&pod->rwork);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MPI_IALLREDUCE)
+#if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
     ierr = PetscMalloc1(3*pod->maxn,&pod->dots_iallreduce);CHKERRQ(ierr);
 #endif
     pod->lwork = -1;
@@ -258,7 +258,7 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
   ierr = VecRestoreArray(pod->bsnap[pod->curr],&array);CHKERRQ(ierr);
   if (pod->Aspd) {
     ierr = VecMDot(pod->xsnap[pod->curr],pod->n,pod->bsnap,pod->swork);CHKERRQ(ierr);
-#if !defined(PETSC_HAVE_MPI_IALLREDUCE)
+#if !defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
     ierr = MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess));CHKERRMPI(ierr);
 #else
     ierr = MPI_Iallreduce(pod->swork,pod->dots_iallreduce,pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce);CHKERRMPI(ierr);
@@ -281,14 +281,14 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
     if (!herm) {
       off  = (off == pod->n) ? 2*pod->n : pod->n;
       ierr = VecMDot(pod->xsnap[pod->curr],pod->n,pod->bsnap,pod->swork + off);CHKERRQ(ierr);
-#if !defined(PETSC_HAVE_MPI_IALLREDUCE)
+#if !defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
       ierr = MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,3*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess));CHKERRMPI(ierr);
 #else
       ierr = MPI_Iallreduce(pod->swork,pod->dots_iallreduce,3*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess),&pod->req_iallreduce);CHKERRMPI(ierr);
       pod->ndots_iallreduce = 3;
 #endif
     } else {
-#if !defined(PETSC_HAVE_MPI_IALLREDUCE)
+#if !defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
       ierr = MPIU_Allreduce(pod->swork,pod->swork + 3*pod->n,2*pod->n,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)guess));CHKERRMPI(ierr);
       for (i=0;i<pod->n;i++) pod->swork[5*pod->n + i] = pod->swork[4*pod->n + i];
 #else

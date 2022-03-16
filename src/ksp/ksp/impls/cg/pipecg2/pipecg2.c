@@ -591,7 +591,7 @@ static PetscErrorCode  KSPSolve_PIPECG2(KSP ksp)
   lambda[11]= delta[0];
   lambda[12] = dps;
 
-#if defined(PETSC_HAVE_MPI_IALLREDUCE)
+#if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
   ierr = MPI_Iallreduce(MPI_IN_PLACE,&lambda[10],3,MPIU_SCALAR,MPIU_SUM,pcomm,&req);CHKERRMPI(ierr);
 #else
   ierr = MPIU_Allreduce(MPI_IN_PLACE,&lambda[10],3,MPIU_SCALAR,MPIU_SUM,pcomm);CHKERRMPI(ierr);
@@ -659,7 +659,7 @@ static PetscErrorCode  KSPSolve_PIPECG2(KSP ksp)
     gamma[0] = gamma[1];
     delta[0] = delta[1];
 
-#if defined(PETSC_HAVE_MPI_IALLREDUCE)
+#if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
     ierr = MPI_Iallreduce(MPI_IN_PLACE,lambda,15,MPIU_SCALAR,MPIU_SUM,pcomm,&req);CHKERRMPI(ierr);
 #else
     ierr = MPIU_Allreduce(MPI_IN_PLACE,lambda,15,MPIU_SCALAR,MPIU_SUM,pcomm);CHKERRMPI(ierr);

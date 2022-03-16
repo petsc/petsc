@@ -472,14 +472,17 @@ Unable to run hostname to check the network')
                        if (MPI_Win_create_dynamic(MPI_INFO_NULL,MPI_COMM_WORLD,&win));\n'):
       self.addDefine('HAVE_MPI_FEATURE_DYNAMIC_WINDOW', 1) # Use it to represent a group of MPI3 Win routines
     if self.checkLink('#include <mpi.h>\n',
-                      'int send=0,recv,counts[2]={1,1},displs[2]={1,2}; MPI_Request req;\n\
-                       if (MPI_Iscatter(&send,1,MPI_INT,&recv,1,MPI_INT,0,MPI_COMM_WORLD,&req));\n \
-                       if (MPI_Iscatterv(&send,counts,displs,MPI_INT,&recv,1,MPI_INT,0,MPI_COMM_WORLD,&req));\n \
-                       if (MPI_Igather(&send,1,MPI_INT,&recv,1,MPI_INT,0,MPI_COMM_WORLD,&req));\n \
-                       if (MPI_Igatherv(&send,1,MPI_INT,&recv,counts,displs,MPI_INT,0,MPI_COMM_WORLD,&req));\n \
-                       if (MPI_Iallgather(&send,1,MPI_INT,&recv,1,MPI_INT,MPI_COMM_WORLD,&req));\n \
-                       if (MPI_Iallgatherv(&send,1,MPI_INT,&recv,counts,displs,MPI_INT,MPI_COMM_WORLD,&req));\n \
-                       if (MPI_Ialltoall(&send,1,MPI_INT,&recv,1,MPI_INT,MPI_COMM_WORLD,&req));\n'):
+                      '''
+                        int send=0,recv,counts[2]={1,1},displs[2]={1,2}; MPI_Request req;
+                        if (MPI_Iscatter(&send,1,MPI_INT,&recv,1,MPI_INT,0,MPI_COMM_WORLD,&req)) return 0;
+                        if (MPI_Iscatterv(&send,counts,displs,MPI_INT,&recv,1,MPI_INT,0,MPI_COMM_WORLD,&req)) return 0;
+                        if (MPI_Igather(&send,1,MPI_INT,&recv,1,MPI_INT,0,MPI_COMM_WORLD,&req)) return 0;
+                        if (MPI_Igatherv(&send,1,MPI_INT,&recv,counts,displs,MPI_INT,0,MPI_COMM_WORLD,&req)) return 0;
+                        if (MPI_Iallgather(&send,1,MPI_INT,&recv,1,MPI_INT,MPI_COMM_WORLD,&req)) return 0;
+                        if (MPI_Iallgatherv(&send,1,MPI_INT,&recv,counts,displs,MPI_INT,MPI_COMM_WORLD,&req)) return 0;
+                        if (MPI_Ialltoall(&send,1,MPI_INT,&recv,1,MPI_INT,MPI_COMM_WORLD,&req)) return 0;
+                        if (MPI_Iallreduce(&send,&recv,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD,&req)) return 0;
+                      '''):
       self.addDefine('HAVE_MPI_NONBLOCKING_COLLECTIVES', 1)
       self.support_mpi3_nbc = 1
     if self.checkLink('#include <mpi.h>\n',
@@ -876,9 +879,9 @@ You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to preve
     self.executeTest(self.PetscArchMPICheck)
     # deadlock AO tests ex1 with test 3
     if not (hasattr(self, 'isNecMPI')):
-      funcs = '''MPI_Iallreduce MPI_Ibarrier'''.split()
+      funcs = '''MPI_Ibarrier'''.split()
     else:
-      funcs = '''MPI_Iallreduce MPI_Ibarrier '''.split()
+      funcs = '''MPI_Ibarrier '''.split()
     found, missing = self.libraries.checkClassify(self.dlib, funcs)
     for f in found:
       self.addDefine('HAVE_' + f.upper(),1)

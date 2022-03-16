@@ -26,7 +26,7 @@ static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf,void *recvbuf,PetscMPIIn
   PETSC_UNUSED PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_MPI_IALLREDUCE)
+#if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
   ierr = MPI_Iallreduce(sendbuf,recvbuf,count,datatype,op,comm,request);CHKERRMPI(ierr);
 #else
   ierr = MPIU_Allreduce(sendbuf,recvbuf,count,datatype,op,comm);CHKERRMPI(ierr);
@@ -57,7 +57,7 @@ static PetscErrorCode  PetscSplitReductionCreate(MPI_Comm comm,PetscSplitReducti
   (*sr)->request     = MPI_REQUEST_NULL;
   (*sr)->mix         = PETSC_FALSE;
   (*sr)->async       = PETSC_FALSE;
-#if defined(PETSC_HAVE_MPI_IALLREDUCE)
+#if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
   (*sr)->async = PETSC_TRUE;    /* Enable by default */
 #endif
   /* always check for option; so that tests that run on systems without support don't warn about unhandled options */
