@@ -444,34 +444,47 @@ PetscErrorCode VecLoad_Plex_HDF5_Native_Internal(Vec v, PetscViewer viewer)
 PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, PetscViewer viewer)
 {
   const char           *topologydm_name;
-  IS                    orderIS, conesIS, cellsIS, orntsIS;
+  const char           *pointsName, *coneSizesName, *conesName, *orientationsName;
+  IS                    pointsIS, coneSizesIS, conesIS, orientationsIS;
+  PetscInt             *points, *coneSizes, *cones, *orientations;
   const PetscInt       *gpoint;
-  PetscInt             *order, *sizes, *cones, *ornts;
-  PetscInt              dim, pStart, pEnd, p, conesSize = 0, cellsSize = 0, c = 0, s = 0;
+  PetscInt              pStart, pEnd, nPoints = 0, conesSize = 0;
+  PetscInt              p, c, s;
   DMPlexStorageVersion  version;
   char                  group[PETSC_MAX_PATH_LEN];
+  MPI_Comm              comm;
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  pointsName        = "order";
+  coneSizesName     = "cones";
+  conesName         = "cells";
+  orientationsName  = "orientation";
   ierr = DMPlexStorageVersionSetUpWriting_Private(dm, viewer, &version);CHKERRQ(ierr);
-  ierr = ISGetIndices(globalPointNumbers, &gpoint);CHKERRQ(ierr);
   ierr = DMPlexGetHDF5Name_Private(dm, &topologydm_name);CHKERRQ(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  if (version.major <= 1) {
+    ierr = PetscStrcpy(group, "/topology");CHKERRQ(ierr);
+  } else {
+    ierr = PetscSNPrintf(group, sizeof(group), "topologies/%s/topology", topologydm_name);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
   ierr = DMPlexGetChart(dm, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = ISGetIndices(globalPointNumbers, &gpoint);CHKERRQ(ierr);
   for (p = pStart; p < pEnd; ++p) {
     if (gpoint[p] >= 0) {
       PetscInt coneSize;
 
       ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
-      conesSize += 1;
-      cellsSize += coneSize;
+      nPoints += 1;
+      conesSize += coneSize;
     }
   }
-  ierr = PetscMalloc1(conesSize, &order);CHKERRQ(ierr);
-  ierr = PetscMalloc1(conesSize, &sizes);CHKERRQ(ierr);
-  ierr = PetscMalloc1(cellsSize, &cones);CHKERRQ(ierr);
-  ierr = PetscMalloc1(cellsSize, &ornts);CHKERRQ(ierr);
-  for (p = pStart; p < pEnd; ++p) {
+  ierr = PetscMalloc1(nPoints, &points);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nPoints, &coneSizes);CHKERRQ(ierr);
+  ierr = PetscMalloc1(conesSize, &cones);CHKERRQ(ierr);
+  ierr = PetscMalloc1(conesSize, &orientations);CHKERRQ(ierr);
+  for (p = pStart, c = 0, s = 0; p < pEnd; ++p) {
     if (gpoint[p] >= 0) {
       const PetscInt *cone, *ornt;
       PetscInt        coneSize, cp;
@@ -479,38 +492,41 @@ PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, Pe
       ierr = DMPlexGetConeSize(dm, p, &coneSize);CHKERRQ(ierr);
       ierr = DMPlexGetCone(dm, p, &cone);CHKERRQ(ierr);
       ierr = DMPlexGetConeOrientation(dm, p, &ornt);CHKERRQ(ierr);
-      order[s]   = gpoint[p];
-      sizes[s++] = coneSize;
-      for (cp = 0; cp < coneSize; ++cp, ++c) {cones[c] = gpoint[cone[cp]] < 0 ? -(gpoint[cone[cp]]+1) : gpoint[cone[cp]]; ornts[c] = ornt[cp];}
+      points[s]    = gpoint[p];
+      coneSizes[s] = coneSize;
+      for (cp = 0; cp < coneSize; ++cp, ++c) {
+        cones[c] = gpoint[cone[cp]] < 0 ? -(gpoint[cone[cp]]+1) : gpoint[cone[cp]];
+        orientations[c] = ornt[cp];
+      }
+      ++s;
     }
   }
-  PetscCheckFalse(s != conesSize,PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of points %D != %D", s, conesSize);
-  PetscCheckFalse(c != cellsSize,PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of cone points %D != %D", c, cellsSize);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), conesSize, order, PETSC_OWN_POINTER, &orderIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) orderIS, "order");CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), conesSize, sizes, PETSC_OWN_POINTER, &conesIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) conesIS, "cones");CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), cellsSize, cones, PETSC_OWN_POINTER, &cellsIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) cellsIS, "cells");CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PetscObjectComm((PetscObject) dm), cellsSize, ornts, PETSC_OWN_POINTER, &orntsIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) orntsIS, "orientation");CHKERRQ(ierr);
-  if (version.major <= 1) {
-    ierr = PetscStrcpy(group, "/topology");CHKERRQ(ierr);
-  } else {
-    ierr = PetscSNPrintf(group, sizeof(group), "topologies/%s/topology", topologydm_name);CHKERRQ(ierr);
-  }
-  ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
-  ierr = ISView(orderIS, viewer);CHKERRQ(ierr);
+  PetscCheckFalse(s != nPoints,PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of points %D != %D", s, nPoints);
+  PetscCheckFalse(c != conesSize,PETSC_COMM_SELF, PETSC_ERR_LIB, "Total number of cone points %D != %D", c, conesSize);
+  ierr = ISCreateGeneral(comm, nPoints, points, PETSC_OWN_POINTER, &pointsIS);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm, nPoints, coneSizes, PETSC_OWN_POINTER, &coneSizesIS);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm, conesSize, cones, PETSC_OWN_POINTER, &conesIS);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm, conesSize, orientations, PETSC_OWN_POINTER, &orientationsIS);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) pointsIS, pointsName);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coneSizesIS, coneSizesName);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) conesIS, conesName);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) orientationsIS, orientationsName);CHKERRQ(ierr);
+  ierr = ISView(pointsIS, viewer);CHKERRQ(ierr);
+  ierr = ISView(coneSizesIS, viewer);CHKERRQ(ierr);
   ierr = ISView(conesIS, viewer);CHKERRQ(ierr);
-  ierr = ISView(cellsIS, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject) cellsIS, "cell_dim", PETSC_INT, (void *) &dim);CHKERRQ(ierr);
-  ierr = ISView(orntsIS, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
-  ierr = ISDestroy(&orderIS);CHKERRQ(ierr);
+  ierr = ISView(orientationsIS, viewer);CHKERRQ(ierr);
+  ierr = ISDestroy(&pointsIS);CHKERRQ(ierr);
+  ierr = ISDestroy(&coneSizesIS);CHKERRQ(ierr);
   ierr = ISDestroy(&conesIS);CHKERRQ(ierr);
-  ierr = ISDestroy(&cellsIS);CHKERRQ(ierr);
-  ierr = ISDestroy(&orntsIS);CHKERRQ(ierr);
+  ierr = ISDestroy(&orientationsIS);CHKERRQ(ierr);
   ierr = ISRestoreIndices(globalPointNumbers, &gpoint);CHKERRQ(ierr);
+  {
+    PetscInt dim;
+
+    ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5WriteAttribute(viewer, conesName, "cell_dim", PETSC_INT, (void *) &dim);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1368,8 +1384,9 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
 {
   MPI_Comm              comm;
   const char           *topologydm_name;
-  IS                    orderIS, conesIS, cellsIS, orntsIS;
-  const PetscInt       *order, *cones, *cells, *ornts;
+  const char           *pointsName, *coneSizesName, *conesName, *orientationsName;
+  IS                    pointsIS, coneSizesIS, conesIS, orientationsIS;
+  const PetscInt       *points, *coneSizes, *cones, *orientations;
   PetscInt             *cone, *ornt;
   PetscInt              dim, N, Np, pEnd, p, q, maxConeSize = 0, c;
   PetscMPIInt           size, rank;
@@ -1378,6 +1395,10 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
+  pointsName        = "order";
+  coneSizesName     = "cones";
+  conesName         = "cells";
+  orientationsName  = "orientation";
   ierr = PetscObjectGetComm((PetscObject)dm, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRMPI(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRMPI(ierr);
@@ -1389,53 +1410,56 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
     ierr = PetscSNPrintf(group, sizeof(group), "topologies/%s/topology", topologydm_name);CHKERRQ(ierr);
   }
   ierr = PetscViewerHDF5PushGroup(viewer, group);CHKERRQ(ierr);
-  ierr = ISCreate(comm, &orderIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) orderIS, "order");CHKERRQ(ierr);
+  ierr = ISCreate(comm, &pointsIS);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) pointsIS, pointsName);CHKERRQ(ierr);
+  ierr = ISCreate(comm, &coneSizesIS);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) coneSizesIS, coneSizesName);CHKERRQ(ierr);
   ierr = ISCreate(comm, &conesIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) conesIS, "cones");CHKERRQ(ierr);
-  ierr = ISCreate(comm, &cellsIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) cellsIS, "cells");CHKERRQ(ierr);
-  ierr = ISCreate(comm, &orntsIS);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) orntsIS, "orientation");CHKERRQ(ierr);
-  ierr = PetscViewerHDF5ReadObjectAttribute(viewer, (PetscObject) cellsIS, "cell_dim", PETSC_INT, NULL, &dim);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) conesIS, conesName);CHKERRQ(ierr);
+  ierr = ISCreate(comm, &orientationsIS);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) orientationsIS, orientationsName);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5ReadObjectAttribute(viewer, (PetscObject) conesIS, "cell_dim", PETSC_INT, NULL, &dim);CHKERRQ(ierr);
   ierr = DMSetDimension(dm, dim);CHKERRQ(ierr);
   {
     /* Force serial load */
-    ierr = PetscViewerHDF5ReadSizes(viewer, "order", NULL, &Np);CHKERRQ(ierr);
-    ierr = PetscLayoutSetLocalSize(orderIS->map, rank == 0 ? Np : 0);CHKERRQ(ierr);
-    ierr = PetscLayoutSetSize(orderIS->map, Np);CHKERRQ(ierr);
-    ierr = PetscViewerHDF5ReadSizes(viewer, "cones", NULL, &Np);CHKERRQ(ierr);
-    ierr = PetscLayoutSetLocalSize(conesIS->map, rank == 0 ? Np : 0);CHKERRQ(ierr);
-    ierr = PetscLayoutSetSize(conesIS->map, Np);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5ReadSizes(viewer, pointsName, NULL, &Np);CHKERRQ(ierr);
+    ierr = PetscLayoutSetLocalSize(pointsIS->map, rank == 0 ? Np : 0);CHKERRQ(ierr);
+    ierr = PetscLayoutSetSize(pointsIS->map, Np);CHKERRQ(ierr);
     pEnd = rank == 0 ? Np : 0;
-    ierr = PetscViewerHDF5ReadSizes(viewer, "cells", NULL, &N);CHKERRQ(ierr);
-    ierr = PetscLayoutSetLocalSize(cellsIS->map, rank == 0 ? N : 0);CHKERRQ(ierr);
-    ierr = PetscLayoutSetSize(cellsIS->map, N);CHKERRQ(ierr);
-    ierr = PetscViewerHDF5ReadSizes(viewer, "orientation", NULL, &N);CHKERRQ(ierr);
-    ierr = PetscLayoutSetLocalSize(orntsIS->map, rank == 0 ? N : 0);CHKERRQ(ierr);
-    ierr = PetscLayoutSetSize(orntsIS->map, N);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5ReadSizes(viewer, coneSizesName, NULL, &Np);CHKERRQ(ierr);
+    ierr = PetscLayoutSetLocalSize(coneSizesIS->map, rank == 0 ? Np : 0);CHKERRQ(ierr);
+    ierr = PetscLayoutSetSize(coneSizesIS->map, Np);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5ReadSizes(viewer, conesName, NULL, &N);CHKERRQ(ierr);
+    ierr = PetscLayoutSetLocalSize(conesIS->map, rank == 0 ? N : 0);CHKERRQ(ierr);
+    ierr = PetscLayoutSetSize(conesIS->map, N);CHKERRQ(ierr);
+    ierr = PetscViewerHDF5ReadSizes(viewer, orientationsName, NULL, &N);CHKERRQ(ierr);
+    ierr = PetscLayoutSetLocalSize(orientationsIS->map, rank == 0 ? N : 0);CHKERRQ(ierr);
+    ierr = PetscLayoutSetSize(orientationsIS->map, N);CHKERRQ(ierr);
   }
-  ierr = ISLoad(orderIS, viewer);CHKERRQ(ierr);
+  ierr = ISLoad(pointsIS, viewer);CHKERRQ(ierr);
+  ierr = ISLoad(coneSizesIS, viewer);CHKERRQ(ierr);
   ierr = ISLoad(conesIS, viewer);CHKERRQ(ierr);
-  ierr = ISLoad(cellsIS, viewer);CHKERRQ(ierr);
-  ierr = ISLoad(orntsIS, viewer);CHKERRQ(ierr);
+  ierr = ISLoad(orientationsIS, viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   /* Create Plex */
   ierr = DMPlexSetChart(dm, 0, pEnd);CHKERRQ(ierr);
-  ierr = ISGetIndices(orderIS, &order);CHKERRQ(ierr);
-  ierr = ISGetIndices(conesIS, &cones);CHKERRQ(ierr);
+  ierr = ISGetIndices(pointsIS, &points);CHKERRQ(ierr);
+  ierr = ISGetIndices(coneSizesIS, &coneSizes);CHKERRQ(ierr);
   for (p = 0; p < pEnd; ++p) {
-    ierr = DMPlexSetConeSize(dm, order[p], cones[p]);CHKERRQ(ierr);
-    maxConeSize = PetscMax(maxConeSize, cones[p]);
+    ierr = DMPlexSetConeSize(dm, points[p], coneSizes[p]);CHKERRQ(ierr);
+    maxConeSize = PetscMax(maxConeSize, coneSizes[p]);
   }
   ierr = DMSetUp(dm);CHKERRQ(ierr);
-  ierr = ISGetIndices(cellsIS, &cells);CHKERRQ(ierr);
-  ierr = ISGetIndices(orntsIS, &ornts);CHKERRQ(ierr);
+  ierr = ISGetIndices(conesIS, &cones);CHKERRQ(ierr);
+  ierr = ISGetIndices(orientationsIS, &orientations);CHKERRQ(ierr);
   ierr = PetscMalloc2(maxConeSize,&cone,maxConeSize,&ornt);CHKERRQ(ierr);
   for (p = 0, q = 0; p < pEnd; ++p) {
-    for (c = 0; c < cones[p]; ++c, ++q) {cone[c] = cells[q]; ornt[c] = ornts[q];}
-    ierr = DMPlexSetCone(dm, order[p], cone);CHKERRQ(ierr);
-    ierr = DMPlexSetConeOrientation(dm, order[p], ornt);CHKERRQ(ierr);
+    for (c = 0; c < coneSizes[p]; ++c, ++q) {
+      cone[c] = cones[q];
+      ornt[c] = orientations[q];
+    }
+    ierr = DMPlexSetCone(dm, points[p], cone);CHKERRQ(ierr);
+    ierr = DMPlexSetConeOrientation(dm, points[p], ornt);CHKERRQ(ierr);
   }
   ierr = PetscFree2(cone,ornt);CHKERRQ(ierr);
   /* Create global section migration SF */
@@ -1456,15 +1480,16 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
     ierr = PetscLayoutDestroy(&layout);CHKERRQ(ierr);
     ierr = PetscFree(globalIndices);CHKERRQ(ierr);
   }
-  /*  */
-  ierr = ISRestoreIndices(orderIS, &order);CHKERRQ(ierr);
+  /* Clean-up */
+  ierr = ISRestoreIndices(pointsIS, &points);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(coneSizesIS, &coneSizes);CHKERRQ(ierr);
   ierr = ISRestoreIndices(conesIS, &cones);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(cellsIS, &cells);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(orntsIS, &ornts);CHKERRQ(ierr);
-  ierr = ISDestroy(&orderIS);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(orientationsIS, &orientations);CHKERRQ(ierr);
+  ierr = ISDestroy(&pointsIS);CHKERRQ(ierr);
+  ierr = ISDestroy(&coneSizesIS);CHKERRQ(ierr);
   ierr = ISDestroy(&conesIS);CHKERRQ(ierr);
-  ierr = ISDestroy(&cellsIS);CHKERRQ(ierr);
-  ierr = ISDestroy(&orntsIS);CHKERRQ(ierr);
+  ierr = ISDestroy(&orientationsIS);CHKERRQ(ierr);
+  /* Fill in the rest of the topology structure */
   ierr = DMPlexSymmetrize(dm);CHKERRQ(ierr);
   ierr = DMPlexStratify(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
