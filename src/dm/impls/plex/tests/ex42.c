@@ -408,7 +408,7 @@ int main(int argc, char **argv)
     test:
       suffix: cube_3_p4
       nsize: 4
-      args: -dm_refine_pre 1 -dm_plex_shape box_surface -dm_refine 1
+      args: -petscpartitioner_type simple -dm_refine_pre 1 -dm_plex_shape box_surface -dm_refine 1
 
     test:
       suffix: sphere_3
@@ -417,6 +417,6 @@ int main(int argc, char **argv)
     test:
       suffix: sphere_3_p4
       nsize: 4
-      args: -dm_refine_pre 1 -dm_plex_shape sphere -dm_refine 2
+      args: -petscpartitioner_type simple -dm_refine_pre 1 -dm_plex_shape sphere -dm_refine 2
 
 TEST*/
