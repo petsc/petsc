@@ -329,20 +329,21 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
   case cupmErrorNoDevice: {
     PetscBool found;
     PetscBool ignoreCupmError = PETSC_FALSE;
-    auto      buf = std::array<char,PETSC_DEVICE_MAX_DEVICES>{};
+    char      buf[16];
 
-    ierr = PetscOptionsGetenv(comm,CUPM_VISIBLE_DEVICES<T>(),buf.data(),buf.size(),&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetenv(comm,CUPM_VISIBLE_DEVICES<T>(),buf,sizeof(buf),&found);CHKERRQ(ierr);
     if (found) {
-      for (auto it = buf.cbegin(); it != buf.cend(); ++it) {
-        if (!*it) continue;
-        // find out the first non-empty characters in buf are '-<some number>', which indicates
-        // no devices should be visible so we can ignore the errors about not finding devices
-        ignoreCupmError = static_cast<PetscBool>((*it == '-') && (std::next(it) != buf.cend()) && isdigit(*std::next(it)));
-        break;
-      }
+      size_t len;
+
+      ierr = PetscStrlen(buf,&len);CHKERRQ(ierr);
+      if (!len || buf[0] == '-') ignoreCupmError = PETSC_TRUE;
     }
     id = PETSC_CUPM_DEVICE_NONE; // there are no devices anyway
-    if (ignoreCupmError) {auto PETSC_UNUSED ignored = cupmGetLastError(); break;}
+    if (ignoreCupmError) {
+      initTypeCUPM = PETSC_DEVICE_INIT_NONE;
+      auto PETSC_UNUSED ignored = cupmGetLastError();
+      break;
+    }
     // if we don't outright ignore the error we then drop and check if the user tried to
     // eagerly initialize the device
   }
