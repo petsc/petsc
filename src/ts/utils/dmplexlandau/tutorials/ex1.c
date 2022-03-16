@@ -20,11 +20,11 @@ int main(int argc, char **argv)
   ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
   ierr = PetscOptionsGetInt(NULL,NULL, "-dim", &dim, NULL);CHKERRQ(ierr);
   /* Create a mesh */
-  ierr = LandauCreateVelocitySpace(PETSC_COMM_SELF, dim, "", &X, &J, &dm);CHKERRQ(ierr);
+  ierr = DMPlexLandauCreateVelocitySpace(PETSC_COMM_SELF, dim, "", &X, &J, &dm);CHKERRQ(ierr);
   ierr = DMSetUp(dm);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&X_0);CHKERRQ(ierr);
   ierr = VecCopy(X,X_0);CHKERRQ(ierr);
-  ierr = LandauPrintNorms(X,0);CHKERRQ(ierr);
+  ierr = DMPlexLandauPrintNorms(X,0);CHKERRQ(ierr);
   ierr = DMSetOutputSequenceNumber(dm, 0, 0.0);CHKERRQ(ierr);
   ierr = DMViewFromOptions(dm,NULL,"-dm_view");CHKERRQ(ierr);
   ierr = VecViewFromOptions(X,NULL,"-vec_view");CHKERRQ(ierr);
@@ -34,21 +34,21 @@ int main(int argc, char **argv)
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
   ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,NULL,LandauIFunction,NULL);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,J,J,LandauIJacobian,NULL);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,DMPlexLandauIFunction,NULL);CHKERRQ(ierr);
+  ierr = TSSetIJacobian(ts,J,J,DMPlexLandauIJacobian,NULL);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER);CHKERRQ(ierr);
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
   ierr = TSSolve(ts,X);CHKERRQ(ierr);
-  ierr = LandauPrintNorms(X,1);CHKERRQ(ierr);
+  ierr = DMPlexLandauPrintNorms(X,1);CHKERRQ(ierr);
   ierr = TSGetTime(ts, &time);CHKERRQ(ierr);
   ierr = DMSetOutputSequenceNumber(dm, 1, time);CHKERRQ(ierr);
   ierr = VecViewFromOptions(X,NULL,"-vec_view");CHKERRQ(ierr);
   ierr = VecAXPY(X,-1,X_0);CHKERRQ(ierr);
   /* clean up */
-  ierr = LandauDestroyVelocitySpace(&dm);CHKERRQ(ierr);
+  ierr = DMPlexLandauDestroyVelocitySpace(&dm);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&X_0);CHKERRQ(ierr);

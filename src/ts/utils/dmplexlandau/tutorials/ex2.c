@@ -415,7 +415,7 @@ static PetscErrorCode FormSource(TS ts, PetscReal ftime, Vec X_dummmy, Vec F, vo
       ierr = DMCompositeGetAccessArray(pack, F, ctx->num_grids*ctx->batch_sz, NULL, globFarray);CHKERRQ(ierr);
       for (PetscInt grid=0 ; grid<ctx->num_grids ; grid++) {
         /* add it */
-        ierr = LandauAddMaxwellians(ctx->plex[grid],globFarray[ LAND_PACK_IDX(0,grid) ],ftime,temps,tilda_ns,grid,0,ctx);CHKERRQ(ierr);
+        ierr = DMPlexLandauAddMaxwellians(ctx->plex[grid],globFarray[ LAND_PACK_IDX(0,grid) ],ftime,temps,tilda_ns,grid,0,ctx);CHKERRQ(ierr);
         ierr = VecViewFromOptions(globFarray[ LAND_PACK_IDX(0,grid) ],NULL,"-vec_view_sources");CHKERRQ(ierr);
       }
       // Does DMCompositeRestoreAccessArray copy the data back? (no)
@@ -447,7 +447,7 @@ PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
   if (time/rectx->plotDt >= (PetscReal)rectx->plotIdx || reason) {
     if ((reason || stepi==0 || rectx->plotIdx%rectx->print_period==0) && ctx->verbose > 0) {
       /* print norms */
-      ierr = LandauPrintNorms(X, stepi);CHKERRQ(ierr);
+      ierr = DMPlexLandauPrintNorms(X, stepi);CHKERRQ(ierr);
     }
     if (!rectx->plotting) { /* first step of possible backtracks */
       rectx->plotting = PETSC_TRUE;
@@ -679,7 +679,7 @@ int main(int argc, char **argv)
   }
   ierr = PetscOptionsGetInt(NULL,NULL, "-dim", &dim, NULL);CHKERRQ(ierr);
   /* Create a mesh */
-  ierr = LandauCreateVelocitySpace(PETSC_COMM_WORLD, dim, "", &X, &J, &pack);CHKERRQ(ierr);
+  ierr = DMPlexLandauCreateVelocitySpace(PETSC_COMM_WORLD, dim, "", &X, &J, &pack);CHKERRQ(ierr);
   ierr = DMCompositeGetNumberDM(pack,&nDMs);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(*XsubArray)*nDMs, &XsubArray);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)J, "Jacobian");CHKERRQ(ierr);
@@ -703,8 +703,8 @@ int main(int argc, char **argv)
   /* Create timestepping solver context */
   ierr = TSCreate(PETSC_COMM_SELF,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts,pack);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,NULL,LandauIFunction,NULL);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,J,J,LandauIJacobian,NULL);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,NULL,DMPlexLandauIFunction,NULL);CHKERRQ(ierr);
+  ierr = TSSetIJacobian(ts,J,J,DMPlexLandauIJacobian,NULL);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,NULL,FormSource,NULL);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
@@ -712,7 +712,7 @@ int main(int argc, char **argv)
   ierr = TSMonitorSet(ts,Monitor,ctx,NULL);CHKERRQ(ierr);
   ierr = TSSetPreStep(ts,PreStep);CHKERRQ(ierr);
   rectx->Ez_initial = ctx->Ez;       /* cache for induction caclulation - applied E field */
-  if (1) { /* warm up an test just LandauIJacobian */
+  if (1) { /* warm up an test just DMPlexLandauIJacobian */
     Vec           vec;
     PetscInt      nsteps;
     PetscReal     dt;
@@ -754,7 +754,7 @@ int main(int argc, char **argv)
 #endif
   ierr = VecViewFromOptions(X, NULL,"-vec_view_global");CHKERRQ(ierr);
   /* clean up */
-  ierr = LandauDestroyVelocitySpace(&pack);CHKERRQ(ierr);
+  ierr = DMPlexLandauDestroyVelocitySpace(&pack);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = PetscFree(rectx);CHKERRQ(ierr);

@@ -4,13 +4,13 @@
 #include <petscdmplex.h> /*I      "petscdmplex.h"    I*/
 #include <petscts.h>
 
-PETSC_EXTERN PetscErrorCode LandauPrintNorms(Vec, PetscInt);
-PETSC_EXTERN PetscErrorCode LandauCreateVelocitySpace(MPI_Comm,PetscInt,const char[],Vec*,Mat*,DM*);
-PETSC_EXTERN PetscErrorCode LandauDestroyVelocitySpace(DM*);
-PETSC_EXTERN PetscErrorCode LandauAddMaxwellians(DM, Vec, PetscReal, PetscReal[], PetscReal[], PetscInt, PetscInt, void *);
-PETSC_EXTERN PetscErrorCode LandauCreateMassMatrix(DM dm, Mat *Amat);
-PETSC_EXTERN PetscErrorCode LandauIFunction(TS, PetscReal,Vec,Vec,Vec,void *);
-PETSC_EXTERN PetscErrorCode LandauIJacobian(TS, PetscReal,Vec,Vec,PetscReal,Mat,Mat,void *);
+PETSC_EXTERN PetscErrorCode DMPlexLandauPrintNorms(Vec, PetscInt);
+PETSC_EXTERN PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm,PetscInt,const char[],Vec*,Mat*,DM*);
+PETSC_EXTERN PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM*);
+PETSC_EXTERN PetscErrorCode DMPlexLandauAddMaxwellians(DM, Vec, PetscReal, PetscReal[], PetscReal[], PetscInt, PetscInt, void *);
+PETSC_EXTERN PetscErrorCode DMPlexLandauCreateMassMatrix(DM dm, Mat *Amat);
+PETSC_EXTERN PetscErrorCode DMPlexLandauIFunction(TS, PetscReal,Vec,Vec,Vec,void *);
+PETSC_EXTERN PetscErrorCode DMPlexLandauIJacobian(TS, PetscReal,Vec,Vec,PetscReal,Mat,Mat,void *);
 
 typedef int LandauIdx;
 
