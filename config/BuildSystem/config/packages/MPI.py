@@ -482,6 +482,7 @@ Unable to run hostname to check the network')
                         if (MPI_Iallgatherv(&send,1,MPI_INT,&recv,counts,displs,MPI_INT,MPI_COMM_WORLD,&req)) return 0;
                         if (MPI_Ialltoall(&send,1,MPI_INT,&recv,1,MPI_INT,MPI_COMM_WORLD,&req)) return 0;
                         if (MPI_Iallreduce(&send,&recv,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD,&req)) return 0;
+                        if (MPI_Ibarrier(MPI_COMM_WORLD,&req)) return 0;
                       '''):
       self.addDefine('HAVE_MPI_NONBLOCKING_COLLECTIVES', 1)
       self.support_mpi3_nbc = 1
@@ -877,14 +878,6 @@ You may need to set the environmental variable HWLOC_COMPONENTS to -x86 to preve
     self.executeTest(self.configureIO) #depends on checkMPIDistro
     self.executeTest(self.findMPIIncludeAndLib)
     self.executeTest(self.PetscArchMPICheck)
-    # deadlock AO tests ex1 with test 3
-    if not (hasattr(self, 'isNecMPI')):
-      funcs = '''MPI_Ibarrier'''.split()
-    else:
-      funcs = '''MPI_Ibarrier '''.split()
-    found, missing = self.libraries.checkClassify(self.dlib, funcs)
-    for f in found:
-      self.addDefine('HAVE_' + f.upper(),1)
 
     oldFlags = self.compilers.CPPFLAGS # Disgusting save and restore
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)

@@ -69,7 +69,7 @@ PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm comm,PetscBuildTwoSidedTyp
   if (_twosided_type == PETSC_BUILDTWOSIDED_NOTSET) {
     ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
     _twosided_type = PETSC_BUILDTWOSIDED_ALLREDUCE; /* default for small comms, see https://gitlab.com/petsc/petsc/-/merge_requests/2611 */
-#if defined(PETSC_HAVE_MPI_IBARRIER)
+#if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
     if (size > 1024) _twosided_type = PETSC_BUILDTWOSIDED_IBARRIER;
 #endif
     ierr = PetscOptionsGetEnum(NULL,NULL,"-build_twosided",PetscBuildTwoSidedTypes,(PetscEnum*)&_twosided_type,NULL);CHKERRQ(ierr);
@@ -78,7 +78,7 @@ PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm comm,PetscBuildTwoSidedTyp
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MPI_IBARRIER)
+#if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
 static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata)
 {
   PetscErrorCode ierr;
@@ -289,7 +289,7 @@ PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm,PetscMPIInt count,MPI_Dataty
   ierr = PetscCommBuildTwoSidedGetType(comm,&buildtype);CHKERRQ(ierr);
   switch (buildtype) {
   case PETSC_BUILDTWOSIDED_IBARRIER:
-#if defined(PETSC_HAVE_MPI_IBARRIER)
+#if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
     ierr = PetscCommBuildTwoSided_Ibarrier(comm,count,dtype,nto,toranks,todata,nfrom,fromranks,fromdata);CHKERRQ(ierr);
     break;
 #else
@@ -356,7 +356,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm,PetscMP
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_MPI_IBARRIER)
+#if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
 
 static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm,PetscMPIInt count,MPI_Datatype dtype,PetscMPIInt nto,const PetscMPIInt *toranks,const void *todata,
                                                           PetscMPIInt *nfrom,PetscMPIInt **fromranks,void *fromdata,PetscMPIInt ntags,MPI_Request **toreqs,MPI_Request **fromreqs,
@@ -559,7 +559,7 @@ PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm,PetscMPIInt count,MPI_Da
   ierr = PetscCommBuildTwoSidedGetType(comm,&buildtype);CHKERRQ(ierr);
   switch (buildtype) {
   case PETSC_BUILDTWOSIDED_IBARRIER:
-#if defined(PETSC_HAVE_MPI_IBARRIER)
+#if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
     f = PetscCommBuildTwoSidedFReq_Ibarrier;
     break;
 #else
