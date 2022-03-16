@@ -1,10 +1,5 @@
-<HTML>
-<HEAD>
-<TITLE>DMNetwork Manual Pages</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
+# DMNetwork Manual Pages
 
-<H2> DMNetwork</H2>
+The DMNetwork class encapsulates a graph topology, and is based on DMPLEX. It is designed to handle very large scale graphs, such as those that arise in power system or wireless communication modeling.
 
-The DMNetwork class encapsulates a graph topology, and is based on DMPLEX. It is designed to handle very large scales graphs, such as those that arise in power system or wireless communication modeling.
-<P>
+

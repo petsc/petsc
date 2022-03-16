@@ -1,9 +1,5 @@
-<HTML>
-<HEAD>
-<TITLE>Generic PETSc Manual Pages</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
+# Generic PETSc Manual Pages
 
 Empty page for makefiles that are missing a MANSEC variable (the directories 
 don't have code in them).
-<P>
+

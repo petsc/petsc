@@ -1,13 +1,6 @@
-<HTML>
-<HEAD>
-<TITLE>Viewer Manual Pages</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
+# Viewer Manual Pages
 
-<H2> PetscViewer Manual Pages 
-</H2>
 
 PETSc viewers export information and data from PETSc objects.
 
-<P>
 

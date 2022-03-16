@@ -1,10 +1,4 @@
-<HTML>
-<HEAD>
-<TITLE>DMSWARM Manual Pages</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
-
-<H2> DMSWARM</H2>
+# DMSWARM Manual Pages
 
 The DMSWARM class encapsulates a particle cloud, with interfaces for particle data, movement, and interface with meshes.
-<P>
+

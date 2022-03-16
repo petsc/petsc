@@ -1,10 +1,6 @@
-<HTML>
-<HEAD>
-<TITLE>DMPLEX Manual Pages</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
+# DMPLEX Manual Pages
 
-<H2> DMPLEX <A HREF="PETSC_DIRsrc/dm/impls/plex/tutorials/index.html">Examples</A></H2>
+<A HREF="PETSC_DIRsrc/dm/impls/plex/tutorials/index.html">Examples</A><BR>
 
 The DMPLEX class encapsulates an unstructured mesh, with interfaces for both topology and geometry. It is capable of parallel refinement and coarsening (using Pragmatic or ParMmg) and parallel redistribution for load balancing. It is designed to interface with the PetscFE and PetscFV trial discretization objects.
 
@@ -14,4 +10,4 @@ The DMPLEX class encapsulates an unstructured mesh, with interfaces for both top
   <li><a href="http://arxiv.org/abs/1506.06194">Unstructured Overlapping Mesh Distribution in Parallel</a>, Matthew G. Knepley, Michael Lange, Gerard J. Gorman, 2015.</li>
 </ul>
 
-<P>
+

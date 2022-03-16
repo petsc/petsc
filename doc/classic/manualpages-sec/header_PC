@@ -1,33 +1,20 @@
-<HTML>
-<HEAD>
-<TITLE>Preconditioners - PC</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
-
-<H2> Preconditioners - PC:</H2>
+# Preconditioners - PC Manual Pages
 
 The
 <A HREF="PETSC_DIRdocs/manualpages/KSP/index.html">Scalable Linear Equations Solvers (KSP)</A>
 component provides an easy-to-use interface to the combination of
 a Krylov subspace iterative method and a preconditioner (in the
 <A HREF="PETSC_DIRdocs/manualpages/KSP/index.html">KSP</A> and PC
-components, respectively) or a sequential direct solver.  
+components, respectively) or a sequential direct solver.
 KSP users can set various preconditioning
-options at runtime via the options database (e.g., 
-<font face ="Courier">
--pc_type jacobi
-</font face>
-).  
+options at runtime via the options database (e.g., `-pc_type jacobi`).
 KSP users can also set PC options directly in application
 codes by first extracting the PC context from the KSP context via
 <A HREF="PETSC_DIRdocs/manualpages/KSP/KSPGetPC.html">KSPGetPC()</A>
-and then directly calling the PC routines listed below (e.g., 
+and then directly calling the PC routines listed below (e.g.,
 <A HREF="PETSC_DIRdocs/manualpages/PC/PCSetType.html">PCSetType()</A>
 ).
 PC components can be used directly to create and
 destroy solvers; this is not needed for users but
 is for library developers.
-
-<P>
-
 

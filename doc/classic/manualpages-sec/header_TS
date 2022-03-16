@@ -1,10 +1,6 @@
-<HTML>
-<HEAD>
-<TITLE>Time-steppers - ODE integrators - TS</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
+# Time-steppers for ODE and DAE - TS Manual Pages
 
-<H2>Time steppers for ODE and DAE - TS: <A HREF="PETSC_DIRsrc/ts/tutorials/index.html">Examples</A></H2>
+<A HREF="PETSC_DIRsrc/ts/tutorials/index.html">Examples</A><BR>
 
 The time-stepping (TS) component provides ODE and DAE integrators as well as
 pseudo-timestepping.  TS internally
@@ -18,5 +14,3 @@ and then directly calling various SNES (and KSP and PC with further unwrapping) 
 <A HREF="PETSC_DIRdocs/manualpages/PC/PCSetType.html">PCSetType()</A>
 ).
 
-
-<P>

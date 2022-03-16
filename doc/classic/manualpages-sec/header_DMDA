@@ -1,10 +1,4 @@
-<HTML>
-<HEAD>
-<TITLE>DMDA Manual Pages</TITLE>
-</HEAD>
-<BODY BGCOLOR="FFFFFF">
+# DMDA Manual Pages
 
-<H2> DMDA</H2>
+The DMDA class encapsulates a Cartesian structured mesh, with interfaces for both topology and geometry. It is capable of parallel refinement and coarsening. Some support for parallel redistribution is available through the `PCTELESCOPE` object. A piecewise linear discretization is assumed for operations which require this information.
 
-The DMDA class encapsulates a Cartesian structured mesh, with interfaces for both topology and geometry. It is capable of parallel refinement and coarsening. Some support for parallel redistribution is available through the PCTELESCOPE object. A piecewise linear discretization is assumed for operations which require this information.
-<P>

@@ -1,0 +1,7 @@
+# Semi-Lagrangian Manual Pages
+
+<A HREF="PETSC_DIRsrc/contrib/semiLagrange/tutorials/index.html">Examples</A><BR>
+
+Characteristic objects are used to manage parallel Semi-Lagrangian methods for structured mesh (DA) problems
+in PDE-based (or other) simulations. 
+
