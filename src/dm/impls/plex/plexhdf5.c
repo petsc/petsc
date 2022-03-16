@@ -582,7 +582,7 @@ static PetscErrorCode CreateConesIS_Private(DM dm, PetscInt cStart, PetscInt cEn
       ierr = PetscObjectReference((PetscObject) sfPoint);CHKERRQ(ierr);
     } else {
       ierr = PetscSFCreate(PetscObjectComm((PetscObject) sfPoint), &sfPoint);CHKERRQ(ierr);
-      ierr = PetscSFSetGraph(sfPoint, nroots+vExtra, nleaves, ilocal, PETSC_USE_POINTER, iremote, PETSC_USE_POINTER);CHKERRQ(ierr);
+      ierr = PetscSFSetGraph(sfPoint, nroots+vExtra, nleaves, (PetscInt*)ilocal, PETSC_COPY_VALUES, (PetscSFNode*)iremote, PETSC_COPY_VALUES);CHKERRQ(ierr);
     }
   } else {
     ierr = PetscObjectReference((PetscObject) sfPoint);CHKERRQ(ierr);

@@ -2337,6 +2337,7 @@ PETSC_EXTERN PetscErrorCode PetscSortedReal(PetscInt,const PetscReal[],PetscBool
 PETSC_EXTERN PetscErrorCode PetscSortInt(PetscInt,PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortReverseInt(PetscInt,PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortedRemoveDupsInt(PetscInt*,PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscSortedCheckDupsInt(PetscInt,const PetscInt[],PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscSortRemoveDupsInt(PetscInt*,PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscCheckDupsInt(PetscInt,const PetscInt[],PetscBool*);
 PETSC_EXTERN PetscErrorCode PetscFindInt(PetscInt, PetscInt, const PetscInt[], PetscInt*);

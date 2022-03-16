@@ -18,15 +18,16 @@
 
    Notes:
    Global indices must lie in [0, N) where N is the global size of layout.
+   Leaf indices in ilocal get sorted; this means the user-provided array gets sorted if localmode is PETSC_OWN_POINTER.
 
-   Developers Note:
+   Developer Notes:
    Local indices which are the identity permutation in the range [0,nleaves) are discarded as they
    encode contiguous storage. In such case, if localmode is PETSC_OWN_POINTER, the memory is deallocated as it is not
    needed
 
 .seealso: PetscSFCreate(), PetscSFView(), PetscSFSetGraph(), PetscSFGetGraph()
 @*/
-PetscErrorCode PetscSFSetGraphLayout(PetscSF sf,PetscLayout layout,PetscInt nleaves,const PetscInt *ilocal,PetscCopyMode localmode,const PetscInt *iremote)
+PetscErrorCode PetscSFSetGraphLayout(PetscSF sf,PetscLayout layout,PetscInt nleaves,PetscInt *ilocal,PetscCopyMode localmode,const PetscInt *iremote)
 {
   PetscErrorCode ierr;
   const PetscInt *range;
