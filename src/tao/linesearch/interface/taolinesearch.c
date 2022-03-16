@@ -126,13 +126,10 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
 
   PetscFunctionBegin;
   PetscValidPointer(newls,2);
-  *newls = NULL;
-
   PetscCall(TaoLineSearchInitializePackage());
 
   PetscCall(PetscHeaderCreate(ls,TAOLINESEARCH_CLASSID,"TaoLineSearch","Linesearch","Tao",comm,TaoLineSearchDestroy,TaoLineSearchView));
-  ls->bounded = 0;
-  ls->max_funcs=30;
+  ls->max_funcs = 30;
   ls->ftol = 0.0001;
   ls->gtol = 0.9;
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -140,27 +137,10 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
 #else
   ls->rtol = 1.0e-10;
 #endif
-  ls->stepmin=1.0e-20;
-  ls->stepmax=1.0e+20;
-  ls->step=1.0;
-  ls->nfeval=0;
-  ls->ngeval=0;
-  ls->nfgeval=0;
-
-  ls->ops->computeobjective = NULL;
-  ls->ops->computegradient = NULL;
-  ls->ops->computeobjectiveandgradient = NULL;
-  ls->ops->computeobjectiveandgts = NULL;
-  ls->ops->setup = NULL;
-  ls->ops->apply = NULL;
-  ls->ops->view = NULL;
-  ls->ops->setfromoptions = NULL;
-  ls->ops->reset = NULL;
-  ls->ops->destroy = NULL;
-  ls->ops->monitor = NULL;
-  ls->usemonitor=PETSC_FALSE;
-  ls->setupcalled=PETSC_FALSE;
-  ls->usetaoroutines=PETSC_FALSE;
+  ls->stepmin = 1.0e-20;
+  ls->stepmax = 1.0e+20;
+  ls->step = 1.0;
+  ls->initstep = 1.0;
   *newls = ls;
   PetscFunctionReturn(0);
 }
@@ -519,6 +499,7 @@ PetscErrorCode TaoLineSearchMonitor(TaoLineSearch ls, PetscInt its, PetscReal f,
 . -tao_ls_ftol <tol> - tolerance for sufficient decrease
 . -tao_ls_gtol <tol> - tolerance for curvature condition
 . -tao_ls_rtol <tol> - relative tolerance for acceptable step
+. -tao_ls_stepinit <step> - initial steplength allowed
 . -tao_ls_stepmin <step> - minimum steplength allowed
 . -tao_ls_stepmax <step> - maximum steplength allowed
 . -tao_ls_max_funcs <n> - maximum number of function evaluations allowed
@@ -553,6 +534,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
   PetscCall(PetscOptionsReal("-tao_ls_rtol","relative tol for acceptable step","",ls->rtol,&ls->rtol,NULL));
   PetscCall(PetscOptionsReal("-tao_ls_stepmin","lower bound for step","",ls->stepmin,&ls->stepmin,NULL));
   PetscCall(PetscOptionsReal("-tao_ls_stepmax","upper bound for step","",ls->stepmax,&ls->stepmax,NULL));
+  PetscCall(PetscOptionsReal("-tao_ls_stepinit","initial step","",ls->initstep,&ls->initstep,NULL));
   PetscCall(PetscOptionsString("-tao_ls_monitor","enable the basic monitor","TaoLineSearchSetMonitor","stdout",monfilename,sizeof(monfilename),&flg));
   if (flg) {
     PetscCall(PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ls),monfilename,&monviewer));
@@ -1211,6 +1193,7 @@ PetscErrorCode TaoLineSearchSetInitialStepLength(TaoLineSearch ls,PetscReal s)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
+  PetscValidLogicalCollectiveReal(ls,s,2);
   ls->initstep = s;
   PetscFunctionReturn(0);
 }
