@@ -2495,7 +2495,7 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
     PetscInt       d;
 
     for (d = 0; d < cdof; ++d) {
-      PetscCheckFalse(indices[d] >= dof,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " dof %" PetscInt_FMT ", invalid constraint index[%" PetscInt_FMT "]: %" PetscInt_FMT, point, dof, d, indices[d]);
+      PetscCheck(indices[d] < dof,PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " dof %" PetscInt_FMT ", invalid constraint index[%" PetscInt_FMT "]: %" PetscInt_FMT, point, dof, d, indices[d]);
     }
     ierr = VecIntSetValuesSection(s->bcIndices, s->bc, point, indices, INSERT_VALUES);CHKERRQ(ierr);
   }
@@ -2561,10 +2561,10 @@ PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt po
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (PetscDefined(USE_DEBUG)) {
-    PetscInt ndof;
+    PetscInt nfdof;
 
-    ierr = PetscSectionGetConstraintDof(s,point,&ndof);CHKERRQ(ierr);
-    if (ndof) PetscValidIntPointer(indices,4);
+    ierr = PetscSectionGetFieldConstraintDof(s, point, field, &nfdof);CHKERRQ(ierr);
+    if (nfdof) PetscValidIntPointer(indices, 4);
   }
   PetscSectionCheckValidField(field,s->numFields);
   ierr = PetscSectionSetConstraintIndices(s->field[field], point, indices);CHKERRQ(ierr);
