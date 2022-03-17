@@ -3958,16 +3958,12 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
 {
   PetscSF         sfPoint;
   PetscLayout     layout;
-  PetscInt        numVerticesAdj, *verticesAdj, *cones, c, p, dim;
-  PetscMPIInt     rank, size;
+  PetscInt        numVerticesAdj, *verticesAdj, *cones, c, p;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   PetscValidLogicalCollectiveInt(dm,NVertices,4);
   ierr = PetscLogEventBegin(DMPLEX_BuildFromCellList,dm,0,0,0);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject) dm), &rank);CHKERRMPI(ierr);
-  ierr = MPI_Comm_size(PetscObjectComm((PetscObject) dm), &size);CHKERRMPI(ierr);
-  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
   /* Get/check global number of vertices */
   {
     PetscInt NVerticesInCells, i;
