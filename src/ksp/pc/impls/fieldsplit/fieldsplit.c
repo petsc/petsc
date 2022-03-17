@@ -3009,91 +3009,103 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc,PetscBool flg)
 /* -------------------------------------------------------------------------------------*/
 /*MC
    PCFIELDSPLIT - Preconditioner created by combining separate preconditioners for individual
-                  fields or groups of fields. See the users manual section "Solving Block Matrices" for more details.
+                  fields or groups of fields. See [the users manual section on "Solving Block Matrices"](sec_block_matrices) for more details.
 
-     To set options on the solvers for each block append -fieldsplit_ to all the PC
-        options database keys. For example, -fieldsplit_pc_type ilu -fieldsplit_pc_factor_levels 1
+     To set options on the solvers for each block append `-fieldsplit_` to all the PC
+        options database keys. For example, `-fieldsplit_pc_type ilu -fieldsplit_pc_factor_levels 1`
 
-     To set the options on the solvers separate for each block call PCFieldSplitGetSubKSP()
-         and set the options directly on the resulting KSP object
+     To set the options on the solvers separate for each block call `PCFieldSplitGetSubKSP()`
+         and set the options directly on the resulting `KSP` object
 
    Level: intermediate
 
    Options Database Keys:
-+   -pc_fieldsplit_%d_fields <a,b,..> - indicates the fields to be used in the %d'th split
++   -pc_fieldsplit_%d_fields <a,b,..> - indicates the fields to be used in the `%d`'th split
 .   -pc_fieldsplit_default - automatically add any fields to additional splits that have not
-                              been supplied explicitly by -pc_fieldsplit_%d_fields
+                              been supplied explicitly by `-pc_fieldsplit_%d_fields`
 .   -pc_fieldsplit_block_size <bs> - size of block that defines fields (i.e. there are bs fields)
 .   -pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative,schur,gkb> - type of relaxation or factorization splitting
-.   -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full> - default is a11; see PCFieldSplitSetSchurPre()
-.   -pc_fieldsplit_schur_fact_type <diag,lower,upper,full> - set factorization type when using -pc_fieldsplit_type schur; see PCFieldSplitSetSchurFactType()
+.   -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full> - default is a11; see `PCFieldSplitSetSchurPre()`
+.   -pc_fieldsplit_schur_fact_type <diag,lower,upper,full> - set factorization type when using `-pc_fieldsplit_type schur`; see `PCFieldSplitSetSchurFactType()`
 -   -pc_fieldsplit_detect_saddle_point - automatically finds rows with zero diagonal and uses Schur complement with no preconditioner as the solver
 
-     Options prefixes for inner solvers when using the Schur complement preconditioner are -fieldsplit_0_ and -fieldsplit_1_ .
-     For all other solvers they are -fieldsplit_%d_ for the dth field; use -fieldsplit_ for all fields.
-     The options prefix for the inner solver when using the Golub-Kahan biadiagonalization preconditioner is -fieldsplit_0_
+     Options prefixes for inner solvers when using the Schur complement preconditioner are `-fieldsplit_0_` and `-fieldsplit_1_` .
+     For all other solvers they are `-fieldsplit_%d_` for the `d`th field; use `-fieldsplit_` for all fields.
+     The options prefix for the inner solver when using the Golub-Kahan biadiagonalization preconditioner is `-fieldsplit_0_`
 
    Notes:
-    Use PCFieldSplitSetFields() to set fields defined by "strided" entries and PCFieldSplitSetIS()
+    Use `PCFieldSplitSetFields()` to set fields defined by "strided" entries and `PCFieldSplitSetIS()`
      to define a field by an arbitrary collection of entries.
 
       If no fields are set the default is used. The fields are defined by entries strided by bs,
-      beginning at 0 then 1, etc to bs-1. The block size can be set with PCFieldSplitSetBlockSize(),
+      beginning at 0 then 1, etc to bs-1. The block size can be set with `PCFieldSplitSetBlockSize()`,
       if this is not called the block size defaults to the blocksize of the second matrix passed
-      to KSPSetOperators()/PCSetOperators().
+      to `KSPSetOperators()`/`PCSetOperators()`.
 
-$     For the Schur complement preconditioner if J = [ A00 A01]
-$                                                    [ A10 A11]
-$     the preconditioner using full factorization is
-$              [ I   -ksp(A00) A01] [ inv(A00)    0  ] [     I          0]
-$              [ 0         I      ] [   0      ksp(S)] [ -A10 ksp(A00)  I]
-     where the action of inv(A00) is applied using the KSP solver with prefix -fieldsplit_0_.  S is the Schur complement
-$              S = A11 - A10 ksp(A00) A01
-     which is usually dense and not stored explicitly.  The action of ksp(S) is computed using the KSP solver with prefix -fieldsplit_splitname_ (where splitname was given
-     in providing the SECOND split or 1 if not give). For PCFieldSplitGetSubKSP() when field number is 0,
-     it returns the KSP associated with -fieldsplit_0_ while field number 1 gives -fieldsplit_1_ KSP. By default
-     A11 is used to construct a preconditioner for S, use PCFieldSplitSetSchurPre() for all the possible ways to construct the preconditioner for S.
+      For the Schur complement preconditioner if
 
-     The factorization type is set using -pc_fieldsplit_schur_fact_type <diag, lower, upper, full>. The full is shown above,
-     diag gives
-$              [ inv(A00)     0 ]
-$              [   0      -ksp(S)]
-     note that slightly counter intuitively there is a negative in front of the ksp(S) so that the preconditioner is positive definite. For SPD matrices J, the sign flip
-     can be turned off with PCFieldSplitSetSchurScale() or by command line -pc_fieldsplit_schur_scale 1.0. The lower factorization is the inverse of
-$              [  A00   0]
-$              [  A10   S]
-     where the inverses of A00 and S are applied using KSPs. The upper factorization is the inverse of
-$              [ A00 A01]
-$              [  0   S ]
-     where again the inverses of A00 and S are applied using KSPs.
+      ```{math}
+      J = \left[\begin{array}{cc} A_{00} & A_{01} \\ A_{10} & A_{11} \end{array}\right]
+      ```
 
-     If only one set of indices (one IS) is provided with PCFieldSplitSetIS() then the complement of that IS
+      the preconditioner using `full` factorization is logically
+      ```{math}
+      \left[\begin{array}{cc} I & -\text{ksp}(A_{00}) \\ 0 & I \end{array}\right] \left[\begin{array}{cc} \text{inv}(A_{00}) & 0 \\ 0 & \text{ksp}(S) \end{array}\right] \left[\begin{array}{cc} I & 0 \\ -A_{10} \text{ksp}(A_{00}) & I \end{array}\right]
+      ```
+     where the action of $\text{inv}(A_{00})$ is applied using the KSP solver with prefix `-fieldsplit_0_`.  $S$ is the Schur complement
+     ```{math}
+     S = A_{11} - A10 \text{ksp}(A_{00}) A_{01}
+     ```
+     which is usually dense and not stored explicitly.  The action of $\text{ksp}(S)$ is computed using the KSP solver with prefix `-fieldsplit_splitname_` (where `splitname` was given
+     in providing the SECOND split or 1 if not given). For `PCFieldSplitGetSub\text{ksp}()` when field number is 0,
+     it returns the KSP associated with `-fieldsplit_0_` while field number 1 gives `-fieldsplit_1_` KSP. By default
+     $A_{11}$ is used to construct a preconditioner for $S$, use `PCFieldSplitSetSchurPre()` for all the possible ways to construct the preconditioner for $S$.
+
+     The factorization type is set using `-pc_fieldsplit_schur_fact_type <diag, lower, upper, full>`. `full` is shown above,
+     `diag` gives
+      ```{math}
+      \left[\begin{array}{cc} \text{inv}(A_{00}) & 0 \\  0 & -\text{ksp}(S) \end{array}\right]
+      ```
+     Note that, slightly counter intuitively, there is a negative in front of the $\text{ksp}(S)$  so that the preconditioner is positive definite. For SPD matrices $J$, the sign flip
+     can be turned off with `PCFieldSplitSetSchurScale()` or by command line `-pc_fieldsplit_schur_scale 1.0`. The `lower` factorization is the inverse of
+      ```{math}
+      \left[\begin{array}{cc} A_{00} & 0 \\  A_{10} & S \end{array}\right]
+      ```
+     where the inverses of A_{00} and S are applied using KSPs. The upper factorization is the inverse of
+      ```{math}
+      \left[\begin{array}{cc} A_{00} & A_{01} \\  0 & S \end{array}\right]
+      ```
+     where again the inverses of $A_{00}$ and $S$ are applied using `KSP`s.
+
+     If only one set of indices (one `IS`) is provided with `PCFieldSplitSetIS()` then the complement of that `IS`
      is used automatically for a second block.
 
      The fieldsplit preconditioner cannot currently be used with the BAIJ or SBAIJ data formats if the blocksize is larger than 1.
      Generally it should be used with the AIJ format.
 
      The forms of these preconditioners are closely related if not identical to forms derived as "Distributive Iterations", see,
-     for example, page 294 in "Principles of Computational Fluid Dynamics" by Pieter Wesseling. Note that one can also use PCFIELDSPLIT
+     for example, page 294 in "Principles of Computational Fluid Dynamics" by Pieter Wesseling {cite}`Wesseling2009`. Note that one can also use `PCFIELDSPLIT`
      inside a smoother resulting in "Distributive Smoothers".
 
      References:
-.    * - A taxonomy and comparison of parallel block multi-level preconditioners for the incompressible Navier-Stokes equations
-       Howard Elman, V.E. Howle, John Shadid, Robert Shuttleworth, Ray Tuminaro, Journal of Computational Physics 227 (2008) 1790--1808
-       http://chess.cs.umd.edu/~elman/papers/tax.pdf
 
-   The Constrained Pressure Preconditioner (CPR) can be implemented using PCCOMPOSITE with PCGALERKIN. CPR first solves an R A P subsystem, updates the
-   residual on all variables (PCCompositeSetType(pc,PC_COMPOSITE_MULTIPLICATIVE)), and then applies a simple ILU like preconditioner on all the variables.
+     See "A taxonomy and comparison of parallel block multi-level preconditioners for the incompressible Navier-Stokes equations" {cite}`elman2008tcp`.
 
-   The generalized Golub-Kahan bidiagonalization preconditioner (gkb) can be applied to symmetric 2x2 block matrices of the shape
-$        [ A00  A01]
-$        [ A01' 0  ]
-   with A00 positive semi-definite. The implementation follows [Ar13]. Therein, we choose N := 1/nu * I and the (1,1)-block of the matrix is modified to H = A00 + nu*A01*A01'.
-   A linear system Hx = b has to be solved in each iteration of the GKB algorithm. This solver is chosen with the option prefix -fieldsplit_0_.
+     The Constrained Pressure Preconditioner (CPR) can be implemented using `PCCOMPOSITE` with `PCGALERKIN`. CPR first solves an $R A P$ subsystem, updates the
+     residual on all variables (`PCCompositeSetType(pc,PC_COMPOSITE_MULTIPLICATIVE)`), and then applies a simple ILU like preconditioner on all the variables.
 
-.    * - [Ar13] Generalized Golub-Kahan bidiagonalization and stopping criteria, SIAM J. Matrix Anal. Appl., Vol. 34, No. 2, pp. 571-592, 2013.
+     The generalized Golub-Kahan bidiagonalization preconditioner (GKB) can be applied to symmetric $2 \times 2$ block matrices of the shape
+     ```{math}
+     \left[\begin{array}{cc} A_{00} & A_{01} \\ A_{01}' & 0 \end{array}\right]
+     ```
+     with $A_{00}$ positive semi-definite. The implementation follows {cite}`Arioli2013`. Therein, we choose $N := 1/\nu * I$ and the $(1,1)$-block of the matrix is modified to $H = _{A00} + \nu*A_{01}*A_{01}'$.
+     A linear system $Hx = b$ has to be solved in each iteration of the GKB algorithm. This solver is chosen with the option prefix `-fieldsplit_0_`.
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCLSC,
+     ```{bibliography}
+     :filter: docname in docnames
+     ```
+
+.seealso:  PCCreate(), PCSetType(), PCType, PC, PCLSC,
            PCFieldSplitGetSubKSP(), PCFieldSplitSchurGetSubKSP(), PCFieldSplitSetFields(),
            PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSetSchurPre(), PCFieldSplitSetSchurFactType(),
            MatSchurComplementSetAinvType(), PCFieldSplitSetSchurScale(), PCFieldSplitSetDetectSaddlePoint()
