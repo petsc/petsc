@@ -133,12 +133,12 @@ static PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer,MPI_
 
 #if defined(PETSC_HAVE_MPIIO)
 /*@C
-    PetscViewerBinaryGetMPIIOOffset - Gets the current global offset that should be passed to MPI_File_set_view() or MPI_File_{write|read}_at[_all]()
+    PetscViewerBinaryGetMPIIOOffset - Gets the current global offset that should be passed to `MPI_File_set_view()` or `MPI_File_{write|read}_at[_all]()`
 
     Not Collective
 
     Input Parameter:
-.   viewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
+.   viewer - PetscViewer context, obtained from `PetscViewerBinaryOpen()`
 
     Output Parameter:
 .   off - the current global offset
@@ -148,7 +148,7 @@ static PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer,MPI_
     Fortran Note:
     This routine is not supported in Fortran.
 
-    Use PetscViewerBinaryAddMPIIOOffset() to increase this value after you have written a view.
+    Use `PetscViewerBinaryAddMPIIOOffset()` to increase this value after you have written a view.
 
 .seealso: PetscViewerBinaryOpen(), PetscViewerBinaryGetInfoPointer(), PetscViewerBinaryGetUseMPIIO(), PetscViewerBinarySetUseMPIIO(), PetscViewerBinaryAddMPIIOOffset()
 @*/
@@ -178,7 +178,7 @@ PetscErrorCode PetscViewerBinaryGetMPIIOOffset(PetscViewer viewer,MPI_Offset *of
     Fortran Note:
     This routine is not supported in Fortran.
 
-    Use PetscViewerBinaryGetMPIIOOffset() to get the value that you should pass to MPI_File_set_view() or MPI_File_{write|read}_at[_all]()
+    Use `PetscViewerBinaryGetMPIIOOffset()` to get the value that you should pass to `MPI_File_set_view()` or `MPI_File_{write|read}_at[_all]()`
 
 .seealso: PetscViewerBinaryOpen(),PetscViewerBinaryGetInfoPointer(), PetscViewerBinaryGetUseMPIIO(), PetscViewerBinarySetUseMPIIO(), PetscViewerBinaryGetMPIIOOffset()
 @*/
