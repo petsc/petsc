@@ -422,6 +422,7 @@ during setup in debug mode)
    In particular, if localmode/remotemode is PETSC_OWN_POINTER or PETSC_USE_POINTER,
    PETSc might modify the respective array;
    if PETSC_USE_POINTER, the user must delete the array after PetscSFDestroy().
+   Only if PETSC_COPY_VALUES is used, the respective array is guaranteed to stay intact and a const array can be passed (but a cast to non-const is needed).
 
    Fortran Notes:
    In Fortran you must use PETSC_COPY_VALUES for localmode and remotemode.
