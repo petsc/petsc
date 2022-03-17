@@ -618,7 +618,7 @@ static PetscErrorCode MatColoringSetFromOptions_Greedy(PetscOptionItems *PetscOp
    Supports both distance one and distance two colorings.
 
    References:
-.  1. - Bozdag et al. "A Parallel Distance 2 Graph Coloring Algorithm for Distributed Memory Computers"
+.  * - Bozdag et al. "A Parallel Distance 2 Graph Coloring Algorithm for Distributed Memory Computers"
    HPCC'05 Proceedings of the First international conference on High Performance Computing and Communications
 
 .seealso: MatColoringCreate(), MatColoring, MatColoringSetType(), MatColoringType

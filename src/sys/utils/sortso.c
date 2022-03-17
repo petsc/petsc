@@ -960,7 +960,7 @@ static inline PetscErrorCode PetscTimSortBuildRunWithArray_Private(char *arr, ch
 .ve
 
   References:
-  1. - Tim Peters. https://bugs.python.org/file4451/timsort.txt
+. * - Tim Peters. https://bugs.python.org/file4451/timsort.txt
 
   Level: developer
 
@@ -1089,7 +1089,7 @@ PetscErrorCode PetscTimSort(PetscInt n, void *arr, size_t size, int (*cmp)(const
 .ve
 
   References:
-  1. - Tim Peters. https://bugs.python.org/file4451/timsort.txt
+. * - Tim Peters. https://bugs.python.org/file4451/timsort.txt
 
   Level: developer
 

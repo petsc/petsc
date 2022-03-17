@@ -62,7 +62,7 @@ static PetscErrorCode MatSTRUMPACKSetReordering_STRUMPACK(Mat F,MatSTRUMPACKReor
    Level: beginner
 
    References:
-.      STRUMPACK manual
+.  * - STRUMPACK manual
 
 .seealso: MatGetFactor()
 @*/
@@ -100,7 +100,7 @@ static PetscErrorCode MatSTRUMPACKSetColPerm_STRUMPACK(Mat F,PetscBool cperm)
    Level: beginner
 
    References:
-.      STRUMPACK manual
+.  * - STRUMPACK manual
 
 .seealso: MatGetFactor()
 @*/
@@ -138,7 +138,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSRelTol_STRUMPACK(Mat F,PetscReal rtol)
    Level: beginner
 
    References:
-.      STRUMPACK manual
+.  * - STRUMPACK manual
 
 .seealso: MatGetFactor()
 @*/
@@ -176,7 +176,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSAbsTol_STRUMPACK(Mat F,PetscReal atol)
    Level: beginner
 
    References:
-.      STRUMPACK manual
+.  * - STRUMPACK manual
 
 .seealso: MatGetFactor()
 @*/
@@ -214,7 +214,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSMaxRank_STRUMPACK(Mat F,PetscInt hssmaxr
    Level: beginner
 
    References:
-.      STRUMPACK manual
+.  * - STRUMPACK manual
 
 .seealso: MatGetFactor()
 @*/
@@ -252,7 +252,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSLeafSize_STRUMPACK(Mat F,PetscInt leaf_s
    Level: beginner
 
    References:
-.      STRUMPACK manual
+.  * - STRUMPACK manual
 
 .seealso: MatGetFactor()
 @*/
@@ -290,7 +290,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSMinSepSize_STRUMPACK(Mat F,PetscInt hssm
    Level: beginner
 
    References:
-.      STRUMPACK manual
+.  * - STRUMPACK manual
 
 .seealso: MatGetFactor()
 @*/

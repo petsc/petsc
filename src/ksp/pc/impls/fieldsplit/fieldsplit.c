@@ -2532,8 +2532,8 @@ $      *) With DIAG, the preconditioned operator has three distinct nonzero eige
     Note that a flexible method like KSPFGMRES or KSPGCR must be used if the fieldsplit preconditioner is nonlinear (e.g. a few iterations of a Krylov method is used to solve with A or S).
 
     References:
-+   1. - Murphy, Golub, and Wathen, A note on preconditioning indefinite linear systems, SIAM J. Sci. Comput., 21 (2000).
--   2. - Ipsen, A note on preconditioning nonsymmetric matrices, SIAM J. Sci. Comput., 23 (2001).
++   * - Murphy, Golub, and Wathen, A note on preconditioning indefinite linear systems, SIAM J. Sci. Comput., 21 (2000).
+-   * - Ipsen, A note on preconditioning nonsymmetric matrices, SIAM J. Sci. Comput., 23 (2001).
 
 .seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetFields(), PCFieldSplitSchurPreType, PCFieldSplitSetSchurScale()
 @*/
@@ -3142,7 +3142,7 @@ $              [  0   S ]
      inside a smoother resulting in "Distributive Smoothers".
 
      References:
-       A taxonomy and comparison of parallel block multi-level preconditioners for the incompressible Navier-Stokes equations
+.    * - A taxonomy and comparison of parallel block multi-level preconditioners for the incompressible Navier-Stokes equations
        Howard Elman, V.E. Howle, John Shadid, Robert Shuttleworth, Ray Tuminaro, Journal of Computational Physics 227 (2008) 1790--1808
        http://chess.cs.umd.edu/~elman/papers/tax.pdf
 
@@ -3155,7 +3155,7 @@ $        [ A01' 0  ]
    with A00 positive semi-definite. The implementation follows [Ar13]. Therein, we choose N := 1/nu * I and the (1,1)-block of the matrix is modified to H = A00 + nu*A01*A01'.
    A linear system Hx = b has to be solved in each iteration of the GKB algorithm. This solver is chosen with the option prefix -fieldsplit_0_.
 
-[Ar13] Generalized Golub-Kahan bidiagonalization and stopping criteria, SIAM J. Matrix Anal. Appl., Vol. 34, No. 2, pp. 571-592, 2013.
+.    * - [Ar13] Generalized Golub-Kahan bidiagonalization and stopping criteria, SIAM J. Matrix Anal. Appl., Vol. 34, No. 2, pp. 571-592, 2013.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCLSC,
            PCFieldSplitGetSubKSP(), PCFieldSplitSchurGetSubKSP(), PCFieldSplitSetFields(),

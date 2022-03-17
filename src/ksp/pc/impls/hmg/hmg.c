@@ -488,7 +488,7 @@ PetscErrorCode PCHMGUseMatMAIJ(PC pc, PetscBool usematmaij)
    Concepts: Hybrid of ASM and MG, Subspace Coarsening
 
     References:
-.   1. - Fande Kong, Yaqi Wang, Derek R Gaston, Cody J Permann, Andrew E Slaughter, Alexander D Lindsay, Richard C Martineau, A highly parallel multilevel
+.   * - Fande Kong, Yaqi Wang, Derek R Gaston, Cody J Permann, Andrew E Slaughter, Alexander D Lindsay, Richard C Martineau, A highly parallel multilevel
     Newton-Krylov-Schwarz method with subspace-based coarsening and partition-based balancing for the multigroup neutron transport equations on
     3D unstructured meshes, arXiv preprint arXiv:1903.03659, 2019
 

@@ -499,7 +499,7 @@ static PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F,PetscReal dtol)
    Level: beginner
 
    References:
-.      SuperLU Users' Guide
+.  * - SuperLU Users' Guide
 
 .seealso: MatGetFactor()
 @*/

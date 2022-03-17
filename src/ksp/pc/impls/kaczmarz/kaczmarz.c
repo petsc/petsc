@@ -117,7 +117,7 @@ PetscErrorCode PCView_Kaczmarz(PC pc,PetscViewer viewer)
     In parallel this is block-Jacobi with Kaczmarz inner solve.
 
    References:
-.  1. - S. Kaczmarz, "Angenaherte Auflosing von Systemen Linearer Gleichungen",
+.  * - S. Kaczmarz, "Angenaherte Auflosing von Systemen Linearer Gleichungen",
    Bull. Internat. Acad. Polon. Sci. C1. A, 1937.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC

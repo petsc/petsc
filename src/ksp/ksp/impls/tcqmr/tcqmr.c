@@ -172,7 +172,7 @@ static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
           it is a bound on the true residual.
 
   References:
-.  1. - Tony F. Chan, Lisette de Pillis, and Henk van der Vorst, Transpose free formulations of Lanczos type methods for nonsymmetric linear systems,
+. * - Tony F. Chan, Lisette de Pillis, and Henk van der Vorst, Transpose free formulations of Lanczos type methods for nonsymmetric linear systems,
   Numerical Algorithms, Volume 17, 1998.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPTFQMR

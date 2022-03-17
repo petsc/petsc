@@ -1196,7 +1196,7 @@ $    save example.mat A b -v7.3
    (see MatSetOption(), MAT_SPD, MAT_SYMMETRIC).
 
    References:
-1. MATLAB(R) Documentation, manual page of save(), https://www.mathworks.com/help/matlab/ref/save.html#btox10b-1-version
+.  * - MATLAB(R) Documentation, manual page of save(), https://www.mathworks.com/help/matlab/ref/save.html#btox10b-1-version
 
 .seealso: PetscViewerBinaryOpen(), PetscViewerSetType(), MatView(), VecLoad()
 
@@ -6946,7 +6946,7 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
     interface definition cannot be generated correctly [due to MatFactorInfo]
 
    References:
-     Y. Saad, Iterative methods for sparse linear systems Philadelphia: Society for Industrial and Applied Mathematics, 2003
+.  * - Y. Saad, Iterative methods for sparse linear systems Philadelphia: Society for Industrial and Applied Mathematics, 2003
 @*/
 PetscErrorCode MatILUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFactorInfo *info)
 {
@@ -7008,7 +7008,7 @@ $      expected fill - as ratio of original fill.
     interface definition cannot be generated correctly [due to MatFactorInfo]
 
    References:
-     Y. Saad, Iterative methods for sparse linear systems Philadelphia: Society for Industrial and Applied Mathematics, 2003
+.  * - Y. Saad, Iterative methods for sparse linear systems Philadelphia: Society for Industrial and Applied Mathematics, 2003
 @*/
 PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo *info)
 {

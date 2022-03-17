@@ -1764,7 +1764,7 @@ PetscErrorCode PetscDTGaussLobattoJacobiQuadrature(PetscInt npoints,PetscReal a,
    Level: intermediate
 
    References:
-.   1. - Golub and Welsch, Calculation of Quadrature Rules, Math. Comp. 23(106), 1969.
+.  * - Golub and Welsch, Calculation of Quadrature Rules, Math. Comp. 23(106), 1969.
 
 .seealso: PetscDTLegendreEval()
 @*/
@@ -1922,7 +1922,7 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
   Level: intermediate
 
   References:
-.  1. - Karniadakis and Sherwin.  FIAT
+. * - Karniadakis and Sherwin.  FIAT
 
   Note: For dim == 1, this is Gauss-Legendre quadrature
 

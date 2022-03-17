@@ -134,7 +134,7 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc,ISColoring *iscoloring)
           This is a sequential algorithm
 
    References:
-.  1. - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
+.  * - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
    pp. 187-209, 1983.
 
 .seealso: MatColoringCreate(), MatColoring, MatColoringSetType(), MATCOLORINGGREEDY, MatColoringType
@@ -244,7 +244,7 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc,ISColoring *iscoloring)
           This is a sequential algorithm
 
    References:
-.  1. - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
+.  * - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
    pp. 187-209, 1983.
 
 .seealso: MatColoringCreate(), MatColoring, MatColoringSetType(), MATCOLORINGGREEDY, MatColoringType
@@ -356,7 +356,7 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc,ISColoring *iscoloring)
           This is a sequential algorithm
 
    References:
-.  1. - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
+.  * - TF Coleman and J More, "Estimation of sparse Jacobian matrices and graph coloring," SIAM Journal on Numerical Analysis, vol. 20, no. 1,
    pp. 187-209, 1983.
 
 .seealso: MatColoringCreate(), MatColoring, MatColoringSetType(), MATCOLORINGGREEDY, MatColoringType

@@ -209,7 +209,7 @@ PetscErrorCode KSPDestroy_BCGS(KSP ksp)
           Supports left and right preconditioning but not symmetric
 
    References:
-.    1. -   van der Vorst, SIAM J. Sci. Stat. Comput., 1992.
+.  * - van der Vorst, SIAM J. Sci. Stat. Comput., 1992.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPFBICG, KSPQMRCGS, KSPSetPCSide()
 M*/

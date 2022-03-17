@@ -901,7 +901,7 @@ PetscErrorCode  KSPGMRESSetBreakdownTolerance(KSP ksp,PetscReal tol)
     Left and right preconditioning are supported, but not symmetric preconditioning.
 
    References:
-.     1. - YOUCEF SAAD AND MARTIN H. SCHULTZ, GMRES: A GENERALIZED MINIMAL RESIDUAL ALGORITHM FOR SOLVING NONSYMMETRIC LINEAR SYSTEMS.
+.  * - YOUCEF SAAD AND MARTIN H. SCHULTZ, GMRES: A GENERALIZED MINIMAL RESIDUAL ALGORITHM FOR SOLVING NONSYMMETRIC LINEAR SYSTEMS.
           SIAM J. ScI. STAT. COMPUT. Vo|. 7, No. 3, July 1986.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPLGMRES,

@@ -849,7 +849,7 @@ PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F,PetscInt icntl,PetscInt
           database approach when working with TS, SNES, or KSP.
 
    References:
-.      Mkl_Pardiso Users' Guide
+.  * - Mkl_Pardiso Users' Guide
 
 .seealso: MatGetFactor()
 @*/

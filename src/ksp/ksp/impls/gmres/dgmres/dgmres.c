@@ -1134,8 +1134,8 @@ static PetscErrorCode  KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
     Left and right preconditioning are supported, but not symmetric preconditioning. Complex arithmetic is not yet supported
 
  References:
-+  1. - J. Erhel, K. Burrage and B. Pohl,  Restarted GMRES preconditioned by deflation,J. Computational and Applied Mathematics, 69(1996).
--  2. - D. NUENTSA WAKAM and F. PACULL, Memory Efficient Hybrid Algebraic Solvers for Linear Systems Arising from Compressible Flows, Computers and Fluids,
++ * - J. Erhel, K. Burrage and B. Pohl,  Restarted GMRES preconditioned by deflation,J. Computational and Applied Mathematics, 69(1996).
+- * - D. NUENTSA WAKAM and F. PACULL, Memory Efficient Hybrid Algebraic Solvers for Linear Systems Arising from Compressible Flows, Computers and Fluids,
    In Press, http://dx.doi.org/10.1016/j.compfluid.2012.03.023
 
  Contributed by: Desire NUENTSA WAKAM,INRIA

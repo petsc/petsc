@@ -547,9 +547,9 @@ static PetscErrorCode MatPartitioningImprove_Hierarchical(MatPartitioning part, 
    Level: beginner
 
    References:
-  1.  Fande Kong, Xiao-Chuan Cai, A highly scalable multilevel Schwarz method with boundary geometry preserving coarse spaces for 3D elasticity
++  * - Fande Kong, Xiao-Chuan Cai, A highly scalable multilevel Schwarz method with boundary geometry preserving coarse spaces for 3D elasticity
       problems on domains with complex geometry,   SIAM Journal on Scientific Computing 38 (2), C73-C95, 2016
-  2.  Fande Kong, Roy H. Stogner, Derek Gaston, John W. Peterson, Cody J. Permann, Andrew E. Slaughter, and Richard C. Martineau,
+-  * - Fande Kong, Roy H. Stogner, Derek Gaston, John W. Peterson, Cody J. Permann, Andrew E. Slaughter, and Richard C. Martineau,
       A general-purpose hierarchical mesh partitioning method with node balancing strategies for large-scale numerical simulations,
       arXiv preprint arXiv:1809.02666CoRR, 2018.
 

@@ -323,7 +323,7 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
 
   By default this routine computes the solution norm at each iteration, this can be time consuming, you can turn this off with SNESSetNormSchedule() or -snes_norm_schedule
    References:
-.  1. - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
+.  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
 .seealso: SNESCreate(), SNES, SNESSetType(), SNESSetNGS(), SNESType (for list of available types), SNESNGSSetSweeps(), SNESNGSSetTolerances(),

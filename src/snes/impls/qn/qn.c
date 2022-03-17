@@ -539,17 +539,17 @@ PetscErrorCode SNESQNSetType_QN(SNES snes, SNESQNType qtype)
       Uses left nonlinear preconditioning by default.
 
       References:
-+   1. -   Kelley, C.T., Iterative Methods for Linear and Nonlinear Equations, Chapter 8, SIAM, 1995.
-.   2. -   R. Byrd, J. Nocedal, R. Schnabel, Representations of Quasi Newton Matrices and their use in Limited Memory Methods,
++   * -   Kelley, C.T., Iterative Methods for Linear and Nonlinear Equations, Chapter 8, SIAM, 1995.
+.   * -   R. Byrd, J. Nocedal, R. Schnabel, Representations of Quasi Newton Matrices and their use in Limited Memory Methods,
       Technical Report, Northwestern University, June 1992.
-.   3. -   Peter N. Brown, Alan C. Hindmarsh, Homer F. Walker, Experiments with Quasi-Newton Methods in Solving Stiff ODE
+.   * -   Peter N. Brown, Alan C. Hindmarsh, Homer F. Walker, Experiments with Quasi-Newton Methods in Solving Stiff ODE
       Systems, SIAM J. Sci. Stat. Comput. Vol 6(2), April 1985.
-.   4. -   Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
+.   * -   Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
        SIAM Review, 57(4), 2015
-.   5. -   Griewank, Andreas. "Broyden updating, the good and the bad!." Doc. Math (2012): 301-315.
-.   6. -   Gilbert, Jean Charles, and Claude Lemar{\'e}chal. "Some numerical experiments with variable-storage quasi-Newton algorithms."
+.   * -   Griewank, Andreas. "Broyden updating, the good and the bad!." Doc. Math (2012): 301-315.
+.   * -   Gilbert, Jean Charles, and Claude Lemar{\'e}chal. "Some numerical experiments with variable-storage quasi-Newton algorithms."
       Mathematical programming 45.1-3 (1989): 407-435.
--   7. -   Dener A., Munson T. "Accelerating Limited-Memory Quasi-Newton Convergence for Large-Scale Optimization"
+-   * -   Dener A., Munson T. "Accelerating Limited-Memory Quasi-Newton Convergence for Large-Scale Optimization"
       Computational Science - ICCS 2019. ICCS 2019. Lecture Notes in Computer Science, vol 11538. Springer, Cham
 
       Level: beginner
