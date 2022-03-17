@@ -593,7 +593,7 @@ PETSC_EXTERN PetscErrorCode PetscLogObjectState(PetscObject,const char[],...) PE
 #define PetscLogObjects(a)                 0
 #define PetscLogSetThreshold(a,b)          0
 #define PetscLogSet(lb,le)                 0
-#define PetscLogIsActive(flag)             0
+#define PetscLogIsActive(flag)             (*(flag) = PETSC_FALSE,0)
 
 #define PetscLogView(viewer)               0
 #define PetscLogViewFromOptions()          0
