@@ -83,10 +83,10 @@ typedef struct {
   void  *ipfdf_data; // for each grid, but same for all batched vertices
   void  *maps; // for each grid, but same for all batched vertices
   // COO
-  LandauIdx        *coo_elem_offsets;
-  LandauIdx        (*coo_elem_point_offsets)[LANDAU_MAX_NQ+1];
-  LandauIdx        *coo_elem_fullNb;
-  LandauIdx        n_coo_cellsTot;
+  void             *coo_elem_offsets;
+  void             *coo_elem_point_offsets;
+  void             *coo_elem_fullNb;
+  LandauIdx        coo_n_cellsTot;
   LandauIdx        coo_size;
   LandauIdx        coo_max_fullnb;
 } LandauStaticData;

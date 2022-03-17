@@ -598,6 +598,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
         } else {  // GPU like assembly for debugging
           PetscInt      fieldA,q,f,g,d,nr,nc,rows0[LANDAU_MAX_Q_FACE]={0},cols0[LANDAU_MAX_Q_FACE]={0},rows[LANDAU_MAX_Q_FACE],cols[LANDAU_MAX_Q_FACE];
           PetscScalar   vals[LANDAU_MAX_Q_FACE*LANDAU_MAX_Q_FACE]={0},row_scale[LANDAU_MAX_Q_FACE]={0},col_scale[LANDAU_MAX_Q_FACE]={0};
+          LandauIdx     *coo_elem_offsets = (LandauIdx*)ctx->SData_d.coo_elem_offsets, *coo_elem_fullNb = (LandauIdx*)ctx->SData_d.coo_elem_fullNb, (*coo_elem_point_offsets)[LANDAU_MAX_NQ+1] = (LandauIdx (*)[LANDAU_MAX_NQ+1])ctx->SData_d.coo_elem_point_offsets;
           /* assemble - from the diagonal (I,I) in this format for DMPlexMatSetClosure */
           for (fieldA = 0; fieldA < loc_Nf ; fieldA++) {
             LandauIdx *const Idxs = &maps[grid].gIdx[loc_elem][fieldA][0];
@@ -634,8 +635,8 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
                 const PetscInt    j   = fieldA*Nb + g; /* Element matrix column */
                 const PetscScalar Aij = elemMat[i*totDim + j];
                 if (coo_vals) { // mirror (i,j) in CreateStaticGPUData
-                  const int fullNb = ctx->SData_d.coo_elem_fullNb[glb_elem_idx],fullNb2=fullNb*fullNb;
-                  const int idx0   = b_id*ctx->SData_d.coo_elem_offsets[elem_offset[num_grids]] + ctx->SData_d.coo_elem_offsets[glb_elem_idx] + fieldA*fullNb2 + fullNb * ctx->SData_d.coo_elem_point_offsets[glb_elem_idx][f] + nr * ctx->SData_d.coo_elem_point_offsets[glb_elem_idx][g];
+                  const int fullNb = coo_elem_fullNb[glb_elem_idx],fullNb2=fullNb*fullNb;
+                  const int idx0   = b_id*coo_elem_offsets[elem_offset[num_grids]] + coo_elem_offsets[glb_elem_idx] + fieldA*fullNb2 + fullNb * coo_elem_point_offsets[glb_elem_idx][f] + nr * coo_elem_point_offsets[glb_elem_idx][g];
                   for (int q = 0, idx2 = idx0; q < nr; q++) {
                     for (int d = 0; d < nc; d++, idx2++) {
                       coo_vals[idx2] = row_scale[q]*col_scale[d]*Aij;
@@ -1600,21 +1601,24 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
     pointInterpolationP4est pointMaps[MAP_BF_SIZE][LANDAU_MAX_Q_FACE];
     P4estVertexMaps         *maps;
     const PetscInt          *plex_batch=NULL,Nb=Nq; // tensor elements;
-
+    LandauIdx               *coo_elem_offsets=NULL, *coo_elem_fullNb=NULL, (*coo_elem_point_offsets)[LANDAU_MAX_NQ+1] = NULL;
     /* create GPU asssembly data */
     ierr = PetscInfo(ctx->plex[0], "Make GPU maps %d\n",1);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(ctx->events[2],0,0,0,0);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(*maps)*ctx->num_grids, &maps);CHKERRQ(ierr);
 
     if (ctx->coo_assembly) { // setup COO assembly -- put COO metadata directly in ctx->SData_d
-      ierr = PetscMalloc3(ncellsTot+1,&ctx->SData_d.coo_elem_offsets,ncellsTot,&ctx->SData_d.coo_elem_fullNb,ncellsTot, &ctx->SData_d.coo_elem_point_offsets);CHKERRQ(ierr); // array of integer pointers
-      ctx->SData_d.coo_elem_offsets[0] = 0; // finish later
+      ierr = PetscMalloc3(ncellsTot+1,&coo_elem_offsets,ncellsTot,&coo_elem_fullNb,ncellsTot, &coo_elem_point_offsets);CHKERRQ(ierr); // array of integer pointers
+      coo_elem_offsets[0] = 0; // finish later
       ierr = PetscInfo(ctx->plex[0], "COO initialization, %" PetscInt_FMT " cells\n",ncellsTot);CHKERRQ(ierr);
-      ctx->SData_d.n_coo_cellsTot      = ncellsTot;
+      ctx->SData_d.coo_n_cellsTot         = ncellsTot;
+      ctx->SData_d.coo_elem_offsets       = (void*)coo_elem_offsets;
+      ctx->SData_d.coo_elem_fullNb        = (void*)coo_elem_fullNb;
+      ctx->SData_d.coo_elem_point_offsets = (void*)coo_elem_point_offsets;
     } else {
       ctx->SData_d.coo_elem_offsets       = ctx->SData_d.coo_elem_fullNb = NULL;
       ctx->SData_d.coo_elem_point_offsets = NULL;
-      ctx->SData_d.n_coo_cellsTot         = 0;
+      ctx->SData_d.coo_n_cellsTot         = 0;
     }
 
     ctx->SData_d.coo_max_fullnb = 0;
@@ -1635,7 +1639,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
       // count reduced and get
       ierr = PetscMalloc(maps[grid].num_elements * sizeof(*maps[grid].gIdx), &maps[grid].gIdx);CHKERRQ(ierr);
       for (int ej = cStart, eidx = 0 ; ej < cEnd; ++ej, ++eidx, glb_elem_idx++) {
-        if (ctx->SData_d.coo_elem_offsets) ctx->SData_d.coo_elem_offsets[glb_elem_idx+1] = ctx->SData_d.coo_elem_offsets[glb_elem_idx]; // start with last one, then add
+        if (coo_elem_offsets) coo_elem_offsets[glb_elem_idx+1] = coo_elem_offsets[glb_elem_idx]; // start with last one, then add
         for (int fieldA=0;fieldA<Nf[grid];fieldA++) {
           int fullNb = 0;
           for (int q = 0; q < Nb; ++q) {
@@ -1707,11 +1711,11 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
             if (elMat != valuesOrig) {ierr = DMRestoreWorkArray(ctx->plex[grid], numindices*numindices, MPIU_SCALAR, &elMat);CHKERRQ(ierr);}
           }
           if (ctx->coo_assembly) { // setup COO assembly
-            ctx->SData_d.coo_elem_offsets[glb_elem_idx+1] += fullNb*fullNb; // one species block, adds a block for each species, on this element in this grid
+            coo_elem_offsets[glb_elem_idx+1] += fullNb*fullNb; // one species block, adds a block for each species, on this element in this grid
             if (fieldA==0) { // cache full Nb for this element, on this grid per species
-              ctx->SData_d.coo_elem_fullNb[glb_elem_idx] = fullNb;
+              coo_elem_fullNb[glb_elem_idx] = fullNb;
               if (fullNb>ctx->SData_d.coo_max_fullnb) ctx->SData_d.coo_max_fullnb = fullNb;
-            } else PetscCheck(ctx->SData_d.coo_elem_fullNb[glb_elem_idx] == fullNb,PETSC_COMM_SELF, PETSC_ERR_PLIB, "full element size change with species %" PetscInt_FMT " %" PetscInt_FMT,ctx->SData_d.coo_elem_fullNb[glb_elem_idx],fullNb);
+            } else PetscCheck(coo_elem_fullNb[glb_elem_idx] == fullNb,PETSC_COMM_SELF, PETSC_ERR_PLIB, "full element size change with species %" PetscInt_FMT " %" PetscInt_FMT,coo_elem_fullNb[glb_elem_idx],fullNb);
           }
         } // field
       } // cell
@@ -1741,32 +1745,32 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
     // finish COO
     if (ctx->coo_assembly) { // setup COO assembly
       PetscInt *oor, *ooc;
-      ctx->SData_d.coo_size = ctx->SData_d.coo_elem_offsets[ncellsTot]*ctx->batch_sz;
+      ctx->SData_d.coo_size = coo_elem_offsets[ncellsTot]*ctx->batch_sz;
       ierr = PetscMalloc2(ctx->SData_d.coo_size,&oor,ctx->SData_d.coo_size,&ooc);CHKERRQ(ierr);
       for (int i=0;i<ctx->SData_d.coo_size;i++) oor[i] = ooc[i] = -1;
       // get
       for (int grid=0,glb_elem_idx=0;grid<ctx->num_grids;grid++) {
         for (int ej = 0 ; ej < numCells[grid] ; ++ej, glb_elem_idx++) {
-          const int              fullNb = ctx->SData_d.coo_elem_fullNb[glb_elem_idx];
+          const int              fullNb = coo_elem_fullNb[glb_elem_idx];
           const LandauIdx *const Idxs = &maps[grid].gIdx[ej][0][0]; // just use field-0 maps, They should be the same but this is just for COO storage
-          ctx->SData_d.coo_elem_point_offsets[glb_elem_idx][0] = 0;
+          coo_elem_point_offsets[glb_elem_idx][0] = 0;
           for (int f=0, cnt2=0;f<Nb;f++) {
             int idx = Idxs[f];
-            ctx->SData_d.coo_elem_point_offsets[glb_elem_idx][f+1] = ctx->SData_d.coo_elem_point_offsets[glb_elem_idx][f]; // start at last
+            coo_elem_point_offsets[glb_elem_idx][f+1] = coo_elem_point_offsets[glb_elem_idx][f]; // start at last
             if (idx >= 0) {
               cnt2++;
-              ctx->SData_d.coo_elem_point_offsets[glb_elem_idx][f+1]++; // inc
+              coo_elem_point_offsets[glb_elem_idx][f+1]++; // inc
             } else {
               idx = -idx - 1;
               for (int q = 0 ; q < maps[grid].num_face; q++) {
                 if (maps[grid].c_maps[idx][q].gid < 0) break;
                 cnt2++;
-                ctx->SData_d.coo_elem_point_offsets[glb_elem_idx][f+1]++; // inc
+                coo_elem_point_offsets[glb_elem_idx][f+1]++; // inc
               }
             }
             PetscCheck(cnt2 <= fullNb,PETSC_COMM_SELF, PETSC_ERR_PLIB, "wrong count %d < %d",fullNb,cnt2);
           }
-          PetscCheck(ctx->SData_d.coo_elem_point_offsets[glb_elem_idx][Nb]==fullNb,PETSC_COMM_SELF, PETSC_ERR_PLIB, "coo_elem_point_offsets size %d != fullNb=%d",ctx->SData_d.coo_elem_point_offsets[glb_elem_idx][Nb],fullNb);
+          PetscCheck(coo_elem_point_offsets[glb_elem_idx][Nb]==fullNb,PETSC_COMM_SELF, PETSC_ERR_PLIB, "coo_elem_point_offsets size %d != fullNb=%d",coo_elem_point_offsets[glb_elem_idx][Nb],fullNb);
         }
       }
       // set
@@ -1774,13 +1778,13 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
         for (int grid=0,glb_elem_idx=0;grid<ctx->num_grids;grid++) {
           const PetscInt moffset = LAND_MOFFSET(b_id,grid,ctx->batch_sz,ctx->num_grids,ctx->mat_offset);
           for (int ej = 0 ; ej < numCells[grid] ; ++ej, glb_elem_idx++) {
-            const int  fullNb = ctx->SData_d.coo_elem_fullNb[glb_elem_idx],fullNb2=fullNb*fullNb;
+            const int  fullNb = coo_elem_fullNb[glb_elem_idx],fullNb2=fullNb*fullNb;
             // set (i,j)
             for (int fieldA=0;fieldA<Nf[grid];fieldA++) {
               const LandauIdx *const Idxs = &maps[grid].gIdx[ej][fieldA][0];
               int                    rows[LANDAU_MAX_Q_FACE],cols[LANDAU_MAX_Q_FACE];
               for (int f = 0; f < Nb; ++f) {
-                const int nr =  ctx->SData_d.coo_elem_point_offsets[glb_elem_idx][f+1] - ctx->SData_d.coo_elem_point_offsets[glb_elem_idx][f];
+                const int nr =  coo_elem_point_offsets[glb_elem_idx][f+1] - coo_elem_point_offsets[glb_elem_idx][f];
                 if (nr==1) rows[0] = Idxs[f];
                 else {
                   const int idx = -Idxs[f] - 1;
@@ -1789,7 +1793,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
                   }
                 }
                 for (int g = 0; g < Nb; ++g) {
-                  const int nc =  ctx->SData_d.coo_elem_point_offsets[glb_elem_idx][g+1] - ctx->SData_d.coo_elem_point_offsets[glb_elem_idx][g];
+                  const int nc =  coo_elem_point_offsets[glb_elem_idx][g+1] - coo_elem_point_offsets[glb_elem_idx][g];
                   if (nc==1) cols[0] = Idxs[g];
                   else {
                     const int idx = -Idxs[g] - 1;
@@ -1797,7 +1801,7 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
                       cols[q] = maps[grid].c_maps[idx][q].gid;
                     }
                   }
-                  const int idx0 = b_id*ctx->SData_d.coo_elem_offsets[ncellsTot] + ctx->SData_d.coo_elem_offsets[glb_elem_idx] + fieldA*fullNb2 + fullNb * ctx->SData_d.coo_elem_point_offsets[glb_elem_idx][f] + nr * ctx->SData_d.coo_elem_point_offsets[glb_elem_idx][g];
+                  const int idx0 = b_id*coo_elem_offsets[ncellsTot] + coo_elem_offsets[glb_elem_idx] + fieldA*fullNb2 + fullNb * coo_elem_point_offsets[glb_elem_idx][f] + nr * coo_elem_point_offsets[glb_elem_idx][g];
                   for (int q = 0, idx = idx0; q < nr; q++) {
                     for (int d = 0; d < nc; d++, idx++) {
                       oor[idx] = rows[q] + moffset;
@@ -2355,11 +2359,14 @@ PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *dm)
   } else {
     if (ctx->SData_d.x) { /* in a CPU run */
       PetscReal *invJ = (PetscReal*)ctx->SData_d.invJ, *xx = (PetscReal*)ctx->SData_d.x, *yy = (PetscReal*)ctx->SData_d.y, *zz = (PetscReal*)ctx->SData_d.z, *ww = (PetscReal*)ctx->SData_d.w;
+      LandauIdx *coo_elem_offsets = (LandauIdx*)ctx->SData_d.coo_elem_offsets, *coo_elem_fullNb = (LandauIdx*)ctx->SData_d.coo_elem_fullNb, (*coo_elem_point_offsets)[LANDAU_MAX_NQ+1] = (LandauIdx (*)[LANDAU_MAX_NQ+1])ctx->SData_d.coo_elem_point_offsets;
       ierr = PetscFree4(ww,xx,yy,invJ);CHKERRQ(ierr);
       if (zz) {
         ierr = PetscFree(zz);CHKERRQ(ierr);
       }
-      ierr = PetscFree3(ctx->SData_d.coo_elem_offsets,ctx->SData_d.coo_elem_fullNb,ctx->SData_d.coo_elem_point_offsets);CHKERRQ(ierr); // could be NULL
+      if (coo_elem_offsets) {
+        ierr = PetscFree3(coo_elem_offsets,coo_elem_fullNb,coo_elem_point_offsets);CHKERRQ(ierr); // could be NULL
+      }
     }
   }
 
