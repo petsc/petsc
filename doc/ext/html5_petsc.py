@@ -83,7 +83,7 @@ class PETScHTMLTranslatorMixin:
     def _get_manpage_map(self) -> Dict[str,str]:
         """ Return the manpage strings to link, as a dict.  """
         if not self._manpage_map:
-            htmlmap_filename = os.path.join('_build_classic', 'docs', 'manualpages', 'htmlmap')
+            htmlmap_filename = os.path.join('_build_classic', 'docs', 'manualpages', 'htmlmap_modified')
             if not os.path.isfile(htmlmap_filename):
                 raise Exception("Expected file %s not found. Run script to build classic docs subset." %  htmlmap_filename)
             manpage_map_raw = htmlmap_to_dict(htmlmap_filename)
@@ -185,8 +185,8 @@ def htmlmap_to_dict(htmlmap_filename: str) -> Dict[str,str]:
 def dict_complete_links(string_to_link: Dict[str,str], prefix: str = '') -> Dict[str,str]:
     """ Complete HTML links
 
-    Prepend a prefix to any links not starting with 'http',
-    and add HTML tags
+    Prepend a prefix to any links not starting with 'http'.
+    Add HTML tags.
     """
     def link_string(name: str, link: str, prefix: str) -> str:
         url = link if link.startswith('http') else prefix + link

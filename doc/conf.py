@@ -17,6 +17,7 @@ sys.path.append(os.path.abspath('./ext'))
 
 import build_classic_docs
 import make_links_relative
+import update_htmlmap_links
 
 
 if not os.path.isdir("images"):
@@ -159,6 +160,7 @@ def _build_classic_docs(app):
 def builder_init_handler(app):
     _build_classic_docs(app)
     _copy_classic_docs(app, None, '.', 'pre')
+    _update_htmlmap_links(app)
 
 
 def _copy_classic_docs(app, exception, destination, stage):
@@ -184,6 +186,14 @@ def build_finished_handler(app, exception):
         print("==========================================================================")
         print("    open %s/index.html in your browser to view the documentation " % app.outdir)
         print("==========================================================================")
+
+
+def _update_htmlmap_links(app):
+    if app.builder.name.endswith('html'):
+        print("============================================")
+        print("    Updating htmlmap from conf.py           ")
+        print("============================================")
+        update_htmlmap_links.update_htmlmap_links(app.builder)
 
 
 def setup(app):

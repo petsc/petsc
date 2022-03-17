@@ -9,6 +9,7 @@ import argparse
 
 CLASSIC_DOCS_LOC = os.path.join(os.getcwd(), '_build_classic')
 CLASSIC_DOCS_ARCH = 'arch-classic-docs'
+HTMLMAP_DEFAULT_LOCATION = os.path.join(CLASSIC_DOCS_LOC, "docs", "manualpages", "htmlmap")
 
 def main():
     """ Operations to provide data from the 'classic' PETSc docs system. """
@@ -65,7 +66,7 @@ def _configure_minimal_petsc(petsc_dir, petsc_arch) -> None:
 
 def _build_classic_docs_subset(petsc_dir, petsc_arch):
     # Use htmlmap file as a sentinel
-    htmlmap_filename = os.path.join(CLASSIC_DOCS_LOC, 'docs', 'manualpages', 'htmlmap')
+    htmlmap_filename = HTMLMAP_DEFAULT_LOCATION
     if os.path.isfile(htmlmap_filename):
         print('============================================')
         print('Assuming that the classic docs in %s are current' % CLASSIC_DOCS_LOC)
