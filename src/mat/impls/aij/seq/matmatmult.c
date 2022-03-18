@@ -1509,15 +1509,13 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqDense(Mat A,Mat B,PetscReal fill,Mat
 PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C,const PetscBool add)
 {
   Mat_SeqAIJ        *a=(Mat_SeqAIJ*)A->data;
-  Mat_SeqDense      *bd=(Mat_SeqDense*)B->data;
-  Mat_SeqDense      *cd=(Mat_SeqDense*)C->data;
   PetscErrorCode    ierr;
   PetscScalar       *c,r1,r2,r3,r4,*c1,*c2,*c3,*c4;
   const PetscScalar *aa,*b,*b1,*b2,*b3,*b4,*av;
   const PetscInt    *aj;
-  PetscInt          cm=C->rmap->n,cn=B->cmap->n,bm=bd->lda,am=A->rmap->n;
-  PetscInt          clda=cd->lda;
-  PetscInt          am4=4*clda,bm4=4*bm,col,i,j,n;
+  PetscInt          cm=C->rmap->n,cn=B->cmap->n,bm,am=A->rmap->n;
+  PetscInt          clda;
+  PetscInt          am4,bm4,col,i,j,n;
 
   PetscFunctionBegin;
   if (!cm || !cn) PetscFunctionReturn(0);
@@ -1528,6 +1526,10 @@ PETSC_INTERN PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat
     ierr = MatDenseGetArrayWrite(C,&c);CHKERRQ(ierr);
   }
   ierr = MatDenseGetArrayRead(B,&b);CHKERRQ(ierr);
+  ierr = MatDenseGetLDA(B,&bm);CHKERRQ(ierr);
+  ierr = MatDenseGetLDA(C,&clda);CHKERRQ(ierr);
+  am4 = 4*clda;
+  bm4 = 4*bm;
   b1 = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
   c1 = c; c2 = c1 + clda; c3 = c2 + clda; c4 = c3 + clda;
   for (col=0; col<(cn/4)*4; col += 4) {  /* over columns of C */

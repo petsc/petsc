@@ -63,15 +63,13 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat
   PetscErrorCode      ierr;
   const PetscScalar   *Barray,*ctarray;
   PetscScalar         *Carray,*btarray;
-  Mat_MPIDense        *b=(Mat_MPIDense*)B->data,*c=(Mat_MPIDense*)C->data;
-  Mat_SeqDense        *bseq=(Mat_SeqDense*)(b->A)->data,*cseq=(Mat_SeqDense*)(c->A)->data;
-  PetscInt            i,j,m=A->rmap->n,n=A->cmap->n,ldb=bseq->lda,BN=B->cmap->N,ldc=cseq->lda;
+  PetscInt            i,j,m=A->rmap->n,n=A->cmap->n,ldb,BN=B->cmap->N,ldc;
   Mat_MatTransMatMult *atb;
   Vec                 bt,ct;
 
   PetscFunctionBegin;
   MatCheckProduct(C,3);
-  atb=(Mat_MatTransMatMult *)C->product->data;
+  atb = (Mat_MatTransMatMult *)C->product->data;
   PetscCheckFalse(!atb,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Missing product struct");
   if (!BN) {
     ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -80,13 +78,14 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat
   }
   bt = atb->bt;
   ct = atb->ct;
-  /* transpose local arry of B, then copy it to vector bt */
-  ierr = MatDenseGetArrayRead(B,&Barray);CHKERRQ(ierr);
-  ierr = VecGetArray(bt,&btarray);CHKERRQ(ierr);
 
-  for (j=0; j<BN; j++) {
-    for (i=0; i<m; i++) btarray[i*BN + j] = Barray[j*ldb + i];
-  }
+  /* transpose local array of B, then copy it to vector bt */
+  ierr = MatDenseGetArrayRead(B,&Barray);CHKERRQ(ierr);
+  ierr = MatDenseGetLDA(B,&ldb);CHKERRQ(ierr);
+  ierr = VecGetArray(bt,&btarray);CHKERRQ(ierr);
+  for (j=0; j<BN; j++)
+    for (i=0; i<m; i++)
+      btarray[i*BN + j] = Barray[j*ldb + i];
   ierr = VecRestoreArray(bt,&btarray);CHKERRQ(ierr);
   ierr = MatDenseRestoreArrayRead(B,&Barray);CHKERRQ(ierr);
 
@@ -95,11 +94,11 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat A,Mat B,Mat
 
   /* transpose local array of ct to matrix C */
   ierr = MatDenseGetArray(C,&Carray);CHKERRQ(ierr);
+  ierr = MatDenseGetLDA(C,&ldc);CHKERRQ(ierr);
   ierr = VecGetArrayRead(ct,&ctarray);CHKERRQ(ierr);
-
-  for (j=0; j<BN; j++) {
-    for (i=0; i<n; i++) Carray[j*ldc + i] = ctarray[i*BN + j];
-  }
+  for (j=0; j<BN; j++)
+    for (i=0; i<n; i++)
+      Carray[j*ldc + i] = ctarray[i*BN + j];
   ierr = VecRestoreArrayRead(ct,&ctarray);CHKERRQ(ierr);
   ierr = MatDenseRestoreArray(C,&Carray);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

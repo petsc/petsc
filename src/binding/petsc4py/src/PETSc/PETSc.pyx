@@ -109,6 +109,8 @@ RealType    = PyArray_TypeObjectFromType(NPY_PETSC_REAL)
 ScalarType  = PyArray_TypeObjectFromType(NPY_PETSC_SCALAR)
 ComplexType = PyArray_TypeObjectFromType(NPY_PETSC_COMPLEX)
 
+include "dlpack.pxi"
+
 # --------------------------------------------------------------------
 
 include "petscdef.pxi"

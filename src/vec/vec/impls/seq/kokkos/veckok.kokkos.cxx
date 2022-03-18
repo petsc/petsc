@@ -917,7 +917,7 @@ PetscErrorCode VecGetArrayAndMemType_SeqKokkos(Vec v,PetscScalar** a,PetscMemTyp
     /* When there is device, we always return up-to-date device data */
     veckok->v_dual.sync_device();
     *a = veckok->v_dual.view_device().data();
-    if (mtype) *mtype = PETSC_MEMTYPE_DEVICE;
+    if (mtype) *mtype = PETSC_MEMTYPE_KOKKOS;
   }
   PetscFunctionReturn(0);
 }
@@ -947,7 +947,7 @@ PetscErrorCode VecGetArrayWriteAndMemType_SeqKokkos(Vec v,PetscScalar** a,PetscM
     /* When there is device, we always return device data (but no need to sync the device) */
     veckok->v_dual.clear_sync_state(); /* So that in restore, we can safely modify_device() */
     *a = veckok->v_dual.view_device().data();
-    if (mtype) *mtype = PETSC_MEMTYPE_DEVICE;
+    if (mtype) *mtype = PETSC_MEMTYPE_KOKKOS;
   }
   PetscFunctionReturn(0);
 }
@@ -1166,16 +1166,13 @@ PetscErrorCode VecCreate_SeqKokkos(Vec v)
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
 
-   If the user-provided array is NULL, then VecCUDAPlaceArray() can be used
-   at a later stage to SET the array for storing the vector values.
-
    PETSc does NOT free the array when the vector is destroyed via VecDestroy().
    The user should not free the array until the vector is destroyed.
 
    Level: intermediate
 
 .seealso: VecCreateMPICUDAWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(),
-          VecCreateGhost(), VecCreateSeq(), VecCUDAPlaceArray(), VecCreateSeqWithArray(),
+          VecCreateGhost(), VecCreateSeq(), VecCreateSeqWithArray(),
           VecCreateMPIWithArray()
 @*/
 PetscErrorCode  VecCreateSeqKokkosWithArray(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscScalar darray[],Vec *v)

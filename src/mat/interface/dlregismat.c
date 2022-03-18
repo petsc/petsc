@@ -183,10 +183,8 @@ PetscErrorCode  MatInitializePackage(void)
   /* Register Events */
   ierr = PetscLogEventRegister("MatMult",          MAT_CLASSID,&MAT_Mult);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMults",         MAT_CLASSID,&MAT_Mults);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMultConstr",    MAT_CLASSID,&MAT_MultConstrained);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMultAdd",       MAT_CLASSID,&MAT_MultAdd);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMultTranspose", MAT_CLASSID,&MAT_MultTranspose);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatMultTrConstr",  MAT_CLASSID,&MAT_MultTransposeConstrained);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMultTrAdd",     MAT_CLASSID,&MAT_MultTransposeAdd);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatSolve",         MAT_CLASSID,&MAT_Solve);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatSolves",        MAT_CLASSID,&MAT_Solves);CHKERRQ(ierr);

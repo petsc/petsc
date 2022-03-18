@@ -1359,8 +1359,8 @@ static PetscErrorCode MatMissingDiagonal_MPIDense(Mat A,PetscBool  *missing,Pets
 
 static PetscErrorCode MatMatTransposeMultSymbolic_MPIDense_MPIDense(Mat,Mat,PetscReal,Mat);
 static PetscErrorCode MatMatTransposeMultNumeric_MPIDense_MPIDense(Mat,Mat,Mat);
-static PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat,Mat,Mat);
 static PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat,Mat,PetscReal,Mat);
+static PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat,Mat,Mat);
 static PetscErrorCode MatEqual_MPIDense(Mat,Mat,PetscBool*);
 static PetscErrorCode MatLoad_MPIDense(Mat,PetscViewer);
 
@@ -2649,7 +2649,7 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,M
   PetscMPIInt           size,*recvcounts;
   PetscScalar           *carray,*sendbuf;
   const PetscScalar     *atbarray;
-  PetscInt              i,cN=C->cmap->N,cM=C->rmap->N,proc,k,j;
+  PetscInt              i,cN=C->cmap->N,proc,k,j,lda;
   const PetscInt        *ranges;
 
   PetscFunctionBegin;
@@ -2669,9 +2669,10 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,M
 
   /* arrange atbarray into sendbuf */
   ierr = MatDenseGetArrayRead(atb->atb,&atbarray);CHKERRQ(ierr);
+  ierr = MatDenseGetLDA(atb->atb,&lda);CHKERRQ(ierr);
   for (proc=0, k=0; proc<size; proc++) {
     for (j=0; j<cN; j++) {
-      for (i=ranges[proc]; i<ranges[proc+1]; i++) sendbuf[k++] = atbarray[i+j*cM];
+      for (i=ranges[proc]; i<ranges[proc+1]; i++) sendbuf[k++] = atbarray[i+j*lda];
     }
   }
   ierr = MatDenseRestoreArrayRead(atb->atb,&atbarray);CHKERRQ(ierr);
@@ -2716,7 +2717,7 @@ static PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
   ierr = PetscNew(&atb);CHKERRQ(ierr);
   cM   = C->rmap->N;
-  ierr = PetscMalloc2((size_t)cM*(size_t)cN,&atb->sendbuf,size,&atb->recvcounts);CHKERRQ(ierr);
+  ierr = PetscMalloc2(cM*cN,&atb->sendbuf,size,&atb->recvcounts);CHKERRQ(ierr);
   ierr = MatGetOwnershipRanges(C,&ranges);CHKERRQ(ierr);
   for (i=0; i<size; i++) atb->recvcounts[i] = (ranges[i+1] - ranges[i])*cN;
 

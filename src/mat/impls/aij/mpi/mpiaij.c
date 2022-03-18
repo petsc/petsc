@@ -7273,9 +7273,7 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
   ierr = PetscObjectTypeCompareAny((PetscObject)C,&iscuda,MATSEQAIJCUSPARSE,MATMPIAIJCUSPARSE,"");CHKERRQ(ierr);
   ierr = PetscObjectTypeCompareAny((PetscObject)C,&iskokk,MATSEQAIJKOKKOS,MATMPIAIJKOKKOS,"");CHKERRQ(ierr);
   if (iscuda) mmdata->mtype = PETSC_MEMTYPE_CUDA;
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
-  else if (iskokk) mmdata->mtype = PETSC_MEMTYPE_DEVICE;
-#endif
+  else if (iskokk) mmdata->mtype = PETSC_MEMTYPE_KOKKOS;
 
   /* prepare coo coordinates for values insertion */
 
@@ -7393,7 +7391,7 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
   }
   mmdata->hasoffproc = hasoffproc;
 
-   /* gather (i,j) of nonzeros inserted locally */
+  /* gather (i,j) of nonzeros inserted locally */
   for (cp = 0, ncoo_d = 0; cp < mmdata->cp; cp++) {
     Mat_SeqAIJ     *mm = (Mat_SeqAIJ*)mp[cp]->data;
     PetscInt       *coi = coo_i + ncoo_d;

@@ -36,8 +36,10 @@ cdef extern from * nogil:
     PetscMatType MATSHELL
     PetscMatType MATDENSE
     PetscMatType   MATSEQDENSE
-    PetscMatType   MATSEQDENSECUDA
     PetscMatType   MATMPIDENSE
+    PetscMatType MATDENSECUDA
+    PetscMatType   MATSEQDENSECUDA
+    PetscMatType   MATMPIDENSECUDA
     PetscMatType MATELEMENTAL
     PetscMatType MATBAIJ
     PetscMatType   MATSEQBAIJ
@@ -369,8 +371,9 @@ cdef extern from * nogil:
     int MatMultTransposeAdd(PetscMat,PetscVec,PetscVec,PetscVec)
     int MatMultHermitian"MatMultHermitianTranspose"(PetscMat,PetscVec,PetscVec)
     int MatMultHermitianAdd"MatMultHermitianTransposeAdd"(PetscMat,PetscVec,PetscVec,PetscVec)
-    int MatMultConstrained(PetscMat,PetscVec,PetscVec)
-    int MatMultTransposeConstrained(PetscMat,PetscVec,PetscVec)
+
+    int MatBindToCPU(PetscMat,PetscBool)
+    int MatBoundToCPU(PetscMat,PetscBool*)
 
     int MatSOR(PetscMat,PetscVec,PetscReal,PetscMatSORType,PetscReal,PetscInt,PetscInt,PetscVec)
 
@@ -451,11 +454,30 @@ cdef extern from * nogil:
     int MatScaleSystem(PetscMat,PetscVec,PetscVec)
     int MatUnScaleSystem(PetscMat,PetscVec,PetscVec)
 
+    int MatDenseSetLDA(PetscMat,PetscInt)
+    int MatDenseGetLDA(PetscMat,PetscInt*)
     int MatDenseGetLocalMatrix(PetscMat,PetscMat*)
     int MatDenseGetArray(PetscMat,PetscScalar*[])
     int MatDenseRestoreArray(PetscMat,PetscScalar*[])
+    int MatDenseGetArrayWrite(PetscMat,PetscScalar*[])
+    int MatDenseRestoreArrayWrite(PetscMat,PetscScalar*[])
+    int MatDenseGetArrayRead(PetscMat,const PetscScalar*[])
+    int MatDenseRestoreArrayRead(PetscMat,const PetscScalar*[])
+    int MatDenseGetColumnVec(PetscMat,PetscInt,PetscVec*)
+    int MatDenseRestoreColumnVec(PetscMat,PetscInt,PetscVec*)
+    int MatDenseGetColumnVecRead(PetscMat,PetscInt,PetscVec*)
+    int MatDenseRestoreColumnVecRead(PetscMat,PetscInt,PetscVec*)
+    int MatDenseGetColumnVecWrite(PetscMat,PetscInt,PetscVec*)
+    int MatDenseRestoreColumnVecWrite(PetscMat,PetscInt,PetscVec*)
+    int MatDenseCUDAGetArray(PetscMat,PetscScalar*[])
+    int MatDenseCUDARestoreArray(PetscMat,PetscScalar*[])
+    int MatDenseCUDAGetArrayWrite(PetscMat,PetscScalar*[])
+    int MatDenseCUDARestoreArrayWrite(PetscMat,PetscScalar*[])
+    int MatDenseCUDAGetArrayRead(PetscMat,const PetscScalar*[])
+    int MatDenseCUDARestoreArrayRead(PetscMat,const PetscScalar*[])
 
 cdef extern from "custom.h" nogil:
+    int MatGetCurrentMemType(PetscMat,PetscMemType*)
     int MatIsPreallocated(PetscMat,PetscBool*)
     int MatHasPreallocationAIJ(PetscMat,PetscBool*,PetscBool*,PetscBool*,PetscBool*)
 
@@ -1146,5 +1168,39 @@ cdef matsetvaluestencil(PetscMat A,
                                     1, &c.stencil,
                                     v, im) )
     return 0
+
+cdef mat_get_dlpack_ctx(Mat self):
+    if 'dense' not in self.getType():
+        raise NotImplementedError("Not for type {}".format(self.getType()))
+    cdef object ctx0 = self.get_attr('__dltensor_ctx__')
+    cdef PetscInt n = 0, m = 0, lda = 0
+    cdef int64_t ndim = 2
+    cdef int64_t* shape_arr = NULL
+    cdef int64_t* strides_arr = NULL
+    cdef object s1 = None
+    cdef object s2 = None
+    cdef PetscInt devId = 0
+    cdef PetscMemType mtype = PETSC_MEMTYPE_HOST
+    if ctx0 is None: # First time in, create a linear memory view
+        s1 = oarray_p(empty_p(ndim), NULL, <void**>&shape_arr)
+        s2 = oarray_p(empty_p(ndim), NULL, <void**>&strides_arr)
+        CHKERR( MatGetSize(self.mat, NULL, &n) )
+        CHKERR( MatGetLocalSize(self.mat, &m, NULL) )
+        CHKERR( MatDenseGetLDA(self.mat, &lda) )
+        shape_arr[0] = <int64_t>m
+        shape_arr[1] = <int64_t>n
+        strides_arr[0] = 1
+        strides_arr[1] = <int64_t>lda
+    else:
+        (_, _, ndim, s1, s2) = ctx0
+
+    devType_ = { PETSC_MEMTYPE_HOST : kDLCPU, PETSC_MEMTYPE_CUDA : kDLCUDA }
+    CHKERR( MatGetCurrentMemType(self.mat, &mtype) )
+    dtype = devType_.get(mtype, kDLCPU)
+    if dtype != kDLCPU:
+        CHKERR( PetscObjectGetDeviceId(<PetscObject>self.mat, &devId) )
+    ctx0 = (dtype, devId, ndim, s1, s2)
+    self.set_attr('__dltensor_ctx__', ctx0)
+    return ctx0
 
 # -----------------------------------------------------------------------------

@@ -48,6 +48,11 @@ cdef extern from * nogil:
         PETSC_OFFLOAD_BOTH
         PETSC_OFFLOAD_KOKKOS
 
+    ctypedef enum PetscMemType:
+        PETSC_MEMTYPE_HOST
+        PETSC_MEMTYPE_CUDA
+        PETSC_MEMTYPE_HIP
+        PETSC_MEMTYPE_SYCL
 
 cdef extern from * nogil:
 

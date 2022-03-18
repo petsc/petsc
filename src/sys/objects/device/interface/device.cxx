@@ -211,7 +211,7 @@ PetscErrorCode PetscDeviceConfigure(PetscDevice device)
 
   Collective on viewer, Asynchronous
 
-  Input Parameter:
+  Input Parameters:
 + device - The PetscDevice to view
 - viewer - The PetscViewer to view the device with (NULL for PETSC_VIEWER_STDOUT_WORLD)
 
@@ -228,6 +228,30 @@ PetscErrorCode PetscDeviceView(PetscDevice device, PetscViewer viewer)
   if (!viewer) {ierr = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);}
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = (*device->ops->view)(device,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  PetscDeviceGetDeviceId - Get the device id
+
+  Not collective
+
+  Input Parameter:
+. device - The PetscDevice
+
+  Output Parameter:
+. id - The device id
+
+  Level: beginner
+
+.seealso: PetscDevice, PetscDeviceCreate(), PetscDeviceConfigure(), PetscDeviceDestroy()
+@*/
+PetscErrorCode PetscDeviceGetDeviceId(PetscDevice device, PetscInt *id)
+{
+  PetscFunctionBegin;
+  PetscValidDevice(device,1);
+  PetscValidIntPointer(id,2);
+  *id = device->deviceId;
   PetscFunctionReturn(0);
 }
 

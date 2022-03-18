@@ -95,7 +95,7 @@ cdef extern from "scalar.h":
 # NumPy support
 # -------------
 
-cdef extern from "string.h"  nogil:
+cdef extern from "string.h" nogil:
     void* memset(void*,int,size_t)
     void* memcpy(void*,void*,size_t)
     char* strdup(char*)
