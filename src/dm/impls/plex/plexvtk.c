@@ -466,10 +466,6 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   PetscViewer_VTK          *vtk = (PetscViewer_VTK*) viewer->data;
   FILE                     *fp;
   PetscViewerVTKObjectLink link;
-  PetscSection             coordSection, globalCoordSection;
-  PetscLayout              vLayout;
-  Vec                      coordinates;
-  PetscReal                lengthScale;
   PetscInt                 totVertices, totCells = 0, loops_per_scalar, l;
   PetscBool                hasPoint = PETSC_FALSE, hasCell = PETSC_FALSE, writePartition = PETSC_FALSE, localized, writeComplex;
   const char               *dmname;
@@ -484,8 +480,8 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   writeComplex = PETSC_FALSE;
 #endif
   ierr = DMGetCoordinatesLocalized(dm,&localized);CHKERRQ(ierr);
-  PetscCheckFalse(localized,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"VTK output with localized coordinates not yet supported");
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  PetscCheckFalse(localized,comm,PETSC_ERR_SUP,"VTK output with localized coordinates not yet supported");
   ierr = PetscFOpen(comm, vtk->filename, "wb", &fp);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)dm, &dmname);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fp, "# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
@@ -493,14 +489,30 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   ierr = PetscFPrintf(comm, fp, "ASCII\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fp, "DATASET UNSTRUCTURED_GRID\n");CHKERRQ(ierr);
   /* Vertices */
-  ierr = DMPlexGetScale(dm, PETSC_UNIT_LENGTH, &lengthScale);CHKERRQ(ierr);
-  ierr = DMGetCoordinateSection(dm, &coordSection);CHKERRQ(ierr);
-  ierr = PetscSectionCreateGlobalSection(coordSection, dm->sf, PETSC_FALSE, PETSC_FALSE, &globalCoordSection);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
-  ierr = PetscSectionGetPointLayout(PetscObjectComm((PetscObject)dm), globalCoordSection, &vLayout);CHKERRQ(ierr);
-  ierr = PetscLayoutGetSize(vLayout, &totVertices);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fp, "POINTS %D double\n", totVertices);CHKERRQ(ierr);
-  ierr = DMPlexVTKWriteSection_ASCII(dm, coordSection, globalCoordSection, coordinates, fp, 3, PETSC_DETERMINE, lengthScale, 0);CHKERRQ(ierr);
+  {
+    PetscSection  section, coordSection, globalCoordSection;
+    Vec           coordinates;
+    PetscReal     lengthScale;
+    DMLabel       label;
+    IS            vStratumIS;
+    PetscLayout   vLayout;
+
+    ierr = DMPlexGetScale(dm, PETSC_UNIT_LENGTH, &lengthScale);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+    ierr = DMPlexGetDepthLabel(dm, &label);CHKERRQ(ierr);
+    ierr = DMLabelGetStratumIS(label, 0, &vStratumIS);CHKERRQ(ierr);
+    ierr = DMGetCoordinateSection(dm, &section);CHKERRQ(ierr);                                 /* This section includes all points */
+    ierr = PetscSectionCreateSubmeshSection(section, vStratumIS, &coordSection);CHKERRQ(ierr); /* This one includes just vertices */
+    ierr = PetscSectionCreateGlobalSection(coordSection, dm->sf, PETSC_FALSE, PETSC_FALSE, &globalCoordSection);CHKERRQ(ierr);
+    ierr = PetscSectionGetPointLayout(comm, globalCoordSection, &vLayout);CHKERRQ(ierr);
+    ierr = PetscLayoutGetSize(vLayout, &totVertices);CHKERRQ(ierr);
+    ierr = PetscFPrintf(comm, fp, "POINTS %D double\n", totVertices);CHKERRQ(ierr);
+    ierr = DMPlexVTKWriteSection_ASCII(dm, coordSection, globalCoordSection, coordinates, fp, 3, PETSC_DETERMINE, lengthScale, 0);CHKERRQ(ierr);
+    ierr = ISDestroy(&vStratumIS);CHKERRQ(ierr);
+    ierr = PetscLayoutDestroy(&vLayout);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&coordSection);CHKERRQ(ierr);
+    ierr = PetscSectionDestroy(&globalCoordSection);CHKERRQ(ierr);
+  }
   /* Cells */
   ierr = DMPlexVTKWriteCells_ASCII(dm, fp, &totCells);CHKERRQ(ierr);
   /* Vertex fields */
@@ -645,8 +657,6 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
     }
   }
   /* Cleanup */
-  ierr = PetscSectionDestroy(&globalCoordSection);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(&vLayout);CHKERRQ(ierr);
   ierr = PetscFClose(comm, fp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

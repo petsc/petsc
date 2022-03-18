@@ -1538,7 +1538,7 @@ PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLa
     PetscInt dof;
 
     ierr = PetscSectionGetDof(s, p, &dof);CHKERRQ(ierr);
-    if (dof > 0) ++localSize;
+    if (dof >= 0) ++localSize;
   }
   ierr = PetscLayoutCreate(comm, layout);CHKERRQ(ierr);
   ierr = PetscLayoutSetLocalSize(*layout, localSize);CHKERRQ(ierr);
