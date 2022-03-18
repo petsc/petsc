@@ -237,7 +237,7 @@ static PetscErrorCode  KSPSolve_QMRCGS(KSP ksp)
      KSPQMRCGS - Implements the QMRCGStab method.
 
    Options Database Keys:
-.   see KSPSolve()
+    see KSPSolve()
 
    Level: beginner
 

@@ -25,7 +25,7 @@ static RKTableauLink RKTableauList;
      This method has one stage.
 
      Options database:
-.     -ts_rk_type 1fe
+.     -ts_rk_type 1fe - use type 1fe
 
      Level: advanced
 
@@ -37,7 +37,7 @@ M*/
      This method has two stages.
 
      Options database:
-.     -ts_rk_type 2a
+.     -ts_rk_type 2a - use type 2a
 
      Level: advanced
 
@@ -49,7 +49,7 @@ M*/
      This method has two stages.
 
      Options database:
-.     -ts_rk_type 2b
+.     -ts_rk_type 2b - use type 2b
 
      Level: advanced
 
@@ -61,7 +61,7 @@ M*/
      This method has three stages.
 
      Options database:
-.     -ts_rk_type 3
+.     -ts_rk_type 3 - use type 3
 
      Level: advanced
 
@@ -73,7 +73,7 @@ M*/
      This method has four stages with the First Same As Last (FSAL) property.
 
      Options database:
-.     -ts_rk_type 3bs
+.     -ts_rk_type 3bs - use type 3bs
 
      Level: advanced
 
@@ -88,7 +88,7 @@ M*/
      This is the classical Runge-Kutta method with four stages.
 
      Options database:
-.     -ts_rk_type 4
+.     -ts_rk_type 4 - use type 4
 
      Level: advanced
 
@@ -100,7 +100,7 @@ M*/
      This method has six stages.
 
      Options database:
-.     -ts_rk_type 5f
+.     -ts_rk_type 5f - use type 5f
 
      Level: advanced
 
@@ -112,7 +112,7 @@ M*/
      This method has seven stages with the First Same As Last (FSAL) property.
 
      Options database:
-.     -ts_rk_type 5dp
+.     -ts_rk_type 5dp - use type 5dp
 
      Level: advanced
 
@@ -127,7 +127,7 @@ M*/
      This method has eight stages with the First Same As Last (FSAL) property.
 
      Options database:
-.     -ts_rk_type 5bs
+.     -ts_rk_type 5bs - use type 5bs
 
      Level: advanced
 
@@ -142,7 +142,7 @@ M*/
      This method has nine stages with the First Same As Last (FSAL) property.
 
      Options database:
-.     -ts_rk_type 6vr
+.     -ts_rk_type 6vr - use type 6vr
 
      Level: advanced
 
@@ -157,7 +157,7 @@ M*/
      This method has ten stages.
 
      Options database:
-.     -ts_rk_type 7vr
+.     -ts_rk_type 7vr - use type 7vr
 
      Level: advanced
 
@@ -172,7 +172,7 @@ M*/
      This method has thirteen stages.
 
      Options database:
-.     -ts_rk_type 8vr
+.     -ts_rk_type 8vr - use type 8vr
 
      Level: advanced
 

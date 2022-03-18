@@ -79,7 +79,7 @@ static PetscErrorCode KSPMatSolve_PREONLY(KSP ksp, Mat B, Mat X)
                   commonly used with the direct solver preconditioners like PCLU and PCCHOLESKY
 
    Options Database Keys:
-.   -ksp_type preonly
+.   -ksp_type preonly - use preconditioner only
 
    Level: beginner
 

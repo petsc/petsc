@@ -188,7 +188,7 @@ static PetscErrorCode  KSPSolve_MINRES(KSP ksp)
      KSPMINRES - This code implements the MINRES (Minimum Residual) method.
 
    Options Database Keys:
-.   see KSPSolve()
+    see KSPSolve()
 
    Level: beginner
 

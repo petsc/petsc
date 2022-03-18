@@ -279,7 +279,7 @@ $   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual.
 $   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 
    Options Database Key:
-.   -ksp_norm_type <none,preconditioned,unpreconditioned,natural>
+.   -ksp_norm_type <none,preconditioned,unpreconditioned,natural> - set KSP norm type
 
    Notes:
    Not all combinations of preconditioner side (see KSPSetPCSide()) and norm type are supported by all Krylov methods.

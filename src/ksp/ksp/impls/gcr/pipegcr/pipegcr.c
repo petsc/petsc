@@ -479,7 +479,7 @@ static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
   Level: intermediate
 
   Options Database:
-. -ksp_pipegcr_unroll_w
+. -ksp_pipegcr_unroll_w <bool> -  use unrolling
 
 .seealso: KSPPIPEGCR, KSPPIPEGCRSetTruncationType(), KSPPIPEGCRSetNprealloc(),KSPPIPEGCRGetUnrollW()
 @*/
@@ -506,9 +506,6 @@ PetscErrorCode KSPPIPEGCRSetUnrollW(KSP ksp,PetscBool unroll_w)
 .  unroll_w - PIPEGCR uses unrolling (bool)
 
   Level: intermediate
-
-  Options Database:
-. -ksp_pipegcr_unroll_w
 
 .seealso: KSPPIPEGCR, KSPPIPEGCRGetTruncationType(), KSPPIPEGCRGetNprealloc(),KSPPIPEGCRSetUnrollW()
 @*/
@@ -538,7 +535,7 @@ PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp,PetscBool *unroll_w)
   Level: intermediate
 
   Options Database:
-. -ksp_pipegcr_mmax <N>
+. -ksp_pipegcr_mmax <N> - maximum number of previous directions
 
 .seealso: KSPPIPEGCR, KSPPIPEGCRSetTruncationType(), KSPPIPEGCRSetNprealloc()
 @*/
@@ -564,10 +561,7 @@ PetscErrorCode KSPPIPEGCRSetMmax(KSP ksp,PetscInt mmax)
 .  ksp - the Krylov space context
 
    Output Parameter:
-.  mmax - the maximum number of previous directons allowed for orthogonalization
-
-  Options Database:
-. -ksp_pipegcr_mmax <N>
+.  mmax - the maximum number of previous directions allowed for orthogonalization
 
    Level: intermediate
 
@@ -596,7 +590,7 @@ PetscErrorCode KSPPIPEGCRGetMmax(KSP ksp,PetscInt *mmax)
   Level: advanced
 
   Options Database:
-. -ksp_pipegcr_nprealloc <N>
+. -ksp_pipegcr_nprealloc <N> - number of vectors to preallocate
 
 .seealso: KSPPIPEGCR, KSPPIPEGCRGetTruncationType(), KSPPIPEGCRGetNprealloc()
 @*/
@@ -621,9 +615,6 @@ PetscErrorCode KSPPIPEGCRSetNprealloc(KSP ksp,PetscInt nprealloc)
 
    Output Parameter:
 .  nprealloc - the number of directions preallocated
-
-  Options Database:
-. -ksp_pipegcr_nprealloc <N>
 
    Level: advanced
 

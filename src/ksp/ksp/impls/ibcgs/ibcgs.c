@@ -297,7 +297,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
             in an alternative form to have only a single global reduction operation instead of the usual 3 (or 4)
 
    Options Database Keys:
-.   see KSPSolve()
+    see KSPSolve()
 
    Level: beginner
 

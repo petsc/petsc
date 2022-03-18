@@ -76,7 +76,7 @@ static PetscErrorCode MatConvert_MPIBAIJ_MPIBAIJMKL(Mat A,MatType type,MatReuse 
 
    Options Database Keys:
 +   -mat_block_size - size of the blocks to use
--   -mat_use_hash_table <fact>
+-   -mat_use_hash_table <fact> - set hash table factor
 
    It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
    MatXXXXSetPreallocation() paradigm instead of this routine directly.

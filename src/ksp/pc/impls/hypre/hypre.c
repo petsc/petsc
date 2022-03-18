@@ -2210,7 +2210,7 @@ PetscErrorCode  PCHYPREGetType(PC pc,const char *name[])
 -  type - one of 'cusparse', 'hypre'
 
    Options Database Key:
-.  -pc_mg_galerkin_mat_product_algorithm <"cusparse","hypre">
+.  -pc_mg_galerkin_mat_product_algorithm <cusparse,hypre> - Type of SpGEMM to use in hypre
 
    Level: intermediate
 
@@ -2507,11 +2507,11 @@ PetscErrorCode PCSetUp_PFMG(PC pc)
    Level: advanced
 
    Options Database:
-+ -pc_pfmg_its <its> number of iterations of PFMG to use as preconditioner
-. -pc_pfmg_num_pre_relax <steps> number of smoothing steps before coarse grid
-. -pc_pfmg_num_post_relax <steps> number of smoothing steps after coarse grid
-. -pc_pfmg_tol <tol> tolerance of PFMG
-. -pc_pfmg_relax_type -relaxation type for the up and down cycles, one of Jacobi,Weighted-Jacobi,symmetric-Red/Black-Gauss-Seidel,Red/Black-Gauss-Seidel
++ -pc_pfmg_its <its> - number of iterations of PFMG to use as preconditioner
+. -pc_pfmg_num_pre_relax <steps> - number of smoothing steps before coarse grid solve
+. -pc_pfmg_num_post_relax <steps> - number of smoothing steps after coarse grid solve
+. -pc_pfmg_tol <tol> - tolerance of PFMG
+. -pc_pfmg_relax_type - relaxation type for the up and down cycles, one of Jacobi,Weighted-Jacobi,symmetric-Red/Black-Gauss-Seidel,Red/Black-Gauss-Seidel
 - -pc_pfmg_rap_type - type of coarse matrix generation, one of Galerkin,non-Galerkin
 
    Notes:
@@ -2748,11 +2748,11 @@ PetscErrorCode PCSetUp_SysPFMG(PC pc)
    Level: advanced
 
    Options Database:
-+ -pc_syspfmg_its <its> number of iterations of SysPFMG to use as preconditioner
-. -pc_syspfmg_num_pre_relax <steps> number of smoothing steps before coarse grid
-. -pc_syspfmg_num_post_relax <steps> number of smoothing steps after coarse grid
-. -pc_syspfmg_tol <tol> tolerance of SysPFMG
-- -pc_syspfmg_relax_type -relaxation type for the up and down cycles, one of Weighted-Jacobi,Red/Black-Gauss-Seidel
++ -pc_syspfmg_its <its> - number of iterations of SysPFMG to use as preconditioner
+. -pc_syspfmg_num_pre_relax <steps> - number of smoothing steps before coarse grid
+. -pc_syspfmg_num_post_relax <steps> - number of smoothing steps after coarse grid
+. -pc_syspfmg_tol <tol> - tolerance of SysPFMG
+- -pc_syspfmg_relax_type <Weighted-Jacobi,Red/Black-Gauss-Seidel> - relaxation type for the up and down cycles
 
    Notes:
     This is for CELL-centered descretizations

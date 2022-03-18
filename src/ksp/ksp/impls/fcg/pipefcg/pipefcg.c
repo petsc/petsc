@@ -423,7 +423,7 @@ static PetscErrorCode KSPView_PIPEFCG(KSP ksp,PetscViewer viewer)
   Level: intermediate
 
   Options Database:
-. -ksp_pipefcg_mmax <N>
+. -ksp_pipefcg_mmax <N> - maximum number of previous directions
 
 .seealso: KSPPIPEFCG, KSPPIPEFCGSetTruncationType(), KSPPIPEFCGSetNprealloc()
 @*/
@@ -449,10 +449,10 @@ PetscErrorCode KSPPIPEFCGSetMmax(KSP ksp,PetscInt mmax)
 .  ksp - the Krylov space context
 
    Output Parameter:
-.  mmax - the maximum number of previous directons allowed for orthogonalization
+.  mmax - the maximum number of previous directions allowed for orthogonalization
 
   Options Database:
-. -ksp_pipefcg_mmax <N>
+. -ksp_pipefcg_mmax <N> - maximum number of previous directions
 
    Level: intermediate
 
@@ -480,7 +480,7 @@ PetscErrorCode KSPPIPEFCGGetMmax(KSP ksp,PetscInt *mmax)
   Level: advanced
 
   Options Database:
-. -ksp_pipefcg_nprealloc <N>
+. -ksp_pipefcg_nprealloc <N> - the number of vectors to preallocate
 
 .seealso: KSPPIPEFCG, KSPPIPEFCGSetTruncationType(), KSPPIPEFCGGetNprealloc()
 @*/
@@ -505,9 +505,6 @@ PetscErrorCode KSPPIPEFCGSetNprealloc(KSP ksp,PetscInt nprealloc)
 
    Output Parameter:
 .  nprealloc - the number of directions preallocated
-
-  Options Database:
-. -ksp_pipefcg_nprealloc <N>
 
    Level: advanced
 

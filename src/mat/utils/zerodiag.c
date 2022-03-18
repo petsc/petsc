@@ -31,7 +31,7 @@
     Only works for SeqAIJ matrices
 
     Options Database Keys (When using KSP):
-.      -pc_factor_nonzeros_along_diagonal
+.      -pc_factor_nonzeros_along_diagonal - Reorder to remove zeros from diagonal
 
     Algorithm Notes:
     Column pivoting is used.

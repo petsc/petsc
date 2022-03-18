@@ -2308,7 +2308,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
 . label   - The boundary DMLabel
 . numVals - The number of label values to use, or PETSC_DETERMINE for all values
 . vals    - The label values to use, or PETSC_NULL for all values
-. func    = The function to integrate along the boundary
+. func    - The function to integrate along the boundary
 - user    - The user context
 
   Output Parameter:

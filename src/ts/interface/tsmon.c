@@ -757,7 +757,7 @@ PetscErrorCode TSMonitorSolutionVTKDestroy(void *filenametemplate)
 -  dctx - the TSMonitorLGCtx object that contains all the options for the monitoring, this is created with TSMonitorLGCtxCreate()
 
    Options Database:
-.   -ts_monitor_lg_solution_variables
+.   -ts_monitor_lg_solution_variables - enable monitor of lg solution variables
 
    Level: intermediate
 
@@ -1398,7 +1398,7 @@ PetscErrorCode  TSMonitorEnvelopeCtxCreate(TS ts,TSMonitorEnvelopeCtx *ctx)
 -  dctx - the envelope context
 
    Options Database:
-.  -ts_monitor_envelope
+.  -ts_monitor_envelope - determine maximum and minimum value of each component of the solution over the solution time
 
    Level: intermediate
 
@@ -1498,7 +1498,7 @@ PetscErrorCode  TSMonitorEnvelopeCtxDestroy(TSMonitorEnvelopeCtx *ctx)
 - ctx  - not used
 
   Options Database:
-. -ts_dmswarm_monitor_moments
+. -ts_dmswarm_monitor_moments - Monitor moments of particle distribution
 
   Level: intermediate
 

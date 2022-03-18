@@ -162,7 +162,7 @@ M*/
    Level: beginner
 
    Options Database:
-.   -ts_pseudo_frtol <rtol>
+.   -ts_pseudo_frtol <rtol> - use sepcified rtol
 
 .seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TS_CONVERGED_PSEUDO_FATOL
 M*/
@@ -173,7 +173,7 @@ M*/
    Level: beginner
 
    Options Database:
-.   -ts_pseudo_fatol <atol>
+.   -ts_pseudo_fatol <atol> - use specified atol
 
 .seealso: TSSolve(), TSGetConvergedReason(), TSSetConvergedReason(), TS_CONVERGED_PSEUDO_FRTOL
 M*/

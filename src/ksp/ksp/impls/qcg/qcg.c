@@ -13,7 +13,7 @@ static PetscErrorCode KSPQCGQuadraticRoots(Vec,Vec,PetscReal,PetscReal*,PetscRea
 -   delta - the trust region radius (Infinity is the default)
 
     Options Database Key:
-.   -ksp_qcg_trustregionradius <delta>
+.   -ksp_qcg_trustregionradius <delta> - trust region radius
 
     Level: advanced
 

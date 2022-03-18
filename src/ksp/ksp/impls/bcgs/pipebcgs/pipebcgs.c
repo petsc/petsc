@@ -221,7 +221,7 @@ static PetscErrorCode  KSPSolve_PIPEBCGS(KSP ksp)
     Periodic residual replacement may be used to increase robustness and maximal attainable accuracy.
 
     Options Database Keys:
-.see KSPSolve()
+    see KSPSolve()
 
     Level: intermediate
 

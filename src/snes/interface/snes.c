@@ -22,7 +22,7 @@ PetscLogEvent SNES_Solve, SNES_Setup, SNES_FunctionEval, SNES_JacobianEval, SNES
 -  flg - PETSC_TRUE indicates you want the error generated
 
    Options database keys:
-.  -snes_error_if_not_converged : this takes an optional truth value (0/1/no/yes/true/false)
+.  -snes_error_if_not_converged <true,false> - cause an immediate error condition and stop the program if the solver does not converge
 
    Level: intermediate
 
@@ -1953,7 +1953,7 @@ PetscErrorCode  SNESSetInitialFunction(SNES snes, Vec f)
 -  normschedule - the frequency of norm computation
 
    Options Database Key:
-.  -snes_norm_schedule <none, always, initialonly, finalonly, initialfinalonly>
+.  -snes_norm_schedule <none, always, initialonly, finalonly, initialfinalonly> - set the schedule
 
    Notes:
    Only certain SNES methods support certain SNESNormSchedules.  Most require evaluation
@@ -2783,8 +2783,8 @@ PetscErrorCode SNESTestJacobian(SNES snes)
 -  B - optional preconditioning matrix
 
   Options Database Keys:
-+    -snes_lag_preconditioner <lag>
-.    -snes_lag_jacobian <lag>
++    -snes_lag_preconditioner <lag> - how often to rebuild preconditioner
+.    -snes_lag_jacobian <lag> - how often to rebuild Jacobian
 .    -snes_test_jacobian <optional threshold> - compare the user provided Jacobian with one compute via finite differences to check for errors.  If a threshold is given, display only those entries whose difference is greater than the threshold.
 .    -snes_test_jacobian_view - display the user provided Jacobian, the finite difference Jacobian and the difference between them to help users detect the location of errors in the user provided Jacobian
 .    -snes_compare_explicit - Compare the computed Jacobian to the finite difference Jacobian and output the differences
@@ -3517,7 +3517,7 @@ PetscErrorCode  SNESSetLagPreconditioner(SNES snes,PetscInt lag)
 -  steps - the number of refinements to do, defaults to 0
 
    Options Database Keys:
-.    -snes_grid_sequence <steps>
+.    -snes_grid_sequence <steps> - Use grid sequencing to generate initial guess
 
    Level: intermediate
 
@@ -3548,7 +3548,7 @@ PetscErrorCode  SNESSetGridSequence(SNES snes,PetscInt steps)
 .  steps - the number of refinements to do, defaults to 0
 
    Options Database Keys:
-.    -snes_grid_sequence <steps>
+.    -snes_grid_sequence <steps> - set number of refinements
 
    Level: intermediate
 
@@ -5781,7 +5781,7 @@ PetscErrorCode SNESHasNPC(SNES snes, PetscBool *has_npc)
 .ve
 
     Options Database Keys:
-.   -snes_npc_side <right,left>
+.   -snes_npc_side <right,left> - nonlinear preconditioner side
 
     Notes:
     SNESNRICHARDSON and SNESNCG only support left preconditioning.

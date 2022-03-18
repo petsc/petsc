@@ -570,7 +570,7 @@ PetscErrorCode TSDiscGradIsGonzalez(TS ts,PetscBool *gonzalez)
 - flg - PETSC_TRUE to use the Gonzalez term
 
   Options Database:
-. -ts_discgrad_gonzalez <flg>
+. -ts_discgrad_gonzalez <flg> - use the Gonzalez term for the discrete gradient formulation
 
   Level: Intermediate
 

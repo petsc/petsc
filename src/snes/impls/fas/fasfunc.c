@@ -319,7 +319,7 @@ PetscErrorCode SNESFASSetContinuation(SNES snes,PetscBool continuation)
 -  cycles - the number of cycles -- 1 for V-cycle, 2 for W-cycle
 
    Options Database Key:
-.  -snes_fas_cycles 1 or 2
+.  -snes_fas_cycles <1,2> - 1 for V-cycle, 2 for W-cycle
 
    Level: advanced
 
@@ -1177,7 +1177,7 @@ PetscErrorCode SNESFASFullSetDownSweep(SNES snes,PetscBool swp)
 -  total - whether to use total restriction / interpolatiaon or not (the alternative is defect restriction and correction interpolation)
 
    Options Database Key:
-.  -snes_fas_full_total
+.  -snes_fas_full_total - Use total restriction and interpolation on the initial down and up sweeps for the full FAS cycle
 
    Level: advanced
 
@@ -1210,9 +1210,6 @@ PetscErrorCode SNESFASFullSetTotal(SNES snes,PetscBool total)
 
    Output:
 .  total - whether to use total restriction / interpolatiaon or not (the alternative is defect restriction and correction interpolation)
-
-   Options Database Key:
-.  -snes_fas_full_total
 
    Level: advanced
 

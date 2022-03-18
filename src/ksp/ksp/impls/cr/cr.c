@@ -148,7 +148,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
      KSPCR - This code implements the (preconditioned) conjugate residuals method
 
    Options Database Keys:
-.   see KSPSolve()
+    see KSPSolve()
 
    Level: beginner
 

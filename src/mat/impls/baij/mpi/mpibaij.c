@@ -2919,7 +2919,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A,MatType newtype,MatR
 + -mat_type mpibaij - sets the matrix type to "mpibaij" during a call to MatSetFromOptions()
 . -mat_block_size <bs> - set the blocksize used to store the matrix
 . -mat_baij_mult_version version - indicate the version of the matrix-vector product to use  (0 often indicates using BLAS)
-- -mat_use_hash_table <fact>
+- -mat_use_hash_table <fact> - set hash table factor
 
    Level: beginner
 
@@ -3056,7 +3056,7 @@ M*/
 
    Options Database Keys:
 +   -mat_block_size - size of the blocks to use
--   -mat_use_hash_table <fact>
+-   -mat_use_hash_table <fact> - set hash table factor
 
    Notes:
    If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one processor
@@ -3157,7 +3157,7 @@ PetscErrorCode  MatMPIBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const
 
    Options Database Keys:
 +   -mat_block_size - size of the blocks to use
--   -mat_use_hash_table <fact>
+-   -mat_use_hash_table <fact> - set hash table factor
 
    It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
    MatXXXXSetPreallocation() paradigm instead of this routine directly.

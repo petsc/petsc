@@ -850,7 +850,7 @@ PetscErrorCode  PCBJKOKKOSGetKSP(PC pc,KSP *ksp)
      PCBJKOKKOS -  Defines a preconditioner that applies a Krylov solver and preconditioner to the blocks in a AIJASeq matrix on the GPU.
 
    Options Database Key:
-.     -pc_bjkokkos_
+.     -pc_bjkokkos_ - options prefix with ksp options
 
    Level: intermediate
 

@@ -10,7 +10,7 @@
 -  pyname - full dotted Python name [package].module[.{class|function}]
 
    Options Database Key:
-.  -tao_python_type <pyname>
+.  -tao_python_type <pyname> - python class
 
    Level: intermediate
 

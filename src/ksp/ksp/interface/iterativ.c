@@ -1171,7 +1171,7 @@ PetscErrorCode  KSPConvergedDefaultCreate(void **ctx)
 .  ksp   - iterative context
 
    Options Database:
-.   -ksp_converged_use_initial_residual_norm
+.   -ksp_converged_use_initial_residual_norm <bool> - Use initial residual norm for computing relative convergence
 
    Notes:
    Use KSPSetTolerances() to alter the defaults for rtol, abstol, dtol.
@@ -1210,7 +1210,7 @@ PetscErrorCode  KSPConvergedDefaultSetUIRNorm(KSP ksp)
 .  ksp   - iterative context
 
    Options Database:
-.   -ksp_converged_use_min_initial_residual_norm
+.   -ksp_converged_use_min_initial_residual_norm <bool> - Use minimum of initial residual norm and b for computing relative convergence
 
    Use KSPSetTolerances() to alter the defaults for rtol, abstol, dtol.
 
@@ -1243,7 +1243,7 @@ PetscErrorCode  KSPConvergedDefaultSetUMIRNorm(KSP ksp)
 -  flg - boolean flag
 
    Options Database:
-.   -ksp_converged_maxits
+.   -ksp_converged_maxits <bool> - Declare convergence if the maximum number of iterations is reached
 
    Use KSPSetTolerances() to alter the defaults for rtol, abstol, dtol.
 
@@ -1288,10 +1288,10 @@ PetscErrorCode  KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
    In order to have PETSc declaring convergence in such a case (i.e. KSP_CONVERGED_ITS), users can use KSPConvergedDefaultSetConvergedMaxits()
 
    where:
-+     rtol = relative tolerance,
-.     abstol = absolute tolerance.
-.     dtol = divergence tolerance,
--     rnorm_0 is the two norm of the right hand side (or the preconditioned norm, depending on what was set with
++     rtol - relative tolerance,
+.     abstol - absolute tolerance.
+.     dtol - divergence tolerance,
+-     rnorm_0 - the two norm of the right hand side (or the preconditioned norm, depending on what was set with
           KSPSetNormType(). When initial guess is non-zero you
           can call KSPConvergedDefaultSetUIRNorm() to use the norm of (b - A*(initial guess))
           as the starting point for relative norm convergence testing, that is as rnorm_0

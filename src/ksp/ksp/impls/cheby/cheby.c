@@ -228,7 +228,7 @@ static PetscErrorCode KSPChebyshevEstEigSetUseNoisy_Chebyshev(KSP ksp,PetscBool 
 -  emax, emin - the eigenvalue estimates
 
   Options Database:
-.  -ksp_chebyshev_eigenvalues emin,emax
+.  -ksp_chebyshev_eigenvalues emin,emax - extreme eigenvalues
 
    Note:
    Call KSPChebyshevEstEigSet() or use the option -ksp_chebyshev_esteig a,b,c,d to have the KSP
@@ -268,7 +268,7 @@ PetscErrorCode  KSPChebyshevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin
 -  d - multiple of max eigenvalue estimate to use for max Chebyshev bound (or PETSC_DECIDE)
 
   Options Database:
-.  -ksp_chebyshev_esteig a,b,c,d
+.  -ksp_chebyshev_esteig a,b,c,d - estimate eigenvalues using a Krylov method, then use this transform for Chebyshev eigenvalue bounds
 
    Notes:
    The Chebyshev bounds are set using
@@ -312,7 +312,7 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp,PetscReal a,PetscReal b,PetscReal c
 -  use - PETSC_TRUE to use noisy
 
    Options Database:
-.  -ksp_chebyshev_esteig_noisy <true,false>
+.  -ksp_chebyshev_esteig_noisy <true,false> - Use noisy right hand side for estimate
 
   Notes:
     This alledgely works better for multigrid smoothers
@@ -340,7 +340,7 @@ PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP ksp,PetscBool use)
 . ksp - the Krylov space context
 
   Output Parameters:
-. kspest the eigenvalue estimation Krylov space context
+. kspest - the eigenvalue estimation Krylov space context
 
   Level: intermediate
 

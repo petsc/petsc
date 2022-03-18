@@ -19,7 +19,7 @@ typedef struct {
 .  pc - the preconditioner context
 
    Options Database Key:
-.  -pc_gamg_classical_type
+.  -pc_gamg_classical_type <direct,standard> - set type of Classical AMG prolongation
 
    Level: intermediate
 

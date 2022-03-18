@@ -220,7 +220,7 @@ PetscErrorCode  MatMFFDDSSetUmin(Mat A,PetscReal umin)
         Optimization and Nonlinear Equations".
 
    Options Database Keys:
-.  -mat_mffd_umin <umin> see MatMFFDDSSetUmin()
+.  -mat_mffd_umin <umin> - see MatMFFDDSSetUmin()
 
    Level: intermediate
 

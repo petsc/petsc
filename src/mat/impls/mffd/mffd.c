@@ -738,7 +738,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
    Options Database Keys:
 +  -mat_mffd_err <error_rel> - Sets error_rel
 .  -mat_mffd_unim <umin> - Sets umin (for default PETSc routine that computes h only)
--  -mat_mffd_check_positivity
+-  -mat_mffd_check_positivity - check positivity
 
 .seealso: MatDestroy(), MatMFFDSetFunctionError(), MatMFFDDSSetUmin(), MatMFFDSetFunction()
           MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateSNESMF(),
@@ -891,7 +891,7 @@ PetscErrorCode  MatMFFDSetFunctioniBase(Mat mat,PetscErrorCode (*func)(void*,Vec
 -  period - 1 for everytime, 2 for every second etc
 
    Options Database Keys:
-.  -mat_mffd_period <period>
+.  -mat_mffd_period <period> - Sets how often h is recomputed
 
    Level: advanced
 
@@ -1053,7 +1053,7 @@ PetscErrorCode  MatMFFDSetBase(Mat J,Vec U,Vec F)
 -   ctx - any context needed by the function
 
     Options Database Keys:
-.   -mat_mffd_check_positivity
+.   -mat_mffd_check_positivity <bool> - Insure that U + h*a is non-negative
 
     Level: advanced
 
@@ -1089,7 +1089,7 @@ PetscErrorCode  MatMFFDSetCheckh(Mat J,PetscErrorCode (*fun)(void*,Vec,Vec,Petsc
 -   dummy - context variable (unused)
 
     Options Database Keys:
-.   -mat_mffd_check_positivity
+.   -mat_mffd_check_positivity <bool> - Insure that U + h*a is nonnegative
 
     Level: advanced
 

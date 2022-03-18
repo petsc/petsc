@@ -47,7 +47,7 @@ PetscErrorCode  KSPCGSetType(KSP ksp,KSPCGType type)
 -   flg - turn on or off the single reduction
 
     Options Database:
-.   -ksp_cg_single_reduction
+.   -ksp_cg_single_reduction <bool> - Merge inner products into single MPI_Allreduce
 
     Level: intermediate
 

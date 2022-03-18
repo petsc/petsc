@@ -199,7 +199,7 @@ static PetscErrorCode  KSPSolve_FBCGSR(KSP ksp)
      KSPFBCGSR - Implements a mathematically equivalent variant of FBiCGSTab.
 
    Options Database Keys:
-.   see KSPSolve()
+    see KSPSolve()
 
    Level: beginner
 

@@ -492,7 +492,7 @@ PetscErrorCode MatPartitioningChacoGetEigenSolver_Chaco(MatPartitioning part,MPC
 -  tol  - the tolerance
 
    Options Database:
-.  -mat_partitioning_chaco_eigen_tol <tol>: Tolerance for eigensolver
+.  -mat_partitioning_chaco_eigen_tol <tol> - Tolerance for eigensolver
 
    Note:
    Must be positive. The default value is 0.001.
@@ -571,7 +571,7 @@ PetscErrorCode MatPartitioningChacoGetEigenTol_Chaco(MatPartitioning part,PetscR
 -  num  - the number of eigenvectors
 
    Options Database:
-.  -mat_partitioning_chaco_eigen_number <n>: Number of eigenvectors
+.  -mat_partitioning_chaco_eigen_number <n> - Number of eigenvectors
 
    Note:
    Accepted values are 1, 2 or 3, indicating partitioning by bisection,

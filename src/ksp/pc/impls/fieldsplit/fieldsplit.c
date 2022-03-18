@@ -2957,7 +2957,7 @@ PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
 -  flg  - boolean indicating whether to use field splits defined by the DM
 
    Options Database Key:
-.  -pc_fieldsplit_dm_splits <bool> use the field splits defined by the DM
+.  -pc_fieldsplit_dm_splits <bool> - use the field splits defined by the DM
 
    Level: Intermediate
 
