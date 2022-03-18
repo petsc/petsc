@@ -81,6 +81,7 @@ class Configure(config.package.Package):
       if self.syclArch == 'x86_64':
         flags += ' -fsycl-targets=spir64_x86_64 '
       elif self.syclArch in ['gen','gen9','gen11','gen12lp','dg1','xehp']:
+        # https://en.wikipedia.org/wiki/List_of_Intel_graphics_processing_units
         if self.syclArch == 'gen':
           devArg = 'gen9-' # compile for all targets of gen9 and up
         else:

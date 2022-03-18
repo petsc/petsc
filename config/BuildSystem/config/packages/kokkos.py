@@ -168,9 +168,12 @@ class Configure(config.package.CMakePackage):
       args.append('-DKokkos_ENABLE_SYCL=ON')
       with self.Language('SYCL'):
         petscSyclc = self.getCompiler()
+        syclFlags = self.updatePackageCxxFlags(self.getCompilerFlags())
       self.getExecutable(petscSyclc,getFullPath=1,resultName='systemSyclc')
       if not hasattr(self,'systemSyclc'):
         raise RuntimeError('SYCL error: could not find path of the sycl compiler')
+      args = self.rmArgsStartsWith(args, '-DCMAKE_CXX_FLAGS')
+      args.append('-DCMAKE_CXX_FLAGS="' + syclFlags.replace('"','\\"') + '"')
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
       args.append('-DCMAKE_CXX_COMPILER='+self.systemSyclc)
       args.append('-DCMAKE_CXX_EXTENSIONS=OFF')
