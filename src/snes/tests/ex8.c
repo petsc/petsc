@@ -679,20 +679,19 @@ int main(int argc, char **argv)
   # 2D/3D Q_1 on a tensor cell
   test:
     suffix: q1
-    requires: mpi_type_get_envelope
     args: -dm_plex_dim {{2 3}separate output} -dm_plex_box_faces 2,2,2 -dm_plex_simplex 0 -petscspace_degree 1 -qorder 1 -porder {{1 2}separate output}
 
   # 2D/3D Q_2 on a tensor cell
   test:
     suffix: q2
-    requires: mpi_type_get_envelope !single
+    requires: !single
     args: -dm_plex_dim {{2 3}separate output} -dm_plex_box_faces 2,2,2 -dm_plex_simplex 0 -petscspace_degree 2 -qorder 2 -porder {{1 2 3}separate output}
 
   # 2D/3D Q_3 on a tensor cell
   test:
     TODO: gll Lagrange nodes break this
     suffix: q3
-    requires: mpi_type_get_envelope !single
+    requires: !single
     args: -dm_plex_dim {{2 3}separate output} -dm_plex_box_faces 2,2,2 -dm_plex_simplex 0 -petscspace_degree 3 -qorder 3 -porder {{1 2 3 4}separate output}
 
   # 2D/3D P_1disc on a triangle/quadrilateral
