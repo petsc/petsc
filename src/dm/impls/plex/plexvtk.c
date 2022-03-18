@@ -480,8 +480,8 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   writeComplex = PETSC_FALSE;
 #endif
   ierr = DMGetCoordinatesLocalized(dm,&localized);CHKERRQ(ierr);
-  PetscCheckFalse(localized,PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"VTK output with localized coordinates not yet supported");
   ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  PetscCheckFalse(localized,comm,PETSC_ERR_SUP,"VTK output with localized coordinates not yet supported");
   ierr = PetscFOpen(comm, vtk->filename, "wb", &fp);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject)dm, &dmname);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fp, "# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
