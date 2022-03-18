@@ -352,7 +352,7 @@ static PetscErrorCode SNESSolve_Patch(SNES snes)
            PCPATCH
 
    References:
-.  1. - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers", SIAM Review, 57(4), 2015
+.  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers", SIAM Review, 57(4), 2015
 
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)

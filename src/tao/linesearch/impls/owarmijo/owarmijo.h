@@ -48,16 +48,16 @@
  This type of search is currently NOT supported by the code.
 
  References:
-  Armijo, "Minimization of Functions Having Lipschitz Continuous
++ * - Armijo, "Minimization of Functions Having Lipschitz Continuous
     First-Partial Derivatives," Pacific Journal of Mathematics, volume 16,
     pages 1-3, 1966.
-  Ferris and Lucidi, "Nonmonotone Stabilization Methods for Nonlinear
+. * - Ferris and Lucidi, "Nonmonotone Stabilization Methods for Nonlinear
     Equations," Journal of Optimization Theory and Applications, volume 81,
     pages 53-71, 1994.
-  Grippo, Lampariello, and Lucidi, "A Nonmonotone Line Search Technique
+. * - Grippo, Lampariello, and Lucidi, "A Nonmonotone Line Search Technique
     for Newton's Method," SIAM Journal on Numerical Analysis, volume 23,
     pages 707-716, 1986.
-  Grippo, Lampariello, and Lucidi, "A Class of Nonmonotone Stabilization
+- * - Grippo, Lampariello, and Lucidi, "A Class of Nonmonotone Stabilization
     Methods in Unconstrained Optimization," Numerische Mathematik, volume 59,
   pages 779-805, 1991. */
 #include <petsc/private/taolinesearchimpl.h>

@@ -567,8 +567,9 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
 - islist  -  list of ISs breaking up indis by color
 
   Note:
-+ xis and yis must be of the same length and have congruent communicators.
-- The resulting ISs have subcommunicators in a "deadlock-free" order (see ISListToPair()).
+    xis and yis must be of the same length and have congruent communicators.
+
+    The resulting ISs have subcommunicators in a "deadlock-free" order (see ISListToPair()).
 
   Level: advanced
 

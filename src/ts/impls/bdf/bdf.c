@@ -561,7 +561,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
 -  order - order of the method
 
   Options Database:
-.  -ts_bdf_order <order>
+.  -ts_bdf_order <order> - select the order
 
   Level: intermediate
 

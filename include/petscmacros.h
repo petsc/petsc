@@ -177,7 +177,7 @@ M*/
   Level: beginner
 
 .seealso: PETSC_CONSTEXPR_14, PETSC_NODISCARD
-MC*/
+M*/
 
 /*MC
   PETSC_CONSTEXPR_14 - C++14 constexpr
@@ -207,7 +207,7 @@ MC*/
   Level: beginner
 
 .seealso: PETSC_NULLPTR, PETSC_NODISCARD
-MC*/
+M*/
 
 /*MC
   PETSC_NODISCARD - Mark the return value of a function as non-discardable
@@ -250,7 +250,7 @@ MC*/
   Level: beginner
 
 .seealso: PETSC_NULLPTR, PETSC_CONSTEXPR_14
-MC*/
+M*/
 
 /* C++11 features */
 #if defined(__cplusplus)
@@ -361,7 +361,7 @@ M*/
 #endif
 
 /*MC
-  PetscUnreachable() - Indicate to the compiler that a code-path is logically unreachable
+  PetscUnreachable - Indicate to the compiler that a code-path is logically unreachable
 
   Synopsis:
   #include <petscmacros.h>
@@ -397,7 +397,7 @@ M*/
   Level: advanced
 
 .seealso: SETERRABORT(), PETSCABORT()
-MC*/
+M*/
 #if defined(__GNUC__)
 /* GCC 4.8+, Clang, Intel and other compilers compatible with GCC (-std=c++0x or above) */
 #  define PetscUnreachable() __builtin_unreachable()
@@ -418,7 +418,7 @@ MC*/
 . x - The preprocessor token to expand
 
 .seealso: PetscStringize(), PetscConcat()
-MC*/
+M*/
 #define PetscExpand_(...) __VA_ARGS__
 #define PetscExpand(...)  PetscExpand_(__VA_ARGS__)
 
@@ -457,7 +457,7 @@ MC*/
   Level: beginner
 
 .seealso: PetscConcat(), PetscExpandToNothing(), PetscExpand()
-MC*/
+M*/
 #define PetscStringize_(x) #x
 #define PetscStringize(x)  PetscStringize_(x)
 
@@ -490,7 +490,7 @@ MC*/
   Level: beginner
 
 .seealso: PetscStringize(), PetscExpand()
-MC*/
+M*/
 #define PetscConcat_(x,y) x ## y
 #define PetscConcat(x,y)  PetscConcat_(x,y)
 
@@ -534,7 +534,7 @@ $ #define PETSC_DONT_HAVE_FOO PetscCompl(PetscDefined(HAVE_FOO))
   Level: beginner
 
 .seealso: PetscConcat(), PetscDefined()
-MC*/
+M*/
 #define PetscCompl(b) PetscConcat_(PETSC_INTERNAL_COMPL_,PetscExpand(b))
 
 #if !defined(PETSC_SKIP_VARIADIC_MACROS)
@@ -614,7 +614,7 @@ $ #define FooDefined(d) PetscDefined_(PetscConcat(FOO_,d))
 
 .seealso: PetscHasAttribute(), PetscUnlikely(), PetscLikely(), PetscConcat(),
 PetscExpandToNothing(), PetscCompl()
-MC*/
+M*/
 #define PetscDefined_arg_1 shift,
 #define PetscDefined_arg_  shift,
 #define PetscDefined__take_second_expanded(ignored, val, ...) val
@@ -702,7 +702,7 @@ M*/
   Level: beginner
 
 .seealso: PetscConcat(), PetscDefined(), PetscStringize(), PetscExpand()
-MC*/
+M*/
 #define PetscExpandToNothing(...)
 #endif /* !PETSC_SKIP_VARIADIC_MACROS */
 

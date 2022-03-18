@@ -311,7 +311,8 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(PetscOptionItems *PetscOptionsOb
 
    Level: intermediate
 
-   References: http://dx.doi.org/10.1145/641876.641877
+   References:
+.  * - http://dx.doi.org/10.1145/641876.641877
 
    Notes:
     Valid filter names are
@@ -348,7 +349,8 @@ PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt,const char *name)
 
    Level: intermediate
 
-   References: http://dx.doi.org/10.1016/j.cam.2005.03.008
+   References:
+.  * - http://dx.doi.org/10.1016/j.cam.2005.03.008
 
    Options Database:
 .   -ts_adapt_dsp_pid <kkI,kkP,kkD> - Sets PID controller parameters
@@ -372,7 +374,9 @@ PetscErrorCode TSAdaptDSPSetPID(TSAdapt adapt,PetscReal kkI,PetscReal kkP,PetscR
 
    Level: intermediate
 
-   References: http://dx.doi.org/10.1145/641876.641877 and http://dx.doi.org/10.1016/j.cam.2005.03.008
+   References:
++  * - http://dx.doi.org/10.1145/641876.641877
+-  * - http://dx.doi.org/10.1016/j.cam.2005.03.008
 
    Options Database:
 +   -ts_adapt_dsp_filter <name> - Sets predefined controller by name; use -help for a list of available controllers

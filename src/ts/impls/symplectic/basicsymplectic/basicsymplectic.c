@@ -379,10 +379,11 @@ static PetscErrorCode TSComputeLinearStability_BasicSymplectic(TS ts,PetscReal x
 -  bsymptype - type of the symplectic scheme
 
   Options Database:
-.  -ts_basicsymplectic_type <scheme>
+.  -ts_basicsymplectic_type <scheme> - select the scheme
 
   Notes:
-  The symplectic solver always expects a two-way splitting with the split names being "position" and "momentum". Each split is associated with an IS object and a sub-TS that is intended to store the user-provided RHS function.
+    The symplectic solver always expects a two-way splitting with the split names being "position" and "momentum". Each split is associated with an IS object and a sub-TS
+    that is intended to store the user-provided RHS function.
 
   Level: intermediate
 @*/

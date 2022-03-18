@@ -141,7 +141,7 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
           it is a bound on the true residual.
 
    References:
-.   1. -  Freund, 1993
+.  * - Freund, 1993
 
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPTCQMR
 M*/

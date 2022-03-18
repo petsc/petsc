@@ -371,7 +371,7 @@ PetscErrorCode VecTaggerView(VecTagger tagger,PetscViewer viewer)
 -  listed - PETSC_TRUE if a list was created, pass in NULL if not needed
 
    Notes:
-.  A value is tagged if it is in any of the boxes, unless the tagger has been inverted (see VecTaggerSetInvert()/VecTaggerGetInvert()), in which case a value is tagged if it is in none of the boxes.
+     A value is tagged if it is in any of the boxes, unless the tagger has been inverted (see VecTaggerSetInvert()/VecTaggerGetInvert()), in which case a value is tagged if it is in none of the boxes.
 
    Level: advanced
 

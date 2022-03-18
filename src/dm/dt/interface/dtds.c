@@ -300,11 +300,11 @@ PetscErrorCode PetscDSView(PetscDS prob, PetscViewer v)
 . prob - the PetscDS object to set options for
 
   Options Database:
-+ -petscds_type <type>     : Set the DS type
-. -petscds_view <view opt> : View the DS
-. -petscds_jac_pre         : Turn formation of a separate Jacobian preconditioner on and off
-. -bc_<name> <ids>         : Specify a list of label ids for a boundary condition
-- -bc_<name>_comp <comps>  : Specify a list of field components to constrain for a boundary condition
++ -petscds_type <type>     - Set the DS type
+. -petscds_view <view opt> - View the DS
+. -petscds_jac_pre         - Turn formation of a separate Jacobian preconditioner on or off
+. -bc_<name> <ids>         - Specify a list of label ids for a boundary condition
+- -bc_<name>_comp <comps>  - Specify a list of field components to constrain for a boundary condition
 
   Level: developer
 

@@ -132,8 +132,9 @@ static PetscErrorCode TSMPRKGenerateTableau3(PetscInt ratio,PetscInt s,const Pet
 
      This method has four stages for slow and fast parts. The refinement factor of the stepsize is 2.
      r = 2, np = 2
+
      Options database:
-.     -ts_mprk_type 2a22
+.     -ts_mprk_type 2a22 - select this scheme
 
      Level: advanced
 
@@ -144,8 +145,9 @@ M*/
 
      This method has eight stages for slow and medium and fast parts. The refinement factor of the stepsize is 2.
      r = 2, np = 3
+
      Options database:
-.     -ts_mprk_type 2a23
+.     -ts_mprk_type 2a23 - select this scheme
 
      Level: advanced
 
@@ -156,8 +158,9 @@ M*/
 
      This method has four stages for slow and fast parts. The refinement factor of the stepsize is 3.
      r = 3, np = 2
+
      Options database:
-.     -ts_mprk_type 2a32
+.     -ts_mprk_type 2a32 - select this scheme
 
      Level: advanced
 
@@ -168,8 +171,9 @@ M*/
 
      This method has eight stages for slow and medium and fast parts. The refinement factor of the stepsize is 3.
      r = 3, np = 3
+
      Options database:
-.     -ts_mprk_type 2a33
+.     -ts_mprk_type 2a33- select this scheme
 
      Level: advanced
 
@@ -181,7 +185,7 @@ M*/
      This method has eight stages for both slow and fast parts.
 
      Options database:
-.     -ts_mprk_type pm3  (put here temporarily)
+.     -ts_mprk_type pm3 - select this scheme
 
      Level: advanced
 
@@ -193,7 +197,7 @@ M*/
      This method has five stages for both slow and fast parts.
 
      Options database:
-.     -ts_mprk_type p2
+.     -ts_mprk_type p2 - select this scheme
 
      Level: advanced
 
@@ -205,7 +209,7 @@ M*/
      This method has ten stages for both slow and fast parts.
 
      Options database:
-.     -ts_mprk_type p3
+.     -ts_mprk_type p3 - select this scheme
 
      Level: advanced
 
@@ -1220,7 +1224,7 @@ static PetscErrorCode TSLoad_MPRK(TS ts,PetscViewer viewer)
 -  mprktype - type of MPRK-scheme
 
   Options Database:
-.   -ts_mprk_type - <pm2,p2,p3>
+.   -ts_mprk_type - <pm2,p2,p3> - select the specific scheme
 
   Level: intermediate
 

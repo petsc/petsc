@@ -357,8 +357,8 @@ static PetscErrorCode PCView_SVD(PC pc,PetscViewer viewer)
    Level: advanced
 
   Options Database:
-+  -pc_svd_zero_sing <rtol> Singular values smaller than this are treated as zero
--  -pc_svd_monitor  Print information on the extreme singular values of the operator
++  -pc_svd_zero_sing <rtol> - Singular values smaller than this are treated as zero
+-  -pc_svd_monitor - Print information on the extreme singular values of the operator
 
   Developer Note:
   This implementation automatically creates a redundant copy of the

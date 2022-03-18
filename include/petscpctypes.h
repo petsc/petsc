@@ -271,8 +271,8 @@ typedef enum { PC_MG_MULTIPLICATIVE,PC_MG_ADDITIVE,PC_MG_FULL,PC_MG_KASKADE } PC
    Level: beginner
 
    Values:
-+  PC_MG_V_CYCLE
--  PC_MG_W_CYCLE
++  PC_MG_V_CYCLE - use the v cycle
+-  PC_MG_W_CYCLE - use the w cycle
 
 .seealso: PCMGSetCycleType()
 

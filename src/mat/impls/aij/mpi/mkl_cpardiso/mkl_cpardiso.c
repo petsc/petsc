@@ -840,7 +840,7 @@ PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F,PetscInt icntl,PetscInt
 -  ival - value of Mkl_Pardiso parameter
 
   Options Database:
-.   -mat_mkl_cpardiso_<icntl> <ival>
+.   -mat_mkl_cpardiso_<icntl> <ival> - set the option numbered icntl to ival
 
    Level: Intermediate
 
@@ -849,7 +849,7 @@ PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F,PetscInt icntl,PetscInt
           database approach when working with TS, SNES, or KSP.
 
    References:
-.      Mkl_Pardiso Users' Guide
+.  * - Mkl_Pardiso Users' Guide
 
 .seealso: MatGetFactor()
 @*/

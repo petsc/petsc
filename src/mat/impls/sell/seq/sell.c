@@ -2152,7 +2152,7 @@ M*/
       See MatMult_SeqSELL() for how this format is used with the SIMD operations to achieve high performance.
 
  References:
-   Hong Zhang, Richard T. Mills, Karl Rupp, and Barry F. Smith, Vectorized Parallel Sparse Matrix-Vector Multiplication in {PETSc} Using {AVX-512},
+. * - Hong Zhang, Richard T. Mills, Karl Rupp, and Barry F. Smith, Vectorized Parallel Sparse Matrix-Vector Multiplication in {PETSc} Using {AVX-512},
    Proceedings of the 47th International Conference on Parallel Processing, 2018.
 
 .seealso: MatCreateSeqSELL(), MatCreateSeqAIJ(), MatCreateSell(), MATSEQSELL, MATMPISELL, MATSEQAIJ, MATMPIAIJ, MATAIJ

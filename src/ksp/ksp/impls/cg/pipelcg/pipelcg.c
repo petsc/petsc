@@ -533,10 +533,10 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
         -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 2.0 -ksp_pipelcg_monitor -log_view
 
     References:
-    [*] J. Cornelis, S. Cools and W. Vanroose,
++   * - J. Cornelis, S. Cools and W. Vanroose,
         "The Communication-Hiding Conjugate Gradient Method with Deep Pipelines"
         Submitted to SIAM Journal on Scientific Computing (SISC), 2018.
-    [*] S. Cools, J. Cornelis and W. Vanroose,
+-   * - S. Cools, J. Cornelis and W. Vanroose,
         "Numerically Stable Recurrence Relations for the Communication Hiding Pipelined Conjugate Gradient Method"
         Submitted to IEEE Transactions on Parallel and Distributed Systems, 2019.
 

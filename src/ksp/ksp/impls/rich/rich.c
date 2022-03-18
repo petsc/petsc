@@ -264,7 +264,7 @@ static PetscErrorCode KSPBuildResidual_Richardson(KSP ksp,Vec t,Vec v,Vec *V)
 $    -ksp_type richardson -pc_type jacobi gives one classically Jacobi preconditioning
 
   References:
-.  1. - L. F. Richardson, "The Approximate Arithmetical Solution by Finite Differences of Physical Problems Involving
+. * - L. F. Richardson, "The Approximate Arithmetical Solution by Finite Differences of Physical Problems Involving
    Differential Equations, with an Application to the Stresses in a Masonry Dam",
   Philosophical Transactions of the Royal Society of London. Series A,
   Containing Papers of a Mathematical or Physical Character, Vol. 210, 1911 (1911).

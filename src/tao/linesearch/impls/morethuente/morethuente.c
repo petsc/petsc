@@ -278,7 +278,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
    More-Thuente line-search can be selected with "-tao_ls_type more-thuente".
 
    References:
-.     1. - JORGE J. MORE AND DAVID J. THUENTE, LINE SEARCH ALGORITHMS WITH GUARANTEED SUFFICIENT DECREASE.
+.  * - JORGE J. MORE AND DAVID J. THUENTE, LINE SEARCH ALGORITHMS WITH GUARANTEED SUFFICIENT DECREASE.
           ACM Trans. Math. Software 20, no. 3 (1994): 286-307.
 
    Level: developer

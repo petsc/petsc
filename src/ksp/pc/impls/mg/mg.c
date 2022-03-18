@@ -1473,7 +1473,7 @@ PetscErrorCode  PCMGSetCycleType(PC pc,PCMGCycleType n)
 -  n - number of cycles (default is 1)
 
    Options Database Key:
-.  -pc_mg_multiplicative_cycles n
+.  -pc_mg_multiplicative_cycles n - set the number of cycles
 
    Level: advanced
 
@@ -1513,7 +1513,7 @@ PetscErrorCode PCMGSetGalerkin_MG(PC pc,PCMGGalerkinType use)
 -  use - one of PC_MG_GALERKIN_BOTH,PC_MG_GALERKIN_PMAT,PC_MG_GALERKIN_MAT, or PC_MG_GALERKIN_NONE
 
    Options Database Key:
-.  -pc_mg_galerkin <both,pmat,mat,none>
+.  -pc_mg_galerkin <both,pmat,mat,none> - set the matrices to form via the Galerkin process
 
    Level: intermediate
 
@@ -1761,7 +1761,7 @@ PetscErrorCode  PCMGSetNumberSmooth(PC pc,PetscInt n)
 .  pc - the preconditioner context
 
    Options Database Key:
-.  -pc_mg_distinct_smoothup
+.  -pc_mg_distinct_smoothup <bool> - use distinct smoothing objects
 
    Level: advanced
 

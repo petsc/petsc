@@ -487,6 +487,7 @@ static PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F,PetscReal dtol)
 
 /*@
   MatSuperluSetILUDropTol - Set SuperLU ILU drop tolerance
+
    Logically Collective on Mat
 
    Input Parameters:
@@ -494,12 +495,12 @@ static PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F,PetscReal dtol)
 -  dtol - drop tolerance
 
   Options Database:
-.   -mat_superlu_ilu_droptol <dtol>
+.   -mat_superlu_ilu_droptol <dtol> - the drop tolerance
 
    Level: beginner
 
    References:
-.      SuperLU Users' Guide
+.  * - SuperLU Users' Guide
 
 .seealso: MatGetFactor()
 @*/

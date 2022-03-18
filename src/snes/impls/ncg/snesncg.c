@@ -474,7 +474,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
     SNESLINESEARCHL2 is used. Also supports the special purpose line search SNESLINESEARCHNCGLINEAR
 
    References:
-.  1. -  Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu,"Composing Scalable Nonlinear Algebraic Solvers",
+.  * -  Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu,"Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESNEWTONLS, SNESNEWTONTR, SNESNGMRES, SNESQN, SNESLINESEARCHNCGLINEAR, SNESNCGSetType(), SNESNCGGetType(), SNESLineSearchSetType()

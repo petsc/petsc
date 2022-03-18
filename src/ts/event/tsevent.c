@@ -93,7 +93,7 @@ PetscErrorCode TSSetPostEventIntervalStep(TS ts,PetscReal dt)
 -  vtol - array of tolerances or NULL, used in preference to tol if present
 
    Options Database Keys:
-.  -ts_event_tol <tol> tolerance for event zero crossing
+.  -ts_event_tol <tol> - tolerance for event zero crossing
 
    Notes:
    Must call TSSetEventHandler() before setting the tolerances.

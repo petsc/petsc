@@ -563,14 +563,14 @@ PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
                 out of the denominator in the formula for ghat.
 
     References:
-+     1. - G.L.G. Sleijpen, H.A. van der Vorst, "An overview of
++   * - G.L.G. Sleijpen, H.A. van der Vorst, "An overview of
          approaches for the stable computation of hybrid BiCG
          methods", Applied Numerical Mathematics: Transactions
          f IMACS, 19(3), 1996.
-.     2. -  G.L.G. Sleijpen, H.A. van der Vorst, D.R. Fokkema,
+.   * - G.L.G. Sleijpen, H.A. van der Vorst, D.R. Fokkema,
          "BiCGStab(L) and other hybrid BiCG methods",
           Numerical Algorithms, 7, 1994.
--     3. -  D.R. Fokkema, "Enhanced implementation of BiCGStab(L)
+-   * - D.R. Fokkema, "Enhanced implementation of BiCGStab(L)
          for solving linear systems of equations", preprint
          from www.citeseer.com.
 

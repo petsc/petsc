@@ -62,7 +62,7 @@ static PetscErrorCode MatSTRUMPACKSetReordering_STRUMPACK(Mat F,MatSTRUMPACKReor
    Level: beginner
 
    References:
-.      STRUMPACK manual
+.  * - STRUMPACK manual
 
 .seealso: MatGetFactor()
 @*/
@@ -88,19 +88,20 @@ static PetscErrorCode MatSTRUMPACKSetColPerm_STRUMPACK(Mat F,PetscBool cperm)
 
 /*@
   MatSTRUMPACKSetColPerm - Set whether STRUMPACK should try to permute the columns of the matrix in order to get a nonzero diagonal
+
    Logically Collective on Mat
 
    Input Parameters:
 +  F - the factored matrix obtained by calling MatGetFactor() from PETSc-STRUMPACK interface
--  cperm - whether or not to permute (internally) the columns of the matrix
+-  cperm - PETSC_TRUE to permute (internally) the columns of the matrix
 
   Options Database:
-.   -mat_strumpack_colperm <cperm>
+.   -mat_strumpack_colperm <cperm> - true to use the permutation
 
    Level: beginner
 
    References:
-.      STRUMPACK manual
+.  * - STRUMPACK manual
 
 .seealso: MatGetFactor()
 @*/
@@ -126,7 +127,8 @@ static PetscErrorCode MatSTRUMPACKSetHSSRelTol_STRUMPACK(Mat F,PetscReal rtol)
 
 /*@
   MatSTRUMPACKSetHSSRelTol - Set STRUMPACK relative tolerance for HSS compression
-   Logically Collective on Mat
+
+  Logically Collective on Mat
 
    Input Parameters:
 +  F - the factored matrix obtained by calling MatGetFactor() from PETSc-STRUMPACK interface
@@ -138,7 +140,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSRelTol_STRUMPACK(Mat F,PetscReal rtol)
    Level: beginner
 
    References:
-.      STRUMPACK manual
+.  * - STRUMPACK manual
 
 .seealso: MatGetFactor()
 @*/
@@ -164,6 +166,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSAbsTol_STRUMPACK(Mat F,PetscReal atol)
 
 /*@
   MatSTRUMPACKSetHSSAbsTol - Set STRUMPACK absolute tolerance for HSS compression
+
    Logically Collective on Mat
 
    Input Parameters:
@@ -176,7 +179,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSAbsTol_STRUMPACK(Mat F,PetscReal atol)
    Level: beginner
 
    References:
-.      STRUMPACK manual
+.  * - STRUMPACK manual
 
 .seealso: MatGetFactor()
 @*/
@@ -202,6 +205,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSMaxRank_STRUMPACK(Mat F,PetscInt hssmaxr
 
 /*@
   MatSTRUMPACKSetHSSMaxRank - Set STRUMPACK maximum HSS rank
+
    Logically Collective on Mat
 
    Input Parameters:
@@ -214,7 +218,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSMaxRank_STRUMPACK(Mat F,PetscInt hssmaxr
    Level: beginner
 
    References:
-.      STRUMPACK manual
+.  * - STRUMPACK manual
 
 .seealso: MatGetFactor()
 @*/
@@ -240,6 +244,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSLeafSize_STRUMPACK(Mat F,PetscInt leaf_s
 
 /*@
   MatSTRUMPACKSetHSSLeafSize - Set STRUMPACK HSS leaf size
+
    Logically Collective on Mat
 
    Input Parameters:
@@ -252,7 +257,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSLeafSize_STRUMPACK(Mat F,PetscInt leaf_s
    Level: beginner
 
    References:
-.      STRUMPACK manual
+.  * - STRUMPACK manual
 
 .seealso: MatGetFactor()
 @*/
@@ -278,6 +283,7 @@ static PetscErrorCode MatSTRUMPACKSetHSSMinSepSize_STRUMPACK(Mat F,PetscInt hssm
 
 /*@
   MatSTRUMPACKSetHSSMinSepSize - Set STRUMPACK minimum separator size for low-rank approximation
+
    Logically Collective on Mat
 
    Input Parameters:
@@ -285,12 +291,12 @@ static PetscErrorCode MatSTRUMPACKSetHSSMinSepSize_STRUMPACK(Mat F,PetscInt hssm
 -  hssminsize - minimum dense matrix size for low-rank approximation
 
   Options Database:
-.   -mat_strumpack_hss_min_sep_size <hssminsize>
+.   -mat_strumpack_hss_min_sep_size <hssminsize> - set the minimum separator size
 
    Level: beginner
 
    References:
-.      STRUMPACK manual
+.  * - STRUMPACK manual
 
 .seealso: MatGetFactor()
 @*/

@@ -461,7 +461,7 @@ static PetscErrorCode KSPGuessView_POD(KSPGuess guess,PetscViewer viewer)
   The number of solutions to be retained and the energy tolerance to construct the lower dimensional basis can be specified at command line by -ksp_guess_pod_tol <real> and -ksp_guess_pod_size <int>.
 
   References:
-.   1. - http://www.math.uni-konstanz.de/numerik/personen/volkwein/teaching/POD-Book.pdf
+. * - http://www.math.uni-konstanz.de/numerik/personen/volkwein/teaching/POD-Book.pdf
 
     Level: intermediate
 

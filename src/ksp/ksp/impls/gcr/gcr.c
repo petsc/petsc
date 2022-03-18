@@ -386,7 +386,7 @@ static PetscErrorCode  KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
     Contributed by Dave May
 
     References:
-.          1. - S. C. Eisenstat, H. C. Elman, and H. C. Schultz. Variational iterative methods for
+.   * - S. C. Eisenstat, H. C. Elman, and H. C. Schultz. Variational iterative methods for
            nonsymmetric systems of linear equations. SIAM J. Numer. Anal., 20, 1983
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,

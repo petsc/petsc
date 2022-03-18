@@ -744,7 +744,7 @@ PetscErrorCode SNESReset_VINEWTONRSLS(SNES snes)
    Level: beginner
 
    References:
-.  1. - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large Scale
+.  * - T. S. Munson, and S. Benson. Flexible Complementarity Solvers for Large Scale
      Applications, Optimization Methods and Software, 21 (2006).
 
 .seealso:  SNESVISetVariableBounds(), SNESVISetComputeVariableBounds(), SNESCreate(), SNES, SNESSetType(), SNESVINEWTONSSLS, SNESNEWTONTR, SNESLineSearchSetType(),SNESLineSearchSetPostCheck(), SNESLineSearchSetPreCheck()

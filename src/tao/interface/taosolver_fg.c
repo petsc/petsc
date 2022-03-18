@@ -603,7 +603,7 @@ PetscErrorCode TaoSetObjectiveAndGradient(Tao tao, Vec g, PetscErrorCode (*func)
 . tao - the Tao context
 
   Output Parameters:
-. g - the vector to internally hold the gradient computation
++ g - the vector to internally hold the gradient computation
 . func - the gradient function
 - ctx - user-defined context for private data for the gradient evaluation routine
 

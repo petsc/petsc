@@ -1419,9 +1419,9 @@ PetscErrorCode  TSGLLEFinalizePackage(void)
   Level: beginner
 
   References:
-+  1. - John Butcher and Z. Jackieweicz and W. Wright, On error propagation in general linear methods for
++ * - John Butcher and Z. Jackieweicz and W. Wright, On error propagation in general linear methods for
   ordinary differential equations, Journal of Complexity, Vol 23, 2007.
--  2. - John Butcher, Numerical methods for ordinary differential equations, second edition, Wiley, 2009.
+- * - John Butcher, Numerical methods for ordinary differential equations, second edition, Wiley, 2009.
 
 .seealso:  TSCreate(), TS, TSSetType()
 

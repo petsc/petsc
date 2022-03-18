@@ -58,9 +58,9 @@
      found.
 
    References:
-     Huang and Pang, "Options Pricing and Linear Complementarity,"
++ * - Huang and Pang, "Options Pricing and Linear Complementarity,"
        Journal of Computational Finance, volume 2, number 3, 1998.
-     Wilmott, "Derivatives: The Theory and Practice of Financial Engineering,"
+- * - Wilmott, "Derivatives: The Theory and Practice of Financial Engineering,"
        John Wiley and Sons, New York, 1998.
 ***************************************************************************/
 

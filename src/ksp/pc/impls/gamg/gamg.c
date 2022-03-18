@@ -861,11 +861,11 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
 -  n - the number of equations
 
    Options Database Key:
-.  -pc_gamg_process_eq_limit <limit>
+.  -pc_gamg_process_eq_limit <limit> - set the limit
 
    Notes:
     GAMG will reduce the number of MPI processes used directly on the coarse grids so that there are around <limit> equations on each process
-          that has degrees of freedom
+    that has degrees of freedom
 
    Level: intermediate
 
@@ -901,7 +901,7 @@ static PetscErrorCode PCGAMGSetProcEqLim_GAMG(PC pc, PetscInt n)
 -  n - maximum number of equations to aim for
 
    Options Database Key:
-.  -pc_gamg_coarse_eq_limit <limit>
+.  -pc_gamg_coarse_eq_limit <limit> - set the limit
 
    Notes: For example -pc_gamg_coarse_eq_limit 1000 will stop coarsening once the coarse grid
      has less than 1000 unknowns.
@@ -940,14 +940,13 @@ static PetscErrorCode PCGAMGSetCoarseEqLim_GAMG(PC pc, PetscInt n)
 -  n - PETSC_TRUE or PETSC_FALSE
 
    Options Database Key:
-.  -pc_gamg_repartition <true,false>
+.  -pc_gamg_repartition <true,false> - turn on the repartitioning
 
    Notes:
     this will generally improve the loading balancing of the work on each level
 
    Level: intermediate
 
-.seealso: ()
 @*/
 PetscErrorCode PCGAMGSetRepartition(PC pc, PetscBool n)
 {
@@ -979,7 +978,7 @@ static PetscErrorCode PCGAMGSetRepartition_GAMG(PC pc, PetscBool n)
 -  n - number of its
 
    Options Database Key:
-.  -pc_gamg_use_sa_esteig <true,false>
+.  -pc_gamg_use_sa_esteig <true,false> - use the eigen estimate
 
    Notes:
    Smoothed aggregation constructs the smoothed prolongator $P = (I - \omega D^{-1} A) T$ where $T$ is the tentative prolongator and $D$ is the diagonal of $A$.
@@ -1023,7 +1022,7 @@ static PetscErrorCode PCGAMGSetUseSAEstEig_GAMG(PC pc, PetscBool n)
 .  emin - min eigenvalue
 
    Options Database Key:
-.  -pc_gamg_eigenvalues
+.  -pc_gamg_eigenvalues <emin,emax> - estimates of the eigenvalues
 
    Level: intermediate
 
@@ -1063,15 +1062,14 @@ static PetscErrorCode PCGAMGSetEigenvalues_GAMG(PC pc,PetscReal emax,PetscReal e
 -  n - PETSC_TRUE or PETSC_FALSE
 
    Options Database Key:
-.  -pc_gamg_reuse_interpolation <true,false>
+.  -pc_gamg_reuse_interpolation <true,false> - reuse the previous interpolation
 
    Level: intermediate
 
    Notes:
-    this may negatively affect the convergence rate of the method on new matrices if the matrix entries change a great deal, but allows
-          rebuilding the preconditioner quicker.
+    May negatively affect the convergence rate of the method on new matrices if the matrix entries change a great deal, but allows
+    rebuilding the preconditioner quicker.
 
-.seealso: ()
 @*/
 PetscErrorCode PCGAMGSetReuseInterpolation(PC pc, PetscBool n)
 {
@@ -1103,11 +1101,10 @@ static PetscErrorCode PCGAMGSetReuseInterpolation_GAMG(PC pc, PetscBool n)
 -  flg - PETSC_TRUE to use aggregates, PETSC_FALSE to not
 
    Options Database Key:
-.  -pc_gamg_asm_use_agg
+.  -pc_gamg_asm_use_agg <true,false> - use aggregates to define the additive Schwarz subdomains
 
    Level: intermediate
 
-.seealso: ()
 @*/
 PetscErrorCode PCGAMGASMSetUseAggs(PC pc, PetscBool flg)
 {
@@ -1139,7 +1136,7 @@ static PetscErrorCode PCGAMGASMSetUseAggs_GAMG(PC pc, PetscBool flg)
 -  flg - PETSC_TRUE to not force coarse grid onto one processor
 
    Options Database Key:
-.  -pc_gamg_use_parallel_coarse_grid_solver
+.  -pc_gamg_use_parallel_coarse_grid_solver - use a parallel coarse grid direct solver
 
    Level: intermediate
 
@@ -1175,7 +1172,7 @@ static PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve_GAMG(PC pc, PetscBool 
 -  flg - PETSC_TRUE to pin coarse grids to CPU
 
    Options Database Key:
-.  -pc_gamg_cpu_pin_coarse_grids
+.  -pc_gamg_cpu_pin_coarse_grids - pin the coarse grids to the CPU
 
    Level: intermediate
 
@@ -1202,7 +1199,7 @@ static PetscErrorCode PCGAMGSetCpuPinCoarseGrids_GAMG(PC pc, PetscBool flg)
 }
 
 /*@
-   PCGAMGSetCoarseGridLayoutType - place reduce grids on processors with natural order (compact type)
+   PCGAMGSetCoarseGridLayoutType - place coarse grids on processors with natural order (compact type)
 
    Collective on PC
 
@@ -1211,7 +1208,7 @@ static PetscErrorCode PCGAMGSetCpuPinCoarseGrids_GAMG(PC pc, PetscBool flg)
 -  flg - Layout type
 
    Options Database Key:
-.  -pc_gamg_coarse_grid_layout_type
+.  -pc_gamg_coarse_grid_layout_type - place the coarse grids with natural ordering
 
    Level: intermediate
 
@@ -1247,11 +1244,10 @@ static PetscErrorCode PCGAMGSetCoarseGridLayoutType_GAMG(PC pc, PCGAMGLayoutType
 -  n - the maximum number of levels to use
 
    Options Database Key:
-.  -pc_mg_levels
+.  -pc_mg_levels <n> - set the maximum number of levels to allow
 
    Level: intermediate
 
-.seealso: ()
 @*/
 PetscErrorCode PCGAMGSetNlevels(PC pc, PetscInt n)
 {
@@ -1284,7 +1280,7 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
 -  n - number of threshold values provided in array
 
    Options Database Key:
-.  -pc_gamg_threshold <threshold>
+.  -pc_gamg_threshold <threshold> - the threshold to drop edges
 
    Notes:
     Increasing the threshold decreases the rate of coarsening. Conversely reducing the threshold increases the rate of coarsening (aggressive coarsening) and thereby reduces the complexity of the coarse grids, and generally results in slower solver converge rates. Reducing coarse grid complexity reduced the complexity of Galerkin coarse grid construction considerably.
@@ -1321,7 +1317,7 @@ static PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal v[], PetscInt n)
 }
 
 /*@
-   PCGAMGSetRankReductionFactors - Set manual schedual for process reduction on coarse grids
+   PCGAMGSetRankReductionFactors - Set manual schedule for process reduction on coarse grids
 
    Collective on PC
 
@@ -1331,7 +1327,7 @@ static PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal v[], PetscInt n)
 -  n - number of values provided in array
 
    Options Database Key:
-.  -pc_gamg_rank_reduction_factors <factors>
+.  -pc_gamg_rank_reduction_factors <factors> - provide the schedule
 
    Level: intermediate
 
@@ -1366,10 +1362,10 @@ static PetscErrorCode PCGAMGSetRankReductionFactors_GAMG(PC pc, PetscInt v[], Pe
 
    Input Parameters:
 +  pc - the preconditioner context
--  scale - the threshold value reduction, ussually < 1.0
+-  scale - the threshold value reduction, usually < 1.0
 
    Options Database Key:
-.  -pc_gamg_threshold_scale <v>
+.  -pc_gamg_threshold_scale <v> - set the relative threshold reduction on each level
 
    Notes:
    The initial threshold (for an arbitrary number of levels starting from the finest) can be set with PCGAMGSetThreshold().

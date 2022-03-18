@@ -77,7 +77,8 @@ M*/
 
      Level: advanced
 
-     References: https://doi.org/10.1016/0893-9659(89)90079-7
+     References:
+. * - https://doi.org/10.1016/0893-9659(89)90079-7
 
 .seealso: TSRK, TSRKType, TSRKSetType()
 M*/
@@ -115,7 +116,8 @@ M*/
 
      Level: advanced
 
-     References: https://doi.org/10.1016/0771-050X(80)90013-3
+     References:
+. * - https://doi.org/10.1016/0771-050X(80)90013-3
 
 .seealso: TSRK, TSRKType, TSRKSetType()
 M*/
@@ -129,7 +131,8 @@ M*/
 
      Level: advanced
 
-     References: https://doi.org/10.1016/0898-1221(96)00141-1
+     References:
+. * - https://doi.org/10.1016/0898-1221(96)00141-1
 
 .seealso: TSRK, TSRKType, TSRKSetType()
 M*/
@@ -143,7 +146,8 @@ M*/
 
      Level: advanced
 
-     References: http://people.math.sfu.ca/~jverner/RKV65.IIIXb.Robust.00010102836.081204.CoeffsOnlyRAT
+     References:
+. * - http://people.math.sfu.ca/~jverner/RKV65.IIIXb.Robust.00010102836.081204.CoeffsOnlyRAT
 
 .seealso: TSRK, TSRKType, TSRKSetType()
 M*/
@@ -157,7 +161,8 @@ M*/
 
      Level: advanced
 
-     References: http://people.math.sfu.ca/~jverner/RKV76.IIa.Robust.000027015646.081206.CoeffsOnlyRAT
+     References:
+. * - http://people.math.sfu.ca/~jverner/RKV76.IIa.Robust.000027015646.081206.CoeffsOnlyRAT
 
 .seealso: TSRK, TSRKType, TSRKSetType()
 M*/
@@ -171,7 +176,8 @@ M*/
 
      Level: advanced
 
-     References: http://people.math.sfu.ca/~jverner/RKV87.IIa.Robust.00000754677.081208.CoeffsOnlyRATandFLOAT
+     References:
+. * - http://people.math.sfu.ca/~jverner/RKV87.IIa.Robust.00000754677.081208.CoeffsOnlyRATandFLOAT
 
 .seealso: TSRK, TSRKType, TSRKSetType()
 M*/

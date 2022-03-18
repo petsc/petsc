@@ -6,7 +6,7 @@
     Contributed by: Xiangmin Jiao (xiangmin.jiao@stonybrook.edu)
 
     References:
-     Chan, Gallopoulos, Simoncini, Szeto, and Tong (SISC 1994), Ghai, Lu, and Jiao (NLAA 2019)
+.   * - Chan, Gallopoulos, Simoncini, Szeto, and Tong (SISC 1994), Ghai, Lu, and Jiao (NLAA 2019)
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h>       /*I  "petscksp.h"  I*/
 
@@ -245,7 +245,7 @@ static PetscErrorCode  KSPSolve_QMRCGS(KSP ksp)
     Only right preconditioning is supported.
 
    References:
-    Chan, Gallopoulos, Simoncini, Szeto, and Tong (SISC 1994), Ghai, Lu, and Jiao (NLAA 2019)
+. * - Chan, Gallopoulos, Simoncini, Szeto, and Tong (SISC 1994), Ghai, Lu, and Jiao (NLAA 2019)
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPFBICGS, KSPFBCGSL, KSPSetPCSide()
 M*/

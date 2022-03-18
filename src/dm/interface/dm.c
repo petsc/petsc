@@ -199,12 +199,12 @@ PetscErrorCode DMClone(DM dm, DM *newdm)
 
    Logically Collective on da
 
-   Input Parameter:
+   Input Parameters:
 +  da - initial distributed array
-.  ctype - the vector type, currently either VECSTANDARD, VECCUDA, or VECVIENNACL
+-  ctype - the vector type, currently either VECSTANDARD, VECCUDA, or VECVIENNACL
 
    Options Database:
-.   -dm_vec_type ctype
+.   -dm_vec_type ctype - the type of vector to create
 
    Level: intermediate
 
@@ -358,7 +358,7 @@ PetscErrorCode  DMGetISColoringType(DM dm,ISColoringType *ctype)
 -  ctype - the matrix type
 
    Options Database:
-.   -dm_mat_type ctype
+.   -dm_mat_type ctype - the type of the matrix to create
 
    Level: intermediate
 
@@ -387,7 +387,7 @@ PetscErrorCode  DMSetMatType(DM dm,MatType ctype)
 .  ctype - the matrix type
 
    Options Database:
-.   -dm_mat_type ctype
+.   -dm_mat_type ctype - the matrix type
 
    Level: intermediate
 
@@ -1621,6 +1621,7 @@ PetscErrorCode DMGetWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *mem)
 
   Developer Notes:
     count and dtype are ignored, they are only needed for DMGetWorkArray()
+
 .seealso DMDestroy(), DMCreate()
 @*/
 PetscErrorCode DMRestoreWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *mem)
@@ -1643,7 +1644,7 @@ PetscErrorCode DMRestoreWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *
 }
 
 /*@C
-  DMSetNullSpaceConstructor - Provide a callback function which constructs the nullspace for a given field
+  DMSetNullSpaceConstructor - Provide a callback function which constructs the nullspace for a given field when function spaces are joined or split, such as in DMCreateSubDM()
 
   Logically collective on DM
 
@@ -1652,19 +1653,20 @@ PetscErrorCode DMRestoreWorkArray(DM dm,PetscInt count,MPI_Datatype dtype,void *
 . field  - The field number for the nullspace
 - nullsp - A callback to create the nullspace
 
-  Notes:
-  The callback is intended to provide nullspaces when function spaces are joined or split, such as in DMCreateSubDM(). The calling sequence is
-$ PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
-$ dm        - The present DM
-$ origField - The field number given above, in the original DM
-$ field     - The field number in dm
-$ nullSpace - The nullspace for the given field
+  Calling sequence of nullsp:
+.vb
+    PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
+.ve
++  dm        - The present DM
+.  origField - The field number given above, in the original DM
+.  field     - The field number in dm
+-  nullSpace - The nullspace for the given field
 
   This function is currently not available from Fortran.
 
 .seealso: DMGetNullSpaceConstructor(), DMSetNearNullSpaceConstructor(), DMGetNearNullSpaceConstructor(), DMCreateSubDM(), DMCreateSuperDM()
-*/
-PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace))
+@*/
+PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM, PetscInt, PetscInt, MatNullSpace*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -1685,19 +1687,20 @@ PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
   Output Parameter:
 . nullsp - A callback to create the nullspace
 
-  Notes:
-  The callback is intended to provide nullspaces when function spaces are joined or split, such as in DMCreateSubDM(). The calling sequence is
-$ PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
-$ dm        - The present DM
-$ origField - The field number given above, in the original DM
-$ field     - The field number in dm
-$ nullSpace - The nullspace for the given field
+  Calling sequence of nullsp:
+.vb
+    PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
+.ve
++  dm        - The present DM
+.  origField - The field number given above, in the original DM
+.  field     - The field number in dm
+-  nullSpace - The nullspace for the given field
 
   This function is currently not available from Fortran.
 
 .seealso: DMSetNullSpaceConstructor(), DMSetNearNullSpaceConstructor(), DMGetNearNullSpaceConstructor(), DMCreateSubDM(), DMCreateSuperDM()
-*/
-PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace))
+@*/
+PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM, PetscInt, PetscInt, MatNullSpace *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -1717,19 +1720,20 @@ PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
 . field  - The field number for the nullspace
 - nullsp - A callback to create the near-nullspace
 
-  Notes:
-  The callback is intended to provide nullspaces when function spaces are joined or split, such as in DMCreateSubDM(). The calling sequence is
-$ PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
-$ dm        - The present DM
-$ origField - The field number given above, in the original DM
-$ field     - The field number in dm
-$ nullSpace - The nullspace for the given field
+  Calling sequence of nullsp:
+.vb
+    PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
+.ve
++  dm        - The present DM
+.  origField - The field number given above, in the original DM
+.  field     - The field number in dm
+-  nullSpace - The nullspace for the given field
 
   This function is currently not available from Fortran.
 
 .seealso: DMGetNearNullSpaceConstructor(), DMSetNullSpaceConstructor(), DMGetNullSpaceConstructor(), DMCreateSubDM(), DMCreateSuperDM()
-*/
-PetscErrorCode DMSetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace))
+@*/
+PetscErrorCode DMSetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (*nullsp)(DM, PetscInt, PetscInt, MatNullSpace *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -1750,19 +1754,20 @@ PetscErrorCode DMSetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCo
   Output Parameter:
 . nullsp - A callback to create the near-nullspace
 
-  Notes:
-  The callback is intended to provide nullspaces when function spaces are joined or split, such as in DMCreateSubDM(). The calling sequence is
-$ PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
-$ dm        - The present DM
-$ origField - The field number given above, in the original DM
-$ field     - The field number in dm
-$ nullSpace - The nullspace for the given field
+  Calling sequence of nullsp:
+.vb
+    PetscErrorCode nullsp(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace)
+.ve
++  dm        - The present DM
+.  origField - The field number given above, in the original DM
+.  field     - The field number in dm
+-  nullSpace - The nullspace for the given field
 
   This function is currently not available from Fortran.
 
 .seealso: DMSetNearNullSpaceConstructor(), DMSetNullSpaceConstructor(), DMGetNullSpaceConstructor(), DMCreateSubDM(), DMCreateSuperDM()
-*/
-PetscErrorCode DMGetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace))
+@*/
+PetscErrorCode DMGetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (**nullsp)(DM, PetscInt, PetscInt, MatNullSpace *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);

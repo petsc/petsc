@@ -947,6 +947,7 @@ PetscErrorCode  MatViewFromOptions(Mat A,PetscObject obj,const char name[])
 .  -viewer_socket_port <port> -
 .  -mat_view binary - save matrix to file in binary format
 -  -viewer_binary_filename <name> -
+
    Level: beginner
 
    Notes:
@@ -963,9 +964,11 @@ PetscErrorCode  MatViewFromOptions(Mat A,PetscObject obj,const char name[])
 
       One can use '-mat_view draw -draw_pause -1' to pause the graphical display of matrix nonzero structure,
       and then use the following mouse functions.
-+ left mouse: zoom in
-. middle mouse: zoom out
-- right mouse: continue with the simulation
+.vb
+  left mouse: zoom in
+  middle mouse: zoom out
+  right mouse: continue with the simulation
+.ve
 
 .seealso: PetscViewerPushFormat(), PetscViewerASCIIOpen(), PetscViewerDrawOpen(),
           PetscViewerSocketOpen(), PetscViewerBinaryOpen(), MatLoad()
@@ -1196,7 +1199,7 @@ $    save example.mat A b -v7.3
    (see MatSetOption(), MAT_SPD, MAT_SYMMETRIC).
 
    References:
-1. MATLAB(R) Documentation, manual page of save(), https://www.mathworks.com/help/matlab/ref/save.html#btox10b-1-version
+.  * - MATLAB(R) Documentation, manual page of save(), https://www.mathworks.com/help/matlab/ref/save.html#btox10b-1-version
 
 .seealso: PetscViewerBinaryOpen(), PetscViewerSetType(), MatView(), VecLoad()
 
@@ -6859,7 +6862,7 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
     interface definition cannot be generated correctly [due to MatFactorInfo]
 
    References:
-     Y. Saad, Iterative methods for sparse linear systems Philadelphia: Society for Industrial and Applied Mathematics, 2003
+.  * - Y. Saad, Iterative methods for sparse linear systems Philadelphia: Society for Industrial and Applied Mathematics, 2003
 @*/
 PetscErrorCode MatILUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFactorInfo *info)
 {
@@ -6921,7 +6924,7 @@ $      expected fill - as ratio of original fill.
     interface definition cannot be generated correctly [due to MatFactorInfo]
 
    References:
-     Y. Saad, Iterative methods for sparse linear systems Philadelphia: Society for Industrial and Applied Mathematics, 2003
+.  * - Y. Saad, Iterative methods for sparse linear systems Philadelphia: Society for Industrial and Applied Mathematics, 2003
 @*/
 PetscErrorCode MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInfo *info)
 {
@@ -8796,7 +8799,7 @@ PetscErrorCode MatICCFactor(Mat mat,IS row,const MatFactorInfo *info)
 
    Input Parameters:
 +  mat - the matrix
--  diag = the diagonal values, including ghost ones
+-  diag - the diagonal values, including ghost ones
 
    Level: developer
 
@@ -10642,7 +10645,7 @@ PetscErrorCode MatSubdomainsCreateCoalesce(Mat A,PetscInt N,PetscInt *n,IS *iss[
 .  A - the Galerkin coarse matrix
 
    Options Database Key:
-.  -pc_mg_galerkin <both,pmat,mat,none>
+.  -pc_mg_galerkin <both,pmat,mat,none> - for what matrices the Galerkin process should be used
 
    Level: developer
 

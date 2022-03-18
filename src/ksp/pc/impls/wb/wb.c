@@ -756,29 +756,29 @@ PetscErrorCode PCSetFromOptions_Exotic(PetscOptionItems *PetscOptionsObject,PC p
     By default this uses GMRES on the fine grid smoother so this should be used with KSPFGMRES or the smoother changed to not use GMRES
 
    References:
-+  1. - These coarse grid spaces originate in the work of Bramble, Pasciak  and Schatz, "The Construction
++  * - These coarse grid spaces originate in the work of Bramble, Pasciak  and Schatz, "The Construction
    of Preconditioners for Elliptic Problems by Substructing IV", Mathematics of Computation, volume 53, 1989.
-.  2. - They were generalized slightly in "Domain Decomposition Method for Linear Elasticity", Ph. D. thesis, Barry Smith,
+.  * - They were generalized slightly in "Domain Decomposition Method for Linear Elasticity", Ph. D. thesis, Barry Smith,
    New York University, 1990.
-.  3. - They were then explored in great detail in Dryja, Smith, Widlund, "Schwarz Analysis
+.  * - They were then explored in great detail in Dryja, Smith, Widlund, "Schwarz Analysis
    of Iterative Substructuring Methods for Elliptic Problems in Three Dimensions, SIAM Journal on Numerical
    Analysis, volume 31. 1994. These were developed in the context of iterative substructuring preconditioners.
-.  4. - They were then ingeniously applied as coarse grid spaces for overlapping Schwarz methods by Dohrmann and Widlund.
+.  * - They were then ingeniously applied as coarse grid spaces for overlapping Schwarz methods by Dohrmann and Widlund.
    They refer to them as GDSW (generalized Dryja, Smith, Widlund preconditioners). See, for example,
    Clark R. Dohrmann, Axel Klawonn, and Olof B. Widlund. Extending theory for domain decomposition algorithms to irregular subdomains. In Ulrich Langer, Marco
    Discacciati, David Keyes, Olof Widlund, and Walter Zulehner, editors, Proceedings
    of the 17th International Conference on Domain Decomposition Methods in
    Science and Engineering, held in Strobl, Austria, 2006, number 60 in
    Springer Verlag, Lecture Notes in Computational Science and Engineering, 2007.
-.  5. -  Clark R. Dohrmann, Axel Klawonn, and Olof B. Widlund. A family of energy minimizing coarse spaces for overlapping Schwarz preconditioners. In Ulrich Langer,
+.  * -  Clark R. Dohrmann, Axel Klawonn, and Olof B. Widlund. A family of energy minimizing coarse spaces for overlapping Schwarz preconditioners. In Ulrich Langer,
    Marco Discacciati, David Keyes, Olof Widlund, and Walter Zulehner, editors, Proceedings
    of the 17th International Conference on Domain Decomposition Methods
    in Science and Engineering, held in Strobl, Austria, 2006, number 60 in
    Springer Verlag, Lecture Notes in Computational Science and Engineering, 2007
-.  6. - Clark R. Dohrmann, Axel Klawonn, and Olof B. Widlund. Domain decomposition
+.  * - Clark R. Dohrmann, Axel Klawonn, and Olof B. Widlund. Domain decomposition
    for less regular subdomains: Overlapping Schwarz in two dimensions. SIAM J.
    Numer. Anal., 46(4), 2008.
--  7. - Clark R. Dohrmann and Olof B. Widlund. An overlapping Schwarz
+-  * - Clark R. Dohrmann and Olof B. Widlund. An overlapping Schwarz
    algorithm for almost incompressible elasticity. Technical Report
    TR2008 912, Department of Computer Science, Courant Institute
    of Mathematical Sciences, New York University, May 2008. URL:

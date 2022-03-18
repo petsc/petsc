@@ -505,7 +505,7 @@ static PetscErrorCode KSPGuessFischerSetModel_Fischer(KSPGuess guess,PetscInt mo
     a linear system is solved repeatedly
 
   References:
-.   1. -   https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19940020363_1994020363.pdf
+. * - https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19940020363_1994020363.pdf
 
    Notes:
     the algorithm is different from Fischer's paper because we do not CHANGE the right hand side of the new

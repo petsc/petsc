@@ -2813,9 +2813,9 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
 . extent - Array of length 3 containing number of periods in each direction
 . periodic - array of length 3 with periodicity, or NULL for non-periodic
 . tps_distribute - Distribute 2D manifold mesh prior to refinement and extrusion (more scalable)
-- refinements - Number of factor-of-2 refinements of 2D manifold mesh
+. refinements - Number of factor-of-2 refinements of 2D manifold mesh
 . layers - Number of cell layers extruded in normal direction
-. thickness - Thickness in normal direction
+- thickness - Thickness in normal direction
 
   Output Parameter:
 . dm  - The DM object
@@ -2832,7 +2832,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
   When the mesh is refined, "Face Sets" contain the new vertices (created during refinement).  Use DMPlexLabelComplete() to propagate to coarse-level vertices.
 
   References:
-  Maskery et al, Insights into the mechanical properties of several triply periodic minimal surface lattice structures made by polymer additive manufacturing, 2017. https://doi.org/10.1016/j.polymer.2017.11.049
+. * - Maskery et al, Insights into the mechanical properties of several triply periodic minimal surface lattice structures made by polymer additive manufacturing, 2017. https://doi.org/10.1016/j.polymer.2017.11.049
 
   Developer Notes:
   The Gyroid mesh does not currently mark boundary sets.

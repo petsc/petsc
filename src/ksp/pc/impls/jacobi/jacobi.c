@@ -427,17 +427,17 @@ static PetscErrorCode PCView_Jacobi(PC pc, PetscViewer viewer)
    Options Database Key:
 +    -pc_jacobi_type <diagonal,rowmax,rowsum> - approach for forming the preconditioner
 .    -pc_jacobi_abs - use the absolute value of the diagonal entry
--    -pc_jacobi_fixdiag - fix for zero diagonal terms
+-    -pc_jacobi_fixdiag - fix for zero diagonal terms by placing 1.0 in those locations
 
    Level: beginner
 
   Notes:
     By using KSPSetPCSide(ksp,PC_SYMMETRIC) or -ksp_pc_side symmetric
-         can scale each side of the matrix by the square root of the diagonal entries.
+    can scale each side of the matrix by the square root of the diagonal entries.
 
-         Zero entries along the diagonal are replaced with the value 1.0
+    Zero entries along the diagonal are replaced with the value 1.0
 
-         See PCPBJACOBI for a point-block Jacobi preconditioner
+    See PCPBJACOBI for a point-block Jacobi preconditioner
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCJacobiSetType(), PCJacobiSetUseAbs(), PCJacobiGetUseAbs(),
@@ -506,7 +506,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
 -  flg - whether to use absolute values or not
 
    Options Database Key:
-.  -pc_jacobi_abs
+.  -pc_jacobi_abs <bool> - use absolute values
 
    Notes:
     This takes affect at the next construction of the preconditioner
@@ -538,9 +538,6 @@ PetscErrorCode  PCJacobiSetUseAbs(PC pc,PetscBool flg)
    Output Parameter:
 .  flg - whether to use absolute values or not
 
-   Options Database Key:
-.  -pc_jacobi_abs
-
    Level: intermediate
 
 .seealso: PCJacobiaSetType(), PCJacobiSetUseAbs(), PCJacobiGetType()
@@ -557,7 +554,7 @@ PetscErrorCode  PCJacobiGetUseAbs(PC pc,PetscBool *flg)
 }
 
 /*@
-   PCJacobiSetFixDiagonal - Do not check for zero values on diagonal
+   PCJacobiSetFixDiagonal - Check for zero values on the diagonal and replace them with 1.0
 
    Logically Collective on PC
 
@@ -566,7 +563,7 @@ PetscErrorCode  PCJacobiGetUseAbs(PC pc,PetscBool *flg)
 -  flg - the boolean flag
 
    Options Database Key:
-.  -pc_jacobi_fixdiagonal
+.  -pc_jacobi_fixdiagonal <bool> - check for zero values on the diagonal
 
    Notes:
     This takes affect at the next construction of the preconditioner
@@ -626,7 +623,7 @@ PetscErrorCode  PCJacobiGetFixDiagonal(PC pc,PetscBool *flg)
 -  type - PC_JACOBI_DIAGONAL, PC_JACOBI_ROWMAX, PC_JACOBI_ROWSUM
 
    Options Database Key:
-.  -pc_jacobi_type <diagonal,rowmax,rowsum>
+.  -pc_jacobi_type <diagonal,rowmax,rowsum> - the type of diagonal matrix to use for Jacobi
 
    Level: intermediate
 

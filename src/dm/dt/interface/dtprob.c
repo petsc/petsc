@@ -166,8 +166,9 @@ PetscErrorCode PetscCDFGaussian1D(const PetscReal x[], const PetscReal scale[], 
 
   Not collective
 
-  Input Parameter:
-. p - A uniform variable on [0, 1]
+  Input Parameters:
++ p - A uniform variable on [0, 1]
+- dummy - ignored
 
   Output Parameter:
 . x - Coordinate in [-\infty, \infty]
@@ -209,8 +210,9 @@ PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal dum
 
   Not collective
 
-  Input Parameter:
-. x - Coordinate in [-\infty, \infty]^2
+  Input Parameters:
++ x - Coordinate in [-\infty, \infty]^2
+- dummy - ignored
 
   Output Parameter:
 . p - The probability density at x
@@ -230,8 +232,9 @@ PetscErrorCode PetscPDFGaussian2D(const PetscReal x[], const PetscReal dummy[], 
 
   Not collective
 
-  Input Parameter:
-. p - A uniform variable on [0, 1]^2
+  Input Parameters:
++ p - A uniform variable on [0, 1]^2
+- dummy - ignored
 
   Output Parameter:
 . x - Coordinate in [-\infty, \infty]^2
