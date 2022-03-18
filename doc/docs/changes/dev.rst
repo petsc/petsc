@@ -248,6 +248,7 @@ Changes: Development
 - Add ``DMCreateFEDefault()`` as a convenience method for creating the right element on a mesh
 - Add ``DMPlexCreateReferenceCell()``
 - Remove deprecated ``DMPlexCreateFromCellList()`` and ``DMPlexCreateFromCellListParallel()``
+- Add ``DMSetMatrixPreallocateSkip()`` to save initialization time when ``MatSetPreallocationCOO()`` will be used.
 
 .. rubric:: DMPlexLandau:
 
