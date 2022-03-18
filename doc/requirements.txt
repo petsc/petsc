@@ -6,3 +6,4 @@ sphinx-copybutton
 pydata-sphinx-theme
 sphinx-panels
 myst-parser
+sphinx-remove-toctrees

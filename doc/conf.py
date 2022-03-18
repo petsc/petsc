@@ -72,6 +72,7 @@ extensions = [
     'sphinxcontrib.rsvgconverter',
     'myst_parser',
     'html5_petsc',
+    'sphinx_remove_toctrees',
 ]
 
 copybutton_prompt_text = '$ '
@@ -79,6 +80,8 @@ copybutton_prompt_text = '$ '
 bibtex_bibfiles = ['petsc.bib']
 
 myst_enable_extensions = ["dollarmath", "amsmath", "deflist"]
+
+remove_from_toctrees = ['docs/manualpages/*']
 
 # -- Options for HTML output ---------------------------------------------------
 
