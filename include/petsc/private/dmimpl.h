@@ -227,6 +227,7 @@ struct _p_DM {
   PetscInt                bind_below; /* Local size threshold (in entries/rows) below which Vec/Mat objects are bound to CPU */
   PetscInt                bs;
   ISLocalToGlobalMapping  ltogmap;
+  PetscBool               prealloc_skip; // Flag indicating the DMCreateMatrix() should not preallocate (only set sizes and local-to-global)
   PetscBool               prealloc_only; /* Flag indicating the DMCreateMatrix() should only preallocate, not fill the matrix */
   PetscBool               structure_only; /* Flag indicating the DMCreateMatrix() create matrix structure without values */
   PetscInt                levelup,leveldown;  /* if the DM has been obtained by refining (or coarsening) this indicates how many times that process has been used to generate this DM */

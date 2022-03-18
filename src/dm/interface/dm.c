@@ -1511,6 +1511,29 @@ PetscErrorCode  DMCreateMatrix(DM dm,Mat *mat)
 }
 
 /*@
+  DMSetMatrixPreallocateSkip - When DMCreateMatrix() is called the matrix sizes and ISLocalToGlobalMapping will be
+  properly set, but the entries will not be preallocated. This is most useful to reduce initialization costs when
+  MatSetPreallocationCOO() and MatSetValuesCOO() will be used.
+
+  Logically Collective on dm
+
+  Input Parameters:
++ dm - the DM
+- skip - PETSC_TRUE to skip preallocation
+
+  Level: developer
+
+.seealso DMCreateMatrix(), DMSetMatrixStructureOnly()
+@*/
+PetscErrorCode DMSetMatrixPreallocateSkip(DM dm, PetscBool skip)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dm->prealloc_skip = skip;
+  PetscFunctionReturn(0);
+}
+
+/*@
   DMSetMatrixPreallocateOnly - When DMCreateMatrix() is called the matrix will be properly
     preallocated but the nonzero structure and zero values will not be set.
 
