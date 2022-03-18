@@ -507,29 +507,6 @@ manexamples:
         fi
 
 #
-#   Goes through all examples adding the Concepts: to the exampleconcepts file
-#
-exampleconcepts:
-	-@base=`basename ${LOCDIR}`; \
-        if [ "$${base}" = "tutorials" ] ; then \
-          echo "Generating concepts list" ; \
-          for i in ${EXAMPLESALL} foo ; do \
-            if [ "$$i" != "foo" ] ; then \
-              grep Concepts: $$i | sed -e s?Concepts:??g -e s?\!??g > ltmp;  \
-              line=`cat ltmp | wc -l`; \
-              line=`expr $$line - 1` ; \
-              line=`expr $$line + 1` ; \
-              while [ $$line -gt 0 ] ; do \
-                a=`head -$$line ltmp | tail -1`; \
-                echo ${LOCDIR}$$i $$a >> ${LOC}/docs/exampleconcepts; \
-                line=`expr $$line - 1` ; \
-              done; \
-              ${RM} ltmp; \
-            fi; \
-	  done; \
-        fi
-
-#
 #    Goes through all manual pages adding links to implementations of the method
 # or class, at the end of the file.
 #
@@ -581,10 +558,6 @@ manimplementations:
   done ; \
   ${RM} implsClassAll.txt implsFuncAll.txt
 
-
-getexlist:
-	-@${PETSC_DIR}/lib/petsc/bin/maint/getexlist -locdir ${LOCDIR} -byfile -destdir ${LOC}/docs/manualpages/concepts/ ${EXAMPLESC} ${EXAMPLESF}
-	-@${RM} -f logfile.txt
 #
 #   Rules for generating html code from C and Fortran
 #

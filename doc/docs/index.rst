@@ -11,4 +11,3 @@ PETSc/TAO Documentation
 
 * `PETSc/TAO Users Manual in PDF <manual/manual.pdf>`__
 * `Function Index <../docs/manualpages/singleindex.html>`__
-* `Examples Index <../docs/manualpages/help.html>`__

@@ -358,12 +358,9 @@ allmanexamples: chk_loc allmanpages
 	-${OMAKE_SELF} ACTION=manexamples tree_basic LOC=${LOC}
 
 # Build all classic docs except html sources
-alldoc1: chk_loc chk_concepts_dir allcite allmanpages allmanexamples
+alldoc1: chk_loc allcite allmanpages allmanexamples
 	-${OMAKE_SELF} manimplementations LOC=${LOC}
 	-${PYTHON} lib/petsc/bin/maint/wwwindex.py ${PETSC_DIR} ${LOC}
-	-${OMAKE_SELF} ACTION=getexlist tree_basic LOC=${LOC}
-	-${OMAKE_SELF} ACTION=exampleconcepts tree_basic LOC=${LOC}
-	-${PYTHON} lib/petsc/bin/maint/helpindex.py ${PETSC_DIR} ${LOC}
 
 # Builds .html versions of the source
 # html overwrites some stuff - hence this is done later.
@@ -378,16 +375,11 @@ alldocclean: deletemanualpages allcleanhtml
 deletemanualpages: chk_loc
 	-@if [ -d ${LOC} -a -d ${LOC}/docs/manualpages ]; then \
           find ${LOC}/docs/manualpages -type f -name "*.html" -exec ${RM} {} \; ;\
-          ${RM} ${LOC}/docs/exampleconcepts ;\
           ${RM} ${LOC}/docs/manualpages/manualpages.cit ;\
         fi
 
 allcleanhtml:
 	-${OMAKE_SELF} ACTION=cleanhtml PETSC_DIR=${PETSC_DIR} alltree
-
-chk_concepts_dir: chk_loc
-	@if [ ! -d "${LOC}/docs/manualpages/concepts" ]; then \
-	  echo Making directory ${LOC}/docs/manualpages/concepts for library; ${MKDIR} ${LOC}/docs/manualpages/concepts; fi
 
 # Builds simple html versions of the source without links into the $PETSC_ARCH/obj directory, used by make mergegcov
 srchtml:
