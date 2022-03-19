@@ -863,26 +863,30 @@ PetscErrorCode DMCreateMatrix_DA_IS(DM dm,Mat J)
   ierr = ISDestroy(&is);CHKERRQ(ierr);
 
   /* Preallocation */
-  ierr = MatISGetLocalMat(J,&lJ);CHKERRQ(ierr);
-  ierr = MatGetLocalToGlobalMapping(lJ,&ltog,NULL);CHKERRQ(ierr);
-  ierr = MatCreate(PetscObjectComm((PetscObject)lJ),&P);CHKERRQ(ierr);
-  ierr = MatSetType(P,MATPREALLOCATOR);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(P,ltog,ltog);CHKERRQ(ierr);
-  ierr = MatGetSize(lJ,&N,NULL);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(lJ,&n,NULL);CHKERRQ(ierr);
-  ierr = MatSetSizes(P,n,n,N,N);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(P,dof);CHKERRQ(ierr);
-  ierr = MatSetUp(P);CHKERRQ(ierr);
-  for (i=0;i<nel;i++) {
-    ierr = MatSetValuesBlockedLocal(P,nen,e_loc+i*nen,nen,e_loc+i*nen,NULL,INSERT_VALUES);CHKERRQ(ierr);
-  }
-  ierr = MatPreallocatorPreallocate(P,(PetscBool)!da->prealloc_only,lJ);CHKERRQ(ierr);
-  ierr = MatISRestoreLocalMat(J,&lJ);CHKERRQ(ierr);
-  ierr = DMDARestoreElements(dm,&nel,&nen,&e_loc);CHKERRQ(ierr);
-  ierr = MatDestroy(&P);CHKERRQ(ierr);
+  if (dm->prealloc_skip) {
+    ierr = MatSetUp(J);CHKERRQ(ierr);
+  } else {
+    ierr = MatISGetLocalMat(J,&lJ);CHKERRQ(ierr);
+    ierr = MatGetLocalToGlobalMapping(lJ,&ltog,NULL);CHKERRQ(ierr);
+    ierr = MatCreate(PetscObjectComm((PetscObject)lJ),&P);CHKERRQ(ierr);
+    ierr = MatSetType(P,MATPREALLOCATOR);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(P,ltog,ltog);CHKERRQ(ierr);
+    ierr = MatGetSize(lJ,&N,NULL);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(lJ,&n,NULL);CHKERRQ(ierr);
+    ierr = MatSetSizes(P,n,n,N,N);CHKERRQ(ierr);
+    ierr = MatSetBlockSize(P,dof);CHKERRQ(ierr);
+    ierr = MatSetUp(P);CHKERRQ(ierr);
+    for (i=0;i<nel;i++) {
+      ierr = MatSetValuesBlockedLocal(P,nen,e_loc+i*nen,nen,e_loc+i*nen,NULL,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = MatPreallocatorPreallocate(P,(PetscBool)!da->prealloc_only,lJ);CHKERRQ(ierr);
+    ierr = MatISRestoreLocalMat(J,&lJ);CHKERRQ(ierr);
+    ierr = DMDARestoreElements(dm,&nel,&nen,&e_loc);CHKERRQ(ierr);
+    ierr = MatDestroy(&P);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
