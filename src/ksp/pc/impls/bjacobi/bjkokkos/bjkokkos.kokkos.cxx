@@ -139,8 +139,9 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_TFQMR(const team_member team, cons
   team.team_barrier();
   r0 = dp = PetscSqrtReal(PetscRealPart(dpi));
   // diagnostics
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
   if (monitor) Kokkos::single (Kokkos::PerTeam (team), [=] () { printf("%3d KSP Residual norm %14.12e \n", 0, (double)dp);});
-
+#endif
   if (dp < atol) {metad->reason = KSP_CONVERGED_ATOL_NORMAL; return 0;}
   if (0 == maxit) {metad->reason = KSP_DIVERGED_ITS; return 0;}
 
@@ -199,11 +200,12 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_TFQMR(const team_member team, cons
       parallel_for(Kokkos::TeamVectorRange(team,Nblk), [=] (int idx) {XX[idx] = XX[idx] + eta*D[idx]; });
       team.team_barrier();
       dpest = PetscSqrtReal(2*i + m + 2.0) * tau;
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
       if (monitor && m==1) Kokkos::single (Kokkos::PerTeam (team), [=] () { printf("%3d KSP Residual norm %14.12e \n", i+1, (double)dpest);});
-
+#endif
       if (dpest < atol) {metad->reason = KSP_CONVERGED_ATOL_NORMAL; goto done;}
       if (dpest/r0 < rtol) {metad->reason = KSP_CONVERGED_RTOL_NORMAL; goto done;}
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
       if (dpest/r0 > dtol) {metad->reason = KSP_DIVERGED_DTOL; Kokkos::single (Kokkos::PerTeam (team), [=] () {printf("ERROR block %d diverged: %d it, res=%e, r_0=%e\n",team.league_rank(),i,dpest,r0);}); goto done;}
 #else
       if (dpest/r0 > dtol) {metad->reason = KSP_DIVERGED_DTOL; goto done;}
@@ -283,8 +285,9 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_BICG(const team_member team, const
   parallel_reduce(Kokkos::TeamVectorRange (team, Nblk), [=] (const int idx, PetscScalar& lsum) {lsum += Rr[idx]*PetscConj(Rr[idx]);}, dpi);
   team.team_barrier();
   r0 = dp = PetscSqrtReal(PetscRealPart(dpi));
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
   if (monitor) Kokkos::single (Kokkos::PerTeam (team), [=] () { printf("%3d KSP Residual norm %14.12e \n", 0, (double)dp);});
-
+#endif
   if (dp < atol) {metad->reason = KSP_CONVERGED_ATOL_NORMAL; return 0;}
   if (0 == maxit) {metad->reason = KSP_DIVERGED_ITS; return 0;}
   i = 0;
@@ -293,7 +296,9 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_BICG(const team_member team, const
     parallel_reduce(Kokkos::TeamVectorRange (team, Nblk), [=] (const int idx, PetscScalar& dot) {dot += Zr[idx]*PetscConj(Rl[idx]);}, beta);
     team.team_barrier();
 #if PCBJKOKKOS_VERBOSE_LEVEL >= 6
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
     Kokkos::single (Kokkos::PerTeam (team), [=] () {printf("%7d beta = Z.R = %22.14e \n",i,(double)beta);});
+#endif
 #endif
     if (!i) {
       if (beta == 0.0) {
@@ -327,11 +332,12 @@ KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_BICG(const team_member team, const
     parallel_reduce(Kokkos::TeamVectorRange (team, Nblk), [=] (const int idx, PetscScalar& lsum) {lsum +=  Rr[idx]*PetscConj(Rr[idx]);}, dpi);
     team.team_barrier();
     dp = PetscSqrtReal(PetscRealPart(dpi));
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
     if (monitor) Kokkos::single (Kokkos::PerTeam (team), [=] () { printf("%3d KSP Residual norm %14.12e \n", i+1, (double)dp);});
-
+#endif
     if (dp < atol) {metad->reason = KSP_CONVERGED_ATOL_NORMAL; goto done;}
     if (dp/r0 < rtol) {metad->reason = KSP_CONVERGED_RTOL_NORMAL; goto done;}
-#if defined(PETSC_USE_DEBUG) || 1
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
     if (dp/r0 > dtol) {metad->reason = KSP_DIVERGED_DTOL; Kokkos::single (Kokkos::PerTeam (team), [=] () {printf("ERROR block %d diverged: %d it, res=%e, r_0=%e\n",team.league_rank(),i,dp,r0);}); goto done;}
 #else
     if (dp/r0 > dtol) {metad->reason = KSP_DIVERGED_DTOL; goto done;}
@@ -449,14 +455,14 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc,Vec bin,Vec xout)
           BJSolve_TFQMR(team, glb_Aai, glb_Aaj, glb_Aaa, d_isrow, d_isicol, work_buff, stride, rtol, atol, dtol, maxit, &d_metadata[blkID], start, end, glb_idiag, glb_bdata, glb_xdata, print);
           break;
         case BATCH_KSP_GMRES_IDX:
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
           printf("GMRES not implemented %d\n",ksp_type_idx);
 #else
           /* void */
 #endif
           break;
         default:
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
           printf("Unknown KSP type %d\n",ksp_type_idx);
 #else
           /* void */;
@@ -694,7 +700,9 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
                       d_idiag[rowb] = 1./aa[j];
                       count++;
                     }}, found);
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
                if (found!=1) Kokkos::single (Kokkos::PerThread (team), [=] () {printf("ERRORrow %d) found = %d\n",rowb,found);});
+#endif
              });
         });
     }
