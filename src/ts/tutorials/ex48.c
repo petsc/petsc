@@ -369,7 +369,7 @@ static PetscErrorCode SetupEquilibriumFields(DM dm, DM dmAux, AppCtx *ctx)
   PetscFunctionBegin;
   ierr = DMCreateLocalVector(dmAux, &eq);CHKERRQ(ierr);
   ierr = DMProjectFunctionLocal(dmAux, 0.0, eqFuncs, (void **)ctxarr, INSERT_ALL_VALUES, eq);CHKERRQ(ierr);
-  ierr = DMSetAuxiliaryVec(dm, NULL, 0, eq);CHKERRQ(ierr);
+  ierr = DMSetAuxiliaryVec(dm, NULL, 0, 0, eq);CHKERRQ(ierr);
   if (ctx->plotRef) {  /* plot reference functions */
     PetscViewer       viewer = NULL;
     PetscBool         isHDF5,isVTK;

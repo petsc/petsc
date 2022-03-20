@@ -180,6 +180,7 @@ Changes: Development
 - Add ``DMCreateMassMatrixLumped()`` to support explicit timestepping, also add ``DMTSCreateRHSMassMatrix()``, ``DMTSCreateRHSMassMatrixLumped()``, and ``DMTSDestroyRHSMassMatrix()``
 - Promote ``DMGetFirstLabelEntry()`` to public API and rename
 - Add bias vector argument to ``DMGetDefaultConstraints()`` and ``DMSetDefaultConstraints()``.  Passing ``bias=NULL`` recovers prior behavior.
+- Change ``DMGetAuxiliaryVec()``, ``DMSetAuxiliaryVec()``, and ``DMGetAuxiliaryLabels()`` to take an equation part number
 
 .. rubric:: DMSwarm:
 

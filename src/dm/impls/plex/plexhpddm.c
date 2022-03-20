@@ -60,7 +60,7 @@ PetscErrorCode DMCreateNeumannOverlap_Plex(DM dm, IS *ovl, Mat *J, PetscErrorCod
   {
     Vec A;
 
-    ierr = DMGetAuxiliaryVec(dm, NULL, 0, &A);CHKERRQ(ierr);
+    ierr = DMGetAuxiliaryVec(dm, NULL, 0, 0, &A);CHKERRQ(ierr);
     if (A) {
       DM dmAux, ocdm, odmAux;
       Vec oA;
@@ -79,7 +79,7 @@ PetscErrorCode DMCreateNeumannOverlap_Plex(DM dm, IS *ovl, Mat *J, PetscErrorCod
       ierr = DMPlexDistributeField(dmAux, sf, sec, A, osec, oA);CHKERRQ(ierr);
       ierr = DMSetLocalSection(odmAux, osec);CHKERRQ(ierr);
       ierr = PetscSectionDestroy(&osec);CHKERRQ(ierr);
-      ierr = DMSetAuxiliaryVec(odm, NULL, 0, oA);CHKERRQ(ierr);
+      ierr = DMSetAuxiliaryVec(odm, NULL, 0, 0, oA);CHKERRQ(ierr);
       ierr = VecDestroy(&oA);CHKERRQ(ierr);
       ierr = DMDestroy(&odmAux);CHKERRQ(ierr);
     }

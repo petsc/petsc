@@ -191,7 +191,7 @@ static PetscErrorCode SetupVelocity(DM dm, DM dmAux, AppCtx *user)
   PetscFunctionBeginUser;
   ierr = DMCreateLocalVector(dmAux, &v);CHKERRQ(ierr);
   ierr = DMProjectFunctionLocal(dmAux, 0.0, funcs, NULL, INSERT_ALL_VALUES, v);CHKERRQ(ierr);
-  ierr = DMSetAuxiliaryVec(dm, NULL, 0, v);CHKERRQ(ierr);
+  ierr = DMSetAuxiliaryVec(dm, NULL, 0, 0, v);CHKERRQ(ierr);
   ierr = VecDestroy(&v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

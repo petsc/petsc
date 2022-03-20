@@ -18,11 +18,12 @@ typedef struct _PetscHashAuxKey
 {
   DMLabel  label;
   PetscInt value;
+  PetscInt part;
 } PetscHashAuxKey;
 
-#define PetscHashAuxKeyHash(key) PetscHashCombine(PetscHashPointer((key).label),PetscHashInt((key).value))
+#define PetscHashAuxKeyHash(key) PetscHashCombine(PetscHashCombine(PetscHashPointer((key).label),PetscHashInt((key).value)),PetscHashInt((key).part))
 
-#define PetscHashAuxKeyEqual(k1,k2) (((k1).label == (k2).label) ? ((k1).value == (k2).value) : 0)
+#define PetscHashAuxKeyEqual(k1,k2) (((k1).label == (k2).label) ? (((k1).value == (k2).value) ? ((k1).part == (k2).part) : 0) : 0)
 
 PETSC_HASH_MAP(HMapAux, PetscHashAuxKey, Vec, PetscHashAuxKeyHash, PetscHashAuxKeyEqual, NULL)
 

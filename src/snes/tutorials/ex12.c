@@ -725,7 +725,7 @@ static PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
   ierr = DMCreateLocalVector(dmAux, &nu);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) nu, "Coefficient");CHKERRQ(ierr);
   ierr = DMProjectFunctionLocal(dmAux, 0.0, matFuncs, ctx, INSERT_ALL_VALUES, nu);CHKERRQ(ierr);
-  ierr = DMSetAuxiliaryVec(dm, NULL, 0, nu);CHKERRQ(ierr);
+  ierr = DMSetAuxiliaryVec(dm, NULL, 0, 0, nu);CHKERRQ(ierr);
   ierr = VecDestroy(&nu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -743,7 +743,7 @@ static PetscErrorCode SetupBC(DM dm, DM dmAux, AppCtx *user)
   else          bcFuncs[0] = quadratic_u_3d;
   ierr = DMCreateLocalVector(dmAux, &uexact);CHKERRQ(ierr);
   ierr = DMProjectFunctionLocal(dmAux, 0.0, bcFuncs, NULL, INSERT_ALL_VALUES, uexact);CHKERRQ(ierr);
-  ierr = DMSetAuxiliaryVec(dm, NULL, 0, uexact);CHKERRQ(ierr);
+  ierr = DMSetAuxiliaryVec(dm, NULL, 0, 0, uexact);CHKERRQ(ierr);
   ierr = VecDestroy(&uexact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -983,7 +983,7 @@ int main(int argc, char **argv)
   {
     Vec nu;
 
-    ierr = DMGetAuxiliaryVec(dm, NULL, 0, &nu);CHKERRQ(ierr);
+    ierr = DMGetAuxiliaryVec(dm, NULL, 0, 0, &nu);CHKERRQ(ierr);
     if (nu) {ierr = VecViewFromOptions(nu, NULL, "-coeff_view");CHKERRQ(ierr);}
   }
 

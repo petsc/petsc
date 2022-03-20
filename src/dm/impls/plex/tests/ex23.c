@@ -200,7 +200,7 @@ static PetscErrorCode TestFunctionProjection(DM dm, DM dmAux, DMLabel label, Vec
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, la);CHKERRQ(ierr);}
+  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, 0, la);CHKERRQ(ierr);}
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = PetscMalloc1(Nf, &funcs);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) funcs[f] = linear;
@@ -221,7 +221,7 @@ static PetscErrorCode TestFunctionProjection(DM dm, DM dmAux, DMLabel label, Vec
   ierr = VecViewFromOptions(lx, NULL, "-local_func_view");CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &lx);CHKERRQ(ierr);
   ierr = PetscFree(funcs);CHKERRQ(ierr);
-  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, NULL);CHKERRQ(ierr);}
+  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, 0, NULL);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -239,7 +239,7 @@ static PetscErrorCode TestFieldProjection(DM dm, DM dmAux, DMLabel label, Vec la
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, la);CHKERRQ(ierr);}
+  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, 0, la);CHKERRQ(ierr);}
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = PetscMalloc2(Nf, &funcs, Nf, &afuncs);CHKERRQ(ierr);
   for (f = 0; f < Nf; ++f) afuncs[f]  = linear;
@@ -262,7 +262,7 @@ static PetscErrorCode TestFieldProjection(DM dm, DM dmAux, DMLabel label, Vec la
   ierr = DMRestoreLocalVector(dm, &lx);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm, &lu);CHKERRQ(ierr);
   ierr = PetscFree2(funcs, afuncs);CHKERRQ(ierr);
-  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, NULL);CHKERRQ(ierr);}
+  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, 0, NULL);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -280,7 +280,7 @@ static PetscErrorCode TestFieldProjectionMultiple(DM dm, DM dmIn, DM dmAux, DMLa
   PetscErrorCode    ierr;
 
   PetscFunctionBeginUser;
-  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, la);CHKERRQ(ierr);}
+  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, 0, la);CHKERRQ(ierr);}
   ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
   ierr = DMGetNumFields(dmIn, &NfIn);CHKERRQ(ierr);
   ierr = PetscMalloc2(Nf, &funcs, NfIn, &afuncs);CHKERRQ(ierr);
@@ -304,7 +304,7 @@ static PetscErrorCode TestFieldProjectionMultiple(DM dm, DM dmIn, DM dmAux, DMLa
   ierr = DMRestoreLocalVector(dm, &lx);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dmIn, &lu);CHKERRQ(ierr);
   ierr = PetscFree2(funcs, afuncs);CHKERRQ(ierr);
-  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, NULL);CHKERRQ(ierr);}
+  if (dmAux) {ierr = DMSetAuxiliaryVec(dm, NULL, 0, 0, NULL);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
