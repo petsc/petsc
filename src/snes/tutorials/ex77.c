@@ -380,7 +380,7 @@ PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
   ctxs[0] = user; ctxs[1] = user;
   ierr = DMCreateLocalVector(dmAux, &A);CHKERRQ(ierr);
   ierr = DMProjectFunctionLocal(dmAux, 0.0, matFuncs, ctxs, INSERT_ALL_VALUES, A);CHKERRQ(ierr);
-  ierr = DMSetAuxiliaryVec(dm, NULL, 0, A);CHKERRQ(ierr);
+  ierr = DMSetAuxiliaryVec(dm, NULL, 0, 0, A);CHKERRQ(ierr);
   ierr = VecDestroy(&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

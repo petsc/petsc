@@ -1917,7 +1917,7 @@ static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cSta
   ierr = ISCreateStride(PETSC_COMM_SELF,numCells,cStart,1,&cellIS);CHKERRQ(ierr);
   ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   /* Read Auxiliary DS information */
-  ierr = DMGetAuxiliaryVec(dm, NULL, 0, &locA);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, NULL, 0, 0, &locA);CHKERRQ(ierr);
   if (locA) {
     ierr = VecGetDM(locA, &dmAux);CHKERRQ(ierr);
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
@@ -2207,7 +2207,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
   ierr = PetscDSGetComponentDerivativeOffsets(prob, &uOff_x);CHKERRQ(ierr);
   ierr = PetscDSGetConstants(prob, &numConstants, &constants);CHKERRQ(ierr);
   /* Read Auxiliary DS information */
-  ierr = DMGetAuxiliaryVec(dm, NULL, 0, &locA);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, NULL, 0, 0, &locA);CHKERRQ(ierr);
   if (locA) {
     DM dmAux;
 
@@ -3823,7 +3823,7 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
-  ierr = DMGetAuxiliaryVec(dm, NULL, 0, &locA);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, NULL, 0, 0, &locA);CHKERRQ(ierr);
   if (locA) {
     ierr = VecGetDM(locA, &dmAux);CHKERRQ(ierr);
     ierr = DMGetDS(dmAux, &probAux);CHKERRQ(ierr);
@@ -4049,7 +4049,7 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
   ierr = ISGetPointRange(cellIS, &cStart, &cEnd, &cells);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(DMPLEX_JacobianFEM,dm,0,0,0);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
-  ierr = DMGetAuxiliaryVec(dm, NULL, 0, &A);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, NULL, 0, 0, &A);CHKERRQ(ierr);
   if (A) {
     ierr = VecGetDM(A, &dmAux);CHKERRQ(ierr);
     ierr = DMGetLocalSection(dmAux, &sectionAux);CHKERRQ(ierr);
@@ -4313,7 +4313,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
   ierr = DMGetLocalSection(dm, &section);CHKERRQ(ierr);
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
-  ierr = DMGetAuxiliaryVec(dm, key.label, key.value, &locA);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, key.label, key.value, key.part, &locA);CHKERRQ(ierr);
   if (locA) {
     DM dmAux;
 
@@ -4538,7 +4538,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscFormKey key, IS cellIS
   ierr = DMGetCellDS(dm, cells ? cells[cStart] : cStart, &ds);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(ds, &totDim);CHKERRQ(ierr);
-  ierr = DMGetAuxiliaryVec(dm, key.label, key.value, &locA);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, key.label, key.value, key.part, &locA);CHKERRQ(ierr);
   if (locA) {
     PetscInt subcell;
     ierr = VecGetDM(locA, &dmAux);CHKERRQ(ierr);
@@ -4911,7 +4911,7 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
   ierr = DMGetCellDS(dm, cStart, &ds);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(ds, &totDim);CHKERRQ(ierr);
-  ierr = DMGetAuxiliaryVec(dm, key[2].label, key[2].value, &locA[2]);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, key[2].label, key[2].value, key[2].part, &locA[2]);CHKERRQ(ierr);
   if (locA[2]) {
     ierr = VecGetDM(locA[2], &dmAux[2]);CHKERRQ(ierr);
     ierr = DMGetCellDS(dmAux[2], cStart, &dsAux[2]);CHKERRQ(ierr);
@@ -4931,7 +4931,7 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
         if      (support[0] == cStart) s = 1;
         else if (support[1] == cStart) s = 0;
         else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D does not have cell %D in its support", cone[c], cStart);
-        ierr = DMGetAuxiliaryVec(dm, key[c].label, key[c].value, &locA[c]);CHKERRQ(ierr);
+        ierr = DMGetAuxiliaryVec(dm, key[c].label, key[c].value, key[c].part, &locA[c]);CHKERRQ(ierr);
         if (locA[c]) {ierr = VecGetDM(locA[c], &dmAux[c]);CHKERRQ(ierr);}
         else         {dmAux[c] = dmAux[2];}
         ierr = DMGetCellDS(dmAux[c], support[s], &dsAux[c]);CHKERRQ(ierr);
@@ -5082,7 +5082,7 @@ PetscErrorCode DMPlexComputeBdJacobian_Single_Internal(DM dm, PetscReal t, Petsc
   ierr = DMGetDS(dm, &prob);CHKERRQ(ierr);
   ierr = PetscDSGetNumFields(prob, &Nf);CHKERRQ(ierr);
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
-  ierr = DMGetAuxiliaryVec(dm, label, values[0], &locA);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, label, values[0], 0, &locA);CHKERRQ(ierr);
   if (locA) {
     DM dmAux;
 
@@ -5296,7 +5296,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
   if (hasJac && Jac == JacP) hasPrec = PETSC_FALSE;
   ierr = PetscDSHasDynamicJacobian(prob, &hasDyn);CHKERRQ(ierr);
   hasDyn = hasDyn && (X_tShift != 0.0) ? PETSC_TRUE : PETSC_FALSE;
-  ierr = DMGetAuxiliaryVec(dm, key.label, key.value, &A);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, key.label, key.value, key.part, &A);CHKERRQ(ierr);
   if (A) {
     ierr = VecGetDM(A, &dmAux);CHKERRQ(ierr);
     ierr = DMGetEnclosureRelation(dmAux, dm, &encAux);CHKERRQ(ierr);
@@ -5507,7 +5507,7 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
   ierr = PetscDSGetTotalDimension(ds, &totDim);CHKERRQ(ierr);
   ierr = PetscDSHasBdJacobian(ds, &hasBdJac);CHKERRQ(ierr);
   ierr = PetscDSHasBdJacobianPreconditioner(ds, &hasBdPrec);CHKERRQ(ierr);
-  ierr = DMGetAuxiliaryVec(dm, key[2].label, key[2].value, &locA[2]);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, key[2].label, key[2].value, key[2].part, &locA[2]);CHKERRQ(ierr);
   if (locA[2]) {
     ierr = VecGetDM(locA[2], &dmAux[2]);CHKERRQ(ierr);
     ierr = DMConvert(dmAux[2], DMPLEX, &plexA);CHKERRQ(ierr);
@@ -5529,7 +5529,7 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
         if      (support[0] == cStart) s = 1;
         else if (support[1] == cStart) s = 0;
         else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %D does not have cell %D in its support", cone[c], cStart);
-        ierr = DMGetAuxiliaryVec(dm, key[c].label, key[c].value, &locA[c]);CHKERRQ(ierr);
+        ierr = DMGetAuxiliaryVec(dm, key[c].label, key[c].value, key[c].part, &locA[c]);CHKERRQ(ierr);
         if (locA[c]) {ierr = VecGetDM(locA[c], &dmAux[c]);CHKERRQ(ierr);}
         else         {dmAux[c] = dmAux[2];}
         ierr = DMGetCellDS(dmAux[c], support[s], &dsAux[c]);CHKERRQ(ierr);
@@ -5748,7 +5748,7 @@ PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM dm, PetscFormKey key, IS
   ierr = PetscDSGetTotalDimension(prob, &totDim);CHKERRQ(ierr);
   ierr = PetscDSHasDynamicJacobian(prob, &hasDyn);CHKERRQ(ierr);
   hasDyn = hasDyn && (X_tShift != 0.0) ? PETSC_TRUE : PETSC_FALSE;
-  ierr = DMGetAuxiliaryVec(dm, key.label, key.value, &A);CHKERRQ(ierr);
+  ierr = DMGetAuxiliaryVec(dm, key.label, key.value, key.part, &A);CHKERRQ(ierr);
   if (A) {
     ierr = VecGetDM(A, &dmAux);CHKERRQ(ierr);
     ierr = DMGetEnclosureRelation(dmAux, dm, &encAux);CHKERRQ(ierr);

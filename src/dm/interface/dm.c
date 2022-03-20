@@ -9965,27 +9965,28 @@ PetscErrorCode DMGetNumAuxiliaryVec(DM dm, PetscInt *numAux)
 }
 
 /*@
-  DMGetAuxiliaryVec - Get the auxiliary vector for region specified by the given label and value
+  DMGetAuxiliaryVec - Get the auxiliary vector for region specified by the given label and value, and equation part
 
   Not collective
 
   Input Parameters:
 + dm     - The DM
 . label  - The DMLabel
-- value  - The label value indicating the region
+. value  - The label value indicating the region
+- part   - The equation part, or 0 if unused
 
   Output Parameter:
 . aux    - The Vec holding auxiliary field data
 
-  Note: If no auxiliary vector is found for this (label, value), (NULL, 0) is checked as well.
+  Note: If no auxiliary vector is found for this (label, value), (NULL, 0, 0) is checked as well.
 
   Level: advanced
 
 .seealso: DMSetAuxiliaryVec(), DMGetNumAuxiliaryVec()
 @*/
-PetscErrorCode DMGetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, Vec *aux)
+PetscErrorCode DMGetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, PetscInt part, Vec *aux)
 {
-  PetscHashAuxKey key, wild = {NULL, 0};
+  PetscHashAuxKey key, wild = {NULL, 0, 0};
   PetscBool       has;
   PetscErrorCode  ierr;
 
@@ -9994,6 +9995,7 @@ PetscErrorCode DMGetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, Vec *aux)
   if (label) PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 2);
   key.label = label;
   key.value = value;
+  key.part  = part;
   ierr = PetscHMapAuxHas(dm->auxData, key, &has);CHKERRQ(ierr);
   if (has) {ierr = PetscHMapAuxGet(dm->auxData, key,  aux);CHKERRQ(ierr);}
   else     {ierr = PetscHMapAuxGet(dm->auxData, wild, aux);CHKERRQ(ierr);}
@@ -10001,7 +10003,7 @@ PetscErrorCode DMGetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, Vec *aux)
 }
 
 /*@
-  DMSetAuxiliaryVec - Set the auxiliary vector for region specified by the given label and value
+  DMSetAuxiliaryVec - Set the auxiliary vector for region specified by the given label and value, and equation part
 
   Not collective
 
@@ -10009,13 +10011,14 @@ PetscErrorCode DMGetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, Vec *aux)
 + dm     - The DM
 . label  - The DMLabel
 . value  - The label value indicating the region
+. part   - The equation part, or 0 if unused
 - aux    - The Vec holding auxiliary field data
 
   Level: advanced
 
 .seealso: DMGetAuxiliaryVec()
 @*/
-PetscErrorCode DMSetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, Vec aux)
+PetscErrorCode DMSetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, PetscInt part, Vec aux)
 {
   Vec             old;
   PetscHashAuxKey key;
@@ -10026,6 +10029,7 @@ PetscErrorCode DMSetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, Vec aux)
   if (label) PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 2);
   key.label = label;
   key.value = value;
+  key.part  = part;
   ierr = PetscHMapAuxGet(dm->auxData, key, &old);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject) aux);CHKERRQ(ierr);
   ierr = PetscObjectDereference((PetscObject) old);CHKERRQ(ierr);
@@ -10035,7 +10039,7 @@ PetscErrorCode DMSetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, Vec aux)
 }
 
 /*@C
-  DMGetAuxiliaryLabels - Get the labels and values for all auxiliary vectors in this DM
+  DMGetAuxiliaryLabels - Get the labels, values, and parts for all auxiliary vectors in this DM
 
   Not collective
 
@@ -10044,7 +10048,8 @@ PetscErrorCode DMSetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, Vec aux)
 
   Output Parameters:
 + labels  - The DMLabels for each Vec
-- values  - The label values for each Vec
+. values  - The label values for each Vec
+- parts   - The equation parts for each Vec
 
   Note: The arrays passed in must be at least as large as DMGetNumAuxiliaryVec().
 
@@ -10052,7 +10057,7 @@ PetscErrorCode DMSetAuxiliaryVec(DM dm, DMLabel label, PetscInt value, Vec aux)
 
 .seealso: DMGetNumAuxiliaryVec(), DMGetAuxiliaryVec(), DMSetAuxiliaryVec()
 @*/
-PetscErrorCode DMGetAuxiliaryLabels(DM dm, DMLabel labels[], PetscInt values[])
+PetscErrorCode DMGetAuxiliaryLabels(DM dm, DMLabel labels[], PetscInt values[], PetscInt parts[])
 {
   PetscHashAuxKey *keys;
   PetscInt         n, i, off = 0;
@@ -10062,10 +10067,11 @@ PetscErrorCode DMGetAuxiliaryLabels(DM dm, DMLabel labels[], PetscInt values[])
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(labels, 2);
   PetscValidPointer(values, 3);
+  PetscValidPointer(parts,  4);
   ierr = DMGetNumAuxiliaryVec(dm, &n);CHKERRQ(ierr);
   ierr = PetscMalloc1(n, &keys);CHKERRQ(ierr);
   ierr = PetscHMapAuxGetKeys(dm->auxData, &off, keys);CHKERRQ(ierr);
-  for (i = 0; i < n; ++i) {labels[i] = keys[i].label; values[i] = keys[i].value;}
+  for (i = 0; i < n; ++i) {labels[i] = keys[i].label; values[i] = keys[i].value; parts[i] = keys[i].part;}
   ierr = PetscFree(keys);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
