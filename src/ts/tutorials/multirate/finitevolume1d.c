@@ -445,7 +445,7 @@ PetscErrorCode RiemannListFind(PetscFunctionList flist,const char *name,RiemannF
 
   PetscFunctionBeginUser;
   ierr = PetscFunctionListFind(flist,name,rsolve);CHKERRQ(ierr);
-  PetscCheckFalse(!*rsolve,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Riemann solver \"%s\" could not be found",name);
+  PetscCheck(*rsolve,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Riemann solver \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
 
@@ -464,7 +464,7 @@ PetscErrorCode ReconstructListFind(PetscFunctionList flist,const char *name,Reco
 
   PetscFunctionBeginUser;
   ierr = PetscFunctionListFind(flist,name,r);CHKERRQ(ierr);
-  PetscCheckFalse(!*r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Reconstruction \"%s\" could not be found",name);
+  PetscCheck(*r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Reconstruction \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
 
@@ -483,7 +483,7 @@ PetscErrorCode RiemannListFind_2WaySplit(PetscFunctionList flist,const char *nam
 
   PetscFunctionBeginUser;
   ierr = PetscFunctionListFind(flist,name,rsolve);CHKERRQ(ierr);
-  PetscCheckFalse(!*rsolve,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Riemann solver \"%s\" could not be found",name);
+  PetscCheck(*rsolve,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Riemann solver \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
 
@@ -502,7 +502,7 @@ PetscErrorCode ReconstructListFind_2WaySplit(PetscFunctionList flist,const char 
 
   PetscFunctionBeginUser;
   ierr = PetscFunctionListFind(flist,name,r);CHKERRQ(ierr);
-  PetscCheckFalse(!*r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Reconstruction \"%s\" could not be found",name);
+  PetscCheck(*r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Reconstruction \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
 
@@ -623,7 +623,7 @@ PetscErrorCode FVSample(FVCtx *ctx,DM da,PetscReal time,Vec U)
   PetscInt       i,j,k,dof,xs,xm,Mx;
 
   PetscFunctionBeginUser;
-  PetscCheckFalse(!ctx->physics.sample,PETSC_COMM_SELF,PETSC_ERR_SUP,"Physics has not provided a sampling function");
+  PetscCheck(ctx->physics.sample,PETSC_COMM_SELF,PETSC_ERR_SUP,"Physics has not provided a sampling function");
   ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,U,&u);CHKERRQ(ierr);

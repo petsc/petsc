@@ -496,7 +496,7 @@ static PetscErrorCode TSAdjointStep_Theta(TS ts)
 
   /* Second-order adjoint */
   if (ts->vecs_sensi2) { /* U_{n+1} */
-    PetscCheckFalse(!th->endpoint,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Operation not implemented in TS_Theta");
+    PetscCheck(th->endpoint,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"Operation not implemented in TS_Theta");
     /* Get w1 at t_{n+1} from TLM matrix */
     ierr = MatDenseGetColumn(ts->mat_sensip,0,&xarr);CHKERRQ(ierr);
     ierr = VecPlaceArray(ts->vec_sensip_col,xarr);CHKERRQ(ierr);
@@ -1502,7 +1502,7 @@ static PetscErrorCode TSSetUp_CN(TS ts)
 
   PetscFunctionBegin;
   PetscCheckFalse(th->Theta != 0.5,PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change the default value (0.5) of theta when using Crank-Nicolson");
-  PetscCheckFalse(!th->endpoint,PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change to the midpoint form of the Theta methods when using Crank-Nicolson");
+  PetscCheck(th->endpoint,PetscObjectComm((PetscObject)ts),PETSC_ERR_OPT_OVERWRITE,"Can not change to the midpoint form of the Theta methods when using Crank-Nicolson");
   ierr = TSSetUp_Theta(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

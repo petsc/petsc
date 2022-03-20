@@ -194,7 +194,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   if (container) {
     PetscCheck(ctx->gpu_assembly,ctx->comm,PETSC_ERR_ARG_WRONG,"maps but no GPU assembly");
     ierr = PetscContainerGetPointer(container, (void **) &maps);CHKERRQ(ierr);
-    PetscCheckFalse(!maps,ctx->comm,PETSC_ERR_ARG_WRONG,"empty GPU matrix container");
+    PetscCheck(maps,ctx->comm,PETSC_ERR_ARG_WRONG,"empty GPU matrix container");
     for (PetscInt i=0;i<ctx->num_grids*ctx->batch_sz;i++) subJ[i] = NULL;
   } else {
     PetscCheck(!ctx->gpu_assembly,ctx->comm,PETSC_ERR_ARG_WRONG,"No maps but GPU assembly");
@@ -220,7 +220,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
   if (shift==0) { /* create dynamic point data: f_alpha for closure of each cell (cellClosure[nbatch,ngrids,ncells[g],f[Nb,ns[g]]]) or xdata */
     DM pack;
     ierr = VecGetDM(a_X, &pack);CHKERRQ(ierr);
-    PetscCheckFalse(!pack,PETSC_COMM_SELF, PETSC_ERR_PLIB, "pack has no DM");
+    PetscCheck(pack,PETSC_COMM_SELF, PETSC_ERR_PLIB, "pack has no DM");
     ierr = PetscLogEventBegin(ctx->events[1],0,0,0,0);CHKERRQ(ierr);
     ierr = MatZeroEntries(JacP);CHKERRQ(ierr);
     for (PetscInt fieldA=0;fieldA<ctx->num_species;fieldA++) {
@@ -1141,7 +1141,7 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscInt type, Pet
   ierr = DMGetDS(forest, &prob);CHKERRQ(ierr);
   ierr = DMGetDimension(forest, &dim);CHKERRQ(ierr);
   ierr = DMIsForest(forest, &isForest);CHKERRQ(ierr);
-  PetscCheckFalse(!isForest,ctx->comm,PETSC_ERR_ARG_WRONG,"! Forest");
+  PetscCheck(isForest,ctx->comm,PETSC_ERR_ARG_WRONG,"! Forest");
   ierr = DMConvert(forest, DMPLEX, &plex);CHKERRQ(ierr);
   ierr = DMPlexGetHeightStratum(plex,0,&cStart,&cEnd);CHKERRQ(ierr);
   ierr = DMLabelCreate(PETSC_COMM_SELF,"adapt",&adaptLabel);CHKERRQ(ierr);
@@ -2253,13 +2253,13 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
     PetscBool flg;
     if (ctx->deviceType == LANDAU_CUDA) {
       ierr = PetscObjectTypeCompareAny((PetscObject)ctx->J,&flg,MATSEQAIJCUSPARSE,MATMPIAIJCUSPARSE,MATAIJCUSPARSE,"");CHKERRQ(ierr);
-      PetscCheckFalse(!flg,ctx->comm,PETSC_ERR_ARG_WRONG,"must use '-dm_mat_type aijcusparse -dm_vec_type cuda' for GPU assembly and Cuda or use '-dm_landau_device_type cpu'");
+      PetscCheck(flg,ctx->comm,PETSC_ERR_ARG_WRONG,"must use '-dm_mat_type aijcusparse -dm_vec_type cuda' for GPU assembly and Cuda or use '-dm_landau_device_type cpu'");
     } else if (ctx->deviceType == LANDAU_KOKKOS) {
       ierr = PetscObjectTypeCompareAny((PetscObject)ctx->J,&flg,MATSEQAIJKOKKOS,MATMPIAIJKOKKOS,MATAIJKOKKOS,"");CHKERRQ(ierr);
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
-      PetscCheckFalse(!flg,ctx->comm,PETSC_ERR_ARG_WRONG,"must use '-dm_mat_type aijkokkos -dm_vec_type kokkos' for GPU assembly and Kokkos or use '-dm_landau_device_type cpu'");
+      PetscCheck(flg,ctx->comm,PETSC_ERR_ARG_WRONG,"must use '-dm_mat_type aijkokkos -dm_vec_type kokkos' for GPU assembly and Kokkos or use '-dm_landau_device_type cpu'");
 #else
-      PetscCheckFalse(!flg,ctx->comm,PETSC_ERR_ARG_WRONG,"must configure with '--download-kokkos-kernels' for GPU assembly and Kokkos or use '-dm_landau_device_type cpu'");
+      PetscCheck(flg,ctx->comm,PETSC_ERR_ARG_WRONG,"must configure with '--download-kokkos-kernels' for GPU assembly and Kokkos or use '-dm_landau_device_type cpu'");
 #endif
     }
   }
@@ -2491,7 +2491,7 @@ PetscErrorCode DMPlexLandauPrintNorms(Vec X, PetscInt stepi)
 
   PetscFunctionBegin;
   ierr = VecGetDM(X, &pack);CHKERRQ(ierr);
-  PetscCheckFalse(!pack,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Vector has no DM");
+  PetscCheck(pack,PETSC_COMM_SELF, PETSC_ERR_PLIB, "Vector has no DM");
   ierr = DMGetDimension(pack, &dim);CHKERRQ(ierr);
   PetscCheck(dim == 2 || dim == 3,PETSC_COMM_SELF, PETSC_ERR_PLIB, "dim %" PetscInt_FMT " not in [2,3]",dim);
   ierr = DMGetApplicationContext(pack, &ctx);CHKERRQ(ierr);
@@ -2777,7 +2777,7 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&pack);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(pack, &ctx);CHKERRQ(ierr);
-  PetscCheckFalse(!ctx,PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
+  PetscCheck(ctx,PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
   if (ctx->stage) {
     ierr = PetscLogStagePush(ctx->stage);CHKERRQ(ierr);
   }
@@ -2854,7 +2854,7 @@ PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_t
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&pack);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(pack, &ctx);CHKERRQ(ierr);
-  PetscCheckFalse(!ctx,PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
+  PetscCheck(ctx,PETSC_COMM_SELF, PETSC_ERR_PLIB, "no context");
   PetscCheckFalse(Amat!=Pmat || Amat!=ctx->J,ctx->comm, PETSC_ERR_PLIB, "Amat!=Pmat || Amat!=ctx->J");
   ierr = DMGetDimension(pack, &dim);CHKERRQ(ierr);
   /* get collision Jacobian into A */
@@ -2868,7 +2868,7 @@ PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_t
 #endif
   ierr = PetscInfo(ts, "Adding just mass to Jacobian t=%g, shift=%g\n",(double)time_dummy,(double)shift);CHKERRQ(ierr);
   PetscCheckFalse(shift==0.0,ctx->comm, PETSC_ERR_PLIB, "zero shift");
-  PetscCheckFalse(!ctx->aux_bool,ctx->comm, PETSC_ERR_PLIB, "wrong state");
+  PetscCheck(ctx->aux_bool,ctx->comm, PETSC_ERR_PLIB, "wrong state");
   if (!ctx->use_matrix_mass) {
     ierr = LandauFormJacobian_Internal(X,ctx->J,dim,shift,(void*)ctx);CHKERRQ(ierr);
     ierr = MatViewFromOptions(ctx->J, NULL, "-dm_landau_mat_view");CHKERRQ(ierr);

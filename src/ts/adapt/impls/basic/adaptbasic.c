@@ -22,7 +22,7 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt,TS ts,PetscReal h,PetscI
     PetscCheckFalse(enorm >= 0 && order < 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed error order %D must be positive",order);
   } else if (ts->ops->evaluatestep) {
     PetscCheckFalse(adapt->candidates.n < 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"No candidate has been registered");
-    PetscCheckFalse(!adapt->candidates.inuse_set,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
+    PetscCheck(adapt->candidates.inuse_set,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
     order = adapt->candidates.order[0];
     ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(dm,&Y);CHKERRQ(ierr);

@@ -62,7 +62,7 @@ int main(int argc,char **argv)
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only");
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only");
 
   user.mx    = 4;
   user.my    = 4;
@@ -76,7 +76,7 @@ int main(int argc,char **argv)
   N  = user.mx*user.my;
   dt = .5/PetscMax(user.mx,user.my);
   PetscOptionsGetReal(NULL,NULL,"-param",&user.param,NULL);
-  PetscCheckFalse(user.param >= param_max || user.param <= param_min,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Parameter is out of range");
+  PetscCheck(user.param < param_max && user.param >= param_min,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Parameter is out of range");
 
   /*
       Create vectors to hold the solution and function value

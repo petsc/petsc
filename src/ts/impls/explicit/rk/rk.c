@@ -1087,7 +1087,7 @@ static PetscErrorCode TSInterpolate_RK(TS ts,PetscReal itime,Vec X)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!B,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSRK %s does not have an interpolation formula",rk->tableau->name);
+  PetscCheck(B,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSRK %s does not have an interpolation formula",rk->tableau->name);
 
   switch (rk->status) {
     case TS_STEP_INCOMPLETE:

@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
 
   ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
 
   ierr = PetscOptionsBegin(PETSC_COMM_SELF,"","ex43 options","");CHKERRQ(ierr);
   ierr = PetscOptionsReal("-frequency","Natual frequency",__FILE__,user.Omega,&user.Omega,NULL);CHKERRQ(ierr);

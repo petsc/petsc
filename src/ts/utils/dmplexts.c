@@ -329,7 +329,7 @@ PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   ierr = TSComputeIFunction(ts, t, u, u_t, r, PETSC_FALSE);CHKERRQ(ierr);
   ierr = VecNorm(r, NORM_2, &res);CHKERRQ(ierr);
   if (tol >= 0.0) {
-    PetscCheckFalse(res > tol,comm, PETSC_ERR_ARG_WRONG, "L_2 Residual %g exceeds tolerance %g", (double) res, (double) tol);
+    PetscCheck(res <= tol,comm, PETSC_ERR_ARG_WRONG, "L_2 Residual %g exceeds tolerance %g", (double) res, (double) tol);
   } else if (residual) {
     *residual = res;
   } else {
@@ -407,7 +407,7 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   if (nullspace) {
     PetscBool isNull;
     ierr = MatNullSpaceTest(nullspace, J, &isNull);CHKERRQ(ierr);
-    PetscCheckFalse(!isNull,comm, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
+    PetscCheck(isNull,comm, PETSC_ERR_PLIB, "The null space calculated for the system operator is invalid.");
   }
   /* Taylor test */
   {
@@ -460,7 +460,7 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
     ierr = PetscFree3(es, hs, errors);CHKERRQ(ierr);
     /* Slope should be about 2 */
     if (tol >= 0) {
-      PetscCheckFalse(!isLin && PetscAbsReal(2 - slope) > tol,comm, PETSC_ERR_ARG_WRONG, "Taylor approximation convergence rate should be 2, not %0.2f", (double) slope);
+      PetscCheck(isLin || PetscAbsReal(2 - slope) <= tol,comm, PETSC_ERR_ARG_WRONG, "Taylor approximation convergence rate should be 2, not %0.2f", (double) slope);
     } else if (isLinear || convRate) {
       if (isLinear) *isLinear = isLin;
       if (convRate) *convRate = slope;

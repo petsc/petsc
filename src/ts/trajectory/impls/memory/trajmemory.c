@@ -1815,34 +1815,34 @@ static PetscErrorCode TSTrajectorySet_Memory(TSTrajectory tj,TS ts,PetscInt step
       }
       break;
     case TWO_LEVEL_NOREVOLVE:
-      PetscCheckFalse(!tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
+      PetscCheck(tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
       ierr = TSTrajectoryMemorySet_TLNR(tj,ts,tjsch,stepnum,time,X);CHKERRQ(ierr);
       break;
 #if defined(PETSC_HAVE_REVOLVE)
     case TWO_LEVEL_REVOLVE:
-      PetscCheckFalse(!tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
+      PetscCheck(tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
       ierr = TSTrajectoryMemorySet_TLR(tj,ts,tjsch,stepnum,time,X);CHKERRQ(ierr);
       break;
     case TWO_LEVEL_TWO_REVOLVE:
-      PetscCheckFalse(!tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
+      PetscCheck(tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
       ierr = TSTrajectoryMemorySet_TLTR(tj,ts,tjsch,stepnum,time,X);CHKERRQ(ierr);
       break;
     case REVOLVE_OFFLINE:
-      PetscCheckFalse(!tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
+      PetscCheck(tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
       ierr = TSTrajectoryMemorySet_ROF(tj,ts,tjsch,stepnum,time,X);CHKERRQ(ierr);
       break;
     case REVOLVE_ONLINE:
-      PetscCheckFalse(!tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
+      PetscCheck(tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
       ierr = TSTrajectoryMemorySet_RON(tj,ts,tjsch,stepnum,time,X);CHKERRQ(ierr);
       break;
     case REVOLVE_MULTISTAGE:
-      PetscCheckFalse(!tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
+      PetscCheck(tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
       ierr = TSTrajectoryMemorySet_RMS(tj,ts,tjsch,stepnum,time,X);CHKERRQ(ierr);
       break;
 #endif
 #if defined(PETSC_HAVE_CAMS)
     case CAMS_OFFLINE:
-      PetscCheckFalse(!tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
+      PetscCheck(tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
       ierr = TSTrajectoryMemorySet_AOF(tj,ts,tjsch,stepnum,time,X);CHKERRQ(ierr);
       break;
 #endif
@@ -1871,34 +1871,34 @@ static PetscErrorCode TSTrajectoryGet_Memory(TSTrajectory tj,TS ts,PetscInt step
       }
       break;
     case TWO_LEVEL_NOREVOLVE:
-      PetscCheckFalse(!tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
+      PetscCheck(tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
       ierr = TSTrajectoryMemoryGet_TLNR(tj,ts,tjsch,stepnum);CHKERRQ(ierr);
       break;
 #if defined(PETSC_HAVE_REVOLVE)
     case TWO_LEVEL_REVOLVE:
-      PetscCheckFalse(!tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
+      PetscCheck(tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
       ierr = TSTrajectoryMemoryGet_TLR(tj,ts,tjsch,stepnum);CHKERRQ(ierr);
       break;
     case TWO_LEVEL_TWO_REVOLVE:
-      PetscCheckFalse(!tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
+      PetscCheck(tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
       ierr = TSTrajectoryMemoryGet_TLTR(tj,ts,tjsch,stepnum);CHKERRQ(ierr);
       break;
     case REVOLVE_OFFLINE:
-      PetscCheckFalse(!tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
+      PetscCheck(tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
       ierr = TSTrajectoryMemoryGet_ROF(tj,ts,tjsch,stepnum);CHKERRQ(ierr);
       break;
     case REVOLVE_ONLINE:
-      PetscCheckFalse(!tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
+      PetscCheck(tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
       ierr = TSTrajectoryMemoryGet_RON(tj,ts,tjsch,stepnum);CHKERRQ(ierr);
       break;
     case REVOLVE_MULTISTAGE:
-      PetscCheckFalse(!tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
+      PetscCheck(tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
       ierr = TSTrajectoryMemoryGet_RMS(tj,ts,tjsch,stepnum);CHKERRQ(ierr);
       break;
 #endif
 #if defined(PETSC_HAVE_CAMS)
     case CAMS_OFFLINE:
-      PetscCheckFalse(!tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
+      PetscCheck(tj->adjoint_solve_mode,PetscObjectComm((PetscObject)tj),PETSC_ERR_SUP,"Not implemented");
       ierr = TSTrajectoryMemoryGet_AOF(tj,ts,tjsch,stepnum);CHKERRQ(ierr);
       break;
 #endif
@@ -1940,7 +1940,7 @@ static PetscErrorCode TSTrajectorySetMaxUnitsRAM_Memory(TSTrajectory tj,PetscInt
   TJScheduler *tjsch = (TJScheduler*)tj->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!tjsch->max_cps_ram,PetscObjectComm((PetscObject)tj),PETSC_ERR_ARG_INCOMP,"Conflict with -ts_trjaectory_max_cps_ram or TSTrajectorySetMaxCpsRAM. You can set max_cps_ram or max_units_ram, but not both at the same time.");
+  PetscCheck(tjsch->max_cps_ram,PetscObjectComm((PetscObject)tj),PETSC_ERR_ARG_INCOMP,"Conflict with -ts_trjaectory_max_cps_ram or TSTrajectorySetMaxCpsRAM. You can set max_cps_ram or max_units_ram, but not both at the same time.");
   tjsch->max_units_ram = max_units_ram;
   PetscFunctionReturn(0);
 }
@@ -1950,7 +1950,7 @@ static PetscErrorCode TSTrajectorySetMaxUnitsDisk_Memory(TSTrajectory tj,PetscIn
   TJScheduler *tjsch = (TJScheduler*)tj->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!tjsch->max_cps_disk,PetscObjectComm((PetscObject)tj),PETSC_ERR_ARG_INCOMP,"Conflict with -ts_trjaectory_max_cps_disk or TSTrajectorySetMaxCpsDisk. You can set max_cps_disk or max_units_disk, but not both at the same time.");
+  PetscCheck(tjsch->max_cps_disk,PetscObjectComm((PetscObject)tj),PETSC_ERR_ARG_INCOMP,"Conflict with -ts_trjaectory_max_cps_disk or TSTrajectorySetMaxCpsDisk. You can set max_cps_disk or max_units_disk, but not both at the same time.");
   tjsch->max_units_ram = max_units_disk;
   PetscFunctionReturn(0);
 }
