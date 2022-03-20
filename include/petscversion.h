@@ -1,5 +1,6 @@
 #if !defined(PETSCVERSION_H)
 #define PETSCVERSION_H
+#include <petscconf.h>
 
 #define PETSC_VERSION_RELEASE    0
 #define PETSC_VERSION_MAJOR      3
