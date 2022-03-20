@@ -1483,6 +1483,66 @@ PetscErrorCode PetscDualSpaceCreateInteriorDataDefault(PetscDualSpace sp, PetscQ
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscDualSpaceEqual - Determine if a dual space is equivalent
+
+  Input Parameters:
++ A    - A PetscDualSpace object
+- B    - Another PetscDualSpace object
+
+  Output Parameter:
+. equal - PETSC_TRUE if the dual spaces are equivalent
+
+  Level: advanced
+
+.seealso: PetscDualSpaceCreate()
+@*/
+PetscErrorCode PetscDualSpaceEqual(PetscDualSpace A, PetscDualSpace B, PetscBool *equal)
+{
+  PetscErrorCode ierr;
+  PetscInt sizeA, sizeB, dimA, dimB;
+  const PetscInt *dofA, *dofB;
+  PetscQuadrature quadA, quadB;
+  Mat matA, matB;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,PETSCDUALSPACE_CLASSID,1);
+  PetscValidHeaderSpecific(B,PETSCDUALSPACE_CLASSID,2);
+  PetscValidBoolPointer(equal,3);
+  *equal = PETSC_FALSE;
+  ierr = PetscDualSpaceGetDimension(A, &sizeA);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetDimension(B, &sizeB);CHKERRQ(ierr);
+  if (sizeB != sizeA) {
+    PetscFunctionReturn(0);
+  }
+  ierr = DMGetDimension(A->dm, &dimA);CHKERRQ(ierr);
+  ierr = DMGetDimension(B->dm, &dimB);CHKERRQ(ierr);
+  if (dimA != dimB) {
+    PetscFunctionReturn(0);
+  }
+
+  ierr = PetscDualSpaceGetNumDof(A, &dofA);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetNumDof(B, &dofB);CHKERRQ(ierr);
+  for (PetscInt d=0; d<dimA; d++) {
+    if (dofA[d] != dofB[d]) {
+      PetscFunctionReturn(0);
+    }
+  }
+
+  ierr = PetscDualSpaceGetInteriorData(A, &quadA, &matA);CHKERRQ(ierr);
+  ierr = PetscDualSpaceGetInteriorData(B, &quadB, &matB);CHKERRQ(ierr);
+  if (!quadA && !quadB) {
+    *equal = PETSC_TRUE;
+  } else if (quadA && quadB) {
+    ierr = PetscQuadratureEqual(quadA, quadB, equal);CHKERRQ(ierr);
+    if (*equal == PETSC_FALSE) PetscFunctionReturn(0);
+    if (!matA && !matB) PetscFunctionReturn(0);
+    if (matA && matB) {ierr = MatEqual(matA, matB, equal);CHKERRQ(ierr);}
+    else *equal = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@C
   PetscDualSpaceApplyFVM - Apply a functional from the dual space basis to an input function by assuming a point evaluation functional at the cell centroid.
 

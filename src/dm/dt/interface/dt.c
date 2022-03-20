@@ -277,6 +277,50 @@ PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscQuadratureEqual - determine whether two quadratures are equivalent
+
+  Input Parameters:
++ A - A PetscQuadrature object
+- B - Another PetscQuadrature object
+
+  Output Parameters:
+. equal - PETSC_TRUE if the quadratures are the same
+
+  Level: intermediate
+
+.seealso: PetscQuadratureCreate()
+@*/
+PetscErrorCode PetscQuadratureEqual(PetscQuadrature A, PetscQuadrature B, PetscBool *equal)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, PETSCQUADRATURE_CLASSID, 1);
+  PetscValidHeaderSpecific(B, PETSCQUADRATURE_CLASSID, 2);
+  PetscValidBoolPointer(equal, 3);
+  *equal = PETSC_FALSE;
+  if (A->dim != B->dim || A->Nc != B->Nc || A->order != B->order || A->numPoints != B->numPoints) {
+    PetscFunctionReturn(0);
+  }
+  for (PetscInt i=0; i<A->numPoints*A->dim; i++) {
+    if (PetscAbsReal(A->points[i] - B->points[i]) > PETSC_SMALL) {
+      PetscFunctionReturn(0);
+    }
+  }
+  if (!A->weights && !B->weights) {
+    *equal = PETSC_TRUE;
+    PetscFunctionReturn(0);
+  }
+  if (A->weights && B->weights) {
+    for (PetscInt i=0; i<A->numPoints; i++) {
+      if (PetscAbsReal(A->weights[i] - B->weights[i]) > PETSC_SMALL) {
+        PetscFunctionReturn(0);
+      }
+    }
+    *equal = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, const PetscReal J[], PetscReal Jinv[])
 {
   PetscScalar    *Js, *Jinvs;
