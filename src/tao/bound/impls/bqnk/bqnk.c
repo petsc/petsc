@@ -113,9 +113,9 @@ PetscErrorCode TaoSetUp_BQNK(Tao tao)
   ierr = MatSetSizes(bqnk->B, n, n, N, N);CHKERRQ(ierr);
   ierr = MatLMVMAllocate(bqnk->B,tao->solution,bnk->unprojected_gradient);CHKERRQ(ierr);
   ierr = PetscObjectBaseTypeCompare((PetscObject)bqnk->B, MATLMVM, &is_lmvm);CHKERRQ(ierr);
-  PetscCheckFalse(!is_lmvm,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Matrix must be an LMVM-type");
+  PetscCheck(is_lmvm,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Matrix must be an LMVM-type");
   ierr = MatGetOption(bqnk->B, MAT_SYMMETRIC, &is_sym);CHKERRQ(ierr);
-  PetscCheckFalse(!is_sym,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix must be symmetric");
+  PetscCheck(is_sym,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM matrix must be symmetric");
   ierr = MatGetOption(bqnk->B, MAT_SPD, &is_spd);CHKERRQ(ierr);
   ierr = KSPGetPC(tao->ksp, &bqnk->pc);CHKERRQ(ierr);
   ierr = PCSetType(bqnk->pc, PCLMVM);CHKERRQ(ierr);
@@ -224,7 +224,7 @@ PetscErrorCode TaoGetLMVMMatrix(Tao tao, Mat *B)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompareAny((PetscObject)tao, &flg, TAOBQNLS, TAOBQNKLS, TAOBQNKTR, TAOBQNKTL, "");CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM Matrix only exists for quasi-Newton algorithms");
+  PetscCheck(flg,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM Matrix only exists for quasi-Newton algorithms");
   *B = bqnk->B;
   PetscFunctionReturn(0);
 }
@@ -253,9 +253,9 @@ PetscErrorCode TaoSetLMVMMatrix(Tao tao, Mat B)
 
   PetscFunctionBegin;
   ierr = PetscObjectTypeCompareAny((PetscObject)tao, &flg, TAOBQNLS, TAOBQNKLS, TAOBQNKTR, TAOBQNKTL, "");CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM Matrix only exists for quasi-Newton algorithms");
+  PetscCheck(flg,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM Matrix only exists for quasi-Newton algorithms");
   ierr = PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &flg);CHKERRQ(ierr);
-  PetscCheckFalse(!flg,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Given matrix is not an LMVM matrix");
+  PetscCheck(flg,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "Given matrix is not an LMVM matrix");
   if (bqnk->B) {
     ierr = MatDestroy(&bqnk->B);CHKERRQ(ierr);
   }

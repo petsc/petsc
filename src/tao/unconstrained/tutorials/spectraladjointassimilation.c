@@ -492,7 +492,7 @@ PetscErrorCode RHSLaplacian(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
 
-  PetscCheckFalse(appctx->param.N-1 < 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Polynomial order must be at least 2");
+  PetscCheck(appctx->param.N-1 >= 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Polynomial order must be at least 2");
   xs   = xs/(appctx->param.N-1);
   xn   = xn/(appctx->param.N-1);
 
@@ -546,7 +546,7 @@ PetscErrorCode RHSAdvection(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void *ctx)
   ierr = MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE);CHKERRQ(ierr);
   ierr = DMDAGetCorners(appctx->da,&xs,NULL,NULL,&xn,NULL,NULL);CHKERRQ(ierr);
 
-  PetscCheckFalse(appctx->param.N-1 < 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Polynomial order must be at least 2");
+  PetscCheck(appctx->param.N-1 >= 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Polynomial order must be at least 2");
   xs   = xs/(appctx->param.N-1);
   xn   = xn/(appctx->param.N-1);
 

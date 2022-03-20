@@ -49,7 +49,7 @@ static PetscErrorCode MatDiagonalSet_ADA(Mat M,Vec D, InsertMode mode)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscCheckFalse(mode == INSERT_VALUES,PetscObjectComm((PetscObject)M),PETSC_ERR_SUP,"Cannot insert diagonal entries of this matrix type, can only add");
+  PetscCheck(mode != INSERT_VALUES,PetscObjectComm((PetscObject)M),PETSC_ERR_SUP,"Cannot insert diagonal entries of this matrix type, can only add");
   ierr = MatShellGetContext(M,&ctx);CHKERRQ(ierr);
   if (!ctx->D2) {
     ierr = VecDuplicate(D,&ctx->D2);CHKERRQ(ierr);
@@ -224,7 +224,7 @@ static PetscErrorCode MatCreateSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse 
 
   PetscFunctionBegin;
   ierr = ISEqual(isrow,iscol,&isequal);CHKERRQ(ierr);
-  PetscCheckFalse(!isequal,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only for identical column and row indices");
+  PetscCheck(isequal,PETSC_COMM_SELF,PETSC_ERR_SUP,"Only for identical column and row indices");
   ierr = MatShellGetContext(mat,&ctx);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(ctx->A,&low,&high);CHKERRQ(ierr);

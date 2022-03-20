@@ -133,7 +133,7 @@ int main(int argc,char **argv)
   appctx.param.Le = appctx.param.L/appctx.param.E;
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  PetscCheckFalse(appctx.param.E % size,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of elements must be divisible by number of processes");
+  PetscCheck((appctx.param.E % size) == 0,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of elements must be divisible by number of processes");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create GLL data structures
@@ -457,7 +457,7 @@ PetscErrorCode RHSMatrixLaplaciangllDM(TS ts,PetscReal t,Vec X,Mat A,Mat BB,void
    */
   ierr = PetscGaussLobattoLegendreElementLaplacianCreate(appctx->SEMop.gll.n,appctx->SEMop.gll.nodes,appctx->SEMop.gll.weights,&temp);CHKERRQ(ierr);
   /* workaround for clang analyzer warning: Division by zero */
-  PetscCheckFalse(appctx->param.N <= 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Spectral element order should be > 1");
+  PetscCheck(appctx->param.N > 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Spectral element order should be > 1");
 
   /* scale by the size of the element */
   for (i=0; i<appctx->param.N; i++) {

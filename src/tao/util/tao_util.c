@@ -64,7 +64,7 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
   ierr = VecGetOwnershipRange(FB, low + 4, high + 4);CHKERRQ(ierr);
 
   for (i = 1; i < 4; ++i) {
-    PetscCheckFalse(low[0] != low[i] || high[0] != high[i],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vectors must be identically loaded over processors");
+    PetscCheck(low[0] == low[i] && high[0] == high[i],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vectors must be identically loaded over processors");
   }
 
   ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
@@ -165,7 +165,7 @@ PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FB)
   ierr = VecGetOwnershipRange(FB, low + 4, high + 4);CHKERRQ(ierr);
 
   for (i = 1; i < 4; ++i) {
-    PetscCheckFalse(low[0] != low[i] || high[0] != high[i],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vectors must be identically loaded over processors");
+    PetscCheck(low[0] == low[i] && high[0] == high[i],PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vectors must be identically loaded over processors");
   }
 
   ierr = VecGetArrayRead(X, &x);CHKERRQ(ierr);
@@ -514,9 +514,8 @@ PetscErrorCode TaoSoftThreshold(Vec in, PetscReal lb, PetscReal ub, Vec out)
   ierr = VecGetLocalSize(in, &nlocal);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in, &mlocal);CHKERRQ(ierr);
 
-  PetscCheckFalse(nlocal != mlocal,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Input and output vectors need to be of same size.");
-  PetscCheckFalse(lb == ub,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Lower bound and upper bound need to be different.");
-  PetscCheckFalse(lb > ub,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Lower bound needs to be lower than upper bound.");
+  PetscCheck(nlocal == mlocal,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Input and output vectors need to be of same size.");
+  PetscCheck(lb < ub,PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Lower bound needs to be lower than upper bound.");
 
   if (ub >= 0 && lb < 0) {
     for (i=0; i<nlocal; i++) outarray[i] = ST_InternalPN(inarray[i], lb, ub);
