@@ -40,7 +40,7 @@ PetscErrorCode DMMoabCreateVector(DM dm, moab::Tag tag, const moab::Range* range
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!tag && (!range || range->empty()),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Both tag and range cannot be null.");
+  PetscCheck(tag || (range && !range->empty()),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Both tag and range cannot be null.");
 
   ierr = DMCreateVector_Moab_Private(dm, tag, range, is_global_vec, destroy_tag, vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -428,7 +428,7 @@ PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const moab::Ran
   PetscCheckFalse(sizeof(PetscReal) != sizeof(PetscScalar),PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "MOAB tags only support Real types (Complex-type unsupported)");
   if (!userrange) range = dmmoab->vowned;
   else range = userrange;
-  PetscCheckFalse(!range,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Input range cannot be empty or call DMSetUp first.");
+  PetscCheck(range,PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Input range cannot be empty or call DMSetUp first.");
 
 #ifndef USE_NATIVE_PETSCVEC
   /* If the tag data is in a single sequence, use PETSc native vector since tag_iterate isn't useful anymore */

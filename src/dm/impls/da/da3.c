@@ -229,10 +229,10 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  PetscCheckFalse(stencil_type == DMDA_STENCIL_BOX && (bx == DM_BOUNDARY_MIRROR || by == DM_BOUNDARY_MIRROR || bz == DM_BOUNDARY_MIRROR),PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Mirror boundary and box stencil");
+  PetscCheck(stencil_type != DMDA_STENCIL_BOX || (bx != DM_BOUNDARY_MIRROR && by != DM_BOUNDARY_MIRROR && bz != DM_BOUNDARY_MIRROR),PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Mirror boundary and box stencil");
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
 #if !defined(PETSC_USE_64BIT_INDICES)
-  PetscCheckFalse(((PetscInt64) M)*((PetscInt64) N)*((PetscInt64) P)*((PetscInt64) dof) > (PetscInt64) PETSC_MPI_INT_MAX,comm,PETSC_ERR_INT_OVERFLOW,"Mesh of %D by %D by %D by %D (dof) is too large for 32 bit indices",M,N,P,dof);
+  PetscCheck(((PetscInt64) M)*((PetscInt64) N)*((PetscInt64) P)*((PetscInt64) dof) <= (PetscInt64) PETSC_MPI_INT_MAX,comm,PETSC_ERR_INT_OVERFLOW,"Mesh of %D by %D by %D by %D (dof) is too large for 32 bit indices",M,N,P,dof);
 #endif
 
   ierr = MPI_Comm_size(comm,&size);CHKERRMPI(ierr);
@@ -268,7 +268,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
       if (m*n*p == size) break;
       m--;
     }
-    PetscCheckFalse(!m,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad p value: p = %D",p);
+    PetscCheck(m,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad p value: p = %D",p);
     if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
   } else if (m == PETSC_DECIDE && n != PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
@@ -279,7 +279,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
       if (m*n*p == size) break;
       m--;
     }
-    PetscCheckFalse(!m,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad n value: n = %D",n);
+    PetscCheck(m,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad n value: n = %D",n);
     if (M > P && m < p) {PetscInt _m = m; m = p; p = _m;}
   } else if (m != PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
@@ -290,7 +290,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
       if (m*n*p == size) break;
       n--;
     }
-    PetscCheckFalse(!n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad m value: m = %D",n);
+    PetscCheck(n,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad m value: m = %D",n);
     if (N > P && n < p) {PetscInt _n = n; n = p; p = _n;}
   } else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */

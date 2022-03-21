@@ -65,7 +65,7 @@ PetscErrorCode  DMDASetFieldName(DM da,PetscInt nf,const char name[])
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscCheckFalse(nf < 0 || nf >= dd->w,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
-  PetscCheckFalse(!dd->fieldname,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
+  PetscCheck(dd->fieldname,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   ierr = PetscFree(dd->fieldname[nf]);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name,&dd->fieldname[nf]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -123,7 +123,7 @@ PetscErrorCode  DMDASetFieldNames(DM da,const char * const *names)
   PetscInt       nf = 0;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!dd->fieldname,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
+  PetscCheck(dd->fieldname,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   while (names[nf++]) {};
   PetscCheckFalse(nf != dd->w+1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid number of fields %D",nf-1);
   ierr = PetscStrArrayallocpy(names,&fieldname);CHKERRQ(ierr);
@@ -161,7 +161,7 @@ PetscErrorCode  DMDAGetFieldName(DM da,PetscInt nf,const char **name)
   PetscValidHeaderSpecificType(da,DM_CLASSID,1,DMDA);
   PetscValidPointer(name,3);
   PetscCheckFalse(nf < 0 || nf >= dd->w,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid field number: %D",nf);
-  PetscCheckFalse(!dd->fieldname,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
+  PetscCheck(dd->fieldname,PetscObjectComm((PetscObject)da),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   *name = dd->fieldname[nf];
   PetscFunctionReturn(0);
 }
@@ -193,7 +193,7 @@ PetscErrorCode DMDASetCoordinateName(DM dm,PetscInt nf,const char name[])
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
   PetscCheckFalse(nf < 0 || nf >= dm->dim,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
-  PetscCheckFalse(!dd->coordinatename,PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"You should call DMSetUp() first");
+  PetscCheck(dd->coordinatename,PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   ierr = PetscFree(dd->coordinatename[nf]);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name,&dd->coordinatename[nf]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -228,7 +228,7 @@ PetscErrorCode DMDAGetCoordinateName(DM dm,PetscInt nf,const char **name)
   PetscValidHeaderSpecificType(dm,DM_CLASSID,1,DMDA);
   PetscValidPointer(name,3);
   PetscCheckFalse(nf < 0 || nf >= dm->dim,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Invalid coordinate number: %D",nf);
-  PetscCheckFalse(!dd->coordinatename,PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"You should call DMSetUp() first");
+  PetscCheck(dd->coordinatename,PetscObjectComm((PetscObject)dm),PETSC_ERR_ORDER,"You should call DMSetUp() first");
   *name = dd->coordinatename[nf];
   PetscFunctionReturn(0);
 }

@@ -1082,7 +1082,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
 
     PetscInfo(NULL, "GLOBAL_ID: Local [min, max] - [%D, %D], Global [min, max] - [%D, %D]\n", dmmoab->lminmax[0], dmmoab->lminmax[1], dmmoab->gminmax[0], dmmoab->gminmax[1]);
   }
-  PetscCheckFalse(!(dmmoab->bs == dmmoab->numFields || dmmoab->bs == 1),PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mismatch between block size and number of component fields. %D != 1 OR %D != %D.", dmmoab->bs, dmmoab->bs, dmmoab->numFields);
+  PetscCheck(dmmoab->bs == dmmoab->numFields || dmmoab->bs == 1,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mismatch between block size and number of component fields. %D != 1 OR %D != %D.", dmmoab->bs, dmmoab->bs, dmmoab->numFields);
 
   {
     dmmoab->seqstart = dmmoab->mbiface->id_from_handle(dmmoab->vlocal->front());
