@@ -110,7 +110,7 @@ static PetscErrorCode PCApply_Composite_Special(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   PetscCheck(next,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPCType() or -pc_composite_pcs");
-  PetscCheckFalse(!next->next || next->next->next,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Special composite preconditioners requires exactly two PCs");
+  PetscCheck(next->next && !next->next->next,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Special composite preconditioners requires exactly two PCs");
 
   /* Set the reuse flag on children PCs */
   PetscCall(PCSetReusePreconditioner(next->pc,pc->reusepreconditioner));

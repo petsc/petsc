@@ -414,15 +414,15 @@ PetscErrorCode  PCApply(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
-  PetscCheckFalse(x == y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+  PetscCheck(x != y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->erroriffailure) PetscCall(VecValidValues(x,2,PETSC_TRUE));
   /* use pmat to check vector sizes since for KSPLSQR the pmat may be of a different size than mat */
   PetscCall(MatGetLocalSize(pc->pmat,&m,&n));
   PetscCall(VecGetLocalSize(x,&mv));
   PetscCall(VecGetLocalSize(y,&nv));
   /* check pmat * y = x is feasible */
-  PetscCheckFalse(mv != m,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local rows %D does not equal input vector size %D",m,mv);
-  PetscCheckFalse(nv != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local columns %D does not equal output vector size %D",n,nv);
+  PetscCheck(mv == m,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local rows %D does not equal input vector size %D",m,mv);
+  PetscCheck(nv == n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Preconditioner number of local columns %D does not equal output vector size %D",n,nv);
   PetscCall(VecSetErrorIfLocked(y,3));
 
   PetscCall(PCSetUp(pc));
@@ -465,7 +465,7 @@ PetscErrorCode  PCMatApply(PC pc,Mat X,Mat Y)
   PetscValidHeaderSpecific(Y, MAT_CLASSID, 3);
   PetscCheckSameComm(pc, 1, X, 2);
   PetscCheckSameComm(pc, 1, Y, 3);
-  PetscCheckFalse(Y == X,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_IDN, "Y and X must be different matrices");
+  PetscCheck(Y != X,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_IDN, "Y and X must be different matrices");
   PetscCall(PCGetOperators(pc, NULL, &A));
   PetscCall(MatGetLocalSize(A, &m3, &n3));
   PetscCall(MatGetLocalSize(X, &m2, &n2));
@@ -473,9 +473,9 @@ PetscErrorCode  PCMatApply(PC pc,Mat X,Mat Y)
   PetscCall(MatGetSize(A, &M3, &N3));
   PetscCall(MatGetSize(X, &M2, &N2));
   PetscCall(MatGetSize(Y, &M1, &N1));
-  PetscCheckFalse(n1 != n2 || N1 != N2,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible number of columns between block of input vectors (n,N) = (%D,%D) and block of output vectors (n,N) = (%D,%D)", n2, N2, n1, N1);
-  PetscCheckFalse(m2 != m3 || M2 != M3,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible layout between block of input vectors (m,M) = (%D,%D) and Pmat (m,M)x(n,N) = (%D,%D)x(%D,%D)", m2, M2, m3, M3, n3, N3);
-  PetscCheckFalse(m1 != n3 || M1 != N3,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible layout between block of output vectors (m,M) = (%D,%D) and Pmat (m,M)x(n,N) = (%D,%D)x(%D,%D)", m1, M1, m3, M3, n3, N3);
+  PetscCheck(n1 == n2 && N1 == N2,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible number of columns between block of input vectors (n,N) = (%D,%D) and block of output vectors (n,N) = (%D,%D)", n2, N2, n1, N1);
+  PetscCheck(m2 == m3 && M2 == M3,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible layout between block of input vectors (m,M) = (%D,%D) and Pmat (m,M)x(n,N) = (%D,%D)x(%D,%D)", m2, M2, m3, M3, n3, N3);
+  PetscCheck(m1 == n3 && M1 == N3,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Incompatible layout between block of output vectors (m,M) = (%D,%D) and Pmat (m,M)x(n,N) = (%D,%D)x(%D,%D)", m1, M1, m3, M3, n3, N3);
   PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)Y, &match, MATSEQDENSE, MATMPIDENSE, ""));
   PetscCheck(match,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of output vectors not stored in a dense Mat");
   PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)X, &match, MATSEQDENSE, MATMPIDENSE, ""));
@@ -523,7 +523,7 @@ PetscErrorCode  PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
-  PetscCheckFalse(x == y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+  PetscCheck(x != y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->erroriffailure) PetscCall(VecValidValues(x,2,PETSC_TRUE));
   PetscCall(PCSetUp(pc));
   PetscCheck(pc->ops->applysymmetricleft,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have left symmetric apply");
@@ -561,7 +561,7 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
-  PetscCheckFalse(x == y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+  PetscCheck(x != y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->erroriffailure) PetscCall(VecValidValues(x,2,PETSC_TRUE));
   PetscCall(PCSetUp(pc));
   PetscCheck(pc->ops->applysymmetricright,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have left symmetric apply");
@@ -602,7 +602,7 @@ PetscErrorCode  PCApplyTranspose(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
-  PetscCheckFalse(x == y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+  PetscCheck(x != y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->erroriffailure) PetscCall(VecValidValues(x,2,PETSC_TRUE));
   PetscCall(PCSetUp(pc));
   PetscCheck(pc->ops->applytranspose,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply transpose");
@@ -673,9 +673,9 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
   PetscCheckSameComm(pc,1,x,3);
   PetscCheckSameComm(pc,1,y,4);
   PetscCheckSameComm(pc,1,work,5);
-  PetscCheckFalse(x == y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  PetscCheckFalse(side != PC_LEFT && side != PC_SYMMETRIC && side != PC_RIGHT,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Side must be right, left, or symmetric");
-  PetscCheckFalse(pc->diagonalscale && side == PC_SYMMETRIC,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot include diagonal scaling with symmetric preconditioner application");
+  PetscCheck(x != y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+  PetscCheck(side == PC_LEFT || side == PC_SYMMETRIC || side == PC_RIGHT,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Side must be right, left, or symmetric");
+  PetscCheck(!pc->diagonalscale || side != PC_SYMMETRIC,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot include diagonal scaling with symmetric preconditioner application");
   if (pc->erroriffailure) PetscCall(VecValidValues(x,3,PETSC_TRUE));
 
   PetscCall(PCSetUp(pc));
@@ -697,7 +697,7 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
       PetscCall(MatMult(pc->mat,y,work));
       PetscCall(PCApply(pc,work,y));
       PetscCall(PCDiagonalScaleLeft(pc,y,y));
-    } else PetscCheckFalse(side == PC_SYMMETRIC,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot provide diagonal scaling with symmetric application of preconditioner");
+    } else PetscCheck(side != PC_SYMMETRIC,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot provide diagonal scaling with symmetric application of preconditioner");
   } else {
     if (pc->ops->applyBA) {
       PetscCall((*pc->ops->applyBA)(pc,side,x,y,work));
@@ -750,14 +750,14 @@ PetscErrorCode  PCApplyBAorABTranspose(PC pc,PCSide side,Vec x,Vec y,Vec work)
   PetscValidHeaderSpecific(x,VEC_CLASSID,3);
   PetscValidHeaderSpecific(y,VEC_CLASSID,4);
   PetscValidHeaderSpecific(work,VEC_CLASSID,5);
-  PetscCheckFalse(x == y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
+  PetscCheck(x != y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->erroriffailure) PetscCall(VecValidValues(x,3,PETSC_TRUE));
   if (pc->ops->applyBAtranspose) {
     PetscCall((*pc->ops->applyBAtranspose)(pc,side,x,y,work));
     if (pc->erroriffailure) PetscCall(VecValidValues(y,4,PETSC_FALSE));
     PetscFunctionReturn(0);
   }
-  PetscCheckFalse(side != PC_LEFT && side != PC_RIGHT,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Side must be right or left");
+  PetscCheck(side == PC_LEFT || side == PC_RIGHT,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Side must be right or left");
 
   PetscCall(PCSetUp(pc));
   if (side == PC_RIGHT) {
@@ -840,7 +840,7 @@ PetscErrorCode  PCApplyRichardson(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscRe
   PetscValidHeaderSpecific(b,VEC_CLASSID,2);
   PetscValidHeaderSpecific(y,VEC_CLASSID,3);
   PetscValidHeaderSpecific(w,VEC_CLASSID,4);
-  PetscCheckFalse(b == y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"b and y must be different vectors");
+  PetscCheck(b != y,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_IDN,"b and y must be different vectors");
   PetscCall(PCSetUp(pc));
   PetscCheck(pc->ops->applyrichardson,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PC does not have apply richardson");
   PetscCall((*pc->ops->applyrichardson)(pc,b,y,w,rtol,abstol,dtol,its,guesszero,outits,reason));
@@ -1154,10 +1154,10 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat)
   if (pc->setupcalled && pc->mat && pc->pmat && Amat && Pmat) {
     PetscCall(MatGetLocalSize(Amat,&m1,&n1));
     PetscCall(MatGetLocalSize(pc->mat,&m2,&n2));
-    PetscCheckFalse(m1 != m2 || n1 != n2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot change local size of Amat after use old sizes %D %D new sizes %D %D",m2,n2,m1,n1);
+    PetscCheck(m1 == m2 && n1 == n2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot change local size of Amat after use old sizes %D %D new sizes %D %D",m2,n2,m1,n1);
     PetscCall(MatGetLocalSize(Pmat,&m1,&n1));
     PetscCall(MatGetLocalSize(pc->pmat,&m2,&n2));
-    PetscCheckFalse(m1 != m2 || n1 != n2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot change local size of Pmat after use old sizes %D %D new sizes %D %D",m2,n2,m1,n1);
+    PetscCheck(m1 == m2 && n1 == n2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot change local size of Pmat after use old sizes %D %D new sizes %D %D",m2,n2,m1,n1);
   }
 
   if (Pmat != pc->pmat) {
@@ -1505,7 +1505,7 @@ PetscErrorCode PCPreSolve(PC pc,KSP ksp)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,2);
   pc->presolvedone++;
-  PetscCheckFalse(pc->presolvedone > 2,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot embed PCPreSolve() more than twice");
+  PetscCheck(pc->presolvedone <= 2,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Cannot embed PCPreSolve() more than twice");
   PetscCall(KSPGetSolution(ksp,&x));
   PetscCall(KSPGetRhs(ksp,&rhs));
 
@@ -1626,7 +1626,7 @@ PetscErrorCode  PCLoad(PC newdm, PetscViewer viewer)
   PetscCheck(isbinary,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
   PetscCall(PetscViewerBinaryRead(viewer,&classid,1,NULL,PETSC_INT));
-  PetscCheckFalse(classid != PC_FILE_CLASSID,PetscObjectComm((PetscObject)newdm),PETSC_ERR_ARG_WRONG,"Not PC next in file");
+  PetscCheck(classid == PC_FILE_CLASSID,PetscObjectComm((PetscObject)newdm),PETSC_ERR_ARG_WRONG,"Not PC next in file");
   PetscCall(PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR));
   PetscCall(PCSetType(newdm, type));
   if (newdm->ops->load) {

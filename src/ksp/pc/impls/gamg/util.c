@@ -77,7 +77,7 @@ PetscErrorCode PCGAMGCreateGraph(Mat Amat, Mat *a_Gmat)
 
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)Amat,MATSEQAIJ,&isseqaij));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)Amat,MATMPIAIJ,&ismpiaij));
-  PetscCheckFalse(!isseqaij && !ismpiaij,PETSC_COMM_WORLD,PETSC_ERR_USER,"Require (MPI)AIJ matrix type");
+  PetscCheck(isseqaij || ismpiaij,PETSC_COMM_WORLD,PETSC_ERR_USER,"Require (MPI)AIJ matrix type");
   PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GRAPH],0,0,0,0));
 
   /* TODO GPU: these calls are potentially expensive if matrices are large and we want to use the GPU */
@@ -317,7 +317,7 @@ PetscErrorCode PCGAMGFilterGraph(Mat *a_Gmat,PetscReal vfilter,PetscBool symm)
     PetscBool isaij,ismpiaij;
     PetscCall(PetscObjectBaseTypeCompare((PetscObject)Gmat,MATSEQAIJ,&isaij));
     PetscCall(PetscObjectBaseTypeCompare((PetscObject)Gmat,MATMPIAIJ,&ismpiaij));
-    PetscCheckFalse(!isaij && !ismpiaij,PETSC_COMM_WORLD,PETSC_ERR_USER,"Require (MPI)AIJ matrix type");
+    PetscCheck(isaij || ismpiaij,PETSC_COMM_WORLD,PETSC_ERR_USER,"Require (MPI)AIJ matrix type");
     if (isaij) {
       PetscCall(MatGetInfo(Gmat,MAT_LOCAL,&info));
       PetscCall(MatSeqAIJGetArray(Gmat,&avals));

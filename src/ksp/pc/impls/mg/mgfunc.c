@@ -291,7 +291,7 @@ PetscErrorCode  PCMGGetInterpolation(PC pc,PetscInt l,Mat *mat)
   PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   PetscCheckFalse(l <= 0 || mg->nlevels <= l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %D must be in range {1,...,%D}",l,mg->nlevels-1);
   if (!mglevels[l]->interpolate) {
-    PetscCheckFalse(!mglevels[l]->restrct,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call PCMGSetInterpolation() or PCMGSetRestriction()");
+    PetscCheck(mglevels[l]->restrct,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call PCMGSetInterpolation() or PCMGSetRestriction()");
     PetscCall(PCMGSetInterpolation(pc,l,mglevels[l]->restrct));
   }
   if (mat) *mat = mglevels[l]->interpolate;
@@ -368,7 +368,7 @@ PetscErrorCode  PCMGGetRestriction(PC pc,PetscInt l,Mat *mat)
   PetscCheck(mglevels,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
   PetscCheckFalse(l <= 0 || mg->nlevels <= l,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_OUTOFRANGE,"Level %D must be in range {1,...,%D}",l,mg->nlevels-1);
   if (!mglevels[l]->restrct) {
-    PetscCheckFalse(!mglevels[l]->interpolate,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call PCMGSetRestriction() or PCMGSetInterpolation()");
+    PetscCheck(mglevels[l]->interpolate,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONGSTATE,"Must call PCMGSetRestriction() or PCMGSetInterpolation()");
     PetscCall(PCMGSetRestriction(pc,l,mglevels[l]->interpolate));
   }
   if (mat) *mat = mglevels[l]->restrct;

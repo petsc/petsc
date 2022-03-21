@@ -377,7 +377,7 @@ static PetscErrorCode PCFieldSplitSetRuntimeSplits_Private(PC pc)
       PetscCheck(nfields,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot list zero fields");
       PetscCall(PCFieldSplitSetFields(pc,splitname,nfields,ifields,ifields));
     } else {
-      PetscCheckFalse(!nfields || !nfields_col,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot list zero fields");
+      PetscCheck(nfields && nfields_col,PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot list zero fields");
       PetscCheckFalse(nfields != nfields_col,PETSC_COMM_SELF,PETSC_ERR_USER,"Number of row and column fields must match");
       PetscCall(PCFieldSplitSetFields(pc,splitname,nfields,ifields,ifields_col));
     }
@@ -651,7 +651,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       }
       PetscCall(ISSorted(ilink->is,&sorted));
       if (ilink->is_col) PetscCall(ISSorted(ilink->is_col,&sorted_col));
-      PetscCheckFalse(!sorted || !sorted_col,PETSC_COMM_SELF,PETSC_ERR_USER,"Fields must be sorted when creating split");
+      PetscCheck(sorted && sorted_col,PETSC_COMM_SELF,PETSC_ERR_USER,"Fields must be sorted when creating split");
       ilink = ilink->next;
     }
   }
@@ -2420,7 +2420,7 @@ PetscErrorCode  PCFieldSplitSchurRestoreS(PC pc,Mat *S)
   PetscCheck(isfs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected PC of type PCFIELDSPLIT, got %s instead",t);
   jac = (PC_FieldSplit*)pc->data;
   PetscCheckFalse(jac->type != PC_COMPOSITE_SCHUR,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Expected PCFIELDSPLIT of type SCHUR, got %D instead",jac->type);
-  PetscCheckFalse(!S || *S != jac->schur,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatSchurComplement restored is not the same as gotten");
+  PetscCheck(S && (*S == jac->schur),PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"MatSchurComplement restored is not the same as gotten");
   PetscFunctionReturn(0);
 }
 

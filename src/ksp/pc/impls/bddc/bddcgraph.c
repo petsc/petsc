@@ -1163,7 +1163,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   PetscCall(ISRenumber(subset,NULL,NULL,&subset_n));
   PetscCall(ISDestroy(&subset));
   PetscCall(ISGetLocalSize(subset_n,&k));
-  PetscCheckFalse(k != graph->ncc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %D != %D",k,graph->ncc);
+  PetscCheck(k == graph->ncc,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Invalid size of new subset! %D != %D",k,graph->ncc);
   PetscCall(ISGetIndices(subset_n,&is_indices));
   PetscCall(PetscArraycpy(graph->subset_ref_node,is_indices,graph->ncc));
   PetscCall(ISRestoreIndices(subset_n,&is_indices));

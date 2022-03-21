@@ -37,7 +37,7 @@ static PetscErrorCode PCApplyTranspose_SOR(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   PetscCall(MatIsSymmetricKnown(pc->pmat,&set,&sym));
-  PetscCheckFalse(!set || !sym || (jac->sym != SOR_SYMMETRIC_SWEEP && jac->sym != SOR_LOCAL_SYMMETRIC_SWEEP),PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Can only apply transpose of SOR if matrix is symmetric and sweep is symmetric");
+  PetscCheck(set && sym && (jac->sym == SOR_SYMMETRIC_SWEEP || jac->sym == SOR_LOCAL_SYMMETRIC_SWEEP),PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Can only apply transpose of SOR if matrix is symmetric and sweep is symmetric");
   PetscCall(MatSOR(pc->pmat,x,jac->omega,(MatSORType)flag,jac->fshift,jac->its,jac->lits,y));
   PetscCall(MatFactorGetError(pc->pmat,(MatFactorError*)&pc->failedreason));
   PetscFunctionReturn(0);

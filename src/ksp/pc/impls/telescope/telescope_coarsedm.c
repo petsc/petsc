@@ -195,8 +195,8 @@ PetscErrorCode PCTelescopeSetUp_CoarseDM(PC pc,PC_Telescope sred)
     }
   }
 
-  PetscCheckFalse(!has_perm && has_kspcomputeoperators && !using_kspcomputeoperators,comm,PETSC_ERR_SUP,"No method to permute an operator was found on the parent DM. A method for KSPSetComputeOperators() was provided but it was requested to be ignored. Telescope setup cannot proceed");
-  PetscCheckFalse(!has_perm && !has_kspcomputeoperators,comm,PETSC_ERR_SUP,"No method to permute an operator was found on the parent DM. No method for KSPSetComputeOperators() was provided. Telescope setup cannot proceed");
+  PetscCheck(has_perm || !has_kspcomputeoperators || using_kspcomputeoperators,comm,PETSC_ERR_SUP,"No method to permute an operator was found on the parent DM. A method for KSPSetComputeOperators() was provided but it was requested to be ignored. Telescope setup cannot proceed");
+  PetscCheck(has_perm || has_kspcomputeoperators,comm,PETSC_ERR_SUP,"No method to permute an operator was found on the parent DM. No method for KSPSetComputeOperators() was provided. Telescope setup cannot proceed");
 
   {
     char dmfine_method[PETSC_MAX_PATH_LEN];

@@ -432,12 +432,12 @@ PetscErrorCode PCBDDCSetChangeOfBasisMat(PC pc, Mat change, PetscBool interior)
     PetscInt rows_c,cols_c,rows,cols;
     PetscCall(MatGetSize(pc->mat,&rows,&cols));
     PetscCall(MatGetSize(change,&rows_c,&cols_c));
-    PetscCheckFalse(rows_c != rows,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of rows for change of basis matrix! %D != %D",rows_c,rows);
-    PetscCheckFalse(cols_c != cols,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of columns for change of basis matrix! %D != %D",cols_c,cols);
+    PetscCheck(rows_c == rows,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of rows for change of basis matrix! %D != %D",rows_c,rows);
+    PetscCheck(cols_c == cols,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of columns for change of basis matrix! %D != %D",cols_c,cols);
     PetscCall(MatGetLocalSize(pc->mat,&rows,&cols));
     PetscCall(MatGetLocalSize(change,&rows_c,&cols_c));
-    PetscCheckFalse(rows_c != rows,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local rows for change of basis matrix! %D != %D",rows_c,rows);
-    PetscCheckFalse(cols_c != cols,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local columns for change of basis matrix! %D != %D",cols_c,cols);
+    PetscCheck(rows_c == rows,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local rows for change of basis matrix! %D != %D",rows_c,rows);
+    PetscCheck(cols_c == cols,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Invalid number of local columns for change of basis matrix! %D != %D",cols_c,cols);
   }
   PetscCall(PetscTryMethod(pc,"PCBDDCSetChangeOfBasisMat_C",(PC,Mat,PetscBool),(pc,change,interior)));
   PetscFunctionReturn(0);
@@ -677,7 +677,7 @@ static PetscErrorCode PCBDDCSetLevels_BDDC(PC pc,PetscInt levels)
   PC_BDDC  *pcbddc = (PC_BDDC*)pc->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(levels > PETSC_PCBDDC_MAXLEVELS-1,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Maximum number of additional levels for BDDC is %d",PETSC_PCBDDC_MAXLEVELS-1);
+  PetscCheck(levels < PETSC_PCBDDC_MAXLEVELS,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Maximum number of additional levels for BDDC is %d",PETSC_PCBDDC_MAXLEVELS-1);
   pcbddc->max_levels = levels;
   PetscFunctionReturn(0);
 }
@@ -1548,7 +1548,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat,MATIS,&ismatis));
   PetscCheck(ismatis,PetscObjectComm((PetscObject)pc),PETSC_ERR_ARG_WRONG,"PCBDDC preconditioner requires matrix of type MATIS");
   PetscCall(MatGetSize(pc->pmat,&nrows,&ncols));
-  PetscCheckFalse(nrows != ncols,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCBDDC preconditioner requires a square preconditioning matrix");
+  PetscCheck(nrows == ncols,PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"PCBDDC preconditioner requires a square preconditioning matrix");
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size));
 
   matis = (Mat_IS*)pc->pmat->data;

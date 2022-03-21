@@ -284,7 +284,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
     PetscCall(VecScatterEnd(matis->rctx,pcis->vec1_N,pcis->vec1_global,ADD_VALUES,SCATTER_REVERSE));
     PetscCall(VecSum(pcis->vec1_global,&scalar_value));
     i = (PetscInt)PetscRealPart(scalar_value);
-    PetscCheckFalse(i != fetidpmat_ctx->n_lambda,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Global number of multipliers mismatch! (%D != %D)",fetidpmat_ctx->n_lambda,i);
+    PetscCheck(i == fetidpmat_ctx->n_lambda,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Global number of multipliers mismatch! (%D != %D)",fetidpmat_ctx->n_lambda,i);
   }
 
   /* init data for scaling factors exchange */

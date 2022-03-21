@@ -1144,7 +1144,7 @@ static PetscErrorCode PCPatchCreateCellPatches(PC pc)
         }
         if (found0 && found1) break;
       }
-      PetscCheckFalse(!(found0 && found1),PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Didn't manage to find local point numbers for facet support");
+      PetscCheck(found0 && found1,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Didn't manage to find local point numbers for facet support");
     }
   }
   PetscCall(PetscHSetIDestroy(&ht));
@@ -2446,7 +2446,7 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
-    PetscCheckFalse(!patch->save_operators && patch->denseinverse,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Can't have dense inverse without save operators");
+    PetscCheck(patch->save_operators || !patch->denseinverse,PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Can't have dense inverse without save operators");
     if (!patch->denseinverse) {
       PetscCall(PetscMalloc1(patch->npatch, &patch->solver));
       PetscCall(PCGetOptionsPrefix(pc, &prefix));

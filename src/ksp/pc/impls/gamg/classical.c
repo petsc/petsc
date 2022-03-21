@@ -203,7 +203,7 @@ PetscErrorCode PCGAMGProlongator_Classical_Direct(PC pc, Mat A, Mat G, PetscCoar
   fn = fe-fs;
   PetscCall(PetscObjectTypeCompare((PetscObject)A,MATMPIAIJ,&isMPIAIJ));
   PetscCall(PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&isSEQAIJ));
-  PetscCheckFalse(!isMPIAIJ && !isSEQAIJ,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Classical AMG requires MPIAIJ matrix");
+  PetscCheck(isMPIAIJ || isSEQAIJ,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONG,"Classical AMG requires MPIAIJ matrix");
   if (isMPIAIJ) {
     mpiaij = (Mat_MPIAIJ*)A->data;
     lA = mpiaij->A;
