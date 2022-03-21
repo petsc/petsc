@@ -8588,25 +8588,25 @@ PetscErrorCode MatGetNullSpace(Mat mat, MatNullSpace *nullsp)
    Level: advanced
 
    Notes:
-      This null space is used by the linear solvers. Overwrites any previous null space that may have been attached
+      This null space is used by the KSP linear solvers to solve singular systems.
 
-      For inconsistent singular systems (linear systems where the right hand side is not in the range of the operator) you also likely should
-      call MatSetTransposeNullSpace(). This allows the linear system to be solved in a least squares sense.
+      Overwrites any previous null space that may have been attached. You can remove the null space from the matrix object by calling this routine with an nullsp of NULL
 
-      You can remove the null space by calling this routine with an nullsp of NULL
+      For inconsistent singular systems (linear systems where the right hand side is not in the range of the operator) the KSP residuals will not converge to
+      to zero but the linear system will still be solved in a least squares sense.
 
       The fundamental theorem of linear algebra (Gilbert Strang, Introduction to Applied Mathematics, page 72) states that
    the domain of a matrix A (from R^n to R^m (m rows, n columns) R^n = the direct sum of the null space of A, n(A), + the range of A^T, R(A^T).
    Similarly R^m = direct sum n(A^T) + R(A).  Hence the linear system A x = b has a solution only if b in R(A) (or correspondingly b is orthogonal to
    n(A^T)) and if x is a solution then x + alpha n(A) is a solution for any alpha. The minimum norm solution is orthogonal to n(A). For problems without a solution
    the solution that minimizes the norm of the residual (the least squares solution) can be obtained by solving A x = \hat{b} where \hat{b} is b orthogonalized to the n(A^T).
-
-      Krylov solvers can produce the minimal norm solution to the least squares problem by utilizing MatNullSpaceRemove().
+   This  \hat{b} can be obtained by calling MatNullSpaceRemove() with the null space of the transpose of the matrix.
 
     If the matrix is known to be symmetric because it is an SBAIJ matrix or one as called MatSetOption(mat,MAT_SYMMETRIC or MAT_SYMMETRIC_ETERNAL,PETSC_TRUE); this
     routine also automatically calls MatSetTransposeNullSpace().
 
-.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace(), MatGetNullSpace(), MatSetTransposeNullSpace(), MatGetTransposeNullSpace(), MatNullSpaceRemove()
+.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace(), MatGetNullSpace(), MatSetTransposeNullSpace(), MatGetTransposeNullSpace(), MatNullSpaceRemove(),
+          KSPSetPCSide()
 @*/
 PetscErrorCode MatSetNullSpace(Mat mat,MatNullSpace nullsp)
 {
@@ -8648,7 +8648,7 @@ PetscErrorCode MatGetTransposeNullSpace(Mat mat, MatNullSpace *nullsp)
 }
 
 /*@
-   MatSetTransposeNullSpace - attaches a null space to a matrix.
+   MatSetTransposeNullSpace - attaches the null space of a transpose of a matrix to the matrix
 
    Logically Collective on Mat
 
@@ -8659,18 +8659,11 @@ PetscErrorCode MatGetTransposeNullSpace(Mat mat, MatNullSpace *nullsp)
    Level: advanced
 
    Notes:
-      For inconsistent singular systems (linear systems where the right hand side is not in the range of the operator) this allows the linear system to be solved in a least squares sense.
-      You must also call MatSetNullSpace()
+      This allows solving singular linear systems defined by the transpose of the matrix using KSP solvers with left preconditioning.
 
-      The fundamental theorem of linear algebra (Gilbert Strang, Introduction to Applied Mathematics, page 72) states that
-   the domain of a matrix A (from R^n to R^m (m rows, n columns) R^n = the direct sum of the null space of A, n(A), + the range of A^T, R(A^T).
-   Similarly R^m = direct sum n(A^T) + R(A).  Hence the linear system A x = b has a solution only if b in R(A) (or correspondingly b is orthogonal to
-   n(A^T)) and if x is a solution then x + alpha n(A) is a solution for any alpha. The minimum norm solution is orthogonal to n(A). For problems without a solution
-   the solution that minimizes the norm of the residual (the least squares solution) can be obtained by solving A x = \hat{b} where \hat{b} is b orthogonalized to the n(A^T).
+      See MatSetNullSpace()
 
-      Krylov solvers can produce the minimal norm solution to the least squares problem by utilizing MatNullSpaceRemove().
-
-.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace(), MatGetNullSpace(), MatSetNullSpace(), MatGetTransposeNullSpace(), MatNullSpaceRemove()
+.seealso: MatCreate(), MatNullSpaceCreate(), MatSetNearNullSpace(), MatGetNullSpace(), MatSetNullSpace(), MatGetTransposeNullSpace(), MatNullSpaceRemove(), KSPSetPCSide()
 @*/
 PetscErrorCode MatSetTransposeNullSpace(Mat mat,MatNullSpace nullsp)
 {
