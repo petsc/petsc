@@ -216,7 +216,7 @@ PETSC_DEVICE_FUNC_DECL void LandauTensor3D(const PetscReal x1[], const PetscReal
 #define GAMMA3(_x,_c02) PetscSqrtReal(1.0 + ((_x[0]*_x[0]) + (_x[1]*_x[1]) + (_x[2]*_x[2]))/(_c02))
 PETSC_DEVICE_FUNC_DECL void LandauTensor3DRelativistic(const PetscReal a_x1[], const PetscReal xp, const PetscReal yp, const PetscReal zp, PetscReal U[][3], PetscReal mask, PetscReal c0)
 {
-  const PetscReal x2[3] = {xp,yp,zp}, x1[3] = {a_x1[0],a_x1[1],a_x1[2]}, c02 = c0*c0, g1 = GAMMA3(x1,c02), g2 = GAMMA3(x2,c02), g1_eps = g1 - 1., g2_eps = g2 - 1., gg_eps = g1_eps + g2_eps + g1_eps*g2_eps;
+  const PetscReal x2[3] = {xp,yp,zp}, x1[3] = {a_x1[0],a_x1[1],a_x1[2]}, c02 = c0*c0, g1 = GAMMA3(x1,c02), g2 = GAMMA3(x2,c02);
   PetscReal       fact, u1u2, diff[3], udiff2,u12,u22,wsq,rsq, tt;
   PetscInt        i,j;
 
