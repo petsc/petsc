@@ -151,8 +151,8 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscCheckFalse(tao->ineq_doublesided,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "TAOALMM does not support double-sided inequality constraint definition. Please restructure your inequality constrainst to fit the form c(x) >= 0.");
-  PetscCheckFalse(!tao->eq_constrained && !tao->ineq_constrained,PetscObjectComm((PetscObject)tao), PETSC_ERR_ORDER, "Equality and/or inequality constraints must be defined before solver setup.");
+  PetscCheck(!tao->ineq_doublesided,PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "TAOALMM does not support double-sided inequality constraint definition. Please restructure your inequality constrainst to fit the form c(x) >= 0.");
+  PetscCheck(tao->eq_constrained || tao->ineq_constrained,PetscObjectComm((PetscObject)tao), PETSC_ERR_ORDER, "Equality and/or inequality constraints must be defined before solver setup.");
   ierr = TaoComputeVariableBounds(tao);CHKERRQ(ierr);
   /* alias base vectors and create extras */
   ierr = VecGetType(tao->solution, &vec_type);CHKERRQ(ierr);

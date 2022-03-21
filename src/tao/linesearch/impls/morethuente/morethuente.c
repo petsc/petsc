@@ -74,7 +74,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     ierr = VecGetLocalSize(mt->x, &n2);CHKERRQ(ierr);
     ierr = VecGetSize(ls->upper,&nn1);CHKERRQ(ierr);
     ierr = VecGetSize(mt->x,&nn2);CHKERRQ(ierr);
-    PetscCheckFalse(n1 != n2 || nn1 != nn2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Variable vector not compatible with bounds vector");
+    PetscCheck(n1 == n2 && nn1 == nn2,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Variable vector not compatible with bounds vector");
     ierr = VecScale(s,-1.0);CHKERRQ(ierr);
     ierr = VecBoundGradientProjection(s,x,ls->lower,ls->upper,s);CHKERRQ(ierr);
     ierr = VecScale(s,-1.0);CHKERRQ(ierr);
@@ -379,9 +379,9 @@ static PetscErrorCode Tao_mcstep(TaoLineSearch ls,PetscReal *stx,PetscReal *fx,P
   PetscFunctionBegin;
   /* Check the input parameters for errors */
   mtP->infoc = 0;
-  PetscCheckFalse(mtP->bracket && (*stp <= PetscMin(*stx,*sty) || (*stp >= PetscMax(*stx,*sty))),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad stp in bracket");
-  PetscCheckFalse(*dx * (*stp-*stx) >= 0.0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"dx * (stp-stx) >= 0.0");
-  PetscCheckFalse(ls->stepmax < ls->stepmin,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"stepmax > stepmin");
+  PetscCheck(!mtP->bracket || (*stp > PetscMin(*stx,*sty) && (*stp < PetscMax(*stx,*sty))),PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"bad stp in bracket");
+  PetscCheck(*dx * (*stp-*stx) < 0.0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"dx * (stp-stx) >= 0.0");
+  PetscCheck(ls->stepmax >= ls->stepmin,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"stepmax > stepmin");
 
   /* Determine if the derivatives have opposite sign */
   sgnd = *dp * (*dx / PetscAbsReal(*dx));

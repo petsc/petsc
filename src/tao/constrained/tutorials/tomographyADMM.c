@@ -344,7 +344,7 @@ int main(int argc,char **argv)
     ierr = MatScale(user->Hz,user->lambda);CHKERRQ(ierr);
     ierr = TaoADMMSetRegularizerHessianRoutine(tao, user->Hz, user->Hz, HessianMisfit, (void*)user);CHKERRQ(ierr);
     ierr = TaoADMMSetRegHessianChangeStatus(tao,PETSC_TRUE);CHKERRQ(ierr);
-  } else PetscCheckFalse(user->reg != 3,PETSC_COMM_WORLD, PETSC_ERR_ARG_UNKNOWN_TYPE, "Incorrect Reg type"); /* TaoShell case */
+  } else PetscCheck(user->reg == 3,PETSC_COMM_WORLD, PETSC_ERR_ARG_UNKNOWN_TYPE, "Incorrect Reg type"); /* TaoShell case */
 
   /* Set type for the misfit solver */
   ierr = TaoADMMGetMisfitSubsolver(tao, &misfit);CHKERRQ(ierr);

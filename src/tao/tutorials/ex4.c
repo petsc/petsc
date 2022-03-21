@@ -68,11 +68,11 @@ static PetscErrorCode CreateMatrix(UserCtx ctx)
   ierr = PetscLogStageRegister("Assembly", &stage);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
 
-  /* Set matrix elements in  2-D fiveopoint stencil format. */
+  /* Set matrix elements in  2-D five point stencil format. */
   if (!(ctx->matops)) {
-    PetscCheckFalse(ctx->m != ctx->n,PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "Stencil matrix must be square");
+    PetscCheck(ctx->m == ctx->n,PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "Stencil matrix must be square");
     gridN = (PetscInt) PetscSqrtReal((PetscReal) ctx->m);
-    PetscCheckFalse(gridN * gridN != ctx->m,PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "Number of rows must be square");
+    PetscCheck(gridN * gridN == ctx->m,PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "Number of rows must be square");
     for (Ii=Istart; Ii<Iend; Ii++) {
       i   = Ii / gridN; j = Ii % gridN;
       I_n = i * gridN + j + 1;

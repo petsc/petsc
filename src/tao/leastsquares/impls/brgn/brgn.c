@@ -77,7 +77,7 @@ PetscErrorCode TaoBRGNGetDampingVector(Tao tao,Vec *d)
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
 
   PetscFunctionBegin;
-  PetscCheckFalse(gn->reg_type != BRGN_REGULARIZATION_LM,PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Damping vector is only available if regularization type is lm.");
+  PetscCheck(gn->reg_type == BRGN_REGULARIZATION_LM,PetscObjectComm((PetscObject)tao),PETSC_ERR_SUP,"Damping vector is only available if regularization type is lm.");
   *d = gn->damping;
   PetscFunctionReturn(0);
 }
@@ -328,11 +328,11 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
   PetscInt              i,n,N,K; /* dict has size K*N*/
 
   PetscFunctionBegin;
-  PetscCheckFalse(!tao->ls_res,PetscObjectComm((PetscObject)tao),PETSC_ERR_ORDER,"TaoSetResidualRoutine() must be called before setup!");
+  PetscCheck(tao->ls_res,PetscObjectComm((PetscObject)tao),PETSC_ERR_ORDER,"TaoSetResidualRoutine() must be called before setup!");
   ierr = PetscObjectTypeCompare((PetscObject)gn->subsolver,TAOBNLS,&is_bnls);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)gn->subsolver,TAOBNTR,&is_bntr);CHKERRQ(ierr);
   ierr = PetscObjectTypeCompare((PetscObject)gn->subsolver,TAOBNTL,&is_bntl);CHKERRQ(ierr);
-  PetscCheckFalse((is_bnls || is_bntr || is_bntl) && !tao->ls_jac,PetscObjectComm((PetscObject)tao),PETSC_ERR_ORDER,"TaoSetResidualJacobianRoutine() must be called before setup!");
+  PetscCheck((!is_bnls && !is_bntr && !is_bntl) || tao->ls_jac,PetscObjectComm((PetscObject)tao),PETSC_ERR_ORDER,"TaoSetResidualJacobianRoutine() must be called before setup!");
   if (!tao->gradient) {
     ierr = VecDuplicate(tao->solution,&tao->gradient);CHKERRQ(ierr);
   }
