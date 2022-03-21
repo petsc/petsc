@@ -111,9 +111,6 @@ def copy_classic_docs(outdir):
                 shutil.copy(source, target)
 
 
-def _get_classic_build_dir():
-    return os.path.join(os.getcwd(), '_build_classic')
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--clean', '-c', action='store_true')
