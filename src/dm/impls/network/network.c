@@ -1039,7 +1039,7 @@ PetscErrorCode DMNetworkGetGlobalEdgeIndex(DM dm,PetscInt p,PetscInt *index)
 
   Level: intermediate
 
-.seealso: DMNetworkGetGlobalEdgeIndex()
+.seealso: DMNetworkGetGlobalEdgeIndex(), DMNetworkGetLocalVertexIndex()
 @*/
 PetscErrorCode DMNetworkGetGlobalVertexIndex(DM dm,PetscInt p,PetscInt *index)
 {
@@ -1085,15 +1085,25 @@ PetscErrorCode DMNetworkGetNumComponents(DM dm,PetscInt p,PetscInt *numcomponent
 
   Input Parameters:
 + dm - the DMNetwork object
-. p - the edge/vertex point
+. p - the edge or vertex point
 - compnum - component number; use ALL_COMPONENTS if no specific component is requested
 
   Output Parameters:
 . offset - the local offset
 
+  Notes:
+    These offsets can be passed to MatSetValuesLocal() for matrices obtained with DMCreateMatrix().
+
+    For vectors obtained with DMCreateLocalVector() the offsets can be used with VecSetValues().
+
+    For vectors obtained with DMCreateLocalVector() and the array obtained with VecGetArray(vec,&array) you can access or set
+    the vector values with array[offset].
+
+    For vectors obtained with DMCreateGlobalVector() the offsets can be used with VecSetValuesLocal().
+
   Level: intermediate
 
-.seealso: DMGetLocalVector(), DMNetworkGetComponent(), DMNetworkGetGlobalVecOffset()
+.seealso: DMGetLocalVector(), DMNetworkGetComponent(), DMNetworkGetGlobalVecOffset(), DMCreateGlobalVector(), VecGetArray(), VecSetValuesLocal(), MatSetValuesLocal()
 @*/
 PetscErrorCode DMNetworkGetLocalVecOffset(DM dm,PetscInt p,PetscInt compnum,PetscInt *offset)
 {
@@ -1122,15 +1132,23 @@ PetscErrorCode DMNetworkGetLocalVecOffset(DM dm,PetscInt p,PetscInt compnum,Pets
 
   Input Parameters:
 + dm - the DMNetwork object
-. p - the edge/vertex point
+. p - the edge or vertex point
 - compnum - component number; use ALL_COMPONENTS if no specific component is requested
 
   Output Parameters:
 . offsetg - the global offset
 
+  Notes:
+    These offsets can be passed to MatSetValues() for matrices obtained with DMCreateMatrix().
+
+    For vectors obtained with DMCreateGlobalVector() the offsets can be used with VecSetValues().
+
+    For vectors obtained with DMCreateGlobalVector() and the array obtained with VecGetArray(vec,&array) you can access or set
+    the vector values with array[offset - rstart] where restart is obtained with VecGetOwnershipRange(v,&rstart,NULL);
+
   Level: intermediate
 
-.seealso: DMNetworkGetLocalVecOffset(), DMGetGlobalVector(), DMNetworkGetComponent()
+.seealso: DMNetworkGetLocalVecOffset(), DMGetGlobalVector(), DMNetworkGetComponent(), DMCreateGlobalVector(), VecGetArray(), VecSetValues(), MatSetValues()
 @*/
 PetscErrorCode DMNetworkGetGlobalVecOffset(DM dm,PetscInt p,PetscInt compnum,PetscInt *offsetg)
 {
