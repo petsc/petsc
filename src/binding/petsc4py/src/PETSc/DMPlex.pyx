@@ -727,6 +727,14 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexMetricNoMovement(self.dm, &noMove) )
         return toBool(noMove)
 
+    def metricSetNoSurf(self, PetscBool noSurf):
+        CHKERR( DMPlexMetricSetNoSurf(self.dm, noSurf) )
+
+    def metricNoSurf(self):
+        cdef PetscBool noSurf = PETSC_FALSE
+        CHKERR( DMPlexMetricNoSurf(self.dm, &noSurf) )
+        return toBool(noSurf)
+
     def metricSetVerbosity(self, PetscInt verbosity):
         CHKERR( DMPlexMetricSetVerbosity(self.dm, verbosity) )
 

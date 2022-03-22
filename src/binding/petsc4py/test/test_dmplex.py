@@ -148,6 +148,7 @@ class BaseTestPlex(object):
         self.plex.metricSetNoInsertion(False)
         self.plex.metricSetNoSwapping(False)
         self.plex.metricSetNoMovement(False)
+        self.plex.metricSetNoSurf(False)
         self.plex.metricSetVerbosity(-1)
         self.plex.metricSetNumIterations(3)
         self.plex.metricSetMinimumMagnitude(h_min)
@@ -163,6 +164,7 @@ class BaseTestPlex(object):
         self.assertFalse(self.plex.metricNoInsertion())
         self.assertFalse(self.plex.metricNoSwapping())
         self.assertFalse(self.plex.metricNoMovement())
+        self.assertFalse(self.plex.metricNoSurf())
         assert self.plex.metricGetVerbosity() == -1
         assert self.plex.metricGetNumIterations() == 3
         assert np.isclose(self.plex.metricGetMinimumMagnitude(), h_min)

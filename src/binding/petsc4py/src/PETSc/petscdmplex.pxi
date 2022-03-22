@@ -144,6 +144,8 @@ cdef extern from * nogil:
     int DMPlexMetricNoSwapping(PetscDM,PetscBool*)
     int DMPlexMetricSetNoMovement(PetscDM,PetscBool)
     int DMPlexMetricNoMovement(PetscDM,PetscBool*)
+    int DMPlexMetricSetNoSurf(PetscDM,PetscBool)
+    int DMPlexMetricNoSurf(PetscDM,PetscBool*)
     int DMPlexMetricSetVerbosity(PetscDM,PetscInt)
     int DMPlexMetricGetVerbosity(PetscDM,PetscInt*)
     int DMPlexMetricSetNumIterations(PetscDM,PetscInt)
