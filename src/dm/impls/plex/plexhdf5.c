@@ -546,9 +546,10 @@ PetscErrorCode DMPlexTopologyView_HDF5_Internal(DM dm, IS globalPointNumbers, Pe
   orientationsName = "orientation";
   PetscCall(DMPlexStorageVersionSetUpWriting_Private(dm, viewer, &version));
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
-  if (version.major <= 1) {
+  if (version.major < 2) {
     PetscCall(PetscStrcpy(group, "/topology"));
   } else {
+    /* since DMPlexStorageVersion 2.0.0 */
     PetscCall(PetscSNPrintf(group, sizeof(group), "topologies/%s/topology", topologydm_name));
   }
   PetscCall(PetscViewerHDF5PushGroup(viewer, group));
@@ -809,7 +810,7 @@ PetscErrorCode DMPlexCoordinatesView_HDF5_Internal(DM dm, PetscViewer viewer)
 
     PetscCall(PetscViewerGetFormat(viewer, &format));
     PetscCall(DMPlexStorageVersionSetUpWriting_Private(dm, viewer, &version));
-    if (format == PETSC_VIEWER_HDF5_XDMF || format == PETSC_VIEWER_HDF5_VIZ || version.major <= 1) {
+    if (format == PETSC_VIEWER_HDF5_XDMF || format == PETSC_VIEWER_HDF5_VIZ || version.major < 2) {
       PetscCall(DMPlexCoordinatesView_HDF5_Legacy_Private(dm, viewer));
       PetscFunctionReturn(0);
     }
@@ -987,9 +988,10 @@ PetscErrorCode DMPlexLabelsView_HDF5_Internal(DM dm, IS globalPointNumbers, Pets
   PetscCall(DMPlexStorageVersionSetUpWriting_Private(dm, viewer, &version));
   PetscCall(ISGetIndices(globalPointNumbers, &gpoint));
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
-  if (version.major <= 1) {
+  if (version.major < 2) {
     PetscCall(PetscStrcpy(group, "/labels"));
   } else {
+    /* since DMPlexStorageVersion 2.0.0 */
     PetscCall(PetscSNPrintf(group, sizeof(group), "topologies/%s/labels", topologydm_name));
   }
   PetscCall(PetscViewerHDF5PushGroup(viewer, group));
@@ -1427,9 +1429,10 @@ PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM dm, PetscViewer viewer, PetscSF
   PetscCall(LoadLabelsCtxCreate(dm, viewer, sfXC, &ctx));
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
   PetscCall(DMPlexStorageVersionGet_Private(dm, viewer, &version));
-  if (version.major <= 1) {
+  if (version.major < 2) {
     PetscCall(PetscStrcpy(group, "labels"));
   } else {
+    /* since DMPlexStorageVersion 2.0.0 */
     PetscCall(PetscSNPrintf(group, sizeof(group), "topologies/%s/labels", topologydm_name));
   }
   PetscCall(PetscViewerHDF5PushGroup(viewer, group));
@@ -1642,9 +1645,10 @@ PetscErrorCode DMPlexTopologyLoad_HDF5_Internal(DM dm, PetscViewer viewer, Petsc
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
   PetscCall(DMPlexStorageVersionGet_Private(dm, viewer, &version));
-  if (version.major <= 1) {
+  if (version.major < 2) {
     PetscCall(PetscStrcpy(group, "/topology"));
   } else {
+    /* since DMPlexStorageVersion 2.0.0 */
     PetscCall(PetscSNPrintf(group, sizeof(group), "topologies/%s/topology", topologydm_name));
   }
   PetscCall(PetscViewerHDF5PushGroup(viewer, group));
@@ -1797,24 +1801,22 @@ static PetscErrorCode DMPlexCoordinatesLoad_HDF5_Legacy_Private(DM dm, PetscView
 
 PetscErrorCode DMPlexCoordinatesLoad_HDF5_Internal(DM dm, PetscViewer viewer, PetscSF sfXC)
 {
-  DM          cdm;
-  Vec         coords;
-  PetscInt    blockSize;
-  PetscReal   lengthScale;
-  PetscSF     lsf;
-  const char *topologydm_name;
-  char       *coordinatedm_name, *coordinates_name;
+  DMPlexStorageVersion version;
+  DM                   cdm;
+  Vec                  coords;
+  PetscInt             blockSize;
+  PetscReal            lengthScale;
+  PetscSF              lsf;
+  const char          *topologydm_name;
+  char                *coordinatedm_name, *coordinates_name;
 
   PetscFunctionBegin;
-  {
-    DMPlexStorageVersion version;
-
-    PetscCall(DMPlexStorageVersionGet_Private(dm, viewer, &version));
-    if (version.major <= 1) {
-      PetscCall(DMPlexCoordinatesLoad_HDF5_Legacy_Private(dm, viewer));
-      PetscFunctionReturn(0);
-    }
+  PetscCall(DMPlexStorageVersionGet_Private(dm, viewer, &version));
+  if (version.major < 2) {
+    PetscCall(DMPlexCoordinatesLoad_HDF5_Legacy_Private(dm, viewer));
+    PetscFunctionReturn(0);
   }
+  /* else: since DMPlexStorageVersion 2.0.0 */
   PetscCheck(sfXC, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_NULL, "PetscSF must be given for parallel load");
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
   PetscCall(PetscViewerHDF5PushGroup(viewer, "topologies"));
@@ -1844,33 +1846,25 @@ PetscErrorCode DMPlexCoordinatesLoad_HDF5_Internal(DM dm, PetscViewer viewer, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexLoad_HDF5_Legacy_Private(DM dm, PetscViewer viewer)
-{
-  PetscFunctionBegin;
-  PetscCall(DMPlexTopologyLoad_HDF5_Internal(dm, viewer, NULL));
-  PetscCall(DMPlexLabelsLoad_HDF5_Internal(dm, viewer, NULL));
-  PetscCall(DMPlexCoordinatesLoad_HDF5_Legacy_Private(dm, viewer));
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode DMPlexLoad_HDF5_Internal(DM dm, PetscViewer viewer)
 {
-  PetscSF sfXC;
+  DMPlexStorageVersion version;
 
   PetscFunctionBegin;
-  {
-    DMPlexStorageVersion version;
+  PetscCall(DMPlexStorageVersionGet_Private(dm, viewer, &version));
+  if (version.major < 2) {
+    PetscCall(DMPlexTopologyLoad_HDF5_Internal(dm, viewer, NULL));
+    PetscCall(DMPlexLabelsLoad_HDF5_Internal(dm, viewer, NULL));
+    PetscCall(DMPlexCoordinatesLoad_HDF5_Legacy_Private(dm, viewer));
+  } else {
+    PetscSF sfXC;
 
-    PetscCall(DMPlexStorageVersionGet_Private(dm, viewer, &version));
-    if (version.major <= 1) {
-      PetscCall(DMPlexLoad_HDF5_Legacy_Private(dm, viewer));
-      PetscFunctionReturn(0);
-    }
+    /* since DMPlexStorageVersion 2.0.0 */
+    PetscCall(DMPlexTopologyLoad_HDF5_Internal(dm, viewer, &sfXC));
+    PetscCall(DMPlexLabelsLoad_HDF5_Internal(dm, viewer, sfXC));
+    PetscCall(DMPlexCoordinatesLoad_HDF5_Internal(dm, viewer, sfXC));
+    PetscCall(PetscSFDestroy(&sfXC));
   }
-  PetscCall(DMPlexTopologyLoad_HDF5_Internal(dm, viewer, &sfXC));
-  PetscCall(DMPlexLabelsLoad_HDF5_Internal(dm, viewer, sfXC));
-  PetscCall(DMPlexCoordinatesLoad_HDF5_Internal(dm, viewer, sfXC));
-  PetscCall(PetscSFDestroy(&sfXC));
   PetscFunctionReturn(0);
 }
 
