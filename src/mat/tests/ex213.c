@@ -28,7 +28,7 @@ int main(int argc,char **args)
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheckFalse(size > 4,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Can only use at most 4 processors.");
+  PetscCheck(size < 5,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Can only use at most 4 processors.");
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* Get a partition range based on the vector size */

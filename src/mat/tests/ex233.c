@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  PetscCheckFalse(size < 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is an example with more then one processors");
+  PetscCheck(size > 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is an example with more then one processors");
   if (rank) {
     PetscInt i;
     for (i = 0; i < 3; i++) ia[i] = 0;

@@ -87,7 +87,7 @@ int main(int argc,char **argv)
   /* Test MatMatMult() */
   if (Test_MatMatMult) {
 #if !defined(PETSC_HAVE_ELEMENTAL)
-    PetscCheckFalse(size > 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"This test requires ELEMENTAL");
+    PetscCheck(size == 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"This test requires ELEMENTAL");
 #endif
     PetscCall(MatTranspose(A,MAT_INITIAL_MATRIX,&B)); /* B = A^T */
     PetscCall(MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C)); /* C = B*A = A^T*A */

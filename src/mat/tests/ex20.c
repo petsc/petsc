@@ -16,7 +16,7 @@ int main(int argc,char **args)
 
   /* This example does not work correctly for np > 2 */
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheckFalse(size > 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Use np <= 2");
+  PetscCheck(size <= 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Use np <= 2");
 
   /* Create the matrix for the five point stencil, YET AGAIN */
   PetscCall(MatCreate(PETSC_COMM_WORLD,&C));

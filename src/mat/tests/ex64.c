@@ -14,7 +14,7 @@ int main(int argc,char **args)
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,m"Can only run on one processor");
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,m"Can only run on one processor");
 
   /*
      Open binary file.  Note that we use FILE_MODE_WRITE to indicate

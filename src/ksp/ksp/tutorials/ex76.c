@@ -25,7 +25,7 @@ int main(int argc,char **args)
   PetscCall(PetscInitialize(&argc,&args,NULL,help));
   PetscCall(PetscLogDefaultBegin());
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheckFalse(size != 4,PETSC_COMM_WORLD,PETSC_ERR_USER,"This example requires 4 processes");
+  PetscCheck(size == 4,PETSC_COMM_WORLD,PETSC_ERR_USER,"This example requires 4 processes");
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-rhs",&N,NULL));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCall(MatCreate(PETSC_COMM_WORLD,&A));

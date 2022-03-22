@@ -11,7 +11,7 @@ int main(int argc, char **argv)
 
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Only coded for one process");
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only coded for one process");
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, 1, 2));
   PetscCall(MatSetBlockSizes(A, 1, 2));

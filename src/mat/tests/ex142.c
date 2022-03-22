@@ -31,7 +31,7 @@ int main(int argc,char **args)
 #endif
 
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
   ierr     = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex142");PetscCall(ierr);
   PetscCall(PetscOptionsEList("-function", "Function type", "ex142", funcNames, NUM_FUNCS, funcNames[function], &func, NULL));
   PetscCall(PetscOptionsBool("-vec_view draw", "View the functions", "ex142", view, &view, NULL));

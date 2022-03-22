@@ -27,7 +27,7 @@ int main(int argc,char **args)
 
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD,&size));
-  PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example is for exactly two processes");
+  PetscCheck(size == 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This example is for exactly two processes");
   PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD,&rank));
 
   PetscCall(PetscMalloc1(3,&ii));

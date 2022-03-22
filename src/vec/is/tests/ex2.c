@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheckFalse(size > 3,PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Example only works with up to three processes");
+  PetscCheck(size < 4,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Example only works with up to three processes");
 
   PetscCall(PetscCalloc1(size*n,&izero));
   for (i = 0; i < 3; i++) {

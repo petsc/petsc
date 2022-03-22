@@ -30,7 +30,7 @@ int main(int argc,char **args)
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_size(comm,&size));
-  PetscCheckFalse(size != 4,comm,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 4 processors ");
+  PetscCheck(size == 4,comm,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 4 processors ");
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
   /*set a small matrix */
   PetscCall(PetscMalloc1(5,&ia));

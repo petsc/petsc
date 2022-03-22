@@ -35,7 +35,7 @@ int main(int argc,char **args)
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
-  PetscCheckFalse(size>2,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "A uniprocessor or two-processor example only.");
+  PetscCheck(size < 3,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE, "A uniprocessor or two-processor example only.");
 
   PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
   if (size > 1) {

@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
-  PetscCheckFalse(size < 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must be run with at least two processors");
+  PetscCheck(size >= 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must be run with at least two processors");
 
   /* create two vector */
   PetscCall(VecCreateSeq(PETSC_COMM_SELF,n,&x));

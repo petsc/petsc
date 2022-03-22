@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm,&rank));
   PetscCallMPI(MPI_Comm_size(comm,&size));
-  PetscCheckFalse(size != 3,comm,PETSC_ERR_ARG_INCOMP,"You have to use three MPI processes to run this example ");
+  PetscCheck(size == 3,comm,PETSC_ERR_WRONG_MPI_SIZE,"You have to use three MPI processes to run this example ");
   PetscCall(MatCreateMPIAIJWithArrays(comm,2,2,PETSC_DETERMINE,PETSC_DETERMINE,i[rank],j[rank],a[rank],&A));
   PetscCall(MatView(A,NULL));
   PetscCall(MatUpdateMPIAIJWithArrays(A,2,2,PETSC_DETERMINE,PETSC_DETERMINE,i[rank],j[rank],anew[rank]));

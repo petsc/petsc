@@ -13,7 +13,7 @@ int main(int argc, char ** argv)
 
   PetscCall(PetscInitialize(&argc, &argv, (char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must use 2 processors");
+  PetscCheck(size == 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must use 2 processors");
 
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetType(A, MATMPIAIJ));

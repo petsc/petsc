@@ -13,7 +13,7 @@ int main(int argc,char **args)
   PetscCall(PetscInitialize(&argc,&args,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
-  PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for two processes");
+  PetscCheck(size == 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for two processes");
 
   if (rank == 0) {
     ii[0] = 0; ii[1] = 2; ii[2] = 5; ii[3] = 7; ii[4] = 7;

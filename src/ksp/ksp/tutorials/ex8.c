@@ -147,7 +147,7 @@ int main(int argc,char **args)
   if (!user_subdomains) { /* basic version */
     PetscCall(PCASMSetOverlap(pc,overlap));
   } else { /* advanced version */
-    PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"PCASMCreateSubdomains2D() is currently a uniprocessor routine only!");
+    PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"PCASMCreateSubdomains2D() is currently a uniprocessor routine only!");
     PetscCall(PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is,&is_local));
     PetscCall(PCASMSetLocalSubdomains(pc,Nsub,is,is_local));
     flg  = PETSC_FALSE;

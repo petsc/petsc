@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   PetscCall(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
-  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must be run with one processor");
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must be run with one processor");
 
   /* create vector */
   PetscCall(VecCreate(PETSC_COMM_SELF,&x));

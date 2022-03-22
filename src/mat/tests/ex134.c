@@ -101,7 +101,7 @@ int main(int argc,char *argv[])
   PetscCall(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_size(comm,&size));
-  PetscCheckFalse(size != 2,comm,PETSC_ERR_USER,"This example must be run with exactly two processes");
+  PetscCheck(size == 2,comm,PETSC_ERR_USER,"This example must be run with exactly two processes");
   PetscCall(Assemble(comm,2,MATMPIBAIJ));
   PetscCall(Assemble(comm,2,MATMPISBAIJ));
   PetscCall(Assemble(comm,1,MATMPIBAIJ));
