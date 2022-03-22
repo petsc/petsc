@@ -222,13 +222,13 @@ static PetscErrorCode TSInterpolate_Sundials(TS ts,PetscReal t,Vec X)
     PetscMPIInt size;
 
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-    PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"TSSUNDIALS only supports a dense solve in the serial case");
+    PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"TSSUNDIALS only supports a dense solve in the serial case");
     y = N_VMake_Serial(locsize,(realtype*)x_data);
   } else {
     y = N_VMake_Parallel(cvode->comm_sundials,locsize,glosize,(realtype*)x_data);
   }
 
-  PetscCheckFalse(!y,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Interpolated y is not allocated");
+  PetscCheck(y,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Interpolated y is not allocated");
 
   ierr = CVodeGetDky(cvode->mem,t,0,y);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x_data);CHKERRQ(ierr);
@@ -294,12 +294,12 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
     PetscMPIInt size;
 
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-    PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"TSSUNDIALS only supports a dense solve in the serial case");
+    PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"TSSUNDIALS only supports a dense solve in the serial case");
     cvode->y = N_VNew_Serial(locsize);
   } else {
     cvode->y = N_VNew_Parallel(cvode->comm_sundials,locsize,glosize);
   }
-  PetscCheckFalse(!cvode->y,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"cvode->y is not allocated");
+  PetscCheck(cvode->y,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"cvode->y is not allocated");
 
   /* initialize N_Vec y: copy ts->vec_sol to cvode->y */
   ierr   = VecGetArray(ts->vec_sol,&parray);CHKERRQ(ierr);
@@ -324,7 +324,7 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
 
   /* Call CVodeCreate to create the solver memory and the use of a Newton iteration */
   mem = CVodeCreate(cvode->cvode_type, CV_NEWTON);
-  PetscCheckFalse(!mem,PETSC_COMM_SELF,PETSC_ERR_MEM,"CVodeCreate() fails");
+  PetscCheck(mem,PETSC_COMM_SELF,PETSC_ERR_MEM,"CVodeCreate() fails");
   cvode->mem = mem;
 
   /* Set the pointer to user-defined data */
@@ -372,7 +372,7 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
     PetscMPIInt size;
 
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-    PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"TSSUNDIALS only supports a dense solve in the serial case");
+    PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"TSSUNDIALS only supports a dense solve in the serial case");
     flag = CVDense(mem,locsize);
     PetscCheckFalse(flag,PETSC_COMM_SELF,PETSC_ERR_LIB,"CVDense() fails, flag %d",flag);
   } else {

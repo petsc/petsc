@@ -211,7 +211,7 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRMPI(ierr);
-  PetscCheckFalse(size != 1,PETSC_COMM_WORLD, PETSC_ERR_SUP, "This is a uniprocessor example only");
+  PetscCheck(size == 1,PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only");
 
   /*
    * Allow user to set the grid dimensions and the equations parameters

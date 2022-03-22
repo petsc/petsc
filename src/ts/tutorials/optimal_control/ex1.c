@@ -251,7 +251,7 @@ int main(int argc,char **argv)
   /* Initialize program */
   ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
   /* Parameter settings */
   aircraft.ftime = 1.;   /* time interval in hour */

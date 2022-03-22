@@ -130,7 +130,7 @@ PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory tj,TS ts)
       ierr = PetscTestDirectory(dir,'w',&flg);CHKERRQ(ierr);
       if (!flg) {
         ierr = PetscTestFile(dir,'r',&flg);CHKERRQ(ierr);
-        PetscCheckFalse(flg,PETSC_COMM_SELF,PETSC_ERR_USER,"Specified path is a file - not a dir: %s",dir);
+        PetscCheck(!flg,PETSC_COMM_SELF,PETSC_ERR_USER,"Specified path is a file - not a dir: %s",dir);
         ierr = PetscMkdir(dir);CHKERRQ(ierr);
       } else SETERRQ(comm,PETSC_ERR_SUP,"Directory %s not empty",tj->dirname);
     }

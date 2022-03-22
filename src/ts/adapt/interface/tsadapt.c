@@ -142,7 +142,7 @@ PetscErrorCode  TSAdaptSetType(TSAdapt adapt,TSAdaptType type)
   ierr = PetscObjectTypeCompare((PetscObject)adapt,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
   ierr = PetscFunctionListFind(TSAdaptList,type,&r);CHKERRQ(ierr);
-  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSAdapt type \"%s\" given",type);
+  PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSAdapt type \"%s\" given",type);
   if (adapt->ops->destroy) {ierr = (*adapt->ops->destroy)(adapt);CHKERRQ(ierr);}
   ierr = PetscMemzero(adapt->ops,sizeof(struct _TSAdaptOps));CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)adapt,type);CHKERRQ(ierr);
@@ -221,7 +221,7 @@ PetscErrorCode  TSAdaptLoad(TSAdapt adapt,PetscViewer viewer)
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
   ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
-  PetscCheckFalse(!isbinary,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+  PetscCheck(isbinary,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
   ierr = PetscViewerBinaryRead(viewer,type,256,NULL,PETSC_CHAR);CHKERRQ(ierr);
   ierr = TSAdaptSetType(adapt,type);CHKERRQ(ierr);
@@ -429,10 +429,10 @@ PetscErrorCode TSAdaptSetSafety(TSAdapt adapt,PetscReal safety,PetscReal reject_
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   PetscValidLogicalCollectiveReal(adapt,safety,2);
   PetscValidLogicalCollectiveReal(adapt,reject_safety,3);
-  PetscCheckFalse(safety != PETSC_DEFAULT && safety < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Safety factor %g must be non negative",(double)safety);
-  PetscCheckFalse(safety != PETSC_DEFAULT && safety > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Safety factor %g must be less than one",(double)safety);
-  PetscCheckFalse(reject_safety != PETSC_DEFAULT && reject_safety < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reject safety factor %g must be non negative",(double)reject_safety);
-  PetscCheckFalse(reject_safety != PETSC_DEFAULT && reject_safety > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reject safety factor %g must be less than one",(double)reject_safety);
+  PetscCheck(safety == PETSC_DEFAULT || safety >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Safety factor %g must be non negative",(double)safety);
+  PetscCheck(safety == PETSC_DEFAULT || safety <= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Safety factor %g must be less than one",(double)safety);
+  PetscCheck(reject_safety == PETSC_DEFAULT || reject_safety >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reject safety factor %g must be non negative",(double)reject_safety);
+  PetscCheck(reject_safety == PETSC_DEFAULT || reject_safety <= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Reject safety factor %g must be less than one",(double)reject_safety);
   if (safety != PETSC_DEFAULT) adapt->safety = safety;
   if (reject_safety != PETSC_DEFAULT) adapt->reject_safety = reject_safety;
   PetscFunctionReturn(0);
@@ -537,9 +537,9 @@ PetscErrorCode TSAdaptSetClip(TSAdapt adapt,PetscReal low,PetscReal high)
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   PetscValidLogicalCollectiveReal(adapt,low,2);
   PetscValidLogicalCollectiveReal(adapt,high,3);
-  PetscCheckFalse(low  != PETSC_DEFAULT && low  < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Decrease factor %g must be non negative",(double)low);
-  PetscCheckFalse(low  != PETSC_DEFAULT && low  > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Decrease factor %g must be less than one",(double)low);
-  PetscCheckFalse(high != PETSC_DEFAULT && high < 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Increase factor %g must be greater than one",(double)high);
+  PetscCheck(low  == PETSC_DEFAULT || low  >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Decrease factor %g must be non negative",(double)low);
+  PetscCheck(low  == PETSC_DEFAULT || low  <= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Decrease factor %g must be less than one",(double)low);
+  PetscCheck(high == PETSC_DEFAULT || high >= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Increase factor %g must be greater than one",(double)high);
   if (low  != PETSC_DEFAULT) adapt->clip[0] = low;
   if (high != PETSC_DEFAULT) adapt->clip[1] = high;
   PetscFunctionReturn(0);
@@ -593,8 +593,8 @@ PetscErrorCode TSAdaptSetScaleSolveFailed(TSAdapt adapt,PetscReal scale)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   PetscValidLogicalCollectiveReal(adapt,scale,2);
-  PetscCheckFalse(scale != PETSC_DEFAULT && scale <= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scale factor %g must be positive",(double)scale);
-  PetscCheckFalse(scale != PETSC_DEFAULT && scale  > 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scale factor %g must be less than one",(double)scale);
+  PetscCheck(scale == PETSC_DEFAULT || scale > 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scale factor %g must be positive",(double)scale);
+  PetscCheck(scale == PETSC_DEFAULT || scale <= 1,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scale factor %g must be less than one",(double)scale);
   if (scale != PETSC_DEFAULT) adapt->scale_solve_failed = scale;
   PetscFunctionReturn(0);
 }
@@ -648,13 +648,13 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt,PetscReal hmin,PetscReal hmax)
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
   PetscValidLogicalCollectiveReal(adapt,hmin,2);
   PetscValidLogicalCollectiveReal(adapt,hmax,3);
-  PetscCheckFalse(hmin != PETSC_DEFAULT && hmin < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Minimum time step %g must be non negative",(double)hmin);
-  PetscCheckFalse(hmax != PETSC_DEFAULT && hmax < 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Minimum time step %g must be non negative",(double)hmax);
+  PetscCheck(hmin == PETSC_DEFAULT || hmin >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Minimum time step %g must be non negative",(double)hmin);
+  PetscCheck(hmax == PETSC_DEFAULT || hmax >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Minimum time step %g must be non negative",(double)hmax);
   if (hmin != PETSC_DEFAULT) adapt->dt_min = hmin;
   if (hmax != PETSC_DEFAULT) adapt->dt_max = hmax;
   hmin = adapt->dt_min;
   hmax = adapt->dt_max;
-  PetscCheckFalse(hmax <= hmin,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Maximum time step %g must greater than minimum time step %g",(double)hmax,(double)hmin);
+  PetscCheck(hmax > hmin,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Maximum time step %g must greater than minimum time step %g",(double)hmax,(double)hmin);
   PetscFunctionReturn(0);
 }
 
@@ -742,7 +742,7 @@ PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAda
 
   two = 2; clip[0] = adapt->clip[0]; clip[1] = adapt->clip[1];
   ierr = PetscOptionsRealArray("-ts_adapt_clip","Admissible decrease/increase factor in step size","TSAdaptSetClip",clip,&two,&set);CHKERRQ(ierr);
-  PetscCheckFalse(set && (two != 2),PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Must give exactly two values to -ts_adapt_clip");
+  PetscCheck(!set || (two == 2),PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Must give exactly two values to -ts_adapt_clip");
   if (set) {ierr = TSAdaptSetClip(adapt,clip[0],clip[1]);CHKERRQ(ierr);}
 
   hmin = adapt->dt_min; hmax = adapt->dt_max;
@@ -757,7 +757,7 @@ PetscErrorCode  TSAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSAda
   if (set) {ierr = TSAdaptSetScaleSolveFailed(adapt,scale);CHKERRQ(ierr);}
 
   ierr = PetscOptionsEnum("-ts_adapt_wnormtype","Type of norm computed for error estimation","",NormTypes,(PetscEnum)adapt->wnormtype,(PetscEnum*)&adapt->wnormtype,NULL);CHKERRQ(ierr);
-  PetscCheckFalse(adapt->wnormtype != NORM_2 && adapt->wnormtype != NORM_INFINITY,PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"Only 2-norm and infinite norm supported");
+  PetscCheck(adapt->wnormtype == NORM_2 || adapt->wnormtype == NORM_INFINITY,PetscObjectComm((PetscObject)adapt),PETSC_ERR_SUP,"Only 2-norm and infinite norm supported");
 
   ierr = PetscOptionsInt("-ts_adapt_time_step_increase_delay","Number of timesteps to delay increasing the time step after it has been decreased due to failed solver","TSAdaptSetTimeStepIncreaseDelay",adapt->timestepjustdecreased_delay,&adapt->timestepjustdecreased_delay,NULL);CHKERRQ(ierr);
 
@@ -818,9 +818,9 @@ PetscErrorCode TSAdaptCandidateAdd(TSAdapt adapt,const char name[],PetscInt orde
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt,TSADAPT_CLASSID,1);
-  PetscCheckFalse(order < 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Classical order %D must be a positive integer",order);
+  PetscCheck(order >= 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Classical order %D must be a positive integer",order);
   if (inuse) {
-    PetscCheckFalse(adapt->candidates.inuse_set,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"Cannot set the inuse method twice, maybe forgot to call TSAdaptCandidatesClear()");
+    PetscCheck(!adapt->candidates.inuse_set,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"Cannot set the inuse method twice, maybe forgot to call TSAdaptCandidatesClear()");
     adapt->candidates.inuse_set = PETSC_TRUE;
   }
   /* first slot if this is the current scheme, otherwise the next available slot */
@@ -917,8 +917,8 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt,TS ts,PetscReal h,PetscInt *next_sc,P
   }
 
   ierr = (*adapt->ops->choose)(adapt,ts,h,&scheme,next_h,accept,&wlte,&wltea,&wlter);CHKERRQ(ierr);
-  PetscCheckFalse(scheme < 0 || (ncandidates > 0 && scheme >= ncandidates),PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Chosen scheme %D not in valid range 0..%D",scheme,ncandidates-1);
-  PetscCheckFalse(*next_h < 0,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed step size %g must be positive",(double)*next_h);
+  PetscCheck(scheme >= 0 && (ncandidates <= 0 || scheme < ncandidates),PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Chosen scheme %D not in valid range 0..%D",scheme,ncandidates-1);
+  PetscCheck(*next_h >= 0,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_OUTOFRANGE,"Computed step size %g must be positive",(double)*next_h);
   if (next_sc) *next_sc = scheme;
 
   if (*accept && ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP) {

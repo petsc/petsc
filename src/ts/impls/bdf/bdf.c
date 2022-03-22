@@ -80,8 +80,8 @@ static PetscErrorCode TSBDF_RestoreVecs(TS ts,DM dm,Vec *Xdot,Vec *Ydot)
     ierr = DMRestoreNamedGlobalVector(dm,"TSBDF_Vec_Xdot",Xdot);CHKERRQ(ierr);
     ierr = DMRestoreNamedGlobalVector(dm,"TSBDF_Vec_Ydot",Ydot);CHKERRQ(ierr);
   } else {
-    PetscCheckFalse(*Xdot != bdf->vec_dot,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"Vec does not match the cache");
-    PetscCheckFalse(*Ydot != bdf->vec_wrk,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"Vec does not match the cache");
+    PetscCheck(*Xdot == bdf->vec_dot,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"Vec does not match the cache");
+    PetscCheck(*Ydot == bdf->vec_wrk,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_INCOMP,"Vec does not match the cache");
     *Xdot = NULL;
     *Ydot = NULL;
   }
@@ -494,7 +494,7 @@ static PetscErrorCode TSBDFSetOrder_BDF(TS ts,PetscInt order)
 
   PetscFunctionBegin;
   if (order == bdf->order) PetscFunctionReturn(0);
-  PetscCheckFalse(order < 1 || order > 6,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"BDF Order %D not implemented",order);
+  PetscCheck(order >= 1 && order <= 6,PetscObjectComm((PetscObject)ts),PETSC_ERR_ARG_OUTOFRANGE,"BDF Order %D not implemented",order);
   bdf->order = order;
   PetscFunctionReturn(0);
 }

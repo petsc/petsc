@@ -882,7 +882,7 @@ PetscErrorCode TSRosWRegisterRos4(TSRosWType name,PetscReal gamma,PetscReal a2,P
 
   {
     const PetscReal misfit = a2*a2*bm[1] + a3*a3*bm[2] + a4*a4*bm[3] - one/three;
-    PetscCheckFalse(PetscAbs(misfit) > PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_SUP,"Assumptions violated, could not construct a third order embedded method");
+    PetscCheck(PetscAbs(misfit) <= PETSC_SMALL,PETSC_COMM_SELF,PETSC_ERR_SUP,"Assumptions violated, could not construct a third order embedded method");
   }
   ierr = TSRosWRegister(name,4,4,&A[0][0],&Gamma[0][0],b,bm,0,NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1081,7 +1081,7 @@ static PetscErrorCode TSInterpolate_RosW(TS ts,PetscReal itime,Vec U)
   Vec             *Y        = ros->Y;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!Bt,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSRosW %s does not have an interpolation formula",ros->tableau->name);
+  PetscCheck(Bt,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSRosW %s does not have an interpolation formula",ros->tableau->name);
 
   switch (ros->status) {
   case TS_STEP_INCOMPLETE:

@@ -742,7 +742,7 @@ static PetscErrorCode TSGLLESetType_GLLE(TS ts,TSGLLEType type)
   }
 
   ierr = PetscFunctionListFind(TSGLLEList,type,&r);CHKERRQ(ierr);
-  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLLE type \"%s\" given",type);
+  PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLLE type \"%s\" given",type);
   ierr = (*r)(ts);CHKERRQ(ierr);
   ierr = PetscStrcpy(gl->type_name,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -756,7 +756,7 @@ static PetscErrorCode TSGLLESetAcceptType_GLLE(TS ts,TSGLLEAcceptType type)
 
   PetscFunctionBegin;
   ierr = PetscFunctionListFind(TSGLLEAcceptList,type,&r);CHKERRQ(ierr);
-  PetscCheckFalse(!r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLLEAccept type \"%s\" given",type);
+  PetscCheck(r,PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLLEAccept type \"%s\" given",type);
   gl->Accept = r;
   ierr = PetscStrncpy(gl->accept_name,type,sizeof(gl->accept_name));CHKERRQ(ierr);
   PetscFunctionReturn(0);

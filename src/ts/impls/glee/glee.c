@@ -683,7 +683,7 @@ static PetscErrorCode TSInterpolate_GLEE(TS ts,PetscReal itime,Vec X)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  PetscCheckFalse(!B,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSGLEE %s does not have an interpolation formula",glee->tableau->name);
+  PetscCheck(B,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSGLEE %s does not have an interpolation formula",glee->tableau->name);
   switch (glee->status) {
     case TS_STEP_INCOMPLETE:
     case TS_STEP_PENDING:
@@ -1103,7 +1103,7 @@ PetscErrorCode TSSetTimeError_GLEE(TS ts,Vec X)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  PetscCheckFalse(r != 2,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSSetTimeError_GLEE not supported for '%s' with r=%D.",tab->name,tab->r);
+  PetscCheck(r == 2,PetscObjectComm((PetscObject)ts),PETSC_ERR_SUP,"TSSetTimeError_GLEE not supported for '%s' with r=%D.",tab->name,tab->r);
   for (i=1; i<r; i++) {
     ierr = VecCopy(ts->vec_sol,Y[i]);CHKERRQ(ierr);
     ierr = VecAXPBY(Y[i],S[0],S[1],X);CHKERRQ(ierr);

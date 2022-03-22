@@ -1125,7 +1125,7 @@ PetscErrorCode Initialize(Vec Y, void* s)
     IJacobian   = IJacobian_Hull1972C34;
   }
   ierr = PetscOptionsGetScalarArray(NULL,NULL,"-yinit",y,&N,&flg);CHKERRQ(ierr);
-  PetscCheckFalse((N != GetSize((const char*)s)) && flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Number of initial values %D does not match problem size %D.",N,GetSize((const char*)s));
+  PetscCheck((N == GetSize((const char*)s)) || !flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Number of initial values %D does not match problem size %D.",N,GetSize((const char*)s));
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1189,7 +1189,7 @@ PetscErrorCode SolveODE(char* ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
 
   PetscFunctionBegin;
   N = GetSize((const char *)&ptype[0]);
-  PetscCheckFalse(N < 0,PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Illegal problem specification.");
+  PetscCheck(N >= 0,PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Illegal problem specification.");
   ierr = VecCreate(PETSC_COMM_WORLD,&Y);CHKERRQ(ierr);
   ierr = VecSetSizes(Y,N,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetUp(Y);CHKERRQ(ierr);
@@ -1285,7 +1285,7 @@ int main(int argc, char **argv)
 
   /* Check if running with only 1 proc */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRMPI(ierr);
-  PetscCheckFalse(size>1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
+  PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex31",NULL);CHKERRQ(ierr);
   ierr = PetscOptionsString("-problem","Problem specification","<hull1972a1>",ptype,ptype,sizeof(ptype),NULL);CHKERRQ(ierr);

@@ -87,7 +87,7 @@ static PetscErrorCode TSAdaptChoose_DSP(TSAdapt adapt,TS ts,PetscReal h,PetscInt
     Vec Y;
 
     PetscCheckFalse(adapt->candidates.n < 1,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"No candidate has been registered");
-    PetscCheckFalse(!adapt->candidates.inuse_set,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
+    PetscCheck(adapt->candidates.inuse_set,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_WRONGSTATE,"The current in-use scheme is not among the %D candidates",adapt->candidates.n);
     order = adapt->candidates.order[0];
     ierr = TSGetDM(ts,&dm);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(dm,&Y);CHKERRQ(ierr);
@@ -244,7 +244,7 @@ static PetscErrorCode TSAdaptDSPSetFilter_DSP(TSAdapt adapt,const char *name)
     ierr = PetscStrcasecmp(name,filterlist[i].name,&match);CHKERRQ(ierr);
     if (match) { tab = &filterlist[i]; break; }
   }
-  PetscCheckFalse(!tab,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_UNKNOWN_TYPE,"Filter name %s not found",name);
+  PetscCheck(tab,PetscObjectComm((PetscObject)adapt),PETSC_ERR_ARG_UNKNOWN_TYPE,"Filter name %s not found",name);
   dsp->kBeta[0] = tab->kBeta[0]/tab->scale;
   dsp->kBeta[1] = tab->kBeta[1]/tab->scale;
   dsp->kBeta[2] = tab->kBeta[2]/tab->scale;
