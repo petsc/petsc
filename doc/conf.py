@@ -156,12 +156,12 @@ r'''
 
 # -- Setup and event callbacks -------------------------------------------------
 
-def _build_classic_docs(app):
-    build_classic_docs.main()
+def _build_classic_docs(app, stage):
+    build_classic_docs.main(stage)
 
 
 def builder_init_handler(app):
-    _build_classic_docs(app)
+    _build_classic_docs(app, 'pre')
     _copy_classic_docs(app, None, '.', 'pre')
     _update_htmlmap_links(app)
 
@@ -183,6 +183,7 @@ def _fix_links(app, exception):
 
 
 def build_finished_handler(app, exception):
+    _build_classic_docs(app, 'post')
     _copy_classic_docs(app, exception, app.outdir, 'post')
     _fix_links(app, exception)
     if app.builder.name == 'html':

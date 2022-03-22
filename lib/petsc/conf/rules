@@ -571,7 +571,7 @@ simplehtml: chk_c2html
 
 html: chk_c2html
 	-@export htmlmap_tmp=$$(mktemp) ;\
-          sed -e s?man+../?man+ROOT/docs/manualpages/? ${LOC}/docs/manualpages/manualpages.cit > $$htmlmap_tmp ;\
+          sed -e s?man+manualpages/?man+ROOT/docs/manualpages/? ${LOC}/docs/manualpages/htmlmap_modified > $$htmlmap_tmp ;\
           cat ${PETSC_DIR}/doc/classic/mpi.www.index >> $$htmlmap_tmp ;\
           ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
           loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \

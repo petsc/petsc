@@ -367,7 +367,9 @@ alldoc1: chk_loc allmanpages allmanexamples
 alldoc2: chk_loc allmanpages
 	-${OMAKE_SELF} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
 
-alldoc12: alldoc1 alldoc2
+# A version which presumes allmanpages has already been run
+alldoc_post: chk_loc
+	-${OMAKE_SELF} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
 
 alldocclean: deletemanualpages allcleanhtml
 
