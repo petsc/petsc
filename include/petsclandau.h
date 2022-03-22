@@ -31,8 +31,6 @@ typedef int LandauIdx;
 #define LANDAU_MAX_GRIDS 3
 #endif
 
-#define LANDAU_MAX_BATCH_SZ 320
-
 #if !defined(LANDAU_MAX_Q)
 #if defined(LANDAU_MAX_NQ)
 #error"LANDAU_MAX_NQ but not LANDAU_MAX_Q. Use -DLANDAU_MAX_Q=4 for Q3 elements"
@@ -49,9 +47,11 @@ typedef int LandauIdx;
 #if LANDAU_DIM==2
 #define LANDAU_MAX_Q_FACE LANDAU_MAX_Q
 #define LANDAU_MAX_NQ (LANDAU_MAX_Q*LANDAU_MAX_Q)
+#define LANDAU_MAX_BATCH_SZ 320
 #else
 #define LANDAU_MAX_Q_FACE (LANDAU_MAX_Q*LANDAU_MAX_Q)
 #define LANDAU_MAX_NQ (LANDAU_MAX_Q*LANDAU_MAX_Q*LANDAU_MAX_Q)
+#define LANDAU_MAX_BATCH_SZ 32
 #endif
 
 typedef enum {LANDAU_CUDA, LANDAU_KOKKOS, LANDAU_CPU} LandauDeviceType;
@@ -83,10 +83,10 @@ typedef struct {
   void  *ipfdf_data; // for each grid, but same for all batched vertices
   void  *maps; // for each grid, but same for all batched vertices
   // COO
-  LandauIdx        *coo_elem_offsets;
-  LandauIdx        (*coo_elem_point_offsets)[LANDAU_MAX_NQ+1];
-  LandauIdx        *coo_elem_fullNb;
-  LandauIdx        n_coo_cellsTot;
+  void             *coo_elem_offsets;
+  void             *coo_elem_point_offsets;
+  void             *coo_elem_fullNb;
+  LandauIdx        coo_n_cellsTot;
   LandauIdx        coo_size;
   LandauIdx        coo_max_fullnb;
 } LandauStaticData;
