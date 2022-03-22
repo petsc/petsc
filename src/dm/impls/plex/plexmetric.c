@@ -7,7 +7,7 @@ PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
 {
   MPI_Comm       comm;
   PetscBool      isotropic = PETSC_FALSE, uniform = PETSC_FALSE, restrictAnisotropyFirst = PETSC_FALSE;
-  PetscBool      noInsert = PETSC_FALSE, noSwap = PETSC_FALSE, noMove = PETSC_FALSE;
+  PetscBool      noInsert = PETSC_FALSE, noSwap = PETSC_FALSE, noMove = PETSC_FALSE, noSurf = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscInt       verbosity = -1, numIter = 3;
   PetscReal      h_min = 1.0e-30, h_max = 1.0e+30, a_max = 1.0e+05, p = 1.0, target = 1000.0, beta = 1.3, hausd = 0.01;
@@ -27,6 +27,8 @@ PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
   ierr = DMPlexMetricSetNoSwapping(dm, noSwap);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_metric_no_move", "Turn off facet node movement", "DMAdaptMetric", noMove, &noMove, NULL);CHKERRQ(ierr);
   ierr = DMPlexMetricSetNoMovement(dm, noMove);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_metric_no_surf", "Turn off surface modification", "DMAdaptMetric", noSurf, &noSurf, NULL);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetNoSurf(dm, noSurf);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-dm_plex_metric_num_iterations", "Number of ParMmg adaptation iterations", "DMAdaptMetric", numIter, &numIter, NULL, 0);CHKERRQ(ierr);
   ierr = DMPlexMetricSetNumIterations(dm, numIter);CHKERRQ(ierr);
   ierr = PetscOptionsRangeInt("-dm_plex_metric_verbosity", "Verbosity of metric-based mesh adaptation package (-1 = silent, 10 = maximum)", "DMAdaptMetric", verbosity, &verbosity, NULL, -1, 10);CHKERRQ(ierr);
@@ -222,7 +224,7 @@ PetscErrorCode DMPlexMetricRestrictAnisotropyFirst(DM dm, PetscBool *restrictAni
   Notes:
   This is only used by Mmg and ParMmg (not Pragmatic).
 
-.seealso: DMPlexMetricNoInsertion(), DMPlexMetricSetNoSwapping(), DMPlexMetricSetNoMovement()
+.seealso: DMPlexMetricNoInsertion(), DMPlexMetricSetNoSwapping(), DMPlexMetricSetNoMovement(), DMPlexMetricSetNoSurf()
 @*/
 PetscErrorCode DMPlexMetricSetNoInsertion(DM dm, PetscBool noInsert)
 {
@@ -252,7 +254,7 @@ PetscErrorCode DMPlexMetricSetNoInsertion(DM dm, PetscBool noInsert)
   Notes:
   This is only used by Mmg and ParMmg (not Pragmatic).
 
-.seealso: DMPlexMetricSetNoInsertion(), DMPlexMetricNoSwapping(), DMPlexMetricNoMovement()
+.seealso: DMPlexMetricSetNoInsertion(), DMPlexMetricNoSwapping(), DMPlexMetricNoMovement(), DMPlexMetricNoSurf()
 @*/
 PetscErrorCode DMPlexMetricNoInsertion(DM dm, PetscBool *noInsert)
 {
@@ -280,7 +282,7 @@ PetscErrorCode DMPlexMetricNoInsertion(DM dm, PetscBool *noInsert)
   Notes:
   This is only used by Mmg and ParMmg (not Pragmatic).
 
-.seealso: DMPlexMetricNoSwapping(), DMPlexMetricSetNoInsertion(), DMPlexMetricSetNoMovement()
+.seealso: DMPlexMetricNoSwapping(), DMPlexMetricSetNoInsertion(), DMPlexMetricSetNoMovement(), DMPlexMetricSetNoSurf()
 @*/
 PetscErrorCode DMPlexMetricSetNoSwapping(DM dm, PetscBool noSwap)
 {
@@ -310,7 +312,7 @@ PetscErrorCode DMPlexMetricSetNoSwapping(DM dm, PetscBool noSwap)
   Notes:
   This is only used by Mmg and ParMmg (not Pragmatic).
 
-.seealso: DMPlexMetricSetNoSwapping(), DMPlexMetricNoInsertion(), DMPlexMetricNoMovement()
+.seealso: DMPlexMetricSetNoSwapping(), DMPlexMetricNoInsertion(), DMPlexMetricNoMovement(), DMPlexMetricNoSurf()
 @*/
 PetscErrorCode DMPlexMetricNoSwapping(DM dm, PetscBool *noSwap)
 {
@@ -338,7 +340,7 @@ PetscErrorCode DMPlexMetricNoSwapping(DM dm, PetscBool *noSwap)
   Notes:
   This is only used by Mmg and ParMmg (not Pragmatic).
 
-.seealso: DMPlexMetricNoMovement(), DMPlexMetricSetNoInsertion(), DMPlexMetricSetNoSwapping()
+.seealso: DMPlexMetricNoMovement(), DMPlexMetricSetNoInsertion(), DMPlexMetricSetNoSwapping(), DMPlexMetricSetNoSurf()
 @*/
 PetscErrorCode DMPlexMetricSetNoMovement(DM dm, PetscBool noMove)
 {
@@ -368,7 +370,7 @@ PetscErrorCode DMPlexMetricSetNoMovement(DM dm, PetscBool noMove)
   Notes:
   This is only used by Mmg and ParMmg (not Pragmatic).
 
-.seealso: DMPlexMetricSetNoMovement(), DMPlexMetricNoInsertion(), DMPlexMetricNoSwapping()
+.seealso: DMPlexMetricSetNoMovement(), DMPlexMetricNoInsertion(), DMPlexMetricNoSwapping(), DMPlexMetricNoSurf()
 @*/
 PetscErrorCode DMPlexMetricNoMovement(DM dm, PetscBool *noMove)
 {
@@ -381,6 +383,64 @@ PetscErrorCode DMPlexMetricNoMovement(DM dm, PetscBool *noMove)
     ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
   }
   *noMove = plex->metricCtx->noMove;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexMetricSetNoSurf - Should surface modification be turned off?
+
+  Input parameters:
++ dm     - The DM
+- noSurf - Should surface modification be turned off?
+
+  Level: beginner
+
+  Notes:
+  This is only used by Mmg and ParMmg (not Pragmatic).
+
+.seealso: DMPlexMetricNoSurf(), DMPlexMetricSetNoMovement(), DMPlexMetricSetNoInsertion(), DMPlexMetricSetNoSwapping()
+@*/
+PetscErrorCode DMPlexMetricSetNoSurf(DM dm, PetscBool noSurf)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  plex->metricCtx->noSurf = noSurf;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexMetricNoSurf - Is surface modification turned off?
+
+  Input parameters:
+. dm     - The DM
+
+  Output parameters:
+. noSurf - Is surface modification turned off?
+
+  Level: beginner
+
+  Notes:
+  This is only used by Mmg and ParMmg (not Pragmatic).
+
+.seealso: DMPlexMetricSetNoSurf(), DMPlexMetricNoMovement(), DMPlexMetricNoInsertion(), DMPlexMetricNoSwapping()
+@*/
+PetscErrorCode DMPlexMetricNoSurf(DM dm, PetscBool *noSurf)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  *noSurf = plex->metricCtx->noSurf;
   PetscFunctionReturn(0);
 }
 

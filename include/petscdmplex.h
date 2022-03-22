@@ -470,6 +470,8 @@ PETSC_EXTERN PetscErrorCode DMPlexMetricSetNoSwapping(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexMetricNoSwapping(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricSetNoMovement(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexMetricNoMovement(DM, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMPlexMetricSetNoSurf(DM, PetscBool);
+PETSC_EXTERN PetscErrorCode DMPlexMetricNoSurf(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricSetMinimumMagnitude(DM, PetscReal);
 PETSC_EXTERN PetscErrorCode DMPlexMetricGetMinimumMagnitude(DM, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricSetMaximumMagnitude(DM, PetscReal);

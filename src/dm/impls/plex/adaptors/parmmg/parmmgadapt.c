@@ -25,7 +25,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   PetscInt          *gv_new, *owners, *verticesNewSorted, pStart, pEnd;
   PetscInt           numCellsNew, numVerticesNew, numCornersNew, numFacesNew, numVerticesNewLoc;
   const PetscInt    *gV, *ioffset, *irootloc, *roffset, *rmine, *rremote;
-  PetscBool          flg = PETSC_FALSE, noInsert, noSwap, noMove, isotropic, uniform;
+  PetscBool          flg = PETSC_FALSE, noInsert, noSwap, noMove, noSurf, isotropic, uniform;
   const PetscMPIInt *iranks, *rranks;
   PetscMPIInt        numProcs, rank;
   PMMG_pParMesh      parmesh = NULL;
@@ -248,6 +248,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = DMPlexMetricNoInsertion(dm, &noInsert);CHKERRQ(ierr);
   ierr = DMPlexMetricNoSwapping(dm, &noSwap);CHKERRQ(ierr);
   ierr = DMPlexMetricNoMovement(dm, &noMove);CHKERRQ(ierr);
+  ierr = DMPlexMetricNoSurf(dm, &noSurf);CHKERRQ(ierr);
   ierr = DMPlexMetricGetVerbosity(dm, &verbosity);CHKERRQ(ierr);
   ierr = DMPlexMetricGetNumIterations(dm, &numIter);CHKERRQ(ierr);
   ierr = DMPlexMetricGetGradationFactor(dm, &gradationFactor);CHKERRQ(ierr);
@@ -258,6 +259,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_noinsert, noInsert);
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_noswap, noSwap);
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_nomove, noMove);
+  ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_nosurf, noSurf);
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_verbose, verbosity);
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_globalNum, 1);
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_niter, numIter);
