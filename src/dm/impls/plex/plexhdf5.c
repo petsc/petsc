@@ -6,8 +6,8 @@
 
 #if defined(PETSC_HAVE_HDF5)
 
-typedef struct DMPlexStorageVersion {
-  PetscInt major, minor, subminor;
+typedef struct {
+  int major, minor, subminor;
 } DMPlexStorageVersion;
 
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
@@ -32,6 +32,39 @@ static PetscErrorCode DMPlexStorageVersionParseString_Private(DM dm, const char 
   v->major    = ti[0];
   v->minor    = ti[1];
   v->subminor = ti[2];
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMPlexStorageVersionCheck_Private(DM dm, DMPlexStorageVersion *version)
+{
+  PetscBool valid = PETSC_FALSE;
+
+  PetscFunctionBegin;
+  switch (version->major) {
+  case 1:
+    switch (version->minor) {
+    case 0:
+      switch (version->subminor) {
+      case 0:
+        valid = PETSC_TRUE;
+        break;
+      };
+      break;
+    };
+    break;
+  case 2:
+    switch (version->minor) {
+    case 0:
+      switch (version->subminor) {
+      case 0:
+        valid = PETSC_TRUE;
+        break;
+      };
+      break;
+    };
+    break;
+  }
+  PetscCheck(valid, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "DMPlexStorageVersion %d.%d.%d not supported", version->major, version->minor, version->subminor);
   PetscFunctionReturn(0);
 }
 
@@ -65,6 +98,7 @@ static PetscErrorCode DMPlexStorageVersionSetUpWriting_Private(DM dm, PetscViewe
   }
   PetscCall(PetscViewerHDF5WriteAttribute(viewer, NULL, "petsc_version_git", PETSC_STRING, PETSC_VERSION_GIT));
   PetscCall(DMPlexStorageVersionParseString_Private(dm, optVersion, version));
+  PetscCall(DMPlexStorageVersionCheck_Private(dm, version));
   PetscFunctionReturn(0);
 }
 
@@ -79,6 +113,7 @@ static PetscErrorCode DMPlexStorageVersionGet_Private(DM dm, PetscViewer viewer,
   PetscCall(PetscStrallocpy("1.0.0", &defaultVersion));
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, NULL, ATTR_NAME, PETSC_STRING, &defaultVersion, &versionString));
   PetscCall(DMPlexStorageVersionParseString_Private(dm, versionString, version));
+  PetscCall(DMPlexStorageVersionCheck_Private(dm, version));
   PetscCall(PetscFree(versionString));
   PetscCall(PetscFree(defaultVersion));
   PetscFunctionReturn(0);
