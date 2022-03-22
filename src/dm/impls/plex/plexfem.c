@@ -6,6 +6,16 @@
 #include <petsc/private/petscfeimpl.h>
 #include <petsc/private/petscfvimpl.h>
 
+PetscBool Clementcite = PETSC_FALSE;
+const char ClementCitation[] = "@article{clement1975approximation,\n"
+                               "  title   = {Approximation by finite element functions using local regularization},\n"
+                               "  author  = {Philippe Cl{\\'e}ment},\n"
+                               "  journal = {Revue fran{\\c{c}}aise d'automatique, informatique, recherche op{\\'e}rationnelle. Analyse num{\\'e}rique},\n"
+                               "  volume  = {9},\n"
+                               "  number  = {R2},\n"
+                               "  pages   = {77--84},\n"
+                               "  year    = {1975}\n}\n";
+
 static PetscErrorCode DMPlexConvertPlex(DM dm, DM *plex, PetscBool copy)
 {
   PetscBool      isPlex;
@@ -1718,20 +1728,148 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
+  DMPlexComputeClementInterpolant - This function computes the L2 projection of the cellwise values of a function u onto P1, and stores it in a Vec.
+
+  Collective on dm
+
+  Input Parameters:
++ dm - The DM
+- locX  - The coefficient vector u_h
+
+  Output Parameter:
+. locC - A Vec which holds the Clement interpolant of the function
+
+  Notes:
+  u_h(v_i) = \sum_{T_i \in support(v_i)} |T_i| u_h(T_i) / \sum_{T_i \in support(v_i)} |T_i| where |T_i| is the cell volume
+
+  Level: developer
+
+.seealso: DMProjectFunction(), DMComputeL2Diff(), DMPlexComputeL2FieldDiff(), DMComputeL2GradientDiff()
+@*/
+PetscErrorCode DMPlexComputeClementInterpolant(DM dm, Vec locX, Vec locC)
+{
+  PetscInt         debug = ((DM_Plex *) dm->data)->printFEM;
+  DM               dmc;
+  PetscQuadrature  quad;
+  PetscScalar     *interpolant, *valsum;
+  PetscFEGeom      fegeom;
+  PetscReal       *coords;
+  const PetscReal *quadPoints, *quadWeights;
+  PetscInt         dim, cdim, Nf, f, Nc = 0, Nq, qNc, cStart, cEnd, vStart, vEnd, v;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscCitationsRegister(ClementCitation, &Clementcite);CHKERRQ(ierr);
+  ierr = VecGetDM(locC, &dmc);CHKERRQ(ierr);
+  ierr = VecSet(locC, 0.0);CHKERRQ(ierr);
+  ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &cdim);CHKERRQ(ierr);
+  fegeom.dimEmbed = cdim;
+  ierr = DMGetNumFields(dm, &Nf);CHKERRQ(ierr);
+  PetscCheck(Nf > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of fields is zero!");
+  for (f = 0; f < Nf; ++f) {
+    PetscObject  obj;
+    PetscClassId id;
+    PetscInt     fNc;
+
+    ierr = DMGetField(dm, f, NULL, &obj);CHKERRQ(ierr);
+    ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+    if (id == PETSCFE_CLASSID) {
+      PetscFE fe = (PetscFE) obj;
+
+      ierr = PetscFEGetQuadrature(fe, &quad);CHKERRQ(ierr);
+      ierr = PetscFEGetNumComponents(fe, &fNc);CHKERRQ(ierr);
+    } else if (id == PETSCFV_CLASSID) {
+      PetscFV fv = (PetscFV) obj;
+
+      ierr = PetscFVGetQuadrature(fv, &quad);CHKERRQ(ierr);
+      ierr = PetscFVGetNumComponents(fv, &fNc);CHKERRQ(ierr);
+    } else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", f);
+    Nc += fNc;
+  }
+  ierr = PetscQuadratureGetData(quad, NULL, &qNc, &Nq, &quadPoints, &quadWeights);CHKERRQ(ierr);
+  PetscCheck(qNc == 1,PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_SIZ, "Quadrature components %D > 1", qNc);
+  ierr = PetscMalloc6(Nc*2, &valsum, Nc, &interpolant, cdim*Nq, &coords, Nq, &fegeom.detJ, cdim*cdim*Nq, &fegeom.J, cdim*cdim*Nq, &fegeom.invJ);CHKERRQ(ierr);
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  for (v = vStart; v < vEnd; ++v) {
+    PetscScalar volsum = 0.0;
+    PetscInt   *star   = NULL;
+    PetscInt    starSize, st, fc;
+
+    ierr = PetscArrayzero(valsum, Nc);CHKERRQ(ierr);
+    ierr = DMPlexGetTransitiveClosure(dm, v, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+    for (st = 0; st < starSize*2; st += 2) {
+      const PetscInt cell = star[st];
+      PetscScalar   *val  = &valsum[Nc];
+      PetscScalar   *x    = NULL;
+      PetscReal      vol  = 0.0;
+      PetscInt       foff = 0;
+
+      if ((cell < cStart) || (cell >= cEnd)) continue;
+      ierr = DMPlexComputeCellGeometryFEM(dm, cell, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ);CHKERRQ(ierr);
+      ierr = DMPlexVecGetClosure(dm, NULL, locX, cell, NULL, &x);CHKERRQ(ierr);
+      for (f = 0; f < Nf; ++f) {
+        PetscObject  obj;
+        PetscClassId id;
+        PetscInt     Nb, fNc, q;
+
+        ierr = PetscArrayzero(val, Nc);CHKERRQ(ierr);
+        ierr = DMGetField(dm, f, NULL, &obj);CHKERRQ(ierr);
+        ierr = PetscObjectGetClassId(obj, &id);CHKERRQ(ierr);
+        if (id == PETSCFE_CLASSID)      {ierr = PetscFEGetNumComponents((PetscFE) obj, &fNc);CHKERRQ(ierr);ierr = PetscFEGetDimension((PetscFE) obj, &Nb);CHKERRQ(ierr);}
+        else if (id == PETSCFV_CLASSID) {ierr = PetscFVGetNumComponents((PetscFV) obj, &fNc);CHKERRQ(ierr);Nb = 1;}
+        else SETERRQ(PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", f);
+        for (q = 0; q < Nq; ++q) {
+          const PetscReal wt = quadWeights[q]*fegeom.detJ[q];
+          PetscFEGeom     qgeom;
+
+          qgeom.dimEmbed = fegeom.dimEmbed;
+          qgeom.J        = &fegeom.J[q*cdim*cdim];
+          qgeom.invJ     = &fegeom.invJ[q*cdim*cdim];
+          qgeom.detJ     = &fegeom.detJ[q];
+          PetscCheck(fegeom.detJ[q] > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %D, quadrature points %D", (double) fegeom.detJ[q], cell, q);
+          if (id == PETSCFE_CLASSID) {ierr = PetscFEInterpolate_Static((PetscFE) obj, &x[foff], &qgeom, q, interpolant);CHKERRQ(ierr);}
+          else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %D", f);
+          for (fc = 0; fc < fNc; ++fc) val[foff+fc] += interpolant[fc]*wt;
+          vol += wt;
+        }
+        foff += Nb;
+      }
+      ierr = DMPlexVecRestoreClosure(dm, NULL, locX, cell, NULL, &x);CHKERRQ(ierr);
+      for (fc = 0; fc < Nc; ++fc) valsum[fc] += val[fc];
+      volsum += vol;
+      if (debug) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "Vertex %" PetscInt_FMT " Cell %" PetscInt_FMT " value: [", v, cell);CHKERRQ(ierr);
+        for (fc = 0; fc < Nc; ++fc) {
+          if (fc) {ierr = PetscPrintf(PETSC_COMM_SELF, ", ");CHKERRQ(ierr);}
+          ierr = PetscPrintf(PETSC_COMM_SELF, "%g", (double) PetscRealPart(val[fc]));CHKERRQ(ierr);
+        }
+        ierr = PetscPrintf(PETSC_COMM_SELF, "]\n");CHKERRQ(ierr);
+      }
+    }
+    for (fc = 0; fc < Nc; ++fc) valsum[fc] /= volsum;
+    ierr = DMPlexRestoreTransitiveClosure(dm, v, PETSC_FALSE, &starSize, &star);CHKERRQ(ierr);
+    ierr = DMPlexVecSetClosure(dmc, NULL, locC, v, valsum, INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = PetscFree6(valsum, interpolant, coords, fegeom.detJ, fegeom.J, fegeom.invJ);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/*@
   DMPlexComputeGradientClementInterpolant - This function computes the L2 projection of the cellwise gradient of a function u onto P1, and stores it in a Vec.
 
   Collective on dm
 
   Input Parameters:
 + dm - The DM
-- LocX  - The coefficient vector u_h
+- locX  - The coefficient vector u_h
 
   Output Parameter:
 . locC - A Vec which holds the Clement interpolant of the gradient
 
   Notes:
-    Add citation to (Clement, 1975) and definition of the interpolant
   \nabla u_h(v_i) = \sum_{T_i \in support(v_i)} |T_i| \nabla u_h(T_i) / \sum_{T_i \in support(v_i)} |T_i| where |T_i| is the cell volume
 
   Level: developer
@@ -1752,6 +1890,7 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = PetscCitationsRegister(ClementCitation, &Clementcite);CHKERRQ(ierr);
   ierr = VecGetDM(locC, &dmC);CHKERRQ(ierr);
   ierr = VecSet(locC, 0.0);CHKERRQ(ierr);
   ierr = DMGetDimension(dm, &dim);CHKERRQ(ierr);
