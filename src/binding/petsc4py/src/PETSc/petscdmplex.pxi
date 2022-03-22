@@ -160,6 +160,8 @@ cdef extern from * nogil:
     int DMPlexMetricGetNormalizationOrder(PetscDM,PetscReal*)
     int DMPlexMetricSetGradationFactor(PetscDM,PetscReal)
     int DMPlexMetricGetGradationFactor(PetscDM,PetscReal*)
+    int DMPlexMetricSetHausdorffNumber(PetscDM,PetscReal)
+    int DMPlexMetricGetHausdorffNumber(PetscDM,PetscReal*)
     int DMPlexMetricCreate(PetscDM,PetscInt,PetscVec*)
     int DMPlexMetricCreateUniform(PetscDM,PetscInt,PetscReal,PetscVec*)
     int DMPlexMetricCreateIsotropic(PetscDM,PetscInt,PetscVec,PetscVec*)

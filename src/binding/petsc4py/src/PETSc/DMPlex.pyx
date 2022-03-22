@@ -791,6 +791,14 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexMetricGetGradationFactor(self.dm, &beta) )
         return beta
 
+    def metricSetHausdorffNumber(self, PetscReal hausd):
+        CHKERR( DMPlexMetricSetHausdorffNumber(self.dm, hausd) )
+
+    def metricGetHausdorffNumber(self):
+        cdef PetscReal hausd
+        CHKERR( DMPlexMetricGetHausdorffNumber(self.dm, &hausd) )
+        return hausd
+
     def metricCreate(self, field=0):
         cdef Vec metric = Vec()
         CHKERR( DMPlexMetricCreate(self.dm, field, &metric.vec) )
