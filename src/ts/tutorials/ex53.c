@@ -685,14 +685,12 @@ static PetscErrorCode terzaghi_2d_p_t(PetscInt dim, PetscReal time, const PetscR
     PetscReal   zstar = x[1] / L;                                  /* - */
     PetscReal   tstar = PetscRealPart(c*time) / PetscSqr(2.0*L);   /* - */
     PetscScalar F1_t  = 0.0;
-    PetscScalar F1_zz = 0.0;
 
     PetscCheck(PetscAbsScalar((1/M + (alpha*eta)/G) - S) <= 1.0e-10,PETSC_COMM_SELF, PETSC_ERR_PLIB, "S %g != check %g", S, (1/M + (alpha*eta)/G));
 
     for (m = 1; m < 2*N+1; ++m) {
       if (m%2 == 1) {
         F1_t += ((-m*PETSC_PI*c) / PetscSqr(L)) * PetscSinReal(0.5*m*PETSC_PI*zstar) * PetscExpReal(-PetscSqr(m*PETSC_PI)*tstar);
-        F1_zz += (-m*PETSC_PI / PetscSqr(L)) * PetscSinReal(0.5*m*PETSC_PI*zstar) * PetscExpReal(-PetscSqr(m*PETSC_PI)*tstar);
       }
     }
     u[0] = ((P_0*eta) / (G*S)) * F1_t; /* Pa / s */
@@ -1059,35 +1057,20 @@ static PetscErrorCode mandel_2d_p_t(PetscInt dim, PetscReal time, const PetscRea
 
   CHKERRQ(PetscBagGetData(user->bag, (void **) &param));
 
-  PetscInt NITER = user->niter;
-
   PetscScalar alpha = param->alpha;
   PetscScalar K_u = param->K_u;
   PetscScalar M = param->M;
   PetscScalar G = param->mu;
-  PetscScalar k = param->k;
-  PetscScalar mu_f = param->mu_f;
   PetscScalar F = param->P_0;
 
   PetscScalar K_d = K_u - alpha*alpha*M;
   PetscScalar nu = (3.0*K_d - 2.0*G) / (2.0*(3.0*K_d + G));
   PetscScalar nu_u = (3.0*K_u - 2.0*G) / (2.0*(3.0*K_u + G));
-  PetscScalar kappa = k / mu_f;
 
   PetscReal   a = (user->xmax[0] - user->xmin[0]) / 2.0;
-  PetscReal   c = PetscRealPart(((2.0*kappa*G) * (1.0 - nu) * (nu_u - nu)) / (alpha*alpha * (1.0 - 2.0*nu) * (1.0 - nu_u)));
   //PetscScalar A1 = 3.0 / (B * (1.0 + nu_u));
   //PetscScalar A2 = (alpha * (1.0 - 2.0*nu)) / (1.0 - nu);
 
-  // Series term
-  PetscScalar P_s = 0.0;
-
-  for (PetscInt n=1; n < NITER+1; n++)
-  {
-    PetscReal alpha_n = user->zeroArray[n-1];
-
-    P_s += (-1.0*alpha_n*alpha_n*c*( -1.0*PetscCosReal(alpha_n) + PetscCosReal( (alpha_n*x[0])/a))*PetscExpReal( (-1.0*alpha_n*alpha_n*c*time)/(a*a))*PetscSinReal(alpha_n)) / ( a*a*(alpha_n - PetscSinReal(alpha_n)*PetscCosReal(alpha_n)));
-  }
   u[0] = ( (2.0*F*(-2.0*nu + 3.0*nu_u))/(3.0*a*alpha*(1.0 - 2.0*nu)));
 
   return 0;
