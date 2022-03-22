@@ -14,7 +14,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   Vec                coordinates;
   PetscSF            sf;
   const PetscScalar *coords, *met;
-  PetscReal         *vertices, *metric, *verticesNew, *verticesNewLoc, gradationFactor;
+  PetscReal         *vertices, *metric, *verticesNew, *verticesNewLoc, gradationFactor, hausdorffNumber;
   PetscInt          *cells, *cellsNew, *cellTags, *cellTagsNew, *verTags, *verTagsNew;
   PetscInt          *bdFaces, *faceTags, *facesNew, *faceTagsNew;
   PetscInt          *corners, *requiredCells, *requiredVer, *ridges, *requiredFaces;
@@ -251,6 +251,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = DMPlexMetricGetVerbosity(dm, &verbosity);CHKERRQ(ierr);
   ierr = DMPlexMetricGetNumIterations(dm, &numIter);CHKERRQ(ierr);
   ierr = DMPlexMetricGetGradationFactor(dm, &gradationFactor);CHKERRQ(ierr);
+  ierr = DMPlexMetricGetHausdorffNumber(dm, &hausdorffNumber);CHKERRQ(ierr);
   ierr = PMMG_Init_parMesh(PMMG_ARG_start, PMMG_ARG_ppParMesh, &parmesh, PMMG_ARG_pMesh, PMMG_ARG_pMet, PMMG_ARG_dim, 3, PMMG_ARG_MPIComm, comm, PMMG_ARG_end);
   ierr = PMMG_Set_meshSize(parmesh, numVertices, numCells, 0, numFaceTags, 0, 0);
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_APImode, PMMG_APIDISTRIB_nodes);
@@ -261,6 +262,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_globalNum, 1);
   ierr = PMMG_Set_iparameter(parmesh, PMMG_IPARAM_niter, numIter);
   ierr = PMMG_Set_dparameter(parmesh, PMMG_DPARAM_hgrad, gradationFactor);
+  ierr = PMMG_Set_dparameter(parmesh, PMMG_DPARAM_hausd, hausdorffNumber);
   ierr = PMMG_Set_vertices(parmesh, vertices, verTags);
   ierr = PMMG_Set_tetrahedra(parmesh, cells, cellTags);
   ierr = PMMG_Set_triangles(parmesh, bdFaces, faceTags);

@@ -482,6 +482,8 @@ PETSC_EXTERN PetscErrorCode DMPlexMetricSetNormalizationOrder(DM, PetscReal);
 PETSC_EXTERN PetscErrorCode DMPlexMetricGetNormalizationOrder(DM, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricSetGradationFactor(DM, PetscReal);
 PETSC_EXTERN PetscErrorCode DMPlexMetricGetGradationFactor(DM, PetscReal *);
+PETSC_EXTERN PetscErrorCode DMPlexMetricSetHausdorffNumber(DM, PetscReal);
+PETSC_EXTERN PetscErrorCode DMPlexMetricGetHausdorffNumber(DM, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricSetVerbosity(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexMetricGetVerbosity(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexMetricSetNumIterations(DM, PetscInt);

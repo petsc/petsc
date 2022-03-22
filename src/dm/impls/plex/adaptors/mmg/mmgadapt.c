@@ -12,7 +12,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   PetscSection       coordSection;
   Vec                coordinates;
   const PetscScalar *coords, *met;
-  PetscReal         *vertices, *metric, *verticesNew, gradationFactor;
+  PetscReal         *vertices, *metric, *verticesNew, gradationFactor, hausdorffNumber;
   PetscInt          *cells, *cellsNew, *cellTags, *cellTagsNew, *verTags, *verTagsNew;
   PetscInt          *bdFaces, *faceTags, *facesNew, *faceTagsNew;
   PetscInt          *corners, *requiredCells, *requiredVer, *ridges, *requiredFaces;
@@ -141,6 +141,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   /* Send mesh to Mmg and remesh */
   ierr = DMPlexMetricGetVerbosity(dm, &verbosity);CHKERRQ(ierr);
   ierr = DMPlexMetricGetGradationFactor(dm, &gradationFactor);CHKERRQ(ierr);
+  ierr = DMPlexMetricGetHausdorffNumber(dm, &hausdorffNumber);CHKERRQ(ierr);
   ierr = DMPlexMetricNoInsertion(dm, &noInsert);CHKERRQ(ierr);
   ierr = DMPlexMetricNoSwapping(dm, &noSwap);CHKERRQ(ierr);
   ierr = DMPlexMetricNoMovement(dm, &noMove);CHKERRQ(ierr);
@@ -152,6 +153,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
     ierr = MMG2D_Set_iparameter(mmg_mesh, mmg_metric, MMG2D_IPARAM_nomove, noMove);
     ierr = MMG2D_Set_iparameter(mmg_mesh, mmg_metric, MMG2D_IPARAM_verbose, verbosity);
     ierr = MMG2D_Set_dparameter(mmg_mesh, mmg_metric, MMG2D_DPARAM_hgrad, gradationFactor);
+    ierr = MMG2D_Set_dparameter(mmg_mesh, mmg_metric, MMG2D_DPARAM_hausd, hausdorffNumber);
     ierr = MMG2D_Set_meshSize(mmg_mesh, numVertices, numCells, 0, numFaceTags);
     ierr = MMG2D_Set_vertices(mmg_mesh, vertices, verTags);
     ierr = MMG2D_Set_triangles(mmg_mesh, cells, cellTags);
@@ -167,6 +169,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
     ierr = MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_nomove, noMove);
     ierr = MMG3D_Set_iparameter(mmg_mesh, mmg_metric, MMG3D_IPARAM_verbose, verbosity);
     ierr = MMG3D_Set_dparameter(mmg_mesh, mmg_metric, MMG3D_DPARAM_hgrad, gradationFactor);
+    ierr = MMG3D_Set_dparameter(mmg_mesh, mmg_metric, MMG2D_DPARAM_hausd, hausdorffNumber);
     ierr = MMG3D_Set_meshSize(mmg_mesh, numVertices, numCells, 0, numFaceTags, 0, 0);
     ierr = MMG3D_Set_vertices(mmg_mesh, vertices, verTags);
     ierr = MMG3D_Set_tetrahedra(mmg_mesh, cells, cellTags);

@@ -10,7 +10,7 @@ PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
   PetscBool      noInsert = PETSC_FALSE, noSwap = PETSC_FALSE, noMove = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscInt       verbosity = -1, numIter = 3;
-  PetscReal      h_min = 1.0e-30, h_max = 1.0e+30, a_max = 1.0e+05, p = 1.0, target = 1000.0, beta = 1.3;
+  PetscReal      h_min = 1.0e-30, h_max = 1.0e+30, a_max = 1.0e+05, p = 1.0, target = 1000.0, beta = 1.3, hausd = 0.01;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
@@ -43,6 +43,8 @@ PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
   ierr = DMPlexMetricSetTargetComplexity(dm, target);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-dm_plex_metric_gradation_factor", "Metric gradation factor", "DMAdaptMetric", beta, &beta, NULL);CHKERRQ(ierr);
   ierr = DMPlexMetricSetGradationFactor(dm, beta);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-dm_plex_metric_hausdorff_number", "Metric Hausdorff number", "DMAdaptMetric", hausd, &hausd, NULL);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetHausdorffNumber(dm, hausd);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -666,7 +668,7 @@ PetscErrorCode DMPlexMetricGetNormalizationOrder(DM dm, PetscReal *p)
 
   This is only used by Mmg and ParMmg (not Pragmatic).
 
-.seealso: DMPlexMetricGetGradationFactor()
+.seealso: DMPlexMetricGetGradationFactor(), DMPlexMetricSetHausdorffNumber()
 @*/
 PetscErrorCode DMPlexMetricSetGradationFactor(DM dm, PetscReal beta)
 {
@@ -701,7 +703,7 @@ PetscErrorCode DMPlexMetricSetGradationFactor(DM dm, PetscReal beta)
 
   This is only used by Mmg and ParMmg (not Pragmatic).
 
-.seealso: DMPlexMetricSetGradationFactor()
+.seealso: DMPlexMetricSetGradationFactor(), DMPlexMetricGetHausdorffNumber()
 @*/
 PetscErrorCode DMPlexMetricGetGradationFactor(DM dm, PetscReal *beta)
 {
@@ -714,6 +716,80 @@ PetscErrorCode DMPlexMetricGetGradationFactor(DM dm, PetscReal *beta)
     ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
   }
   *beta = plex->metricCtx->gradationFactor;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexMetricSetHausdorffNumber - Set the metric Hausdorff number
+
+  Input parameters:
++ dm    - The DM
+- hausd - The metric Hausdorff number
+
+  Level: beginner
+
+  Notes:
+
+  The Hausdorff number imposes the maximal distance between the piecewise linear approximation of the
+  boundary and the reconstructed ideal boundary. Thus, a low Hausdorff parameter leads to refine the
+  high curvature areas. By default, the Hausdorff value is set to 0.01, which is a suitable value for
+  an object of size 1 in each direction. For smaller (resp. larger) objects, you may need to decrease
+  (resp. increase) the Hausdorff parameter. (Taken from
+  https://www.mmgtools.org/mmg-remesher-try-mmg/mmg-remesher-options/mmg-remesher-option-hausd).
+
+  This is only used by Mmg and ParMmg (not Pragmatic).
+
+.seealso: DMPlexMetricSetGradationFactor(), DMPlexMetricGetHausdorffNumber()
+@*/
+PetscErrorCode DMPlexMetricSetHausdorffNumber(DM dm, PetscReal hausd)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  plex->metricCtx->hausdorffNumber = hausd;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexMetricGetHausdorffNumber - Get the metric Hausdorff number
+
+  Input parameters:
+. dm    - The DM
+
+  Output parameters:
+. hausd - The metric Hausdorff number
+
+  Level: beginner
+
+  Notes:
+
+  The Hausdorff number imposes the maximal distance between the piecewise linear approximation of the
+  boundary and the reconstructed ideal boundary. Thus, a low Hausdorff parameter leads to refine the
+  high curvature areas. By default, the Hausdorff value is set to 0.01, which is a suitable value for
+  an object of size 1 in each direction. For smaller (resp. larger) objects, you may need to decrease
+  (resp. increase) the Hausdorff parameter. (Taken from
+  https://www.mmgtools.org/mmg-remesher-try-mmg/mmg-remesher-options/mmg-remesher-option-hausd).
+
+  This is only used by Mmg and ParMmg (not Pragmatic).
+
+.seealso: DMPlexMetricGetGradationFactor(), DMPlexMetricSetHausdorffNumber()
+@*/
+PetscErrorCode DMPlexMetricGetHausdorffNumber(DM dm, PetscReal *hausd)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  *hausd = plex->metricCtx->hausdorffNumber;
   PetscFunctionReturn(0);
 }
 
