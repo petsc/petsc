@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(PetscOptionsGetInt(NULL,NULL, "-n", &n, NULL));
   PetscCall(PetscOptionsGetInt(NULL,NULL, "-n_timesteps", &n_timesteps, NULL));
-  PetscCheckFalse(n_timesteps < 0,comm, PETSC_ERR_USER_INPUT, "-n_timesteps must be nonnegative");
+  PetscCheck(n_timesteps >= 0,comm, PETSC_ERR_USER_INPUT, "-n_timesteps must be nonnegative");
 
   /* create, initialize and write vectors */
   PetscCall(PetscRandomCreate(comm, &rand));

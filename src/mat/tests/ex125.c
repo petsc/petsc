@@ -45,7 +45,7 @@ int main(int argc,char **args)
     PetscCall(MatShift(A,1.0));
   }
   PetscCall(MatGetLocalSize(A,&m,&n));
-  PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
+  PetscCheck(m == n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
 
   /* if A is symmetric, set its flag -- required by MatGetInertia() */
   PetscCall(MatIsSymmetric(A,0.0,&flg));

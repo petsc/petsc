@@ -137,7 +137,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJ_2d(PetscInt i,PetscInt j,Pe
         break;
       }
     }
-    PetscCheckFalse(pi == -1,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ij] pi cannot be determined : range %D, val %D",Mp,i);
+    PetscCheck(pi != -1,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ij] pi cannot be determined : range %D, val %D",Mp,i);
     *_pi = (PetscMPIInt)pi;
   }
 
@@ -148,7 +148,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJ_2d(PetscInt i,PetscInt j,Pe
         break;
       }
     }
-    PetscCheckFalse(pj == -1,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ij] pj cannot be determined : range %D, val %D",Np,j);
+    PetscCheck(pj != -1,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmda-ij] pj cannot be determined : range %D, val %D",Np,j);
     *_pj = (PetscMPIInt)pj;
   }
 
@@ -267,9 +267,9 @@ static PetscErrorCode DMDACreatePermutation_2d(DM dmrepart,DM dmf,Mat *mat)
       PetscCall(_DMDADetermineGlobalS0_2d(rank_ijk_re,Mp_re,Np_re,range_i_re,range_j_re,&s0_re));
 
       ii = i - start_i_re[ rank_reI[0] ];
-      PetscCheckFalse(ii < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm2d] index error ii");
+      PetscCheck(ii >= 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm2d] index error ii");
       jj = j - start_j_re[ rank_reI[1] ];
-      PetscCheckFalse(jj < 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm2d] index error jj");
+      PetscCheck(jj >= 0,PETSC_COMM_SELF,PETSC_ERR_USER,"[dmdarepart-perm2d] index error jj");
 
       lenI_re[0] = range_i_re[ rank_reI[0] ];
       lenI_re[1] = range_j_re[ rank_reI[1] ];
@@ -659,7 +659,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd,PetscInt *_nref,MPI_Comm **_cl,DM *
   ndecomps = 1;
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-ndecomps",&ndecomps,NULL));
   ncoarsen = ndecomps - 1;
-  PetscCheckFalse(ncoarsen < 0,PETSC_COMM_WORLD,PETSC_ERR_USER,"-ndecomps must be >= 1");
+  PetscCheck(ncoarsen >= 0,PETSC_COMM_WORLD,PETSC_ERR_USER,"-ndecomps must be >= 1");
 
   levelrefs = 2;
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-level_nrefs",&levelrefs,NULL));
@@ -671,7 +671,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd,PetscInt *_nref,MPI_Comm **_cl,DM *
   set = PETSC_FALSE;
   PetscCall(PetscOptionsGetIntArray(NULL,NULL,"-level_comm_red_factor",number,&found,&set));
   if (set) {
-    PetscCheckFalse(found != ncoarsen,PETSC_COMM_WORLD,PETSC_ERR_USER,"Expected %D values for -level_comm_red_factor. Found %D",ncoarsen,found);
+    PetscCheck(found == ncoarsen,PETSC_COMM_WORLD,PETSC_ERR_USER,"Expected %D values for -level_comm_red_factor. Found %D",ncoarsen,found);
   }
 
   PetscCall(PetscMalloc1(ncoarsen+1,&pscommlist));

@@ -311,8 +311,8 @@ static PetscErrorCode CapsuleReadAndCompareAttributes(Capsule c, PetscViewer v, 
         PetscCall(PetscPrintf(comm, "---"));
       }
     }
-    PetscCheckFalse(!gd && hasAttr,comm, PETSC_ERR_PLIB, "Attribute %s/%s/%s exists while its parent %s/%s doesn't exist", group, parent, attribute, group, parent);
-    PetscCheckFalse(flg != hasAttr,comm, PETSC_ERR_PLIB, "Attribute %s/%s should exist? %s Exists? %s", parent, attribute, PetscBools[flg], PetscBools[hasAttr]);
+    PetscCheck(gd || !hasAttr,comm, PETSC_ERR_PLIB, "Attribute %s/%s/%s exists while its parent %s/%s doesn't exist", group, parent, attribute, group, parent);
+    PetscCheck(flg == hasAttr,comm, PETSC_ERR_PLIB, "Attribute %s/%s should exist? %s Exists? %s", parent, attribute, PetscBools[flg], PetscBools[hasAttr]);
 
     /* check loaded attributes are the same as original */
     if (hasAttr) {
@@ -438,7 +438,7 @@ static PetscErrorCode testGroupsDatasets(PetscViewer viewer)
     PetscCall(PetscStrcmp(group, expected, &flg2));
     PetscCheck(flg2,comm, PETSC_ERR_PLIB, "Current group %s not equal to expected %s", group, expected);
     PetscCall(shouldExist(group, PETSC_TRUE, &flg2));
-    PetscCheckFalse(flg1 != flg2,comm, PETSC_ERR_PLIB, "Group %s should exist? %s Exists in %s? %s", group, PetscBools[flg2], filename, PetscBools[flg1]);
+    PetscCheck(flg1 == flg2,comm, PETSC_ERR_PLIB, "Group %s should exist? %s Exists in %s? %s", group, PetscBools[flg2], filename, PetscBools[flg1]);
   }
 
   /* check existence of datasets; compare loaded vectors with original ones */
@@ -466,7 +466,7 @@ static PetscErrorCode testGroupsDatasets(PetscViewer viewer)
       flg1 = (PetscBool)(flg && flg1); /* both group and dataset need to exist */
       PetscCall(PetscViewerHDF5HasDataset(viewer, name, &flg2));
       if (verbose) PetscCall(PetscPrintf(comm, "    %s dataset? %s", fullname, PetscBools[flg2]));
-      PetscCheckFalse(flg2 != flg1,comm, PETSC_ERR_PLIB, "Dataset %s should exist? %s Exists in %s? %s", fullname, PetscBools[flg1], filename, PetscBools[flg2]);
+      PetscCheck(flg2 == flg1,comm, PETSC_ERR_PLIB, "Dataset %s should exist? %s Exists in %s? %s", fullname, PetscBools[flg1], filename, PetscBools[flg2]);
 
       if (flg2) {
         Vec v;
@@ -558,7 +558,7 @@ static PetscErrorCode testAttributesAbsolutePath(PetscViewer viewer, const char 
 
     PetscCall(CapsuleCreate(old, &c));
     PetscCall(CapsuleWriteAttributes(c, viewer, buf));
-    PetscCheckFalse(capsules[paths2apaths[p]][s],comm, PETSC_ERR_PLIB, "capsules[%" PetscInt_FMT "][%" PetscInt_FMT "] gets overwritten for %s", paths2apaths[p], s, buf);
+    PetscCheck(!capsules[paths2apaths[p]][s],comm, PETSC_ERR_PLIB, "capsules[%" PetscInt_FMT "][%" PetscInt_FMT "] gets overwritten for %s", paths2apaths[p], s, buf);
     capsules[paths2apaths[p]][s] = c;
     old = c;
   }
@@ -590,7 +590,7 @@ static PetscErrorCode testAttributesAbsolutePath(PetscViewer viewer, const char 
     /* check attribute capsule has been created for given path */
     c = capsules[paths2apaths[p]][s];
     flg1 = (PetscBool) !!c;
-    PetscCheckFalse(flg != flg1,comm, PETSC_ERR_PLIB, "Capsule should exist for %s? %s Exists? %s", buf, PetscBools[flg], PetscBools[flg1]);
+    PetscCheck(flg == flg1,comm, PETSC_ERR_PLIB, "Capsule should exist for %s? %s Exists? %s", buf, PetscBools[flg], PetscBools[flg1]);
     if (!flg) continue;
 
     /* check correct existence and fidelity of attributes in file */
@@ -643,7 +643,7 @@ static PetscErrorCode testAttributesPushedPath(PetscViewer viewer)
       if (verbose) PetscCall(PetscPrintf(comm, "Write attributes to %s/%s\n", apaths[paths2apaths[p]], datasets[s]));
       PetscCall(CapsuleCreate(old, &c));
       PetscCall(CapsuleWriteAttributes(c, viewer, datasets[s]));
-      PetscCheckFalse(capsules[paths2apaths[p]][s],comm, PETSC_ERR_PLIB, "capsules[%" PetscInt_FMT "][%" PetscInt_FMT "] gets overwritten for %s/%s", paths2apaths[p], s, paths[p], datasets[s]);
+      PetscCheck(!capsules[paths2apaths[p]][s],comm, PETSC_ERR_PLIB, "capsules[%" PetscInt_FMT "][%" PetscInt_FMT "] gets overwritten for %s/%s", paths2apaths[p], s, paths[p], datasets[s]);
       capsules[paths2apaths[p]][s] = c;
       old = c;
     }
@@ -670,7 +670,7 @@ static PetscErrorCode testAttributesPushedPath(PetscViewer viewer)
       c = capsules[paths2apaths[p]][s];
       flg  = (PetscBool) !!gd;
       flg1 = (PetscBool) !!c;
-      PetscCheckFalse(flg != flg1,comm, PETSC_ERR_PLIB, "Capsule should exist for %s/%s? %s Exists? %s", group, datasets[s], PetscBools[flg], PetscBools[flg1]);
+      PetscCheck(flg == flg1,comm, PETSC_ERR_PLIB, "Capsule should exist for %s/%s? %s Exists? %s", group, datasets[s], PetscBools[flg], PetscBools[flg1]);
       if (!flg) continue;
 
       /* check correct existence of attributes in file */
@@ -728,7 +728,7 @@ static PetscErrorCode testObjectAttributes(PetscViewer viewer)
         if (verbose) PetscCall(PetscPrintf(comm, "Write attributes to %s/%s\n", apaths[paths2apaths[p]], name));
         PetscCall(CapsuleCreate(old, &c));
         PetscCall(CapsuleWriteAttributes(c, viewer, name));
-        PetscCheckFalse(capsules[paths2apaths[p]][s],comm, PETSC_ERR_PLIB, "capsules[%" PetscInt_FMT "][%" PetscInt_FMT "] gets overwritten for %s/%s", paths2apaths[p], s, paths[p], name);
+        PetscCheck(!capsules[paths2apaths[p]][s],comm, PETSC_ERR_PLIB, "capsules[%" PetscInt_FMT "][%" PetscInt_FMT "] gets overwritten for %s/%s", paths2apaths[p], s, paths[p], name);
         capsules[paths2apaths[p]][s] = c;
         old = c;
       }
@@ -764,7 +764,7 @@ static PetscErrorCode testObjectAttributes(PetscViewer viewer)
       /* check attribute capsule has been created for given path */
       c = capsules[paths2apaths[p]][s];
       flg1 = (PetscBool) !!c;
-      PetscCheckFalse(flg != flg1,comm, PETSC_ERR_PLIB, "Capsule should exist for %s/%s? %s Exists? %s", group, name, PetscBools[flg], PetscBools[flg1]);
+      PetscCheck(flg == flg1,comm, PETSC_ERR_PLIB, "Capsule should exist for %s/%s? %s Exists? %s", group, name, PetscBools[flg], PetscBools[flg1]);
 
       /* check correct existence of attributes in file */
       if (flg) {
@@ -802,15 +802,15 @@ static PetscErrorCode testAttributesDefaultValue(PetscViewer viewer)
   bools[1] = PetscNot(bools[0]);
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, "/", "attr_0_bool", PETSC_BOOL, &bools[1], &bools[2]));
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, "/", "attr_nonExisting_bool", PETSC_BOOL, &bools[1], &bools[3]));
-  PetscCheckFalse(bools[2] != bools[0],comm, PETSC_ERR_PLIB, "%s = bools[2] != bools[0] = %s", PetscBools[bools[2]], PetscBools[bools[0]]);
-  PetscCheckFalse(bools[3] != bools[1],comm, PETSC_ERR_PLIB, "%s = bools[3] != bools[1] = %s", PetscBools[bools[3]], PetscBools[bools[1]]);
+  PetscCheck(bools[2] == bools[0],comm, PETSC_ERR_PLIB, "%s = bools[2] != bools[0] = %s", PetscBools[bools[2]], PetscBools[bools[0]]);
+  PetscCheck(bools[3] == bools[1],comm, PETSC_ERR_PLIB, "%s = bools[3] != bools[1] = %s", PetscBools[bools[3]], PetscBools[bools[1]]);
 
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, "/", "attr_0_int", PETSC_INT, NULL, &ints[0]));
   ints[1] = ints[0] * -333;
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, "/", "attr_0_int", PETSC_INT, &ints[1], &ints[2]));
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, "/", "attr_nonExisting_int", PETSC_INT, &ints[1], &ints[3]));
-  PetscCheckFalse(ints[2] != ints[0],comm, PETSC_ERR_PLIB, "%" PetscInt_FMT " = ints[2] != ints[0] = %" PetscInt_FMT, ints[2], ints[0]);
-  PetscCheckFalse(ints[3] != ints[1],comm, PETSC_ERR_PLIB, "%" PetscInt_FMT " = ints[3] != ints[1] = %" PetscInt_FMT, ints[3], ints[1]);
+  PetscCheck(ints[2] == ints[0],comm, PETSC_ERR_PLIB, "%" PetscInt_FMT " = ints[2] != ints[0] = %" PetscInt_FMT, ints[2], ints[0]);
+  PetscCheck(ints[3] == ints[1],comm, PETSC_ERR_PLIB, "%" PetscInt_FMT " = ints[3] != ints[1] = %" PetscInt_FMT, ints[3], ints[1]);
   if (verbose) {
     PetscCall(PetscIntView(nv, ints, PETSC_VIEWER_STDOUT_WORLD));
   }
@@ -819,8 +819,8 @@ static PetscErrorCode testAttributesDefaultValue(PetscViewer viewer)
   reals[1] = reals[0] * -11.1;
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, "/", "attr_0_real", PETSC_REAL, &reals[1], &reals[2]));
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, "/", "attr_nonExisting_real", PETSC_REAL, &reals[1], &reals[3]));
-  PetscCheckFalse(reals[2] != reals[0],comm, PETSC_ERR_PLIB, "%f = reals[2] != reals[0] = %f", reals[2], reals[0]);
-  PetscCheckFalse(reals[3] != reals[1],comm, PETSC_ERR_PLIB, "%f = reals[3] != reals[1] = %f", reals[3], reals[1]);
+  PetscCheck(reals[2] == reals[0],comm, PETSC_ERR_PLIB, "%f = reals[2] != reals[0] = %f", reals[2], reals[0]);
+  PetscCheck(reals[3] == reals[1],comm, PETSC_ERR_PLIB, "%f = reals[3] != reals[1] = %f", reals[3], reals[1]);
   if (verbose) {
     PetscCall(PetscRealView(nv, reals, PETSC_VIEWER_STDOUT_WORLD));
   }

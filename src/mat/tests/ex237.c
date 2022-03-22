@@ -92,7 +92,7 @@ int main(int argc, char** argv)
       PetscCall(MatDestroy(&Tt));
       PetscCall(MatDenseGetArrayRead(T, &ptr));
       PetscCall(MatGetRowIJ(A, 0, PETSC_FALSE, PETSC_FALSE, &An, &Ai, &Aj, &done));
-      PetscCheckFalse(!done || An != m,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes");
+      PetscCheck(done && An == m,PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Inconsistent sizes");
       PetscCall(MatSeqAIJGetArray(A, &Aa));
       PetscCall(MatCreate(PETSC_COMM_WORLD, &B));
       PetscCall(MatSetType(B, MATSEQBAIJ));

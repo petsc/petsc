@@ -62,7 +62,7 @@ int main(int argc,char **args)
 
   /* Read data into vector */
   PetscCall(PetscBinaryRead(fd,&sz,1,NULL,PETSC_INT));
-  PetscCheckFalse(sz <=0,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Error: Must have array length > 0");
+  PetscCheck(sz > 0,PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Error: Must have array length > 0");
 
   PetscCall(PetscPrintf(PETSC_COMM_SELF,"reading data in binary from input.dat, sz =%" PetscInt_FMT " ...\n",sz));
   PetscCall(PetscBinaryRead(fd,avec,sz,NULL,PETSC_SCALAR));

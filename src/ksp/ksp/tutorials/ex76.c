@@ -150,7 +150,7 @@ int main(int argc,char **args)
         PetscCall(MatAYPX(C,-1.0,X,SAME_NONZERO_PATTERN));
         PetscCall(MatNorm(C,NORM_INFINITY,&norm));
         PetscCall(MatDestroy(&C));
-        PetscCheckFalse(norm > 100*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"KSPMatSolve() and KSPSolve() difference has nonzero norm %g with pseudo-block KSPHPDDMType %s",(double)norm,KSPHPDDMTypes[type]);
+        PetscCheck(norm <= 100*PETSC_MACHINE_EPSILON,PetscObjectComm((PetscObject)pc),PETSC_ERR_PLIB,"KSPMatSolve() and KSPSolve() difference has nonzero norm %g with pseudo-block KSPHPDDMType %s",(double)norm,KSPHPDDMTypes[type]);
       }
     }
 #endif
@@ -169,13 +169,13 @@ int main(int argc,char **args)
     PetscCall(PetscLogEventRegister("MatLUFactorNum",PC_CLASSID,&event));
     PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info2));
     if (info1.count || info2.count) {
-      PetscCheckFalse(info2.count <= info1.count,PETSC_COMM_SELF,PETSC_ERR_PLIB,"LU numerical factorization (%d) not called more times than LU symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp",info2.count,info1.count);
+      PetscCheck(info2.count > info1.count,PETSC_COMM_SELF,PETSC_ERR_PLIB,"LU numerical factorization (%d) not called more times than LU symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp",info2.count,info1.count);
     } else {
       PetscCall(PetscLogEventRegister("MatCholFctrSym",PC_CLASSID,&event));
       PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info1));
       PetscCall(PetscLogEventRegister("MatCholFctrNum",PC_CLASSID,&event));
       PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info2));
-      PetscCheckFalse(info2.count <= info1.count,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cholesky numerical factorization (%d) not called more times than Cholesky symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp",info2.count,info1.count);
+      PetscCheck(info2.count > info1.count,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cholesky numerical factorization (%d) not called more times than Cholesky symbolic factorization (%d), broken -pc_hpddm_levels_1_st_share_sub_ksp",info2.count,info1.count);
     }
   }
   PetscCall(KSPDestroy(&ksp));

@@ -41,9 +41,9 @@ int main(int argc,char **args)
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-repmap",&repmap,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-permmap",&permute,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-diffmap",&diffmap,NULL));
-  PetscCheckFalse(size > 1 && m < 4,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be larger or equal 4 for parallel runs");
-  PetscCheckFalse(size == 1 && m < 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be larger or equal 2 for uniprocessor runs");
-  PetscCheckFalse(n < 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of cols should be larger or equal 2");
+  PetscCheck(size == 1 || m >= 4,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be larger or equal 4 for parallel runs");
+  PetscCheck(size != 1 || m >= 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of rows should be larger or equal 2 for uniprocessor runs");
+  PetscCheck(n >= 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Number of cols should be larger or equal 2");
 
   /* create a MATIS matrix */
   PetscCall(MatCreate(PETSC_COMM_WORLD,&A));
@@ -744,7 +744,7 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char* func)
 
     PetscCall(MatMultEqual(A,B,3,&ok));
     PetscCall(MatMultTransposeEqual(A,B,3,&okt));
-    PetscCheckFalse(!ok || !okt,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: mult ok ?  %d, multtranspose ok ? %d",func,ok,okt);
+    PetscCheck(ok && okt,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR ON %s: mult ok ?  %d, multtranspose ok ? %d",func,ok,okt);
   }
   PetscFunctionReturn(0);
 }
@@ -822,7 +822,7 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
   if (squaretest && haszerorows) {
     PetscCall(VecAXPY(b2,-1.,b));
     PetscCall(VecNorm(b2,NORM_INFINITY,&error));
-    PetscCheckFalse(error > PETSC_SQRT_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR IN ZEROROWS ON B %g (diag %s)",(double)error,diagstr);
+    PetscCheck(error <= PETSC_SQRT_MACHINE_EPSILON,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"ERROR IN ZEROROWS ON B %g (diag %s)",(double)error,diagstr);
   }
 
   /* test MatMissingDiagonal */

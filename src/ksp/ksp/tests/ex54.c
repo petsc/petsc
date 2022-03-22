@@ -131,10 +131,10 @@ int main(int argc, char** argv)
     PetscCall(KSPView(QRsolver, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(VecAXPY(a, -1.0, b));
     PetscCall(VecNorm(a, NORM_2, &norm));
-    PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "||a-b|| > PETSC_SMALL (%g)", (double)norm);
+    PetscCheck(norm <= PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "||a-b|| > PETSC_SMALL (%g)", (double)norm);
     PetscCall(MatAXPY(A, -1.0, B, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(A, NORM_FROBENIUS, &norm));
-    PetscCheckFalse(norm > PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "||A-B|| > PETSC_SMALL (%g)", (double)norm);
+    PetscCheck(norm <= PETSC_SMALL,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "||A-B|| > PETSC_SMALL (%g)", (double)norm);
     PetscCall(VecDestroy(&b));
     PetscCall(MatDestroy(&V));
     PetscCall(MatDestroy(&A));

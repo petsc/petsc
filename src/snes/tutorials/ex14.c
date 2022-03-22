@@ -83,7 +83,7 @@ int main(int argc,char **argv)
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   user.param = 6.0;
   PetscCall(PetscOptionsGetReal(NULL,NULL,"-par",&user.param,NULL));
-  PetscCheckFalse(user.param >= bratu_lambda_max || user.param <= bratu_lambda_min,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lambda is out of range");
+  PetscCheck(user.param < bratu_lambda_max && user.param > bratu_lambda_min,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lambda is out of range");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context

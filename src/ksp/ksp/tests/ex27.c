@@ -52,7 +52,7 @@ int main(int argc,char **args)
 
     /* Create a new vector b by padding the old one */
     PetscCall(MatGetLocalSize(A,&m,&n));
-    PetscCheckFalse(m != n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%D, %D)", m, n);
+    PetscCheck(m == n,PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%D, %D)", m, n);
     PetscCall(VecCreate(PETSC_COMM_WORLD,&tmp));
     PetscCall(VecSetSizes(tmp,m,PETSC_DECIDE));
     PetscCall(VecSetFromOptions(tmp));

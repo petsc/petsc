@@ -865,7 +865,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
         maxnbricks = 10;
         PetscCall(PetscOptionsGetRealArray(NULL,NULL, "-brick_nu",values_nu,&maxnbricks,&flg));
         PetscCheck(flg,PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply a list of nu values for each brick");
-        PetscCheckFalse(maxnbricks != nbricks,PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply equal numbers of values for E and nu");
+        PetscCheck(maxnbricks == nbricks,PETSC_COMM_SELF,PETSC_ERR_USER,"User must supply equal numbers of values for E and nu");
 
         span = 1;
         PetscCall(PetscOptionsGetInt(NULL,NULL,"-brick_span",&span,&flg));

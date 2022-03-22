@@ -140,7 +140,7 @@ int main(int argc,char **args)
     PetscCall(MatSetFromOptions(A));
     PetscCall(MatLoad(A,fd));
     PetscCall(MatGetLocalSize(A,&m1,&n1));
-    PetscCheckFalse(m1 != m || n1 != n,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"resulting sizes differ from demanded ones: %D %D != %D %D",m1,n1,m,n);
+    PetscCheck(m1 == m && n1 == n,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"resulting sizes differ from requested ones: %D %D != %D %D",m1,n1,m,n);
   }
   PetscCall(MatGetLocalSize(A,&m,&n));
 

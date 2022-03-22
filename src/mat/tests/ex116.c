@@ -91,7 +91,7 @@ int main(int argc,char **args)
     PetscCall(PetscFree(iwork));
   }
   PetscCall(MatDenseRestoreArray(A_dense,&arrayA));
-  PetscCheckFalse(nevs <= 0,PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED, "nev=%" PetscBLASInt_FMT ", no eigensolution has found", nevs);
+  PetscCheck(nevs > 0,PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED, "nev=%" PetscBLASInt_FMT ", no eigensolution has found", nevs);
 
   /* View eigenvalues */
   PetscCall(PetscOptionsHasName(NULL,NULL, "-eig_view", &flg));

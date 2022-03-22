@@ -44,10 +44,10 @@ int main(int argc,char **args)
   PetscCall(KSPDestroy(&ksp));
   PetscCall(PetscLogEventRegister("PCApply",PC_CLASSID,&event));
   PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info));
-  PetscCheckFalse(PetscDefined(USE_LOG) && m > 1 && info.count,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"PCApply() called %d times",info.count);
+  PetscCheck(!PetscDefined(USE_LOG) || m <= 1 || !info.count,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"PCApply() called %d times",info.count);
   PetscCall(PetscLogEventRegister("PCMatApply",PC_CLASSID,&event));
   PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info));
-  PetscCheckFalse(PetscDefined(USE_LOG) && m > 1 && !info.count,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"PCMatApply() never called");
+  PetscCheck(!PetscDefined(USE_LOG) || m <= 1 || info.count,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"PCMatApply() never called");
   PetscCall(PetscFinalize());
   return 0;
 }

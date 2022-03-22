@@ -22,10 +22,10 @@ int main(int argc,char **args)
   PetscCall(PetscOptionsGetIntArray(NULL,NULL,"-outer_fieldsplit_sizes",outer,&found,&flg));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
   if (flg) {
-    PetscCheckFalse(found == 1,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must supply more than one field");
+    PetscCheck(found != 1,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must supply more than one field");
     j = 0;
     for (i=0; i<found; ++i) j += outer[i];
-    PetscCheckFalse(j != Q,PETSC_COMM_WORLD,PETSC_ERR_USER,"Sum of outer fieldsplit sizes (%D) greater than number of blocks in MatNest (%D)",j,Q);
+    PetscCheck(j == Q,PETSC_COMM_WORLD,PETSC_ERR_USER,"Sum of outer fieldsplit sizes (%D) greater than number of blocks in MatNest (%D)",j,Q);
   }
   PetscCall(KSPCreate(PETSC_COMM_WORLD,&ksp));
   size = PetscMax(3,size);

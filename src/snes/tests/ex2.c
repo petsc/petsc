@@ -15,7 +15,7 @@ static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], 
 {
   PetscInt d, c;
 
-  PetscCheckFalse(Nc != 3,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Something is wrong: %D", Nc);
+  PetscCheck(Nc == 3,PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Something is wrong: %D", Nc);
   for (c = 0; c < Nc; ++c) {
     u[c] = 0.0;
     for (d = 0; d < dim; ++d) u[c] += x[d];

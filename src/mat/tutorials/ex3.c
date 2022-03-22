@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscObjectSetName((PetscObject) y, "y"));
   PetscCall(VecViewFromOptions(y, NULL, "-y_view"));
   PetscCall(VecNorm(y, NORM_2, &error));
-  PetscCheckFalse(error > PETSC_SMALL,comm, PETSC_ERR_ARG_WRONG, "Invalid output, x should be in the nullspace of A");
+  PetscCheck(error <= PETSC_SMALL,comm, PETSC_ERR_ARG_WRONG, "Invalid output, x should be in the nullspace of A");
   /* Check that an interior unit vector gets mapped to something of 1-norm 4 */
   if (size > 1) {
     PetscCall(VecSet(x, 0.0));
@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
     PetscCall(VecAssemblyEnd(x));
     PetscCall(MatMult(A, x, y));
     PetscCall(VecNorm(y, NORM_1, &error));
-    PetscCheckFalse(PetscAbsReal(error - 4) > PETSC_SMALL,comm, PETSC_ERR_ARG_WRONG, "Invalid output for matrix multiply");
+    PetscCheck(PetscAbsReal(error - 4) <= PETSC_SMALL,comm, PETSC_ERR_ARG_WRONG, "Invalid output for matrix multiply");
   }
   /* Cleanup */
   PetscCall(MatDestroy(&A));

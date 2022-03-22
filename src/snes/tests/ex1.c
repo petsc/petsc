@@ -89,7 +89,7 @@ int main(int argc,char **argv)
   PetscCall(PetscOptionsGetInt(NULL,NULL,"-my",&user.my,NULL));
   PetscCall(PetscOptionsGetReal(NULL,NULL,"-par",&user.param,NULL));
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-pc",&pc,NULL));
-  PetscCheckFalse(user.param >= bratu_lambda_max || user.param <= bratu_lambda_min,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lambda is out of range");
+  PetscCheck(user.param < bratu_lambda_max && user.param > bratu_lambda_min,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lambda is out of range");
   N = user.mx*user.my;
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-use_convergence_test",&use_convergence_test,NULL));
 
@@ -147,7 +147,7 @@ int main(int argc,char **argv)
     efficiently using a coloring of the columns of the matrix.
   */
   PetscCall(PetscOptionsGetBool(NULL,NULL,"-snes_fd_coloring",&fd_coloring,NULL));
-  PetscCheckFalse(matrix_free && fd_coloring,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Use only one of -snes_mf, -snes_fd_coloring options!\nYou can do -snes_mf_operator -snes_fd_coloring");
+  PetscCheck(!matrix_free || !fd_coloring,PETSC_COMM_WORLD,PETSC_ERR_ARG_INCOMP,"Use only one of -snes_mf, -snes_fd_coloring options!\nYou can do -snes_mf_operator -snes_fd_coloring");
 
   if (fd_coloring) {
     ISColoring   iscoloring;

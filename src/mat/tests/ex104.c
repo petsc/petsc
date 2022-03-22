@@ -165,7 +165,7 @@ int main(int argc,char **argv)
 
     PetscCall(MatNorm(C, NORM_FROBENIUS, &diff));
     PetscCall(MatNorm(D, NORM_FROBENIUS, &scale));
-    PetscCheckFalse(diff > PETSC_SMALL * scale,PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "MatMatTransposeMult() differs between MAT_INITIAL_MATRIX and MAT_REUSE_MATRIX");
+    PetscCheck(diff <= PETSC_SMALL * scale,PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "MatMatTransposeMult() differs between MAT_INITIAL_MATRIX and MAT_REUSE_MATRIX");
     PetscCall(MatDestroy(&C));
 
     PetscCall(MatMatTransposeMultEqual(A,B,D,10,&equal));

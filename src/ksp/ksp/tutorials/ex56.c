@@ -82,8 +82,8 @@ int main(int argc,char **args)
     const PetscInt NN  = nn/NP, id0 = ipz*nn*nn*NN + ipy*nn*NN*NN + ipx*NN*NN*NN;
     PetscInt       *d_nnz, *o_nnz,osz[4]={0,9,15,19},nbc;
     PetscScalar    vv[24], v2[24];
-    PetscCheckFalse(npe!=NP*NP*NP,comm,PETSC_ERR_ARG_WRONG, "npe=%d: npe^{1/3} must be integer",npe);
-    PetscCheckFalse(nn!=NP*(nn/NP),comm,PETSC_ERR_ARG_WRONG, "-ne %d: (ne+1)%(npe^{1/3}) must equal zero",ne);
+    PetscCheck(npe == NP*NP*NP,comm,PETSC_ERR_ARG_WRONG, "npe=%d: npe^{1/3} must be integer",npe);
+    PetscCheck(nn == NP*(nn/NP),comm,PETSC_ERR_ARG_WRONG, "-ne %d: (ne+1)%(npe^{1/3}) must equal zero",ne);
 
     /* count nnz */
     PetscCall(PetscMalloc1(m+1, &d_nnz));
@@ -102,7 +102,7 @@ int main(int argc,char **args)
         }
       }
     }
-    PetscCheckFalse(ic != m,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ic %D does not equal m %D",ic,m);
+    PetscCheck(ic == m,PETSC_COMM_SELF,PETSC_ERR_PLIB,"ic %D does not equal m %D",ic,m);
 
     /* create stiffness matrix */
     PetscCall(MatCreate(comm,&Amat));
@@ -122,7 +122,7 @@ int main(int argc,char **args)
 
     PetscCall(MatGetOwnershipRange(Amat,&Istart,&Iend));
 
-    PetscCheckFalse(m != Iend - Istart,PETSC_COMM_SELF,PETSC_ERR_PLIB,"m %D does not equal Iend %D - Istart %D",m,Iend,Istart);
+    PetscCheck(m == Iend - Istart,PETSC_COMM_SELF,PETSC_ERR_PLIB,"m %D does not equal Iend %D - Istart %D",m,Iend,Istart);
     /* generate element matrices */
     {
       PetscBool hasData = PETSC_TRUE;
