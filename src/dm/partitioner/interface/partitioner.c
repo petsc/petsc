@@ -12,6 +12,13 @@
   Options Database Key:
 . -petscpartitioner_type <type> - Sets the PetscPartitioner type; use -help for a list of available types
 
+  Note:
+$ PETSCPARTITIONERCHACO    - The Chaco partitioner (--download-chaco)
+$ PETSCPARTITIONERPARMETIS - The ParMetis partitioner (--download-parmetis)
+$ PETSCPARTITIONERSHELL    - A shell partitioner implemented by the user
+$ PETSCPARTITIONERSIMPLE   - A simple partitioner that divides cells into equal, contiguous chunks
+$ PETSCPARTITIONERGATHER   - Gathers all cells onto process 0
+
   Level: intermediate
 
 .seealso: PetscPartitionerGetType(), PetscPartitionerCreate()
@@ -296,7 +303,7 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 
   Level: developer
 
-.seealso PetscPartitionerCreate(), PetscSectionCreate(), PetscSectionSetChart(), PetscSectionSetDof()
+.seealso PetscPartitionerCreate(), PetscPartitionerSetType(), PetscSectionCreate(), PetscSectionSetChart(), PetscSectionSetDof()
 @*/
 PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertexSection, PetscSection targetSection, PetscSection partSection, IS *partition)
 {
@@ -381,7 +388,7 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
 
   Level: beginner
 
-.seealso: PetscPartitionerSetType(), PETSCPARTITIONERCHACO, PETSCPARTITIONERPARMETIS, PETSCPARTITIONERSHELL, PETSCPARTITIONERSIMPLE, PETSCPARTITIONERGATHER
+.seealso: PetscPartitionerSetType(), PetscPartitionerDestroy()
 @*/
 PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
 {
@@ -405,4 +412,3 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
   *part = p;
   PetscFunctionReturn(0);
 }
-

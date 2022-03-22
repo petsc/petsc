@@ -251,6 +251,8 @@ Changes: Development
 - Remove deprecated ``DMPlexCreateFromCellList()`` and ``DMPlexCreateFromCellListParallel()``
 - Add ``DMSetMatrixPreallocateSkip()`` to save initialization time when ``MatSetPreallocationCOO()`` will be used.
 - Improve loading performance related to coordinate projection in common cases.
+- Add ``DMPlexGetOrdering1D()`` for 1D Plex problems
+- Add ``DMPlexComputeClementInterpolant()`` averaging operator
 
 .. rubric:: DMPlexLandau:
 

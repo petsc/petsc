@@ -140,7 +140,103 @@ PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer)
+/*@
+  DMPlexVecView1D - Plot many 1D solutions on the same line graph
+
+  Collective on dm
+
+  Input Parameters:
++ dm - The DMPlex
+. n  - The number of vectors
+. u  - The array of local vectors
+- viewer - The Draw viewer
+
+  Level: advanced
+
+.seealso: VecViewFromOptions(), VecView()
+@*/
+PetscErrorCode DMPlexVecView1D(DM dm, PetscInt n, Vec u[], PetscViewer viewer)
+{
+  PetscDS            ds;
+  PetscDraw          draw = NULL;
+  PetscDrawLG        lg;
+  Vec                coordinates;
+  const PetscScalar *coords, **sol;
+  PetscReal         *vals;
+  PetscInt          *Nc;
+  PetscInt           Nf, f, c, Nl, l, i, vStart, vEnd, v;
+  char             **names;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetDS(dm, &ds);CHKERRQ(ierr);
+  ierr = PetscDSGetNumFields(ds, &Nf);CHKERRQ(ierr);
+  ierr = PetscDSGetTotalComponents(ds, &Nl);CHKERRQ(ierr);
+  ierr = PetscDSGetComponents(ds, &Nc);CHKERRQ(ierr);
+
+  ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
+  if (!draw) PetscFunctionReturn(0);
+  ierr = PetscDrawLGCreate(draw, n*Nl, &lg);CHKERRQ(ierr);
+
+  ierr = PetscMalloc3(n, &sol, n*Nl, &names, n*Nl, &vals);CHKERRQ(ierr);
+  for (i = 0, l = 0; i < n; ++i) {
+    const char *vname;
+
+    ierr = PetscObjectGetName((PetscObject) u[i], &vname);CHKERRQ(ierr);
+    for (f = 0; f < Nf; ++f) {
+      PetscObject disc;
+      const char *fname;
+      char        tmpname[PETSC_MAX_PATH_LEN];
+
+      ierr = PetscDSGetDiscretization(ds, f, &disc);CHKERRQ(ierr);
+      /* TODO Create names for components */
+      for (c = 0; c < Nc[f]; ++c, ++l) {
+        ierr = PetscObjectGetName(disc, &fname);CHKERRQ(ierr);
+        ierr = PetscStrcpy(tmpname, vname);CHKERRQ(ierr);
+        ierr = PetscStrlcat(tmpname, ":", PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+        ierr = PetscStrlcat(tmpname, fname, PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+        ierr = PetscStrallocpy(tmpname, &names[l]);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscDrawLGSetLegend(lg, (const char *const *) names);CHKERRQ(ierr);
+  /* Just add P_1 support for now */
+  ierr = DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm, &coordinates);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  for (i = 0; i < n; ++i) {ierr = VecGetArrayRead(u[i], &sol[i]);CHKERRQ(ierr);}
+  for (v = vStart; v < vEnd; ++v) {
+    PetscScalar *x, *svals;
+
+    ierr = DMPlexPointLocalRead(dm, v, coords, &x);CHKERRQ(ierr);
+    for (i = 0; i < n; ++i) {
+      ierr = DMPlexPointLocalRead(dm, v, sol[i], &svals);CHKERRQ(ierr);
+      for (l = 0; l < Nl; ++l) vals[i*Nl + l] = PetscRealPart(svals[l]);
+    }
+    ierr = PetscDrawLGAddCommonPoint(lg, PetscRealPart(x[0]), vals);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArrayRead(coordinates, &coords);CHKERRQ(ierr);
+  for (i = 0; i < n; ++i) {ierr = VecRestoreArrayRead(u[i], &sol[i]);CHKERRQ(ierr);}
+  for (l = 0; l < n*Nl; ++l) {ierr = PetscFree(names[l]);CHKERRQ(ierr);}
+  ierr = PetscFree3(sol, names, vals);CHKERRQ(ierr);
+
+  ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+  ierr = PetscDrawLGDestroy(&lg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode VecView_Plex_Local_Draw_1D(Vec u, PetscViewer viewer)
+{
+  DM             dm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecGetDM(u, &dm);CHKERRQ(ierr);
+  ierr = DMPlexVecView1D(dm, 1, &u, viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode VecView_Plex_Local_Draw_2D(Vec v, PetscViewer viewer)
 {
   DM                 dm;
   PetscSection       s;
@@ -151,7 +247,7 @@ static PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer)
   const PetscScalar *coords, *array;
   PetscReal          bound[4] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
   PetscReal          vbound[2], time;
-  PetscBool          isnull, flg;
+  PetscBool          flg;
   PetscInt           dim, Nf, f, Nc, comp, vStart, vEnd, cStart, cEnd, c, N, level, step, w = 0;
   const char        *name;
   char               title[PETSC_MAX_PATH_LEN];
@@ -159,12 +255,8 @@ static PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
-  ierr = PetscDrawIsNull(draw, &isnull);CHKERRQ(ierr);
-  if (isnull) PetscFunctionReturn(0);
-
   ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
   ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
-  PetscCheckFalse(dim != 2,PetscObjectComm((PetscObject) dm), PETSC_ERR_SUP, "Cannot draw meshes of dimension %D. Use PETSCVIEWERGLVIS", dim);
   ierr = DMGetLocalSection(dm, &s);CHKERRQ(ierr);
   ierr = PetscSectionGetNumFields(s, &Nf);CHKERRQ(ierr);
   ierr = DMGetCoarsenLevel(dm, &level);CHKERRQ(ierr);
@@ -277,6 +369,29 @@ static PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer)
       ierr = ISDestroy(&fis);CHKERRQ(ierr);
       ierr = DMDestroy(&fdm);CHKERRQ(ierr);
     }
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode VecView_Plex_Local_Draw(Vec v, PetscViewer viewer)
+{
+  DM             dm;
+  PetscDraw      draw;
+  PetscInt       dim;
+  PetscBool      isnull;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
+  ierr = PetscDrawIsNull(draw, &isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
+
+  ierr = VecGetDM(v, &dm);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDim(dm, &dim);CHKERRQ(ierr);
+  switch (dim) {
+    case 1: VecView_Plex_Local_Draw_1D(v, viewer);CHKERRQ(ierr);break;
+    case 2: VecView_Plex_Local_Draw_2D(v, viewer);CHKERRQ(ierr);break;
+    default: SETERRQ(PetscObjectComm((PetscObject) v), PETSC_ERR_SUP, "Cannot draw meshes of dimension %D. Try PETSCVIEWERGLVIS", dim);
   }
   PetscFunctionReturn(0);
 }
