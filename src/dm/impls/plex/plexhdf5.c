@@ -104,6 +104,17 @@ static PetscErrorCode PetscViewerCheckVersion_Private(PetscViewer viewer, DMPlex
       break;
     };
     break;
+  case 3:
+    switch (version->minor) {
+    case 0:
+      switch (version->subminor) {
+      case 0:
+        valid = PETSC_TRUE;
+        break;
+      };
+      break;
+    };
+    break;
   }
   PetscCheck(valid, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "DMPlexStorageVersion %d.%d.%d not supported", version->major, version->minor, version->subminor);
   PetscFunctionReturn(0);
