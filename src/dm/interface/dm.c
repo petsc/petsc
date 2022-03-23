@@ -5097,7 +5097,7 @@ PetscErrorCode DMAddField(DM dm, DMLabel label, PetscObject field)
 PetscErrorCode DMSetFieldAvoidTensor(DM dm, PetscInt f, PetscBool avoidTensor)
 {
   PetscFunctionBegin;
-  PetscCheck((f > 0) && (f < dm->Nf),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Field %D is not in [0, %D)", f, dm->Nf);
+  PetscCheck((f >= 0) && (f < dm->Nf),PetscObjectComm((PetscObject) dm), PETSC_ERR_ARG_OUTOFRANGE, "Field %D is not in [0, %D)", f, dm->Nf);
   dm->fields[f].avoidTensor = avoidTensor;
   PetscFunctionReturn(0);
 }
