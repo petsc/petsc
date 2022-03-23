@@ -6,14 +6,15 @@
    Private context (data structure) for the SVD preconditioner.
 */
 typedef struct {
-  Vec         diag,work;
-  Mat         A,U,Vt;
-  PetscInt    nzero;
-  PetscReal   zerosing;         /* measure of smallest singular value treated as nonzero */
-  PetscInt    essrank;          /* essential rank of operator */
-  VecScatter  left2red,right2red;
-  Vec         leftred,rightred;
-  PetscViewer monitor;
+  Vec               diag,work;
+  Mat               A,U,Vt;
+  PetscInt          nzero;
+  PetscReal         zerosing;         /* measure of smallest singular value treated as nonzero */
+  PetscInt          essrank;          /* essential rank of operator */
+  VecScatter        left2red,right2red;
+  Vec               leftred,rightred;
+  PetscViewer       monitor;
+  PetscViewerFormat monitorformat;
 } PC_SVD;
 
 typedef enum {READ=1, WRITE=2, READ_WRITE=3} AccessMode;
@@ -102,23 +103,21 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   if (jac->monitor) {
     PetscCall(PetscViewerASCIIAddTab(jac->monitor,((PetscObject)pc)->tablevel));
     PetscCall(PetscViewerASCIIPrintf(jac->monitor,"    SVD: condition number %14.12e, %D of %D singular values are (nearly) zero\n",(double)PetscRealPart(d[0]/d[n-1]),jac->nzero,n));
-    if (n >= 10) {              /* print 5 smallest and 5 largest */
+    if (n < 10 || jac->monitorformat == PETSC_VIEWER_ALL) {
+      PetscCall(PetscViewerASCIIPrintf(jac->monitor,"    SVD: singular values:\n"));
+      for (i=0; i<n; i++) {
+        if (i%5 == 0) {
+            if (i != 0) {
+              PetscCall(PetscViewerASCIIPrintf(jac->monitor,"\n"));
+            }
+            PetscCall(PetscViewerASCIIPrintf(jac->monitor,"        "));
+          }
+        PetscCall(PetscViewerASCIIPrintf(jac->monitor," %14.12e",(double)PetscRealPart(d[i])));
+      }
+      PetscCall(PetscViewerASCIIPrintf(jac->monitor,"\n"));
+    } else {              /* print 5 smallest and 5 largest */
       PetscCall(PetscViewerASCIIPrintf(jac->monitor,"    SVD: smallest singular values: %14.12e %14.12e %14.12e %14.12e %14.12e\n",(double)PetscRealPart(d[n-1]),(double)PetscRealPart(d[n-2]),(double)PetscRealPart(d[n-3]),(double)PetscRealPart(d[n-4]),(double)PetscRealPart(d[n-5])));
       PetscCall(PetscViewerASCIIPrintf(jac->monitor,"    SVD: largest singular values : %14.12e %14.12e %14.12e %14.12e %14.12e\n",(double)PetscRealPart(d[4]),(double)PetscRealPart(d[3]),(double)PetscRealPart(d[2]),(double)PetscRealPart(d[1]),(double)PetscRealPart(d[0])));
-    } else {                    /* print all singular values */
-      char     buf[256],*p;
-      size_t   left = sizeof(buf),used;
-      PetscInt thisline;
-      for (p=buf,i=n-1,thisline=1; i>=0; i--,thisline++) {
-        PetscCall(PetscSNPrintfCount(p,left," %14.12e",&used,(double)PetscRealPart(d[i])));
-        left -= used;
-        p    += used;
-        if (thisline > 4 || i==0) {
-          PetscCall(PetscViewerASCIIPrintf(jac->monitor,"    SVD: singular values:%s\n",buf));
-          p        = buf;
-          thisline = 0;
-        }
-      }
     }
     PetscCall(PetscViewerASCIISubtractTab(jac->monitor,((PetscObject)pc)->tablevel));
   }
@@ -128,17 +127,6 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   if (jac->essrank > 0) for (i=0; i<n-jac->nzero-jac->essrank; i++) d[i] = 0.0; /* Skip all but essrank eigenvalues */
   PetscCall(PetscInfo(pc,"Number of zero or nearly singular values %D\n",jac->nzero));
   PetscCall(VecRestoreArray(jac->diag,&d));
-#if defined(foo)
-  {
-    PetscViewer viewer;
-    PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF,"joe",FILE_MODE_WRITE,&viewer));
-    PetscCall(MatView(jac->A,viewer));
-    PetscCall(MatView(jac->U,viewer));
-    PetscCall(MatView(jac->Vt,viewer));
-    PetscCall(VecView(jac->diag,viewer));
-    PetscCall(PetscViewerDestroy(viewer));
-  }
-#endif
   PetscCall(PetscFree(work));
   PetscFunctionReturn(0);
 }
@@ -299,20 +287,13 @@ static PetscErrorCode PCDestroy_SVD(PC pc)
 static PetscErrorCode PCSetFromOptions_SVD(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PC_SVD         *jac = (PC_SVD*)pc->data;
-  PetscBool      flg,set;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   PetscCall(PetscOptionsHead(PetscOptionsObject,"SVD options"));
   PetscCall(PetscOptionsReal("-pc_svd_zero_sing","Singular values smaller than this treated as zero","None",jac->zerosing,&jac->zerosing,NULL));
   PetscCall(PetscOptionsInt("-pc_svd_ess_rank","Essential rank of operator (0 to use entire operator)","None",jac->essrank,&jac->essrank,NULL));
-  PetscCall(PetscOptionsBool("-pc_svd_monitor","Monitor the conditioning, and extremal singular values","None",jac->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set));
-  if (set) {                    /* Should make PCSVDSetMonitor() */
-    if (flg && !jac->monitor) {
-      PetscCall(PetscViewerASCIIOpen(PetscObjectComm((PetscObject)pc),"stdout",&jac->monitor));
-    } else if (!flg) {
-      PetscCall(PetscViewerDestroy(&jac->monitor));
-    }
-  }
+  PetscCall(PetscOptionsViewer("-pc_svd_monitor","Monitor the conditioning, and extremal singular values","None",&jac->monitor,&jac->monitorformat,&flg));
   PetscCall(PetscOptionsTail());
   PetscFunctionReturn(0);
 }
