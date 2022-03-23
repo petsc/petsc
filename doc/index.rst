@@ -119,7 +119,7 @@ Toolkits/libraries that use PETSc
 Citing PETSc
 ============
 
-You can run any PETSc program with the option``-citations`` to print appropriate citations for the algorithms you are using within PETSc.
+You can run any PETSc program with the option ``-citations`` to print appropriate citations for the algorithms you are using within PETSc.
 
 For general citations on PETSc please use the following:
 
