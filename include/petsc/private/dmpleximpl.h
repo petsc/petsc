@@ -119,11 +119,9 @@ typedef struct {
   PetscInt             refct;
 
   PetscSection         coneSection;       /* Layout of cones (inedges for DAG) */
-  PetscInt             maxConeSize;       /* Cached for fast lookup */
   PetscInt            *cones;             /* Cone for each point */
   PetscInt            *coneOrientations;  /* Orientation of each cone point, means cone traveral should start on point 'o', and if negative start on -(o+1) and go in reverse */
   PetscSection         supportSection;    /* Layout of cones (inedges for DAG) */
-  PetscInt             maxSupportSize;    /* Cached for fast lookup */
   PetscInt            *supports;          /* Cone for each point */
   PetscBool            refinementUniform; /* Flag for uniform cell refinement */
   char                *transformType;     /* Type of transform for uniform cell refinement */
