@@ -566,7 +566,7 @@ class Configure(config.package.Package):
   def checkMKL(self):
     '''Check for Intel MKL library'''
     self.libraries.saveLog()
-    if self.libraries.check(self.dlib, 'mkl_set_num_threads'):
+    if self.libraries.check(self.dlib, 'mkl_set_num_threads') and not self.libraries.check(self.dlib, 'flexiblas_avail'):
       self.mkl = 1
       self.addDefine('HAVE_MKL_LIBS',1)
       '''Set include directory for mkl.h and friends'''
