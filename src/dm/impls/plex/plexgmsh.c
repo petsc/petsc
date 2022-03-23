@@ -441,8 +441,9 @@ static PetscErrorCode GmshEntitiesGet(GmshEntities *entities, PetscInt dim, Pets
 }
 
 typedef struct {
-  PetscInt *id;   /* Node IDs */
-  double   *xyz;  /* Coordinates */
+  PetscInt *id;  /* Node IDs */
+  double   *xyz; /* Coordinates */
+  PetscInt *tag; /* Physical tag */
 } GmshNodes;
 
 static PetscErrorCode GmshNodesCreate(PetscInt count, GmshNodes **nodes)
@@ -453,6 +454,7 @@ static PetscErrorCode GmshNodesCreate(PetscInt count, GmshNodes **nodes)
   ierr = PetscNew(nodes);CHKERRQ(ierr);
   ierr = PetscMalloc1(count*1, &(*nodes)->id);CHKERRQ(ierr);
   ierr = PetscMalloc1(count*3, &(*nodes)->xyz);CHKERRQ(ierr);
+  ierr = PetscMalloc1(count*1, &(*nodes)->tag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -463,6 +465,7 @@ static PetscErrorCode GmshNodesDestroy(GmshNodes **nodes)
   if (!*nodes) PetscFunctionReturn(0);
   ierr = PetscFree((*nodes)->id);CHKERRQ(ierr);
   ierr = PetscFree((*nodes)->xyz);CHKERRQ(ierr);
+  ierr = PetscFree((*nodes)->tag);CHKERRQ(ierr);
   ierr = PetscFree((*nodes));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -474,8 +477,8 @@ typedef struct {
   PetscInt numVerts; /* Size of vertex array */
   PetscInt numNodes; /* Size of node array */
   PetscInt *nodes;   /* Vertex/Node array */
-  PetscInt numTags;  /* Size of tag array */
-  int      tags[4];  /* Tag array */
+  PetscInt numTags;  /* Size of physical tag array */
+  int      tags[4];  /* Physical tag array */
 } GmshElement;
 
 static PetscErrorCode GmshElementsCreate(PetscInt count, GmshElement **elements)
@@ -567,6 +570,7 @@ static PetscErrorCode GmshReadNodes_v22(GmshFile *gmsh, GmshMesh *mesh)
     if (byteSwap) {ierr = PetscByteSwap(&nid, PETSC_ENUM, 1);CHKERRQ(ierr);}
     if (byteSwap) {ierr = PetscByteSwap(xyz, PETSC_DOUBLE, 3);CHKERRQ(ierr);}
     nodes->id[n] = nid;
+    nodes->tag[n] = -1;
   }
   PetscFunctionReturn(0);
 }
@@ -740,6 +744,7 @@ static PetscErrorCode GmshReadNodes_v40(GmshFile *gmsh, GmshMesh *mesh)
         if (byteSwap) {ierr = PetscByteSwap(&nid, PETSC_ENUM, 1);CHKERRQ(ierr);}
         if (byteSwap) {ierr = PetscByteSwap(xyz, PETSC_DOUBLE, 3);CHKERRQ(ierr);}
         nodes->id[n] = nid;
+        nodes->tag[n] = -1;
       }
     } else {
       for (node = 0; node < numNodes; ++node, ++n) {
@@ -749,6 +754,7 @@ static PetscErrorCode GmshReadNodes_v40(GmshFile *gmsh, GmshMesh *mesh)
         if (byteSwap) {ierr = PetscByteSwap(&nid, PETSC_ENUM, 1);CHKERRQ(ierr);}
         if (byteSwap) {ierr = PetscByteSwap(xyz, PETSC_DOUBLE, 3);CHKERRQ(ierr);}
         nodes->id[n] = nid;
+        nodes->tag[n] = -1;
       }
     }
   }
@@ -936,6 +942,7 @@ static PetscErrorCode GmshReadEntities_v41(GmshFile *gmsh, GmshMesh *mesh)
       ierr = GmshReadSize(gmsh, &numTags, 1);CHKERRQ(ierr);
       ierr = GmshBufferGet(gmsh, numTags, sizeof(int), &tags);CHKERRQ(ierr);
       ierr = GmshReadInt(gmsh, tags, numTags);CHKERRQ(ierr);
+      /* Currently, we do not save the ids for the bounding entities */
     }
   }
   PetscFunctionReturn(0);
@@ -957,8 +964,9 @@ $EndNodes
 */
 static PetscErrorCode GmshReadNodes_v41(GmshFile *gmsh, GmshMesh *mesh)
 {
-  int            info[3];
-  PetscInt       sizes[4], numEntityBlocks, numNodes, numNodesBlock = 0, block, node;
+  int            info[3], dim, eid, parametric;
+  PetscInt       sizes[4], numEntityBlocks, numTags, numNodes, numNodesBlock = 0, block, node, n;
+  GmshEntity     *entity = NULL;
   GmshNodes      *nodes;
   PetscErrorCode ierr;
 
@@ -970,10 +978,15 @@ static PetscErrorCode GmshReadNodes_v41(GmshFile *gmsh, GmshMesh *mesh)
   mesh->nodelist = nodes;
   for (block = 0, node = 0; block < numEntityBlocks; ++block, node += numNodesBlock) {
     ierr = GmshReadInt(gmsh, info, 3);CHKERRQ(ierr);
-    PetscCheckFalse(info[2] != 0,PETSC_COMM_SELF, PETSC_ERR_SUP, "Parametric coordinates not supported");
+    dim = info[0]; eid = info[1]; parametric = info[2];
+    ierr = GmshEntitiesGet(mesh->entities, dim, eid, &entity);CHKERRQ(ierr);
+    numTags = PetscMin(1, entity->numTags);
+    if (entity->numTags > 1) PetscInfo(NULL, "Entity %d has more than %d physical tags, assigning only the first to nodes", eid, 1);
+    PetscCheck(!parametric, PETSC_COMM_SELF, PETSC_ERR_SUP, "Parametric coordinates not supported");
     ierr = GmshReadSize(gmsh, &numNodesBlock, 1);CHKERRQ(ierr);
     ierr = GmshReadSize(gmsh, nodes->id+node, numNodesBlock);CHKERRQ(ierr);
     ierr = GmshReadDouble(gmsh, nodes->xyz+node*3, numNodesBlock*3);CHKERRQ(ierr);
+    for (n = 0; n < numNodesBlock; ++n) nodes->tag[node+n] = numTags ? entity->tags[0] : -1;
   }
   gmsh->nodeStart = sizes[2];
   gmsh->nodeEnd   = sizes[3]+1;
@@ -1012,7 +1025,8 @@ static PetscErrorCode GmshReadElements_v41(GmshFile *gmsh, GmshMesh *mesh)
     ierr = GmshCellTypeCheck(cellType);CHKERRQ(ierr);
     numVerts = GmshCellMap[cellType].numVerts;
     numNodes = GmshCellMap[cellType].numNodes;
-    numTags  = entity->numTags;
+    numTags  = PetscMin(4, entity->numTags);
+    if (entity->numTags > 4) PetscInfo(NULL, "Entity %d has more then %d physical tags, assigning only the first to elements", eid, 4);
     ierr = GmshReadSize(gmsh, &numBlockElements, 1);CHKERRQ(ierr);
     ierr = GmshBufferGet(gmsh, (1+numNodes)*numBlockElements, sizeof(PetscInt), &ibuf);CHKERRQ(ierr);
     ierr = GmshReadSize(gmsh, ibuf, (1+numNodes)*numBlockElements);CHKERRQ(ierr);
@@ -1488,7 +1502,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   PetscInt       dim = 0, coordDim = -1, order = 0;
   PetscInt       numNodes = 0, numElems = 0, numVerts = 0, numCells = 0;
   PetscInt       cell, cone[8], e, n, v, d;
-  PetscBool      binary, usemarker = PETSC_FALSE, useregions = PETSC_FALSE;
+  PetscBool      binary, usemarker = PETSC_FALSE, useregions = PETSC_FALSE, markvertices = PETSC_FALSE;
   PetscBool      hybrid = interpolate, periodic = PETSC_TRUE;
   PetscBool      highOrder = PETSC_TRUE, highOrderSet, project = PETSC_FALSE;
   PetscBool      isSimplex = PETSC_FALSE, isHybrid = PETSC_FALSE, hasTetra = PETSC_FALSE;
@@ -1505,6 +1519,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   ierr = PetscOptionsBool("-dm_plex_gmsh_project", "Project high-order coordinates to a different space", "DMPlexCreateGmsh", project, &project, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_gmsh_use_marker", "Generate marker label", "DMPlexCreateGmsh", usemarker, &usemarker, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_gmsh_use_regions", "Generate labels with region names", "DMPlexCreateGmsh", useregions, &useregions, NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_gmsh_mark_vertices", "Add vertices to generated labels", "DMPlexCreateGmsh", markvertices, &markvertices, NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-dm_plex_gmsh_spacedim", "Embedding space dimension", "DMPlexCreateGmsh", coordDim, &coordDim, NULL, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -1671,6 +1686,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     *dm  = idm;
   }
 
+  /* Create the label "marker" over the whole boundary */
   PetscCheckFalse(usemarker && !interpolate && dim > 1,comm,PETSC_ERR_SUP,"Cannot create marker label without interpolation");
   if (rank == 0 && usemarker) {
     PetscInt f, fStart, fEnd;
@@ -1708,7 +1724,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
           const PetscInt tag = elem->tags[0];
           PetscInt       r;
 
-          ierr = DMSetLabelValue_Fast(*dm, &cellSets, "Cell Sets", cell, tag);CHKERRQ(ierr);
+          if (!Nr) {ierr = DMSetLabelValue_Fast(*dm, &cellSets, "Cell Sets", cell, tag);CHKERRQ(ierr);}
           for (r = 0; r < Nr; ++r) {
             if (mesh->regionTags[r] == tag) {ierr = DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], cell, tag);CHKERRQ(ierr);}
           }
@@ -1731,7 +1747,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         }
         ierr = DMPlexGetFullJoin(*dm, elem->numVerts, cone, &joinSize, &join);CHKERRQ(ierr);
         PetscCheckFalse(joinSize != 1,PETSC_COMM_SELF, PETSC_ERR_SUP, "Could not determine Plex facet for Gmsh element %D (Plex cell %D)", elem->id, e);
-        ierr = DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", join[0], tag);CHKERRQ(ierr);
+        if (!Nr) {ierr = DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", join[0], tag);CHKERRQ(ierr);}
         for (r = 0; r < Nr; ++r) {
           if (mesh->regionTags[r] == tag) {ierr = DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], join[0], tag);CHKERRQ(ierr);}
         }
@@ -1746,7 +1762,21 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
           const PetscInt tag = elem->tags[0];
           PetscInt       r;
 
-          ierr = DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vStart + vv, tag);CHKERRQ(ierr);
+          if (!Nr) {ierr = DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vStart + vv, tag);CHKERRQ(ierr);}
+          for (r = 0; r < Nr; ++r) {
+            if (mesh->regionTags[r] == tag) {ierr = DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], vStart + vv, tag);CHKERRQ(ierr);}
+          }
+        }
+      }
+    }
+    if (markvertices) {
+      for (v = 0; v < numNodes; ++v) {
+        const PetscInt vv  = mesh->vertexMap[v];
+        const PetscInt tag = mesh->nodelist->tag[v];
+        PetscInt       r;
+
+        if (tag != -1) {
+          if (!Nr) {ierr = DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vStart + vv, tag);CHKERRQ(ierr);}
           for (r = 0; r < Nr; ++r) {
             if (mesh->regionTags[r] == tag) {ierr = DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], vStart + vv, tag);CHKERRQ(ierr);}
           }
