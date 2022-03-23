@@ -95,6 +95,10 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Error norm %g\n",(double)(norm/((PetscReal)(mx)*(PetscReal)(my)*(PetscReal)(mz))));CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Error norm %g\n",(double)(norm/((PetscReal)(mx)*(PetscReal)(my)*(PetscReal)(mz))));CHKERRQ(ierr);
+  ierr = VecSum(x,&norm);CHKERRQ(ierr);
+  if (norm > 10000*PETSC_MACHINE_EPSILON) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector sum %g\n",(double)norm);CHKERRQ(ierr);
+  }
 
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);

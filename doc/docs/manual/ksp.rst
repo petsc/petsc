@@ -2050,7 +2050,8 @@ Sometimes one is required to solver singular linear systems. In this
 case, the system matrix has a nontrivial null space. For example, the
 discretization of the Laplacian operator with Neumann boundary
 conditions has a null space of the constant functions. PETSc has tools
-to help solve these systems.
+to help solve these systems. This approach is only guaranteed to work for left preconditioning (see ``KSPSetPCSide()``); for example it
+may not work in some situations with ``KSPFGMRES``.
 
 First, one must know what the null space is and store it using an
 orthonormal basis in an array of PETSc Vecs. The constant functions can
@@ -2072,18 +2073,28 @@ with the call
 .. code-block::
 
    MatSetNullSpace(Mat Amat,MatNullSpace nsp);
-   MatSetTransposeNullSpace(Mat Amat,MatNullSpace nsp);
 
 The ``Amat`` should be the *first* matrix argument used with
 ``KSPSetOperators()``, ``SNESSetJacobian()``, or ``TSSetIJacobian()``.
 The PETSc solvers will now
 handle the null space during the solution process.
 
+If the right hand side of linear system is not in the range of ``Amat``, that is it is not
+orthogonal to the null space of ``Amat`` transpose, then the residual
+norm of the Krylov iteration will not converge to zero; it will converge to a non-zero value while the
+solution is converging to the least squares solution of the linear system. One can, if one desires,
+apply ``MatNullSpaceRemove()`` with the null space of ``Amat`` transpose to the right hand side before calling
+``KSPSolve()``. Then the residual norm will converge to zero.
+
+
 If one chooses a direct solver (or an incomplete factorization) it may
 still detect a zero pivot. You can run with the additional options or
 ``-pc_factor_shift_type NONZERO``
 ``-pc_factor_shift_amount  <dampingfactor>`` to prevent the zero pivot.
 A good choice for the ``dampingfactor`` is 1.e-10.
+
+If the matrix is non-symmetric and you wish to solve the transposed linear system
+you must provide the null space of the transposed matrix with ``MatSetTransposeNullSpace()``.
 
 .. _sec_externalsol:
 
