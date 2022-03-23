@@ -7,10 +7,10 @@ PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
 {
   MPI_Comm       comm;
   PetscBool      isotropic = PETSC_FALSE, uniform = PETSC_FALSE, restrictAnisotropyFirst = PETSC_FALSE;
-  PetscBool      noInsert = PETSC_FALSE, noSwap = PETSC_FALSE, noMove = PETSC_FALSE;
+  PetscBool      noInsert = PETSC_FALSE, noSwap = PETSC_FALSE, noMove = PETSC_FALSE, noSurf = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscInt       verbosity = -1, numIter = 3;
-  PetscReal      h_min = 1.0e-30, h_max = 1.0e+30, a_max = 1.0e+05, p = 1.0, target = 1000.0, beta = 1.3;
+  PetscReal      h_min = 1.0e-30, h_max = 1.0e+30, a_max = 1.0e+05, p = 1.0, target = 1000.0, beta = 1.3, hausd = 0.01;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
@@ -27,6 +27,8 @@ PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
   ierr = DMPlexMetricSetNoSwapping(dm, noSwap);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-dm_plex_metric_no_move", "Turn off facet node movement", "DMAdaptMetric", noMove, &noMove, NULL);CHKERRQ(ierr);
   ierr = DMPlexMetricSetNoMovement(dm, noMove);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-dm_plex_metric_no_surf", "Turn off surface modification", "DMAdaptMetric", noSurf, &noSurf, NULL);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetNoSurf(dm, noSurf);CHKERRQ(ierr);
   ierr = PetscOptionsBoundedInt("-dm_plex_metric_num_iterations", "Number of ParMmg adaptation iterations", "DMAdaptMetric", numIter, &numIter, NULL, 0);CHKERRQ(ierr);
   ierr = DMPlexMetricSetNumIterations(dm, numIter);CHKERRQ(ierr);
   ierr = PetscOptionsRangeInt("-dm_plex_metric_verbosity", "Verbosity of metric-based mesh adaptation package (-1 = silent, 10 = maximum)", "DMAdaptMetric", verbosity, &verbosity, NULL, -1, 10);CHKERRQ(ierr);
@@ -43,6 +45,8 @@ PetscErrorCode DMPlexMetricSetFromOptions(DM dm)
   ierr = DMPlexMetricSetTargetComplexity(dm, target);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-dm_plex_metric_gradation_factor", "Metric gradation factor", "DMAdaptMetric", beta, &beta, NULL);CHKERRQ(ierr);
   ierr = DMPlexMetricSetGradationFactor(dm, beta);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-dm_plex_metric_hausdorff_number", "Metric Hausdorff number", "DMAdaptMetric", hausd, &hausd, NULL);CHKERRQ(ierr);
+  ierr = DMPlexMetricSetHausdorffNumber(dm, hausd);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -220,7 +224,7 @@ PetscErrorCode DMPlexMetricRestrictAnisotropyFirst(DM dm, PetscBool *restrictAni
   Notes:
   This is only used by Mmg and ParMmg (not Pragmatic).
 
-.seealso: DMPlexMetricNoInsertion(), DMPlexMetricSetNoSwapping(), DMPlexMetricSetNoMovement()
+.seealso: DMPlexMetricNoInsertion(), DMPlexMetricSetNoSwapping(), DMPlexMetricSetNoMovement(), DMPlexMetricSetNoSurf()
 @*/
 PetscErrorCode DMPlexMetricSetNoInsertion(DM dm, PetscBool noInsert)
 {
@@ -250,7 +254,7 @@ PetscErrorCode DMPlexMetricSetNoInsertion(DM dm, PetscBool noInsert)
   Notes:
   This is only used by Mmg and ParMmg (not Pragmatic).
 
-.seealso: DMPlexMetricSetNoInsertion(), DMPlexMetricNoSwapping(), DMPlexMetricNoMovement()
+.seealso: DMPlexMetricSetNoInsertion(), DMPlexMetricNoSwapping(), DMPlexMetricNoMovement(), DMPlexMetricNoSurf()
 @*/
 PetscErrorCode DMPlexMetricNoInsertion(DM dm, PetscBool *noInsert)
 {
@@ -278,7 +282,7 @@ PetscErrorCode DMPlexMetricNoInsertion(DM dm, PetscBool *noInsert)
   Notes:
   This is only used by Mmg and ParMmg (not Pragmatic).
 
-.seealso: DMPlexMetricNoSwapping(), DMPlexMetricSetNoInsertion(), DMPlexMetricSetNoMovement()
+.seealso: DMPlexMetricNoSwapping(), DMPlexMetricSetNoInsertion(), DMPlexMetricSetNoMovement(), DMPlexMetricSetNoSurf()
 @*/
 PetscErrorCode DMPlexMetricSetNoSwapping(DM dm, PetscBool noSwap)
 {
@@ -308,7 +312,7 @@ PetscErrorCode DMPlexMetricSetNoSwapping(DM dm, PetscBool noSwap)
   Notes:
   This is only used by Mmg and ParMmg (not Pragmatic).
 
-.seealso: DMPlexMetricSetNoSwapping(), DMPlexMetricNoInsertion(), DMPlexMetricNoMovement()
+.seealso: DMPlexMetricSetNoSwapping(), DMPlexMetricNoInsertion(), DMPlexMetricNoMovement(), DMPlexMetricNoSurf()
 @*/
 PetscErrorCode DMPlexMetricNoSwapping(DM dm, PetscBool *noSwap)
 {
@@ -336,7 +340,7 @@ PetscErrorCode DMPlexMetricNoSwapping(DM dm, PetscBool *noSwap)
   Notes:
   This is only used by Mmg and ParMmg (not Pragmatic).
 
-.seealso: DMPlexMetricNoMovement(), DMPlexMetricSetNoInsertion(), DMPlexMetricSetNoSwapping()
+.seealso: DMPlexMetricNoMovement(), DMPlexMetricSetNoInsertion(), DMPlexMetricSetNoSwapping(), DMPlexMetricSetNoSurf()
 @*/
 PetscErrorCode DMPlexMetricSetNoMovement(DM dm, PetscBool noMove)
 {
@@ -366,7 +370,7 @@ PetscErrorCode DMPlexMetricSetNoMovement(DM dm, PetscBool noMove)
   Notes:
   This is only used by Mmg and ParMmg (not Pragmatic).
 
-.seealso: DMPlexMetricSetNoMovement(), DMPlexMetricNoInsertion(), DMPlexMetricNoSwapping()
+.seealso: DMPlexMetricSetNoMovement(), DMPlexMetricNoInsertion(), DMPlexMetricNoSwapping(), DMPlexMetricNoSurf()
 @*/
 PetscErrorCode DMPlexMetricNoMovement(DM dm, PetscBool *noMove)
 {
@@ -379,6 +383,64 @@ PetscErrorCode DMPlexMetricNoMovement(DM dm, PetscBool *noMove)
     ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
   }
   *noMove = plex->metricCtx->noMove;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexMetricSetNoSurf - Should surface modification be turned off?
+
+  Input parameters:
++ dm     - The DM
+- noSurf - Should surface modification be turned off?
+
+  Level: beginner
+
+  Notes:
+  This is only used by Mmg and ParMmg (not Pragmatic).
+
+.seealso: DMPlexMetricNoSurf(), DMPlexMetricSetNoMovement(), DMPlexMetricSetNoInsertion(), DMPlexMetricSetNoSwapping()
+@*/
+PetscErrorCode DMPlexMetricSetNoSurf(DM dm, PetscBool noSurf)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  plex->metricCtx->noSurf = noSurf;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexMetricNoSurf - Is surface modification turned off?
+
+  Input parameters:
+. dm     - The DM
+
+  Output parameters:
+. noSurf - Is surface modification turned off?
+
+  Level: beginner
+
+  Notes:
+  This is only used by Mmg and ParMmg (not Pragmatic).
+
+.seealso: DMPlexMetricSetNoSurf(), DMPlexMetricNoMovement(), DMPlexMetricNoInsertion(), DMPlexMetricNoSwapping()
+@*/
+PetscErrorCode DMPlexMetricNoSurf(DM dm, PetscBool *noSurf)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  *noSurf = plex->metricCtx->noSurf;
   PetscFunctionReturn(0);
 }
 
@@ -666,7 +728,7 @@ PetscErrorCode DMPlexMetricGetNormalizationOrder(DM dm, PetscReal *p)
 
   This is only used by Mmg and ParMmg (not Pragmatic).
 
-.seealso: DMPlexMetricGetGradationFactor()
+.seealso: DMPlexMetricGetGradationFactor(), DMPlexMetricSetHausdorffNumber()
 @*/
 PetscErrorCode DMPlexMetricSetGradationFactor(DM dm, PetscReal beta)
 {
@@ -701,7 +763,7 @@ PetscErrorCode DMPlexMetricSetGradationFactor(DM dm, PetscReal beta)
 
   This is only used by Mmg and ParMmg (not Pragmatic).
 
-.seealso: DMPlexMetricSetGradationFactor()
+.seealso: DMPlexMetricSetGradationFactor(), DMPlexMetricGetHausdorffNumber()
 @*/
 PetscErrorCode DMPlexMetricGetGradationFactor(DM dm, PetscReal *beta)
 {
@@ -714,6 +776,80 @@ PetscErrorCode DMPlexMetricGetGradationFactor(DM dm, PetscReal *beta)
     ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
   }
   *beta = plex->metricCtx->gradationFactor;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexMetricSetHausdorffNumber - Set the metric Hausdorff number
+
+  Input parameters:
++ dm    - The DM
+- hausd - The metric Hausdorff number
+
+  Level: beginner
+
+  Notes:
+
+  The Hausdorff number imposes the maximal distance between the piecewise linear approximation of the
+  boundary and the reconstructed ideal boundary. Thus, a low Hausdorff parameter leads to refine the
+  high curvature areas. By default, the Hausdorff value is set to 0.01, which is a suitable value for
+  an object of size 1 in each direction. For smaller (resp. larger) objects, you may need to decrease
+  (resp. increase) the Hausdorff parameter. (Taken from
+  https://www.mmgtools.org/mmg-remesher-try-mmg/mmg-remesher-options/mmg-remesher-option-hausd).
+
+  This is only used by Mmg and ParMmg (not Pragmatic).
+
+.seealso: DMPlexMetricSetGradationFactor(), DMPlexMetricGetHausdorffNumber()
+@*/
+PetscErrorCode DMPlexMetricSetHausdorffNumber(DM dm, PetscReal hausd)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  plex->metricCtx->hausdorffNumber = hausd;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexMetricGetHausdorffNumber - Get the metric Hausdorff number
+
+  Input parameters:
+. dm    - The DM
+
+  Output parameters:
+. hausd - The metric Hausdorff number
+
+  Level: beginner
+
+  Notes:
+
+  The Hausdorff number imposes the maximal distance between the piecewise linear approximation of the
+  boundary and the reconstructed ideal boundary. Thus, a low Hausdorff parameter leads to refine the
+  high curvature areas. By default, the Hausdorff value is set to 0.01, which is a suitable value for
+  an object of size 1 in each direction. For smaller (resp. larger) objects, you may need to decrease
+  (resp. increase) the Hausdorff parameter. (Taken from
+  https://www.mmgtools.org/mmg-remesher-try-mmg/mmg-remesher-options/mmg-remesher-option-hausd).
+
+  This is only used by Mmg and ParMmg (not Pragmatic).
+
+.seealso: DMPlexMetricGetGradationFactor(), DMPlexMetricSetHausdorffNumber()
+@*/
+PetscErrorCode DMPlexMetricGetHausdorffNumber(DM dm, PetscReal *hausd)
+{
+  DM_Plex       *plex = (DM_Plex *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!plex->metricCtx) {
+    ierr = PetscNew(&plex->metricCtx);CHKERRQ(ierr);
+    ierr = DMPlexMetricSetFromOptions(dm);CHKERRQ(ierr);
+  }
+  *hausd = plex->metricCtx->hausdorffNumber;
   PetscFunctionReturn(0);
 }
 

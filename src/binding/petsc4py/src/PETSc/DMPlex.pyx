@@ -727,6 +727,14 @@ cdef class DMPlex(DM):
         CHKERR( DMPlexMetricNoMovement(self.dm, &noMove) )
         return toBool(noMove)
 
+    def metricSetNoSurf(self, PetscBool noSurf):
+        CHKERR( DMPlexMetricSetNoSurf(self.dm, noSurf) )
+
+    def metricNoSurf(self):
+        cdef PetscBool noSurf = PETSC_FALSE
+        CHKERR( DMPlexMetricNoSurf(self.dm, &noSurf) )
+        return toBool(noSurf)
+
     def metricSetVerbosity(self, PetscInt verbosity):
         CHKERR( DMPlexMetricSetVerbosity(self.dm, verbosity) )
 
@@ -790,6 +798,14 @@ cdef class DMPlex(DM):
         cdef PetscReal beta
         CHKERR( DMPlexMetricGetGradationFactor(self.dm, &beta) )
         return beta
+
+    def metricSetHausdorffNumber(self, PetscReal hausd):
+        CHKERR( DMPlexMetricSetHausdorffNumber(self.dm, hausd) )
+
+    def metricGetHausdorffNumber(self):
+        cdef PetscReal hausd
+        CHKERR( DMPlexMetricGetHausdorffNumber(self.dm, &hausd) )
+        return hausd
 
     def metricCreate(self, field=0):
         cdef Vec metric = Vec()
