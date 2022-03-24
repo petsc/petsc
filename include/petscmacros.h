@@ -125,6 +125,40 @@ M*/
 #define PetscHasAttribute(name) __has_attribute(name)
 
 /*MC
+  PETSC_ATTRIBUTE_COLD - Indicate to the compiler that a function is very unlikely to be
+  executed
+
+  Notes:
+  The marked function is often optimized for size rather than speed and may be grouped alongside
+  other equally frigid routines improving code locality of lukewarm or hotter parts of program.
+
+  The paths leading to cold functions are usually automatically marked as unlikely by the
+  compiler. It may thus be useful to mark functions used to handle unlikely conditions -- such
+  as error handlers -- as cold to improve optimization of the surrounding temperate functions.
+
+  Example Usage:
+.vb
+  void my_error_handler(...) PETSC_ATTRIBUTE_COLD;
+
+  if (temperature < 0) {
+    return my_error_handler(...); // chilly!
+  }
+.ve
+
+  Level: intermediate
+
+.seealso: PetscUnlikely(), PetscUnlikelyDebug(), PetscLikely(), PetscLikelyDebug(),
+PetscUnreachable()
+M*/
+#if PetscHasAttribute(__cold__)
+#  define PETSC_ATTRIBUTE_COLD __attribute__((__cold__))
+#elif PetscHasAttribute(cold) /* some implementations (old gcc) use no underscores */
+#  define PETSC_ATTRIBUTE_COLD __attribute__((cold))
+#else
+#  define PETSC_ATTRIBUTE_COLD
+#endif
+
+/*MC
   PETSC_NULLPTR - Standard way of indicating a null value or pointer
 
   Notes:
@@ -318,7 +352,8 @@ M*/
 
   Level: advanced
 
-.seealso: PetscLikely(), PetscUnlikelyDebug(), PetscCall(), PetscDefined(), PetscHasAttribute()
+.seealso: PetscLikely(), PetscUnlikelyDebug(), PetscCall(), PetscDefined(), PetscHasAttribute(),
+PETSC_ATTRIBUTE_COLD
 M*/
 
 /*MC
@@ -351,6 +386,7 @@ M*/
   Level: advanced
 
 .seealso: PetscUnlikely(), PetscDefined(), PetscHasAttribute()
+PETSC_ATTRIBUTE_COLD
 M*/
 #if defined(PETSC_HAVE_BUILTIN_EXPECT)
 #  define PetscUnlikely(cond) __builtin_expect(!!(cond),0)
@@ -396,7 +432,7 @@ M*/
 
   Level: advanced
 
-.seealso: SETERRABORT(), PETSCABORT()
+.seealso: SETERRABORT(), PETSCABORT(), PETSC_ATTRIBUTE_COLD
 M*/
 #if defined(__GNUC__)
 /* GCC 4.8+, Clang, Intel and other compilers compatible with GCC (-std=c++0x or above) */

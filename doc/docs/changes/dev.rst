@@ -65,6 +65,7 @@ Changes: Development
 - Change ``SETERRABORT()`` to be variadic
 - Add ``PetscCheck()`` and ``PetscAssert()`` for checking a boolean condition is true. The former is always enabled, while the latter is enabled only in debug builds.
 - ``PetscDevice`` initialization for CUDA and HIP will now respect ``CUDA_VISIBILE_DEVICES`` and ``HIP_VISIBLE_DEVICES`` environment variables respectively
+- Add ``PETSC_ATTRIBUTE_COLD`` to inform compilers that a function is unlikely to be called
 - Add ``PetscCall()``, ``PetscCallVoid()``, ``PetscCallMPI()``, ``PetscCallAbort()``, ``PetscCallContinue()``, ``PetscCallThrow()``, and ``PetscCallCXX()``. These supersede ``CHKERRQ()``, ``CHKERRV()``, ``CHKERRMPI()``, ``CHKERRABORT()``, ``CHKERRCONTINUE()``, ``CHKERRXX()``, and ``CHKERRCXX()`` respectively
 - Add ``PetscCallCUDA()``, ``PetscCallCUBLAS()``, ``PetscCallCUSPARSE()``, ``PetscCallCUSOLVER()``, ``PetscCallCUFFT()``, and ``PetscCallCURAND()``. These supersede ``CHKERRCUDA()``, ``CHKERRCUBLAS()``, ``CHKERRCUSPARSE()``, ``CHKERRCUSOLVER()``, ``CHKERRCUFFT()``, and ``CHKERRCURAND()`` respectively
 - Add ``PetscCallHIP()``, ``PetscCallHIPBLAS()``, and ``PetscCallHIPSOLVER()``. These supersede ``CHKERRHIP()``, ``CHKERRHIPBLAS()``, and ``CHKERRHIPSOLVER()`` respectively
