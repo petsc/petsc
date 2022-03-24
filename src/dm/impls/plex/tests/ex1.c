@@ -525,7 +525,7 @@ int main(int argc, char **argv)
 
   # Gmsh v41 ascii/binary reader tests
   testset: # 32bit mesh, sequential
-    args: -dm_coord_space 0 -dm_view ::ascii_info_detail -dm_plex_check_all
+    args: -dm_coord_space 0 -dm_view ::ascii_info_detail -dm_plex_check_all -dm_plex_gmsh_mark_vertices
     output_file: output/ex1_gmsh_3d_32.out
     test:
       suffix: gmsh_3d_ascii_v41_32
@@ -540,13 +540,13 @@ int main(int argc, char **argv)
   test:
     suffix: gmsh_quad_8node
     args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-qua-8node.msh \
-          -dm_view -dm_plex_check_all
+          -dm_view -dm_plex_check_all -dm_plex_gmsh_mark_vertices
   test:
     suffix: gmsh_hex_20node
     args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-hex-20node.msh \
-          -dm_view -dm_plex_check_all
+          -dm_view -dm_plex_check_all -dm_plex_gmsh_mark_vertices
   testset:  # 32bit mesh, parallel
-    args: -dm_coord_space 0 -dist_dm_distribute -petscpartitioner_type simple -dm_view ::ascii_info_detail -dm_plex_check_all
+    args: -dm_coord_space 0 -dist_dm_distribute -petscpartitioner_type simple -dm_view ::ascii_info_detail -dm_plex_check_all -dm_plex_gmsh_mark_vertices
     nsize: 2
     output_file: output/ex1_gmsh_3d_32_np2.out
     test:
@@ -560,7 +560,7 @@ int main(int argc, char **argv)
       requires: defined(PETSC_HAVE_MPIIO)
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-32.msh -viewer_binary_mpiio
   testset: # 64bit mesh, sequential
-    args: -dm_coord_space 0 -dm_view ::ascii_info_detail -dm_plex_check_all
+    args: -dm_coord_space 0 -dm_view ::ascii_info_detail -dm_plex_check_all -dm_plex_gmsh_mark_vertices
     output_file: output/ex1_gmsh_3d_64.out
     test:
       suffix: gmsh_3d_ascii_v41_64
@@ -573,7 +573,7 @@ int main(int argc, char **argv)
       requires: defined(PETSC_HAVE_MPIIO)
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/gmsh-3d-binary-64.msh -viewer_binary_mpiio
   testset:  # 64bit mesh, parallel
-    args: -dm_coord_space 0 -dist_dm_distribute -petscpartitioner_type simple -dm_view ::ascii_info_detail -dm_plex_check_all
+    args: -dm_coord_space 0 -dist_dm_distribute -petscpartitioner_type simple -dm_view ::ascii_info_detail -dm_plex_check_all -dm_plex_gmsh_mark_vertices
     nsize: 2
     output_file: output/ex1_gmsh_3d_64_np2.out
     test:
