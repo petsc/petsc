@@ -623,11 +623,17 @@ cdef class TAO(Object):
         PetscINCREF(xl.obj); PetscINCREF(xu.obj)
         return (xl, xu)
 
+    def setIterationNumber(self, its):
+        """
+        """
+        cdef PetscInt ival = asInt(its)
+        CHKERR( TaoSetIterationNumber(self.tao, ival) )
+
     def getIterationNumber(self):
         """
         """
         cdef PetscInt its=0
-        CHKERR( TaoGetSolutionStatus(self.tao, &its, NULL, NULL, NULL, NULL, NULL) )
+        CHKERR( TaoGetIterationNumber(self.tao, &its) )
         return toInt(its)
 
     def getObjectiveValue(self):
