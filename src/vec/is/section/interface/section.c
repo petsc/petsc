@@ -548,16 +548,6 @@ PetscErrorCode PetscSectionSetFieldComponents(PetscSection s, PetscInt field, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSectionCheckConstraints_Static(PetscSection s)
-{
-  PetscFunctionBegin;
-  if (!s->bc) {
-    PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &s->bc));
-    PetscCall(PetscSectionSetChart(s->bc, s->pStart, s->pEnd));
-  }
-  PetscFunctionReturn(0);
-}
-
 /*@
   PetscSectionGetChart - Returns the range [pStart, pEnd) in which points lie.
 
@@ -957,7 +947,7 @@ PetscErrorCode PetscSectionSetConstraintDof(PetscSection s, PetscInt point, Pets
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (numDof) {
-    PetscCall(PetscSectionCheckConstraints_Static(s));
+    PetscCall(PetscSectionCheckConstraints_Private(s));
     PetscCall(PetscSectionSetDof(s->bc, point, numDof));
   }
   PetscFunctionReturn(0);
@@ -982,7 +972,7 @@ PetscErrorCode PetscSectionAddConstraintDof(PetscSection s, PetscInt point, Pets
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   if (numDof) {
-    PetscCall(PetscSectionCheckConstraints_Static(s));
+    PetscCall(PetscSectionCheckConstraints_Private(s));
     PetscCall(PetscSectionAddDof(s->bc, point, numDof));
   }
   PetscFunctionReturn(0);

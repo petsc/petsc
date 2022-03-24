@@ -148,16 +148,6 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSectionCheckConstraints_Static(PetscSection s)
-{
-  PetscFunctionBegin;
-  if (!s->bc) {
-    PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &s->bc));
-    PetscCall(PetscSectionSetChart(s->bc, s->pStart, s->pEnd));
-  }
-  PetscFunctionReturn(0);
-}
-
 /*@C
   PetscSFDistributeSection - Create a new PetscSection reorganized, moving from the root to the leaves of the SF
 
@@ -250,8 +240,8 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasDof[-rpStart], &leafSection->atlasDof[-lpStart],MPI_REPLACE));
   PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasDof[-rpStart], &leafSection->atlasDof[-lpStart],MPI_REPLACE));
   if (sub[1]) {
-    PetscCall(PetscSectionCheckConstraints_Static(rootSection));
-    PetscCall(PetscSectionCheckConstraints_Static(leafSection));
+    PetscCall(PetscSectionCheckConstraints_Private(rootSection));
+    PetscCall(PetscSectionCheckConstraints_Private(leafSection));
     PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->bc->atlasDof[-rpStart], &leafSection->bc->atlasDof[-lpStart],MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->bc->atlasDof[-rpStart], &leafSection->bc->atlasDof[-lpStart],MPI_REPLACE));
   }
@@ -259,8 +249,8 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
     PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->field[f]->atlasDof[-rpStart], &leafSection->field[f]->atlasDof[-lpStart],MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->field[f]->atlasDof[-rpStart], &leafSection->field[f]->atlasDof[-lpStart],MPI_REPLACE));
     if (sub[2+f]) {
-      PetscCall(PetscSectionCheckConstraints_Static(rootSection->field[f]));
-      PetscCall(PetscSectionCheckConstraints_Static(leafSection->field[f]));
+      PetscCall(PetscSectionCheckConstraints_Private(rootSection->field[f]));
+      PetscCall(PetscSectionCheckConstraints_Private(leafSection->field[f]));
       PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->field[f]->bc->atlasDof[-rpStart], &leafSection->field[f]->bc->atlasDof[-lpStart],MPI_REPLACE));
       PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->field[f]->bc->atlasDof[-rpStart], &leafSection->field[f]->bc->atlasDof[-lpStart],MPI_REPLACE));
     }

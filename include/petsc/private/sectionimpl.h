@@ -87,6 +87,16 @@ PETSC_INTERN PetscErrorCode PetscSectionView_HDF5_Internal(PetscSection, PetscVi
 PETSC_INTERN PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection, PetscViewer);
 #endif
 
+static inline PetscErrorCode PetscSectionCheckConstraints_Private(PetscSection s)
+{
+  PetscFunctionBegin;
+  if (!s->bc) {
+    PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &s->bc));
+    PetscCall(PetscSectionSetChart(s->bc, s->pStart, s->pEnd));
+  }
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 #  define PetscSectionCheckValidField(x,y)
 #  define PetscSectionCheckValidFieldComponent(x,y)
