@@ -545,10 +545,10 @@ cdef class TAO(Object):
         """
         if monitor is None: return
         cdef object monitorlist = self.get_attr('__monitor__')
+        if args  is None: args  = ()
+        if kargs is None: kargs = {}
         if monitorlist is None:
             CHKERR( TaoSetMonitor(self.tao, TAO_Monitor, NULL, NULL) )
-            if args  is None: args  = ()
-            if kargs is None: kargs = {}
             self.set_attr('__monitor__',  [(monitor, args, kargs)])
         else:
             monitorlist.append((monitor, args, kargs))
