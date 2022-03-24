@@ -180,7 +180,7 @@ PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
 /*@
   PetscSectionSetFromOptions - sets parameters in a PetscSection from the options database
 
-  Collective on PetscSection
+  Collective
 
   Input Parameter:
 . section - the PetscSection
@@ -210,7 +210,7 @@ PetscErrorCode PetscSectionSetFromOptions(PetscSection s)
 /*@
   PetscSectionCompare - Compares two sections
 
-  Collective on PetscSection
+  Collective
 
   Input Parameters:
 + s1 - the first PetscSection
@@ -314,7 +314,7 @@ not_congruent:
 /*@
   PetscSectionGetNumFields - Returns the number of fields, or 0 if no fields were defined.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . s - the PetscSection
@@ -338,7 +338,7 @@ PetscErrorCode PetscSectionGetNumFields(PetscSection s, PetscInt *numFields)
 /*@
   PetscSectionSetNumFields - Sets the number of fields.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -484,7 +484,7 @@ PetscErrorCode PetscSectionSetComponentName(PetscSection s, PetscInt field, Pets
 /*@
   PetscSectionGetFieldComponents - Returns the number of field components for the given field.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -510,7 +510,7 @@ PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, Pe
 /*@
   PetscSectionSetFieldComponents - Sets the number of field components for the given field.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -561,7 +561,7 @@ static PetscErrorCode PetscSectionCheckConstraints_Static(PetscSection s)
 /*@
   PetscSectionGetChart - Returns the range [pStart, pEnd) in which points lie.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . s - the PetscSection
@@ -586,7 +586,7 @@ PetscErrorCode PetscSectionGetChart(PetscSection s, PetscInt *pStart, PetscInt *
 /*@
   PetscSectionSetChart - Sets the range [pStart, pEnd) in which points lie.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -623,7 +623,7 @@ PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pE
 /*@
   PetscSectionGetPermutation - Returns the permutation of [0, pEnd-pStart) or NULL
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . s - the PetscSection
@@ -646,7 +646,7 @@ PetscErrorCode PetscSectionGetPermutation(PetscSection s, IS *perm)
 /*@
   PetscSectionSetPermutation - Sets the permutation for [0, pEnd-pStart)
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -675,7 +675,7 @@ PetscErrorCode PetscSectionSetPermutation(PetscSection s, IS perm)
 /*@
   PetscSectionGetPointMajor - Returns the flag for dof ordering, true if it is point major, otherwise field major
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . s - the PetscSection
@@ -699,13 +699,11 @@ PetscErrorCode PetscSectionGetPointMajor(PetscSection s, PetscBool *pm)
 /*@
   PetscSectionSetPointMajor - Sets the flag for dof ordering, true if it is point major, otherwise field major
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s  - the PetscSection
 - pm - the flag for point major ordering
-
-  Not collective
 
   Level: intermediate
 
@@ -723,7 +721,7 @@ PetscErrorCode PetscSectionSetPointMajor(PetscSection s, PetscBool pm)
 /*@
   PetscSectionGetIncludesConstraints - Returns the flag indicating if constrained dofs were included when computing offsets
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . s - the PetscSection
@@ -747,13 +745,11 @@ PetscErrorCode PetscSectionGetIncludesConstraints(PetscSection s, PetscBool *inc
 /*@
   PetscSectionSetIncludesConstraints - Sets the flag indicating if constrained dofs are to be included when computing offsets
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s  - the PetscSection
 - includesConstraints - the flag indicating if constrained dofs are to be included when computing offsets
-
-  Not collective
 
   Level: intermediate
 
@@ -771,7 +767,7 @@ PetscErrorCode PetscSectionSetIncludesConstraints(PetscSection s, PetscBool incl
 /*@
   PetscSectionGetDof - Return the number of degrees of freedom associated with a given point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -799,7 +795,7 @@ PetscErrorCode PetscSectionGetDof(PetscSection s, PetscInt point, PetscInt *numD
 /*@
   PetscSectionSetDof - Sets the number of degrees of freedom associated with a given point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -822,7 +818,7 @@ PetscErrorCode PetscSectionSetDof(PetscSection s, PetscInt point, PetscInt numDo
 /*@
   PetscSectionAddDof - Adds to the number of degrees of freedom associated with a given point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -847,7 +843,7 @@ PetscErrorCode PetscSectionAddDof(PetscSection s, PetscInt point, PetscInt numDo
 /*@
   PetscSectionGetFieldDof - Return the number of degrees of freedom associated with a field on a given point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -874,7 +870,7 @@ PetscErrorCode PetscSectionGetFieldDof(PetscSection s, PetscInt point, PetscInt 
 /*@
   PetscSectionSetFieldDof - Sets the number of degrees of freedom associated with a field on a given point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -898,7 +894,7 @@ PetscErrorCode PetscSectionSetFieldDof(PetscSection s, PetscInt point, PetscInt 
 /*@
   PetscSectionAddFieldDof - Adds a number of degrees of freedom associated with a field on a given point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -922,7 +918,7 @@ PetscErrorCode PetscSectionAddFieldDof(PetscSection s, PetscInt point, PetscInt 
 /*@
   PetscSectionGetConstraintDof - Return the number of constrained degrees of freedom associated with a given point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -949,7 +945,7 @@ PetscErrorCode PetscSectionGetConstraintDof(PetscSection s, PetscInt point, Pets
 /*@
   PetscSectionSetConstraintDof - Set the number of constrained degrees of freedom associated with a given point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -974,7 +970,7 @@ PetscErrorCode PetscSectionSetConstraintDof(PetscSection s, PetscInt point, Pets
 /*@
   PetscSectionAddConstraintDof - Increment the number of constrained degrees of freedom associated with a given point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -999,7 +995,7 @@ PetscErrorCode PetscSectionAddConstraintDof(PetscSection s, PetscInt point, Pets
 /*@
   PetscSectionGetFieldConstraintDof - Return the number of constrained degrees of freedom associated with a given field on a point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -1026,7 +1022,7 @@ PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection s, PetscInt point,
 /*@
   PetscSectionSetFieldConstraintDof - Set the number of constrained degrees of freedom associated with a given field on a point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -1050,7 +1046,7 @@ PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection s, PetscInt point,
 /*@
   PetscSectionAddFieldConstraintDof - Increment the number of constrained degrees of freedom associated with a given field on a point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -1074,7 +1070,7 @@ PetscErrorCode PetscSectionAddFieldConstraintDof(PetscSection s, PetscInt point,
 /*@
   PetscSectionSetUpBC - Setup the subsections describing boundary conditions.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . s - the PetscSection
@@ -1099,7 +1095,7 @@ PetscErrorCode PetscSectionSetUpBC(PetscSection s)
 /*@
   PetscSectionSetUp - Calculate offsets based upon the number of degrees of freedom for each point.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . s - the PetscSection
@@ -1165,7 +1161,7 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
 /*@
   PetscSectionGetMaxDof - Return the maximum number of degrees of freedom on any point in the chart
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 . s - the PetscSection
@@ -1189,7 +1185,7 @@ PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof)
 /*@
   PetscSectionGetStorageSize - Return the size of an array or local Vec capable of holding all the degrees of freedom.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . s - the PetscSection
@@ -1216,7 +1212,7 @@ PetscErrorCode PetscSectionGetStorageSize(PetscSection s, PetscInt *size)
 /*@
   PetscSectionGetConstrainedStorageSize - Return the size of an array or local Vec capable of holding all unconstrained degrees of freedom.
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . s - the PetscSection
@@ -1549,7 +1545,7 @@ PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLa
 /*@
   PetscSectionGetOffset - Return the offset into an array or local Vec for the dof associated with the given point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -1577,7 +1573,7 @@ PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *o
 /*@
   PetscSectionSetOffset - Set the offset into an array or local Vec for the dof associated with the given point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -1602,7 +1598,7 @@ PetscErrorCode PetscSectionSetOffset(PetscSection s, PetscInt point, PetscInt of
 /*@
   PetscSectionGetFieldOffset - Return the offset into an array or local Vec for the dof associated with the given point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -1629,7 +1625,7 @@ PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscI
 /*@
   PetscSectionSetFieldOffset - Set the offset into an array or local Vec for the dof associated with the given field at a point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -1655,7 +1651,7 @@ PetscErrorCode PetscSectionSetFieldOffset(PetscSection s, PetscInt point, PetscI
 /*@
   PetscSectionGetFieldPointOffset - Return the offset on the given point for the dof associated with the given point.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s - the PetscSection
@@ -1689,7 +1685,7 @@ PetscErrorCode PetscSectionGetFieldPointOffset(PetscSection s, PetscInt point, P
 /*@
   PetscSectionGetOffsetRange - Return the full range of offsets [start, end)
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . s - the PetscSection
@@ -1726,7 +1722,7 @@ PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, Petsc
 /*@
   PetscSectionCreateSubsection - Create a new, smaller section composed of only the selected fields
 
-  Collective on s
+  Collective
 
   Input Parameters:
 + s      - the PetscSection
@@ -1818,7 +1814,7 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const 
 /*@
   PetscSectionCreateSupersection - Create a new, larger section composed of the input sections
 
-  Collective on s
+  Collective
 
   Input Parameters:
 + s     - the input sections
@@ -1934,7 +1930,7 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
 /*@
   PetscSectionCreateSubmeshSection - Create a new, smaller section with support on the submesh
 
-  Collective on s
+  Collective
 
   Input Parameters:
 + s           - the PetscSection
@@ -2066,7 +2062,7 @@ static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
 /*@C
    PetscSectionViewFromOptions - View from Options
 
-   Collective on PetscSection
+   Collective
 
    Input Parameters:
 +  A - the PetscSection object to view
@@ -2087,7 +2083,7 @@ PetscErrorCode  PetscSectionViewFromOptions(PetscSection A,PetscObject obj,const
 /*@C
   PetscSectionView - Views a PetscSection
 
-  Collective on PetscSection
+  Collective
 
   Input Parameters:
 + s - the PetscSection object to view
@@ -2140,7 +2136,7 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
 /*@C
   PetscSectionLoad - Loads a PetscSection
 
-  Collective on PetscSection
+  Collective
 
   Input Parameters:
 + s - the PetscSection object to load
@@ -2194,7 +2190,7 @@ static PetscErrorCode PetscSectionResetClosurePermutation(PetscSection section)
 /*@
   PetscSectionReset - Frees all section data.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 . s - the PetscSection
@@ -2244,7 +2240,7 @@ PetscErrorCode PetscSectionReset(PetscSection s)
 /*@
   PetscSectionDestroy - Frees a section object and frees its range if that exists.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 . s - the PetscSection
@@ -2355,7 +2351,7 @@ PetscErrorCode VecIntSetValuesSection(PetscInt *baseArray, PetscSection s, Petsc
 /*@C
   PetscSectionHasConstraints - Determine whether a section has constrained dofs
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . s - The PetscSection
@@ -2379,7 +2375,7 @@ PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstrai
 /*@C
   PetscSectionGetConstraintIndices - Get the point dof numbers, in [0, dof), which are constrained
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s     - The PetscSection
@@ -2407,7 +2403,7 @@ PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, 
 /*@C
   PetscSectionSetConstraintIndices - Set the point dof numbers, in [0, dof), which are constrained
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s     - The PetscSection
@@ -2440,7 +2436,7 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
 /*@C
   PetscSectionGetFieldConstraintIndices - Get the field dof numbers, in [0, fdof), which are constrained
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s     - The PetscSection
@@ -2473,7 +2469,7 @@ PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt po
 /*@C
   PetscSectionSetFieldConstraintIndices - Set the field dof numbers, in [0, fdof), which are constrained
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s       - The PetscSection
@@ -2505,7 +2501,7 @@ PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt po
 /*@
   PetscSectionPermute - Reorder the section according to the input point permutation
 
-  Collective on PetscSection
+  Collective
 
   Input Parameters:
 + section - The PetscSection object
@@ -2589,7 +2585,7 @@ PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSe
 /*@
   PetscSectionSetClosureIndex - Set a cache of points in the closure of each point in the section
 
-  Collective on section
+  Collective
 
   Input Parameters:
 + section   - The PetscSection
@@ -2623,7 +2619,7 @@ PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj
 /*@
   PetscSectionGetClosureIndex - Get the cache of points in the closure of each point in the section
 
-  Collective on section
+  Collective
 
   Input Parameters:
 + section   - The PetscSection
@@ -2740,7 +2736,7 @@ PetscErrorCode PetscSectionGetClosurePermutation_Internal(PetscSection section, 
 /*@
   PetscSectionGetClosurePermutation - Get the dof permutation for the closure of each cell in the section, meaning clPerm[newIndex] = oldIndex.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + section   - The PetscSection
@@ -2785,7 +2781,7 @@ PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection se
 /*@
   PetscSectionGetClosureInversePermutation - Get the inverse dof permutation for the closure of each cell in the section, meaning clPerm[oldIndex] = newIndex.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + section   - The PetscSection
@@ -2867,7 +2863,7 @@ PetscErrorCode PetscSectionSymCreate(MPI_Comm comm, PetscSectionSym *sym)
 /*@C
   PetscSectionSymSetType - Builds a PetscSection symmetry, for a particular implementation.
 
-  Collective on PetscSectionSym
+  Collective
 
   Input Parameters:
 + sym    - The section symmetry object
@@ -2949,7 +2945,7 @@ PetscErrorCode PetscSectionSymRegister(const char sname[], PetscErrorCode (*func
 /*@
    PetscSectionSymDestroy - Destroys a section symmetry.
 
-   Collective on PetscSectionSym
+   Collective
 
    Input Parameters:
 .  sym - the section symmetry
@@ -2983,7 +2979,7 @@ PetscErrorCode PetscSectionSymDestroy(PetscSectionSym *sym)
 /*@C
    PetscSectionSymView - Displays a section symmetry
 
-   Collective on PetscSectionSym
+   Collective
 
    Input Parameters:
 +  sym - the index set
@@ -3012,7 +3008,7 @@ PetscErrorCode PetscSectionSymView(PetscSectionSym sym,PetscViewer viewer)
 /*@
   PetscSectionSetSym - Set the symmetries for the data referred to by the section
 
-  Collective on PetscSection
+  Collective
 
   Input Parameters:
 + section - the section describing data layout
@@ -3039,7 +3035,7 @@ PetscErrorCode PetscSectionSetSym(PetscSection section, PetscSectionSym sym)
 /*@
   PetscSectionGetSym - Get the symmetries for the data referred to by the section
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 . section - the section describing data layout
@@ -3062,7 +3058,7 @@ PetscErrorCode PetscSectionGetSym(PetscSection section, PetscSectionSym *sym)
 /*@
   PetscSectionSetFieldSym - Set the symmetries for the data referred to by a field of the section
 
-  Collective on PetscSection
+  Collective
 
   Input Parameters:
 + section - the section describing data layout
@@ -3085,7 +3081,7 @@ PetscErrorCode PetscSectionSetFieldSym(PetscSection section, PetscInt field, Pet
 /*@
   PetscSectionGetFieldSym - Get the symmetries for the data referred to by a field of the section
 
-  Collective on PetscSection
+  Collective
 
   Input Parameters:
 + section - the section describing data layout
@@ -3110,7 +3106,7 @@ PetscErrorCode PetscSectionGetFieldSym(PetscSection section, PetscInt field, Pet
 /*@C
   PetscSectionGetPointSyms - Get the symmetries for a set of points in a PetscSection under specific orientations.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + section - the section
@@ -3211,7 +3207,7 @@ PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints
 /*@C
   PetscSectionRestorePointSyms - Restore the symmetries returned by PetscSectionGetPointSyms()
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + section - the section
@@ -3256,7 +3252,7 @@ PetscErrorCode PetscSectionRestorePointSyms(PetscSection section, PetscInt numPo
 /*@C
   PetscSectionGetFieldPointSyms - Get the symmetries for a set of points in a field of a PetscSection under specific orientations.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + section - the section
@@ -3287,7 +3283,7 @@ PetscErrorCode PetscSectionGetFieldPointSyms(PetscSection section, PetscInt fiel
 /*@C
   PetscSectionRestoreFieldPointSyms - Restore the symmetries returned by PetscSectionGetFieldPointSyms()
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + section - the section
@@ -3317,7 +3313,7 @@ PetscErrorCode PetscSectionRestoreFieldPointSyms(PetscSection section, PetscInt 
 /*@
   PetscSectionSymCopy - Copy the symmetries, assuming that the point structure is compatible
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . sym - the PetscSectionSym
@@ -3367,7 +3363,7 @@ PetscErrorCode PetscSectionSymDistribute(PetscSectionSym sym, PetscSF migrationS
 /*@
   PetscSectionGetUseFieldOffsets - Get the flag to use field offsets directly in a global section, rather than just the point offset
 
-  Not collective
+  Not Collective
 
   Input Parameter:
 . s - the global PetscSection
@@ -3390,7 +3386,7 @@ PetscErrorCode PetscSectionGetUseFieldOffsets(PetscSection s, PetscBool *flg)
 /*@
   PetscSectionSetUseFieldOffsets - Set the flag to use field offsets directly in a global section, rather than just the point offset
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + s   - the global PetscSection
@@ -3426,7 +3422,7 @@ PetscErrorCode PetscSectionSetUseFieldOffsets(PetscSection s, PetscBool flg)
 /*@
   PetscSectionExtractDofsFromArray - Extracts elements of an array corresponding to DOFs of specified points.
 
-  Not collective
+  Not Collective
 
   Input Parameters:
 + origSection - the PetscSection describing the layout of the array
