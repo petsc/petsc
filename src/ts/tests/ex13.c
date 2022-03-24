@@ -19,9 +19,8 @@ int main(int argc,char **argv)
   PetscInt       i, p = 1, Nt = 10;
   PetscInt       II[10] = { 1, 4, 9, 2, 3, 6, 5, 8, 0, 7 };
   PetscBool      sort,use1,use2,check = PETSC_FALSE;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(VecCreate(PETSC_COMM_WORLD,&W));
   CHKERRQ(VecSetSizes(W,1,PETSC_DECIDE));
   CHKERRQ(VecSetUp(W));
@@ -163,8 +162,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&W));
   CHKERRQ(VecDestroy(&W2));
   CHKERRQ(VecDestroy(&Wdot));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

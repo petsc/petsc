@@ -259,12 +259,11 @@ PetscErrorCode port_lsd_bfbt(void)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   CHKERRQ(port_lsd_bfbt());
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

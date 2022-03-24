@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   PetscBool      sorted;
   MPI_Comm       comm;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   comm = MPI_COMM_WORLD;
   CHKERRMPI(MPI_Comm_rank(comm, &rank));
   ierr = PetscOptionsBegin(comm, "", "Parallel Sort Test Options", "IS");CHKERRQ(ierr);
@@ -79,8 +79,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscRandomDestroy(&randvalues));
   CHKERRQ(PetscRandomDestroy(&randsizes));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

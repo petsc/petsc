@@ -171,9 +171,8 @@ int main(int argc, char **argv)
   PetscSF          *sfs;
   PetscInt         *leafOffsets;
   MPI_Comm          comm;
-  PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(GetOptions(comm, &ctx));
 
@@ -186,8 +185,8 @@ int main(int argc, char **argv)
   CHKERRQ(PetscFree(leafOffsets));
   CHKERRQ(PetscSFDestroy(&sf));
   CHKERRQ(PetscSFDestroy(&sfRef));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

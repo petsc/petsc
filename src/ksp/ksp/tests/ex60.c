@@ -12,9 +12,8 @@ int main(int argc,char **args)
   PetscMPIInt    rank, size, sized;
   PetscInt       M = 8, N = 8, m, n, rstart, rend, r;
   PetscBool      userSubdomains = PETSC_FALSE;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &args, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &args, NULL,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-M", &M, NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL, "-user_subdomains", &userSubdomains, NULL));
@@ -81,8 +80,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&u));
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&b));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

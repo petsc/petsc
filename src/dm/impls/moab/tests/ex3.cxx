@@ -80,9 +80,8 @@ int main(int argc, char **argv)
   DM            *dmhierarchy;
   PetscInt      *degrees;
   PetscBool      createR;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   createR = PETSC_FALSE;
 
@@ -139,7 +138,7 @@ int main(int argc, char **argv)
   CHKERRQ(PetscFree(degrees));
   CHKERRQ(PetscFree(dmhierarchy));
   CHKERRQ(DMDestroy(&user.dm));
-  ierr = PetscFinalize();
+  CHKERRQ(PetscFinalize());
   return 0;
 }
 

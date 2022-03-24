@@ -15,9 +15,8 @@ int main(int argc, char *argv[])
   PetscInt       numGP = 3;
   PetscInt       dof   = 2*(p+1)*numGP;
   PetscMPIInt    rank, subsize, subrank;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   /* Create 2D DMDA */
   CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
@@ -60,8 +59,8 @@ int main(int argc, char *argv[])
   CHKERRQ(DMDestroy(&daX));
   CHKERRQ(DMDestroy(&daY));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

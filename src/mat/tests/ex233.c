@@ -4,7 +4,6 @@ static char help[] = "Tests MatMPI{AIJ,BAIJ,SBAIJ}SetPreallocationCSR\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       ia[3]={0,2,4};
   PetscInt       ja[4]={0,1,0,1};
   PetscScalar    c[16]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
@@ -15,7 +14,7 @@ int main(int argc,char **argv)
   Mat            ssbaij;
   PetscBool      rect = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCheckFalse(size < 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is an example with more then one processors");
@@ -40,8 +39,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatMPISBAIJSetPreallocationCSR(ssbaij,2,ia,ja,c));
   CHKERRQ(MatViewFromOptions(ssbaij,NULL,"-view"));
   CHKERRQ(MatDestroy(&ssbaij));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

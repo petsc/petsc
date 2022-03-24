@@ -203,9 +203,8 @@ int main(int argc, char **argv)
   PetscInt            dim, spaceDim, Nc, c, Np, p;
   PetscMPIInt         rank, size;
   PetscViewer         selfviewer;
-  PetscErrorCode      ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &ctx));
   CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &ctx, &dm));
   CHKERRQ(DMGetDimension(dm, &dim));
@@ -281,8 +280,8 @@ int main(int argc, char **argv)
   CHKERRQ(DMRestoreLocalVector(dm, &lu));
   CHKERRQ(DMInterpolationDestroy(&interpolator));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

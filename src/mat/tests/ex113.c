@@ -10,12 +10,11 @@ int main(int argc,char **args)
 {
   Mat            A,A1,A2,Mtmp,dstMat;
   PetscViewer    viewer;
-  PetscErrorCode ierr;
   PetscReal      fill=4.0;
   char           file[128];
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   /*  Load the matrix A */
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate a file name for matrix A with the -f option.");
@@ -50,6 +49,6 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A1));
   CHKERRQ(MatDestroy(&A2));
   CHKERRQ(MatDestroy(&dstMat));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

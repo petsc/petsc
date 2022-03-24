@@ -13,7 +13,6 @@ static char help[] = "This example demonstrates the use of DMNetwork interface f
 
 int main(int argc,char ** argv)
 {
-  PetscErrorCode   ierr;
   char             waterdata_file[PETSC_MAX_PATH_LEN] = "sample1.inp";
   WATERDATA        *waterdata;
   AppCtx_Water     appctx;
@@ -29,7 +28,7 @@ int main(int argc,char ** argv)
   SNES             snes;
   SNESConvergedReason reason;
 
-  ierr = PetscInitialize(&argc,&argv,"wateroptions",help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,"wateroptions",help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&crank));
 
   /* Create an empty network object */
@@ -119,8 +118,8 @@ int main(int argc,char ** argv)
   CHKERRQ(VecDestroy(&F));
   CHKERRQ(SNESDestroy(&snes));
   CHKERRQ(DMDestroy(&networkdm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

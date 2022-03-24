@@ -14,12 +14,11 @@ T*/
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode         ierr;
   PetscInt               i,n = 4,indices[] = {0,3,9,12},m = 2,input[] = {0,2};
   PetscInt               output[2],inglobals[13],outlocals[13];
   ISLocalToGlobalMapping mapping;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /*
       Create a local to global mapping. Each processor independently
@@ -53,8 +52,8 @@ int main(int argc,char **argv)
   */
   CHKERRQ(ISLocalToGlobalMappingDestroy(&mapping));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

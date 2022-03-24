@@ -1827,9 +1827,8 @@ int main(int argc, char **argv)
   Vec             u;    /* solution */
   AppCtx          user; /* user-defined work context */
   PetscReal       t;
-  PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
   CHKERRQ(PetscBagCreate(PETSC_COMM_WORLD, sizeof(Parameter), &user.bag));
   CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
@@ -1867,8 +1866,8 @@ int main(int argc, char **argv)
   CHKERRQ(DMDestroy(&dm));
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(PetscBagDestroy(&user.bag));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

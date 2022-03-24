@@ -15,10 +15,9 @@ static char help[] ="Loads a previously saved TS.";
 int main(int argc,char **argv)
 {
   TS             ts;                 /* timestepping context */
-  PetscErrorCode ierr;
   PetscViewer    viewer;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(PetscDLLibraryAppend(PETSC_COMM_WORLD,&PetscDLLibrariesLoaded,"advection-diffusion-reaction/ex1"));
   CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
   CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"advection-diffusion-reaction/binaryoutput",FILE_MODE_READ,&viewer));
@@ -30,6 +29,6 @@ int main(int argc,char **argv)
   CHKERRQ(TSView(ts,PETSC_VIEWER_STDOUT_WORLD));
   CHKERRQ(TSSolve(ts,NULL));
   CHKERRQ(TSDestroy(&ts));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

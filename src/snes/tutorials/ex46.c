@@ -40,7 +40,7 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
@@ -93,8 +93,8 @@ int main(int argc,char **argv)
   CHKERRQ(SNESDestroy(&snes));
   CHKERRQ(DMDestroy(&da));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscScalar funcU(DMDACoor2d *coords)

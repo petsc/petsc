@@ -51,9 +51,8 @@ int main(int argc, char **argv)
 {
   DM             dm;
   Vec            v;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(DMShellCreate(PETSC_COMM_WORLD,&dm));
   CHKERRQ(PetscObjectComposeFunction((PetscObject)dm,"DMSetUpGLVisViewer_C",DMSetUpGLVisViewer_Shell));
   CHKERRQ(VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DECIDE,&v));
@@ -66,8 +65,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecViewFromOptions(v,NULL,"-vec_view"));
   CHKERRQ(DMRestoreGlobalVector(dm,&v));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -9,7 +9,6 @@ int main(int argc,char **argv)
 {
   PetscInt         M = 10,N = 8,ne,nc,i;
   const PetscInt   *e;
-  PetscErrorCode   ierr;
   PetscBool        flg = PETSC_FALSE;
   DM               da;
   PetscViewer      viewer;
@@ -19,7 +18,7 @@ int main(int argc,char **argv)
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
   PetscScalar      *lv;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer));
 
   /* Read options */
@@ -62,8 +61,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&local));
   CHKERRQ(VecDestroy(&global));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

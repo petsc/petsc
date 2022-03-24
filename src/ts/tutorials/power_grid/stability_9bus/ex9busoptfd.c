@@ -777,7 +777,7 @@ int main(int argc,char **argv)
   Vec                lowerb,upperb;
 
   PetscFunctionBeginUser;
-  ierr = PetscInitialize(&argc,&argv,"petscoptions",help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,"petscoptions",help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
 
@@ -887,8 +887,8 @@ int main(int argc,char **argv)
   CHKERRQ(DMDestroy(&user.dmpgrid));
   CHKERRQ(ISDestroy(&user.is_diff));
   CHKERRQ(ISDestroy(&user.is_alg));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* ------------------------------------------------------------------ */

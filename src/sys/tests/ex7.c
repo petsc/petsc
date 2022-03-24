@@ -8,9 +8,8 @@ int main(int argc,char **argv)
   PetscInt       i;
   PetscInt       x[]  = {39, 9, 39, 39, 29},index[5];
   PetscInt       x2[] = {39, 9, 19, 39, 29, 39, 29, 39},index2[8];
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"1st test\n"));
   for (i=0; i<5; i++) index[i] = i;
   CHKERRQ(PetscSortIntWithPermutation(5, x, index));
@@ -20,8 +19,8 @@ int main(int argc,char **argv)
   for (i=0; i<8; i++) index2[i] = i;
   CHKERRQ(PetscSortIntWithPermutation(8, x2, index2));
   for (i=0; i<8; i++) CHKERRQ(PetscPrintf(PETSC_COMM_SELF," %" PetscInt_FMT "     %" PetscInt_FMT "     %" PetscInt_FMT "\n",x2[i], index2[i],x2[index2[i]]));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

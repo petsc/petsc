@@ -718,7 +718,7 @@ int main(int argc,char **argv)
   PetscInt       row_loc,col_loc;
   PetscScalar    val;
 
-  ierr = PetscInitialize(&argc,&argv,"petscoptions",help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,"petscoptions",help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
 
@@ -916,8 +916,8 @@ int main(int argc,char **argv)
   CHKERRQ(ISDestroy(&user.is_diff));
   CHKERRQ(ISDestroy(&user.is_alg));
   CHKERRQ(TSDestroy(&ts));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

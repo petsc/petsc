@@ -10,7 +10,6 @@ int main(int argc,char **args)
   Vec            x,b;
   PetscViewer    fd;
   char           file[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
   PetscBool      flg,preload = PETSC_TRUE;
 
   PetscInitialize(&argc,&args,(char*)0,help);
@@ -48,8 +47,8 @@ int main(int argc,char **args)
   PetscPreLoadEnd();
   CHKERRQ(PetscLogView_VecScatter(PETSC_VIEWER_STDOUT_WORLD));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 #include <petsctime.h>

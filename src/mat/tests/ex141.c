@@ -7,7 +7,6 @@ static char help[] = "Tests converting a SBAIJ matrix to BAIJ format with MatCon
 int main(int argc,char **args)
 {
   Mat            C,B;
-  PetscErrorCode ierr;
   PetscInt       i,bs=2,mbs,m,block,d_nz=6,col[3];
   PetscMPIInt    size;
   char           file[PETSC_MAX_PATH_LEN];
@@ -16,7 +15,7 @@ int main(int argc,char **args)
   PetscScalar    value[4];
   PetscInt       ridx[2],cidx[2];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&loadmat));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
@@ -77,8 +76,8 @@ int main(int argc,char **args)
 
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(MatDestroy(&C));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

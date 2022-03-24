@@ -90,7 +90,7 @@ int main(int argc,char **args)
   PetscBool      flg;
   MPI_Comm       comm;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,NULL,help));
   CHKERRQ(PetscInitializeFortran());
   comm = PETSC_COMM_WORLD;
   f77FORLINK();                               /* Link FORTRAN and C COMMONS */
@@ -285,8 +285,8 @@ int main(int argc,char **args)
   PetscPreLoadEnd();
   CHKERRQ(AODestroy(&user.grid->ao));
   PetscPrintf(MPI_COMM_WORLD, "Time taken in gradient calculation is %g sec.\n",grad_time);
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*---------------------------------------------------------------------*/

@@ -23,11 +23,10 @@ int main(int argc,char **args)
   PetscInt       N = 9, n;
   PetscInt       rstart, rend, row, col;
   PetscInt       i;
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   Vec            v;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size > 4,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Can only use at most 4 processors.");
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
@@ -89,8 +88,8 @@ int main(int argc,char **args)
 
   CHKERRQ(PetscFree(ia));
   CHKERRQ(PetscFree(ja));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

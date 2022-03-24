@@ -21,7 +21,7 @@ int main(int argc, char **argv)
   PetscInt       dim;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char *) 0, help));
   comm = PETSC_COMM_WORLD;
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Test Options","none");CHKERRQ(ierr);
@@ -138,8 +138,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroy(&nv));
   CHKERRQ(VecDestroy(&v));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -262,9 +262,8 @@ int main (int argc, char * argv[]) {
   DM             dma, odm;
   Vec            metric;
   PetscInt       r;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(ProcessOptions(comm, &user));
   CHKERRQ(CreateMesh(comm, &dm));
@@ -291,8 +290,8 @@ int main (int argc, char * argv[]) {
   CHKERRQ(PetscObjectSetOptionsPrefix((PetscObject) dm, "final_"));
   CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -6,11 +6,10 @@ static char help[] = "Demonstrates opening and drawing in a window\n";
 
 int main(int argc,char **argv)
 {
-  PetscDraw      draw;
-  PetscErrorCode ierr;
-  int            x = 0,y = 0,width = 300,height = 300;
+  PetscDraw draw;
+  int       x = 0,y = 0,width = 300,height = 300;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   CHKERRQ(PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw));
   CHKERRQ(PetscDrawSetPause(draw,2.0));
@@ -49,8 +48,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscDrawSave(draw));
 
   CHKERRQ(PetscDrawDestroy(&draw));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

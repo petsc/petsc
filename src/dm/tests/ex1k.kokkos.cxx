@@ -24,7 +24,6 @@ using ConstNodeKokkosOffsetView2D = Kokkos::Experimental::OffsetView<const Node*
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode      ierr;
   DM                  da;
   PetscInt            M = 5, N = 7,xm,ym,xs,ys;
   PetscInt            dof=1,sw = 1;
@@ -33,7 +32,7 @@ int main(int argc,char **argv)
   PetscReal           nrm;
   Vec                 g,l,gg,ll; /* global/local vectors of the da */
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* ===========================================================================
     Show how to manage a multi-component DMDA with DMDAVecGetKokkosOffsetViewDOF
@@ -198,8 +197,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&g));
   CHKERRQ(VecDestroy(&ll));
   CHKERRQ(VecDestroy(&gg));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

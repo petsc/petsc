@@ -7,12 +7,11 @@ static char help[] = "Tests DMLocalToGlobal() for dof > 1\n\n";
 int main(int argc,char **argv)
 {
   PetscInt       M = 6,N = 5,P = 4, m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,i,j,k,is,js,ks,in,jen,kn;
-  PetscErrorCode ierr;
   DM             da;
   Vec            local,global;
   PetscScalar    ****l;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   /* Create distributed array and get vectors */
   CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,P,m,n,p,2,1,NULL,NULL,NULL,&da));
   CHKERRQ(DMSetFromOptions(da));
@@ -40,8 +39,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&local));
   CHKERRQ(VecDestroy(&global));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

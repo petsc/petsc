@@ -10,13 +10,12 @@ int main(int argc,char **args)
   PetscInt       i,j,k,b,m = 3,n,nlocal=2,bs=1,Ii,J;
   PetscInt       *boundary_nodes, nboundary_nodes, *boundary_indices;
   PetscMPIInt    rank,size;
-  PetscErrorCode ierr;
   PetscScalar    v,v0,v1,v2,a0=0.1,a,rhsval, *boundary_values,diag = 1.0;
   PetscReal      norm;
   char           convname[64];
   PetscBool      upwind = PETSC_FALSE, nonlocalBC = PETSC_FALSE, zerorhs = PETSC_TRUE, convert = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   n = nlocal*size;
@@ -171,8 +170,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&rhs));
   CHKERRQ(MatDestroy(&A));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

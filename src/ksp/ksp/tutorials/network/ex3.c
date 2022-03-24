@@ -16,7 +16,6 @@ typedef struct{
 
 int main(int argc,char ** argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   DM             dmnetwork;
   PetscInt       i,j,net,Nsubnet,nsubnet,ne,nv,nvar,v,ncomp,compkey0,compkey1,compkey,goffset,row;
@@ -28,7 +27,7 @@ int main(int argc,char ** argv)
   Comp1          comp1;
   PetscScalar    val;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
@@ -203,8 +202,8 @@ int main(int argc,char ** argv)
   }
 
   CHKERRQ(DMDestroy(&dmnetwork));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

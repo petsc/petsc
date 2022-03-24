@@ -7,7 +7,6 @@ int main(int argc,char **args)
 {
   Mat            A,B,C,D,Fact;
   Vec            xx,s1,s2,yy;
-  PetscErrorCode ierr;
   PetscInt       m=45,rows[2],cols[2],bs=1,i,row,col,*idx,M;
   PetscScalar    rval,vals1[4],vals2[4];
   PetscRandom    rdm;
@@ -16,7 +15,7 @@ int main(int argc,char **args)
   PetscBool      flg;
   MatFactorInfo  info;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   /* Test MatSetValues() and MatGetValues() */
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mat_size",&m,NULL));
@@ -269,8 +268,8 @@ int main(int argc,char **args)
   CHKERRQ(ISDestroy(&is1));
   CHKERRQ(ISDestroy(&is2));
   CHKERRQ(PetscRandomDestroy(&rdm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

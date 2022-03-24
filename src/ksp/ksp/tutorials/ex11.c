@@ -40,13 +40,12 @@ int main(int argc,char **args)
   KSP            ksp;         /* linear solver context */
   PetscReal      norm;         /* norm of solution error */
   PetscInt       dim,i,j,Ii,J,Istart,Iend,n = 6,its,use_random;
-  PetscErrorCode ierr;
   PetscScalar    v,none = -1.0,sigma2,pfive = 0.5,*xa;
   PetscRandom    rctx;
   PetscReal      h2,sigma1 = 100.0;
   PetscBool      flg = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sigma1",&sigma1,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   dim  = n*n;
@@ -213,8 +212,8 @@ int main(int argc,char **args)
   if (use_random) CHKERRQ(PetscRandomDestroy(&rctx));
   CHKERRQ(VecDestroy(&u)); CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&b)); CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

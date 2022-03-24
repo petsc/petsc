@@ -10,7 +10,6 @@ int main(int argc,char **args)
   Mat               A,B,C;
   PetscViewer       va,vb,vc;
   Vec               x,y;
-  PetscErrorCode    ierr;
   PetscInt          i,j,row,m,n,ncols1,ncols2,ct,m2,n2;
   const PetscInt    *cols1,*cols2;
   char              file[PETSC_MAX_PATH_LEN];
@@ -20,7 +19,7 @@ int main(int argc,char **args)
   PetscReal         norm1,norm2,rnorm;
   PetscRandom       r;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),NULL));
 
   /* Load the matrix as AIJ format */
@@ -101,8 +100,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&y));
   CHKERRQ(PetscRandomDestroy(&r));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -8,7 +8,6 @@ int main(int argc,char **args)
 {
   Mat               C,Cperm;
   PetscInt          i,j,m = 5,n = 5,Ii,J,ncols;
-  PetscErrorCode    ierr;
   PetscScalar       v;
   PetscMPIInt       size;
   IS                rperm,cperm,icperm;
@@ -16,7 +15,7 @@ int main(int argc,char **args)
   const PetscScalar *vals;
   PetscBool         TestMyorder=PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -80,8 +79,8 @@ int main(int argc,char **args)
   }
 
   CHKERRQ(MatDestroy(&C));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 #include <petsc/private/matimpl.h>

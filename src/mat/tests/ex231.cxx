@@ -24,7 +24,6 @@ static char help[] = "A test for MatAssembly that heavily relies on PetscSortInt
 
 int main (int argc, char** argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size, rank;
   char           file[2][PETSC_MAX_PATH_LEN];
   PetscBool      flg;
@@ -32,7 +31,7 @@ int main (int argc, char** argv)
   unsigned int   first_local_index;
   unsigned int   last_local_index;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCheckFalse(size > 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example is for <=2 procs");
@@ -151,8 +150,8 @@ int main (int argc, char** argv)
 
   // Clean up
   CHKERRQ(MatDestroy(&mat));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /*TEST
    build:

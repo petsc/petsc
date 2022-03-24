@@ -63,10 +63,9 @@ int main(int argc,char **argv)
 {
   PetscSF        sf,sfDup,sfInv,sfEmbed,sfA,sfB,sfBA;
   const PetscInt *degree;
-  PetscErrorCode ierr;
   char           sftype[64] = PETSCSFBASIC;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-user_sf_type",sftype,sizeof(sftype),NULL));
 
   CHKERRQ(PetscSFCreate(PETSC_COMM_WORLD,&sf));
@@ -251,8 +250,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscSFDestroy(&sfA));
   CHKERRQ(PetscSFDestroy(&sfB));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

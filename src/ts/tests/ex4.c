@@ -36,7 +36,6 @@ extern PetscErrorCode PostStep(TS);
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       time_steps=100,iout,NOUT=1;
   Vec            global;
   PetscReal      dt,ftime,ftime_original;
@@ -55,7 +54,7 @@ int main(int argc,char **argv)
   KSP            ksp;
   PC             pc;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* set data */
   data.m       = 9;
@@ -183,8 +182,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(MatDestroy(&J));
   if (fd_jacobian_coloring) CHKERRQ(MatFDColoringDestroy(&matfdcoloring));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* -------------------------------------------------------------------*/

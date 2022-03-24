@@ -22,7 +22,7 @@ int main(int argc,char **args)
   PetscEventPerfInfo info1,info2;
   PetscErrorCode     ierr;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,NULL,help));
   CHKERRQ(PetscLogDefaultBegin());
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 4,PETSC_COMM_WORLD,PETSC_ERR_USER,"This example requires 4 processes");
@@ -180,8 +180,8 @@ int main(int argc,char **args)
   }
   CHKERRQ(KSPDestroy(&ksp));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

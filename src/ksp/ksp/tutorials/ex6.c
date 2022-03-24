@@ -10,11 +10,10 @@ int main(int argc,char **args)
   KSP            ksp;          /* linear solver context */
   PC             pc;           /* preconditioner context */
   PetscReal      norm;         /* norm of solution error */
-  PetscErrorCode ierr;
   PetscInt       i,col[3],its,rstart,rend,N=10,num_numfac;
   PetscScalar    value[3];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
 
   /* Create and assemble matrix. */
@@ -84,8 +83,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&b)); CHKERRQ(MatDestroy(&A));
   CHKERRQ(KSPDestroy(&ksp));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

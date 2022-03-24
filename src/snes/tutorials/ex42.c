@@ -24,12 +24,11 @@ int main(int argc,char **argv)
   SNES                snes;    /* nonlinear solver context */
   Vec                 x,r;     /* solution, residual vectors */
   Mat                 J;       /* Jacobian matrix */
-  PetscErrorCode      ierr;
   PetscInt            its;
   PetscScalar         *xx;
   SNESConvergedReason reason;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
@@ -103,8 +102,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(VecDestroy(&x)); CHKERRQ(VecDestroy(&r));
   CHKERRQ(MatDestroy(&J)); CHKERRQ(SNESDestroy(&snes));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 /*

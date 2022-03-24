@@ -1994,18 +1994,17 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscInt       mx,my,mz;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   mx   = my = mz = 10;
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mx",&mx,NULL));
   my   = mx; mz = mx;
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-my",&my,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mz",&mz,NULL));
   CHKERRQ(solve_stokes_3d_coupled(mx,my,mz));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

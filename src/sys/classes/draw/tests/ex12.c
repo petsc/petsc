@@ -9,7 +9,6 @@ int main(int argc,char **argv)
   PetscDraw         draw;
   PetscDrawBar      bar;
   PetscDrawAxis     axis;
-  PetscErrorCode    ierr;
   int               color = PETSC_DRAW_ROTATE;
   const char        *xlabel,*ylabel,*toplabel;
   const PetscReal   values[] = {.3, .5, .05, .11};
@@ -19,7 +18,7 @@ int main(int argc,char **argv)
 
   xlabel = "X-axis Label"; toplabel = "Top Label"; ylabel = "Y-axis Label";
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(PetscOptionsHasName(NULL,NULL,"-nolabels",&nolabels));
   if (nolabels) { xlabel = NULL; ylabel = NULL; toplabel = NULL; }
   CHKERRQ(PetscOptionsGetRealArray(NULL,NULL,"-limits",limits,&nlimits,&setlimits));
@@ -41,8 +40,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(PetscDrawBarDestroy(&bar));
   CHKERRQ(PetscDrawDestroy(&draw));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

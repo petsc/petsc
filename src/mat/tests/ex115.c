@@ -10,12 +10,11 @@ int main(int argc,char **args)
   hypre_ParCSRMatrix *parcsr;
   PetscReal          err;
   PetscInt           i,j,N = 6, M = 6;
-  PetscErrorCode     ierr;
   PetscBool          flg,testptap = PETSC_TRUE,testmatmatmult = PETSC_TRUE;
   PetscReal          norm;
   char               file[256];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
 #if defined(PETSC_USE_COMPLEX)
   testptap = PETSC_FALSE;
@@ -346,8 +345,8 @@ int main(int argc,char **args)
 
   CHKERRQ(MatDestroy(&A));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

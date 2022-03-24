@@ -4,16 +4,16 @@ static char help[] = " * Example code testing SeqDense matrices with an LDA (lea
 
 int main(int argc,char **argv)
 {
-  KSP            solver;
-  PC             pc;
-  Mat            A,B;
-  Vec            X,Y,Z;
-  MatScalar      *a;
-  PetscScalar    *b,*x,*y,*z;
-  PetscReal      nrm;
-  PetscErrorCode ierr,size=8,lda=10, i,j;
+  KSP          solver;
+  PC           pc;
+  Mat          A,B;
+  Vec          X,Y,Z;
+  MatScalar   *a;
+  PetscScalar *b,*x,*y,*z;
+  PetscReal    nrm;
+  PetscInt     size = 8,lda=10, i,j;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   /* Create matrix and three vectors: these are all normal */
   CHKERRQ(PetscMalloc1(lda*size,&b));
   for (i=0; i<size; i++) {
@@ -87,8 +87,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(KSPDestroy(&solver));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

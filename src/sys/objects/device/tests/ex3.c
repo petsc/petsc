@@ -48,9 +48,8 @@ static PetscErrorCode TestPetscDeviceContextDuplicate(PetscDeviceContext dctx)
 int main(int argc, char *argv[])
 {
   PetscDeviceContext dctx;
-  PetscErrorCode     ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   /* basic creation and destruction */
   CHKERRQ(PetscDeviceContextCreate(&dctx));
@@ -63,8 +62,8 @@ int main(int argc, char *argv[])
   CHKERRQ(TestPetscDeviceContextDuplicate(dctx));
 
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"EXIT_SUCCESS\n"));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

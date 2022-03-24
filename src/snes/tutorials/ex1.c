@@ -41,12 +41,11 @@ int main(int argc,char **argv)
   PC             pc;           /* preconditioner context */
   Vec            x,r;          /* solution, residual vectors */
   Mat            J;            /* Jacobian matrix */
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscScalar    pfive = .5,*xx;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Example is only for sequential runs");
 
@@ -144,8 +143,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(VecDestroy(&x)); CHKERRQ(VecDestroy(&r));
   CHKERRQ(MatDestroy(&J)); CHKERRQ(SNESDestroy(&snes));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 /*

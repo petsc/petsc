@@ -82,7 +82,6 @@ static PetscErrorCode Update2(DM da,const PetscScalar *__restrict__ x2, PetscSca
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode                       ierr;
   DM                                   da;
   PetscInt                             xm,ym,zm,xs,ys,zs,gxm,gym,gzm,gxs,gys,gzs;
   PetscInt                             dof = 1,sw = 1;
@@ -100,7 +99,7 @@ int main(int argc,char **argv)
   PetscInt                             nwarm = 2, nloop = 10;
   PetscInt                             min = 32, max = 32*8; /* min and max sizes of the grids to sample */
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-min",&min,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-max",&max,NULL));
@@ -161,8 +160,8 @@ int main(int argc,char **argv)
     CHKERRQ(DMDestroy(&da));
   }
   CHKERRQ(PetscRandomDestroy(&rctx));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

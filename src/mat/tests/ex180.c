@@ -7,10 +7,9 @@ int main(int argc,char **args)
   Mat            A;
   PetscViewer    fd;
   char           file[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   /* Determine files from which we read the matrix */
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f");
@@ -24,8 +23,8 @@ int main(int argc,char **args)
   CHKERRQ(MatLoad(A,fd));
   CHKERRQ(PetscViewerDestroy(&fd));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

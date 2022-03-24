@@ -9,7 +9,6 @@ T*/
 #include <petscsys.h>
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   char           version[128];
   PetscInt       major,minor,subminor;
 
@@ -22,7 +21,7 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscGetVersion(version,sizeof(version)));
 
   CHKERRQ(PetscGetVersionNumber(&major,&minor,&subminor,NULL));
@@ -30,8 +29,8 @@ int main(int argc,char **argv)
   PetscCheckFalse(minor != PETSC_VERSION_MINOR,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Library minor %d does not equal include %d",(int)minor,PETSC_VERSION_MINOR);
   PetscCheckFalse(subminor != PETSC_VERSION_SUBMINOR,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Library subminor %d does not equal include %d",(int)subminor,PETSC_VERSION_SUBMINOR);
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

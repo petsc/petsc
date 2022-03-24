@@ -11,7 +11,6 @@ int main(int argc,char **args)
   PetscReal      norm;             /* norm of solution error */
   PetscScalar    v,none = -1.0;
   PetscInt       I,J,ldim,low,high,iglobal,Istart,Iend;
-  PetscErrorCode ierr;
   PetscInt       i,j,m = 3,n = 2,its;
   PetscMPIInt    size,rank;
   PetscBool      mat_nonsymmetric;
@@ -19,7 +18,7 @@ int main(int argc,char **args)
   MatFactorInfo  factinfo;
   IS             perm,iperm;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
@@ -149,6 +148,6 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(MatDestroy(&C));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

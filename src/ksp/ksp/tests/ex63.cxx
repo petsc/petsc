@@ -195,7 +195,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  PetscErrorCode ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,NULL));
   CHKERRQ(PetscOptionsSetValue(NULL,"-options_left","false"));
   KSP ksp;
   CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
@@ -214,8 +214,8 @@ int main(int argc, char *argv[]) {
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(MatDestroy(&Apetsc));
   CHKERRQ(KSPDestroy(&ksp));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

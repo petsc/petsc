@@ -7,12 +7,11 @@ int main(int argc,char **argv)
 {
   Mat            mat;
   PetscInt       m = 7,n,i,j,rstart,rend;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscScalar    v;
   PetscBool      struct_only=PETSC_TRUE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -42,8 +41,8 @@ int main(int argc,char **argv)
 
   /* Free data structures */
   CHKERRQ(MatDestroy(&mat));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

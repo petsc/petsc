@@ -20,11 +20,10 @@ int main(int argc,char **argv)
   const char         *xlabel,*ylabel,*toplabel,*legend;
   PetscReal          xd,yd;
   PetscDrawViewPorts *ports = NULL;
-  PetscErrorCode     ierr;
 
   toplabel = "Top Label"; xlabel = "X-axis Label"; ylabel = "Y-axis Label"; legend = "Legend";
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-x",&x,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-y",&y,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-width",&width,NULL));
@@ -66,8 +65,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscDrawViewPortsDestroy(ports));
   CHKERRQ(PetscDrawLGDestroy(&lg));
   CHKERRQ(PetscDrawDestroy(&draw));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

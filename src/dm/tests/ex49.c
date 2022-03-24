@@ -5,11 +5,10 @@ static char help[] = "Test basic DMProduct operations.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   DM             dm;
   PetscInt       dim;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 1;
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
   CHKERRQ(DMCreate(PETSC_COMM_WORLD,&dm));
@@ -18,8 +17,8 @@ int main(int argc,char **argv)
   CHKERRQ(DMSetFromOptions(dm));
   CHKERRQ(DMSetUp(dm));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

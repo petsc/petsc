@@ -8,7 +8,6 @@ static char help[] = "Plots the various potentials used in the examples.\n";
 int main(int argc,char **argv)
 {
   PetscDrawLG               lg;
-  PetscErrorCode            ierr;
   PetscInt                  Mx = 100,i;
   PetscReal                 x,hx = .1/Mx,pause,xx[3],yy[3];
   PetscDraw                 draw;
@@ -17,7 +16,7 @@ int main(int argc,char **argv)
   PetscDrawViewPorts        *ports;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   CHKERRQ(PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,800));
   CHKERRQ(PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),0,&lg));
   CHKERRQ(PetscDrawLGGetDraw(lg,&draw));
@@ -67,8 +66,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscDrawSetPause(draw,pause));
   CHKERRQ(PetscDrawPause(draw));
   CHKERRQ(PetscDrawViewPortsDestroy(ports));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

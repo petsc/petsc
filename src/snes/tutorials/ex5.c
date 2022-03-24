@@ -92,7 +92,6 @@ int main(int argc,char **argv)
   Vec            x;                            /* solution vector */
   AppCtx         user;                         /* user-defined work context */
   PetscInt       its;                          /* iterations for convergence */
-  PetscErrorCode ierr;
   PetscReal      bratu_lambda_max = 6.81;
   PetscReal      bratu_lambda_min = 0.;
   PetscInt       MMS              = 0;
@@ -106,7 +105,7 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
@@ -228,8 +227,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(SNESDestroy(&snes));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 /*

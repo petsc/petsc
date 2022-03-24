@@ -5,13 +5,12 @@ static char help[] = "Tests PetscSequentialPhaseBegin() and PetscSequentialPhase
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,NULL,help));
   CHKERRQ(PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1));
   CHKERRQ(PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

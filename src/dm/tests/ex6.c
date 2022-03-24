@@ -8,7 +8,6 @@ int main(int argc,char **argv)
 {
   PetscMPIInt      rank;
   PetscInt         M = 3,N = 5,P=3,s=1,w=2,nloc,l,i,j,k,kk,m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE;
-  PetscErrorCode   ierr;
   PetscInt         Xs,Xm,Ys,Ym,Zs,Zm,iloc,*iglobal;
   const PetscInt   *ltog;
   PetscInt         *lx        = NULL,*ly = NULL,*lz = NULL;
@@ -22,7 +21,7 @@ int main(int argc,char **argv)
   AO               ao;
   PetscBool        flg = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,300,&viewer));
 
   /* Read options */
@@ -194,8 +193,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&local));
   CHKERRQ(VecDestroy(&global));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

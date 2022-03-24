@@ -5,7 +5,6 @@ static const char help[] = "Test PetscSF with MPI large count (more than 2 billi
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode    ierr;
   PetscSF           sf;
   PetscInt          i,nroots,nleaves;
   PetscInt          n = (1ULL<<31) + 1024; /* a little over 2G elements */
@@ -18,7 +17,7 @@ int main(int argc,char **argv)
   IS                ix;
   const PetscScalar *xv;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"The test can only run with two MPI ranks");
@@ -85,8 +84,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecScatterDestroy(&vscat));
   CHKERRQ(ISDestroy(&ix));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /**TEST

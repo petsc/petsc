@@ -114,10 +114,9 @@ int main(int argc,char **argv)
 {
   TS             ts;
   Vec            x,c,clocal;
-  PetscErrorCode ierr;
   DM             da,cda;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(TSCreate(PETSC_COMM_WORLD, &ts));
   CHKERRQ(TSSetType(ts,TSARKIMEX));
   CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
@@ -167,8 +166,8 @@ int main(int argc,char **argv)
   CHKERRQ(DMDestroy(&da));
   CHKERRQ(DMDestroy(&cda));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* ------------------------------------------------------------------- */

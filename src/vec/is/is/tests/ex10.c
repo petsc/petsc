@@ -21,13 +21,12 @@ static PetscErrorCode CreateIS(MPI_Comm comm, PetscInt n, PetscInt first, PetscI
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   IS             is;
   PetscInt       n=10, N, first=0, step=0, start, end;
   PetscMPIInt    rank;
   MPI_Comm       comm;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_rank(comm,&rank));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
@@ -44,8 +43,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(comm), "global size: %" PetscInt_FMT "\n", N));
 
   CHKERRQ(ISDestroy(&is));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

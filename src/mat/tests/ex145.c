@@ -7,7 +7,6 @@ int main(int argc,char **argv)
 {
   Mat            A,F,B,X,C,Aher,G;
   Vec            b,x,c,d,e;
-  PetscErrorCode ierr;
   PetscInt       m = 5,n,p,i,j,nrows,ncols;
   PetscScalar    *v,*barray,rval;
   PetscReal      norm,tol=1.e-11;
@@ -18,7 +17,7 @@ int main(int argc,char **argv)
   PetscBool      mats_view=PETSC_FALSE;
   MatFactorInfo  finfo;
 
-  ierr = PetscInitialize(&argc,&argv,(char*) 0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*) 0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
@@ -277,8 +276,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&e));
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(PetscRandomDestroy(&rand));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

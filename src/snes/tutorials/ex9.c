@@ -79,7 +79,7 @@ int main(int argc,char **argv)
   DMDALocalInfo       info;
   PetscReal           error1,errorinf;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,
                       DMDA_STENCIL_STAR,5,5, /* 5x5 coarse grid; override with -da_grid_x,_y */
@@ -119,8 +119,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&u_exact));
   CHKERRQ(SNESDestroy(&snes));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode FormExactSolution(DMDALocalInfo *info, Vec u)

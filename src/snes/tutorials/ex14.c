@@ -70,14 +70,13 @@ int main(int argc,char **argv)
   PetscInt       its;                          /* iterations for convergence */
   MatFDColoring  matfdcoloring = NULL;
   PetscBool      matrix_free = PETSC_FALSE,coloring = PETSC_FALSE, coloring_ds = PETSC_FALSE,local_coloring = PETSC_FALSE;
-  PetscErrorCode ierr;
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.,fnorm;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
@@ -194,8 +193,8 @@ int main(int argc,char **argv)
   CHKERRQ(SNESDestroy(&snes));
   CHKERRQ(DMDestroy(&user.da));
   CHKERRQ(MatFDColoringDestroy(&matfdcoloring));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 /*

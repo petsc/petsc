@@ -15,13 +15,12 @@ int main(int argc,char **argv)
   Vec            xy,sxy;
   DM             da,sda = NULL;
   PetscSF        sf;
-  PetscErrorCode ierr;
   PetscInt       m = 10, n = 10, dof = 2;
   MatStencil     lower = {0,3,2,0}, upper = {0,7,8,0}; /* These are in the order of the z, y, x, logical coordinates, the fourth entry is ignored */
   MPI_Comm       comm;
   PetscMPIInt    rank;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create the large DMDA and set coordinates (which we will copy down to the small DA). */
   CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da));
@@ -72,8 +71,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscSFDestroy(&sf));
   CHKERRQ(DMDestroy(&sda));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

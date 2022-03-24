@@ -12,7 +12,6 @@ PetscErrorCode ApplyOperator(Mat,Vec,Vec);
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode  ierr;
   DM              dmSol;
   Vec             sol,solRef,solRefLocal,rhs,rhsLocal;
   Mat             A;
@@ -23,7 +22,7 @@ int main(int argc,char **argv)
   PetscInt        dof0,dof1,dof2,dof3;
   PetscScalar     ****arrSol,****arrRHS;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   /* Note: these defaults are chosen to suit the problem. We allow adjusting
      them to check that things still work when you add unused extra dof */
   dof0 = 0;
@@ -112,8 +111,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&rhs));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(DMDestroy(&dmSol));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode ApplyOperator(Mat A,Vec in,Vec out)

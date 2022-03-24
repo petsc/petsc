@@ -134,9 +134,8 @@ int main(int argc, char *argv[])
   TS             ts;
   Vec            X;
   PetscInt       N = 9;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   CHKERRQ(TSCreate(PETSC_COMM_SELF,&ts));
   CHKERRQ(TSSetType(ts,TSRK));
@@ -161,8 +160,8 @@ int main(int argc, char *argv[])
   CHKERRQ(TSRollBack(ts));
   CHKERRQ(TSDestroy(&ts));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

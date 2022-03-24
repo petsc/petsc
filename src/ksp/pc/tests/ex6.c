@@ -22,14 +22,13 @@ PetscErrorCode FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r
 int main(int argc,char **args)
 {
   Mat            C;
-  PetscErrorCode ierr;
   PetscInt       i,m = 2,N,M,idx[4],Nsub1,Nsub2,ol=1,x1,x2;
   PetscScalar    Ke[16];
   PetscReal      h;
   IS             *is1,*is2,*islocal1,*islocal2;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   N    = (m+1)*(m+1); /* dimension of matrix */
   M    = m*m; /* number of elements */
@@ -79,8 +78,8 @@ int main(int argc,char **args)
     CHKERRQ(PetscFree(islocal2));
   }
   CHKERRQ(MatDestroy(&C));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

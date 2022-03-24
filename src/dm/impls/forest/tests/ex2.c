@@ -156,7 +156,7 @@ int main(int argc, char **argv)
   DMLabel        adaptLabel;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm, "", "DMForestTransferVec() Test Options", "DMFOREST");CHKERRQ(ierr);
   CHKERRQ(PetscOptionsBool("-linear","Transfer a simple linear function", "ex2.c", linear, &linear, NULL));
@@ -370,8 +370,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroy(&preVec));
   CHKERRQ(DMDestroy(&preForest));
   CHKERRQ(DMDestroy(&base));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

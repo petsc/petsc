@@ -37,7 +37,6 @@ int main(int argc,char **args)
   PetscLogEvent  CHECK_ERROR;    /* event number for error checking */
   PetscInt       ldim,low,high,iglobal,Istart,Iend,Istart2,Iend2;
   PetscInt       Ii,J,i,j,m = 3,n = 2,its,t;
-  PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE, unsym = PETSC_TRUE;
   PetscScalar    v;
   PetscMPIInt    rank,size;
@@ -45,7 +44,7 @@ int main(int argc,char **args)
   PetscLogStage stages[3];
 #endif
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-t",&ntimes,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-unsym",&unsym,NULL));
@@ -349,8 +348,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&C1));   CHKERRQ(MatDestroy(&C2));
   CHKERRQ(VecDestroy(&u));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------- */
 /*

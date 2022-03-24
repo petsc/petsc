@@ -7,7 +7,6 @@ static char help[] = "Time vector operations on GPU\n";
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;
   Vec            v,w,x;
   PetscInt       n=15;
   PetscScalar    val;
@@ -17,7 +16,7 @@ int main(int argc, char **argv)
   PetscLogStage  stage;
 #endif
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
   CHKERRQ(PetscRandomSetFromOptions(rctx));
@@ -61,8 +60,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroy(&w));
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(PetscRandomDestroy(&rctx));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

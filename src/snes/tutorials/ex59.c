@@ -29,7 +29,6 @@ int main(int argc,char **argv)
   SNES              snes;                /* SNES context */
   Vec               x,r,F;               /* vectors */
   Mat               J;                   /* Jacobian */
-  PetscErrorCode    ierr;
   PetscInt          it,n = 11,i;
   PetscReal         h,xp = 0.0;
   PetscScalar       v;
@@ -39,7 +38,7 @@ int main(int argc,char **argv)
   PetscScalar       v2;
   PetscScalar       *xx;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-second_order",&second_order,NULL));
   h    = 1.0/(n-1);
@@ -120,8 +119,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));     CHKERRQ(VecDestroy(&r));
   CHKERRQ(VecDestroy(&F));     CHKERRQ(MatDestroy(&J));
   CHKERRQ(SNESDestroy(&snes));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)

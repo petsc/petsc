@@ -6,12 +6,11 @@ int main(int argc,char **args)
 {
   Mat            A;
   PetscViewer    fd;
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscScalar    *Av;
   PetscInt       i;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   CHKERRQ(MatCreateDense(PETSC_COMM_WORLD,6,6,12,12,NULL,&A));
@@ -42,8 +41,8 @@ int main(int argc,char **args)
   CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
   CHKERRQ(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

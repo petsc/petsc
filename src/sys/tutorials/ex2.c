@@ -13,7 +13,6 @@ T*/
 #include <petscsys.h>
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
 
   /*
@@ -25,7 +24,7 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable to place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   /*
      The following MPI calls return the number of processes
@@ -73,8 +72,8 @@ int main(int argc,char **argv)
          options are chosen (e.g., -log_view).
      See the PetscFinalize() manpage for more information.
   */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

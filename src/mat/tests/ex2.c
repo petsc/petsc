@@ -80,13 +80,12 @@ int main(int argc,char **argv)
 {
   Mat            mat,tmat = 0;
   PetscInt       m = 7,n,i,j,rstart,rend,rect = 0;
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscBool      flg;
   PetscScalar    v, alpha;
   PetscReal      normf,normi,norm1;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
@@ -199,8 +198,8 @@ int main(int argc,char **argv)
   /* Free data structures */
   CHKERRQ(MatDestroy(&mat));
   CHKERRQ(MatDestroy(&tmat));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

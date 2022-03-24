@@ -1665,7 +1665,7 @@ int main(int argc, char **argv)
   Vec            x,b;
   SNES           snes;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 3;
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
   no_coupling = PETSC_FALSE;
@@ -1759,8 +1759,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

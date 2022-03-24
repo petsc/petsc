@@ -6,10 +6,9 @@ static char help[] = "Demonstrates use of color map\n";
 
 int main(int argc,char **argv)
 {
-  PetscDraw      draw;
-  PetscErrorCode ierr;
+  PetscDraw draw;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   CHKERRQ(PetscDrawCreate(PETSC_COMM_SELF,0,"Title",0,0,256,256,&draw));
   CHKERRQ(PetscDrawSetFromOptions(draw));
@@ -20,8 +19,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscDrawStringBoxed(draw,.25,.25,PETSC_DRAW_GREEN,PETSC_DRAW_RED,"Long line followed by a very\nshort line",NULL,NULL));
   CHKERRQ(PetscDrawFlush(draw));
   CHKERRQ(PetscDrawDestroy(&draw));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

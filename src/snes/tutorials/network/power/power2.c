@@ -417,7 +417,6 @@ PetscErrorCode SetInitialValues(DM networkdm, Vec X,void* appctx)
 
 int main(int argc,char ** argv)
 {
-  PetscErrorCode   ierr;
   char             pfdata_file[PETSC_MAX_PATH_LEN]="case9.m";
   PFDATA           *pfdata1,*pfdata2;
   PetscInt         numEdges1=0,numEdges2=0;
@@ -434,7 +433,7 @@ int main(int argc,char ** argv)
   Mat              J;
   SNES             snes;
 
-  ierr = PetscInitialize(&argc,&argv,"poweroptions",help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,"poweroptions",help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   {
     /* introduce the const crank so the clang static analyzer realizes that if it enters any of the if (crank) then it must have entered the first */
@@ -594,8 +593,8 @@ int main(int argc,char ** argv)
     CHKERRQ(SNESDestroy(&snes));
     CHKERRQ(DMDestroy(&networkdm));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

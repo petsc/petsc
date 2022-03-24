@@ -57,13 +57,12 @@ static PetscErrorCode UpdateStress(const Ctx*,Vec,Vec,Vec);
 
 int main(int argc,char *argv[])
 {
-  PetscErrorCode ierr;
   Ctx            ctx;
   Vec            velocity,stress;
   PetscInt       timestep;
 
   /* Initialize PETSc */
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
 
   /* Populate application context */
   ctx.dim         = 2;
@@ -206,8 +205,8 @@ int main(int argc,char *argv[])
   CHKERRQ(DMDestroy(&ctx.dm_stress));
   CHKERRQ(DMDestroy(&ctx.dm_buoyancy));
   CHKERRQ(DMDestroy(&ctx.dm_lame));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 static PetscErrorCode CreateLame(Ctx *ctx)

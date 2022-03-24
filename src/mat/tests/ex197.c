@@ -4,14 +4,13 @@ static char help[] = "Test MatMultHermitianTranspose() and MatMultHermitianTrans
 
 int main(int argc,char **args)
 {
-  Mat            A,B,C;
-  Vec            x,y,ys;
-  PetscErrorCode ierr;
-  PetscInt       i,j;
-  PetscScalar    v;
-  PetscBool      flg;
+  Mat         A,B,C;
+  Vec         x,y,ys;
+  PetscInt    i,j;
+  PetscScalar v;
+  PetscBool   flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
   CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,2,2));
   CHKERRQ(MatSetType(A,MATAIJ));
@@ -62,8 +61,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&y));
   CHKERRQ(VecDestroy(&ys));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

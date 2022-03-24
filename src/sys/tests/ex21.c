@@ -10,13 +10,12 @@ static char help[] = "Tests PetscTreeProcess()";
 */
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       n          = 7,cnt = 0,i,j;
   PetscBool      mask[]     = {PETSC_TRUE,PETSC_FALSE,PETSC_FALSE,PETSC_TRUE,PETSC_FALSE,PETSC_FALSE,PETSC_FALSE};
   PetscInt       parentId[] = {-1,         2,         0,         -1,         2,         1,         0};
   PetscInt       Nlevels,*Level,*Levelcnt,*Idbylevel,*Column;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(PetscProcessTree(n,mask,parentId,&Nlevels,&Level,&Levelcnt,&Idbylevel,&Column));
   for (i=0; i<n; i++) {
     if (!mask[i]) {
@@ -41,8 +40,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscFree(Levelcnt));
   CHKERRQ(PetscFree(Idbylevel));
   CHKERRQ(PetscFree(Column));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

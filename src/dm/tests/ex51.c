@@ -9,7 +9,6 @@ int main(int argc,char **argv)
 {
   PetscInt         i,j,M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE;
   PetscMPIInt      rank;
-  PetscErrorCode   ierr;
   PetscBool        flg = PETSC_FALSE;
   DM               da;
   PetscViewer      viewer;
@@ -20,7 +19,7 @@ int main(int argc,char **argv)
   VecScatter       tolocalall,fromlocalall;
   PetscInt         start,end;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer));
 
   /* Read options */
@@ -78,8 +77,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&localall));
   CHKERRQ(VecDestroy(&global));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

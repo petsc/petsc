@@ -7,13 +7,12 @@ static PetscErrorCode TestFields(DM dmstag);
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   DM             dmstag;
   PetscInt       dim;
   PetscBool      setSizes;
 
   /* Initialize PETSc and process command line arguments */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 2;
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
   setSizes = PETSC_FALSE;
@@ -69,8 +68,8 @@ int main(int argc,char **argv)
 
   /* Clean up and finalize PETSc */
   CHKERRQ(DMDestroy(&dmstag));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 static PetscErrorCode TestFields(DM dmstag)

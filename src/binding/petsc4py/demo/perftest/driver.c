@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
   PetscInt       n,start,step,stop,samples;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,NULL));
 
   CHKERRQ(GetInt("-start",   &start,   12));
   CHKERRQ(GetInt("-step",    &step,    4));

@@ -6,7 +6,6 @@ uses block index sets\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       bs = 1,n = 5,ix0[3] = {5,7,9},ix1[3] = {2,3,4},i,iy0[3] = {1,2,4},iy1[3] = {0,1,3};
   PetscMPIInt    size,rank;
   PetscScalar    value;
@@ -14,7 +13,7 @@ int main(int argc,char **argv)
   IS             isx,isy;
   VecScatter     ctx = 0,newctx;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
@@ -71,8 +70,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&y));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

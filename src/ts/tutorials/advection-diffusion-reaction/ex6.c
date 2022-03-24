@@ -37,7 +37,6 @@ int main(int argc,char **argv)
   AppCtx         appctx;                 /* user-defined application context */
   TS             ts;                     /* timestepping context */
   Vec            U;                      /* approximate solution vector */
-  PetscErrorCode ierr;
   PetscReal      dt;
   DM             da;
   PetscInt       M;
@@ -45,7 +44,7 @@ int main(int argc,char **argv)
   PetscBool      useLaxWendroff = PETSC_TRUE;
 
   /* Initialize program and set problem parameters */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   appctx.a  = -1.0;
@@ -100,8 +99,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&U));
   CHKERRQ(DMDestroy(&da));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* --------------------------------------------------------------------- */
 /*

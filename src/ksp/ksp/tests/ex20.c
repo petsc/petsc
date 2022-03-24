@@ -17,7 +17,6 @@ int FormElementStiffness(PetscReal H,PetscScalar *Ke)
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   Mat            C;
   PetscMPIInt    rank,size;
   PetscInt       i,m = 5,N,start,end,M;
@@ -28,7 +27,7 @@ int main(int argc,char **args)
   KSP            ksp;
   MatNullSpace   nullsp;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   N    = (m+1)*(m+1); /* dimension of matrix */
   M    = m*m; /* number of elements */
@@ -92,8 +91,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&u));
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(MatDestroy(&C));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

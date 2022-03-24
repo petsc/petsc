@@ -18,10 +18,9 @@ int main(int argc,char **args)
   PetscInt            m,M,n,istart,iend,ii,i,J,j,K=10;
   PetscScalar         v;
   PetscMPIInt         size;
-  PetscErrorCode      ierr;
   PetscBool           equal;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_size(comm,&size));
 
@@ -112,8 +111,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A2));
   CHKERRQ(MatDestroy(&A3));
   CHKERRQ(MatDestroy(&A4));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

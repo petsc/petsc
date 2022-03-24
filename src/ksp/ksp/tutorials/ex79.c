@@ -20,9 +20,8 @@ int main(int argc,char **args)
   PetscLogEvent      event;
 #endif
   PetscEventPerfInfo info;
-  PetscErrorCode     ierr;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,NULL,help));
   CHKERRQ(PetscLogDefaultBegin());
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRQ(MatCreateAIJ(PETSC_COMM_WORLD,m,m,PETSC_DECIDE,PETSC_DECIDE,m,NULL,m,NULL,&A));
@@ -49,8 +48,8 @@ int main(int argc,char **args)
   CHKERRQ(PetscLogEventRegister("PCMatApply",PC_CLASSID,&event));
   CHKERRQ(PetscLogEventGetPerfInfo(PETSC_DETERMINE,event,&info));
   PetscCheckFalse(PetscDefined(USE_LOG) && m > 1 && !info.count,PetscObjectComm((PetscObject)ksp),PETSC_ERR_PLIB,"PCMatApply() never called");
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

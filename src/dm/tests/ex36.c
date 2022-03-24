@@ -580,10 +580,9 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       mx = 2,my = 2,mz = 2,l,nl,dim;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mx", &mx, 0));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-my", &my, 0));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mz", &mz, 0));
@@ -604,8 +603,8 @@ int main(int argc,char **argv)
     my = my * 2;
     mz = mz * 2;
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -13,9 +13,8 @@ int main(int argc,char **argv)
   Mat             A;
   MPI_Comm        comm;
   PetscInt        n=5,m=5,*dnnz,*onnz,i,rstart,rend,M,N;
-  PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   comm = MPI_COMM_WORLD;
   CHKERRQ(PetscMalloc2(m,&dnnz,m,&onnz));
   for (i=0; i<m; i++) {
@@ -46,8 +45,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
   CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

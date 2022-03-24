@@ -77,10 +77,9 @@ int main(int argc, char **argv)
   PetscSection   s1=NULL, s2=NULL, tpws = NULL;
   PetscInt       i;
   PetscBool      flg;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_size(comm,&size));
   CHKERRQ(ProcessOptions(comm, &user));
@@ -156,7 +155,7 @@ int main(int argc, char **argv)
   CHKERRQ(DMDestroy(&dm2));
 
   /* if distributed DMs are NULL (sequential case), then quit */
-  if (!dmdist1 && !dmdist2) return ierr;
+  if (!dmdist1 && !dmdist2) return 0;
 
   CHKERRQ(DMViewFromOptions(dmdist1, NULL, "-dm_dist1_view"));
   CHKERRQ(DMViewFromOptions(dmdist2, NULL, "-dm_dist2_view"));
@@ -168,7 +167,7 @@ int main(int argc, char **argv)
   }
 
   /* if repartitioning is disabled, then quit */
-  if (user.repartitioning[0] == '\0') return ierr;
+  if (user.repartitioning[0] == '\0') return 0;
 
   if (user.tpw) {
     CHKERRQ(PetscSectionCreate(comm, &tpws));
@@ -243,8 +242,8 @@ int main(int argc, char **argv)
   CHKERRQ(DMDestroy(&dm2));
   CHKERRQ(DMDestroy(&dmdist1));
   CHKERRQ(DMDestroy(&dmdist2));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

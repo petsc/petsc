@@ -17,9 +17,8 @@ int main(int argc, char **args)
   PetscBool       set_vweights=PETSC_FALSE,use_edge_weights=PETSC_FALSE;
   PetscMPIInt     rank;
   MPI_Comm        comm;
-  PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc, &args, (char*) 0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &args, (char*) 0, help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL));
   CHKERRMPI(MPI_Comm_rank(comm,&rank));
@@ -88,8 +87,8 @@ int main(int argc, char **args)
   CHKERRQ(MatPartitioningDestroy(&part));
 
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

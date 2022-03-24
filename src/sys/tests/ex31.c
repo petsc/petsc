@@ -19,17 +19,16 @@ PetscErrorCode  path_to_unix(char filein[])
 int main(int argc,char **argv)
 {
   char           fpath[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscGetFullPath("~/somefile",fpath,sizeof(fpath)));
   CHKERRQ(path_to_unix(fpath));
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%s\n",fpath));
   CHKERRQ(PetscGetFullPath("someotherfile",fpath,sizeof(fpath)));
   CHKERRQ(path_to_unix(fpath));
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%s\n",fpath));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

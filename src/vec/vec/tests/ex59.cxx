@@ -6,13 +6,12 @@ static char help[] = "Test VecCreate{Seq|MPI}ViennaCLWithArrays.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   Vec            x,y;
   PetscMPIInt    size;
   PetscInt       n = 5;
   PetscScalar    xHost[5] = {0.,1.,2.,3.,4.};
 
-  ierr = PetscInitialize(&argc, &argv, (char*)0, help); if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char*)0, help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   if (size == 1) {
@@ -37,8 +36,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(VecDestroy(&y));
   CHKERRQ(VecDestroy(&x));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

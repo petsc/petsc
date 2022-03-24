@@ -179,13 +179,12 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
   struct _n_User user;
   AdolcCtx       *adctx;
-  PetscErrorCode ierr;
   Vec            lambda[2],mu[2],r;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
@@ -315,8 +314,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&mu[1]));
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(PetscFree(adctx));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

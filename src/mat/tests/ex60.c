@@ -8,11 +8,10 @@ int main(int argc,char **args)
   Mat            C;
   PetscInt       i,j,m = 3,n = 2,Ii,J,col = 0;
   PetscMPIInt    size,rank;
-  PetscErrorCode ierr;
   PetscScalar    v;
   Vec            yy;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-col",&col,NULL));
 
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
@@ -50,8 +49,8 @@ int main(int argc,char **args)
 
   CHKERRQ(VecDestroy(&yy));
   CHKERRQ(MatDestroy(&C));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -18,7 +18,6 @@ static char help[] = "Test to write HDF5 file from PETSc DMDA Vec.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   DM             da2D;
   PetscInt       i,j,ixs, ixm, iys, iym;
   PetscViewer    H5viewer;
@@ -35,7 +34,7 @@ int main(int argc,char **argv)
   dy=(yp-ym)/(Ny-1);
 
   /* Initialize the Petsc context */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,Nx,Ny,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da2D));
   CHKERRQ(DMSetFromOptions(da2D));
   CHKERRQ(DMSetUp(da2D));
@@ -89,8 +88,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&input));
   CHKERRQ(VecDestroy(&gauss));
   CHKERRQ(DMDestroy(&da2D));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

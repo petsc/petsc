@@ -16,7 +16,6 @@ PetscErrorCode ApplyOperator(Mat,Vec,Vec);
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode  ierr;
   DM              dmSol;
   Vec             sol,solRef,solRefLocal,rhs,rhsLocal;
   Mat             A;
@@ -26,7 +25,7 @@ int main(int argc,char **argv)
   PetscInt        iu,ip;
   PetscScalar     **arrSol,**arrRHS;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(DMStagCreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_GHOSTED,3,1,1,DMSTAG_STENCIL_BOX,1,NULL,&dmSol));
   CHKERRQ(DMSetFromOptions(dmSol));
   CHKERRQ(DMSetUp(dmSol));
@@ -101,8 +100,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&rhs));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(DMDestroy(&dmSol));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode ApplyOperator(Mat A,Vec in,Vec out)

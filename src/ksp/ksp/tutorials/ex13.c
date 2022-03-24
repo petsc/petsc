@@ -37,7 +37,6 @@ extern PetscErrorCode UserDoLinearSolver(PetscScalar*,UserCtx *userctx,PetscScal
 int main(int argc,char **args)
 {
   UserCtx        userctx;
-  PetscErrorCode ierr;
   PetscInt       m = 6,n = 7,t,tmax = 2,i,Ii,j,N;
   PetscScalar    *userx,*rho,*solution,*userb,hx,hy,x,y;
   PetscReal      enorm;
@@ -45,7 +44,7 @@ int main(int argc,char **args)
   /*
      Initialize the PETSc libraries
   */
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   /*
      The next two lines are for testing only; these allow the user to
      decide the grid size at runtime.
@@ -128,8 +127,8 @@ int main(int argc,char **args)
   CHKERRQ(PetscFree(userx));
   CHKERRQ(PetscFree(userb));
   CHKERRQ(UserFinalizeLinearSolver(&userctx));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* ------------------------------------------------------------------------*/

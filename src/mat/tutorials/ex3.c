@@ -29,9 +29,8 @@ int main(int argc, char **argv) {
   PetscReal              error;
   PetscInt               overlapSize = 2, globalIdx[2];
   PetscMPIInt            rank, size;
-  PetscErrorCode         ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_rank(comm, &rank));
   CHKERRMPI(MPI_Comm_size(comm, &size));
@@ -71,8 +70,8 @@ int main(int argc, char **argv) {
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&y));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

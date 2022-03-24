@@ -62,7 +62,7 @@ int main(int argc,char **args)
   MPI_Comm        comm;
   PetscReal       e;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_size(comm,&size));
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex62","PC");CHKERRQ(ierr);
@@ -174,8 +174,8 @@ int main(int argc,char **args)
   CHKERRQ(ISDestroy(&isrows));
   CHKERRQ(ISDestroy(&isn));
   CHKERRQ(MatPartitioningDestroy(&part));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

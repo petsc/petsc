@@ -358,9 +358,8 @@ int main(int argc,char **argv)
   PetscReal         ftime   = 10., *probArr, *probVecArr;
   IS                is1,is2;
   PetscReal         *coor, *kin, *pos, *mom;
-  PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(ProcessOptions(comm, &user));
   /* Create dm and particles */
@@ -493,8 +492,8 @@ int main(int argc,char **argv)
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&sw));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

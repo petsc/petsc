@@ -38,11 +38,10 @@ static PetscErrorCode CheckMat(DM,Mat);
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   DM             dmSol;
   Mat            A;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   {
     const PetscInt dof0 = 0, dof1 = 0,dof2 = 1, dof3 = 1; /* 1 dof on each face and element center */
     const PetscInt stencilWidth = 1;
@@ -55,8 +54,8 @@ int main(int argc,char **argv)
   CHKERRQ(CheckMat(dmSol,A));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(DMDestroy(&dmSol));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 static PetscErrorCode CreateMat(DM dmSol,Mat *pA)

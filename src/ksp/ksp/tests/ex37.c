@@ -17,7 +17,6 @@ int main(int argc,char **args)
   PetscViewer    fd;
   char           file[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
-  PetscErrorCode ierr;
   PetscInt       i,m,n,its;
   PetscReal      norm;
   PetscMPIInt    rank,size;
@@ -27,7 +26,7 @@ int main(int argc,char **args)
   PetscScalar    *barray,*xarray,*uarray,*array,one=1.0;
   PetscInt       type=1;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   /* Load the matrix */
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER_INPUT,"Must indicate binary file with the -f option");
@@ -176,8 +175,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A)); CHKERRQ(VecDestroy(&b));
   CHKERRQ(VecDestroy(&u)); CHKERRQ(VecDestroy(&x));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

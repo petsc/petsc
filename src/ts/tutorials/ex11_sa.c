@@ -1428,7 +1428,7 @@ int main(int argc, char **argv)
   char              filename[PETSC_MAX_PATH_LEN] = "sevenside.exo";
   PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char*) 0, help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_rank(comm, &rank));
 
@@ -1568,6 +1568,6 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroy(&X));
   CHKERRQ(PetscFVDestroy(&fvm));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

@@ -93,7 +93,7 @@ int main(int argc, char **argv)
   PetscViewer    viewer;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for exterior algebra tests","none");CHKERRQ(ierr);
   CHKERRQ(PetscOptionsIntArray("-N", "Up to 5 vector space dimensions to test","ex7.c",n,&numTests,NULL));
   CHKERRQ(PetscOptionsBool("-verbose", "Verbose test output","ex7.c",verbose,&verbose,NULL));
@@ -512,8 +512,8 @@ int main(int argc, char **argv)
     CHKERRQ(PetscViewerASCIIPopTab(viewer));
   }
   CHKERRQ(PetscRandomDestroy(&rand));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

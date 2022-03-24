@@ -15,13 +15,12 @@ int main(int argc,char **args)
   Mat            A,Ar,C;
   PetscViewer    fd;                        /* viewer */
   char           file[PETSC_MAX_PATH_LEN];  /* input file name */
-  PetscErrorCode ierr;
   PetscInt       ns=2;
   PetscMPIInt    size;
   PetscSubcomm   subc;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   /*
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
@@ -55,8 +54,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&Ar));
   CHKERRQ(MatDestroy(&C));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

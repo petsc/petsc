@@ -10,9 +10,8 @@ int main(int argc,char **args)
   IS                     is;
   ISLocalToGlobalMapping rmap,cmap;
   PetscInt               bs[4],l2gbs[4],rbs,cbs,l2grbs,l2gcbs,i;
-  PetscErrorCode         ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
   CHKERRQ(MatSetSizes(A,12,12,PETSC_DECIDE,PETSC_DECIDE));
   CHKERRQ(MatSetType(A,MATAIJ));
@@ -47,8 +46,8 @@ int main(int argc,char **args)
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Mat Block sizes: %" PetscInt_FMT " %" PetscInt_FMT " (l2g %" PetscInt_FMT " %" PetscInt_FMT ")\n",rbs,cbs,l2grbs,l2gcbs));
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Vec Block sizes: %" PetscInt_FMT " %" PetscInt_FMT " (l2g %" PetscInt_FMT " %" PetscInt_FMT ")\n",bs[0],bs[1],l2gbs[0],l2gbs[1]));
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Vec Block sizes: %" PetscInt_FMT " %" PetscInt_FMT " (l2g %" PetscInt_FMT " %" PetscInt_FMT ")\n",bs[2],bs[3],l2gbs[2],l2gbs[3]));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

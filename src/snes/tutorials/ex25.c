@@ -35,12 +35,11 @@ extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar
 int main(int argc,char **argv)
 {
   SNES           snes;
-  PetscErrorCode ierr;
   PetscInt       its,lits;
   PetscReal      litspit;
   DM             da;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   /*
       Set the DMDA (grid structure) for the grids.
   */
@@ -63,8 +62,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / SNES = %e\n",(double)litspit));
 
   CHKERRQ(SNESDestroy(&snes));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **t,PetscScalar **f,void *ptr)

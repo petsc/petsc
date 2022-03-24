@@ -25,9 +25,8 @@ int main(int argc,char **args)
   PetscBool              localapi = PETSC_FALSE;
   PetscBool              neg = PETSC_FALSE;
   PetscBool              ismatis, ismpiaij;
-  PetscErrorCode         ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-neg",&neg,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-loc",&loc,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-locdiag",&locdiag,NULL));
@@ -220,8 +219,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&y));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

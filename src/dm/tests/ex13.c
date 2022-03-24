@@ -9,13 +9,12 @@ static char help[] = "Tests loading DM vector from file.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       M = PETSC_DECIDE,N = PETSC_DECIDE;
   DM             da;
   Vec            global;
   PetscViewer    bviewer;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
 
@@ -32,6 +31,6 @@ int main(int argc,char **argv)
   /* Free memory */
   CHKERRQ(VecDestroy(&global));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

@@ -7,11 +7,10 @@ int main(int argc,char **args)
   Mat            A;
   PetscViewer    fd;
   char           file[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
   PetscBool      flg;
   PetscMPIInt    rank;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* Determine files from which we read the matrix */
@@ -31,8 +30,8 @@ int main(int argc,char **args)
   CHKERRQ(MatLoad(A,fd));
   CHKERRQ(PetscViewerDestroy(&fd));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

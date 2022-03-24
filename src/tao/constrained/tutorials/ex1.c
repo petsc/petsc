@@ -54,7 +54,6 @@ PetscErrorCode FormEqualityJacobian(Tao,Vec,Mat,Mat, void*);
 
 PetscErrorCode main(int argc,char **argv)
 {
-  PetscErrorCode ierr;  /* used to check for functions returning nonzeros */
   Tao            tao;
   KSP            ksp;
   PC             pc;
@@ -65,7 +64,7 @@ PetscErrorCode main(int argc,char **argv)
   PetscReal      f;
   PetscBool      pdipm;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size <= 2,PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,"More than 2 processors detected. Example written to use max of 2 processors.");
 
@@ -149,8 +148,8 @@ PetscErrorCode main(int argc,char **argv)
   /* Free objects */
   CHKERRQ(DestroyProblem(&user));
   CHKERRQ(TaoDestroy(&tao));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode InitializeProblem(AppCtx *user)

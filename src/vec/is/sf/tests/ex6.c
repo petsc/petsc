@@ -4,7 +4,6 @@ static char help[]= "  Test VecScatter with x, y on different communicators\n\n"
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode     ierr;
   PetscInt           i,n=5,rstart;
   PetscScalar        *val;
   const PetscScalar  *dat;
@@ -15,7 +14,7 @@ int main(int argc,char **argv)
   VecScatter         vscat1,vscat2;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&nproc));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
@@ -76,8 +75,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecScatterDestroy(&vscat1));
   CHKERRQ(VecScatterDestroy(&vscat2));
   CHKERRMPI(MPI_Comm_free(&newcomm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

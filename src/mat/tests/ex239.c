@@ -5,14 +5,13 @@ static char help[] = "Test device/host memory allocation in MatDenseSeqCUDA()\n\
 #include <petscmat.h>
 int main(int argc, char** argv)
 {
-  PetscErrorCode ierr;
-  PetscInt       global_size=100;
-  Mat            cuda_matrix;
-  Vec            input,output;
-  MPI_Comm       comm = PETSC_COMM_SELF;
-  PetscReal      nrm = 1;
+  PetscInt  global_size = 100;
+  Mat       cuda_matrix;
+  Vec       input,output;
+  MPI_Comm  comm        = PETSC_COMM_SELF;
+  PetscReal nrm         = 1;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(MatCreateDenseCUDA(comm,global_size,global_size,global_size,global_size,NULL,&cuda_matrix));
   CHKERRQ(MatAssemblyBegin(cuda_matrix,MAT_FINAL_ASSEMBLY));
   CHKERRQ(MatAssemblyEnd(cuda_matrix,MAT_FINAL_ASSEMBLY));
@@ -27,8 +26,8 @@ int main(int argc, char** argv)
   CHKERRQ(VecDestroy(&input));
   CHKERRQ(VecDestroy(&output));
   CHKERRQ(MatDestroy(&cuda_matrix));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -132,7 +132,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex21 options","");CHKERRQ(ierr);
   {
     app.lambda = 6.8; app.lambda = 6.0;
@@ -187,8 +187,8 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   CHKERRQ(VecDestroy(&U));
   CHKERRQ(TSDestroy(&ts));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

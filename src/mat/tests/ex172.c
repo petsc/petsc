@@ -7,12 +7,11 @@ static char help[] = "Test MatAXPY and SUBSET_NONZERO_PATTERN [-different] [-ski
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   Mat            A,B,C;
   PetscBool      different=PETSC_FALSE,skip=PETSC_FALSE;
   PetscInt       m0,m1,n=128,i;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-different",&different,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-skip",&skip,NULL));
   /*
@@ -51,8 +50,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(MatDestroy(&C));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

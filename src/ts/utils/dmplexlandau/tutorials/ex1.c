@@ -7,7 +7,6 @@ int main(int argc, char **argv)
 {
   DM             dm;
   Vec            X,X_0;
-  PetscErrorCode ierr;
   PetscInt       dim=2;
   TS             ts;
   Mat            J;
@@ -17,7 +16,7 @@ int main(int argc, char **argv)
   SNESLineSearch linesearch;
   PetscReal      time;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-dim", &dim, NULL));
   /* Create a mesh */
   CHKERRQ(DMPlexLandauCreateVelocitySpace(PETSC_COMM_SELF, dim, "", &X, &J, &dm));
@@ -52,8 +51,8 @@ int main(int argc, char **argv)
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(VecDestroy(&X));
   CHKERRQ(VecDestroy(&X_0));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

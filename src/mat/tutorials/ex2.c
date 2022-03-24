@@ -14,11 +14,10 @@ int main(int argc,char **argv)
   Vec            X,X1,X2,Y,Z,Z1,Z2;
   PetscScalar    *a,*b,*x,*y,*z,v,one=1;
   PetscReal      nrm;
-  PetscErrorCode ierr;
   PetscInt       size=8,size1=6,size2=2, i,j;
   PetscRandom    rnd;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF,&rnd));
 
   /*
@@ -177,8 +176,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&Z1));
   CHKERRQ(VecDestroy(&Z2));
   CHKERRQ(PetscRandomDestroy(&rnd));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

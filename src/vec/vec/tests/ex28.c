@@ -19,7 +19,6 @@ static char help[] = "Tests repeated VecDotBegin()/VecDotEnd().\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       n = 25,i,row0 = 0;
   PetscScalar    two = 2.0,result1,result2,results[40],value,ten = 10.0;
   PetscScalar    result1a,result2a;
@@ -27,7 +26,7 @@ int main(int argc,char **argv)
   Vec            x,y,vecs[40];
   PetscReal      tol = PETSC_SMALL;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create vectors */
   CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
@@ -151,8 +150,8 @@ int main(int argc,char **argv)
     CHKERRQ(VecDestroy(&vecs[i]));
   }
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

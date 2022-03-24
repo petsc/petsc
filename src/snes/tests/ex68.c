@@ -127,9 +127,8 @@ int main(int argc, char **argv)
   Vec            u,r,b;                /* solution, residual, and rhs vectors */
   Mat            A,J;                  /* Jacobian matrix */
   PetscInt       problem = 1, N = 10;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-problem", &problem, NULL));
   CHKERRQ(VecCreate(comm, &u));
@@ -182,8 +181,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroy(&r));
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(SNESDestroy(&snes));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -6,7 +6,6 @@ static char help[] = "Tests DMGetCompatibility() with a 3D DMDA.\n\n";
 
 int main(int argc,char **argv) {
   PetscInt         M = 3,N = 5,P=3,s=1,w=2,i,m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE;
-  PetscErrorCode   ierr;
   PetscInt         *lx        = NULL,*ly = NULL,*lz = NULL;
   PetscBool        test_order = PETSC_FALSE;
   DM               da;
@@ -14,7 +13,7 @@ int main(int argc,char **argv) {
   DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
   PetscBool        flg = PETSC_FALSE,distribute = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Read options */
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-NX",&M,NULL));
@@ -201,8 +200,8 @@ int main(int argc,char **argv) {
   CHKERRQ(PetscFree(ly));
   CHKERRQ(PetscFree(lz));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

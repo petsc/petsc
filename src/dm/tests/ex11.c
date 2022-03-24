@@ -7,7 +7,6 @@ static char help[] = "Tests various 2-dimensional DMDA routines.\n\n";
 int main(int argc,char **argv)
 {
   PetscInt       M = 10,N = 8,dof=1,s=1,bx=0,by=0,i,n,j,k,m,wrap,xs,ys;
-  PetscErrorCode ierr;
   DM             da,dac;
   PetscViewer    viewer;
   Vec            local,global,coors;
@@ -15,7 +14,7 @@ int main(int argc,char **argv)
   PetscDraw      draw;
   char           fname[32];
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   /* Create viewers */
   CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",PETSC_DECIDE,PETSC_DECIDE,600,200,&viewer));
   CHKERRQ(PetscViewerDrawGetDraw(viewer,0,&draw));
@@ -72,8 +71,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&global));
   CHKERRQ(VecDestroy(&local));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

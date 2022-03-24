@@ -122,7 +122,7 @@ int main(int argc, char **argv)
   PetscInt           ntests = 1;
   PetscInt           i;
 
-  ierr = PetscInitialize(&argc, &argv, (char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char*)0,help));
   user.mx = 8;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"elliptic example",NULL);CHKERRQ(ierr);
   CHKERRQ(PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,NULL));
@@ -188,8 +188,8 @@ int main(int argc, char **argv)
   CHKERRQ(TaoDestroy(&tao));
   CHKERRQ(VecDestroy(&x0));
   CHKERRQ(EllipticDestroy(&user));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 /*

@@ -77,7 +77,6 @@ int main(int argc,char **argv)
 {
   TS             ts;
   Vec            x,r,xdot;
-  PetscErrorCode ierr;
   DM             da;
   AppCtx         appctx;
   AdolcCtx       *adctx;
@@ -88,7 +87,7 @@ int main(int argc,char **argv)
   unsigned int   **JP = NULL;
   ISColoring     iscoloring;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(PetscNew(&adctx));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-forwardonly",&forwardonly,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-implicitform",&implicitform,NULL));
@@ -293,8 +292,8 @@ int main(int argc,char **argv)
   }
   CHKERRQ(DMDestroy(&da));
   CHKERRQ(PetscFree(adctx));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode InitialConditions(DM da,Vec U)

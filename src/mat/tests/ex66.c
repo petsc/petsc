@@ -42,12 +42,11 @@ int main(int argc,char **argv)
   PetscBool      testtrans, testnorm, randommat = PETSC_TRUE, testorthog, testcompress, testhlru;
   void           (*approxnormfunc)(void);
   void           (*Anormfunc)(void);
-  PetscErrorCode ierr;
 
 #if defined(PETSC_HAVE_MPI_INIT_THREAD)
   PETSC_MPI_THREAD_REQUIRED = MPI_THREAD_MULTIPLE;
 #endif
-  ierr = PetscInitialize(&argc,&argv,(char*) 0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*) 0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-ng",&N,&flgglob));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nrhs",&nrhs,NULL));
@@ -394,8 +393,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&C));
   CHKERRQ(PetscFree(Cdata));
   CHKERRQ(PetscFree(Adata));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -4,7 +4,6 @@ static char help[] = "Basic test of various routines with SBAIJ matrices\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       ia[3]={0,2,4};
   PetscInt       ja[4]={0,1,0,1};
   PetscScalar    c[16]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
@@ -12,7 +11,7 @@ int main(int argc,char **argv)
   Mat            ssbaij,msbaij;
   Vec            x,y;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is an example with two processors only!");
   CHKERRQ(MatCreate(PETSC_COMM_SELF,&ssbaij));
@@ -37,8 +36,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&y));
   CHKERRQ(MatDestroy(&msbaij));
   CHKERRQ(MatDestroy(&ssbaij));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

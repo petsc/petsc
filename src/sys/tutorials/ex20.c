@@ -5,13 +5,12 @@ static char help[] = "Demonstrates PetscOptionsPush()/PetscOptionsPop().\n\n";
 #include <petscoptions.h>
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscOptions   opt1,opt2;
   PetscInt       int1,int2;
   PetscBool      flg1,flg2,flga,match;
   char           str[16];
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   CHKERRQ(PetscOptionsCreate(&opt1));
   CHKERRQ(PetscOptionsInsertString(opt1,"-testa a"));
@@ -34,8 +33,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscOptionsPop());
   CHKERRQ(PetscOptionsDestroy(&opt2));
   CHKERRQ(PetscOptionsDestroy(&opt1));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

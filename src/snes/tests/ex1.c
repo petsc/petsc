@@ -69,7 +69,6 @@ int main(int argc,char **argv)
   Vec            x,r;                 /* solution, residual vectors */
   Mat            J;                    /* Jacobian matrix */
   AppCtx         user;                 /* user-defined application context */
-  PetscErrorCode ierr;
   PetscInt       i,its,N,hist_its[50];
   PetscMPIInt    size;
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.,history[50];
@@ -78,7 +77,7 @@ int main(int argc,char **argv)
   KSP            ksp;
   PetscInt       *testarray;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
@@ -270,8 +269,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&r));
   CHKERRQ(SNESDestroy(&snes));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 /*

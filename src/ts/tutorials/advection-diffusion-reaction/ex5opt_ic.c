@@ -207,13 +207,12 @@ PetscErrorCode PerturbedInitialConditions3(DM da,Vec U)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   DM             da;
   AppCtx         appctx;
   PetscBool      forwardonly = PETSC_FALSE,implicitform = PETSC_FALSE;
   PetscInt       perturbic = 1;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-forwardonly",&forwardonly,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-implicitform",&implicitform,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-perturbic",&perturbic,NULL));
@@ -312,8 +311,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&appctx.U));
   CHKERRQ(TSDestroy(&appctx.ts));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* ------------------------ TAO callbacks ---------------------------- */

@@ -51,7 +51,6 @@ int main(int argc,char **argv)
   AppCtx         appctx;                 /* user-defined application context */
   TS             ts;                     /* timestepping context */
   Vec            U;                      /* approximate solution vector */
-  PetscErrorCode ierr;
   PetscReal      dt;
   DM             da;
   PetscInt       M;
@@ -60,7 +59,7 @@ int main(int argc,char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr          = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   appctx.a      = 1.0;
   appctx.d      = 0.0;
   CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-a",&appctx.a,NULL));
@@ -139,8 +138,8 @@ int main(int argc,char **argv)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* --------------------------------------------------------------------- */
 /*

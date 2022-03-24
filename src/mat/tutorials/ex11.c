@@ -18,7 +18,6 @@ T*/
 int main(int argc,char **args)
 {
   Mat             mesh,dual;
-  PetscErrorCode  ierr;
   PetscInt        Nvertices = 6;       /* total number of vertices */
   PetscInt        ncells    = 2;       /* number cells on this process */
   PetscInt        *ii,*jj;
@@ -26,7 +25,7 @@ int main(int argc,char **args)
   MatPartitioning part;
   IS              is;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(MPI_COMM_WORLD,&size));
   PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This example is for exactly two processes");
   CHKERRMPI(MPI_Comm_rank(MPI_COMM_WORLD,&rank));
@@ -53,8 +52,8 @@ int main(int argc,char **args)
 
   CHKERRQ(MatDestroy(&mesh));
   CHKERRQ(MatDestroy(&dual));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

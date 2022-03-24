@@ -35,16 +35,15 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt n,MatType mtype)
 
 int main(int argc,char *argv[])
 {
-  PetscErrorCode ierr;
   MPI_Comm       comm;
   PetscInt       n = 6;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(Assemble(comm,n,MATMPISBAIJ));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

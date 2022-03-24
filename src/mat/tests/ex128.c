@@ -14,7 +14,6 @@ int main(int argc,char **args)
 {
   Mat            C,sC,sA;
   PetscInt       i,j,m = 5,n = 5,Ii,J,lf = 0;
-  PetscErrorCode ierr;
   PetscBool      CHOLESKY=PETSC_FALSE,TRIANGULAR=PETSC_FALSE,flg;
   PetscScalar    v;
   IS             row,col;
@@ -24,7 +23,7 @@ int main(int argc,char **args)
   PetscRandom    rdm;
   PetscMPIInt    size;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
@@ -120,8 +119,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&y));
   CHKERRQ(VecDestroy(&ytmp));
   CHKERRQ(VecDestroy(&b));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

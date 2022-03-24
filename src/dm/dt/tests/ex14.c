@@ -78,13 +78,12 @@ static PetscErrorCode TestSampling()
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRQ(TestDistributions());
   CHKERRQ(TestSampling());
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

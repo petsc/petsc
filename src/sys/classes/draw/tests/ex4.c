@@ -27,17 +27,16 @@ PetscErrorCode zoomfunction(PetscDraw draw,void *dummy)
 
 int main(int argc,char **argv)
 {
-  int            x = 0,y = 0,width = 256,height = 256;
-  PetscDraw      draw;
-  PetscErrorCode ierr;
+  int       x = 0,y = 0,width = 256,height = 256;
+  PetscDraw draw;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(PetscDrawCreate(PETSC_COMM_WORLD,NULL,"Title",x,y,width,height,&draw));
   CHKERRQ(PetscDrawSetFromOptions(draw));
   CHKERRQ(PetscDrawZoom(draw,zoomfunction,NULL));
   CHKERRQ(PetscDrawDestroy(&draw));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -3331,9 +3331,8 @@ int main(int argc, char **argv)
   MatNullSpace    nullSpace; /* May be necessary for pressure */
   AppCtx          user;      /* user-defined work context */
   PetscErrorCode  (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void* ctx) = {zero, zero};
-  PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
   CHKERRQ(SNESCreate(PETSC_COMM_WORLD, &snes));
   CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
@@ -3398,8 +3397,8 @@ int main(int argc, char **argv)
   CHKERRQ(SNESDestroy(&snes));
   CHKERRQ(DMDestroy(&dm));
   CHKERRQ(PetscBagDestroy(&user.bag));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

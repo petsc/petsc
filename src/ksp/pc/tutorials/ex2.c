@@ -25,10 +25,9 @@ int main(int argc,char **argv)
   PetscScalar        v;
   KSPConvergedReason reason;
   PetscInt           i,j,its;
-  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   comm = MPI_COMM_SELF;
 
   /*
@@ -125,8 +124,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&B));
   CHKERRQ(VecDestroy(&X));
   CHKERRQ(VecDestroy(&D));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

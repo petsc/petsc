@@ -93,9 +93,8 @@ int main(int argc, char **argv)
   PetscPartitioner part;
   AppCtx         user;
   PetscBool      flg;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
   CHKERRQ(DMPlexCreateFromFile(PETSC_COMM_WORLD, user.filename, user.meshname, user.interpolate, &dm));
   CHKERRQ(DMSetOptionsPrefix(dm,"orig_"));
@@ -143,8 +142,8 @@ int main(int argc, char **argv)
 
   CHKERRQ(DMDestroy(&dm));
   CHKERRQ(DMDestroy(&dmnew));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

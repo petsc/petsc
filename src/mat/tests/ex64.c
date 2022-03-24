@@ -7,13 +7,12 @@ int main(int argc,char **args)
 {
   Mat            A;
   PetscInt       i,j;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscViewer    fd;
   PetscScalar    values[16],one = 1.0;
   Vec            x;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,m"Can only run on one processor");
 
@@ -61,6 +60,6 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&x));
 
   CHKERRQ(PetscViewerDestroy(&fd));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

@@ -25,11 +25,10 @@ int main(int argc,char **args)
   KSP            ksp;              /* linear solver context */
   PC             pc;               /* preconditioner context */
   PetscReal      norm,tol=1000.*PETSC_MACHINE_EPSILON;  /* norm of solution error */
-  PetscErrorCode ierr;
   PetscInt       i,n = 10,col[3],its,rstart,rend,nlocal;
   PetscScalar    one = 1.0,value[3];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -187,8 +186,8 @@ int main(int argc,char **args)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -5,13 +5,12 @@ static char help[] = "Passes a sparse matrix to MATLAB.\n\n";
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscInt       m   = 4,n = 5,i,j,II,J;
   PetscScalar    one = 1.0,v;
   Vec            x;
   Mat            A;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
@@ -45,8 +44,8 @@ int main(int argc,char **args)
 
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

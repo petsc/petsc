@@ -66,11 +66,10 @@ int main(int argc,char **args)
 {
   Mat            mat;
   PetscInt       i,j,m = 2,n,Ii,J;
-  PetscErrorCode ierr;
   PetscScalar    v,none = -1.0;
   PetscMPIInt    rank,size;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   n    = 2*size;
@@ -107,8 +106,8 @@ int main(int argc,char **args)
   CHKERRQ(MatView(mat,PETSC_VIEWER_STDOUT_WORLD));
 
   CHKERRQ(MatDestroy(&mat));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

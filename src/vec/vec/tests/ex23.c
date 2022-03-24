@@ -13,7 +13,6 @@ static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       i,blocks[2],nlocal;
   PetscMPIInt    size,rank;
   PetscScalar    value;
@@ -22,7 +21,7 @@ int main(int argc,char **argv)
   VecScatter     ctx = 0;
   PetscViewer    subviewer;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
@@ -68,8 +67,8 @@ int main(int argc,char **argv)
   CHKERRQ(ISDestroy(&is1));
   CHKERRQ(ISDestroy(&is2));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

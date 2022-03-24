@@ -6,7 +6,6 @@ static char help[] = "Tests solving linear system with KSPFGMRES + PCSOR (omega 
 int main(int argc,char **args)
 {
   Mat            A,Ad,B;
-  PetscErrorCode ierr;
   PetscInt       N = 10, M = 3;
   PetscBool      no_inodes=PETSC_TRUE,flg;
   KSP            ksp;
@@ -14,7 +13,7 @@ int main(int argc,char **args)
   Vec            x,y;
   char           mtype[256];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-mtype",mtype,sizeof(mtype),&flg));
@@ -53,8 +52,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(MatDestroy(&Ad));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

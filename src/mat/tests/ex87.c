@@ -9,12 +9,11 @@ int main(int argc,char **args)
   PetscViewer    viewer;
   char           file[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
-  PetscErrorCode ierr;
   PetscInt       n = 2,issize,M,N;
   PetscMPIInt    rank;
   IS             isrow,iscol,irow[n],icol[n];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
   CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer));
 
@@ -58,6 +57,6 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&BAIJ));
   CHKERRQ(MatDestroy(&SBAIJ));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

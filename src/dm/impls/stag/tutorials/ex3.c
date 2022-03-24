@@ -80,7 +80,6 @@ static PetscScalar g    (PetscScalar x,PetscScalar y, PetscScalar z) {return 0.0
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   DM             dmSol;
   Vec            sol,solRef,rhs;
   Mat            A;
@@ -89,7 +88,7 @@ int main(int argc,char **argv)
   PetscBool      pinPressure;
 
   /* Initialize PETSc and process command line arguments */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   pinPressure = PETSC_TRUE;
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-pinpressure",&pinPressure,NULL));
 
@@ -137,8 +136,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&rhs));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(DMDestroy(&dmSol));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 static PetscErrorCode CreateSystem(DM dmSol,Mat *pA,Vec *pRhs, PetscBool pinPressure)

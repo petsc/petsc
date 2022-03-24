@@ -5,13 +5,12 @@ static char help[] = "Test DMClone_Stag()\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode  ierr;
   DM              dm,dm2;
   PetscInt        dim;
   PetscBool       flg,setSizes;
 
   /* Create a DMStag object */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Supply -dim option with value 1, 2, or 3");
   setSizes = PETSC_FALSE;
@@ -61,8 +60,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(DMDestroy(&dm));
   CHKERRQ(DMDestroy(&dm2));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -3,7 +3,6 @@ static char help[]="This program illustrates the use of PETSc-fftw interface for
 #include <fftw3-mpi.h>
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   PetscInt       N0=10,N1=10,N2=10,N3=10,N4=10,N=N0*N1*N2*N3*N4;
   PetscRandom    rdm;
@@ -13,7 +12,7 @@ int main(int argc,char **args)
   PetscInt       DIM, dim[5],vsize;
   PetscReal      fac;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
 #endif
@@ -70,7 +69,7 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&z));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(PetscRandomDestroy(&rdm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 
 }

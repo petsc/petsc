@@ -162,19 +162,16 @@ PetscErrorCode  TSGLLEAdaptDestroy(TSGLLEAdapt *adapt)
 
 PetscErrorCode  TSGLLEAdaptSetFromOptions(PetscOptionItems *PetscOptionsObject,TSGLLEAdapt adapt)
 {
-  PetscErrorCode ierr;
-  char           type[256] = TSGLLEADAPT_BOTH;
-  PetscBool      flg;
+  char      type[256] = TSGLLEADAPT_BOTH;
+  PetscBool flg;
 
   PetscFunctionBegin;
   /* This should use PetscOptionsBegin() if/when this becomes an object used outside of TSGLLE, but currently this
   * function can only be called from inside TSSetFromOptions_GLLE()  */
   CHKERRQ(PetscOptionsHead(PetscOptionsObject,"TSGLLE Adaptivity options"));
-  ierr = PetscOptionsFList("-ts_adapt_type","Algorithm to use for adaptivity","TSGLLEAdaptSetType",TSGLLEAdaptList,
-                          ((PetscObject)adapt)->type_name ? ((PetscObject)adapt)->type_name : type,type,sizeof(type),&flg);CHKERRQ(ierr);
-  if (flg || !((PetscObject)adapt)->type_name) {
-    CHKERRQ(TSGLLEAdaptSetType(adapt,type));
-  }
+  CHKERRQ(PetscOptionsFList("-ts_adapt_type","Algorithm to use for adaptivity","TSGLLEAdaptSetType",TSGLLEAdaptList,
+                            ((PetscObject)adapt)->type_name ? ((PetscObject)adapt)->type_name : type,type,sizeof(type),&flg));
+  if (flg || !((PetscObject)adapt)->type_name) CHKERRQ(TSGLLEAdaptSetType(adapt,type));
   if (adapt->ops->setfromoptions) CHKERRQ((*adapt->ops->setfromoptions)(PetscOptionsObject,adapt));
   CHKERRQ(PetscOptionsTail());
   PetscFunctionReturn(0);

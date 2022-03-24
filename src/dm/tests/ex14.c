@@ -12,13 +12,12 @@ int main(int argc,char **argv)
 {
   PetscMPIInt    rank;
   PetscInt       M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE, dof = 1;
-  PetscErrorCode ierr;
   DM             da;
   Vec            local,global,natural;
   PetscScalar    value;
   PetscViewer    bviewer;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
@@ -60,6 +59,6 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&global));
   CHKERRQ(VecDestroy(&natural));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

@@ -41,15 +41,14 @@ PetscErrorCode InitializeLambda(DM da,Vec lambda,PetscReal x,PetscReal y)
 
 int main(int argc,char **argv)
 {
-  TS             ts;                  /* ODE integrator */
-  Vec            x;                   /* solution */
-  PetscErrorCode ierr;
-  DM             da;
-  AppCtx         appctx;
-  Vec            lambda[1];
-  PetscBool      forwardonly=PETSC_FALSE,implicitform=PETSC_TRUE;
+  TS        ts;                 /* ODE integrator */
+  Vec       x;                  /* solution */
+  DM        da;
+  AppCtx    appctx;
+  Vec       lambda[1];
+  PetscBool forwardonly = PETSC_FALSE,implicitform=PETSC_TRUE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-forwardonly",&forwardonly,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-implicitform",&implicitform,NULL));
   appctx.aijpc = PETSC_FALSE;
@@ -145,8 +144,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* ------------------------------------------------------------------- */

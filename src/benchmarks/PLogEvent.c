@@ -6,10 +6,9 @@ int main(int argc,char **argv)
 {
   PetscLogDouble x,y;
   PetscLogEvent  e1;
-  PetscErrorCode ierr;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,0));
   PetscLogEventRegister("*DummyEvent",0,&e1);
   /* To take care of the paging effects */
   CHKERRQ(PetscTime(&x));
@@ -53,6 +52,6 @@ int main(int argc,char **argv)
 
   fprintf(stderr,"\n");
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

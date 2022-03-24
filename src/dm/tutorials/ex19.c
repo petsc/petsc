@@ -9,10 +9,9 @@ static char help[] = "Test for DMDA with overlap.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   DM             da;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   /* Build of the DMDA -- 1D -- boundary_none */
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"1D -- DM_BOUNDARY_NONE\n"));
   CHKERRQ(DMDACreate(PETSC_COMM_WORLD, &da));
@@ -158,8 +157,8 @@ int main(int argc,char **argv)
   CHKERRQ(DMDestroy(&da));
 
   /* test moving data in and out */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -4,7 +4,6 @@ static char help[] = "This example tests subnetwork coupling with zero size comp
 
 int main(int argc,char ** argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   DM             dmnetwork;
   PetscInt       i,j,net,Nsubnet,ne,nv,nvar,v,goffset,row,compkey0,compkey1,compkey;
@@ -14,7 +13,7 @@ int main(int argc,char ** argv)
   Vec            X;
   PetscScalar    val;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
@@ -157,8 +156,8 @@ int main(int argc,char ** argv)
   }
   CHKERRQ(PetscFree2(numEdges,edgelist));
   CHKERRQ(DMDestroy(&dmnetwork));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

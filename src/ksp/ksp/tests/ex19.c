@@ -53,14 +53,13 @@ extern PetscErrorCode FormJacobian_Grid(AppCtx*,GridCtx*,Mat*);
 int main(int argc,char **argv)
 {
   AppCtx         user;
-  PetscErrorCode ierr;
   PetscInt       its,N,n,Nx = PETSC_DECIDE,Ny = PETSC_DECIDE,nlocal,Nlocal;
   PetscMPIInt    size;
   KSP            ksp,ksp_fine;
   PC             pc;
   PetscScalar    one = 1.0;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   user.ratio     = 2;
   user.coarse.mx = 5; user.coarse.my = 5;
 
@@ -163,8 +162,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(KSPDestroy(&ksp));
   CHKERRQ(MatDestroy(&user.Ii));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)

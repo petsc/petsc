@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
   Vec             metric;
 
   /* Set up */
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm, "", "Mesh adaptation options", "DMPLEX");CHKERRQ(ierr);
   CHKERRQ(PetscOptionsBool("-noTagging", "Should tag preservation testing be turned off?", "ex60.c", noTagging, &noTagging, NULL));
@@ -280,7 +280,7 @@ int main(int argc, char **argv) {
 
   /* Clean up */
   CHKERRQ(DMDestroy(&dmAdapt));
-  ierr = PetscFinalize();
+  CHKERRQ(PetscFinalize());
   return 0;
 }
 

@@ -95,7 +95,6 @@ int main(int argc,char **argv)
 {
   AppCtx         user;                /* user-defined work context */
   PetscInt       mx,my,its;
-  PetscErrorCode ierr;
   MPI_Comm       comm;
   SNES           snes;
   DM             da;
@@ -105,7 +104,7 @@ int main(int argc,char **argv)
   char           filename[PETSC_MAX_PATH_LEN] = "ex16.vts";
   char           filename_def[PETSC_MAX_PATH_LEN] = "ex16_def.vts";
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(FormElements());
   comm = PETSC_COMM_WORLD;
   CHKERRQ(SNESCreate(comm,&snes));
@@ -194,8 +193,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(DMDestroy(&da));
   CHKERRQ(SNESDestroy(&snes));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscInt OnBoundary(PetscInt i,PetscInt j,PetscInt k,PetscInt mx,PetscInt my,PetscInt mz)

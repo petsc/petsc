@@ -19,7 +19,6 @@ typedef struct {
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscBag       bag;
   Parameter      *params;
   PetscViewer    viewer;
@@ -36,7 +35,7 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   /* Create a DMDA and an associated vector */
   CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,10,10,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,&da));
   CHKERRQ(DMSetFromOptions(da));
@@ -82,8 +81,8 @@ int main(int argc,char **argv)
   CHKERRQ(DMDestroy(&da));
   CHKERRQ(VecDestroy(&local));
   CHKERRQ(VecDestroy(&global));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

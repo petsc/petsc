@@ -8,7 +8,6 @@ static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 int main(int argc,char **argv)
 {
   PetscMPIInt    rank,size;
-  PetscErrorCode ierr;
   PetscInt       M = 60,time_steps = 100, localsize,j,i,mybase,myend,width,xbase,*localnodes = NULL;
   DM             da;
   PetscViewer    viewer,viewer_private;
@@ -18,7 +17,7 @@ int main(int argc,char **argv)
   PetscReal      a,h,k;
   PetscBool      flg = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
@@ -104,8 +103,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&local));
   CHKERRQ(VecDestroy(&global));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

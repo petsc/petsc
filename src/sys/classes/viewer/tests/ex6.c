@@ -128,9 +128,8 @@ static PetscErrorCode TestClose(PetscViewer *viewer)
 int main(int argc,char **args)
 {
   PetscViewer    viewer;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,NULL,help));
 
   CHKERRQ(TestOpen(FILE_MODE_WRITE,&viewer));
   CHKERRQ(TestWrite(viewer));
@@ -188,8 +187,8 @@ int main(int argc,char **args)
     CHKERRQ(TestClose(&viewer));
   }
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

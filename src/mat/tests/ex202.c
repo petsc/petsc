@@ -149,13 +149,12 @@ PetscErrorCode TestReuseMatrix(void)
 
 int main(int argc,char **args)
 {
-  PetscErrorCode      ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(TestInitialMatrix());
   CHKERRQ(TestReuseMatrix());
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

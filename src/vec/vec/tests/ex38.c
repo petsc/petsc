@@ -12,9 +12,8 @@ int main(int argc, char *argv[])
   PetscViewer    viewer;
   IS             is0,is1,is2;
   PetscBool      iscuda;
-  PetscErrorCode ierr;
 
-  ierr   = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   comm   = PETSC_COMM_WORLD;
   viewer = PETSC_VIEWER_STDOUT_WORLD;
   CHKERRMPI(MPI_Comm_size(comm,&size));
@@ -74,8 +73,8 @@ int main(int argc, char *argv[])
   CHKERRQ(ISDestroy(&is1));
   CHKERRQ(ISDestroy(&is2));
   CHKERRQ(VecDestroy(&X));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

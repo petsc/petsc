@@ -38,10 +38,9 @@ int main(int argc,char **args)
   Mat            A;
   PetscInt       M = 24,N = 24,bs = 3;
   PetscInt       rstart,rend,i,j;
-  PetscErrorCode ierr;
   PetscViewer    view;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,NULL,help));
   /*
       Create a parallel SBAIJ matrix shared by all processors
   */
@@ -117,8 +116,8 @@ int main(int argc,char **args)
   CHKERRQ(PetscViewerDestroy(&view));
   CHKERRQ(MatDestroy(&A));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

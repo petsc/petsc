@@ -9,12 +9,11 @@ static char help[] = "Calculates moments for Gaussian functions.\n\n";
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;
   int            s,n = 15;
   PetscInt       tick, moment = 0,momentummax = 7;
   PetscReal      *zeros,*weights,scale,h,sigma = 1/sqrt(2), g = 0, mu = 0;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-moment_max",&momentummax,NULL));
@@ -59,8 +58,8 @@ int main(int argc, char **argv)
   }
   CHKERRQ(PetscFree(zeros));
   CHKERRQ(PetscFree(weights));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

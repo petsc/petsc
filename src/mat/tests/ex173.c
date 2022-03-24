@@ -15,10 +15,9 @@ int main(int argc,char **args)
   Mat            A;
   PetscViewer    fd;                        /* viewer */
   char           file[PETSC_MAX_PATH_LEN];  /* input file name */
-  PetscErrorCode ierr;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f0",file,sizeof(file),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f0 option");
   CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd));
@@ -30,8 +29,8 @@ int main(int argc,char **args)
   CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
   CHKERRQ(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

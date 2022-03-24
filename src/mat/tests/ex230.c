@@ -219,9 +219,8 @@ PetscErrorCode ex2_square_bsvariable(void)
 
 int main(int argc, char **args)
 {
-  PetscErrorCode ierr;
   PetscInt testid = 0;
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-test_id",&testid,NULL));
   switch (testid) {
     case 0:
@@ -233,8 +232,8 @@ int main(int argc, char **args)
     default:
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Invalid value for -test_id. Must be {0,1}");
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

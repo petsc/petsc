@@ -814,7 +814,6 @@ PetscErrorCode DMPlexPreallocateOperator_2(DM dm, PetscInt bs, PetscSection sect
 {
   PetscInt       *tmpClosure,*tmpAdj,*visits;
   PetscInt        c,cStart,cEnd,pStart,pEnd;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   CHKERRQ(DMGetDimension(dm, &dim));

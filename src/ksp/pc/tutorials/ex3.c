@@ -29,7 +29,7 @@ int main(int argc,char **args)
   PetscLogStage stage;
 #endif
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCheckFalse(size < 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This example requires at least 2 MPI processes!");
@@ -139,8 +139,8 @@ int main(int argc,char **args)
   CHKERRQ(KSPDestroy(&ksp));
   CHKERRQ(VecDestroy(&u));  CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&b));  CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

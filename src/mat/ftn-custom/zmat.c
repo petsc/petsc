@@ -23,4 +23,3 @@ PETSC_EXTERN void matsetvaluelocal_(Mat *mat,PetscInt *i,PetscInt *j,PetscScalar
   /* cannot use MatSetValueLocal() here since that uses CHKERRQ() which has a return in it */
   *ierr = MatSetValuesLocal(*mat,1,i,1,j,va,*mode);
 }
-

@@ -5,12 +5,11 @@ static char help[] = "Tests PetscCommGetComm().\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   MPI_Comm       comms[10],comm;
   PetscInt       i;
   PetscRandom    rand;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rand));
   CHKERRQ(PetscObjectGetComm((PetscObject)rand,&comm));
   for (i=0; i<10; i++) {
@@ -26,8 +25,8 @@ int main(int argc,char **argv)
     CHKERRQ(PetscCommRestoreComm(comm,&comms[i]));
   }
   CHKERRQ(PetscRandomDestroy(&rand));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

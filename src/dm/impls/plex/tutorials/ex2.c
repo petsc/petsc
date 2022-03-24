@@ -31,16 +31,15 @@ int main(int argc, char **argv)
   DM             dm;
   DMLabel        label;
   const PetscInt id = 1;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &dm));
   CHKERRQ(DMSetNumFields(dm, 1));
   CHKERRQ(DMGetLabel(dm, "boundary", &label));
   CHKERRQ(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) zero, NULL, NULL, NULL));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

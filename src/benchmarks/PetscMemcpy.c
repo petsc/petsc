@@ -5,10 +5,9 @@
 int main(int argc,char **argv)
 {
   PetscLogDouble x,y;
-  PetscErrorCode ierr;
   PetscScalar    *A,*B;
 
-  ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,0));
   CHKERRQ(PetscCalloc1(8000000,&A));
   CHKERRQ(PetscMalloc1(8000000,&B));
 
@@ -27,6 +26,6 @@ int main(int argc,char **argv)
 
   CHKERRQ(PetscFree(A));
   CHKERRQ(PetscFree(B));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

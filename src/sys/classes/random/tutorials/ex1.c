@@ -14,14 +14,13 @@ int main(int argc,char **argv)
   PetscInt       i,n = 1000,*values;
   PetscRandom    rnd;
   PetscScalar    value,avg = 0.0;
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       view_rank=-1;
 #if defined(PETSC_USE_LOG)
   PetscLogEvent  event;
 #endif
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-view_randomvalues",&view_rank,NULL));
@@ -65,8 +64,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscFree(values));
   CHKERRQ(PetscRandomDestroy(&rnd));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

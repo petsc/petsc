@@ -31,7 +31,6 @@ int main(int argc,char **argv)
   SNES           snes;                   /* SNES context */
   Vec            x,r,F,U;                /* vectors */
   Mat            J;                      /* Jacobian matrix */
-  PetscErrorCode ierr;
   PetscInt       its,n = 5,i,maxit,maxf,lens[3] = {1,2,2};
   PetscMPIInt    size;
   PetscScalar    h,xp,v,none = -1.0;
@@ -39,7 +38,7 @@ int main(int argc,char **argv)
   KSP            ksp;
   PC             pc;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only!");
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
@@ -164,8 +163,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));  CHKERRQ(VecDestroy(&r));
   CHKERRQ(VecDestroy(&U));  CHKERRQ(VecDestroy(&F));
   CHKERRQ(MatDestroy(&J));  CHKERRQ(SNESDestroy(&snes));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 /*

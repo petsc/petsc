@@ -8,10 +8,9 @@ int main(int argc,char **args)
   Mat            A,B;
   Vec            diag;
   PetscInt       i,n = 10,col[3],test;
-  PetscErrorCode ierr;
   PetscScalar    v[3];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* Create A which has empty 0-th row and column */
@@ -71,8 +70,8 @@ int main(int argc,char **args)
   }
 
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

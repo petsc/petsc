@@ -486,10 +486,9 @@ PetscErrorCode ex1_4(void)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       test_mode = 4;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-test_mode",&test_mode,NULL));
   if (test_mode == 1) {
     CHKERRQ(ex1_1());
@@ -500,8 +499,8 @@ int main(int argc,char **argv)
   } else if (test_mode == 4) {
     CHKERRQ(ex1_4());
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Unknown test_mode value, should be 1,2,3,4");
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

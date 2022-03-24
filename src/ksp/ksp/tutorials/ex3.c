@@ -38,10 +38,9 @@ int main(int argc,char **args)
   PetscReal      h;           /* mesh width */
   PetscReal      norm;        /* norm of solution error */
   PetscScalar    x,y;
-  PetscErrorCode ierr;
   PetscInt       idx[4],count,*rows,i,m = 5,start,end,its;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   N    = (m+1)*(m+1);
   M    = m*m;
@@ -177,8 +176,8 @@ int main(int argc,char **args)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* --------------------------------------------------------------------- */

@@ -32,7 +32,7 @@ int main(int argc,char *argv[])
   IS                     is0,is1;
   PetscBool              diag,blocked;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   comm = PETSC_COMM_WORLD;
 
   ierr = PetscOptionsBegin(comm,NULL,"LocalRef Test Options",NULL);CHKERRQ(ierr);
@@ -117,8 +117,8 @@ int main(int argc,char *argv[])
   CHKERRQ(ISDestroy(&is1));
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(MatDestroy(&J));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -37,7 +37,6 @@ int main(int argc,char **argv)
 {
   PetscMPIInt      rank;
   PetscInt         M = 10,N = 8;
-  PetscErrorCode   ierr;
   PetscBool        flg = PETSC_FALSE;
   DM               da;
   PetscViewer      viewer;
@@ -50,7 +49,7 @@ int main(int argc,char **argv)
   PetscMPIInt      size;
 #endif
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer));
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
@@ -104,8 +103,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&local));
   CHKERRQ(VecDestroy(&global));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

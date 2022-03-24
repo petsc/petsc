@@ -7,11 +7,10 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag);
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   DM             dmstag;
   PetscInt       dim,dof[4],i,elx,ely,elz;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 3;
   for (i=0; i<4; ++i) dof[i] = 1;
   elx = ely = elz = 4;
@@ -26,8 +25,8 @@ int main(int argc,char **argv)
   CHKERRQ(DMSetUp(dmstag));
   CHKERRQ(Test_3d_4x4x4_3x3x3(dmstag));
   CHKERRQ(DMDestroy(&dmstag));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)

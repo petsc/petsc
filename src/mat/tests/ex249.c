@@ -5,7 +5,6 @@ static char help[] = "Test MatCreateSubMatrices\n\n";
 
 int main(int argc,char **args)
 {
-  PetscErrorCode  ierr;
   Mat             A,*submats,*submats2;
   IS              *irow,*icol;
   PetscInt        i,n;
@@ -15,7 +14,7 @@ int main(int argc,char **args)
   char            matfile[PETSC_MAX_PATH_LEN],rowfile[PETSC_MAX_PATH_LEN],colfile[PETSC_MAX_PATH_LEN];
   char            rankstr[16]={0};
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-A",matfile,sizeof(matfile),NULL));
@@ -75,8 +74,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroySubMatrices(n,&submats));
   CHKERRQ(MatDestroyMatrices(n,&submats2));
   CHKERRQ(PetscFree2(irow,icol));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

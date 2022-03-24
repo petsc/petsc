@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
   PetscScalar    sum;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"TS conservation example","");CHKERRQ(ierr);
   CHKERRQ(PetscOptionsEnum("-var","Variable formulation",NULL,VarModes,(PetscEnum)var,(PetscEnum*)&var,NULL));
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
@@ -152,8 +152,8 @@ int main(int argc, char *argv[])
 
   CHKERRQ(VecDestroy(&U));
   CHKERRQ(TSDestroy(&ts));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

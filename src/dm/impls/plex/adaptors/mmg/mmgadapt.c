@@ -191,23 +191,23 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   switch (dim) {
   case 2:
     numCornersNew = 3;
-    CHKERRMMG_NONSTANDARD(MMG2D_Get_meshSize, mmg_mesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew);
+    CHKERRMMG_NONSTANDARD(MMG2D_Get_meshSize(mmg_mesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew));
     CHKERRQ(PetscMalloc4(2*numVerticesNew, &verticesNew, numVerticesNew, &verTagsNew, numVerticesNew, &corners, numVerticesNew, &requiredVer));
     CHKERRQ(PetscMalloc3(3*numCellsNew, &cellsNew, numCellsNew, &cellTagsNew, numCellsNew, &requiredCells));
     CHKERRQ(PetscMalloc4(2*numFacesNew, &facesNew, numFacesNew, &faceTagsNew, numFacesNew, &ridges, numFacesNew, &requiredFaces));
-    CHKERRMMG_NONSTANDARD(MMG2D_Get_vertices, mmg_mesh, verticesNew, verTagsNew, corners, requiredVer);
-    CHKERRMMG_NONSTANDARD(MMG2D_Get_triangles, mmg_mesh, cellsNew, cellTagsNew, requiredCells);
-    CHKERRMMG_NONSTANDARD(MMG2D_Get_edges, mmg_mesh, facesNew, faceTagsNew, ridges, requiredFaces);
+    CHKERRMMG_NONSTANDARD(MMG2D_Get_vertices(mmg_mesh, verticesNew, verTagsNew, corners, requiredVer));
+    CHKERRMMG_NONSTANDARD(MMG2D_Get_triangles(mmg_mesh, cellsNew, cellTagsNew, requiredCells));
+    CHKERRMMG_NONSTANDARD(MMG2D_Get_edges(mmg_mesh, facesNew, faceTagsNew, ridges, requiredFaces));
     break;
   case 3:
     numCornersNew = 4;
-    CHKERRMMG_NONSTANDARD(MMG3D_Get_meshSize, mmg_mesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew, 0, 0);
+    CHKERRMMG_NONSTANDARD(MMG3D_Get_meshSize(mmg_mesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew, 0, 0));
     CHKERRQ(PetscMalloc4(3*numVerticesNew, &verticesNew, numVerticesNew, &verTagsNew, numVerticesNew, &corners, numVerticesNew, &requiredVer));
     CHKERRQ(PetscMalloc3(4*numCellsNew, &cellsNew, numCellsNew, &cellTagsNew, numCellsNew, &requiredCells));
     CHKERRQ(PetscMalloc4(3*numFacesNew, &facesNew, numFacesNew, &faceTagsNew, numFacesNew, &ridges, numFacesNew, &requiredFaces));
-    CHKERRMMG_NONSTANDARD(MMG3D_Get_vertices, mmg_mesh, verticesNew, verTagsNew, corners, requiredVer);
-    CHKERRMMG_NONSTANDARD(MMG3D_Get_tetrahedra, mmg_mesh, cellsNew, cellTagsNew, requiredCells);
-    CHKERRMMG_NONSTANDARD(MMG3D_Get_triangles, mmg_mesh, facesNew, faceTagsNew, requiredFaces);
+    CHKERRMMG_NONSTANDARD(MMG3D_Get_vertices(mmg_mesh, verticesNew, verTagsNew, corners, requiredVer));
+    CHKERRMMG_NONSTANDARD(MMG3D_Get_tetrahedra(mmg_mesh, cellsNew, cellTagsNew, requiredCells));
+    CHKERRMMG_NONSTANDARD(MMG3D_Get_triangles(mmg_mesh, facesNew, faceTagsNew, requiredFaces));
 
     /* Reorder for consistency with DMPlex */
     for (i = 0; i < numCellsNew; ++i) CHKERRQ(DMPlexInvertCell(DM_POLYTOPE_TETRAHEDRON, &cellsNew[4*i]));
@@ -222,10 +222,10 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   CHKERRQ(DMPlexCreateFromCellListParallelPetsc(comm, dim, numCellsNew, numVerticesNew, PETSC_DECIDE, numCornersNew, PETSC_TRUE, cellsNew, dim, verticesNew, NULL, NULL, dmNew));
   switch (dim) {
   case 2:
-    CHKERRMMG_NONSTANDARD(MMG2D_Free_all, MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end);
+    CHKERRMMG_NONSTANDARD(MMG2D_Free_all(MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end));
     break;
   case 3:
-    CHKERRMMG_NONSTANDARD(MMG3D_Free_all, MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end);
+    CHKERRMMG_NONSTANDARD(MMG3D_Free_all(MMG5_ARG_start, MMG5_ARG_ppMesh, &mmg_mesh, MMG5_ARG_ppMet, &mmg_metric, MMG5_ARG_end));
     break;
   default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Mmg adaptation defined for dimension %" PetscInt_FMT, dim);
   }

@@ -38,7 +38,6 @@ typedef struct {
 */
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   AppCtx         user;
   PetscInt       Npx=PETSC_DECIDE,Npy=PETSC_DECIDE,Npz=PETSC_DECIDE;
   PetscMPIInt    size,rank;
@@ -53,7 +52,7 @@ int main(int argc,char **argv)
   PetscBool      Test_MatMatMult=PETSC_TRUE,Test_MatPtAP=PETSC_TRUE,Test_3D=PETSC_TRUE,flg;
   const PetscInt *ia,*ja;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-tol",&tol,NULL));
 
   user.ratio     = 2;
@@ -264,8 +263,8 @@ int main(int argc,char **argv)
   CHKERRQ(DMDestroy(&user.fine.da));
   CHKERRQ(DMDestroy(&user.coarse.da));
   CHKERRQ(MatDestroy(&P));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   Mat             A;
   PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
   CHKERRQ(TSSetEquationType(ts,TS_EQ_ODE_IMPLICIT));
@@ -59,8 +59,8 @@ int main(int argc,char **argv)
   if (ierr != PETSC_ERR_ARG_INCOMP) CHKERRQ(ierr);
 
   CHKERRQ(TSDestroy(&ts));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode IFunction(TS ts,PetscReal t,Vec x,Vec xdot,Vec f,void *ctx)

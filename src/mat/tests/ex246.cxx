@@ -50,9 +50,8 @@ int main(int argc,char **argv)
   PetscRandom    rdm;
   MatHtoolKernel kernel = GenEntries;
   MyIMatrix      *imatrix;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)NULL,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m_local",&m,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-symmetric",&sym,NULL));
@@ -94,8 +93,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscFree(gcoords));
   CHKERRQ(PetscFree(coords));
   delete imatrix;
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

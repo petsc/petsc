@@ -7,7 +7,6 @@ static char help[] = "Tests various 2-dimensional DMDA routines.\n\n";
 int main(int argc,char **argv)
 {
   PetscMPIInt      rank;
-  PetscErrorCode   ierr;
   PetscInt         M = 10,N = 8,m = PETSC_DECIDE;
   PetscInt         s =2,w=2,n = PETSC_DECIDE,nloc,l,i,j,kk;
   PetscInt         Xs,Xm,Ys,Ym,iloc,*iglobal;
@@ -22,7 +21,7 @@ int main(int argc,char **argv)
   DMDAStencilType  st = DMDA_STENCIL_BOX;
   AO               ao;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,400,&viewer));
 
   /* Readoptions */
@@ -165,8 +164,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&global));
   CHKERRQ(DMDestroy(&da));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

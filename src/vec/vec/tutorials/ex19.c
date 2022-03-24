@@ -19,10 +19,9 @@ int main(int argc,char **argv)
   PetscInt       i, n = 6, n_timesteps = 5;
   PetscBool      equal;
   MPI_Comm       comm;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char*) 0, help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_rank(comm, &rank));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-n", &n, NULL));
@@ -148,8 +147,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x2r));
   CHKERRQ(VecDestroy(&x3r));
   CHKERRQ(VecDestroy(&x4r));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -9,7 +9,6 @@ int main(int argc,char **argv)
   Mat            A,B,C,D;
   PetscScalar    a[] ={1.,1.,0.,0.,1.,1.,0.,0.,1.};
   PetscInt       ij[]={0,1,2};
-  PetscErrorCode ierr;
   PetscReal      fill=4.0;
   PetscMPIInt    size,rank;
   PetscBool      isequal;
@@ -17,7 +16,7 @@ int main(int argc,char **argv)
   PetscBool      test_hypre=PETSC_FALSE;
 #endif
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 #if defined(PETSC_HAVE_HYPRE)
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test_hypre",&test_hypre,NULL));
 #endif
@@ -94,8 +93,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(MatDestroy(&C));
   CHKERRQ(MatDestroy(&D));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* a test contributed by Tobias Neckel <neckel@in.tum.de>, 02 Jul 2008 */

@@ -1014,7 +1014,6 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
 
 int main(int argc, char *argv[])
 {
-  PetscErrorCode ierr;
   RD             rd;
   TS             ts;
   SNES           snes;
@@ -1023,7 +1022,7 @@ int main(int argc, char *argv[])
   PetscInt       steps;
   PetscReal      ftime;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   CHKERRQ(RDCreate(PETSC_COMM_WORLD,&rd));
   CHKERRQ(DMCreateGlobalVector(rd->da,&X));
   CHKERRQ(DMSetMatType(rd->da,MATAIJ));
@@ -1084,8 +1083,8 @@ int main(int argc, char *argv[])
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(RDDestroy(&rd));
   CHKERRQ(TSDestroy(&ts));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /*TEST
 

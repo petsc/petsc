@@ -14,9 +14,8 @@ int main(int argc,char **args)
   PetscViewer    viewer;
   char           dir[PETSC_MAX_PATH_LEN],name[256];
   PetscBool      flg,reset = PETSC_FALSE;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,NULL,help));
   CHKERRQ(PetscStrcpy(dir,"."));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-load_dir",dir,sizeof(dir),NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nmat",&nmat,NULL));
@@ -58,8 +57,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(KSPDestroy(&ksp));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -5,11 +5,10 @@ static char help[] = "Tests PetscHeapCreate()\n\n";
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscHeap      h;
   PetscInt       id,val,cnt,*values;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscHeapCreate(9,&h));
   CHKERRQ(PetscHeapAdd(h,0,100));
   CHKERRQ(PetscHeapAdd(h,1,19));
@@ -45,8 +44,8 @@ int main(int argc,char **args)
   CHKERRQ(PetscIntView(cnt,values,PETSC_VIEWER_STDOUT_SELF));
   CHKERRQ(PetscFree(values));
   CHKERRQ(PetscHeapDestroy(&h));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

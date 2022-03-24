@@ -9,7 +9,6 @@ static char help[]= "Test SF cuda stream synchronization in device to host commu
 #include <petscvec.h>
 int main(int argc,char **argv)
 {
-  PetscErrorCode     ierr;
   PetscInt           i,n=100000; /* Big enough to make the asynchronous copy meaningful */
   PetscScalar        *val;
   const PetscScalar  *yval;
@@ -19,7 +18,7 @@ int main(int argc,char **argv)
   VecScatter         vscat;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uni-processor test");
 
@@ -63,8 +62,8 @@ int main(int argc,char **argv)
   CHKERRQ(ISDestroy(&ix));
   CHKERRQ(ISDestroy(&iy));
   CHKERRQ(VecScatterDestroy(&vscat));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

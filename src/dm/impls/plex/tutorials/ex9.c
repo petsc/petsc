@@ -40,17 +40,16 @@ int main(int argc, char **argv)
   DMLabel        OQLabel;
   Vec            OQ;
   AppCtx         ctx;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &ctx));
   CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &ctx, &dm));
   CHKERRQ(DMPlexCheckCellShape(dm, ctx.report, ctx.condLimit));
   CHKERRQ(DMPlexComputeOrthogonalQuality(dm, NULL, ctx.tol, &OQ, &OQLabel));
   CHKERRQ(VecDestroy(&OQ));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

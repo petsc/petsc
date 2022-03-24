@@ -1523,9 +1523,8 @@ int main(int argc, char **argv)
 {
   DM             dm;
   AppCtx         user;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRQ(PetscLogStageRegister("create",&stage[0]));
   CHKERRQ(PetscLogStageRegister("distribute",&stage[1]));
   CHKERRQ(PetscLogStageRegister("interpolate",&stage[2]));
@@ -1542,8 +1541,8 @@ int main(int argc, char **argv)
     CHKERRQ(VecDestroy(&coords));
   }
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

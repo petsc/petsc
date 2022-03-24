@@ -11,11 +11,10 @@ int main(int argc,char **args)
   PetscRandom    rctx;
   PetscReal      norm;
   PetscInt       i,j,k,l,n = 27,its,bs = 2,Ii,J;
-  PetscErrorCode ierr;
   PetscBool      test_hermitian = PETSC_FALSE, convert = PETSC_FALSE;
   PetscScalar    v;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-herm",&test_hermitian,NULL));
@@ -146,8 +145,8 @@ int main(int argc,char **args)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

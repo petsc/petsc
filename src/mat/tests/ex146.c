@@ -18,13 +18,12 @@ int main(int argc,char **args)
   PetscScalar    a,*x_arr,*y_arr,*z_arr,enorm;
   Vec            fin,fout,fout1,ini,final;
   PetscRandom    rnd;
-  PetscErrorCode ierr;
   VecScatter     vecscat,vecscat1;
   IS             indx1,indx2;
   PetscInt       *indx3,k,l,*indx4;
   PetscInt       low,tempindx,tempindx1;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers. Your current scalar type is complex");
 #endif
@@ -161,6 +160,6 @@ int main(int argc,char **args)
   fftw_free(out); CHKERRQ(VecDestroy(&fout));
   fftw_free(in2); CHKERRQ(VecDestroy(&fout1));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

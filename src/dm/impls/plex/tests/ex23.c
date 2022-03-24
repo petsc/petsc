@@ -305,9 +305,8 @@ int main(int argc, char **argv)
   PetscInt       dim;
   PetscBool      simplex;
   AppCtx         user;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(ProcessOptions(&user));
   CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
   CHKERRQ(DMGetDimension(dm, &dim));
@@ -393,8 +392,8 @@ int main(int argc, char **argv)
     CHKERRQ(DMDestroy(&subdm));
   }
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

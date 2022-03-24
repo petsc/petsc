@@ -14,13 +14,12 @@ T*/
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       i,n = 4, inputindices[] = {0,1,3,4},bs = 3,issize;
   const PetscInt *indices;
   IS             set;
   PetscBool      isblock;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /*
     Create a block index set. The index set has 4 blocks each of size 3.
@@ -71,8 +70,8 @@ int main(int argc,char **argv)
   PetscCheckFalse(n != 4,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Number of blocks not 4!");
 
   CHKERRQ(ISDestroy(&set));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

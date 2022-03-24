@@ -91,7 +91,6 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
   PetscScalar   *coords;
   PetscInt      *cellStart, *vertStart, v;
   PetscInt       labelIdRange[2], labelId;
-  PetscErrorCode ierr;
   /* Read from file */
   char basename[CGIO_MAX_NAME_LENGTH+1];
   char buffer[CGIO_MAX_NAME_LENGTH+1];

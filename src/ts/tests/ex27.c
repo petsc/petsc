@@ -422,9 +422,8 @@ int main(int argc,char **argv)
   Vec            u, v;   /* problem vector */
   MPI_Comm       comm;
   AppCtx         user;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(ProcessOptions(comm, &user));
   /* Initialize objects and set initial conditions */
@@ -451,8 +450,8 @@ int main(int argc,char **argv)
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&sw));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

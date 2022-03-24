@@ -342,9 +342,8 @@ int main(int argc, char **argv)
   PetscScalar   *v;
   PetscScalar    area;
   CeedData       ceeddata;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(ProcessOptions(comm, &ctx));
   CHKERRQ(CreateMesh(comm, &ctx, &dm));

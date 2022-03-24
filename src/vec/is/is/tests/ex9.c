@@ -11,13 +11,12 @@ int main(int argc,char **argv)
   PetscViewer            viewer;
   PetscViewerFormat      format;
   PetscMPIInt            rank,size;
-  PetscErrorCode         ierr;
   PetscInt               i,nLocal = 3,nGlobal;
   PetscInt              *indices;
   PetscBool              flg, auto_offset = PETSC_FALSE;
   ISLocalToGlobalMapping l2g0, l2g1;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_rank(comm, &rank));
   CHKERRMPI(MPI_Comm_size(comm, &size));
@@ -93,8 +92,8 @@ int main(int argc,char **argv)
   CHKERRQ(ISLocalToGlobalMappingDestroy(&l2g0));
   CHKERRQ(ISLocalToGlobalMappingDestroy(&l2g1));
   CHKERRQ(PetscFree(indices));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

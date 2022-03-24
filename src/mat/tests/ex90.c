@@ -45,7 +45,6 @@ static char help[] ="Tests MatPtAP() \n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   Mat            A,P,PtAP;
   PetscInt       i1[] = {0, 3, 5}, i2[] = {0,2,5};
   PetscInt       j1[] = {0, 1, 3, 1, 2}, j2[] = {0, 2, 1, 2, 3};
@@ -56,7 +55,7 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   PetscMPIInt    rank,size;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_rank(comm,&rank));
   CHKERRMPI(MPI_Comm_size(comm,&size));
@@ -74,8 +73,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&P));
   CHKERRQ(MatDestroy(&PtAP));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

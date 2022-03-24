@@ -67,14 +67,13 @@ static PetscErrorCode TestStride(void)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(TestGeneral());
   CHKERRQ(TestBlock());
   CHKERRQ(TestStride());
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

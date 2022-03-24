@@ -26,18 +26,16 @@ static char help[] = "Mini-app to benchmark matrix--matrix multiplication\n\n";
 
 int main(int argc, char** argv)
 {
-  Mat            A, C, D, E;
-  PetscInt       nbs = 10, ntype = 10, nN = 8, m, M, trial = 5;
-  PetscViewer    viewer;
-  PetscInt       bs[10], N[8];
-  char           *type[10];
-  PetscMPIInt    size;
-  PetscBool      flg, cuda, maij = PETSC_FALSE, check = PETSC_FALSE, trans = PETSC_FALSE, convert = PETSC_FALSE, mkl;
-  char           file[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
+  Mat          A, C, D, E;
+  PetscInt     nbs             = 10, ntype = 10, nN = 8, m, M, trial = 5;
+  PetscViewer  viewer;
+  PetscInt     bs[10], N[8];
+  char        *type[10];
+  PetscMPIInt  size;
+  PetscBool    flg, cuda, maij = PETSC_FALSE, check = PETSC_FALSE, trans = PETSC_FALSE, convert = PETSC_FALSE, mkl;
+  char         file[PETSC_MAX_PATH_LEN];
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
-  if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only");
   CHKERRQ(PetscOptionsGetString(NULL, NULL, "-f", file, PETSC_MAX_PATH_LEN, &flg));
@@ -401,15 +399,11 @@ int main(int argc, char** argv)
         break;
       }
     }
-    if (E != A) {
-      CHKERRQ(MatDestroy(&E));
-    }
+    if (E != A) CHKERRQ(MatDestroy(&E));
     CHKERRQ(MatDestroy(&A));
   }
-  for (m = 0; m < ntype; ++m) {
-    CHKERRQ(PetscFree(type[m]));
-  }
-  ierr = PetscFinalize();
+  for (m = 0; m < ntype; ++m) CHKERRQ(PetscFree(type[m]));
+  CHKERRQ(PetscFinalize());
   return 0;
 }
 

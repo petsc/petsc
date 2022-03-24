@@ -5,7 +5,6 @@ static char help[] = "Scatters from a parallel vector into sequential vectors.\n
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       n   = 5,idx1[2] = {0,3},idx2[2] = {1,4};
   PetscScalar    one = 1.0,two = 2.0;
@@ -13,7 +12,7 @@ int main(int argc,char **argv)
   IS             is1,is2;
   VecScatter     ctx = 0;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
@@ -43,8 +42,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&y));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

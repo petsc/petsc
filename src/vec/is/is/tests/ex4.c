@@ -5,11 +5,10 @@ static char help[] = "Tests ISToGeneral().\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       step = 2;
   IS             is;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-step",&step,NULL));
   CHKERRQ(ISCreateStride(PETSC_COMM_SELF,10,0,step,&is));
@@ -18,8 +17,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(ISDestroy(&is));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

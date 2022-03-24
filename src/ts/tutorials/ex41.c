@@ -153,7 +153,6 @@ int main(int argc,char **argv)
 {
   TS             ts;            /* ODE integrator */
   Vec            U;             /* solution will be stored here */
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       n = 2;
   PetscScalar    *u;
@@ -165,7 +164,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -265,8 +264,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&U));
   CHKERRQ(TSDestroy(&ts));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

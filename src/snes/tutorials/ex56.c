@@ -229,7 +229,7 @@ int main(int argc,char **args)
                                     "-ex56_dm_refine 8",
                                     "-ex56_dm_refine 9"};
   PetscFunctionBeginUser;
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_rank(comm, &rank));
   /* options */
@@ -518,8 +518,8 @@ int main(int argc,char **args)
                        (double)(mdisp[iter]-mdisp[iter-1]),(double)err[iter],(double)(PetscLogReal(err[iter-1]/err[iter])/PetscLogReal(2.)));CHKERRQ(ierr);
   }
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

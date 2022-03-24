@@ -626,9 +626,8 @@ int main (int argc, char *argv[])
   MPI_Comm       comm;
   DM             dm, sw;
   AppCtx         user;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(ProcessOptions(comm, &user));
   CHKERRQ(CreateMesh(comm, &dm, &user));
@@ -639,8 +638,8 @@ int main (int argc, char *argv[])
   CHKERRQ(TestFieldGradientProjection(dm, sw, &user));
   CHKERRQ(DMDestroy(&dm));
   CHKERRQ(DMDestroy(&sw));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

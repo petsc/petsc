@@ -7,7 +7,6 @@ int main(int argc,char **args)
 {
   Mat            A,RHS,C,F,X;
   Vec            u,x,b;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       m,n,nfact,nsolve,nrhs,ipack=0;
   PetscReal      norm,tol=1.e-10;
@@ -22,7 +21,7 @@ int main(int argc,char **args)
   PetscViewer    fd;              /* viewer */
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
 
   /* Determine file from which we read the matrix A */
@@ -309,8 +308,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(VecDestroy(&u));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

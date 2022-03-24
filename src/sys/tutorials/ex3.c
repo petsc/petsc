@@ -22,12 +22,11 @@ T*/
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
   int            i,imax=10000,icount;
   PetscLogEvent  USER_EVENT,check_USER_EVENT;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   /*
      Create a new user-defined event.
@@ -76,8 +75,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscSleep(0.5));
   CHKERRQ(PetscLogEventEnd(USER_EVENT,0,0,0,0));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

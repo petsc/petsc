@@ -23,7 +23,6 @@ int FormElementRhs(PetscReal x,PetscReal y,PetscReal H,PetscScalar *r)
 int main(int argc,char **args)
 {
   Mat            C;
-  PetscErrorCode ierr;
   PetscInt       i,m = 2,N,M,its,idx[4],count,*rows;
   PetscScalar    val,Ke[16],r[4];
   PetscReal      x,y,h,norm;
@@ -32,7 +31,7 @@ int main(int argc,char **args)
   PetscMPIInt    rank;
   PetscBool      usezerorows = PETSC_TRUE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-usezerorows",&usezerorows,NULL));
@@ -160,8 +159,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&u));
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(MatDestroy(&C));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

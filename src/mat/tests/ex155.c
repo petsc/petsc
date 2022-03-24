@@ -4,7 +4,6 @@ static char help[]="This program illustrates the use of PETSc-fftw interface for
 /*extern PetscErrorCode MatCreateVecsFFT(Mat,Vec *,Vec *,Vec *);*/
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   PetscInt       N0=4096,N1=4096,N2=256,N3=10,N4=10,N=N0*N1;
   PetscRandom    rdm;
@@ -14,7 +13,7 @@ int main(int argc,char **args)
   PetscInt       DIM, dim[5],vsize,row,col;
   PetscReal      fac;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
@@ -70,7 +69,7 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&input));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(PetscRandomDestroy(&rdm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 
 }

@@ -7,13 +7,12 @@ int main(int argc,char **argv)
 {
   Mat            mat,submat,submat1,*submatrices;
   PetscInt       m = 10,n = 10,i = 4,tmp,rstart,rend;
-  PetscErrorCode ierr;
   IS             irow,icol;
   PetscScalar    value = 1.0;
   PetscViewer    sviewer;
   PetscBool      allA = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON));
   CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_COMMON));
 
@@ -104,8 +103,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroySubMatrices(1,&submatrices));
   CHKERRQ(MatDestroy(&submat));
   CHKERRQ(MatDestroy(&mat));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

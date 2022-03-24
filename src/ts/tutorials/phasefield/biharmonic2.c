@@ -40,7 +40,6 @@ int main(int argc,char **argv)
   Vec            x,r;                          /* solution, residual vectors */
   Mat            J;                            /* Jacobian matrix */
   PetscInt       steps,Mx;
-  PetscErrorCode ierr;
   DM             da;
   MatFDColoring  matfdcoloring;
   ISColoring     iscoloring;
@@ -52,7 +51,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   ctx.kappa = 1.0;
   CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-kappa",&ctx.kappa,NULL));
   ctx.cahnhillard = PETSC_FALSE;
@@ -155,8 +154,8 @@ int main(int argc,char **argv)
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&da));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 typedef struct {PetscScalar w,u;} Field;

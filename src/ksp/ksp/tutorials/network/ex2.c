@@ -262,7 +262,6 @@ PetscErrorCode FormOperator(DM networkdm,Mat A,Vec b)
 
 int main(int argc,char ** argv)
 {
-  PetscErrorCode    ierr;
   PetscInt          i, nbranch = 0, eStart, eEnd, vStart, vEnd;
   PetscInt          seed = 0, nnode = 0;
   PetscMPIInt       size, rank;
@@ -278,7 +277,7 @@ int main(int argc,char ** argv)
   PetscLogStage stage[3];
 #endif
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
@@ -358,8 +357,8 @@ int main(int argc,char ** argv)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(KSPDestroy(&ksp));
   CHKERRQ(DMDestroy(&networkdm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

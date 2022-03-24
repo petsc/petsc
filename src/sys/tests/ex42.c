@@ -12,9 +12,8 @@ int main(int argc, char **argv)
   PetscLogDouble t_add = 0;
   PetscLogDouble t_has = 0;
   PetscLogDouble t_del = 0;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
   CHKERRQ(PetscHSetICreate(&table));
 
@@ -53,8 +52,8 @@ int main(int argc, char **argv)
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"N = %" PetscInt_FMT " - table size: %" PetscInt_FMT ", add: %g, has: %g, del: %g\n",N,n,t_add,t_has,t_del));
 
   CHKERRQ(PetscHSetIDestroy(&table));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

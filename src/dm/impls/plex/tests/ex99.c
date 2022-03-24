@@ -97,9 +97,8 @@ int main(int argc, char **argv)
   char              cmd[PETSC_MAX_PATH_LEN*4];
   PetscBool         set,flg;
   FILE              *fp;
-  PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
 
   CHKERRQ(PetscStrncpy(geodir, "${PETSC_DIR}/share/petsc/datafiles/meshes", sizeof(geodir)));
   CHKERRQ(PetscOptionsGetenv(PETSC_COMM_SELF, "GMSH", path, sizeof(path), &set));
@@ -157,8 +156,8 @@ int main(int argc, char **argv)
   CHKERRQ(DMDestroy(&dm));
 
 finish:
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -10,14 +10,13 @@ static char help[] = "Benchmarking cudaPointerGetAttributes() time\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode               ierr;
   PetscInt                     i,n=2000;
   cudaError_t                  cerr;
   PetscScalar                  **ptrs;
   PetscLogDouble               tstart,tend,time;
   struct cudaPointerAttributes attr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   CHKERRQ(PetscMalloc1(n,&ptrs));
@@ -42,8 +41,8 @@ int main(int argc,char **argv)
   }
   CHKERRQ(PetscFree(ptrs));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

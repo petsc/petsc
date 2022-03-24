@@ -11,7 +11,6 @@ T*/
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode  ierr;
   Mat             A, Aself;
   Vec             b, bself;
 #if defined(PETSC_USE_INFO)
@@ -25,7 +24,7 @@ int main(int argc, char **argv)
   char            **testClassesStrArr;
   FILE            *infoFile;
 
-  ierr = PetscInitialize(&argc, &argv,(char *) 0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv,(char *) 0, help));
 
   /*
      Examples on how to call PetscInfo() using different objects with or without arguments, and different communicators.
@@ -165,7 +164,7 @@ int main(int argc, char **argv)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(PetscFinalize());
-  return ierr;
+  return 0;
 }
 
 /*TEST

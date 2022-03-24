@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
   AppCtx         ctx;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &ctx));
   CHKERRQ(DMPlexCreateFromFile(PETSC_COMM_WORLD, ctx.filename, "ex37_plex", PETSC_TRUE, &surface));
   CHKERRQ(PetscObjectSetName((PetscObject) surface, "CAD Surface"));
@@ -96,8 +96,8 @@ int main(int argc, char *argv[])
 
   CHKERRQ(DMDestroy(&dm));
   CHKERRQ(DMDestroy(&surface));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

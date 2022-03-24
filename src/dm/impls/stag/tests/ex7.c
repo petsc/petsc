@@ -4,7 +4,6 @@ static char help[] = "Test DMStag 3d periodic and ghosted boundary conditions\n\
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode  ierr;
   DM              dm;
   Vec             vec,vecLocal1,vecLocal2;
   PetscScalar     *a,****a1,****a2,expected;
@@ -12,7 +11,7 @@ int main(int argc,char **argv)
   DMBoundaryType  boundaryTypex,boundaryTypey,boundaryTypez;
   PetscMPIInt     rank;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   dof0 = 1;
   dof1 = 1;
@@ -171,8 +170,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&vecLocal1));
   CHKERRQ(VecDestroy(&vecLocal2));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

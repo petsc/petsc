@@ -3,13 +3,12 @@ static char help[] = "Test MatSetValuesCOO for MPIAIJ and its subclasses \n\n";
 #include <petscmat.h>
 int main(int argc,char **args)
 {
-  PetscErrorCode  ierr;
   Mat             A,B;
   PetscInt        k;
-  const PetscInt  M = 18,N = 18;
+  const PetscInt  M   = 18,N = 18;
   PetscMPIInt     rank,size;
   PetscBool       equal;
-  PetscScalar     *vals;
+  PetscScalar    *vals;
   PetscBool       flg = PETSC_FALSE;
 
   /* Construct 18 x 18 matrices, which are big enough to have complex communication patterns but still small enough for debugging */
@@ -26,7 +25,7 @@ int main(int argc,char **args)
     PetscInt *i,*j,n;
   } coo[3] = {{i0,j0,sizeof(i0)/sizeof(PetscInt)}, {i1,j1,sizeof(i1)/sizeof(PetscInt)}, {i2,j2,sizeof(i2)/sizeof(PetscInt)}};
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-ignore_remote",&flg,NULL));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
@@ -34,9 +33,9 @@ int main(int argc,char **args)
   PetscCheckFalse(size > 3,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"This test requires at most 3 processes");
 
   CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N);
+  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N));
   CHKERRQ(MatSetType(A,MATAIJ));
-  ierr = MatSeqAIJSetPreallocation(A,2,NULL);
+  CHKERRQ(MatSeqAIJSetPreallocation(A,2,NULL));
   CHKERRQ(MatMPIAIJSetPreallocation(A,2,NULL,2,NULL));
   CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
   CHKERRQ(MatSetOption(A,MAT_IGNORE_OFF_PROC_ENTRIES,flg));
@@ -49,7 +48,7 @@ int main(int argc,char **args)
   CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   CHKERRQ(MatCreate(PETSC_COMM_WORLD,&B));
-  ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,N);
+  CHKERRQ(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,N));
   CHKERRQ(MatSetFromOptions(B));
   CHKERRQ(MatSetOption(B,MAT_IGNORE_OFF_PROC_ENTRIES,flg));
   CHKERRQ(MatSetPreallocationCOO(B,coo[rank].n,coo[rank].i,coo[rank].j));
@@ -70,8 +69,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&B));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -8,7 +8,6 @@ static char help[] = "Tests MatSetValuesBlockedStencil() in 3d.\n\n";
 int main(int argc,char **argv)
 {
   PetscInt        M = 3,N = 4,P = 2,s = 1,w = 2,i, m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE;
-  PetscErrorCode  ierr;
   DM              da;
   Mat             mat;
   DMDAStencilType stencil_type = DMDA_STENCIL_BOX;
@@ -16,7 +15,7 @@ int main(int argc,char **argv)
   MatStencil      idx[2],idy[2];
   PetscScalar     *values;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-P",&P,NULL));
@@ -49,6 +48,6 @@ int main(int argc,char **argv)
   CHKERRQ(PetscFree(values));
   CHKERRQ(MatDestroy(&mat));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

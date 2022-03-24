@@ -7,12 +7,11 @@ int main(int argc, char ** argv)
 {
   Mat            A, B, C, C1;
   PetscMPIInt    size;
-  PetscErrorCode ierr;
   PetscInt       i,ia[2] = { 0, 2 }, ja[2] = { 0, 1 }, lda = 4;
   PetscScalar    a[2] = { 1.0, 1.0 }, *data;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc, &argv, (char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must use 2 processors");
 
@@ -57,8 +56,8 @@ int main(int argc, char ** argv)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(PetscFree(data));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

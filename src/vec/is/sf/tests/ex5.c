@@ -5,17 +5,16 @@ static char help[]= "Test PetscSFFCompose when the ilocal arrays are not identit
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;
-  PetscSF        sfA, sfB, sfBA, sfAAm, sfBBm, sfAm, sfBm;
-  PetscInt       nrootsA, nleavesA, nrootsB, nleavesB;
-  PetscInt       *ilocalA, *ilocalB;
-  PetscSFNode    *iremoteA, *iremoteB;
-  PetscMPIInt    rank,size;
-  PetscInt       i,m,n,k,nl = 2,mA,mB,nldataA,nldataB;
-  PetscInt       *rdA,*rdB,*ldA,*ldB;
-  PetscBool      inverse = PETSC_FALSE;
+  PetscSF      sfA, sfB, sfBA, sfAAm, sfBBm, sfAm, sfBm;
+  PetscInt     nrootsA, nleavesA, nrootsB, nleavesB;
+  PetscInt    *ilocalA, *ilocalB;
+  PetscSFNode *iremoteA, *iremoteB;
+  PetscMPIInt  rank,size;
+  PetscInt     i,m,n,k,nl = 2,mA,mB,nldataA,nldataB;
+  PetscInt    *rdA,*rdB,*ldA,*ldB;
+  PetscBool    inverse    = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nl",&nl,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-explicit_inverse",&inverse,NULL));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
@@ -144,9 +143,8 @@ int main(int argc, char **argv)
   CHKERRQ(PetscSFDestroy(&sfAAm));
   CHKERRQ(PetscSFDestroy(&sfBBm));
 
-  ierr = PetscFinalize();
-
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

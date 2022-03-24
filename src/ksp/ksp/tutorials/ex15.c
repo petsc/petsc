@@ -53,7 +53,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscBool      user_defined_pc = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
@@ -213,8 +213,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&u));  CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&b));  CHKERRQ(MatDestroy(&A));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 
 }
 

@@ -19,7 +19,6 @@ const char *kernelSrc =                                       "\n" \
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode    ierr;
   PetscInt          size=5;
   Vec               x;
   cl_program        prg;
@@ -29,7 +28,7 @@ int main(int argc,char **argv)
   PETSC_UINTPTR_T   clmemptr;
   const size_t      gsize=10, lsize=2;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
   CHKERRQ(VecSetSizes(x,size,PETSC_DECIDE));
@@ -68,8 +67,8 @@ int main(int argc,char **argv)
   clReleaseProgram(prg);
   clReleaseKernel(knl);
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

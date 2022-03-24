@@ -6,7 +6,6 @@ int main(int argc,char **args)
 {
   Mat            A,RHS,C,F,X;
   Vec            u,x,b;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       m,n,nsolve,nrhs;
   PetscReal      norm,tol=PETSC_SQRT_MACHINE_EPSILON;
@@ -16,7 +15,7 @@ int main(int argc,char **args)
   PetscViewer    fd;
   char           file[PETSC_MAX_PATH_LEN];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor test");
   /* Determine which type of solver we want to test for */
@@ -180,8 +179,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(VecDestroy(&u));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -6,14 +6,13 @@ static char help[] = "Tests vector scatter-gather operations.  Input arguments a
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       n   = 5,idx1[2] = {0,3},idx2[2] = {1,4};
   PetscScalar    one = 1.0,two = 2.0;
   Vec            x,y;
   IS             is1,is2;
   VecScatter     ctx = 0;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* create two vector */
@@ -45,8 +44,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&y));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

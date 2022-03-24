@@ -13,14 +13,13 @@ static char help[] = "This example is intended for showing how subvectors can\n\
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode    ierr;
   PetscInt          N = 10,i;
   Vec               X,Y,F,X1,Y1,X2,Y2,F1,F2;
   PetscScalar       value,zero=0.0;
   const PetscScalar *x,*y;
   PetscScalar       *f;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create vectors X,Y and F and set values in it*/
   CHKERRQ(VecCreate(PETSC_COMM_SELF,&X));
@@ -89,6 +88,6 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&Y2));
   CHKERRQ(VecDestroy(&F2));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

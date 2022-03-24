@@ -5,7 +5,6 @@ static char help[]= "Tests ISView() and ISLoad() \n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode         ierr;
   PetscInt               n = 3, *izero, j, i;
   PetscInt               ix[3][3][3] = {{{3,5,4},{1,7,9},{0,2,8}},
                                         {{0,2,8},{3,5,4},{1,7,9}},
@@ -15,7 +14,7 @@ int main(int argc,char **argv)
   PetscViewer            vx,vl;
   PetscBool              equal;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size > 3,PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Example only works with up to three processes");
@@ -117,8 +116,8 @@ int main(int argc,char **argv)
   }
   CHKERRQ(PetscFree(izero));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -39,9 +39,8 @@ int main(int argc, char *argv[])
   PetscReal      *eps;
   himaInfo       hinfo;
   PetscRandom    ran;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&ran));
   CHKERRQ(PetscRandomSetFromOptions(ran));
 
@@ -88,8 +87,8 @@ int main(int argc, char *argv[])
   CHKERRQ(PetscFree(vol));
   CHKERRQ(PetscFree(eps));
   CHKERRQ(PetscRandomDestroy(&ran));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode stdNormalArray(PetscReal *eps, PetscInt numdim, PetscRandom ran)

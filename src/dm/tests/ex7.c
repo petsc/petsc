@@ -7,7 +7,6 @@ int main(int argc,char **argv)
 {
   PetscMPIInt      rank;
   PetscInt         M=8,dof=1,stencil_width=1,i,start,end,P=5,N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE,pt = 0,st = 0;
-  PetscErrorCode   ierr;
   PetscBool        flg = PETSC_FALSE,flg2,flg3;
   DMBoundaryType   periodic;
   DMDAStencilType  stencil_type;
@@ -19,7 +18,7 @@ int main(int argc,char **argv)
   char             filename[64];
   FILE             *file;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
@@ -88,8 +87,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&local));
   CHKERRQ(VecDestroy(&global));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

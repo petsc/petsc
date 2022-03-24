@@ -324,9 +324,8 @@ int main(int argc, char **argv)
   DM             dm;   /* problem definition */
   Vec            u, r; /* solution and residual */
   AppCtx         user; /* user-defined work context */
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(PetscBagCreate(PETSC_COMM_WORLD, sizeof(Parameter), &user.bag));
   CHKERRQ(SetupParameters(&user));
   CHKERRQ(PetscBagSetFromOptions(user.bag));
@@ -368,8 +367,8 @@ int main(int argc, char **argv)
   CHKERRQ(DMDestroy(&dm));
   CHKERRQ(SNESDestroy(&snes));
   CHKERRQ(PetscBagDestroy(&user.bag));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

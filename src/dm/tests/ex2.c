@@ -10,7 +10,6 @@ int main(int argc,char **argv)
   PetscMPIInt            rank;
   PetscInt               M  = 13,s=1,dof=1;
   DMBoundaryType         bx = DM_BOUNDARY_PERIODIC;
-  PetscErrorCode         ierr;
   DM                     da;
   PetscViewer            viewer;
   Vec                    local,global;
@@ -19,7 +18,7 @@ int main(int argc,char **argv)
   PetscBool              flg = PETSC_FALSE;
   ISLocalToGlobalMapping is;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",280,480,600,200,&viewer));
   CHKERRQ(PetscViewerDrawGetDraw(viewer,0,&draw));
   CHKERRQ(PetscDrawSetDoubleBuffer(draw));
@@ -75,8 +74,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&global));
   CHKERRQ(VecDestroy(&local));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

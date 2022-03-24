@@ -7,14 +7,13 @@ int main(int argc,char **args)
 {
   Mat            C,A;
   PetscInt       i,j,m = 5,n = 5,Ii,J;
-  PetscErrorCode ierr;
   PetscScalar    v,five = 5.0,one = 1.0;
   IS             isrow,row,col;
   Vec            x,u,b;
   PetscReal      norm;
   MatFactorInfo  info;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
@@ -68,8 +67,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(MatDestroy(&C));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

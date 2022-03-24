@@ -4,13 +4,12 @@ static char help[] = "Tests VecMDot(),VecDot(),VecMTDot(), and VecTDot()\n";
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;
   Vec            *V,t;
   PetscInt       i,j,reps,n=15,k=6;
   PetscRandom    rctx;
   PetscScalar    *val_dot,*val_mdot,*tval_dot,*tval_mdot;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-k",&k,NULL));
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Test with %" PetscInt_FMT " random vectors of length %" PetscInt_FMT "\n",k,n));
@@ -61,8 +60,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroyVecs(k,&V));
   CHKERRQ(VecDestroy(&t));
   CHKERRQ(PetscRandomDestroy(&rctx));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

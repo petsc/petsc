@@ -18,7 +18,7 @@ int main(int argc, char **args)
     Vec            X, Y;
     PetscReal      norm;
 
-    ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+    CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
     CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
     CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
@@ -82,8 +82,8 @@ int main(int argc, char **args)
     CHKERRQ(VecDestroy(&X));
     CHKERRQ(VecDestroy(&Y));
 
-    ierr = PetscFinalize();
-    return ierr;
+    CHKERRQ(PetscFinalize());
+    return 0;
 }
 
 /*TEST

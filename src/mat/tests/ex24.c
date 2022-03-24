@@ -26,14 +26,13 @@ PetscErrorCode FormJacobian(Mat A)
 
 int main(int argc, char *argv[])
 {
-  PetscErrorCode ierr;
   Mat            J;
   PetscMPIInt    size;
   PetscInt       M=8;
   ISColoring     iscoloring;
   MatColoring    coloring;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   CHKERRQ(MatCreate(PETSC_COMM_WORLD,&J));
@@ -60,8 +59,8 @@ int main(int argc, char *argv[])
   CHKERRQ(ISColoringDestroy(&iscoloring));
   CHKERRQ(MatColoringDestroy(&coloring));
   CHKERRQ(MatDestroy(&J));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

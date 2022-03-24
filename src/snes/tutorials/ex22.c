@@ -73,14 +73,13 @@ extern PetscErrorCode DMCreateMatrix_MF(DM,Mat*);
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   UserCtx        user;
   DM             red,da;
   SNES           snes;
   DM             packer;
   PetscBool      use_monitor = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   /* Hardwire several options; can be changed at command line */
   CHKERRQ(PetscOptionsInsertString(NULL,common_options));
@@ -129,8 +128,8 @@ int main(int argc,char **argv)
     CHKERRQ(PetscViewerDestroy(&user.u_lambda_viewer));
     CHKERRQ(PetscViewerDestroy(&user.fu_lambda_viewer));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 typedef struct {

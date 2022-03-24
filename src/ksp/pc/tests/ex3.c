@@ -12,13 +12,12 @@ int main(int argc,char **args)
   Vec            b,ustar,u;  /* vectors (RHS, exact solution, approx solution) */
   PC             pc;           /* PC context */
   KSP            ksp;          /* KSP context */
-  PetscErrorCode ierr;
   PetscInt       n = 10,i,its,col[3];
   PetscScalar    value[3];
   KSPType        kspname;
   PCType         pcname;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* Create and initialize vectors */
@@ -82,8 +81,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(MatDestroy(&mat));
   CHKERRQ(PCDestroy(&pc));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

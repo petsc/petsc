@@ -21,7 +21,6 @@ extern PetscErrorCode ComputeRHSMatrix(PetscInt,PetscInt,Mat*);
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   Vec            x,b,y,b1;
   DM             da;
@@ -33,7 +32,7 @@ int main(int argc,char **args)
   PetscReal      norm,tol = 1000*PETSC_MACHINE_EPSILON;
   PetscBool      InplaceLU=PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only");
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
@@ -142,8 +141,8 @@ int main(int argc,char **args)
   CHKERRQ(ISDestroy(&perm));
   CHKERRQ(ISDestroy(&iperm));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode ComputeRHS(DM da,Vec b)

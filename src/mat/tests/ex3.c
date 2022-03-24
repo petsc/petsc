@@ -8,11 +8,10 @@ int main(int argc,char **args)
   Mat            C;
   Vec            u,x,b,e;
   PetscInt       i,n = 10,midx[3];
-  PetscErrorCode ierr;
   PetscScalar    v[3];
   PetscReal      omega = 1.0,norm;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-omega",&omega,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
@@ -55,8 +54,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(VecDestroy(&u));
   CHKERRQ(VecDestroy(&e));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

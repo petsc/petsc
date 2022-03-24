@@ -4,13 +4,12 @@ static char help[] = "Test CPU/GPU memory leaks, MatMult and MatMultTransposeAdd
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
-  PetscMPIInt    rank,size;
-  Mat            A;
-  PetscInt       i,j,k,n=3,vstart,rstart,rend,margin;
-  Vec            x,y;
+  PetscMPIInt rank,size;
+  Mat         A;
+  PetscInt    i,j,k,n = 3,vstart,rstart,rend,margin;
+  Vec         x,y;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
@@ -54,11 +53,11 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&y));
-  ierr = PetscFinalize();
+  CHKERRQ(PetscFinalize());
 
   /* Uncomment this line if you want to use "cuda-memcheck --leaf-check full" to check this program */
   /*cudaDeviceReset();*/
-  return ierr;
+  return 0;
 }
 
 /*TEST

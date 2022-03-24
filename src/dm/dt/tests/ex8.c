@@ -9,9 +9,8 @@ int main(int argc, char **argv)
   PetscInt       d, n, maxdim = 4;
   PetscInt       *btupprev, *btup;
   PetscInt       *gtup;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRQ(PetscMalloc3(maxdim + 1, &btup, maxdim + 1, &btupprev, maxdim, &gtup));
   for (d = 0; d <= maxdim; d++) {
     for (n = 0; n <= d + 2; n++) {
@@ -47,8 +46,8 @@ int main(int argc, char **argv)
     }
   }
   CHKERRQ(PetscFree3(btup, btupprev, gtup));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

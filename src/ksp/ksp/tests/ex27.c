@@ -19,14 +19,13 @@ int main(int argc,char **args)
   PetscViewer    fd;             /* viewer */
   char           file[1][PETSC_MAX_PATH_LEN];     /* input file name */
   PetscBool      flg;
-  PetscErrorCode ierr;
   PetscInt       M,N,i,its;
   PetscReal      norm;
   PetscScalar    val=1.0;
   PetscMPIInt    size;
   PC             pc;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -121,8 +120,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A)); CHKERRQ(VecDestroy(&b));
   CHKERRQ(VecDestroy(&u)); CHKERRQ(VecDestroy(&x));
   CHKERRQ(KSPDestroy(&ksp));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode PCShellApply_Matinv(PC pc,Vec xin,Vec xout)

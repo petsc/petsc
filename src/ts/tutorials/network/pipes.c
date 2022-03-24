@@ -617,7 +617,6 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm,PetscInt pipesCase,Wash *wash_ptr
 /* ------------------------------------------------------- */
 int main(int argc,char ** argv)
 {
-  PetscErrorCode    ierr;
   Wash              wash;
   Junction          junctions,junction;
   Pipe              pipe,pipes;
@@ -636,7 +635,7 @@ int main(int argc,char ** argv)
   DMNetworkMonitor  monitor;
   MPI_Comm          comm;
 
-  ierr = PetscInitialize(&argc,&argv,"pOption",help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,"pOption",help));
 
   /* Read runtime options */
   CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-case", &pipesCase, NULL));
@@ -734,7 +733,7 @@ int main(int argc,char ** argv)
   /* Network partitioning and distribution of data */
   CHKERRQ(DMNetworkDistribute(&networkdm,0));
   if (viewdm) {
-    PetscPrintf(PETSC_COMM_WORLD,"\nAfter DMNetworkDistribute, DMView:\n");CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\nAfter DMNetworkDistribute, DMView:\n"));
     CHKERRQ(DMView(networkdm,PETSC_VIEWER_STDOUT_WORLD));
   }
 
@@ -754,11 +753,11 @@ int main(int argc,char ** argv)
     CHKERRQ(DMNetworkGetComponent(networkdm,e,0,&type,(void**)&pipe,NULL));
 
     wash->nnodes_loc += pipe->nnodes; /* local total number of nodes, will be used by PipesView() */
-    ierr = PipeSetParameters(pipe,
-                             600.0,          /* length */
-                             0.5,            /* diameter */
-                             1200.0,         /* a */
-                             0.018);CHKERRQ(ierr);    /* friction */
+    CHKERRQ(PipeSetParameters(pipe,
+                              600.0,   /* length   */
+                              0.5,     /* diameter */
+                              1200.0,  /* a        */
+                              0.018)); /* friction */
     CHKERRQ(PipeSetUp(pipe));
 
     if (userJac) {
@@ -792,9 +791,7 @@ int main(int argc,char ** argv)
   CHKERRQ(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER));
   CHKERRQ(TSSetTimeStep(ts,0.1));
   CHKERRQ(TSSetType(ts,TSBEULER));
-  if (size == 1 && monipipes) {
-    CHKERRQ(TSMonitorSet(ts, TSDMNetworkMonitor, monitor, NULL));
-  }
+  if (size == 1 && monipipes) CHKERRQ(TSMonitorSet(ts, TSDMNetworkMonitor, monitor, NULL));
   CHKERRQ(TSSetFromOptions(ts));
 
   CHKERRQ(WASHSetInitialSolution(networkdm,X,wash));
@@ -863,8 +860,8 @@ int main(int argc,char ** argv)
   if (rank) {
     CHKERRQ(PetscFree2(junctions,pipes));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -3604,7 +3604,6 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSPARSE(void)
 static PetscErrorCode MatResetPreallocationCOO_SeqAIJCUSPARSE(Mat mat)
 {
   Mat_SeqAIJCUSPARSE* cusp = (Mat_SeqAIJCUSPARSE*)mat->spptr;
-  cudaError_t         cerr;
 
   PetscFunctionBegin;
   if (!cusp) PetscFunctionReturn(0);

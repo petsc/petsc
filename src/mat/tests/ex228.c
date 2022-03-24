@@ -19,11 +19,10 @@ int main(int argc,char **args)
   PetscRandom    rdm;       /* for creating random input */
   PetscScalar    a;         /* used to scale output */
   PetscReal      enorm;     /* norm for sanity check */
-  PetscErrorCode ierr;      /* to catch bugs, if any */
   PetscInt       n=10,N=1;  /* FFT dimension params */
   PetscInt       DIM,dim[5];/* FFT params */
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* To create random input vector */
@@ -69,7 +68,7 @@ int main(int argc,char **args)
     CHKERRQ(VecScale(z1,a));
     CHKERRQ(VecAXPY(z1,-1.0,x));
     CHKERRQ(VecNorm(z1,NORM_1,&enorm));
-    if (enorm > 1.e-9)CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"  Error norm of |x - z1| %g\n",enorm));
+    if (enorm > 1.e-9) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"  Error norm of |x - z1| %g\n",enorm));
 
     /* free spaces */
     CHKERRQ(VecDestroy(&x1));
@@ -82,8 +81,8 @@ int main(int argc,char **args)
   }
 
   CHKERRQ(PetscRandomDestroy(&rdm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

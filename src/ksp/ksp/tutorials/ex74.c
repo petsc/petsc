@@ -101,7 +101,7 @@ int main(int argc, char **argv)
   PetscFunctionList IRKList = NULL;
   char              irktype[256] = IRKGAUSS;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscFunctionListAdd(&IRKList,IRKGAUSS,RKCreate_Gauss));
 
   /* default value */
@@ -254,8 +254,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroy(&u));
   CHKERRQ(PetscFunctionListDestroy(&IRKList));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode ExactSolution(Vec u,void *c,PetscReal t)

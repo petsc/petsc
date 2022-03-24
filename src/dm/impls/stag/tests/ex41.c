@@ -12,7 +12,7 @@ int main(int argc, char **argv)
   DMStagStencil  row,col;
   PetscScalar    value;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 1;
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
 
@@ -53,8 +53,8 @@ int main(int argc, char **argv)
 
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

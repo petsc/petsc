@@ -13,9 +13,8 @@ int main (int argc, char **argv)
   PetscReal      nrm;
   PetscBool      adapt = PETSC_FALSE, userSection = PETSC_FALSE;
   PetscInt       vStart, vEnd, v, i;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRQ(PetscOptionsGetBool(NULL, NULL, "-adapt", &adapt, NULL));
   CHKERRQ(PetscOptionsGetBool(NULL, NULL, "-user_section", &userSection, NULL));
 
@@ -140,8 +139,8 @@ int main (int argc, char **argv)
   CHKERRQ(VecDestroy(&g));
   CHKERRQ(VecDestroy(&g2));
   CHKERRQ(DMDestroy(&forest));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

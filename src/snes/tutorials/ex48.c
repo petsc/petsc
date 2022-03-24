@@ -1446,7 +1446,7 @@ int main(int argc,char *argv[])
   DM             da;
   SNES           snes;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   comm = PETSC_COMM_WORLD;
 
   CHKERRQ(THICreate(comm,&thi));
@@ -1527,8 +1527,8 @@ int main(int argc,char *argv[])
   CHKERRQ(DMDestroy(&da));
   CHKERRQ(SNESDestroy(&snes));
   CHKERRQ(THIDestroy(&thi));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

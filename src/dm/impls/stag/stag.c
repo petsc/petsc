@@ -514,7 +514,6 @@ If a stratum is active (non-zero dof), make it active in the coordinate DM.
 */
 static PetscErrorCode DMCreateCoordinateDM_Stag(DM dm,DM *dmc)
 {
-  PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
   PetscInt        dim;
   PetscBool       isstag,isproduct;
@@ -527,12 +526,12 @@ static PetscErrorCode DMCreateCoordinateDM_Stag(DM dm,DM *dmc)
   CHKERRQ(PetscStrcmp(stag->coordinateDMType,DMSTAG,&isstag));
   CHKERRQ(PetscStrcmp(stag->coordinateDMType,DMPRODUCT,&isproduct));
   if (isstag) {
-    ierr = DMStagCreateCompatibleDMStag(dm,
-        stag->dof[0] > 0 ? dim : 0,
-        stag->dof[1] > 0 ? dim : 0,
-        stag->dof[2] > 0 ? dim : 0,
-        stag->dof[3] > 0 ? dim : 0,
-        dmc);CHKERRQ(ierr);
+    CHKERRQ(DMStagCreateCompatibleDMStag(dm,
+                                         stag->dof[0] > 0 ? dim : 0,
+                                         stag->dof[1] > 0 ? dim : 0,
+                                         stag->dof[2] > 0 ? dim : 0,
+                                         stag->dof[3] > 0 ? dim : 0,
+                                         dmc));
   } else if (isproduct) {
     CHKERRQ(DMCreate(PETSC_COMM_WORLD,dmc));
     CHKERRQ(DMSetType(*dmc,DMPRODUCT));

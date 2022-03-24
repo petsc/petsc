@@ -18,14 +18,13 @@ T*/
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       i,istart,iend,n = 6,nlocal;
   PetscScalar    v,*array;
   Vec            x;
   PetscViewer    viewer;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
@@ -109,8 +108,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscViewerDestroy(&viewer));
   CHKERRQ(VecDestroy(&x));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

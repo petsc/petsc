@@ -151,20 +151,19 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
 
 int main(int argc, char *argv[])
 {
-  PetscErrorCode ierr;
   PetscBool      ho = PETSC_TRUE;
   PetscBool      plex = PETSC_FALSE;
   PetscInt       cells[3] = {2,2,2};
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-ho",&ho,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-plex",&plex,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nex",&cells[0],NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-ney",&cells[1],NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nez",&cells[2],NULL));
   CHKERRQ(test_3d(cells,plex,ho));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

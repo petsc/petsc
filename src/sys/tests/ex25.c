@@ -3,9 +3,8 @@ static char help[] = "Tests wrapping of math.h functions for real, complex, and 
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Real tests:\n"));
   {
     PetscReal a,b,c;
@@ -119,8 +118,8 @@ int main(int argc,char **argv)
     b = PetscAtanhScalar(a);
     CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"atanh(%f) = %f\n",(double)PetscRealPart(a),(double)PetscRealPart(b)));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

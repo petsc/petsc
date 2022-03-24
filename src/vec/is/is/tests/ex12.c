@@ -13,9 +13,8 @@ int main(int argc,char **argv)
   PetscViewer     viewer;
   PetscMPIInt     size, rank;
   MPI_Comm        comm;
-  PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_size(comm, &size));
   CHKERRMPI(MPI_Comm_rank(comm, &rank));
@@ -51,8 +50,8 @@ int main(int argc,char **argv)
   CHKERRQ(ISDestroy(&is0));
   CHKERRQ(ISDestroy(&is1));
   CHKERRQ(PetscViewerDestroy(&viewer));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

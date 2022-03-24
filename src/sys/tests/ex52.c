@@ -11,7 +11,6 @@ static char help[] = "A benchmark for testing PetscSortInt(), PetscSortIntSemiOr
 #include <petscvec.h>
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       i,l,n=100,r=10,d=1,vsize=1;
   PetscInt       *X,*X1,*XR,*XSO,*W,*Y,*Z,*XP,*X1P;
   PetscReal      val,norm1,nreal;
@@ -23,7 +22,7 @@ int main(int argc,char **argv)
   unsigned long  seedr, seedo;
   PetscBool      order=PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"This is a uniprocessor example only!");
 
@@ -145,8 +144,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscRandomDestroy(&rdm));
   CHKERRQ(PetscFree3(XP,X1P,W));
   CHKERRQ(PetscFree6(X,X1,XR,XSO,Y,Z));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -12,14 +12,13 @@ int CreateError(int n)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD,stdout,"Demonstrates PETSc Error Handlers\n"));
   CHKERRQ(PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error is a contrived error to test error handling\n"));
   CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT));
   CHKERRQ(CreateError(5));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

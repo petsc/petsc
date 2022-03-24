@@ -9,13 +9,12 @@ T*/
 
 int main(int argc, char **args)
 {
-  PetscErrorCode ierr;
   Vec            X, Y;
   Mat            A,B,Af;
   PetscBool      flg;
   PetscReal      xnorm,ynorm,anorm;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
 
   CHKERRQ(MatCreateConstantDiagonal(PETSC_COMM_WORLD,PETSC_DETERMINE,PETSC_DETERMINE,20,20,3.0,&A));
   CHKERRQ(MatCreateVecs(A,&X,&Y));
@@ -57,8 +56,8 @@ int main(int argc, char **args)
   CHKERRQ(VecDestroy(&X));
   CHKERRQ(VecDestroy(&Y));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

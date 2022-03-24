@@ -180,7 +180,6 @@ PetscErrorCode MatSeqDenseCUDACopyToGPU(Mat A)
 
 static PetscErrorCode MatCopy_SeqDenseCUDA(Mat A,Mat B,MatStructure str)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *va;
   PetscScalar       *vb;
   PetscInt          lda1,lda2,m=A->rmap->n,n=A->cmap->n;
@@ -211,7 +210,6 @@ static PetscErrorCode MatCopy_SeqDenseCUDA(Mat A,Mat B,MatStructure str)
 
 static PetscErrorCode MatZeroEntries_SeqDenseCUDA(Mat A)
 {
-  PetscErrorCode ierr;
   PetscScalar    *va;
   PetscInt       lda,m = A->rmap->n,n = A->cmap->n;
   cudaError_t    cerr;
@@ -1395,14 +1393,10 @@ static PetscErrorCode  MatDenseSetLDA_SeqDenseCUDA(Mat A,PetscInt lda)
 
 static PetscErrorCode MatSetUp_SeqDenseCUDA(Mat A)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   CHKERRQ(PetscLayoutSetUp(A->rmap));
   CHKERRQ(PetscLayoutSetUp(A->cmap));
-  if (!A->preallocated) {
-    CHKERRQ(MatSeqDenseCUDASetPreallocation(A,NULL));
-  }
+  if (!A->preallocated) CHKERRQ(MatSeqDenseCUDASetPreallocation(A,NULL));
   PetscFunctionReturn(0);
 }
 

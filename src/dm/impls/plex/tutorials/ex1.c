@@ -13,9 +13,8 @@ int main(int argc, char **argv)
   PetscInt       numDof[12];
   PetscInt       bcField[1];
   IS             bcPointIS[1];
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   /* Create a mesh */
   CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dm));
   CHKERRQ(DMSetType(dm, DMPLEX));
@@ -62,8 +61,8 @@ int main(int argc, char **argv)
   /* Cleanup */
   CHKERRQ(PetscSectionDestroy(&section));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

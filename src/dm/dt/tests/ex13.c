@@ -70,7 +70,6 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   Mat              Mm1;
   PetscReal       *p_trimmed_copy;
   PetscReal       *M_moment_real;
-  PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   // Construct an appropriate quadrature
@@ -99,7 +98,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
 
     PetscStackCallBLAS("LAPACKgesvd",LAPACKgesvd_("N","N",&n,&n,Mcopy,&n,S,NULL,&n,NULL,&n,work,&lwork,&lierr));
     PetscReal cond = S[0] / S[Nbpt - 1];
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "dimension %D, degree %D, form %D: condition number %g\n", dim, deg, form, (double) cond);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "dimension %D, degree %D, form %D: condition number %g\n", dim, deg, form, (double) cond));
     CHKERRQ(PetscFree(work));
     CHKERRQ(PetscFree(S));
   }
@@ -174,8 +173,8 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     Mat          AinvB;
     Mat          prod;
 
-    ierr = constructTabulationAndMass(dim, deg, form < 0 ? form - 1 : form + 1, 0, npoints, points, weights, &Nbpt1, &Nf1, &Nk1,
-                                      &p_trimmed1, &M_trimmed1);CHKERRQ(ierr);
+    CHKERRQ(constructTabulationAndMass(dim, deg, form < 0 ? form - 1 : form + 1, 0, npoints, points, weights, &Nbpt1, &Nf1, &Nk1,
+                                       &p_trimmed1, &M_trimmed1));
 
     CHKERRQ(PetscMalloc1(Nf1 * (PetscAbsInt(form) + 1), &pattern));
     CHKERRQ(PetscDTAltVInteriorPattern(dim, PetscAbsInt(form) + 1, pattern));
@@ -316,12 +315,13 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
 
 int main(int argc, char **argv)
 {
-  PetscInt  max_dim = 3;
-  PetscInt  max_deg = 4;
-  PetscInt  k = 3;
-  PetscBool cond = PETSC_FALSE;
+  PetscInt       max_dim = 3;
+  PetscInt       max_deg = 4;
+  PetscInt       k       = 3;
+  PetscBool      cond    = PETSC_FALSE;
+  PetscErrorCode ierr;
 
-  PetscErrorCode ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for PetscDTPTrimmedEvalJet() tests","none");CHKERRQ(ierr);
   CHKERRQ(PetscOptionsInt("-max_dim", "Maximum dimension of the simplex",__FILE__,max_dim,&max_dim,NULL));
   CHKERRQ(PetscOptionsInt("-max_degree", "Maximum degree of the trimmed polynomial space",__FILE__,max_deg,&max_deg,NULL));
@@ -335,8 +335,8 @@ int main(int argc, char **argv)
       }
     }
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

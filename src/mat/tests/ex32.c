@@ -5,12 +5,11 @@ static char help[] = "Tests MATSEQDENSECUDA\n\n";
 
 int main(int argc,char **argv)
 {
-  Mat            A,AC,B;
-  PetscErrorCode ierr;
-  PetscInt       m = 10,n = 10;
-  PetscReal      r,tol = 10*PETSC_SMALL;
+  Mat       A,AC,B;
+  PetscInt  m     = 10,n = 10;
+  PetscReal r,tol = 10*PETSC_SMALL;
 
-  ierr = PetscInitialize(&argc,&argv,(char*) 0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*) 0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(MatCreate(PETSC_COMM_SELF,&A));
@@ -81,8 +80,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(MatDestroy(&AC));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

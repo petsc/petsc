@@ -12,11 +12,10 @@ int main(int argc,char **args)
   Vec            min,max,maxabs,e;
   PetscInt       m,n,j,imin[M],imax[M],imaxabs[M],indices[N],row,testcase=0;
   PetscScalar    values[N];
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscReal      enorm;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-testcase",&testcase,NULL));
@@ -254,8 +253,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&maxabs));
   CHKERRQ(VecDestroy(&e));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

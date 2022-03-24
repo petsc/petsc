@@ -7,9 +7,8 @@ int main(int argc,char **argv)
 {
   char              pkg[128] = "hdf5";
   PetscBool         has,flg;
-  PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-pkg",pkg,sizeof(pkg),NULL));
   CHKERRQ(PetscHasExternalPackage(pkg, &has));
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "PETSc has %s? %s\n", pkg, PetscBools[has]));
@@ -31,8 +30,8 @@ int main(int argc,char **argv)
 #else
   PetscCheckFalse(flg && has,PETSC_COMM_WORLD, PETSC_ERR_PLIB, "PetscHasExternalPackage() says YAML is configured but PETSC_HAVE_YAML is undefined");
 #endif
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

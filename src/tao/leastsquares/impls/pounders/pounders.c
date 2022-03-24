@@ -633,14 +633,13 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   PetscReal          mdec, rho, normxsp;
   PetscReal          one=1.0,zero=0.0,ratio;
   PetscBLASInt       blasm,blasn,blasncopy,blasnpmax;
-  PetscErrorCode     ierr;
   static PetscBool   set = PETSC_FALSE;
 
   /* n = # of parameters
      m = dimension (components) of function  */
   PetscFunctionBegin;
-  ierr = PetscCitationsRegister("@article{UNEDF0,\n"
-                                "title = {Nuclear energy density optimization},\n"
+  CHKERRQ(PetscCitationsRegister("@article{UNEDF0,\n"
+                                 "title = {Nuclear energy density optimization},\n"
                                 "author = {Kortelainen, M.  and Lesinski, T.  and Mor\'e, J.  and Nazarewicz, W.\n"
                                 "          and Sarich, J.  and Schunck, N.  and Stoitsov, M. V. and Wild, S. },\n"
                                 "journal = {Phys. Rev. C},\n"
@@ -650,7 +649,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
                                 "numpages = {18},\n"
                                 "year = {2010},\n"
                                 "month = {Aug},\n"
-                                "doi = {10.1103/PhysRevC.82.024313}\n}\n",&set);CHKERRQ(ierr);
+                                 "doi = {10.1103/PhysRevC.82.024313}\n}\n",&set));
   tao->niter=0;
   if (tao->XL && tao->XU) {
     /* Check x0 <= XU */

@@ -243,13 +243,13 @@ int main(int argc,char **args)
   PetscInt ppcell = 1;
   PetscInt meshtype = 0;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-ppcell",&ppcell,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-meshtype",&meshtype,NULL));
   PetscCheckFalse(meshtype > 1,PETSC_COMM_WORLD,PETSC_ERR_USER,"-meshtype <value> must be 0 or 1");
 
   CHKERRQ(pic_advect(ppcell,meshtype));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

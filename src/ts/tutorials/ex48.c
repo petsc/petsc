@@ -483,12 +483,11 @@ int main(int argc, char **argv)
   AppCtx         ctx;
   PetscReal      t       = 0.0;
   PetscReal      L2error = 0.0;
-  PetscErrorCode ierr;
   AppCtx        *ctxarr[5];
 
   ctxarr[0] = ctxarr[1] = ctxarr[2] = ctxarr[3] = ctxarr[4] = &ctx; /* each variable could have a different context */
   s_ctx = &ctx;
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &ctx));
   /* create mesh and problem */
   CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &ctx, &dm));
@@ -528,8 +527,8 @@ int main(int argc, char **argv)
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&dm));
   CHKERRQ(PetscFree(ctx.initialFuncs));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

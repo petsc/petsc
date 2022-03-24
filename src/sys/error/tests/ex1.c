@@ -21,11 +21,10 @@ int handleSignal(int signum, void *ctx)
 int main(int argc, char *args[])
 {
   HandlerCtx     user;
-  PetscErrorCode ierr;
 
   user.exitHandler = 0;
 
-  ierr = PetscInitialize(&argc, &args, (char*) 0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &args, (char*) 0, help));
   CHKERRQ(PetscPushSignalHandler(handleSignal, &user));
   while (!user.exitHandler) {
     if (user.signum > 0) {
@@ -34,8 +33,8 @@ int main(int argc, char *args[])
     }
   }
   CHKERRQ(PetscPopSignalHandler());
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -6,14 +6,13 @@ int main(int argc,char **args)
 {
   Mat            A,As;
   PetscBool      flg;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       i,j;
   PetscScalar    v,sigma2;
   PetscReal      h2,sigma1=100.0;
   PetscInt       dim,Ii,J,n = 3,rstart,rend;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-sigma1",&sigma1,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
@@ -121,8 +120,8 @@ int main(int argc,char **args)
   /* Free spaces */
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&As));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

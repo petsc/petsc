@@ -97,7 +97,7 @@ int main(int argc,char **argv)
   char           solver[64];
   PetscBool      inplace,full = PETSC_FALSE, ldl = PETSC_TRUE, qr = PETSC_TRUE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*) 0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*) 0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
   CHKERRQ(PetscStrcpy(solver,"petsc"));
@@ -276,8 +276,8 @@ int main(int argc,char **argv)
     CHKERRQ(VecDestroy(&y));
     CHKERRQ(VecDestroy(&ytmp));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

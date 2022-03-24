@@ -11,9 +11,8 @@ int main(int argc,char **argv)
   PetscReal      x3[] = {39, 9, 19, -39, 29, 309, 209, 390, 12, 11};
   PetscInt       index2[] = {1, -1, 4, 12, 13, 14, 0, 7, 9, 11};
   PetscInt       index3[] = {1, -1, 4, 12, 13, 14, 0, 7, 9, 11};
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"1st test\n"));
   for (i=0; i<5; i++) CHKERRQ(PetscPrintf(PETSC_COMM_SELF," %g\n",(double)x[i]));
   CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"---------------\n"));
@@ -49,8 +48,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscFindReal(val,10,x3,0.21,&loc));
   CHKERRQ(PetscPrintf(PETSC_COMM_SELF," %g in array: loc %" PetscInt_FMT "\n",(double)val,loc));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

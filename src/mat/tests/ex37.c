@@ -7,13 +7,12 @@ int main(int argc,char **args)
 {
   Mat            C,A;
   PetscInt       i, n = 10,midx[3],bs=1;
-  PetscErrorCode ierr;
   PetscScalar    v[3];
   PetscBool      flg,isAIJ;
   MatType        type;
   PetscMPIInt    size;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL));
@@ -153,8 +152,8 @@ int main(int argc,char **args)
 
   CHKERRQ(MatDestroy(&C));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

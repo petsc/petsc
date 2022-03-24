@@ -40,7 +40,6 @@ int main(int argc,char **args)
   Mat            A = NULL;
   Vec            b,u = NULL,u_tmp;
   char           Ain[PETSC_MAX_PATH_LEN],rhs[PETSC_MAX_PATH_LEN],solu[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
   int            m,n = 0,nz,dummy; /* these are fscaned so kept as int */
   PetscInt       i,col,row,shift = 1,sizes[3],nsizes;
   PetscScalar    val;
@@ -50,7 +49,7 @@ int main(int argc,char **args)
   PetscBool      flg_A,flg_b,flg_u,flg;
   PetscMPIInt    size;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -149,8 +148,8 @@ int main(int argc,char **args)
   if (flg_b) CHKERRQ(VecDestroy(&b));
   if (flg_u) CHKERRQ(VecDestroy(&u));
   CHKERRQ(PetscViewerDestroy(&view));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -12,7 +12,7 @@ int main(int argc, char **argv)
   PetscDualSpace dsp;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   dim = 2;
   tensorCell = PETSC_FALSE;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options for PETSCDUALSPACELAGRANGE test","none");CHKERRQ(ierr);
@@ -58,8 +58,8 @@ int main(int argc, char **argv)
   CHKERRQ(PetscDualSpaceSetUp(dsp));
   CHKERRQ(DMDestroy(&K));
   CHKERRQ(PetscDualSpaceDestroy(&dsp));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

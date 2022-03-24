@@ -9,7 +9,6 @@ static char help[] = "Tests DMCreateMatrix for DMComposite.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode         ierr;
   ISLocalToGlobalMapping *ltog,ltogs;
   PetscMPIInt            size;
   DM                     packer;
@@ -17,7 +16,7 @@ int main(int argc,char **argv)
   Mat                    M;
   PetscInt               i;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   CHKERRQ(DMCompositeCreate(PETSC_COMM_WORLD,&packer));
@@ -54,8 +53,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(PetscFree(ltog));
   CHKERRQ(DMDestroy(&packer));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

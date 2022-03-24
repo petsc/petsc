@@ -8,7 +8,6 @@ static char help[] = "Tests Cholesky factorization for a SBAIJ matrix, (bs=2).\n
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   Mat            mat,fact,B;
   PetscInt       ind1[2],ind2[2];
   PetscScalar    temp[4];
@@ -17,7 +16,7 @@ int main(int argc,char **args)
   MatFactorInfo  info;
   PetscMPIInt    size;
 
-  ierr = PetscInitialize(&argc,&args,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -73,6 +72,6 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&mat));
   CHKERRQ(MatDestroy(&fact));
   CHKERRQ(MatDestroy(&B));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

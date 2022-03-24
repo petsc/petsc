@@ -326,7 +326,7 @@ int main(int argc, char *argv[])
   IS             *isg;
   PetscBool      pass_dm;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,10,1,1,NULL,&dau));
   CHKERRQ(DMSetOptionsPrefix(dau,"u_"));
   CHKERRQ(DMSetFromOptions(dau));
@@ -462,8 +462,8 @@ int main(int argc, char *argv[])
   CHKERRQ(DMDestroy(&dak));
   CHKERRQ(DMDestroy(&pack));
   CHKERRQ(SNESDestroy(&snes));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

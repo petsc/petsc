@@ -27,14 +27,13 @@ int main(int argc,char **argv)
   TS                   ts;                         /* time integrator */
   SNES                 snes;
   Vec                  x,r;                        /* solution, residual vectors */
-  PetscErrorCode       ierr;
   DM                   da;
   PetscViewerAndFormat *vf;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -107,8 +106,8 @@ int main(int argc,char **argv)
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&da));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 /*

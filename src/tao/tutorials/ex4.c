@@ -610,13 +610,12 @@ static PetscErrorCode TaylorTest(UserCtx ctx, Tao tao, Vec x, PetscReal *C)
 
 int main(int argc, char ** argv)
 {
-  UserCtx        ctx;
-  Tao            tao;
-  Vec            x;
-  Mat            H;
-  PetscErrorCode ierr;
+  UserCtx ctx;
+  Tao     tao;
+  Vec     x;
+  Mat     H;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(PetscNew(&ctx));
   CHKERRQ(ConfigureContext(ctx));
   /* Define two functions that could pass as objectives to TaoSetObjective(): one
@@ -650,7 +649,7 @@ int main(int argc, char ** argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(DestroyContext(&ctx));
   CHKERRQ(PetscFinalize());
-  return ierr;
+  return 0;
 }
 
 /*TEST

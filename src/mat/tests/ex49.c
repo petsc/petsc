@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   PetscReal      normf,normi,norm1;
   MatInfo        info;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
@@ -82,8 +82,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&tmat));
   if (mat) CHKERRQ(MatDestroy(&mat));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

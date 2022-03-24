@@ -6,11 +6,10 @@ static char help[] = "Tests the creation of a PC context.\n\n";
 int main(int argc,char **args)
 {
   PC             pc;
-  PetscErrorCode ierr;
   PetscInt       n = 5;
   Mat            mat;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PCCreate(PETSC_COMM_WORLD,&pc));
   CHKERRQ(PCSetType(pc,PCNONE));
 
@@ -22,8 +21,8 @@ int main(int argc,char **args)
   CHKERRQ(PCSetUp(pc));
   CHKERRQ(MatDestroy(&mat));
   CHKERRQ(PCDestroy(&pc));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

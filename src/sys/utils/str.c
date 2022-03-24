@@ -559,7 +559,6 @@ PetscErrorCode PetscStrcasecmp(const char a[], const char b[], PetscBool *t)
 #else
   else {
     char           *aa,*bb;
-    PetscErrorCode ierr;
     CHKERRQ(PetscStrallocpy(a,&aa));
     CHKERRQ(PetscStrallocpy(b,&bb));
     CHKERRQ(PetscStrtolower(aa));

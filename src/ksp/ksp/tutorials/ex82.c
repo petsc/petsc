@@ -30,9 +30,8 @@ int main(int argc,char **argv)
   MatHtoolKernel kernel = GenEntries;
   PetscBool      flg,sym = PETSC_FALSE;
   PetscRandom    rdm;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)NULL,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m_local",&m,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-symmetric",&sym,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
@@ -86,8 +85,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(PetscFree(gcoords));
   CHKERRQ(PetscFree(coords));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

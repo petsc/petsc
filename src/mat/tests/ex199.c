@@ -6,7 +6,6 @@ static char help[] = "Tests the different MatColoring implementatons.\n\n";
 int main(int argc,char **args)
 {
   Mat            C;
-  PetscErrorCode ierr;
   PetscViewer    viewer;
   char           file[128];
   PetscBool      flg;
@@ -14,7 +13,7 @@ int main(int argc,char **args)
   ISColoring     coloring;
   PetscMPIInt    size;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
@@ -37,8 +36,8 @@ int main(int argc,char **args)
   CHKERRQ(ISColoringDestroy(&coloring));
   CHKERRQ(MatColoringDestroy(&ctx));
   CHKERRQ(MatDestroy(&C));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

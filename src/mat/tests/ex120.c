@@ -11,7 +11,6 @@ int main(int argc,char **args)
   Mat            A,A_dense,B;
   Vec            *evecs;
   PetscBool      flg,TestZHEEV=PETSC_TRUE,TestZHEEVX=PETSC_FALSE,TestZHEGV=PETSC_FALSE,TestZHEGVX=PETSC_FALSE;
-  PetscErrorCode ierr;
   PetscBool      isSymmetric;
   PetscScalar    *arrayA,*arrayB,*evecs_array=NULL,*work;
   PetscReal      *evals,*rwork;
@@ -25,7 +24,7 @@ int main(int argc,char **args)
   PetscReal      h2,sigma1 = 100.0;
   PetscInt       dim,Ii,J,n = 6,use_random;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -218,8 +217,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A_dense));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&B));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /*------------------------------------------------
   Check the accuracy of the eigen solution

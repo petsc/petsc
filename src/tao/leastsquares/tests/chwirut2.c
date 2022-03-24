@@ -60,7 +60,6 @@ PetscErrorCode EvaluateJacobian(Tao, Vec, Mat, Mat, void *);
 /*--------------------------------------------------------------------*/
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;           /* used to check for functions returning nonzeros */
   PetscInt       wtype=0;
   Vec            x, f;               /* solution, function */
   Vec            w;                  /* weights */
@@ -75,7 +74,7 @@ int main(int argc,char **argv)
   PetscBool      flg;
   AppCtx         user;               /* user-defined work context */
 
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char *)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-wtype",&wtype,&flg));
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"wtype=%d\n",wtype));
   /* Allocate vectors */
@@ -130,8 +129,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&f));
   CHKERRQ(MatDestroy(&J));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*--------------------------------------------------------------------*/

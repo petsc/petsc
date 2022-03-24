@@ -9,7 +9,6 @@ int main(int argc,char **argv)
   PetscDraw      draw;
   PetscDrawHG    hist;
   PetscDrawAxis  axis;
-  PetscErrorCode ierr;
   int            n     = 20,i,x = 0,y = 0,width = 400,height = 300,bins = 8;
   PetscInt       w     = 400,h = 300,nn = 20,b = 8,c = PETSC_DRAW_GREEN;
   int            color = PETSC_DRAW_GREEN;
@@ -19,7 +18,7 @@ int main(int argc,char **argv)
 
   xlabel = "X-axis Label"; toplabel = "Top Label"; ylabel = "Y-axis Label";
 
-  ierr  = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-width",&w,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-height",&h,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&nn,NULL));
@@ -47,8 +46,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(PetscDrawHGDestroy(&hist));
   CHKERRQ(PetscDrawDestroy(&draw));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

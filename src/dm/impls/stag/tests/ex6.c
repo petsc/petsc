@@ -4,11 +4,10 @@ static char help[] = "Spot test DMStag->DMDA routines in 3d\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode  ierr;
   DM              dm;
   Vec             vec;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,4,4,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,3,3,3,DMSTAG_STENCIL_STAR,1,NULL,NULL,NULL,&dm));
   CHKERRQ(DMSetFromOptions(dm));
   CHKERRQ(DMSetUp(dm));
@@ -73,8 +72,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(VecDestroy(&vec));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

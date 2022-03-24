@@ -43,7 +43,6 @@ extern int FormJacobian_Grid(GridCtx*,Mat*);
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       its,n,Nx=PETSC_DECIDE,Ny=PETSC_DECIDE,nlocal,i;
   PetscMPIInt    size;
   PC             pc;
@@ -53,7 +52,7 @@ int main(int argc,char **argv)
   KSP            ksp;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   /* set up discretization matrix for fine grid */
   /* ML requires input of fine-grid matrix. It determines nlevels. */
   fine_ctx.mx = 9; fine_ctx.my = 9;
@@ -113,8 +112,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&fine_ctx.localF));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(KSPDestroy(&ksp));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 int FormJacobian_Grid(GridCtx *grid,Mat *J)

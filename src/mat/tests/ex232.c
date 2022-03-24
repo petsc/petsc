@@ -10,9 +10,8 @@ int main(int argc, char **args)
   PetscScalar    c[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
   Mat            ssbaij;
   Mat            msbaij;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,(char*)0);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,(char*)0));
 
   CHKERRQ(MatCreate(PETSC_COMM_SELF, &ssbaij));
   CHKERRQ(MatCreate(PETSC_COMM_SELF, &msbaij));
@@ -28,8 +27,8 @@ int main(int argc, char **args)
   CHKERRQ(MatView(msbaij, PETSC_VIEWER_STDOUT_(PETSC_COMM_SELF)));
   CHKERRQ(MatDestroy(&ssbaij));
   CHKERRQ(MatDestroy(&msbaij));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

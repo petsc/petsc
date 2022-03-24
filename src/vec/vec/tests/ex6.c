@@ -5,14 +5,13 @@ static char help[] = "Demonstrates a scatter with a stride and general index set
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       n   = 6,idx1[3] = {0,1,2},loc[6] = {0,1,2,3,4,5};
   PetscScalar    two = 2.0,vals[6] = {10,11,12,13,14,15};
   Vec            x,y;
   IS             is1,is2;
   VecScatter     ctx = 0;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create two vector */
   CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&x));
@@ -38,8 +37,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&y));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

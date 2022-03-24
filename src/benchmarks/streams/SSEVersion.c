@@ -79,12 +79,11 @@ int main(int argc,char *argv[])
   int            BytesPerWord,j,k,size;
   PetscInt       node = -1;
   double         scalar, t, times[4][NTIMES];
-  PetscErrorCode ierr;
 #if !STATIC_ALLOC
   double         *PETSC_RESTRICT a,*PETSC_RESTRICT b,*PETSC_RESTRICT c;
 #endif
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-node",&node,NULL));
   /* --- SETUP --- determine precision and check timing --- */
@@ -259,8 +258,8 @@ int main(int argc,char *argv[])
     rmstime[j] = sqrt(rmstime[j]/(double)NTIMES);
     PetscPrintf(PETSC_COMM_WORLD,"%8s: %11.4f  %11.4f  %11.4f  %11.4f  %11.4f\n", label[j], 1.0e-06*bytes[j]/mintime[j], size*1.0e-06*bytes[j]/mintime[j], rmstime[j], mintime[j], maxtime[j]);
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 static double Second()

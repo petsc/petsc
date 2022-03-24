@@ -15,9 +15,8 @@ int main (int argc, char **argv)
   PetscReal      diff;
   PetscInt       min_refine = 2, overlap = 0;
   PetscInt       vStart, vEnd, v;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
 
   CHKERRQ(DMCreate(PETSC_COMM_WORLD, &base));
   CHKERRQ(DMSetType(base, DMPLEX));
@@ -63,8 +62,8 @@ int main (int argc, char **argv)
   CHKERRQ(VecDestroy(&g));
   CHKERRQ(VecDestroy(&g2));
   CHKERRQ(DMDestroy(&forest));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

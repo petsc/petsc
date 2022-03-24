@@ -213,17 +213,16 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat jac,Mat B,void *ctx)
 
 int main(int argc,char **argv)
 {
-  SNES                        snes;                 /* SNES context */
-  Mat                         J;                    /* Jacobian matrix */
-  ApplicationCtx              ctx;                  /* user-defined context */
-  Vec                         x,r,U,F;              /* vectors */
-  PetscScalar                 none = -1.0;
-  PetscErrorCode              ierr;
-  PetscInt                    its,N = 5,maxit,maxf;
-  PetscReal                   abstol,rtol,stol,norm;
-  PetscBool                   viewinitial = PETSC_FALSE;
+  SNES           snes;          /* SNES context */
+  Mat            J;             /* Jacobian matrix */
+  ApplicationCtx ctx;           /* user-defined context */
+  Vec            x,r,U,F;       /* vectors */
+  PetscScalar    none        = -1.0;
+  PetscInt       its,N       = 5,maxit,maxf;
+  PetscReal      abstol,rtol,stol,norm;
+  PetscBool      viewinitial = PETSC_FALSE;
 
-  ierr  = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL));
   ctx.h = 1.0/(N-1);
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-view_initial",&viewinitial,NULL));
@@ -342,8 +341,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&J));
   CHKERRQ(SNESDestroy(&snes));
   CHKERRQ(DMDestroy(&ctx.da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

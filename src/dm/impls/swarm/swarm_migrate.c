@@ -449,7 +449,6 @@ typedef struct {
 PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globalsize)
 {
   DM_Swarm *        swarm = (DM_Swarm*)dm->data;
-  PetscErrorCode    ierr;
   DMSwarmDataEx     de;
   PetscInt          p,pk,npoints,*rankval,n_points_recv,n_bbox_recv,dim,neighbour_cells;
   PetscMPIInt       rank,nrank;
@@ -535,8 +534,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM dm,PetscInt *globa
   CHKERRQ(DMSwarmDataExGetRecvData(de,&n_bbox_recv,(void**)&recv_bbox));
   /*  Wrong, should not be using PETSC_COMM_WORLD */
   for (p=0; p<n_bbox_recv; p++) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[rank %d]: box from %d : range[%+1.4e,%+1.4e]x[%+1.4e,%+1.4e]\n",rank,recv_bbox[p].owner_rank,
-           (double)recv_bbox[p].min[0],(double)recv_bbox[p].max[0],(double)recv_bbox[p].min[1],(double)recv_bbox[p].max[1]);CHKERRQ(ierr);
+    CHKERRQ(PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[rank %d]: box from %d : range[%+1.4e,%+1.4e]x[%+1.4e,%+1.4e]\n",rank,recv_bbox[p].owner_rank,
+                                    (double)recv_bbox[p].min[0],(double)recv_bbox[p].max[0],(double)recv_bbox[p].min[1],(double)recv_bbox[p].max[1]));
   }
   CHKERRQ(PetscSynchronizedFlush(PETSC_COMM_WORLD,stdout));
   /* of course this is stupid as this "generic" function should have a better way to know what the coordinates are called */

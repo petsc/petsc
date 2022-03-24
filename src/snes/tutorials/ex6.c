@@ -33,13 +33,12 @@ int main(int argc,char **argv)
   Vec            x,r,F,U;             /* vectors */
   Mat            J;                   /* Jacobian matrix */
   ReasonViewCtx     monP;             /* monitoring context */
-  PetscErrorCode ierr;
   PetscInt       its,n = 5,i;
   PetscMPIInt    size;
   PetscScalar    h,xp,v;
   MPI_Comm       comm;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_SELF,PETSC_ERR_SUP,"This is a uniprocessor example only!");
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
@@ -153,8 +152,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&U));  CHKERRQ(VecDestroy(&F));
   CHKERRQ(MatDestroy(&J));  CHKERRQ(SNESDestroy(&snes));
   /*CHKERRQ(PetscViewerDestroy(&monP.viewer));*/
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 /*

@@ -6,7 +6,6 @@ Example: mpiexec -n <np> ./ex214 -displ \n\n";
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
 #if defined(PETSC_HAVE_MUMPS)
   Mat            A,RHS,C,F,X,AX,spRHST;
@@ -18,14 +17,14 @@ int main(int argc,char **args)
   char           solver[256];
 #endif
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
 #if !defined(PETSC_HAVE_MUMPS)
   if (rank == 0) CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"This example requires MUMPS, exit...\n"));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 #else
 
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-displ",&displ,NULL));
@@ -209,8 +208,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&C));
   CHKERRQ(MatDestroy(&X));
   CHKERRQ(PetscRandomDestroy(&rand));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 #endif
 }
 

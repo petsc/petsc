@@ -119,11 +119,10 @@ int main(int argc, char **argv)
 
   UserContext     user;
   const char      *fields[1] = {"T-Variable"};
-  PetscErrorCode  ierr;
   PetscInt        k;
   Vec             b, x, errv;
 
-  ierr = PetscInitialize(&argc, &argv, (char*)0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char*)0, help));
 
   CHKERRQ(InitializeOptions(&user));
 
@@ -226,8 +225,8 @@ int main(int argc, char **argv)
   CHKERRQ(KSPDestroy(&ksp));
   CHKERRQ(DMDestroy(&dmref));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscScalar ComputeDiffusionCoefficient(PetscReal coords[3], UserContext* user)

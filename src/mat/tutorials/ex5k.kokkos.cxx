@@ -13,15 +13,14 @@ static char help[] = "Test of Kokkos matrix assemble with 1D Laplacian. Kokkos v
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode               ierr;
-  Mat                          A;
-  PetscInt                     N=11, nz=3, Istart, Iend, num_threads = 128;
-  PetscSplitCSRDataStructure   d_mat;
-  PetscLogEvent                event;
-  Vec                          x,y;
-  PetscMPIInt                  rank;
+  Mat                        A;
+  PetscInt                   N = 11, nz=3, Istart, Iend, num_threads = 128;
+  PetscSplitCSRDataStructure d_mat;
+  PetscLogEvent              event;
+  Vec                        x,y;
+  PetscMPIInt                rank;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-nz_row", &nz, NULL)); // for debugging, will be wrong if nz<3
@@ -83,8 +82,8 @@ int main(int argc,char **argv)
 #else
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_COR,"Kokkos kernels required");
 #endif
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -69,9 +69,8 @@ int main(int argc, char** argv)
   PetscReal      norm;
   PetscInt       m, n;
   PetscBool      exact = PETSC_FALSE;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, NULL);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, NULL));
 
   CHKERRQ(VecCreate(PETSC_COMM_WORLD, &v));
   CHKERRQ(MatCreate(PETSC_COMM_WORLD, &Q));
@@ -147,8 +146,8 @@ int main(int argc, char** argv)
   CHKERRQ(MatDestroy(&C));
   CHKERRQ(MatDestroy(&Q));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -10,13 +10,12 @@ static PetscErrorCode Test2_3d(DM dm);
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   DM             dm;
   PetscInt       dim;
   PetscBool      setSizes,useInjective;
 
   /* Initialize PETSc and process command line arguments */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 2;
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
   setSizes = PETSC_FALSE;
@@ -88,8 +87,8 @@ int main(int argc,char **argv)
 
   /* Clean up and finalize PETSc */
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 static PetscErrorCode Test1(DM dm)

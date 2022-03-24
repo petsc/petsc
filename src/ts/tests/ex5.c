@@ -145,7 +145,6 @@ extern PetscErrorCode calc_gflux(PetscScalar, PetscScalar, PetscScalar*);       
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       time;           /* amount of loops */
   struct in      put;
   PetscScalar    rh;             /* relative humidity */
@@ -172,7 +171,7 @@ int main(int argc,char **argv)
   MatFDColoring  matfdcoloring = 0;
   PetscBool      monitor_off = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Inputs */
   CHKERRQ(readinput(&put));
@@ -322,8 +321,8 @@ int main(int argc,char **argv)
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&da));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /*****************************end main program********************************/
 /*****************************************************************************/

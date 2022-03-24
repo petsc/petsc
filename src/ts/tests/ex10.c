@@ -372,7 +372,7 @@ int main(int argc,char **argv)
   TSDAESimple    tsdae;
   Vec            U,V,Usolution;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(TSDAESimpleCreate(PETSC_COMM_WORLD,&tsdae));
 
   CHKERRQ(VecCreateMPI(PETSC_COMM_WORLD,1,PETSC_DETERMINE,&U));
@@ -393,6 +393,6 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&U));
   CHKERRQ(VecDestroy(&Usolution));
   CHKERRQ(VecDestroy(&V));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

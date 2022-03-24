@@ -46,7 +46,6 @@ PetscErrorCode FormHessian(Tao,Vec,Mat,Mat,void*);
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode     ierr;              /* used to check for functions returning nonzeros */
   PetscInt           N;                 /* Size of vector */
   PetscMPIInt        size;              /* Number of processors */
   Vec                x;                 /* solution, gradient vectors */
@@ -56,7 +55,7 @@ int main(int argc, char **argv)
   AppCtx             user;              /* user-defined work context */
 
   /* Initialize TAO,PETSc */
-  ierr = PetscInitialize(&argc, &argv,(char *)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv,(char *)0,help));
 
   CHKERRMPI(MPI_Comm_size(MPI_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Incorrect number of processors");
@@ -117,8 +116,8 @@ int main(int argc, char **argv)
   CHKERRQ(PetscFree(user.left));
   CHKERRQ(PetscFree(user.right));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* -------------------------------------------------------------------- */

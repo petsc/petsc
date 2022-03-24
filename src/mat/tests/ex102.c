@@ -14,10 +14,9 @@ int main(int argc,char **args)
   Vec            x,b,c=NULL;
   Mat            A,U,V,LR,X,LRe;
   PetscInt       M = 5, N = 7;
-  PetscErrorCode ierr;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&M,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL));
 
@@ -121,8 +120,8 @@ int main(int argc,char **args)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

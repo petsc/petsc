@@ -24,9 +24,8 @@ int main(int argc, char **argv)
   PetscInt       i, j, k, *ln, n, rstart;
   PetscBool      saveCommunicationPattern = PETSC_FALSE;
   PetscMPIInt    size, rank, p;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRQ(PetscOptionsGetBool(NULL, NULL, "-save_comm", &saveCommunicationPattern, NULL));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
@@ -89,8 +88,8 @@ int main(int argc, char **argv)
   }
   CHKERRQ(PetscFree(ln));
   CHKERRQ(VecDestroy(&v));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

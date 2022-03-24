@@ -6,13 +6,12 @@ int main(int argc,char **argv)
 {
   Mat            A,F;
   MatFactorInfo  info;
-  PetscErrorCode ierr;
   PetscInt       m = 10;
   IS             perm;
   PetscMPIInt    size;
   PetscBool      issbaij;
 
-  ierr = PetscInitialize(&argc,&argv,(char*) 0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*) 0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
   CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
@@ -35,8 +34,8 @@ int main(int argc,char **argv)
     CHKERRQ(ISDestroy(&perm));
   }
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -6,13 +6,12 @@ static char help[] = "Tests the routines VecScatterCreateToAll(), VecScatterCrea
 int main(int argc,char **argv)
 {
   PetscInt       n = 3,i,len,start,end;
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscScalar    value,*yy;
   Vec            x,y,z,y_t;
   VecScatter     toall,tozero;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
@@ -62,8 +61,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&y));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

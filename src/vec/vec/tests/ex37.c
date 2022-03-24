@@ -99,7 +99,6 @@ PetscErrorCode test_vec_ops(void)
   Vec            X, a,b;
   Vec            c,d,e,f;
   PetscScalar    val;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "\n\n============== %s ==============\n",PETSC_FUNCTION_NAME));
@@ -259,13 +258,12 @@ PetscErrorCode test_axpy_dot_max(void)
 
 int main(int argc, char **args)
 {
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &args,(char*)0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &args,(char*)0, help));
   CHKERRQ(test_view());
   CHKERRQ(test_axpy_dot_max());
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

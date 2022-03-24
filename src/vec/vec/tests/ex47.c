@@ -7,14 +7,13 @@ static char help[] = "Tests PetscViewerHDF5 VecView()/VecLoad() function.\n\n";
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   Vec            x,y;
   PetscReal      norm,dnorm;
   PetscViewer    H5viewer;
   char           filename[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-filename",filename,sizeof(filename),&flg));
   if (!flg) CHKERRQ(PetscStrcpy(filename,"x.h5"));
   CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
@@ -61,8 +60,8 @@ int main(int argc,char **args)
   CHKERRQ(PetscViewerDestroy(&H5viewer));
   CHKERRQ(VecDestroy(&y));
   CHKERRQ(VecDestroy(&x));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

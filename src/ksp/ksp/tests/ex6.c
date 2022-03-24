@@ -24,7 +24,6 @@ static PetscErrorCode KSPTestResidualMonitor(KSP ksp, PetscInt i, PetscReal r, v
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscInt       its;
 #if defined(PETSC_USE_LOG)
   PetscLogStage  stage1,stage2;
@@ -37,7 +36,7 @@ int main(int argc,char **args)
   PetscBool      table = PETSC_FALSE,flg,test_residual = PETSC_FALSE,b_in_f = PETSC_TRUE;
   KSP            ksp;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-table",&table,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test_residual",&test_residual,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-b_in_f",&b_in_f,NULL));
@@ -132,8 +131,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(VecDestroy(&u));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

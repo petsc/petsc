@@ -300,16 +300,15 @@ static PetscErrorCode TestUniversalLabel(MPI_Comm comm)
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   /*CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));*/
   CHKERRQ(TestInsertion());
   CHKERRQ(TestEmptyStrata(PETSC_COMM_WORLD));
   CHKERRQ(TestDistribution(PETSC_COMM_WORLD));
   CHKERRQ(TestUniversalLabel(PETSC_COMM_WORLD));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

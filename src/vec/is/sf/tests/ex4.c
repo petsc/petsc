@@ -4,7 +4,6 @@ static char help[]= "Test PetscSFFCompose when the ilocal array is not the ident
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode     ierr;
   PetscSF            sfA, sfB, sfBA;
   PetscInt           nrootsA, nleavesA, nrootsB, nleavesB;
   PetscInt          *ilocalA, *ilocalB;
@@ -17,7 +16,7 @@ int main(int argc, char **argv)
   PetscInt           maxleafB;
   PetscBool          flag = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process");
 
@@ -128,8 +127,8 @@ int main(int argc, char **argv)
   CHKERRQ(PetscSFDestroy(&sfB));
   CHKERRQ(PetscSFDestroy(&sfBA));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

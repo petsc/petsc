@@ -69,9 +69,8 @@ int main(int argc, char **argv)
   PetscInt        nB=-1, *B, offsetB=-1;
   PetscMPIInt     size, rank;
   PetscInt        testnum;
-  PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-testnum", &testnum, NULL));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
@@ -171,8 +170,8 @@ int main(int argc, char **argv)
   CHKERRQ(PetscSFView(sf, NULL));
   CHKERRQ(PetscSFDestroy(&sf));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

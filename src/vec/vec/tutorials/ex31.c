@@ -5,13 +5,12 @@ static const char help[] = "Demonstrates PetscMatlabEngineXXX()\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       n = 5;
   char           *output;
   Vec            x;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
   CHKERRQ(VecSetSizes(x,PETSC_DECIDE,n));
@@ -34,6 +33,6 @@ int main(int argc,char **argv)
 
   CHKERRQ(VecView(x,PETSC_VIEWER_STDOUT_WORLD));
   CHKERRQ(VecDestroy(&x));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

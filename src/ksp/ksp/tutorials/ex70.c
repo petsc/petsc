@@ -1285,11 +1285,10 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx,PetscInt my)
 */
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscInt       mx,my;
   PetscBool      set = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   mx = my = 10;
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mx",&mx,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-my",&my,NULL));
@@ -1298,8 +1297,8 @@ int main(int argc,char **args)
     my = mx;
   }
   CHKERRQ(SolveTimeDepStokes(mx,my));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* -------------------------- helpers for boundary conditions -------------------------------- */

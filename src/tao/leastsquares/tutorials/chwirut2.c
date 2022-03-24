@@ -61,13 +61,12 @@ PetscErrorCode RunSimulation(PetscReal *x, PetscInt i, PetscReal*f, AppCtx *user
 /*--------------------------------------------------------------------*/
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;           /* used to check for functions returning nonzeros */
   Vec            x, f;               /* solution, function */
   Tao            tao;                /* Tao solver context */
   AppCtx         user;               /* user-defined work context */
 
    /* Initialize TAO and PETSc */
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char *)0,help));
   MPI_Comm_size(MPI_COMM_WORLD,&user.size);
   MPI_Comm_rank(MPI_COMM_WORLD,&user.rank);
   CHKERRQ(InitializeData(&user));
@@ -105,8 +104,8 @@ int main(int argc,char **argv)
   } else {
     TaskWorker(&user);
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*--------------------------------------------------------------------*/

@@ -67,4 +67,3 @@ PETSC_EXTERN void sneslinesearchsetpostcheck_(SNESLineSearch *linesearch,void (*
 
   *ierr = SNESLineSearchSetPostCheck(*linesearch,oursneslinesearchpostcheck,ctx);
 }
-

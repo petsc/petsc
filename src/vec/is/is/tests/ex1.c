@@ -16,9 +16,8 @@ int main(int argc,char **argv)
   PetscBool      flg;
   PetscBool      permanent = PETSC_FALSE;
   PetscBool      compute = PETSC_TRUE;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
@@ -112,8 +111,8 @@ int main(int argc,char **argv)
   CHKERRQ(ISRestoreIndices(newis,&ii));
   CHKERRQ(ISDestroy(&newis));
   CHKERRQ(ISDestroy(&is));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -294,9 +294,8 @@ int main(int argc, char **argv)
   TS             ts;
   Vec            u, r;
   PetscReal      t       = 0.0;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &ctx));
   CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &dm, &ctx));
   CHKERRQ(DMSetApplicationContext(dm, &ctx));
@@ -339,8 +338,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroy(&r));
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

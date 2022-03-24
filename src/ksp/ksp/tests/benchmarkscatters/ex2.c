@@ -10,7 +10,6 @@ static char help[] = "Tests shared memory subcommunicators\n\n";
 
 int main(int argc,char **args)
 {
-  PetscErrorCode  ierr;
   PetscCommShared scomm;
   MPI_Comm        comm;
   PetscMPIInt     lrank,rank,size,i;

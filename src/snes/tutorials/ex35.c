@@ -72,7 +72,6 @@ int main(int argc,char **argv)
   SNES           psnes;                                /* nonlinear Gauss-Seidel approximate solver */
   Vec            x,b;                                  /* solution vector */
   PetscInt       its;                                  /* iterations for convergence */
-  PetscErrorCode ierr;
   DM             da;
   PetscBool      use_ngs_as_npc = PETSC_FALSE;                /* use the nonlinear Gauss-Seidel approximate solver */
 
@@ -80,7 +79,7 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
@@ -139,8 +138,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(SNESDestroy(&snes));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* ------------------------------------------------------------------- */

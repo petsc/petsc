@@ -6,7 +6,6 @@ static char help[] = "Tests MatGetColumnNorms()/Sums()/Means() for matrix read f
 int main(int argc,char **args)
 {
   Mat            A;
-  PetscErrorCode ierr;
   PetscReal      *reductions_real;
   PetscScalar    *reductions_scalar;
   char           file[PETSC_MAX_PATH_LEN];
@@ -15,7 +14,7 @@ int main(int argc,char **args)
   PetscInt       n;
   PetscMPIInt    rank;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
@@ -62,8 +61,8 @@ int main(int argc,char **args)
   CHKERRQ(PetscFree(reductions_real));
   CHKERRQ(PetscFree(reductions_scalar));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

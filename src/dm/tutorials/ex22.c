@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc, &argv, (char*)0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char*)0, help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
@@ -256,8 +256,8 @@ int main(int argc,char **argv)
     CHKERRMPI(MPI_Comm_free(&subset_mpi_comm));
   }
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

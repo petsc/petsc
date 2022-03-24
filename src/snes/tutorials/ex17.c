@@ -631,9 +631,8 @@ int main(int argc, char **argv)
   SNES           snes; /* Nonlinear solver */
   Vec            u;    /* Solutions */
   AppCtx         user; /* User-defined work context */
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
   CHKERRQ(PetscBagCreate(PETSC_COMM_SELF, sizeof(Parameter), &user.bag));
   CHKERRQ(SetupParameters(PETSC_COMM_WORLD, &user));
@@ -656,8 +655,8 @@ int main(int argc, char **argv)
   CHKERRQ(SNESDestroy(&snes));
   CHKERRQ(DMDestroy(&dm));
   CHKERRQ(PetscBagDestroy(&user.bag));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

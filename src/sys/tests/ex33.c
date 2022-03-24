@@ -37,10 +37,9 @@ PetscErrorCode baru()
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 #if defined(PETSC_USE_DEBUG)
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-checkstack",&flg,NULL));
 #endif
@@ -51,8 +50,8 @@ int main(int argc,char **argv)
   for (PetscInt i = 0; i < PETSCSTACKSIZE+1; i++) CHKERRQ(foo());
   for (PetscInt i = 0; i < PETSCSTACKSIZE+1; i++) CHKERRQ(baru());
   for (PetscInt i = 0; i < PETSCSTACKSIZE+1; i++) CHKERRQ(foo());
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

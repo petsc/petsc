@@ -11,9 +11,8 @@ int main(int argc,char **args)
   PetscInt           i, j, nx, shift, x_size, y_size, *idx;
   PetscScalar        *vals;
   PetscBool          flg, x_equal, y_equal;
-  PetscErrorCode     ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nx",&nx,&flg));
   if (!flg) nx = 3;
 
@@ -147,8 +146,8 @@ int main(int argc,char **args)
   }
   CHKERRQ(PetscFree(x));
   CHKERRQ(PetscFree(x_is));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

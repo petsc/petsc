@@ -32,12 +32,11 @@ int main(int argc,char **argv)
   Vec            u,r;                  /* solution, residual vector */
   Mat            J;                    /* Jacobian matrix */
   PetscInt       steps;                /* iterations for convergence */
-  PetscErrorCode ierr;
   DM             da;
   PetscReal      ftime,dt;
   AppCtx         user;              /* user-defined work context */
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -99,8 +98,8 @@ int main(int argc,char **argv)
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&da));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 /*

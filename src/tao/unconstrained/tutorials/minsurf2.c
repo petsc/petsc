@@ -55,7 +55,6 @@ PetscErrorCode My_Monitor(Tao, void *);
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode     ierr;                /* used to check for functions returning nonzeros */
   PetscInt           Nx, Ny;              /* number of processors in x- and y- directions */
   Vec                x;                   /* solution, gradient vectors */
   PetscBool          flg, viewmat;        /* flags */
@@ -66,7 +65,7 @@ int main(int argc, char **argv)
   MatFDColoring      matfdcoloring;
 
   /* Initialize TAO */
-  ierr = PetscInitialize(&argc, &argv,(char *)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv,(char *)0,help));
 
   /* Specify dimension of the problem */
   user.mx = 10; user.my = 10;
@@ -166,8 +165,8 @@ int main(int argc, char **argv)
   CHKERRQ(PetscFree(user.left));
   CHKERRQ(PetscFree(user.right));
   CHKERRQ(DMDestroy(&user.dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode FormGradient(Tao tao, Vec X, Vec G,void *userCtx)

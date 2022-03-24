@@ -8,11 +8,10 @@ int main(int argc,char **argv)
   double         value;
   void           *arr[1000],*dummy;
   int            i,rand1[1000],rand2[1000];
-  PetscErrorCode ierr;
   PetscRandom    r;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,0));
   CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF,&r));
   CHKERRQ(PetscRandomSetFromOptions(r));
   for (i=0; i<1000; i++) {
@@ -55,6 +54,6 @@ int main(int argc,char **argv)
   fprintf(stdout,"\n");
 
   CHKERRQ(PetscRandomDestroy(&r));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

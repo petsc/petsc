@@ -10,7 +10,6 @@ Load of 1.0 in x direction on all nodes (not a true uniform load).\n\
 int main(int argc,char **args)
 {
   Mat            Amat;
-  PetscErrorCode ierr;
   PetscInt       i,m,M,its,Istart,Iend,j,Ii,ix,ne=4;
   PetscReal      x,y,h;
   Vec            xx,bb;
@@ -32,7 +31,7 @@ int main(int argc,char **args)
                              {6.666666666666667E-02, 0.0000E-00, -2.666666666666667E-01,  2.0000E-01, -3.333333333333333E-01,  0.0000E-00, 5.333333333333333E-01, -2.0000E-01 },
                              {0.0000E-00, -3.333333333333333E-01,  2.0000E-01, -2.666666666666667E-01, 0.0000E-00,  6.666666666666667E-02, -2.0000E-01,  5.333333333333333E-01 } };
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_rank(comm, &mype));
   CHKERRMPI(MPI_Comm_size(comm, &npe));
@@ -255,8 +254,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&bb));
   CHKERRQ(MatDestroy(&Amat));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

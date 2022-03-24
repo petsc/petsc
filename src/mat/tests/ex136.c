@@ -6,12 +6,11 @@ static char help[] = "Tests MatLoad() MatView() for MPIBAIJ.\n\n";
 int main(int argc,char **args)
 {
   Mat            A,B;
-  PetscErrorCode ierr;
   char           file[PETSC_MAX_PATH_LEN];
   PetscBool      flg;
   PetscViewer    fd;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -f option");
 
@@ -56,8 +55,8 @@ int main(int argc,char **args)
 
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&B));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

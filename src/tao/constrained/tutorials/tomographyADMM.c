@@ -299,14 +299,13 @@ PetscErrorCode DestroyContext(AppCtx *user)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   Tao            tao,misfit,reg;
   PetscReal      v1,v2;
   AppCtx*        user;
   PetscViewer    fd;
   char           resultFile[] = "tomographyResult_x";
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscNew(&user));
   CHKERRQ(InitializeUserData(user));
 
@@ -375,8 +374,8 @@ int main(int argc,char **argv)
   CHKERRQ(TaoDestroy(&tao));
   CHKERRQ(DestroyContext(user));
   CHKERRQ(PetscFree(user));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

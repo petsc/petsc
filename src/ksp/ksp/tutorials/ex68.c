@@ -68,7 +68,7 @@ int main(int argc,char **args)
   PetscDrawLG    lg;
   PetscDrawAxis  axis;
 
-  ierr = PetscInitialize(&argc,&args,NULL,NULL);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,NULL,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
 
   CHKERRQ(PetscDrawCreate(PETSC_COMM_SELF,NULL,"Log(Error norm) vs Number of GLL points",0,0,500,500,&draw));
@@ -129,8 +129,8 @@ int main(int argc,char **args)
   CHKERRQ(PetscDrawSetPause(draw,-2));
   CHKERRQ(PetscDrawLGDestroy(&lg));
   CHKERRQ(PetscDrawDestroy(&draw));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

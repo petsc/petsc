@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   char           buffer[256],*output,user[256];
   PetscBool      userhappy = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
   CHKERRQ(PetscMatlabEngineGetOutput(PETSC_MATLAB_ENGINE_(PETSC_COMM_WORLD),&output));
@@ -30,6 +30,6 @@ int main(int argc,char **argv)
     CHKERRQ(PetscSynchronizedFGets(PETSC_COMM_WORLD,stdin,256,user));
     CHKERRQ(PetscStrncmp(user,"exit",4,&userhappy));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

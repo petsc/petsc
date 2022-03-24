@@ -123,7 +123,7 @@ int main(int argc, char **argv)
   PetscReal      perturb = 0.1, tol = 10. * PETSC_SMALL;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(PetscRandomCreate(PETSC_COMM_SELF,&randCtx));
   CHKERRQ(PetscRandomSetInterval(randCtx,-1.,1.));
   CHKERRQ(PetscRandomSetFromOptions(randCtx));
@@ -239,8 +239,8 @@ int main(int argc, char **argv)
     }
   }
   CHKERRQ(PetscRandomDestroy(&randCtx));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

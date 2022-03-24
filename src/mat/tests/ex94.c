@@ -26,7 +26,6 @@ int main(int argc,char **args)
   Mat            A,A_save,B,AT,ATT,BT,BTT,P,R,C,C1;
   Vec            x,v1,v2,v3,v4;
   PetscViewer    viewer;
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscInt       i,m,n,j,*idxn,M,N,nzp,rstart,rend;
   PetscReal      norm,norm_abs,norm_tmp,fill=4.0;
@@ -42,15 +41,13 @@ int main(int argc,char **args)
   MatType        mattype;
   Mat            Cdensetest,Pdense,Cdense,Adense;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-fill",&fill,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-matops_view",&view,NULL));
-  if (view) {
-    CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO));
-  }
+  if (view) CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO));
 
   /*  Load the matrices A_save and B */
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f0",file[0],sizeof(file[0]),&flg));
@@ -439,8 +436,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&B));
 
   PetscPreLoadEnd();
-  PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

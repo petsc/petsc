@@ -7,10 +7,9 @@ int main(int argc,char **args)
 {
   Vec            b;
   PetscViewer    fd;               /* viewer */
-  PetscErrorCode ierr;
   PetscInt       i;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   fd = PETSC_VIEWER_SOCKET_WORLD;
 
   for (i=0; i<1000; i++) {
@@ -19,6 +18,6 @@ int main(int argc,char **args)
     CHKERRQ(VecView(b,fd));
     CHKERRQ(VecDestroy(&b));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

@@ -8,9 +8,8 @@ int main(int argc,char **args)
 {
   Mat            A;
   PC             pc;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
   CHKERRQ(MatSetSizes(A,1,1,1,1));
   CHKERRQ(MatSetFromOptions(A));
@@ -25,8 +24,8 @@ int main(int argc,char **args)
   CHKERRQ(PCView(pc,PETSC_VIEWER_STDOUT_WORLD));
   CHKERRQ(PCDestroy(&pc));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

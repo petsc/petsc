@@ -298,7 +298,6 @@ PetscErrorCode SetInitialGuess(DM networkdm,Vec X,void* appctx)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode   ierr;
   DM               networkdm;
   PetscLogStage    stage[4];
   PetscMPIInt      rank,size;
@@ -327,7 +326,7 @@ int main(int argc,char **argv)
   /* Shared vertices between subnetworks */
   PetscInt           power_svtx,water_svtx;
 
-  ierr = PetscInitialize(&argc,&argv,"ex1options",help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,"ex1options",help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
@@ -655,8 +654,8 @@ int main(int argc,char **argv)
   CHKERRQ(SNESDestroy(&snes_water));
 
   CHKERRQ(DMDestroy(&networkdm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

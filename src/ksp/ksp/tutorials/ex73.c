@@ -973,10 +973,9 @@ PetscErrorCode test_mg(void)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       test_id = 0;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-tid",&test_id,NULL));
   switch (test_id) {
   case 0:
@@ -991,8 +990,8 @@ int main(int argc,char **argv)
   default:
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"-tid must be 0,1,2");
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode ComputeRHS_DMDA(DM da,Vec b,void *ctx)

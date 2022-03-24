@@ -13,7 +13,6 @@ static char help[] = "Test if VecLoad_HDF5 can correctly handle FFTW vectors\n\n
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscInt       i,low,high,ldim,iglobal;
   PetscInt       m=64,dim[2]={8,8},DIM=2; /* FFT parameters */
   Vec            u,u_,H;    /* wave, work and transfer function vectors */
@@ -22,7 +21,7 @@ int main(int argc,char **args)
   PetscViewer    viewer;    /* Load refractive index */
   PetscScalar    v;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
 
   /* Generate vector */
   CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
@@ -62,7 +61,7 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&u));
   CHKERRQ(VecDestroy(&u_));
   CHKERRQ(VecDestroy(&H));
-  ierr = PetscFinalize();
+  CHKERRQ(PetscFinalize());
   return 0;
 }
 

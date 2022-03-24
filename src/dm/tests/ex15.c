@@ -7,7 +7,6 @@ static char help[] = "Tests DMDA interpolation.\n\n";
 int main(int argc,char **argv)
 {
   PetscInt         M1 = 3,M2,dof = 1,s = 1,ratio = 2,dim = 1;
-  PetscErrorCode   ierr;
   DM               da_c,da_f;
   Vec              v_c,v_f;
   Mat              Interp;
@@ -15,7 +14,7 @@ int main(int argc,char **argv)
   PetscBool        pt;
   DMBoundaryType   bx = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE,bz = DM_BOUNDARY_NONE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M1,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-stencil_width",&s,NULL));
@@ -65,6 +64,6 @@ int main(int argc,char **argv)
   CHKERRQ(DMDestroy(&da_c));
   CHKERRQ(VecDestroy(&v_f));
   CHKERRQ(DMDestroy(&da_f));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

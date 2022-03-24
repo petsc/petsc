@@ -35,7 +35,6 @@ PetscErrorCode ISAllGatherDisjoint(IS iis, IS** ois)
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscInt       nd = 2,ov = 1,ndpar,i,start,m,n,end,lsize;
   PetscMPIInt    rank;
   PetscBool      flg, useND = PETSC_FALSE;
@@ -46,7 +45,7 @@ int main(int argc,char **args)
   PetscRandom    r;
   PetscScalar    rand;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must use -f filename to indicate a file containing a PETSc binary matrix");
@@ -138,8 +137,8 @@ int main(int argc,char **args)
   CHKERRQ(PetscFree(is2));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&B));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -10,7 +10,6 @@ is similar to ex40.c; here the index sets used are random. Input arguments are:\
 int main(int argc,char **args)
 {
   PetscInt       nd = 2,ov=1,i,j,m,n,*idx,lsize;
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscBool      flg;
   Mat            A,B;
@@ -20,7 +19,7 @@ int main(int argc,char **args)
   PetscRandom    r;
   PetscScalar    rand;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nd",&nd,NULL));
@@ -88,8 +87,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(PetscFree(idx));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

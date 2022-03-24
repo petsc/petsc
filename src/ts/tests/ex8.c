@@ -65,12 +65,11 @@ extern PetscErrorCode TSFunctionI(TS,PetscReal,Vec,Vec,Vec,void*);
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   AppCtx         ctx;
   TS             ts;
   Vec            tsrhs,UV;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
   CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
   CHKERRQ(TSSetType(ts,TSROSW));
@@ -88,8 +87,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&tsrhs));
   CHKERRQ(VecDestroy(&UV));
   CHKERRQ(TSDestroy(&ts));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*

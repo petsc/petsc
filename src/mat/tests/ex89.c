@@ -4,7 +4,6 @@ static char help[] ="Tests MatPtAP() for MPIMAIJ and MPIAIJ \n ";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   DM             coarsedm,finedm;
   PetscMPIInt    size,rank;
   PetscInt       M,N,Z,i,nrows;
@@ -17,7 +16,7 @@ int main(int argc,char **argv)
   PetscInt       dof;
   MPI_Comm       comm;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_rank(comm,&rank));
   CHKERRMPI(MPI_Comm_size(comm,&size));
@@ -120,8 +119,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&P));
   CHKERRQ(DMDestroy(&finedm));
   CHKERRQ(DMDestroy(&coarsedm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

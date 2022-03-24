@@ -1488,17 +1488,16 @@ PetscErrorCode TSAdjointSolve(TS ts)
 #if defined(TSADJOINT_STAGE)
   PetscLogStage  adjoint_stage;
 #endif
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = PetscCitationsRegister("@article{tsadjointpaper,\n"
-                                "  title         = {{PETSc TSAdjoint: a discrete adjoint ODE solver for first-order and second-order sensitivity analysis}},\n"
-                                "  author        = {Zhang, Hong and Constantinescu, Emil M.  and Smith, Barry F.},\n"
-                                "  journal       = {arXiv e-preprints},\n"
-                                "  eprint        = {1912.07696},\n"
-                                "  archivePrefix = {arXiv},\n"
-                                "  year          = {2019}\n}\n",&cite);CHKERRQ(ierr);
+  CHKERRQ(PetscCitationsRegister("@article{tsadjointpaper,\n"
+                                 "  title         = {{PETSc TSAdjoint: a discrete adjoint ODE solver for first-order and second-order sensitivity analysis}},\n"
+                                 "  author        = {Zhang, Hong and Constantinescu, Emil M.  and Smith, Barry F.},\n"
+                                 "  journal       = {arXiv e-preprints},\n"
+                                 "  eprint        = {1912.07696},\n"
+                                 "  archivePrefix = {arXiv},\n"
+                                 "  year          = {2019}\n}\n",&cite));
 #if defined(TSADJOINT_STAGE)
   CHKERRQ(PetscLogStageRegister("TSAdjoint",&adjoint_stage));
   CHKERRQ(PetscLogStagePush(adjoint_stage));

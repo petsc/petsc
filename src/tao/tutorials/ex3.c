@@ -351,9 +351,8 @@ int main(int argc, char **argv)
   Tao            tao;
   Vec            u, lb, ub;
   AppCtx         user;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
   CHKERRQ(CreateCtx(dm, &user));
 
@@ -387,8 +386,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroy(&lb));
   CHKERRQ(VecDestroy(&ub));
   CHKERRQ(DestroyCtx(&user));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

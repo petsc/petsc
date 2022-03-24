@@ -15,7 +15,7 @@ int main(int argc, char **argv)
   MPI_Comm       comm;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm,"","Options for subspace test","none");CHKERRQ(ierr);
   CHKERRQ(PetscOptionsRangeInt("-dim", "The spatial dimension","ex5.c",dim,&dim,NULL,1,3));
@@ -123,8 +123,8 @@ int main(int argc, char **argv)
     }
   }
   CHKERRQ(PetscFEDestroy(&fe));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

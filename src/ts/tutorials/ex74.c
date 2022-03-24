@@ -51,7 +51,7 @@ int main(int argc, char **argv)
   PetscReal      err,ftime;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* default value */
   ctxt.a       = 0.1;
@@ -110,8 +110,8 @@ int main(int argc, char **argv)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(VecDestroy(&uex));
   CHKERRQ(VecDestroy(&u));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode ExactSolution(Vec u,void *c,PetscReal t)

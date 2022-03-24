@@ -31,9 +31,8 @@ int main(int argc,char **args)
   PetscScalar    v;
   PetscMPIInt    rank, size, p, inversions, total_inversions;
   PetscBool      sort_rows, sort_cols, show_inversions;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size>2,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG, "A uniprocessor or two-processor example only.");
@@ -160,6 +159,6 @@ int main(int argc,char **args)
     CHKERRQ(ISDestroy(&(colis[l])));
   }
   CHKERRQ(MatDestroySubMatrices(nsub,&S));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

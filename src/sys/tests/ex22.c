@@ -4,7 +4,6 @@ static char help[] = "Tests the PetscByteSwap()\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       oint[2],sint[2];
   PetscBool      obool[2],sbool[2];
   PetscScalar    oscalar[2],sscalar[2];
@@ -12,7 +11,7 @@ int main(int argc,char **argv)
   float          ofloat[2],sfloat[2];
   short          oshort[2],sshort[2];
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   sint[0]    = oint[0]    = 5;
   sint[1]    = oint[1]    = 19;
@@ -48,8 +47,8 @@ int main(int argc,char **argv)
   if ((sfloat[0] !=ofloat[0])|| (sfloat[1] != ofloat[1]))     CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Byteswap mismatch for PETSC_FLOAT\n"));
   if ((sshort[0] !=oshort[0])|| (sshort[1] != oshort[1]))     CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Byteswap mismatch for PETSC_SHORT\n"));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

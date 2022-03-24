@@ -38,7 +38,7 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
   PetscBool      listed;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   n    = 10.;
   bs   = 1;
   comm = PETSC_COMM_WORLD;
@@ -163,8 +163,8 @@ int main(int argc, char **argv)
 
   CHKERRQ(VecTaggerDestroy(&tagger));
   CHKERRQ(VecDestroy(&vec));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

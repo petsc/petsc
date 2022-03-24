@@ -8,7 +8,6 @@ Input arguments are:\n\
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscInt       its,m,n,mvec;
   PetscReal      norm;
   Vec            x,b,u;
@@ -20,7 +19,7 @@ int main(int argc,char **args)
   PetscLogStage  stage1;
 #endif
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
 
   /* Read matrix and RHS */
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),NULL));
@@ -81,8 +80,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&u));
   CHKERRQ(MatDestroy(&A));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

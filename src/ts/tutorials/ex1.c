@@ -55,12 +55,11 @@ int main(int argc,char **argv)
   Mat            J;                  /* Jacobian matrix */
   AppCtx         user;               /* user-defined work context */
   PetscInt       its,N;                /* iterations for convergence */
-  PetscErrorCode ierr;
   PetscReal      param_max = 6.81,param_min = 0.,dt;
   PetscReal      ftime;
   PetscMPIInt    size;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only");
 
@@ -176,8 +175,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&r));
   CHKERRQ(MatDestroy(&J));
   CHKERRQ(TSDestroy(&ts));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------ */
 /*           Bratu (Solid Fuel Ignition) Test Problem                 */

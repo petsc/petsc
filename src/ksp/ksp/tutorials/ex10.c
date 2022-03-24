@@ -149,7 +149,7 @@ int main(int argc,char **args)
   PetscBool         flg,preload=PETSC_FALSE,trans=PETSC_FALSE,permute=PETSC_FALSE;
   IS                rowperm=NULL;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Preloading example options","");CHKERRQ(ierr);
   {
@@ -270,8 +270,8 @@ int main(int argc,char **args)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

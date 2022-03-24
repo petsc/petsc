@@ -7,7 +7,6 @@ int main(int argc,char **args)
   Mat            C;
   PetscScalar    none = -1.0;
   PetscMPIInt    rank,size;
-  PetscErrorCode ierr;
   PetscInt       its,k;
   PetscReal      err_norm,res_norm;
   Vec            x,b,u,u_tmp;
@@ -16,7 +15,7 @@ int main(int argc,char **args)
   PetscViewer    view;
   char           filein[128];     /* input file name */
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
@@ -106,8 +105,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&u_tmp));
   CHKERRQ(MatDestroy(&C));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

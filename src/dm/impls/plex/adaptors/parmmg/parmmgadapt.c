@@ -271,10 +271,10 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   CHKERRMMG_NONSTANDARD(PMMG_Set_tensorMets(parmesh, metric));
   CHKERRMMG_NONSTANDARD(PMMG_Set_numberOfNodeCommunicators(parmesh, numNgbRanks));
   for (c = 0; c < numNgbRanks; ++c) {
-    CHKERRMMG_NONSTANDARD(PMMG_Set_ithNodeCommunicatorSize, parmesh, c, ngbRanks[c], intOffset[c+1]-intOffset[c]);
-    CHKERRMMG_NONSTANDARD(PMMG_Set_ithNodeCommunicator_nodes, parmesh, c, &interfaces_lv[intOffset[c]], &interfaces_gv[intOffset[c]], 1);
+    CHKERRMMG_NONSTANDARD(PMMG_Set_ithNodeCommunicatorSize(parmesh, c, ngbRanks[c], intOffset[c+1]-intOffset[c]));
+    CHKERRMMG_NONSTANDARD(PMMG_Set_ithNodeCommunicator_nodes(parmesh, c, &interfaces_lv[intOffset[c]], &interfaces_gv[intOffset[c]], 1));
   }
-  CHKERRMMG(PMMG_parmmglib_distributed, parmesh);
+  CHKERRMMG(PMMG_parmmglib_distributed(parmesh));
   CHKERRQ(PetscFree(cells));
   CHKERRQ(PetscFree2(metric, vertices));
   CHKERRQ(PetscFree2(bdFaces, faceTags));
@@ -286,16 +286,16 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
 
   /* Retrieve mesh from Mmg */
   numCornersNew = 4;
-  CHKERRMMG_NONSTANDARD(PMMG_Get_meshSize, parmesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew, 0, 0);
+  CHKERRMMG_NONSTANDARD(PMMG_Get_meshSize(parmesh, &numVerticesNew, &numCellsNew, 0, &numFacesNew, 0, 0));
   CHKERRQ(PetscMalloc4(dim*numVerticesNew, &verticesNew, numVerticesNew, &verTagsNew, numVerticesNew, &corners, numVerticesNew, &requiredVer));
   CHKERRQ(PetscMalloc3((dim+1)*numCellsNew, &cellsNew, numCellsNew, &cellTagsNew, numCellsNew, &requiredCells));
   CHKERRQ(PetscMalloc4(dim*numFacesNew, &facesNew, numFacesNew, &faceTagsNew, numFacesNew, &ridges, numFacesNew, &requiredFaces));
-  CHKERRMMG_NONSTANDARD(PMMG_Get_vertices, parmesh, verticesNew, verTagsNew, corners, requiredVer);
-  CHKERRMMG_NONSTANDARD(PMMG_Get_tetrahedra, parmesh, cellsNew, cellTagsNew, requiredCells);
-  CHKERRMMG_NONSTANDARD(PMMG_Get_triangles, parmesh, facesNew, faceTagsNew, requiredFaces);
+  CHKERRMMG_NONSTANDARD(PMMG_Get_vertices(parmesh, verticesNew, verTagsNew, corners, requiredVer));
+  CHKERRMMG_NONSTANDARD(PMMG_Get_tetrahedra(parmesh, cellsNew, cellTagsNew, requiredCells));
+  CHKERRMMG_NONSTANDARD(PMMG_Get_triangles(parmesh, facesNew, faceTagsNew, requiredFaces));
   CHKERRQ(PetscMalloc2(numVerticesNew, &owners, numVerticesNew, &gv_new));
-  CHKERRMMG_NONSTANDARD(PMMG_Set_iparameter, parmesh, PMMG_IPARAM_globalNum, 1);
-  CHKERRMMG_NONSTANDARD(PMMG_Get_verticesGloNum, parmesh, gv_new, owners);
+  CHKERRMMG_NONSTANDARD(PMMG_Set_iparameter(parmesh, PMMG_IPARAM_globalNum, 1));
+  CHKERRMMG_NONSTANDARD(PMMG_Get_verticesGloNum(parmesh, gv_new, owners));
   for (i = 0; i < dim*numFacesNew; ++i) facesNew[i] -= 1;
   for (i = 0; i < (dim+1)*numCellsNew; ++i) cellsNew[i] = gv_new[cellsNew[i]-1]-1;
   for (i = 0, numVerticesNewLoc = 0; i < numVerticesNew; ++i) {
@@ -314,7 +314,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
 
   /* Create new plex */
   CHKERRQ(DMPlexCreateFromCellListParallelPetsc(comm, dim, numCellsNew, numVerticesNewLoc, PETSC_DECIDE, numCornersNew, PETSC_TRUE, cellsNew, dim, verticesNewLoc, NULL, &verticesNewSorted, dmNew));
-  CHKERRMMG_NONSTANDARD(PMMG_Free_all, PMMG_ARG_start, PMMG_ARG_ppParMesh, &parmesh, PMMG_ARG_end);
+  CHKERRMMG_NONSTANDARD(PMMG_Free_all(PMMG_ARG_start, PMMG_ARG_ppParMesh, &parmesh, PMMG_ARG_end));
   CHKERRQ(PetscFree4(verticesNew, verTagsNew, corners, requiredVer));
 
   /* Get adapted mesh information */

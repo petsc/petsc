@@ -11,11 +11,10 @@ int main(int argc,char **argv)
 #endif
   PetscRandom    rand;
   PetscReal      value;
-  PetscErrorCode ierr;
   PetscBool      values_view=PETSC_FALSE;
   PetscMPIInt    rank;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,0,"-values_view",&values_view,NULL));
@@ -47,8 +46,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscFree(values));
   CHKERRQ(PetscRandomDestroy(&rand));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

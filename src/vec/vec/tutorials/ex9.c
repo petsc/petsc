@@ -25,12 +25,11 @@ int main(int argc,char **argv)
 {
   PetscMPIInt    rank,size;
   PetscInt       nlocal = 6,nghost = 2,ifrom[2],i,rstart,rend;
-  PetscErrorCode ierr;
   PetscBool      flg,flg2,flg3;
   PetscScalar    value,*array,*tarray=0;
   Vec            lx,gx,gxs;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run example with two processors");
@@ -144,8 +143,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&gx));
 
   if (flg) CHKERRQ(PetscFree(tarray));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

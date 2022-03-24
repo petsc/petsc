@@ -61,11 +61,10 @@ int main(int argc,char **args)
 {
   Mat            A,Aij,B;
   Vec            Adiag,Aijdiag;
-  PetscErrorCode ierr;
   PetscInt       m = 3;
   PetscReal      Aijnorm,Aijdiagnorm,Bnorm,dnorm;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
 
   CHKERRQ(MatCreateAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,m,7,NULL,6,NULL,&Aij));
@@ -92,8 +91,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&Adiag));
   CHKERRQ(VecDestroy(&Aijdiag));
   CHKERRQ(MatDestroy(&B));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

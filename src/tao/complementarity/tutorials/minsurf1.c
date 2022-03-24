@@ -43,7 +43,6 @@ PetscErrorCode FormJacobian(Tao, Vec, Mat, Mat, void *);
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;              /* used to check for functions returning nonzeros */
   Vec            x;                 /* solution vector */
   Vec            c;                 /* Constraints function vector */
   Vec            xl,xu;             /* Bounds on the variables */
@@ -56,7 +55,7 @@ int main(int argc, char **argv)
   AppCtx         user;                    /* user-defined work context */
 
   /* Initialize PETSc, TAO */
-  ierr = PetscInitialize(&argc, &argv, (char *)0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char *)0, help));
 
   /* Specify default dimension of the problem */
   user.mx = 4; user.my = 4;
@@ -124,8 +123,8 @@ int main(int argc, char **argv)
   CHKERRQ(PetscFree(user.left));
   CHKERRQ(PetscFree(user.right));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* -------------------------------------------------------------------- */

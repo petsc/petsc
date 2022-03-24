@@ -12,12 +12,11 @@ int main(int argc,char **args)
   KSP            ksp;          /* linear solver context */
   PC             pc;           /* preconditioner context */
   PetscReal      norm,tol=100.*PETSC_MACHINE_EPSILON; /* norm of solution error */
-  PetscErrorCode ierr;
   PetscInt       i,n = 10,col[3],its;
   PetscMPIInt    rank,size;
   PetscScalar    one = 1.0,value[3];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
@@ -121,8 +120,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(KSPDestroy(&ksp));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

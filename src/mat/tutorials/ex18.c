@@ -146,12 +146,11 @@ static PetscErrorCode FillMatrixCPUCOO3d(FEStruct *fe,Mat A)
 int main(int argc, char **args)
 {
   Mat             A;
-  PetscErrorCode  ierr;
   FEStruct        fe;
   PetscMPIInt     size;
   PetscBool       is_kokkos,is_cuda;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size <= 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Demonstration is only for sequential runs");
 
@@ -182,8 +181,8 @@ int main(int argc, char **args)
 
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(DestroyFEStruct(&fe));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

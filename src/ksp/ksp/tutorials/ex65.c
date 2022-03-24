@@ -50,12 +50,11 @@ static PetscErrorCode MyDMShellCreate(MPI_Comm comm,DM da,DM *shell)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   KSP            ksp;
   DM             da,shell;
   PetscInt       levels;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
   CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,129,1,1,0,&da));
   CHKERRQ(DMSetFromOptions(da));
@@ -74,8 +73,8 @@ int main(int argc,char **argv)
   CHKERRQ(KSPDestroy(&ksp));
   CHKERRQ(DMDestroy(&shell));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 static PetscErrorCode CreateMatrix(DM shell,Mat *A)

@@ -100,7 +100,7 @@ int main(int argc,char **argv)
   PetscInt          skipSmall=-1,loopSmall=-1;
   MPI_Op            op = MPI_REPLACE;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   /* Must init the device first if one wants to call PetscGetMemType() without creating PETSc device objects */
 #if defined(PETSC_HAVE_CUDA)
   CHKERRQ(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
@@ -209,8 +209,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscFreeWithMemType(mtype,rootdata));
   CHKERRQ(PetscFreeWithMemType(mtype,leafdata));
   CHKERRQ(PetscFree(iremote));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /**TEST

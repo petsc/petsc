@@ -2221,9 +2221,8 @@ int main(int argc, char **argv)
   const char    *name[3] = {"displacement", "tracestrain", "pressure"};
   PetscReal      t;
   PetscInt       dim, Nc[3];
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &ctx));
   CHKERRQ(PetscBagCreate(PETSC_COMM_SELF, sizeof(Parameter), &ctx.bag));
   CHKERRQ(PetscMalloc1(ctx.niter, &ctx.zeroArray));
@@ -2281,8 +2280,8 @@ int main(int argc, char **argv)
   CHKERRQ(DMDestroy(&dm));
   CHKERRQ(PetscBagDestroy(&ctx.bag));
   CHKERRQ(PetscFree(ctx.zeroArray));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -71,7 +71,7 @@ int main(int argc,char **argv)
   DMDALocalInfo  info;
   PetscBool      patchis_offproc = PETSC_TRUE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
 
   /* Create distributed array and get vectors */
@@ -237,6 +237,6 @@ int main(int argc,char **argv)
   CHKERRQ(PetscFree(iis));
 
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

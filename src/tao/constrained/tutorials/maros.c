@@ -64,7 +64,6 @@ PetscErrorCode FormEqualityJacobian(Tao,Vec,Mat,Mat, void*);
 
 PetscErrorCode main(int argc,char **argv)
 {
-  PetscErrorCode     ierr;                /* used to check for functions returning nonzeros */
   PetscMPIInt        size;
   Vec                x;                   /* solution */
   KSP                ksp;
@@ -76,7 +75,7 @@ PetscErrorCode main(int argc,char **argv)
   AppCtx             user;                /* application context */
 
   /* Initialize TAO,PETSc */
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char *)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   /* Specify default parameters for the problem, check for command-line overrides */
   CHKERRQ(PetscStrncpy(user.name,"HS21",sizeof(user.name)));
@@ -125,8 +124,8 @@ PetscErrorCode main(int argc,char **argv)
   CHKERRQ(VecDestroy(&cin));
   CHKERRQ(TaoDestroy(&tao));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode InitializeProblem(AppCtx *user)

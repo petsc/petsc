@@ -101,7 +101,6 @@ static PetscErrorCode RHSJacobianP(TS ts,PetscReal t,Vec X,Mat A,void *ctx)
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
 static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *x;
   PetscReal         tfinal, dt;
   User              user = (User)ctx;
@@ -115,9 +114,9 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
     CHKERRQ(VecDuplicate(X,&interpolatedX));
     CHKERRQ(TSInterpolate(ts,user->next_output,interpolatedX));
     CHKERRQ(VecGetArrayRead(interpolatedX,&x));
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %D TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",
-                       user->next_output,step,(double)t,(double)dt,(double)PetscRealPart(x[0]),
-                       (double)PetscRealPart(x[1]));CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %D TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",
+                        user->next_output,step,(double)t,(double)dt,(double)PetscRealPart(x[0]),
+                        (double)PetscRealPart(x[1])));
     CHKERRQ(VecRestoreArrayRead(interpolatedX,&x));
     CHKERRQ(VecDestroy(&interpolatedX));
     user->next_output += 0.1;
@@ -133,12 +132,11 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
   struct _n_User user;
   PetscInt       rows,cols;
-  PetscErrorCode ierr;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
@@ -231,8 +229,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&user.x));
   CHKERRQ(TSDestroy(&ts));
 
-  ierr = PetscFinalize();
-  return(ierr);
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -20,10 +20,9 @@ int main(int argc,char **argv)
   Vec            x;               /* vectors */
   PetscReal      norm;
   PetscInt       n = 20;
-  PetscErrorCode ierr;
   PetscScalar    one = 1.0;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /*
@@ -88,8 +87,8 @@ int main(int argc,char **argv)
      are no longer needed.
   */
   CHKERRQ(VecDestroy(&x));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

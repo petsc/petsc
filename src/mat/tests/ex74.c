@@ -6,7 +6,6 @@ static char help[] = "Tests the various sequential routines in MATSEQSBAIJ forma
 int main(int argc,char **args)
 {
   PetscMPIInt    size;
-  PetscErrorCode ierr;
   Vec            x,y,b,s1,s2;
   Mat            A;                    /* linear system matrix */
   Mat            sA,sB,sFactor,B,C;    /* symmetric matrices */
@@ -20,7 +19,7 @@ int main(int argc,char **args)
   MatFactorInfo  factinfo;
   MatType        type;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
@@ -378,8 +377,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(PetscRandomDestroy(&rdm));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

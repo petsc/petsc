@@ -7,11 +7,10 @@ static char help[]= "Test MatSetRandom on MATMPIAIJ matrices\n\n";
 int main(int argc,char **args)
 {
   Mat            A[2];
-  PetscErrorCode ierr;
   PetscReal      nrm,tol=10*PETSC_SMALL;
   PetscRandom    rctx;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&rctx));
 
   /* Call MatSetRandom on unassembled matrices */
@@ -37,8 +36,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A[0]));
   CHKERRQ(MatDestroy(&A[1]));
   CHKERRQ(PetscRandomDestroy(&rctx));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

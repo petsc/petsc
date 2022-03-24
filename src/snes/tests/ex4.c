@@ -49,7 +49,7 @@ int main(int argc,char **argv)
   PetscBool      flg;
   char           type[256];
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-snes_linesearch_type",type,sizeof(type),&flg));
   if (flg) {
     CHKERRQ(PetscStrcmp(type,SNESLINESEARCHBT,&flg));
@@ -136,8 +136,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(VecDestroy(&x)); CHKERRQ(VecDestroy(&r));
   CHKERRQ(MatDestroy(&J)); CHKERRQ(SNESDestroy(&snes));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode FormObjective(SNES snes,Vec x,PetscReal *f,void *dummy)

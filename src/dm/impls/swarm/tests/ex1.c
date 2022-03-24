@@ -135,9 +135,8 @@ int main (int argc, char * argv[]) {
   MPI_Comm       comm;
   DM             dm, sw;
   AppCtx         user;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(CreateMesh(comm, &dm, &user));
   CHKERRQ(CreateParticles(dm, &sw, &user));

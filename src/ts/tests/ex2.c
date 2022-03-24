@@ -29,14 +29,13 @@ extern PetscReal solz(PetscReal);
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       time_steps = 100,steps;
   Vec            global;
   PetscReal      dt,ftime;
   TS             ts;
   Mat            A = 0,S;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-time",&time_steps,NULL));
 
   /* set initial conditions */
@@ -85,8 +84,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&S));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode MyMatMult(Mat S,Vec x,Vec y)

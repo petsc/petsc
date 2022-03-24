@@ -20,10 +20,9 @@ int main(int argc, char **argv)
   PetscBool       removePoints = PETSC_TRUE;
   PetscReal       *wq, *coords;
   PetscDataType   dtype;
-  PetscErrorCode  ierr;
   PetscBool       is_bjac;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   /* Create a mesh */
   CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dm));
   CHKERRQ(DMSetType(dm, DMPLEX));
@@ -93,7 +92,7 @@ int main(int argc, char **argv)
   CHKERRQ(KSPSetOptionsPrefix(ksp, "ftop_"));
   CHKERRQ(KSPSetFromOptions(ksp));
   CHKERRQ(KSPGetPC(ksp,&pc));
-  ierr = PetscObjectTypeCompare((PetscObject)pc,PCBJACOBI,&is_bjac);
+  CHKERRQ(PetscObjectTypeCompare((PetscObject)pc,PCBJACOBI,&is_bjac));
   if (is_bjac) {
     CHKERRQ(DMSwarmCreateMassMatrixSquare(sw, dm, &PM_p));
     CHKERRQ(KSPSetOperators(ksp, M_p, PM_p));
@@ -125,8 +124,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroy(&rho));
   CHKERRQ(DMDestroy(&sw));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

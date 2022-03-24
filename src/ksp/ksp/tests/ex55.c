@@ -10,7 +10,6 @@ T*/
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       n=10,i,col[3];
   Vec            x,b;
   Mat            A,B;
@@ -18,7 +17,7 @@ int main(int argc, char **argv)
   PC             pc,subpc;
   PetscScalar    value[3];
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Create a diagonal matrix with a given distribution of diagonal elements */
   CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
@@ -67,8 +66,8 @@ int main(int argc, char **argv)
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&b));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -79,7 +79,7 @@ int main(int argc,char **argv)
   TSTrajectory      tj;
   PetscBool         flg = PETSC_FALSE,tflg = PETSC_FALSE,found;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");CHKERRQ(ierr);
   CHKERRQ(PetscOptionsString("-chem","CHEMKIN input file","",chemfile,chemfile,sizeof(chemfile),NULL));
   CHKERRQ(PetscFileRetrieve(PETSC_COMM_WORLD,chemfile,lchemfile,PETSC_MAX_PATH_LEN,&found));
@@ -221,8 +221,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&lambda));
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(PetscFree3(user.tchemwork,user.Jdense,user.rows));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)

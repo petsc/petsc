@@ -10,9 +10,8 @@ int main(int argc,char **args)
   PetscScalar    one = 1.0,zero = 0.0,negativeone = -1.0;
   PetscReal      norm;
   Vec            x,y;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
 
   for (i=0; i<2; i++) {
@@ -63,8 +62,8 @@ int main(int argc,char **args)
     CHKERRQ(VecDestroy(&y));
   }
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

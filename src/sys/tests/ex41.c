@@ -10,9 +10,8 @@ int main(int argc,char **argv)
   PetscHSetI     ht = NULL, hd;
   PetscInt       n, off, array[4],na,nb,i,*marray,size;
   PetscBool      has, flag;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   CHKERRQ(PetscHSetICreate(&ht));
   PetscTestCheck(ht != NULL);
@@ -139,8 +138,8 @@ int main(int argc,char **argv)
   }
   CHKERRQ(PetscFree(marray));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

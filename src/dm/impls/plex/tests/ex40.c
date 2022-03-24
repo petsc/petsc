@@ -40,13 +40,12 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
 int main(int argc, char **argv)
 {
   DM             dm;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &dm));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

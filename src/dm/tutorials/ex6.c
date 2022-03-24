@@ -36,7 +36,6 @@ static char help[] = "\n\n";
 int main(int argc,char **argv)
 {
   PetscInt         M = 6;
-  PetscErrorCode   ierr;
   DM               da;
   Vec              local,global,natural;
   PetscInt         i,start,end,*ifrom,x,y,xm,ym;
@@ -46,7 +45,7 @@ int main(int argc,char **argv)
   VecScatter       scatter1,scatter2;
   PetscViewer      subviewer;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Create distributed array and get vectors */
   CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_GHOSTED,DM_BOUNDARY_GHOSTED,DMDA_STENCIL_STAR,M,M,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
@@ -137,8 +136,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&local));
   CHKERRQ(VecDestroy(&global));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

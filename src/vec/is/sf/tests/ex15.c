@@ -10,7 +10,6 @@ general (SGToSG) vecscatter and sequential general to sequential stride 1 (SGToS
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode     ierr;
   PetscInt           i,n,*ix,*iy,*tomap,start;
   Vec                x,y;
   PetscMPIInt        nproc,rank;
@@ -19,7 +18,7 @@ int main(int argc,char **argv)
   VecScatter         vscat;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&nproc));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
@@ -203,8 +202,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscFree(tomap));
   CHKERRQ(VecScatterDestroy(&vscat));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

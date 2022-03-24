@@ -42,7 +42,7 @@ int main(int argc,char **args)
   PetscReal      *gllNode, *gllWgts;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Options for p-FEM","");CHKERRQ(ierr);
   CHKERRQ(PetscOptionsInt("-m","Number of elements in each direction","None",m,&m,NULL));
   CHKERRQ(PetscOptionsInt("-p","Order of each element (tensor product basis)","None",p,&p,NULL));
@@ -220,8 +220,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&Mass));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* --------------------------------------------------------------------- */

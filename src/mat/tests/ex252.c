@@ -7,9 +7,8 @@ int main(int argc, char **args)
   Mat             A;
   PetscInt        N = 32;
   MPI_Comm        comm;
-  PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc, &args, (char*) 0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &args, (char*) 0, help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-N", &N, NULL));
   CHKERRQ(MatCreate(comm, &A));
@@ -19,8 +18,8 @@ int main(int argc, char **args)
   CHKERRQ(MatMPIAIJSetPreallocation(A, 3, NULL, 2, NULL));
   CHKERRQ(MatZeroEntries(A));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

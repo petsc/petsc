@@ -77,14 +77,13 @@ static PetscErrorCode FRecv(MPI_Comm comm,const PetscMPIInt tag[],PetscMPIInt ra
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size,*toranks,*fromranks,nto,nfrom;
   PetscInt       i,n;
   PetscBool      verbose,build_twosided_f;
   Unit           *todata,*fromdata;
   MPI_Datatype   dtype;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
@@ -165,8 +164,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscFree2(todata,toranks));
   CHKERRQ(PetscFree(fromdata));
   CHKERRQ(PetscFree(fromranks));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -1230,7 +1230,7 @@ int main(int argc, char **argv)
   PetscInt        r;
 
   /* Initialize program */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Check if running with only 1 proc */
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
@@ -1262,8 +1262,8 @@ int main(int argc, char **argv)
     }
   }
   CHKERRQ(PetscFree(error));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

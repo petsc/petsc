@@ -5,12 +5,11 @@ static char help[] = "Tests PetscGlobalMinMax\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscInt       li[2],gi[2] = {-1, -1};
   PetscReal      lr[2],gr[2] = {-1., -1.};
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
@@ -39,8 +38,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscGlobalMinMaxReal(PETSC_COMM_WORLD,lr,lr));
   if (lr[0] != gr[0] || lr[1] != gr[1]) CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"5) Error MIN/MAX %g %g\n",(double)lr[0],(double)li[1]));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

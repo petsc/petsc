@@ -276,11 +276,10 @@ PetscErrorCode pic_insert_DMPLEX(PetscBool is_simplex,PetscInt dim)
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscInt       mode = 0;
   PetscInt       dim = 2;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mode",&mode,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
   switch (mode) {
@@ -299,8 +298,8 @@ int main(int argc,char **args)
       CHKERRQ(pic_insert_DMDA(dim));
       break;
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

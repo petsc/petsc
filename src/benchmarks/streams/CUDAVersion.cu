@@ -361,7 +361,7 @@ int main(int argc, char *argv[])
 
   CHKERRCUDA(cudaSetDeviceFlags(cudaDeviceBlockingSync));
 
-  ierr = PetscInitialize(&argc, &argv, 0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, 0, help));
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "STREAM Benchmark Options", "STREAM");CHKERRQ(ierr);
   CHKERRQ(PetscOptionsBoundedInt("-device", "Specify the CUDA device to be used", "STREAM", device, &device, NULL,0));
@@ -372,8 +372,8 @@ int main(int argc, char *argv[])
   if (ierr) {
     CHKERRQ(PetscPrintf(PETSC_COMM_SELF, "\n[streamBenchmark] - results:\t%s\n\n", (ierr == 0) ? "PASSES" : "FAILED"));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

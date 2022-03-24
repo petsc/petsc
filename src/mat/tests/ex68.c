@@ -6,14 +6,13 @@ static char help[] = "Tests MatReorderForNonzeroDiagonal().\n\n";
 int main(int argc,char **argv)
 {
   Mat            mat,B,C;
-  PetscErrorCode ierr;
   PetscInt       i,j;
   PetscMPIInt    size;
   PetscScalar    v;
   IS             isrow,iscol,identity;
   PetscViewer    viewer;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* ------- Assemble matrix, --------- */
 
@@ -128,8 +127,8 @@ int main(int argc,char **argv)
   CHKERRQ(ISDestroy(&iscol));
   CHKERRQ(MatDestroy(&mat));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

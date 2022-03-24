@@ -11,12 +11,11 @@ static char help[] = "MatLoad test for loading matrices that are created by DMCr
 int main(int argc,char **argv)
 {
   PetscInt       X = 10,Y = 8,Z=8;
-  PetscErrorCode ierr;
   DM             da;
   PetscViewer    viewer;
   Mat            A;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp.dat",FILE_MODE_WRITE,&viewer));
 
   /* Read options */
@@ -43,6 +42,6 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(PetscViewerDestroy(&viewer));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

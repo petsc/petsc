@@ -37,7 +37,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscViewer    view;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,NULL,help));
   /*
       Create a parallel AIJ matrix shared by all processors
   */
@@ -117,8 +117,8 @@ int main(int argc,char **args)
   CHKERRQ(PetscViewerDestroy(&view));
   CHKERRQ(MatDestroy(&A));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

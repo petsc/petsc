@@ -49,11 +49,10 @@ int main(int argc,char **argv)
   Mat            J;
   DM             da;
   Vec            x,r;              /* vectors */
-  PetscErrorCode ierr;
   PetscInt       M = 10;
   MatNullSpace   constants,nconstants;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-symmetric",&symmetric,NULL));
 
@@ -130,8 +129,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatNullSpaceDestroy(&constants));
   CHKERRQ(KSPDestroy(&ksp));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*

@@ -153,9 +153,8 @@ int main(int argc,char **args)
   Vec               X,Y,Z;
   User              user;
   PetscInt          i;
-  PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,NULL,&A));
   CHKERRQ(MatSetUp(A));
   CHKERRQ(MatSetValues(A,2,inds,2,inds,avals,INSERT_VALUES));
@@ -202,8 +201,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&Y));
   CHKERRQ(VecDestroy(&Z));
   CHKERRQ(PetscFree(user));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

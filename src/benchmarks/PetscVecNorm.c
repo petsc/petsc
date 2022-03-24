@@ -7,10 +7,9 @@ int main(int argc,char **argv)
   Vec            x;
   PetscReal      norm;
   PetscLogDouble t1,t2;
-  PetscErrorCode ierr;
   PetscInt       n = 10000;
 
-  ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,0));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   CHKERRQ(VecCreate(PETSC_COMM_SELF,&x));
@@ -33,6 +32,6 @@ int main(int argc,char **argv)
   CHKERRQ(PetscTime(&t2));
   fprintf(stdout,"%s : \n","VecNorm");
   fprintf(stdout," Time %g\n",t2-t1);
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

@@ -107,7 +107,7 @@ int main(int argc,char **args)
   DM             da;
   PetscMPIInt    rank,size;
 
-  ierr = PetscInitialize(&argc,&args,NULL,NULL);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,NULL,NULL));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
@@ -218,8 +218,8 @@ int main(int argc,char **args)
   }
   CHKERRQ(PetscDrawLGDestroy(&lg));
   CHKERRQ(PetscDrawDestroy(&draw));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

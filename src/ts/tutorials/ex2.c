@@ -77,7 +77,6 @@ int main(int argc,char **argv)
   Mat            A;                      /* Jacobian matrix data structure */
   Vec            u;                      /* approximate solution vector */
   PetscInt       time_steps_max = 100;  /* default max timesteps */
-  PetscErrorCode ierr;
   PetscReal      dt;
   PetscReal      time_total_max = 100.0; /* default max total time */
   PetscBool      mymonitor      = PETSC_FALSE;
@@ -87,7 +86,7 @@ int main(int argc,char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,bounds));
 
   appctx.comm = PETSC_COMM_WORLD;
@@ -213,8 +212,8 @@ int main(int argc,char **argv)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* --------------------------------------------------------------------- */
 /*

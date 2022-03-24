@@ -5,14 +5,13 @@ static char help[] = "Demonstrates scattering with the indices specified by a pr
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   Vec            x,y;
   IS             is1,is2;
   PetscInt       n,N,ix[2],iy[2];
   VecScatter     ctx;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size < 3,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"This example needs at least 3 processes");
@@ -52,8 +51,8 @@ int main(int argc,char **argv)
   CHKERRQ(ISDestroy(&is2));
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&y));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

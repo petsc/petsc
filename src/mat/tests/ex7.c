@@ -17,7 +17,7 @@ int main(int argc,char **args)
   PetscReal      norm,fill;
   MatFactorInfo  luinfo;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Mat test ex7 options","Mat");CHKERRQ(ierr);
   m = 3; n = 3; fill = 2.0;
@@ -87,8 +87,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&C));
   CHKERRQ(MatDestroy(&LU));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

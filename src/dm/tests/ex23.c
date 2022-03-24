@@ -8,7 +8,6 @@ int main(int argc,char **argv)
 {
   PetscMPIInt      size;
   PetscInt         N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE,M=8,dof=1,stencil_width=1,P=5,pt = 0,st = 0;
-  PetscErrorCode   ierr;
   PetscBool        flg2,flg3,native = PETSC_FALSE;
   DMBoundaryType   bx           = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE,bz = DM_BOUNDARY_NONE;
   DMDAStencilType  stencil_type = DMDA_STENCIL_STAR;
@@ -19,7 +18,7 @@ int main(int argc,char **argv)
   PetscViewer      viewer;
   PetscRandom      rdm;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-P",&P,NULL));
@@ -117,8 +116,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&global2));
   CHKERRQ(VecDestroy(&global3));
   CHKERRQ(VecDestroy(&global4));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

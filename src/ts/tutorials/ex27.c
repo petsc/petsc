@@ -128,7 +128,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   DM             da;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(SetFromOptions(&ctx));
   CHKERRQ(TSCreate(PETSC_COMM_WORLD, &ts));
   CHKERRQ(TSSetType(ts,TSCN));
@@ -161,7 +161,7 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
+  CHKERRQ(PetscFinalize());
   PetscFunctionReturn(0);
 }
 

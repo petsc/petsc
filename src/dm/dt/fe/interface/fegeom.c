@@ -21,7 +21,6 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
   PetscFEGeom     *g;
   PetscInt        dim, Nq, N;
   const PetscReal *p;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   CHKERRQ(PetscQuadratureGetData(quad,&dim,NULL,&Nq,&p,NULL));
@@ -36,9 +35,9 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
   CHKERRQ(PetscCalloc3(N * dimEmbed, &g->v, N * dimEmbed * dimEmbed, &g->J, N, &g->detJ));
   if (faceData) {
     CHKERRQ(PetscCalloc2(numCells, &g->face, N * dimEmbed, &g->n));
-    ierr = PetscCalloc6(N * dimEmbed * dimEmbed, &(g->suppJ[0]),    N * dimEmbed * dimEmbed, &(g->suppJ[1]),
-                        N * dimEmbed * dimEmbed, &(g->suppInvJ[0]), N * dimEmbed * dimEmbed, &(g->suppInvJ[1]),
-                        N,                       &(g->suppDetJ[0]), N,                       &(g->suppDetJ[1]));CHKERRQ(ierr);
+    CHKERRQ(PetscCalloc6(N * dimEmbed * dimEmbed, &(g->suppJ[0]),    N * dimEmbed * dimEmbed, &(g->suppJ[1]),
+                         N * dimEmbed * dimEmbed, &(g->suppInvJ[0]), N * dimEmbed * dimEmbed, &(g->suppInvJ[1]),
+                         N,                       &(g->suppDetJ[0]), N,                       &(g->suppDetJ[1])));
   }
   CHKERRQ(PetscCalloc1(N * dimEmbed * dimEmbed, &g->invJ));
   *geom = g;

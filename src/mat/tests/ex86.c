@@ -3,13 +3,12 @@ static char help[] = "Testing MatCreateMPIMatConcatenateSeqMat().\n\n";
 #include <petscmat.h>
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   Mat            seqmat,mpimat;
   PetscMPIInt    rank;
   PetscScalar    value[3],*vals;
   PetscInt       i,col[3],n=5,bs=1;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
 
@@ -62,8 +61,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(MatDestroy(&seqmat));
   CHKERRQ(MatDestroy(&mpimat));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

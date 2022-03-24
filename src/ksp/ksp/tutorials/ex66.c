@@ -36,9 +36,8 @@ int main(int argc,char **argv)
   KSP            ksp;
   DM             da;
   UserContext    user;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
   CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_MIRROR,DMDA_STENCIL_STAR,11,11,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
   CHKERRQ(DMSetFromOptions(da));
@@ -56,8 +55,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(DMDestroy(&da));
   CHKERRQ(KSPDestroy(&ksp));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)

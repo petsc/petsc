@@ -9,13 +9,12 @@ int main(int argc,char **args)
   Mat            A;        /* linear system matrix */
   Vec            x,b;      /* approx solution, RHS */
   PetscInt       Ii,Istart,Iend;
-  PetscErrorCode ierr;
   PetscScalar    v[3] = {-1./2., 1., -1./2.};
   PetscInt       j[3];
   PetscInt       k=15;
   PetscInt       M,m=420;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-k",&k,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
 
@@ -49,6 +48,6 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(KSPDestroy(&ksp));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

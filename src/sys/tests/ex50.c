@@ -10,7 +10,6 @@ T*/
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode    ierr;
   PetscViewer       viewer,subviewer,subsubviewer;
   PetscViewerFormat format;
   PetscBool         flg;
@@ -27,7 +26,7 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_size(comm,&size));
   PetscCheckFalse(size < 4,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must run with at least 4 MPI processes");
@@ -64,8 +63,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscSubcommDestroy(&psubsubcomm));
   CHKERRQ(PetscSubcommDestroy(&psubcomm));
   CHKERRQ(PetscViewerDestroy(&viewer));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

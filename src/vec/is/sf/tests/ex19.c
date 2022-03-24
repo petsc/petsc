@@ -161,31 +161,26 @@ PetscErrorCode CreateSF1(AppCtx *ctx, PetscSF *sf1)
 
 int main(int argc, char **argv)
 {
-  AppCtx            ctx;
-  PetscSF           sf0, sf1;
-  MPI_Comm          comm;
-  PetscErrorCode    ierr;
+  AppCtx   ctx;
+  PetscSF  sf0, sf1;
+  MPI_Comm comm;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(GetOptions(comm, &ctx));
 
   CHKERRQ(CreateSF0(&ctx, &sf0));
   CHKERRQ(CreateSF1(&ctx, &sf1));
-  ierr = PetscSFViewFromOptions(sf0, NULL, "-sf0_view");
-  ierr = PetscSFViewFromOptions(sf1, NULL, "-sf1_view");
+  CHKERRQ(PetscSFViewFromOptions(sf0, NULL, "-sf0_view"));
+  CHKERRQ(PetscSFViewFromOptions(sf1, NULL, "-sf1_view"));
   CHKERRQ(PetscSFCheckEqual_Private(sf0, sf1));
 
-  if (ctx.localmode != PETSC_OWN_POINTER) {
-    CHKERRQ(PetscFree(ctx.ilocal));
-  }
-  if (ctx.remotemode != PETSC_OWN_POINTER) {
-    CHKERRQ(PetscFree(ctx.iremote));
-  }
+  if (ctx.localmode != PETSC_OWN_POINTER)  CHKERRQ(PetscFree(ctx.ilocal));
+  if (ctx.remotemode != PETSC_OWN_POINTER) CHKERRQ(PetscFree(ctx.iremote));
   CHKERRQ(PetscSFDestroy(&sf0));
   CHKERRQ(PetscSFDestroy(&sf1));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

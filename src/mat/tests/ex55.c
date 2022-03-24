@@ -7,7 +7,6 @@ static char help[] = "Tests converting a matrix to another format with MatConver
 int main(int argc,char **args)
 {
   Mat            C,A,B,D;
-  PetscErrorCode ierr;
   PetscInt       i,j,ntypes,bs,mbs,m,block,d_nz=6, o_nz=3,col[3],row,verbose=0;
   PetscMPIInt    size,rank;
   MatType        type[9];
@@ -16,7 +15,7 @@ int main(int argc,char **args)
   PetscBool      equal,flg_loadmat,flg,issymmetric;
   PetscScalar    value[3];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-verbose",&verbose,NULL));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),&flg_loadmat));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
@@ -217,8 +216,8 @@ int main(int argc,char **args)
   }
   CHKERRQ(MatDestroy(&C));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -21,12 +21,11 @@ int main(int argc,char **argv)
   SNES           snes;
   Vec            x,r;
   Mat            J;
-  PetscErrorCode ierr;
   PetscInt       its;
   AppCtx         user;
   PetscMPIInt    size;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
@@ -60,8 +59,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&r));
   CHKERRQ(MatDestroy(&J));
   CHKERRQ(SNESDestroy(&snes));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*

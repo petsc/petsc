@@ -161,15 +161,14 @@ PetscErrorCode InitialConditions(DM da,Vec U)
 
 int main(int argc,char **argv)
 {
-  TS             ts;
-  Vec            U,Udot;
-  Mat            Jac,Jac2;
-  DM             da;
-  AppCtx         appctx;
-  PetscReal      t = 0,shift,norm;
-  PetscErrorCode ierr;
+  TS        ts;
+  Vec       U,Udot;
+  Mat       Jac,Jac2;
+  DM        da;
+  AppCtx    appctx;
+  PetscReal t = 0,shift,norm;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   appctx.D1    = 8.0e-5;
   appctx.D2    = 4.0e-5;
@@ -229,8 +228,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&Udot));
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return(ierr);
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
   Mat            A;
   PetscBool      struct_only=PETSC_TRUE;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
   switch (dim) {
@@ -40,8 +40,8 @@ int main(int argc, char *argv[])
   CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

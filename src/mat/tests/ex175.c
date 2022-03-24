@@ -5,12 +5,11 @@ static char help[] = "Tests MatCreateHermitianTranspose().\n\n";
 
 int main(int argc,char **args)
 {
-  Mat            C,C_htransposed,Cht,C_empty;
-  PetscInt       i,j,m = 10,n = 10;
-  PetscErrorCode ierr;
-  PetscScalar    v;
+  Mat         C,C_htransposed,Cht,C_empty;
+  PetscInt    i,j,m = 10,n = 10;
+  PetscScalar v;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   /* Create a complex non-hermitian matrix */
   CHKERRQ(MatCreate(PETSC_COMM_SELF,&C));
   CHKERRQ(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m,n));
@@ -37,8 +36,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&C_htransposed));
   CHKERRQ(MatDestroy(&Cht));
   CHKERRQ(MatDestroy(&C_empty));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

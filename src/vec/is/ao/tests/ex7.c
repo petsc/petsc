@@ -7,12 +7,11 @@ static char help[] = "Demonstrates constructing an application ordering.\n\n";
 int main(int argc,char **argv)
 {
   PetscInt       n = 5;
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   IS             ispetsc,isapp;
   AO             ao;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
@@ -36,8 +35,8 @@ int main(int argc,char **argv)
   CHKERRQ(ISDestroy(&isapp));
 
   CHKERRQ(AODestroy(&ao));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

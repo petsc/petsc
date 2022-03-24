@@ -310,9 +310,8 @@ int main(int argc, char **argv)
   DM             dm, dmnew;
   AppCtx         user;
   Vec            allCoords = NULL;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
   CHKERRQ(CreateMesh(&user, &dm));
   if (user.compare_boundary) {
@@ -327,8 +326,8 @@ int main(int argc, char **argv)
   CHKERRQ(DMDestroy(&dm));
   CHKERRQ(DMDestroy(&dmnew));
   CHKERRQ(VecDestroy(&allCoords));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 //TODO we can -compare once the new parallel topology format is in place

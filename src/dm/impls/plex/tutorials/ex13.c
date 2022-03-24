@@ -12,7 +12,7 @@ int main(int argc, char **argv)
   DMPlexTPSType  tps_type = DMPLEX_TPS_SCHWARZ_P;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Schwarz P Example", NULL);CHKERRQ(ierr);
   CHKERRQ(PetscOptionsIntArray("-extent", "Number of replicas for each of three dimensions", NULL, extent, (three=3, &three), NULL));
   CHKERRQ(PetscOptionsInt("-refine", "Number of refinements", NULL, refine, &refine, NULL));
@@ -26,8 +26,8 @@ int main(int argc, char **argv)
   CHKERRQ(PetscObjectSetName((PetscObject)dm, "TPS"));
   CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

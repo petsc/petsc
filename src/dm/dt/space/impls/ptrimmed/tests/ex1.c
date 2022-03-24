@@ -61,9 +61,8 @@ static PetscErrorCode test(PetscInt dim, PetscInt formDegree, PetscInt degree, P
 
 int main(int argc, char *argv[])
 {
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   for (PetscInt dim = 0; dim <= 3; dim++) {
     for (PetscInt formDegree = -dim; formDegree <= dim; formDegree++) {
       for (PetscInt degree = 0; degree <= 4; degree++) {
@@ -74,8 +73,8 @@ int main(int argc, char *argv[])
       }
     }
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

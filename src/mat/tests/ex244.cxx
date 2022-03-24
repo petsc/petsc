@@ -10,7 +10,6 @@ static char help[] = "Tests MatConvert(), MatLoad() for MATSCALAPACK interface.\
 int main(int argc,char **args)
 {
   Mat            A,Ae,B,Be;
-  PetscErrorCode ierr;
   PetscViewer    view;
   char           file[2][PETSC_MAX_PATH_LEN];
   PetscBool      flg,flgB,isScaLAPACK,isDense,isAij,isSbaij;
@@ -18,7 +17,7 @@ int main(int argc,char **args)
   PetscMPIInt    rank,size;
   PetscInt       M,N;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
@@ -106,8 +105,8 @@ int main(int argc,char **args)
 
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&B));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

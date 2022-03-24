@@ -6,13 +6,12 @@ static char help[] = "Tests VecMax() with index.\n\
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       n = 5,idx;
   PetscReal      value,value2;
   Vec            x;
   PetscScalar    one = 1.0;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* create vector */
@@ -35,8 +34,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(VecDestroy(&x));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

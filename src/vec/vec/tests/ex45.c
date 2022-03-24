@@ -23,13 +23,12 @@ int main(int argc,char **argv)
 {
   Vec            v,s;
   PetscInt       i,start,end,n = 8;
-  PetscErrorCode ierr;
   PetscScalar    value;
   const PetscInt vidx[] = {1,2},sidx[] = {1,0};
   PetscInt       miidx[2];
   PetscReal      mvidx[2];
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /*
@@ -88,8 +87,8 @@ int main(int argc,char **argv)
   */
   CHKERRQ(VecDestroy(&v));
   CHKERRQ(VecDestroy(&s));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

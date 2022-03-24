@@ -48,7 +48,7 @@ int main(int argc, char **argv)
   PetscRandom    random;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   t     = 8;
   log2d = 7;
@@ -108,8 +108,8 @@ int main(int argc, char **argv)
 
   CHKERRQ(PetscFree(X));
   CHKERRQ(PetscRandomDestroy(&random));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

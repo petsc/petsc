@@ -7,14 +7,13 @@ static char help[] = "Tests various DMComposite routines.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscMPIInt            rank;
-  PetscErrorCode         ierr;
-  DM                     da1,da2,packer;
-  Vec                    local,global,globals[2],buffer;
-  PetscScalar            value;
-  PetscViewer            viewer;
+  PetscMPIInt rank;
+  DM          da1,da2,packer;
+  Vec         local,global,globals[2],buffer;
+  PetscScalar value;
+  PetscViewer viewer;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   CHKERRQ(DMCompositeCreate(PETSC_COMM_WORLD,&packer));
   CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,8,1,1,NULL,&da1));
@@ -78,9 +77,8 @@ int main(int argc,char **argv)
   CHKERRQ(DMDestroy(&da2));
   CHKERRQ(DMDestroy(&da1));
 
-  ierr = PetscFinalize();
-
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

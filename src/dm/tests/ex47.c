@@ -167,15 +167,14 @@ PetscErrorCode test_3d_nocoord(const char filename[])
 
 int main(int argc, char *argv[])
 {
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   CHKERRQ(test_3d("3d.vts"));
   CHKERRQ(test_2d("2d.vts"));
   CHKERRQ(test_2d_nocoord("2d_nocoord.vts"));
   CHKERRQ(test_3d_nocoord("3d_nocoord.vts"));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

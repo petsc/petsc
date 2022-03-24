@@ -23,10 +23,9 @@ int main(int argc,char **args)
   Vec             fin,fout,fout1;
   Vec             ini,final;
   PetscRandom     rnd;
-  PetscErrorCode  ierr;
   PetscInt        *indx3,tempindx,low,*indx4,tempindx1;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
@@ -181,8 +180,8 @@ int main(int argc,char **args)
   CHKERRQ(PetscRandomDestroy(&rnd));
   CHKERRQ(PetscFree(indx3));
   CHKERRQ(PetscFree(indx4));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

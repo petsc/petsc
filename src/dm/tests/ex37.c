@@ -15,12 +15,11 @@ PetscErrorCode apply(void *ctx,PetscInt n,const PetscScalar *x,PetscScalar *y)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   DM             da;
   Vec            global;
   PF             pf;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,10,3,1,NULL,&da));
   CHKERRQ(DMSetFromOptions(da));
   CHKERRQ(DMSetUp(da));
@@ -32,8 +31,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecView(global,PETSC_VIEWER_DRAW_WORLD));
   CHKERRQ(VecDestroy(&global));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

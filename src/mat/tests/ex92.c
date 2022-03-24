@@ -8,7 +8,6 @@ static char help[] = "Tests MatIncreaseOverlap(), MatCreateSubMatrices() for par
 int main(int argc,char **args)
 {
   Mat            A,Atrans,sA,*submatA,*submatsA;
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscInt       bs=1,mbs=10,ov=1,i,j,k,*rows,*cols,nd=2,*idx,rstart,rend,sz,M,N,Mbs;
   PetscScalar    *vals,rval,one=1.0;
@@ -20,7 +19,7 @@ int main(int argc,char **args)
   PetscLogStage  stages[2];
 #endif
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
@@ -210,8 +209,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&sA));
   CHKERRQ(PetscRandomDestroy(&rand));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

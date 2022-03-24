@@ -22,9 +22,8 @@ int main(int argc,char **argv)
   Vec             x;
   Vec             f;
   Mat             A;
-  PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
 
@@ -69,8 +68,8 @@ int main(int argc,char **argv)
   CHKERRQ(TSSolve(ts,NULL));
 
   CHKERRQ(TSDestroy(&ts));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec x,Vec f,void *ctx)

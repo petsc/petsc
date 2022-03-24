@@ -27,7 +27,7 @@ int main(int argc,char **args)
   PetscLogStage  stage[6];
   PetscScalar    DD1[24][24];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_rank(comm, &mype));
   CHKERRMPI(MPI_Comm_size(comm, &npe));
@@ -356,8 +356,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&Amat));
   CHKERRQ(PetscFree(coords));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* Data was previously provided in the file data/elem_3d_elast_v_25.tx */

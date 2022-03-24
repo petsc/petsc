@@ -10,7 +10,6 @@ static char help[] = "Test memory scalable AO.\n\n";
 
 int main(int argc, char *argv[])
 {
-  PetscInt              ierr;
   PetscInt              n_global = 16;
   MPI_Comm              comm;
   PetscLayout           layout;
@@ -23,7 +22,7 @@ int main(int argc, char *argv[])
   IS                    app_is, petsc_is;
   const PetscInt        n_loc = 8;
 
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help); if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char *) 0, help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_rank(comm, &rank));
 
@@ -89,8 +88,8 @@ int main(int argc, char *argv[])
   CHKERRQ(PetscFree(petsc_indices));
   CHKERRQ(PetscFree(ia));
   CHKERRQ(PetscFree(ia0));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

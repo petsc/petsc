@@ -49,12 +49,11 @@ int main(int argc, char **argv)
   PetscMPIInt       gsize, grank, mycolor;
   PetscInt          i;
   PetscBool         flg;
-  PetscErrorCode    ierr;
   const char        exampleDMPlexName[] = "DMPlex Object";
   const char        *infilename;
   PetscViewerFormat informat;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&gsize));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&grank));
@@ -156,8 +155,8 @@ int main(int argc, char **argv)
   }
 
   /* Final clean-up */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

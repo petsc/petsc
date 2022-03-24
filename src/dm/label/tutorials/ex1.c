@@ -144,9 +144,8 @@ PetscErrorCode CreateMesh(const char name[], DM *newdm)
 int main(int argc, char **argv)
 {
   DM             dm;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRQ(CreateMesh("plex0", &dm));
   /* add custom labels to test adding/removal */
   {
@@ -288,8 +287,8 @@ int main(int argc, char **argv)
   }
 
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

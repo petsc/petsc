@@ -6,9 +6,8 @@ static const char help[] = "Tests creation and destruction of PetscDeviceContext
 int main(int argc, char *argv[])
 {
   PetscDeviceContext dctx = NULL,ddup = NULL;
-  PetscErrorCode     ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   /* basic creation and destruction */
   CHKERRQ(PetscDeviceContextCreate(&dctx));
@@ -40,8 +39,8 @@ int main(int argc, char *argv[])
   CHKERRQ(AssertDeviceContextExists(dctx));
 
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"EXIT_SUCCESS\n"));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

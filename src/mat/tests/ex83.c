@@ -19,7 +19,6 @@ T*/
 int main(int argc,char **args)
 {
   Mat             A,B;
-  PetscErrorCode  ierr;
   PetscMPIInt     rank,size,membershipKey;
   PetscInt        *ia,*ja,*indices_sc,isrows_localsize;
   const PetscInt  *indices;
@@ -28,7 +27,7 @@ int main(int argc,char **args)
   IS              coarseparts,fineparts;
   MPI_Comm        comm,scomm;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_size(comm,&size));
   PetscCheckFalse(size != 4,comm,PETSC_ERR_WRONG_MPI_SIZE,"Must run with 4 processors ");
@@ -109,6 +108,6 @@ int main(int argc,char **args)
   */
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&B));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

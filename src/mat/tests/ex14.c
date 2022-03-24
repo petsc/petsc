@@ -7,13 +7,12 @@ int main(int argc,char **args)
 {
   Mat               C;
   PetscInt          i,j,m = 5,n = 5,Ii,J,nz,rstart,rend;
-  PetscErrorCode    ierr;
   PetscMPIInt       rank;
   const PetscInt    *idx;
   PetscScalar       v;
   const PetscScalar *values;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   /* Create the matrix for the five point stencil, YET AGAIN */
   CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
   CHKERRQ(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
@@ -47,8 +46,8 @@ int main(int argc,char **args)
   }
 
   CHKERRQ(MatDestroy(&C));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

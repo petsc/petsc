@@ -58,7 +58,6 @@ PetscErrorCode EvaluateRegularizerHessianProd(Mat,Vec,Vec);
 /*--------------------------------------------------------------------*/
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;               /* used to check for functions returning nonzeros */
   Vec            x,res;              /* solution, function res(x) = A*x-b */
   Mat            Hreg;               /* regularizer Hessian matrix for user specified regularizer*/
   Tao            tao;                /* Tao solver context */
@@ -68,7 +67,7 @@ int main(int argc,char **argv)
   PetscViewer    fd;   /* used to save result to file */
   char           resultFile[] = "tomographyResult_x";  /* Debug: change from "tomographyResult_x" to "cs1Result_x" */
 
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char *)0,help));
 
   /* Create TAO solver and set desired solution method */
   CHKERRQ(TaoCreate(PETSC_COMM_SELF,&tao));
@@ -140,8 +139,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&user.xGT));
   CHKERRQ(VecDestroy(&user.xlb));
   CHKERRQ(VecDestroy(&user.xub));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*--------------------------------------------------------------------*/

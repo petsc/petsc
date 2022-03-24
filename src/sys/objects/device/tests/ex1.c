@@ -8,9 +8,8 @@ int main(int argc, char *argv[])
   const PetscInt n = 10;
   PetscDevice    device = NULL;
   PetscDevice    devices[n];
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   /* normal create and destroy */
   CHKERRQ(PetscDeviceCreate(PETSC_DEVICE_DEFAULT,PETSC_DECIDE,&device));
@@ -62,8 +61,8 @@ int main(int argc, char *argv[])
   }
 
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"EXIT_SUCCESS\n"));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

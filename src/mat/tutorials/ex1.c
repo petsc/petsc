@@ -26,11 +26,10 @@ int main(int argc,char **args)
   PetscViewer     fd;                     /* viewer */
   char            file[PETSC_MAX_PATH_LEN];           /* input file name */
   IS              isrow,iscol;            /* row and column permutations */
-  PetscErrorCode  ierr;
   MatOrderingType rtype = MATORDERINGRCM;
   PetscBool       flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   /*
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
@@ -80,8 +79,8 @@ int main(int argc,char **args)
   CHKERRQ(ISDestroy(&isrow));
   CHKERRQ(ISDestroy(&iscol));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

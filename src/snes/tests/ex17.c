@@ -653,15 +653,14 @@ static PetscErrorCode FormJacobian2_block(SNES snes,Vec x,Mat jac,Mat B,void *du
 int main(int argc,char **argv)
 {
   PetscMPIInt    size;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
   CHKERRQ(assembled_system());
   CHKERRQ(block_system());
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

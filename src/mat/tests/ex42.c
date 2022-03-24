@@ -10,7 +10,6 @@ Input arguments are:\n\
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscInt       nd = 2,ov=1,i,j,lsize,m,n,*idx,bs;
   PetscMPIInt    rank, size;
   PetscBool      flg;
@@ -22,7 +21,7 @@ int main(int argc,char **args)
   PetscBool      test_unsorted = PETSC_FALSE;
   PetscScalar    rand;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",file,sizeof(file),NULL));
@@ -119,8 +118,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(PetscFree(idx));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -225,13 +225,12 @@ PetscErrorCode test_solve_matgetvecs(void)
 
 int main(int argc, char **args)
 {
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &args,(char*)0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &args,(char*)0, help));
   CHKERRQ(test_solve());
   CHKERRQ(test_solve_matgetvecs());
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

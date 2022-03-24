@@ -989,7 +989,6 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
 
 int main(int argc,char **args)
 {
-  PetscErrorCode     ierr;
   DomainData         dd;
   PetscReal          norm,maxeig,mineig;
   PetscScalar        scalar_value;
@@ -1001,7 +1000,7 @@ int main(int argc,char **args)
   PetscBool          testfetidp = PETSC_TRUE;
 
   /* Init PETSc */
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   /* Initialize DomainData */
   CHKERRQ(InitializeDomainData(&dd));
   /* Decompose domain */
@@ -1126,8 +1125,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(KSPDestroy(&KSPwithBDDC));
   /* Quit PETSc */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

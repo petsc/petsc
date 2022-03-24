@@ -22,9 +22,8 @@ int main(int argc,char **args)
   Mat            A;            /* matrix */
   Vec            x,b;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   fd = PETSC_VIEWER_SOCKET_WORLD;
 
   CHKERRQ(VecCreate(PETSC_COMM_WORLD,&b));
@@ -44,8 +43,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(KSPDestroy(&ksp));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

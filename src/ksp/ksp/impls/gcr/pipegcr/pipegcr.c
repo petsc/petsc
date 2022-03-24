@@ -376,7 +376,6 @@ static PetscErrorCode KSPView_PIPEGCR(KSP ksp, PetscViewer viewer)
 static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
 {
   KSP_PIPEGCR   *pipegcr = (KSP_PIPEGCR*)ksp->data;
-  PetscErrorCode ierr;
   Mat            A;
   PetscBool      diagonalscale;
   const PetscInt nworkstd = 5;
@@ -406,15 +405,15 @@ static PetscErrorCode KSPSetUp_PIPEGCR(KSP ksp)
   /* Preallocate additional work vectors */
   CHKERRQ(KSPAllocateVectors_PIPEGCR(ksp,pipegcr->nprealloc,pipegcr->nprealloc));
 
-  ierr = PetscLogObjectMemory(
-    (PetscObject)ksp,
-    (pipegcr->mmax + 1) * 4 * sizeof(Vec*) +        /* old dirs  */
-    (pipegcr->mmax + 1) * 4 * sizeof(Vec**) +       /* old pdirs */
-    (pipegcr->mmax + 1) * 4 * sizeof(Vec*) +        /* p/s/qold/told */
-    (pipegcr->mmax + 1) *     sizeof(PetscInt) +    /* chunksizes */
-    (pipegcr->mmax + 2) *     sizeof(Vec*) +        /* redux */
-    (pipegcr->mmax + 2) *     sizeof(PetscScalar) + /* dots */
-    (pipegcr->mmax + 1) *     sizeof(PetscReal)     /* etas */);CHKERRQ(ierr);
+  CHKERRQ(PetscLogObjectMemory(
+            (PetscObject)ksp,
+            (pipegcr->mmax + 1) * 4 * sizeof(Vec*) +        /* old dirs  */
+            (pipegcr->mmax + 1) * 4 * sizeof(Vec**) +       /* old pdirs */
+            (pipegcr->mmax + 1) * 4 * sizeof(Vec*) +        /* p/s/qold/told */
+            (pipegcr->mmax + 1) *     sizeof(PetscInt) +    /* chunksizes */
+            (pipegcr->mmax + 2) *     sizeof(Vec*) +        /* redux */
+            (pipegcr->mmax + 2) *     sizeof(PetscScalar) + /* dots */
+            (pipegcr->mmax + 1) *     sizeof(PetscReal)     /* etas */));
   PetscFunctionReturn(0);
 }
 

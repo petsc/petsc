@@ -16,13 +16,12 @@ int main(int argc,char **args)
   Vec            b;
   MatType        mtype = MATSEQBAIJ;
   Mat            A,*B;
-  PetscErrorCode ierr;
   PetscInt       start=0;
   PetscInt       m;
   IS             isrow,iscol;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-fin",fin,sizeof(fin),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Must indicate binary file with the -fin option");
   CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_SELF,fin,FILE_MODE_READ,&fdin));
@@ -58,8 +57,8 @@ int main(int argc,char **args)
   CHKERRQ(PetscFree(B));
   CHKERRQ(ISDestroy(&iscol));
   CHKERRQ(ISDestroy(&isrow));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

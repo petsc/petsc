@@ -62,9 +62,8 @@ int main(int argc, char **argv)
   PetscDraw         positionDraw;
   PetscDrawSP       positionDrawSP;
   MPI_Comm          comm;
-  PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(ProcessOptions(comm, &user));
 
@@ -169,8 +168,8 @@ int main(int argc, char **argv)
 
   CHKERRQ(PetscDrawSPDestroy(&positionDrawSP));
   CHKERRQ(PetscDrawDestroy(&positionDraw));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

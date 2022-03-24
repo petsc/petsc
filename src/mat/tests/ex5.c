@@ -8,13 +8,12 @@ int main(int argc,char **args)
 {
   Mat            C;
   Vec            s,u,w,x,y,z;
-  PetscErrorCode ierr;
   PetscInt       i,j,m = 8,n,rstart,rend,vstart,vend;
   PetscScalar    one = 1.0,negone = -1.0,v,alpha=0.1;
   PetscReal      norm, tol = PETSC_SQRT_MACHINE_EPSILON;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   n    = m;
@@ -141,8 +140,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&y)); CHKERRQ(VecDestroy(&z));
   CHKERRQ(MatDestroy(&C));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

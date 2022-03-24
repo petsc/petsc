@@ -10,7 +10,6 @@ static char help[] = "Tests I/O of vectors for different data formats (binary,HD
 
 int main(int argc,char **args)
 {
-  PetscErrorCode    ierr;
   PetscMPIInt       rank,size;
   PetscInt          i,m = 20,low,high,ldim,iglobal,lsize;
   PetscScalar       v;
@@ -28,7 +27,7 @@ int main(int argc,char **args)
   PetscLogEvent  VECTOR_GENERATE,VECTOR_READ;
 #endif
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   mpiio_use = vstage2 = vstage3 = PETSC_FALSE;
 
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-binary",&isbinary,NULL));
@@ -149,8 +148,8 @@ int main(int argc,char **args)
 
   /* Free data structures */
   CHKERRQ(VecDestroy(&u));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

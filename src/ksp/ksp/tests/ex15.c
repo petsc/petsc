@@ -8,13 +8,12 @@ int main(int argc,char **args)
   Vec            x,b,u;      /* approx solution, RHS, exact solution */
   Mat            A;            /* linear system matrix */
   KSP            ksp;         /* KSP context */
-  PetscErrorCode ierr;
   PetscInt       i,n = 10,col[3],its,i1,i2;
   PetscScalar    none = -1.0,value[3],avalue;
   PetscReal      norm;
   PC             pc;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* Create vectors */
@@ -75,6 +74,6 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&x));CHKERRQ(VecDestroy(&u));
   CHKERRQ(VecDestroy(&b));CHKERRQ(MatDestroy(&A));
   CHKERRQ(KSPDestroy(&ksp));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

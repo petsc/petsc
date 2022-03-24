@@ -10,14 +10,13 @@
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   char           buff[4096];
 
-  ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,NULL));
   CHKERRQ(PetscGlobusGetTransfers(PETSC_COMM_WORLD,NULL,buff,sizeof(buff)));
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Transfers are %s\n",buff));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

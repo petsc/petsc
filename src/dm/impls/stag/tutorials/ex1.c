@@ -81,7 +81,6 @@ static char help[] = "Solve a toy 1D problem on a staggered grid.\n\
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode    ierr;
   DM                dmSol,dmForcing;
   DM                dmCoordSol;
   Vec               sol,solRef,solRefLocal,f,fLocal,rhs,coordSolLocal;
@@ -98,7 +97,7 @@ int main(int argc,char **argv)
   const PetscReal domainSize = 1.0;
 
   /* Initialize PETSc */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Create 1D DMStag for the solution, and set up. Note that you can supply many
      command line options (see the man page for DMStagCreate1d)
@@ -379,8 +378,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(DMDestroy(&dmSol));
   CHKERRQ(DMDestroy(&dmForcing));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

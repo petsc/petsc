@@ -6,9 +6,8 @@ static char help[] = "Tests PetscArraymove()/PetscMemmove()\n";
 int main(int argc,char **argv)
 {
   PetscInt       i,*a,*b;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   CHKERRQ(PetscMalloc1(10,&a));
   CHKERRQ(PetscMalloc1(20,&b));
@@ -44,8 +43,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscIntView(20,a,NULL));
   CHKERRQ(PetscFree(a));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

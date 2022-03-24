@@ -638,9 +638,8 @@ int main(int argc, char **argv)
 {
   Stokes         s;
   KSP            ksp;
-  PetscErrorCode ierr;
 
-  ierr           = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   s.nx           = 4;
   s.ny           = 6;
   CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-nx", &s.nx, NULL));
@@ -678,8 +677,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroy(&s.b));
   CHKERRQ(VecDestroy(&s.y));
   CHKERRQ(MatDestroy(&s.myS));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

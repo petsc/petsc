@@ -21,7 +21,7 @@ int main(int argc,char **args)
   KSPConvergedReason reason;
   PetscErrorCode     ierr;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,NULL,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-f",name,sizeof(name),&flg));
@@ -136,8 +136,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&KA));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(KSPDestroy(&ksp));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

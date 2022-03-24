@@ -25,7 +25,7 @@ int main(int argc,char **args)
   PetscScalar     *x_array,*y_array,*z_array;
   fftw_plan       fplan,bplan;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
 #endif
@@ -153,8 +153,8 @@ int main(int argc,char **args)
     CHKERRQ(VecDestroy(&z));
   }
   CHKERRQ(PetscRandomDestroy(&rdm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -19,13 +19,12 @@ int main(int argc,char **args)
   PetscViewer    fd;              /* viewer */
   char           file[PETSC_MAX_PATH_LEN];     /* input file name */
   PetscBool      flg,partition=PETSC_FALSE,displayIS=PETSC_FALSE,displayMat=PETSC_FALSE;
-  PetscErrorCode ierr;
   PetscInt       its,m,n;
   PetscReal      norm;
   PetscMPIInt    size,rank;
   PetscScalar    one = 1.0;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
@@ -149,8 +148,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&u)); CHKERRQ(VecDestroy(&x));
   CHKERRQ(KSPDestroy(&ksp));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

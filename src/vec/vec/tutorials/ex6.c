@@ -13,7 +13,6 @@ static char help[] = "Writes an array to a file, then reads an array from a file
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   int            fd;
   PetscInt       i,m = 10,sz;
@@ -21,7 +20,7 @@ int main(int argc,char **args)
   Vec            vec;
   PetscViewer    view_out,view_in;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
@@ -75,8 +74,8 @@ int main(int argc,char **args)
   /* Free data structures */
   CHKERRQ(VecDestroy(&vec));
   CHKERRQ(PetscViewerDestroy(&view_in));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

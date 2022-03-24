@@ -6,7 +6,6 @@ static const char help[] = "Test overlapped communication on a single star fores
 
 int main(int argc, char **argv)
 {
-  PetscInt    ierr;
   PetscSF     sf;
   Vec         A,Aout;
   Vec         B,Bout;
@@ -20,7 +19,7 @@ int main(int argc, char **argv)
   PetscInt    *ilocal;
   PetscSFNode *iremote;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
@@ -90,8 +89,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroy(&Bout));
   CHKERRQ(PetscSFDestroy(&sf));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

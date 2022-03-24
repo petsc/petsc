@@ -95,9 +95,8 @@ int main(int argc, char **argv)
   Mat            system;
   MPI_Comm       comm;
   PetscInt       i;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(ProcessOptions(comm, &user));
   CHKERRQ(CreateMesh(comm, &user));
@@ -133,8 +132,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroy(&solution));
   CHKERRQ(MatDestroy(&system));
   CHKERRQ(DMDestroy(&user.dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

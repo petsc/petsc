@@ -816,9 +816,8 @@ int main(int argc, char **argv)
   AppCtx         user;        /* user-defined work context */
   JacActionCtx   userJ;       /* context for Jacobian MF action */
   PetscReal      error = 0.0; /* L_2 error in the solution */
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
   CHKERRQ(SNESCreate(PETSC_COMM_WORLD, &snes));
   CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
@@ -1002,8 +1001,8 @@ int main(int argc, char **argv)
   CHKERRQ(DMDestroy(&dm));
   CHKERRQ(PetscFree2(user.exactFuncs, user.exactFields));
   CHKERRQ(PetscFree(user.kgrid));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

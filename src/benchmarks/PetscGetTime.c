@@ -6,9 +6,8 @@ int main(int argc,char **argv)
 {
   PetscLogDouble x,y;
   PetscInt       i;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,0);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,0));
   /* To take care of paging effects */
   CHKERRQ(PetscTime(&y));
 
@@ -27,6 +26,6 @@ int main(int argc,char **argv)
     fprintf(stdout,"%-15s : %e sec\n","PetscTime",(y-x)/10.0);
   }
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

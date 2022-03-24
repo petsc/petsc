@@ -7,10 +7,9 @@ int main(int argc, char **argv)
   Mat mat;
   MatNullSpace nsp;
   PetscBool prefix = PETSC_FALSE, flg;
-  PetscErrorCode ierr;
   PetscInt zero = 0;
   PetscScalar value = 0;
-  ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
 
   CHKERRQ(PetscOptionsGetBool(NULL, NULL, "-with_prefix",&prefix,NULL));
   CHKERRQ(MatCreateDense(PETSC_COMM_WORLD, 1, 1, 1, 1, NULL, &mat));
@@ -24,8 +23,8 @@ int main(int argc, char **argv)
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Null space test failed!");
   CHKERRQ(MatNullSpaceDestroy(&nsp));
   CHKERRQ(MatDestroy(&mat));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

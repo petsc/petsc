@@ -13,12 +13,11 @@ int main(int argc,char **args)
   Vec            x, b, u;      /* approx solution, RHS, exact solution */
   Mat            A;            /* linear system matrix */
   KSP            ksp;          /* linear solver context */
-  PetscErrorCode ierr;
   PetscInt       i,n = 10,col[3];
   PetscMPIInt    size;
   PetscScalar    value[3];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
@@ -73,8 +72,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(KSPDestroy(&ksp));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

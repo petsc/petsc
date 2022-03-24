@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char*) 0, help));
 
   /*
      The following MPI calls return the number of processes
@@ -57,8 +57,8 @@ int main(int argc, char *argv[])
          options are chosen (e.g., -log_view).  See PetscFinalize()
      manpage for more information.
   */
-  ierr = PetscFinalize();if (ierr) return ierr;
-  ierr = MPI_Comm_free(&PETSC_COMM_WORLD);if (ierr) return ierr;
+  CHKERRQ(PetscFinalize();if (ierr) return ierr);
+  ierr = MPI_Comm_free(&PETSC_COMM_WORLD);if (ierr) return 0;
 #if defined(PETSC_HAVE_ELEMENTAL)
   ierr = PetscElementalFinalizePackage();if (ierr) return ierr;
 #endif

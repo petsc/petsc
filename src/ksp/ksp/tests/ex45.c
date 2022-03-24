@@ -15,9 +15,8 @@ int main(int argc, char **argv)
     DM             shell;
     Vec            *left, *right;
     MPI_Comm       c;
-    PetscErrorCode ierr;
 
-    ierr = PetscInitialize(&argc, &argv, NULL, NULL);if (ierr) return ierr;
+    CHKERRQ(PetscInitialize(&argc, &argv, NULL, NULL));
     c = PETSC_COMM_WORLD;
 
     CHKERRQ(MatCreate(c, &A));

@@ -4,13 +4,12 @@ static char help[] = "Tests VecPlaceArray() and VecReciprocal().\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       n=5,bs;
   PetscBool      iscuda,iskokkos,iship;
   Vec            x,x1,x2,x3;
   PetscScalar    *px;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create vector of length 2*n */
   CHKERRQ(VecCreate(PETSC_COMM_SELF,&x));
@@ -67,8 +66,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(VecDestroy(&x));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

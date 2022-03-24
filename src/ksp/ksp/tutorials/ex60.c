@@ -121,7 +121,6 @@ static PetscErrorCode AssembleDiagonalMatrix(Mat A, PetscScalar (*diagfunc)(Pets
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       n=10000,its,dfid=1;
   Vec            x,b,u;
   Mat            A;
@@ -131,7 +130,7 @@ int main(int argc, char **argv)
   PetscReal      eta=0.1,norm;
   PetscScalar(*diagfunc)(PetscInt,PetscInt);
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   /* Process command line options */
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-eta",&eta,NULL));
@@ -206,8 +205,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(VecDestroy(&u));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

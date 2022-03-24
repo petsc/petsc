@@ -126,7 +126,7 @@ int main(int argc,char **argv)
   TSAdapt        adapt;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   app.Cd = 0.0;
@@ -180,8 +180,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&V));
   CHKERRQ(TSDestroy(&ts));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

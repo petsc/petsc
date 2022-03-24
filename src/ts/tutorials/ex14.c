@@ -1579,7 +1579,7 @@ int main(int argc,char *argv[])
   PetscReal      ftime;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   comm = PETSC_COMM_WORLD;
 
   CHKERRQ(THICreate(comm,&thi));
@@ -1656,6 +1656,6 @@ int main(int argc,char *argv[])
   CHKERRQ(DMDestroy(&pack));
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(THIDestroy(&thi));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

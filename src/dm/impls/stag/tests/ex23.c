@@ -5,12 +5,11 @@ static char help[] = "Test modifying DMStag coordinates, when represented as a p
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   DM             dm,cdm;
   PetscInt       ex,ey,ez,n[3],start[3],nExtra[3],iNext,iPrev,iCenter,d,round;
   PetscScalar    **cArrX,**cArrY,**cArrZ;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   CHKERRQ(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_GHOSTED,DM_BOUNDARY_PERIODIC,4,3,2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,1,1,DMSTAG_STENCIL_BOX,2,NULL,NULL,NULL,&dm));
   CHKERRQ(DMSetFromOptions(dm));
@@ -78,8 +77,8 @@ int main(int argc,char **argv)
   }
 
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

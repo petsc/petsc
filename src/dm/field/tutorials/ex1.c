@@ -233,7 +233,7 @@ int main(int argc, char **argv)
   PetscBool       testShell = PETSC_FALSE;
   PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   ierr = PetscOptionsBegin(comm, "", "DMField Tutorial Options", "DM");CHKERRQ(ierr);
   CHKERRQ(PetscOptionsFList("-dm_type","DM implementation on which to define field","ex1.c",DMList,type,type,256,NULL));
@@ -350,8 +350,8 @@ int main(int argc, char **argv)
   CHKERRQ(DMFieldDestroy(&field));
   CHKERRQ(PetscQuadratureDestroy(&quad));
   CHKERRQ(PetscRandomDestroy(&rand));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

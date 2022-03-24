@@ -7,11 +7,10 @@ int main(int argc,char **args)
 {
   Mat            A,B,*Bsub;
   PetscInt       i,j,m = 6,n = 6,N = 36,Ii,J;
-  PetscErrorCode ierr;
   PetscScalar    v;
   IS             isrow;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,NULL,&A));
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
@@ -53,8 +52,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroySubMatrices(1,&Bsub));
   CHKERRQ(MatDestroy(&A));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

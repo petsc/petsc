@@ -726,7 +726,7 @@ int main(int argc,char *argv[])
   PetscReal         ptime;
   PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(PetscMemzero(&ctx,sizeof(ctx)));
 
@@ -958,8 +958,8 @@ int main(int argc,char *argv[])
   CHKERRQ(PetscFree(index_slowbuffer));
   CHKERRQ(PetscFunctionListDestroy(&limiters));
   CHKERRQ(PetscFunctionListDestroy(&physics));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

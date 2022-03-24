@@ -69,7 +69,7 @@ PetscErrorCode Brusselator(int argc,char **argv,PetscInt cycle)
   struct _User      user;       /* user-defined work context */
   TSConvergedReason reason;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -154,8 +154,8 @@ PetscErrorCode Brusselator(int argc,char **argv,PetscInt cycle)
   CHKERRQ(VecDestroy(&X));
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ptr)

@@ -43,10 +43,9 @@ int main(int argc,char **args)
   PetscScalar       avals[] = {2,3,5,7};
   Mat               S;
   User              user;
-  PetscErrorCode    ierr;
   Vec               base;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscNew(&user));
   CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,NULL,&user->B));
   CHKERRQ(MatSetUp(user->B));
@@ -66,8 +65,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&user->B));
   CHKERRQ(MatDestroy(&S));
   CHKERRQ(PetscFree(user));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

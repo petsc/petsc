@@ -60,12 +60,11 @@ int main(int argc,char **argv)
 {
   SNES           snes;
   AppCtx         user;
-  PetscErrorCode ierr;
   PetscInt       its,lits;
   PetscReal      litspit;
   DM             da;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   /* set problem parameters */
   user.tleft  = 1.0;
@@ -109,8 +108,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(DMDestroy(&da));
   CHKERRQ(SNESDestroy(&snes));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* --------------------  Form initial approximation ----------------- */
 PetscErrorCode FormInitialGuess(SNES snes,Vec X,void *ctx)

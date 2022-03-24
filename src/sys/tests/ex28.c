@@ -9,9 +9,8 @@ int main(int argc,char **argv)
 {
 
   PetscReal a;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   a = PetscAtan2Real(1.0,1.0);
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"PetscAtan2Real(1.0,1.0) = %g\n",(double)a));
   a = PetscAtan2Real(1.0,0.0);
@@ -20,8 +19,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"PetscAtan2Real(0.0,1.0) = %g\n",(double)a));
   a = PetscAtan2Real(0.0,0.0);
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"PetscAtan2Real(0.0,0.0) = %g\n",(double)a));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

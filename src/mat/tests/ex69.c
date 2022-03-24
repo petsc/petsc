@@ -35,10 +35,9 @@ int main(int argc,char **argv)
   PetscScalar    *vv,*aa;
   PetscInt       n=30,k=6,l=0,i,Istart,Iend,nloc,bs,test=1;
   PetscBool      flg,reset,use_shell = PETSC_FALSE;
-  PetscErrorCode ierr;
   VecType        vtype;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-k",&k,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-l",&l,NULL));
@@ -165,8 +164,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(VecDestroy(&t));
   CHKERRQ(VecDestroy(&v));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

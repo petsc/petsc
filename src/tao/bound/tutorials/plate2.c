@@ -62,7 +62,6 @@ PetscErrorCode MyMatMult(Mat,Vec,Vec);
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode         ierr;                 /* used to check for functions returning nonzeros */
   PetscInt               Nx, Ny;               /* number of processors in x- and y- directions */
   PetscInt               m, N;                 /* number of local and global elements in vectors */
   Vec                    x,xl,xu;               /* solution vector  and bounds*/
@@ -73,7 +72,7 @@ int main(int argc, char **argv)
   AppCtx                 user;                 /* user-defined work context */
 
   /* Initialize PETSc, TAO */
-  ierr = PetscInitialize(&argc, &argv,(char *)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv,(char *)0,help));
 
   /* Specify default dimension of the problem */
   user.mx = 10; user.my = 10; user.bheight=0.1;
@@ -181,8 +180,8 @@ int main(int argc, char **argv)
   if (flg) {
     CHKERRQ(MatDestroy(&H_shell));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*  FormFunctionGradient - Evaluates f(x) and gradient g(x).

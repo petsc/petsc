@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   PetscInt         check_step_alive = -1, check_step_dead = -1;
   PetscBool        has_glider, has_blinker;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Conway's Game of Life","");CHKERRQ(ierr);
   {
     CHKERRQ(PetscOptionsIntArray("-glider","Coordinate at which to center a glider",NULL,glider_loc,(two=2,&two),&has_glider));
@@ -142,8 +142,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&Xglobal));
   CHKERRQ(VecDestroy(&Xlocal));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

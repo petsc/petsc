@@ -238,10 +238,9 @@ int main(int argc,char **argv)
   PC                 pc;
   PetscScalar        *u,*p;
   PetscInt           i;
-  PetscErrorCode     ierr;
 
   /* Initialize program */
-  ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,NULL));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
@@ -418,8 +417,8 @@ int main(int argc,char **argv)
     CHKERRQ(VecDestroy(&aircraft.inthp4[0]));
     CHKERRQ(MatDestroy(&aircraft.H));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*

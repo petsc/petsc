@@ -95,10 +95,9 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       mx,my,mz;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   mx   = 2;
   my   = 2;
   mz   = 2;
@@ -106,8 +105,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-my", &my, 0));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mz", &mz, 0));
   CHKERRQ(test1_DAInjection3d(mx,my,mz));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

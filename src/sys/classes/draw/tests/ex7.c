@@ -5,8 +5,7 @@ static char help[] = "Demonstrates drawing primitives in a window\n";
 
 int main(int argc,char **argv)
 {
-  PetscDraw      draw;
-  PetscErrorCode ierr;
+  PetscDraw draw;
 
   int i,j,w,h;
   int k  = PETSC_DRAW_BLACK;
@@ -18,7 +17,7 @@ int main(int argc,char **argv)
   int c2 = 255;
   int c1 = (c0+c2)/2;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   CHKERRQ(PetscDrawCreate(PETSC_COMM_WORLD,0,"Draw Example",PETSC_DECIDE,PETSC_DECIDE,101,101,&draw));
   /*CHKERRQ(PetscDrawSetPause(draw,2.0));*/
@@ -107,8 +106,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscDrawPause(draw));
 
   CHKERRQ(PetscDrawDestroy(&draw));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

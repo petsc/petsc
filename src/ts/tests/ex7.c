@@ -66,7 +66,6 @@ extern PetscErrorCode SNESFunction(SNES,Vec,Vec,void*);
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   AppCtx         ctx;
   TS             ts;
   Vec            tsrhs,U;
@@ -74,7 +73,7 @@ int main(int argc,char **argv)
   PetscInt       i;
   PetscMPIInt    rank;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
   CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
@@ -115,8 +114,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&U));
   CHKERRQ(SNESDestroy(&ctx.snes));
   CHKERRQ(TSDestroy(&ts));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*

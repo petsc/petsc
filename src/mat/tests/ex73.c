@@ -26,14 +26,14 @@ int main(int argc,char **args)
   PetscViewer     fd;                /* viewer */
   char            file[PETSC_MAX_PATH_LEN];         /* input file name */
   PetscBool       flg,viewMats,viewIS,viewVecs,useND,noVecLoad = PETSC_FALSE;
-  PetscInt        ierr,*nlocal,m,n;
+  PetscInt        *nlocal,m,n;
   PetscMPIInt     rank,size;
   MatPartitioning part;
   IS              is,isn;
   Vec             xin, xout;
   VecScatter      scat;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscOptionsHasName(NULL,NULL, "-view_mats", &viewMats));
@@ -192,8 +192,8 @@ int main(int argc,char **args)
   */
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(VecDestroy(&xin));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

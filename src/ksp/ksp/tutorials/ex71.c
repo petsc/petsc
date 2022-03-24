@@ -188,7 +188,7 @@ int main(int argc,char **args)
 #endif
   PetscErrorCode         ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD,&user));
   for (i=0; i<3; i++) nodes[i] = user.cells[i] + !user.per[i];
   switch (user.dim) {
@@ -451,8 +451,8 @@ int main(int argc,char **args)
   CHKERRQ(KSPDestroy(&ksp));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

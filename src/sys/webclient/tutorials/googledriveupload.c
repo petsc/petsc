@@ -7,14 +7,13 @@
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   char           access_token[512];
 
-  ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,NULL));
   CHKERRQ(PetscGoogleDriveRefresh(PETSC_COMM_WORLD,NULL,access_token,sizeof(access_token)));
   CHKERRQ(PetscGoogleDriveUpload(PETSC_COMM_WORLD,access_token,"googledriveupload.c"));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -21,7 +21,6 @@ extern PetscErrorCode paulintegrate20(PetscReal K[60][60]);
 int main(int argc,char **args)
 {
   Mat            mat;
-  PetscErrorCode ierr;
   PetscInt       i,its,m = 3,rdim,cdim,rstart,rend;
   PetscMPIInt    rank,size;
   PetscScalar    v,neg1 = -1.0;
@@ -29,7 +28,7 @@ int main(int argc,char **args)
   KSP            ksp;
   PetscReal      norm;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
@@ -74,8 +73,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(MatDestroy(&mat));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* -------------------------------------------------------------------- */
 /*

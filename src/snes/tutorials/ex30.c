@@ -129,11 +129,10 @@ int main(int argc,char **argv)
   Parameter      param;
   GridInfo       grid;
   PetscInt       nits;
-  PetscErrorCode ierr;
   MPI_Comm       comm;
   DM             da;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscOptionsSetValue(NULL,"-file","ex30_output");
   PetscOptionsSetValue(NULL,"-snes_monitor_short",NULL);
   PetscOptionsSetValue(NULL,"-snes_max_it","20");
@@ -199,8 +198,8 @@ int main(int argc,char **argv)
   CHKERRQ(SNESDestroy(&snes));
   CHKERRQ(DMDestroy(&da));
   CHKERRQ(PetscPopSignalHandler());
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*=====================================================================

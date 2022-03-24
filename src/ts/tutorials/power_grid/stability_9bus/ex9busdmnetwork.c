@@ -977,7 +977,7 @@ int main(int argc,char ** argv)
   PC             pc;
   PetscInt       numEdges = 0;
 
-  ierr = PetscInitialize(&argc,&argv,"ex9busnetworkops",help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,"ex9busnetworkops",help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nc",&nc,NULL));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
@@ -1164,8 +1164,8 @@ int main(int argc,char ** argv)
   CHKERRQ(VecDestroy(&X));
   CHKERRQ(DMDestroy(&networkdm));
   CHKERRQ(TSDestroy(&ts));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
  }
 
 /*TEST

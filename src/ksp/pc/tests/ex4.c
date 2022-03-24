@@ -9,11 +9,10 @@ int main(int argc,char **args)
   Mat            mat;
   Vec            b,u;
   PC             pc;
-  PetscErrorCode ierr;
   PetscInt       n = 5,i,col[3];
   PetscScalar    value[3];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   /* Create vectors */
   CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&b));
   CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,n,&u));
@@ -54,8 +53,8 @@ int main(int argc,char **args)
   CHKERRQ(PCDestroy(&pc));
   CHKERRQ(VecDestroy(&u));
   CHKERRQ(VecDestroy(&b));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

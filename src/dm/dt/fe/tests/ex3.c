@@ -242,9 +242,8 @@ int main(int argc, char **argv)
   DM             dm;
   AppCtx         user;
   PetscMPIInt    size;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_SUP, "This is a uniprocessor example only.");
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
@@ -259,8 +258,8 @@ int main(int argc, char **argv)
   CHKERRQ(CheckL2Projection(dm, &user));
 
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

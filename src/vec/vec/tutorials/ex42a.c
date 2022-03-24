@@ -7,10 +7,9 @@ int main(int argc,char **args)
 {
   Vec            b;
   PetscViewer    fd;
-  PetscErrorCode ierr;
   PetscInt       i;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   /* server indicates we WAIT for someone to connect to our socket */
   CHKERRQ(PetscViewerSocketOpen(PETSC_COMM_WORLD,"server",PETSC_DEFAULT,&fd));
 
@@ -22,6 +21,6 @@ int main(int argc,char **args)
     CHKERRQ(VecLoad(b,fd));
   }
   CHKERRQ(VecDestroy(&b));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

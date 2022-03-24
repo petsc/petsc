@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   KSP            ksp;
   PetscBool      errorinmatmult = PETSC_FALSE,errorinpcapply = PETSC_FALSE,errorinpcsetup = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-error_in_matmult",&errorinmatmult,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-error_in_pcapply",&errorinpcapply,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-error_in_pcsetup",&errorinpcsetup,NULL));
@@ -145,8 +145,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(DMDestroy(&da));
   CHKERRQ(SNESDestroy(&user.snes));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* ------------------------------------------------------------------- */

@@ -5,12 +5,11 @@ static char help[] = "Tests retrieving unused PETSc options.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       i,N,M;
   char           **names,**values;
   PetscBool      set;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-get_an_integer",&M,&set));
   if (set) CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Option used: name:-get_an_integer value: %" PetscInt_FMT "\n",M));
@@ -24,8 +23,8 @@ int main(int argc,char **argv)
   }
   CHKERRQ(PetscOptionsLeftRestore(NULL,&N,&names,&values));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

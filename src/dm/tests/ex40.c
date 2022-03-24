@@ -6,14 +6,13 @@ static char help[] = "Tests mirror boundary conditions in 2-d.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       M = 8, N = 8,stencil_width = 1, dof = 1,m,n,xstart,ystart,i,j,c;
   DM             da;
   Vec            global,local;
   PetscScalar    ***vglobal;
   PetscViewer    sview;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,0,"-stencil_width",&stencil_width,0));
   CHKERRQ(PetscOptionsGetInt(NULL,0,"-dof",&dof,0));
 
@@ -47,8 +46,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&local));
   CHKERRQ(VecDestroy(&global));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

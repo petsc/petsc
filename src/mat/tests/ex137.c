@@ -6,12 +6,11 @@ static char help[] = "Tests MatCreateMPISBAIJWithArrays().\n\n";
 int main(int argc,char **args)
 {
   Mat            A;
-  PetscErrorCode ierr;
   PetscInt       m = 4, bs = 1,ii[5],jj[7];
   PetscMPIInt    size,rank;
   PetscScalar    aa[7];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCheckFalse(size != 2,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for two processes");
@@ -35,8 +34,8 @@ int main(int argc,char **args)
   CHKERRQ(MatCreateMPISBAIJWithArrays(PETSC_COMM_WORLD,bs,m,m,PETSC_DECIDE,PETSC_DECIDE,ii,jj,aa,&A));
   CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

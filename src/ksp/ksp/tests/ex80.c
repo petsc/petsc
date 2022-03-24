@@ -6,7 +6,6 @@ static char help[] = "Test the Fischer-3 initial guess routine.\n\n";
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscInt i;
   {
     Mat         A;
@@ -14,7 +13,7 @@ int main(int argc,char **args)
     PetscScalar values[SIZE] = {1.0,1.0,1.0};
     Vec         sol,rhs,newsol,newrhs;
 
-    ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+    CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
 
     /* common data structures */
     CHKERRQ(MatCreateSeqDense(PETSC_COMM_SELF,SIZE,SIZE,NULL,&A));
@@ -143,8 +142,8 @@ int main(int argc,char **args)
     }
     CHKERRQ(MatDestroy(&A));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* The relative tolerance here is strict enough to get rid of all the noise in both single and double precision: values as low as 5e-7 also work */

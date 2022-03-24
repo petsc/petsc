@@ -154,9 +154,8 @@ int main(int argc, char **argv)
   PetscScalar        constraintValue        = 1.5;
   PetscViewerFormat  format                 = PETSC_VIEWER_HDF5_PETSC;
   AppCtx             user;
-  PetscErrorCode     ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
@@ -474,8 +473,8 @@ int main(int argc, char **argv)
   CHKERRMPI(MPI_Comm_free(&comm));
 
   /* Finalize */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

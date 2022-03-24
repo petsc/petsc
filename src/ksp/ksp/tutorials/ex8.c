@@ -49,14 +49,13 @@ int main(int argc,char **args)
   PetscInt       m = 15,n = 17;          /* mesh dimensions in x- and y- directions */
   PetscInt       M = 2,N = 1;            /* number of subdomains in x- and y- directions */
   PetscInt       i,j,Ii,J,Istart,Iend;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscBool      flg;
   PetscBool      user_subdomains = PETSC_FALSE;
   PetscScalar    v, one = 1.0;
   PetscReal      e;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
@@ -283,8 +282,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

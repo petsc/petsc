@@ -19,7 +19,6 @@ int main(int argc,char **args)
   PetscViewer    fd;                /* viewer */
   char           file[1][PETSC_MAX_PATH_LEN];     /* input file name */
   PetscBool      flg,TestSYEVX=PETSC_TRUE;
-  PetscErrorCode ierr;
   PetscBool      isSymmetric;
   PetscScalar    *arrayA,*evecs_array,*work,*evals;
   PetscMPIInt    size;
@@ -29,7 +28,7 @@ int main(int argc,char **args)
   PetscBLASInt   *iwork,*ifail,lwork,lierr,bn;
   PetscReal      tols[2];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -177,8 +176,8 @@ int main(int argc,char **args)
   }
 
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /*------------------------------------------------
   Check the accuracy of the eigen solution

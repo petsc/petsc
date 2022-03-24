@@ -62,7 +62,6 @@ static PetscErrorCode ConvergenceTest(Tao, void*);
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode     ierr;            /* used to check for functions returning nonzeros */
   PetscInt           Nx, Ny;          /* number of processors in x- and y- directions */
   PetscInt           m;               /* number of local elements in vectors */
   Vec                x;               /* variables vector */
@@ -75,7 +74,7 @@ int main(int argc, char **argv)
   PetscReal          zero = 0.0;      /* lower bound on all variables */
 
   /* Initialize PETSC and TAO */
-  ierr = PetscInitialize(&argc, &argv,(char *)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv,(char *)0,help));
 
   /* Set the default values for the problem parameters */
   user.nx = 50; user.ny = 50; user.ecc = 0.1; user.b = 10.0;
@@ -178,8 +177,8 @@ int main(int argc, char **argv)
   /* Free TAO data structures */
   CHKERRQ(TaoDestroy(&tao));
   CHKERRQ(DMDestroy(&user.dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 static PetscReal p(PetscReal xi, PetscReal ecc)

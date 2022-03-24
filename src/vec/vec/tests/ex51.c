@@ -28,9 +28,8 @@ int main(int argc,char **argv)
   PetscScalar    sum;                     /* used to test sum of parent vector elements */
   PetscScalar    mean;                    /* used to test mean of parent vector elements */
   PetscBool      usehdf5 = PETSC_FALSE;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char*) 0, help));
 
   /* parse input options to determine I/O format */
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-hdf5",&usehdf5,NULL));
@@ -104,8 +103,8 @@ int main(int argc,char **argv)
   /* destroy parent vector, index set and exit */
   CHKERRQ(VecDestroy(&testvec));
   CHKERRQ(ISDestroy(&loadis));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

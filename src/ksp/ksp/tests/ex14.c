@@ -89,7 +89,6 @@ int main(int argc,char **argv)
   PetscMPIInt    size;                /* number of processors */
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
   PetscInt       m,N;
-  PetscErrorCode ierr;
 
   /* --------------- Data to define nonlinear solver -------------- */
   PetscReal    rtol = 1.e-8;          /* relative convergence tolerance */
@@ -102,7 +101,7 @@ int main(int argc,char **argv)
   PetscInt     i;                     /* nonlinear solve iteration number */
   PetscBool    no_output = PETSC_FALSE;             /* flag indicating whether to surpress output */
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-no_output",&no_output,NULL));
 
@@ -276,8 +275,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&user.localX)); CHKERRQ(VecDestroy(&X));
   CHKERRQ(VecDestroy(&F));
   CHKERRQ(KSPDestroy(&ksp));  CHKERRQ(DMDestroy(&user.da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 /*

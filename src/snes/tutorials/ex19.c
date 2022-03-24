@@ -96,13 +96,12 @@ int main(int argc,char **argv)
 {
   AppCtx         user;                /* user-defined work context */
   PetscInt       mx,my,its;
-  PetscErrorCode ierr;
   MPI_Comm       comm;
   SNES           snes;
   DM             da;
   Vec            x;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   PetscFunctionBeginUser;
   comm = PETSC_COMM_WORLD;
@@ -175,8 +174,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(DMDestroy(&da));
   CHKERRQ(SNESDestroy(&snes));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* ------------------------------------------------------------------- */

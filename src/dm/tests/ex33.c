@@ -10,7 +10,6 @@ int main(int argc,char **argv)
   PetscMPIInt      rank,size;
   PetscInt         N            = 6,M=8,P=5,dof=1;
   PetscInt         stencil_width=1,pt=0,st=0;
-  PetscErrorCode   ierr;
   PetscBool        flg2,flg3,isbinary,mpiio;
   DMBoundaryType   bx           = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE,bz = DM_BOUNDARY_NONE;
   DMDAStencilType  stencil_type = DMDA_STENCIL_STAR;
@@ -24,7 +23,7 @@ int main(int argc,char **argv)
   PetscBool ishdf5;
 #endif
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
@@ -121,6 +120,6 @@ int main(int argc,char **argv)
   CHKERRQ(DMDestroy(&da2));
   CHKERRQ(VecDestroy(&global1));
   CHKERRQ(VecDestroy(&global2));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

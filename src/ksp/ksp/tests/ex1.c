@@ -21,14 +21,13 @@ static PetscErrorCode GetConvergenceTestName(PetscErrorCode (*converged)(KSP,Pet
 int main(int argc,char **args)
 {
   Mat            C;
-  PetscErrorCode ierr;
   PetscInt       N = 0;
   Vec            u,b,x;
   KSP            ksp;
   PetscReal      norm;
   PetscBool      flg=PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
 
   /* create stiffness matrix */
   CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
@@ -108,8 +107,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(MatDestroy(&C));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

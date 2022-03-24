@@ -7,7 +7,6 @@ int main(int argc,char **args)
   PetscInt       i,rstart,rend,N=10,num_numfac=5,col[3],k;
   Mat            A[5],F;
   Vec            u,x,b;
-  PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscScalar    value[3];
   PetscReal      norm,tol=100*PETSC_MACHINE_EPSILON;
@@ -17,7 +16,7 @@ int main(int argc,char **args)
   char           solvertype[64];
   char           factortype[64];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   /* Create and assemble matrices, all have same data structure */
@@ -125,8 +124,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(VecDestroy(&u));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

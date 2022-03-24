@@ -20,12 +20,11 @@ T*/
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       i,n,first,step;
   IS             set;
   const PetscInt *indices;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   n     = 10;
   first = 3;
@@ -56,8 +55,8 @@ int main(int argc,char **argv)
   CHKERRQ(ISStrideGetInfo(set,&first,&step));
   PetscCheckFalse(first != 3 || step != 2,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Stride info not correct!");
   CHKERRQ(ISDestroy(&set));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -39,7 +39,7 @@ int main(int argc, char **argv)
   PetscBool      view_coord = PETSC_FALSE, tensor = PETSC_TRUE;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Tensor closure restrictions", "DMPLEX");CHKERRQ(ierr);
   CHKERRQ(PetscOptionsBool("-closure_tensor", "Apply DMPlexSetClosurePermutationTensor", "ex8.c", tensor, &tensor, NULL));
   CHKERRQ(PetscOptionsBool("-view_coord", "View coordinates of element closures", "ex8.c", view_coord, &view_coord, NULL));
@@ -89,8 +89,8 @@ int main(int argc, char **argv)
   }
   CHKERRQ(PetscFEDestroy(&fe));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -10,10 +10,9 @@ int main(int argc,char **argv)
   PetscScalar    one=1,e=2.7181;
   PetscReal      nrm1,nrm2,nrm3,nrm4;
   PetscInt       ione=1;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   comm = MPI_COMM_SELF;
 
   CHKERRQ(VecCreate(comm,&V));
@@ -155,8 +154,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(VecDestroy(&V));
   CHKERRQ(VecDestroy(&W));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

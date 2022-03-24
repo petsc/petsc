@@ -10,7 +10,6 @@ T*/
 #include <petscsys.h>
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscBool      found;
   char           localname[PETSC_MAX_PATH_LEN];
   const char     url[] = "https://www.mcs.anl.gov/petsc/index.html";
@@ -24,14 +23,14 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscFileRetrieve(PETSC_COMM_WORLD,url,localname,PETSC_MAX_PATH_LEN,&found));
   if (found) {
     CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Successfully download file %s\n",localname));
   } else SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"Unable to download url %s",url);
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

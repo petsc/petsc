@@ -19,7 +19,7 @@ int main(int argc, char **argv)
   PetscBool   test_dupped_type;
   MPI_Datatype contig;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
@@ -83,8 +83,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroy(&Aout));
   CHKERRQ(PetscSFDestroy(&sf));
   CHKERRMPI(MPI_Type_free(&contig));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

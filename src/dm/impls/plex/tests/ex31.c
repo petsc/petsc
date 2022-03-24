@@ -46,13 +46,12 @@ int main(int argc, char **argv)
   AppCtx         user;
   IS             is=NULL;
   PetscSection   s=NULL, gsection=NULL;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscSF        sf;
   PetscInt       pStart, pEnd, p, minBefore, maxBefore, minAfter, maxAfter, gSizeBefore, gSizeAfter;
   PetscBool      success;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_size(comm, &size));
   CHKERRQ(ProcessOptions(comm, &user));
@@ -121,8 +120,8 @@ int main(int argc, char **argv)
   }
 
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

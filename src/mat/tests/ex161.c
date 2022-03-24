@@ -7,7 +7,6 @@ int main(int argc,char **argv)
 {
   Mat                  A,R,C,C_dense,C_sparse,Rt_dense,P,PtAP;
   PetscInt             row,col,m,n;
-  PetscErrorCode       ierr;
   MatScalar            one         =1.0,val;
   MatColoring          mc;
   MatTransposeColoring matcoloring = 0;
@@ -15,7 +14,7 @@ int main(int argc,char **argv)
   PetscBool            equal;
   PetscMPIInt          size;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -119,8 +118,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&R));
   CHKERRQ(MatDestroy(&PtAP));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

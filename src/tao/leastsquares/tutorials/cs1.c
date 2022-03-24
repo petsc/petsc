@@ -64,7 +64,6 @@ PetscErrorCode EvaluateJacobian(Tao,Vec,Mat,Mat,void *);
 /*--------------------------------------------------------------------*/
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;               /* used to check for functions returning nonzeros */
   Vec            x,f;               /* solution, function f(x) = A*x-b */
   Mat            J,D;               /* Jacobian matrix, Transform matrix */
   Tao            tao;                /* Tao solver context */
@@ -73,7 +72,7 @@ int main(int argc,char **argv)
   PetscInt       lits[100];
   AppCtx         user;               /* user-defined work context */
 
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char *)0,help));
 
   /* Allocate solution and vector function vectors */
   CHKERRQ(VecCreateSeq(PETSC_COMM_SELF,N,&x));
@@ -133,8 +132,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&J));
   CHKERRQ(MatDestroy(&D));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*--------------------------------------------------------------------*/

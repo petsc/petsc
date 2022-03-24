@@ -365,7 +365,7 @@ int main(int argc, char **argv)
   PetscInt       cStart, cEnd, c, d, bs;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
   CHKERRQ(SNESCreate(PETSC_COMM_WORLD, &snes));
   CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
@@ -554,6 +554,6 @@ int main(int argc, char **argv)
   CHKERRQ(DMDestroy(&sdm));
   CHKERRQ(DMDestroy(&dm));
   CHKERRQ(PetscFree(user.exactFuncs));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

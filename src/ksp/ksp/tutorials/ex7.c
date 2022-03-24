@@ -36,14 +36,13 @@ int main(int argc,char **args)
   PC             pc;           /* PC context */
   PC             subpc;        /* PC context for subdomain */
   PetscReal      norm;         /* norm of solution error */
-  PetscErrorCode ierr;
   PetscInt       i,j,Ii,J,*blks,m = 4,n;
   PetscMPIInt    rank,size;
   PetscInt       its,nlocal,first,Istart,Iend;
   PetscScalar    v,one = 1.0,none = -1.0;
   PetscBool      isbjacobi;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
@@ -228,8 +227,8 @@ int main(int argc,char **args)
   CHKERRQ(KSPDestroy(&ksp));
   CHKERRQ(VecDestroy(&u));  CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&b));  CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

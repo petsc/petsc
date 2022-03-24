@@ -13,7 +13,6 @@ int main(int argc, char** argv)
 {
   Mat            A,A_elemental;
   PetscInt       i,j,M=10,N=5,nrows,ncols;
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   IS             isrows,iscols;
   const PetscInt *rows,*cols;
@@ -21,7 +20,7 @@ int main(int argc, char** argv)
   MatType        type;
   PetscBool      isDense,isAIJ,flg;
 
-  ierr = PetscInitialize(&argc, &argv, (char*)0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char*)0, help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
@@ -88,8 +87,8 @@ int main(int argc, char** argv)
   CHKERRQ(ISDestroy(&iscols));
   CHKERRQ(PetscFree(v));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

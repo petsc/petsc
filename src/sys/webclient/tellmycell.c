@@ -35,7 +35,6 @@
 @*/
 PetscErrorCode PetscTellMyCell(MPI_Comm comm,const char number[],const char message[],PetscBool *flg)
 {
-  PetscErrorCode ierr;
   size_t         nlen,mlen,blen;
   PetscMPIInt    rank;
   char           Username[64],Password[64];

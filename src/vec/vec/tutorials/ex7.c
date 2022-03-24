@@ -25,12 +25,11 @@ PETSC_INTERN void ex7f_(Vec*,int*);
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
-  PetscInt       m = 10;
-  int            fcomm;
-  Vec            vec;
+  PetscInt m = 10;
+  int      fcomm;
+  Vec      vec;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   /* This function should be called to be able to use PETSc routines
      from the FORTRAN subroutines needed by this program */
 
@@ -51,8 +50,8 @@ int main(int argc,char **args)
 
   CHKERRQ(VecView(vec,PETSC_VIEWER_STDOUT_WORLD));
   CHKERRQ(VecDestroy(&vec));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PETSC_INTERN void ex7c_(Vec *fvec,int *fcomm,PetscErrorCode *ierr)

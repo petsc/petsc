@@ -26,10 +26,9 @@ PetscErrorCode TestRenumber(IS is, IS mult)
 int main(int argc, char **argv)
 {
   IS              is;
-  PetscErrorCode  ierr;
   PetscMPIInt     size, rank;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
@@ -77,8 +76,8 @@ int main(int argc, char **argv)
     CHKERRQ(ISDestroy(&mult));
   }
   /* Finalize */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

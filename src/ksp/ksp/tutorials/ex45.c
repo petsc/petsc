@@ -28,14 +28,13 @@ extern PetscErrorCode ComputeInitialGuess(KSP,Vec,void*);
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   KSP            ksp;
   PetscReal      norm;
   DM             da;
   Vec            x,b,r;
   Mat            A;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
   CHKERRQ(DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,7,7,7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da));
@@ -61,8 +60,8 @@ int main(int argc,char **argv)
 
   CHKERRQ(VecDestroy(&r));
   CHKERRQ(KSPDestroy(&ksp));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)

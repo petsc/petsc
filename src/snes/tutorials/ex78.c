@@ -36,11 +36,10 @@ int main(int argc,char **argv)
   Mat            J;                    /* Jacobian matrix */
   DM             da;
   Vec            x,r;              /* vectors */
-  PetscErrorCode ierr;
   PetscInt       N = 5;
   MatNullSpace   constants;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -94,8 +93,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatNullSpaceDestroy(&constants));
   CHKERRQ(SNESDestroy(&snes));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*

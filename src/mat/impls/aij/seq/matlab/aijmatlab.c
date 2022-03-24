@@ -10,7 +10,6 @@
 
 PETSC_EXTERN mxArray *MatSeqAIJToMatlab(Mat B)
 {
-  PetscErrorCode ierr;
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)B->data;
   mwIndex        *ii,*jj;
   mxArray        *mat;
@@ -18,7 +17,7 @@ PETSC_EXTERN mxArray *MatSeqAIJToMatlab(Mat B)
 
   PetscFunctionBegin;
   mat  = mxCreateSparse(B->cmap->n,B->rmap->n,aij->nz,mxREAL);
-  ierr = PetscArraycpy(mxGetPr(mat),aij->a,aij->nz);if (ierr) return NULL;
+  if (PetscArraycpy(mxGetPr(mat),aij->a,aij->nz)) return NULL;
   /* MATLAB stores by column, not row so we pass in the transpose of the matrix */
   jj = mxGetIr(mat);
   for (i=0; i<aij->nz; i++) jj[i] = aij->j[i];

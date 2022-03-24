@@ -97,14 +97,13 @@ static PetscErrorCode CheckMatrices(Mat A,Mat B,Vec left,Vec right,Vec X,Vec Y,V
 
 int main(int argc, char *argv[])
 {
-  PetscErrorCode ierr;
   Mat            A,B,Asub,Bsub;
   PetscInt       ms,idxrow[3],idxcol[4];
   Vec            left,right,X,Y,X1,Y1;
   IS             isrow,iscol;
   PetscBool      random = PETSC_TRUE;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(AssembleMatrix(PETSC_COMM_WORLD,&A));
   CHKERRQ(AssembleMatrix(PETSC_COMM_WORLD,&B));
   CHKERRQ(MatSetOperation(B,MATOP_CREATE_SUBMATRIX,NULL));
@@ -160,8 +159,8 @@ int main(int argc, char *argv[])
   CHKERRQ(VecDestroy(&Y));
   CHKERRQ(VecDestroy(&X1));
   CHKERRQ(VecDestroy(&Y1));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

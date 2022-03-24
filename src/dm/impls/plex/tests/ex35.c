@@ -65,7 +65,7 @@ int main(int argc, char **argv)
   PetscLogDouble before, after, est = 0, clean, max;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRQ(PetscOptionsGetBool(NULL, NULL, "-trace", &trace, NULL));
   CHKERRQ(PetscOptionsGetBool(NULL, NULL, "-check_memory", &checkMemory, NULL));
   CHKERRQ(PetscOptionsGetBool(NULL, NULL, "-aux_memory", &auxMemory, NULL));
@@ -91,8 +91,8 @@ int main(int argc, char **argv)
     CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "  Memory for mesh  %D\n", (PetscInt) (after-before)));
     CHKERRQ(PetscPrintf(PETSC_COMM_WORLD, "Discrepancy %D\n", (PetscInt) PetscAbsReal(after-before-est)));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

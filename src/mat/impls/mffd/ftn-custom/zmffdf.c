@@ -44,4 +44,3 @@ PETSC_EXTERN void matmffdsetoptionsprefix_(Mat *mat,char* prefix,PetscErrorCode 
   *ierr = MatMFFDSetOptionsPrefix(*mat,t);if (*ierr) return;
   FREECHAR(prefix,t);
 }
-

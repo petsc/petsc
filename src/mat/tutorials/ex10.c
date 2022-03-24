@@ -20,13 +20,12 @@ int main(int argc,char **args)
   Mat            A;                       /* matrix */
   PetscViewer    fd;                      /* viewer */
   char           file[PETSC_MAX_PATH_LEN];            /* input file name */
-  PetscErrorCode ierr;
   PetscReal      *norms;
   PetscInt       n,cstart,cend;
   PetscBool      flg;
   PetscViewerFormat format;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   /*
      Determine files from which we read the matrix
   */
@@ -70,8 +69,8 @@ int main(int argc,char **args)
   CHKERRQ(MatViewFromOptions(A,NULL,"-mat_view"));
 
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

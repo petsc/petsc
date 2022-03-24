@@ -7,12 +7,11 @@ static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
 int main(int argc,char **argv)
 {
   PetscMPIInt    size,rank;
-  PetscErrorCode ierr;
   PetscInt       n   = 5,idx;
   PetscScalar    one = 1.0,two = 2.0,three = 3.0;
   Vec            x,y;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   if (n < 5) n = 5;
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
@@ -43,8 +42,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&y));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

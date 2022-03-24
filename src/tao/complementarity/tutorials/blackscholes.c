@@ -127,7 +127,6 @@ PetscErrorCode ComputeVariableBounds(Tao, Vec, Vec, void*);
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;    /* used to check for functions returning nonzeros */
   Vec            x;             /* solution vector */
   Vec            c;             /* Constraints function vector */
   Mat            J;                  /* jacobian matrix */
@@ -141,7 +140,7 @@ int main(int argc, char **argv)
   Vec            localX;
 
   /* Initialize PETSc, TAO */
-  ierr = PetscInitialize(&argc, &argv, (char *)0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char *)0, help));
 
   /*
      Initialize the user-defined application context with reasonable
@@ -267,8 +266,8 @@ int main(int argc, char **argv)
   CHKERRQ(PetscFree(user.c));
   CHKERRQ(PetscFree(user.d));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* -------------------------------------------------------------------- */

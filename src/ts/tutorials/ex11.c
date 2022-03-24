@@ -1377,7 +1377,7 @@ int main(int argc, char **argv)
   VecTagger         refineTag = NULL, coarsenTag = NULL;
   PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char*) 0, help));
   comm = PETSC_COMM_WORLD;
 
   CHKERRQ(PetscNew(&user));
@@ -1737,8 +1737,8 @@ int main(int argc, char **argv)
   CHKERRQ(PetscLimiterDestroy(&noneLimiter));
   CHKERRQ(PetscFVDestroy(&fvm));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* Godunov fluxs */

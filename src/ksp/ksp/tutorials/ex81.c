@@ -15,9 +15,8 @@ int main(int argc,char **args)
   PetscMPIInt        size;
   PetscBool          flg;
   PetscRandom        rctx;
-  PetscErrorCode     ierr;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,NULL,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRQ(PetscMalloc1(found,&outer));
   CHKERRQ(PetscOptionsGetIntArray(NULL,NULL,"-outer_fieldsplit_sizes",outer,&found,&flg));
@@ -187,8 +186,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(KSPDestroy(&ksp));
   CHKERRQ(PetscFree(outer));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

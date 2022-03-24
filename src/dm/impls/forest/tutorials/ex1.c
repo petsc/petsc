@@ -12,7 +12,7 @@ int main(int argc, char **argv)
   PetscBool      conv = PETSC_FALSE;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dm));
   CHKERRQ(PetscStrncpy(typeString,DMFOREST,256));
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"DM Forest example options",NULL);CHKERRQ(ierr);
@@ -34,8 +34,8 @@ int main(int argc, char **argv)
     CHKERRQ(DMDestroy(&dmConv));
   }
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

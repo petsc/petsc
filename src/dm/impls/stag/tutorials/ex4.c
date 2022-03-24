@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   Vec            x,b;
   KSP            ksp;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Populate application context */
   CHKERRQ(PetscMalloc1(1,&ctx));
@@ -130,8 +130,8 @@ int main(int argc,char **argv)
   CHKERRQ(DMDestroy(&ctx->dmStokes));
   CHKERRQ(DMDestroy(&ctx->dmCoeff));
   CHKERRQ(PetscFree(ctx));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 static PetscErrorCode CreateSystem(const Ctx ctx,Mat *pA,Vec *pRhs)

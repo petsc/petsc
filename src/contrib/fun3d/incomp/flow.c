@@ -87,7 +87,7 @@ int main(int argc,char **args)
   PetscInt    maxfails                       = 10000;
   char        pvtu_fname[PETSC_MAX_PATH_LEN] = "incomp";
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,NULL,help));
   CHKERRQ(PetscInitializeFortran());
   CHKERRQ(PetscOptionsInsertFile(PETSC_COMM_WORLD,"petsc.opt",PETSC_FALSE));
 
@@ -308,8 +308,8 @@ int main(int argc,char **args)
 
   CHKERRQ(PetscPrintf(comm,"Time taken in gradient calculation %g sec.\n",grad_time));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*---------------------------------------------------------------------*/

@@ -119,9 +119,8 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
 int main(int argc, char **argv)
 {
   PetscInt       dim, order, tensor;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   for (tensor = 0; tensor < 2; tensor++) {
     for (dim = 1; dim <= 3; dim++) {
       if (dim == 1 && tensor) continue;
@@ -130,8 +129,8 @@ int main(int argc, char **argv)
       }
     }
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -299,9 +299,8 @@ int main(int argc, char **argv)
   const PetscScalar *endVals;
   PetscReal          ftime   = .1;
   PetscInt           locSize, dim, d, Np, p, steps;
-  PetscErrorCode     ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(ProcessOptions(comm, &user));
 
@@ -361,8 +360,8 @@ int main(int argc, char **argv)
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&sw));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

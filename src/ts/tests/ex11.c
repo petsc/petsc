@@ -156,10 +156,9 @@ static PetscErrorCode PetscRandomCreate_Dummy(PetscRandom arand)
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscReal      A[1],Gamma[1] = {1.0},b[1],c[1],d[1];
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   /* TaoLineSearchRegister() also has the same memory leak */
   /* TaoRegister() also has the same memory leak */
   CHKERRQ(TSGLLEAdaptRegister("dummy",TSGLLEAdaptCreate_Dummy));
@@ -193,8 +192,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscDrawRegister("dummy",PetscDrawCreate_Dummy));
   CHKERRQ(PetscViewerRegister("dummy",PetscViewerCreate_Dummy));
   CHKERRQ(PetscRandomRegister("dummy",PetscRandomCreate_Dummy));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

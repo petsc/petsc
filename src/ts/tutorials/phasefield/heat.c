@@ -40,7 +40,6 @@ int main(int argc,char **argv)
   TS             ts;                           /* time integrator */
   Vec            x,r;                          /* solution, residual vectors */
   PetscInt       steps,Mx;
-  PetscErrorCode ierr;
   DM             da;
   PetscReal      dt;
   UserCtx        ctx;
@@ -51,7 +50,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   ctx.kappa     = 1.0;
   CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-kappa",&ctx.kappa,NULL));
   ctx.allencahn = PETSC_FALSE;
@@ -128,8 +127,8 @@ int main(int argc,char **argv)
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&da));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 /*

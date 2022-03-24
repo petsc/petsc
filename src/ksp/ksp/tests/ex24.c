@@ -8,14 +8,13 @@ int main(int argc,char **args)
   Mat            C;
   PetscScalar    v,none = -1.0;
   PetscInt       i,j,Ii,J,Istart,Iend,N,m = 4,n = 4,its,k;
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscReal      err_norm,res_norm;
   Vec            x,b,u,u_tmp;
   PC             pc;
   KSP            ksp;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
@@ -115,8 +114,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&u_tmp));
   CHKERRQ(MatDestroy(&C));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

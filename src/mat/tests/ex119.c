@@ -4,13 +4,12 @@ static char help[] = "Tests binary MatView() for MPIDENSE matrices \n\n";
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   Mat            A;
   PetscViewer    viewer;
   char           inputfile[256],outputfile[256];
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-inputfile",inputfile,sizeof(inputfile),&flg));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-outputfile",outputfile,sizeof(outputfile),&flg));
   CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,inputfile,FILE_MODE_READ,&viewer));
@@ -21,6 +20,6 @@ int main(int argc,char **args)
   CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,outputfile,FILE_MODE_WRITE,&viewer));
   CHKERRQ(MatView(A,viewer));
   CHKERRQ(PetscViewerDestroy(&viewer));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

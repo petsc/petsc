@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
   PetscViewer       viewer;
   PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc, &argv,NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv,NULL, help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FEM Layout Options", "ex26");CHKERRQ(ierr);
@@ -481,8 +481,8 @@ int main(int argc, char **argv) {
   CHKERRQ(DMDestroy(&dmUA2));
   CHKERRQ(DMDestroy(&dm));
   CHKERRQ(PetscFree2(pStartDepth, pEndDepth));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

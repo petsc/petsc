@@ -9,7 +9,6 @@ static char help[] = "Tests DMComposite routines.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode         ierr;
   PetscInt               nredundant1 = 5,nredundant2 = 2,i;
   ISLocalToGlobalMapping *ltog;
   PetscMPIInt            rank,size;
@@ -21,7 +20,7 @@ int main(int argc,char **argv)
   PetscViewer            sviewer;
   PetscBool              gather_add = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
@@ -115,8 +114,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&local2));
   CHKERRQ(VecDestroy(&global));
   CHKERRQ(DMDestroy(&packer));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -5,7 +5,6 @@
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;
   Mat            A;
   KSP            ksp;
   PC             pc;
@@ -14,7 +13,7 @@ int main(int argc, char **argv)
   Vec            x, b;
   MPI_Comm       comm;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, NULL);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, NULL));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(MatCreate(comm, &A));
   CHKERRQ(MatSetSizes(A, 4, 4, PETSC_DECIDE, PETSC_DECIDE));
@@ -46,8 +45,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&b));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

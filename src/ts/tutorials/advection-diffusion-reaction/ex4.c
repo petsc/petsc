@@ -44,14 +44,13 @@ int main(int argc,char **argv)
 {
   TS             ts;                  /* nonlinear solver */
   Vec            U;                   /* solution, residual vectors */
-  PetscErrorCode ierr;
   DM             da;
   AppCtx         appctx;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   appctx.epsilon = 1.0e-3;
   appctx.delta   = 1.0;
@@ -118,8 +117,8 @@ int main(int argc,char **argv)
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&da));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 /*

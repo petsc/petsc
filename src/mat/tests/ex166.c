@@ -17,13 +17,12 @@ int main(int argc,char **argv)
   const struct {PetscInt i,j; PetscScalar v;} entries[] = {{0,3,1.},{1,2,2.},{2,1,3.},{2,4,4.},{3,0,5.},{3,3,6.},{4,1,7.},{4,4,8.}};
   const PetscInt ixrow[5]                               = {4,2,1,3,0},ixcol[5] = {3,2,1,4,0};
   Mat            A,B;
-  PetscErrorCode ierr;
   PetscInt       i,rstart,rend,cstart,cend;
   IS             isrow,iscol;
   PetscViewer    viewer,sviewer;
   PetscBool      view_sparse;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   /* ------- Assemble matrix, --------- */
   CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
   CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,5,5));
@@ -73,6 +72,6 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&B));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

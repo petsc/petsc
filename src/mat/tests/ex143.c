@@ -24,7 +24,7 @@ int main(int argc,char **args)
   Vec            x,y,z;
   PetscBool      view=PETSC_FALSE,use_interface=PETSC_TRUE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex143");CHKERRQ(ierr);
   CHKERRQ(PetscOptionsBool("-vec_view draw", "View the vectors", "ex143", view, &view, NULL));
   CHKERRQ(PetscOptionsBool("-use_FFTW_interface", "Use PETSc-FFTW interface", "ex143",use_interface, &use_interface, NULL));
@@ -149,8 +149,8 @@ int main(int argc,char **args)
   }
 
   CHKERRQ(PetscRandomDestroy(&rdm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

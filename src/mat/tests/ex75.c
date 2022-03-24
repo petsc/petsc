@@ -11,11 +11,10 @@ int main(int argc,char **args)
   PetscReal      r1,r2,rnorm,tol = PETSC_SQRT_MACHINE_EPSILON;
   PetscScalar    one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1;
   PetscInt       n,col[3],n1,block,row,i,j,i2,j2,Ii,J,rstart,rend,bs=1,mbs=16,d_nz=3,o_nz=3,prob=1;
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mbs",&mbs,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-prob",&prob,NULL));
@@ -251,8 +250,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&sA));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(PetscRandomDestroy(&rctx));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

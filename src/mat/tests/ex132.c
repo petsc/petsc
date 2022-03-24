@@ -8,13 +8,12 @@ int main(int argc,char **args)
   Mat            C,C1,C2,CU;
   PetscScalar    v;
   PetscInt       Ii,J,Istart,Iend;
-  PetscErrorCode ierr;
   PetscInt       i,j,m = 3,n;
   PetscMPIInt    size;
   PetscBool      mat_nonsymmetric = PETSC_FALSE,flg;
   MatInfo        info;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   n    = 2*size;
@@ -128,8 +127,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&C2));
   CHKERRQ(MatDestroy(&C));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

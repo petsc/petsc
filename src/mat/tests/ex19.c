@@ -21,7 +21,6 @@ int main(int argc,char **args)
 {
   Mat            C;
   Vec            u,b;
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscInt       i,m = 5,N,start,end,M,idx[4];
   PetscInt       j,nrsub,ncsub,*rsub,*csub,mystart,myend;
@@ -29,7 +28,7 @@ int main(int argc,char **args)
   PetscScalar    one = 1.0,Ke[16],*vals;
   PetscReal      h,norm;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
 
   N    = (m+1)*(m+1); /* dimension of matrix */
@@ -118,8 +117,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&u));
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(MatDestroy(&C));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -5,16 +5,15 @@ static char help[] = "Tests mesh reordering\n\n";
 int main(int argc, char **argv)
 {
   DM             dm;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dm));
   CHKERRQ(DMSetType(dm, DMPLEX));
   CHKERRQ(DMSetFromOptions(dm));
   CHKERRQ(DMViewFromOptions(dm, NULL, "-dm_view"));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

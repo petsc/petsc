@@ -31,11 +31,10 @@ int main(int argc,char **argv)
 {
   Vec            u,xy;
   DM             da;
-  PetscErrorCode ierr;
   PetscInt       m = 10, n = 10, dof = 2;
   PF             pf;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da));
   CHKERRQ(DMSetFromOptions(da));
   CHKERRQ(DMSetUp(da));
@@ -58,8 +57,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&u));
   CHKERRQ(PFDestroy(&pf));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

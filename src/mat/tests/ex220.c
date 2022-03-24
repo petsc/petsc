@@ -5,13 +5,12 @@ static char help[PETSC_MAX_PATH_LEN] = "Tests MatLoad() with MatCreateDense() fo
 
 int main(int argc, char **argv)
 {
-    PetscErrorCode      ierr;
     PetscViewer         viewer;
     Mat                 A;
     char                filename[PETSC_MAX_PATH_LEN];
     PetscBool           flg;
 
-    ierr = PetscInitialize(&argc, &argv, (char*)0, help);if (ierr) return ierr;
+    CHKERRQ(PetscInitialize(&argc, &argv, (char*)0, help));
     CHKERRQ(PetscOptionsGetString(NULL, NULL, "-f", filename, sizeof(filename), &flg));
     PetscCheck(flg,PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate a filename for input with the -f option");
 
@@ -20,8 +19,8 @@ int main(int argc, char **argv)
     CHKERRQ(MatLoad(A, viewer));
     CHKERRQ(PetscViewerDestroy(&viewer));
     CHKERRQ(MatDestroy(&A));
-    ierr = PetscFinalize();
-    return ierr;
+    CHKERRQ(PetscFinalize());
+    return 0;
 }
 
 /*TEST

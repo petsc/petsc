@@ -56,7 +56,7 @@ int main(int argc,char **argv)
   PetscInt       I;
   PetscMPIInt    rank;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
   CHKERRQ(TSSetProblemType(ts,TS_NONLINEAR));
@@ -93,8 +93,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecScatterDestroy(&ctx.scatterU));
   CHKERRQ(VecScatterDestroy(&ctx.scatterV));
   CHKERRQ(TSDestroy(&ts));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*

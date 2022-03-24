@@ -170,7 +170,6 @@ int main(int argc,char **argv)
   TS             ts;            /* ODE integrator */
   Vec            U,Udot,R;      /* solution, derivative, residual */
   Mat            A;             /* Jacobian matrix */
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       n = 3;
   AppCtx         ctx;
@@ -181,7 +180,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only for sequential runs");
   CHKERRQ(PetscNew(&adctx));
@@ -276,8 +275,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&U));
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(PetscFree(adctx));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -8,7 +8,6 @@
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   Mat            A;
   Mat            subA[9];
   IS             isg[3];
@@ -20,7 +19,7 @@ int main(int argc,char **argv)
   KSP           ksp;
   PC            pc;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,PETSC_NULL);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,PETSC_NULL));
 
   CHKERRQ(MatCreateAIJ(PETSC_COMM_WORLD,5,5,PETSC_DETERMINE,PETSC_DETERMINE,3,NULL,0,NULL,&subA[0]));
   CHKERRQ(MatGetOwnershipRange(subA[0],&mstart,&mend));
@@ -163,8 +162,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&r));
   CHKERRQ(KSPDestroy(&ksp));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

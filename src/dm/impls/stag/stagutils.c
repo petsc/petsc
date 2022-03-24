@@ -1293,7 +1293,6 @@ PetscErrorCode DMStagSetUniformCoordinates(DM dm,PetscReal xmin,PetscReal xmax,P
 @*/
 PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
 {
-  PetscErrorCode  ierr;
   DM_Stag * const stag = (DM_Stag*)dm->data;
   PetscInt        dim;
   PetscBool       flg;
@@ -1306,10 +1305,10 @@ PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm,PetscReal xmin,PetscRea
   CHKERRQ(DMStagSetCoordinateDMType(dm,DMSTAG));
   CHKERRQ(DMGetDimension(dm,&dim));
   switch (dim) {
-    case 1: ierr = DMStagSetUniformCoordinatesExplicit_1d(dm,xmin,xmax);                    CHKERRQ(ierr); break;
-    case 2: ierr = DMStagSetUniformCoordinatesExplicit_2d(dm,xmin,xmax,ymin,ymax);          CHKERRQ(ierr); break;
-    case 3: CHKERRQ(DMStagSetUniformCoordinatesExplicit_3d(dm,xmin,xmax,ymin,ymax,zmin,zmax)); break;
-    default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %D",dim);
+  case 1: CHKERRQ(DMStagSetUniformCoordinatesExplicit_1d(dm,xmin,xmax));                     break;
+  case 2: CHKERRQ(DMStagSetUniformCoordinatesExplicit_2d(dm,xmin,xmax,ymin,ymax));           break;
+  case 3: CHKERRQ(DMStagSetUniformCoordinatesExplicit_3d(dm,xmin,xmax,ymin,ymax,zmin,zmax)); break;
+  default: SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_ARG_OUTOFRANGE,"Unsupported dimension %D",dim);
   }
   PetscFunctionReturn(0);
 }

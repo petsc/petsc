@@ -287,16 +287,15 @@ static PetscErrorCode TestSetIndexAdd(PetscWeakForm wf)
 int main(int argc,char **argv)
 {
   PetscWeakForm  wf;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRQ(PetscWeakFormCreate(PETSC_COMM_SELF, &wf));
   CHKERRQ(TestSetIndex(wf));
   CHKERRQ(TestAdd(wf));
   CHKERRQ(TestSetIndexAdd(wf));
   CHKERRQ(PetscWeakFormDestroy(&wf));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

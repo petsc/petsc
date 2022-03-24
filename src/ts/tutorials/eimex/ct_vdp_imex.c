@@ -55,7 +55,7 @@ int main(int argc, char **argv)
   struct _User      user;       /* user-defined work context */
   PetscViewer       viewer;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   /* Initialize user application context */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"van der Pol options","");CHKERRQ(ierr);
   user.mu      = 1e0;
@@ -162,8 +162,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&ref));
   CHKERRQ(TSDestroy(&ts));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)

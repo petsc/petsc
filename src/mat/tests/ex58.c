@@ -7,12 +7,11 @@ int main(int argc,char **argv)
 {
   Mat            A,B;
   PetscInt       m = 7,n,i,rstart,rend,cols[3];
-  PetscErrorCode ierr;
   PetscScalar    v[3];
   PetscBool      equal;
   const char     *eq[2];
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   n    = m;
 
@@ -61,8 +60,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&B));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

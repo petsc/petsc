@@ -30,7 +30,7 @@ int main(int argc,char **args)
   PetscBool              diffmap = PETSC_TRUE, symmetric = PETSC_FALSE, issymmetric;
   PetscErrorCode         ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   m = n = 2*size;
@@ -688,8 +688,8 @@ int main(int argc,char **args)
   CHKERRQ(ISLocalToGlobalMappingDestroy(&rmap));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&B));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char* func)

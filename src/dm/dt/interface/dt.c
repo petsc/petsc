@@ -1433,7 +1433,6 @@ static PetscErrorCode PetscDTGaussLobattoJacobiEndweights_Internal(PetscInt n, P
   {
     PetscInt alphai = (PetscInt) alpha;
     PetscInt betai = (PetscInt) beta;
-    PetscErrorCode ierr;
 
     if ((PetscReal) alphai == alpha && (PetscReal) betai == beta) {
       PetscReal binom1, binom2;

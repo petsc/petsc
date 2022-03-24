@@ -7,11 +7,10 @@ static char help[] = "Spot check DMStag Compatibility Checks";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   DM             dms[NDMS];
   PetscInt       i;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Two 3d DMs, with all the same parameters */
   CHKERRQ(DMStagCreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,4,3,2,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,3,4,5,DMSTAG_STENCIL_BOX,1,NULL,NULL,NULL,&dms[0]));
@@ -49,8 +48,8 @@ int main(int argc,char **argv)
   for (i=0; i<NDMS; ++i) {
     CHKERRQ(DMDestroy(&dms[i]));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

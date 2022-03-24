@@ -8,12 +8,11 @@ int main(int argc,char **args)
   Mat            A, B, C;
   PetscReal      err;
   PetscInt       i,j,M = 20;
-  PetscErrorCode ierr;
   PetscMPIInt    NP;
   MPI_Comm       comm;
   PetscInt       *rows;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_size(comm,&NP));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
@@ -148,8 +147,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(MatDestroy(&C));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -98,7 +98,7 @@ int main(int argc,char **argv)
   char              **snames,*names;
   Vec               lambda;     /* used with TSAdjoint for sensitivities */
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Chemistry solver options","");CHKERRQ(ierr);
   CHKERRQ(PetscOptionsString("-chem","CHEMKIN input file","",chemfile,chemfile,sizeof(chemfile),NULL));
   CHKERRQ(PetscOptionsString("-thermo","NASA thermo input file","",thermofile,thermofile,sizeof(thermofile),NULL));
@@ -231,8 +231,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&lambda));
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(PetscFree3(user.tchemwork,user.Jdense,user.rows));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*

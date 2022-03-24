@@ -9,12 +9,11 @@ int main(int argc,char **args)
   PetscInt       i,j,m = 5,n,nrows,ncols;
   const PetscInt *rows,*cols;
   IS             isrows,iscols;
-  PetscErrorCode ierr;
   PetscBool      flg,Test_MatMatMult=PETSC_FALSE,mats_view=PETSC_FALSE;
   PetscScalar    *v;
   PetscMPIInt    rank,size;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRQ(PetscOptionsHasName(NULL,NULL,"-mats_view",&mats_view));
@@ -121,8 +120,8 @@ int main(int argc,char **args)
   CHKERRQ(ISDestroy(&iscols));
   CHKERRQ(MatDestroy(&C));
   CHKERRQ(MatDestroy(&Caij));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

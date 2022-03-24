@@ -6,14 +6,13 @@ Where at least a couple of mallocs will occur in the stash code.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       i,j,r,n = 50,repeat = 1,bs;
   PetscScalar    val,*vals,zero=0.0;
   PetscBool      inv = PETSC_FALSE, subset = PETSC_FALSE,flg;
   Vec            x,y;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   bs   = size;
 
@@ -73,8 +72,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&y));
   CHKERRQ(PetscFree(vals));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

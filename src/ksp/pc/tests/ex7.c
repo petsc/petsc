@@ -8,12 +8,11 @@ int main(int argc,char **args)
 {
   Mat            C,A;
   PetscInt       i,j;
-  PetscErrorCode ierr;
   PetscScalar    v;
   PC             pc;
   Vec            xtmp;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(MatCreate(PETSC_COMM_WORLD,&C));
   CHKERRQ(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,3,3));
   CHKERRQ(MatSetFromOptions(C));
@@ -45,6 +44,6 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&xtmp));
   CHKERRQ(MatDestroy(&C));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

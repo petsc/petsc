@@ -96,7 +96,6 @@ int main(int argc,char **argv)
   PetscReal      time_total_max = 1.0;   /* default max total time */
   PetscInt       time_steps_max = 100;   /* default max timesteps */
   PetscDraw      draw;                   /* drawing context */
-  PetscErrorCode ierr;
   PetscInt       steps,m;
   PetscMPIInt    size;
   PetscReal      dt,ftime;
@@ -107,7 +106,7 @@ int main(int argc,char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr        = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   appctx.comm = PETSC_COMM_WORLD;
 
   m               = 60;
@@ -280,8 +279,8 @@ int main(int argc,char **argv)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* --------------------------------------------------------------------- */
 /*

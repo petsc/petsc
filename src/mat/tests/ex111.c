@@ -49,7 +49,7 @@ int main(int argc,char **argv)
   PetscBool      Test_3D=PETSC_FALSE,flg;
   const PetscInt *ia,*ja;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
@@ -181,8 +181,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&R));
   CHKERRQ(MatDestroy(&C));
   CHKERRQ(MatDestroy(&D));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

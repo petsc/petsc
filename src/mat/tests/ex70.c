@@ -214,7 +214,7 @@ int main(int argc,char **args)
   PetscReal      err;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,NULL,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-K",&K,NULL));
@@ -735,8 +735,8 @@ int main(int argc,char **args)
   CHKERRQ(PetscFree(dataB));
   CHKERRQ(PetscFree(dataR));
   CHKERRQ(PetscFree(dataBt));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

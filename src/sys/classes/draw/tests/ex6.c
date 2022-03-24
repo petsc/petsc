@@ -52,13 +52,12 @@ static PetscErrorCode DrawFunction(PetscDraw draw,void *ctx)
 
 int main(int argc,char **argv)
 {
-  char           title[64],cmap[32] = "";
-  PetscDraw      draw;
-  FunctionCtx    ctx;
-  PetscErrorCode ierr;
+  char        title[64],cmap[32] = "";
+  PetscDraw   draw;
+  FunctionCtx ctx;
 
   ctx.function = Peaks;
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-draw_cmap",cmap,sizeof(cmap),NULL));
   CHKERRQ(PetscSNPrintf(title,sizeof(title),"Colormap: %s",cmap));
 
@@ -70,8 +69,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscDrawSave(draw));
 
   CHKERRQ(PetscDrawDestroy(&draw));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

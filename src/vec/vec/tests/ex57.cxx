@@ -5,12 +5,11 @@ typedef viennacl::vector<PetscScalar> ViennaclVector;
 
 int main(int argc,char *argv[])
 {
-  PetscErrorCode ierr;
   Vec            x,y;
   PetscInt       n = 5;
   ViennaclVector *x_vcl;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,NULL);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,NULL));
   CHKERRQ(VecCreate(PETSC_COMM_WORLD,&x));
   CHKERRQ(VecSetSizes(x,n,PETSC_DECIDE));
   CHKERRQ(VecSetType(x,VECVIENNACL));
@@ -31,8 +30,8 @@ int main(int argc,char *argv[])
   CHKERRQ(VecDestroy(&y));
   CHKERRQ(VecDestroy(&x));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

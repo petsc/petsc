@@ -4,13 +4,12 @@ static char help[] = "Test memory allocation of PetscFV arrays used in PetscFVCo
 
 int main(int argc, char **argv)
 {
-    PetscErrorCode ierr;
     PetscFV        fvm;
     PetscInt       dim, numFaces;
     PetscScalar    *dx, *grad;
 
     PetscFunctionBeginUser;
-    ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help); if (ierr) return ierr;
+    CHKERRQ(PetscInitialize(&argc, &argv, PETSC_NULL, help));
 
     /*
       Working with a 2D mesh, made of triangles, and using the 2nd neighborhood

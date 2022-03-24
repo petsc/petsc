@@ -106,9 +106,8 @@ int main(int argc, char **argv)
   Vec            errv;
   Mat            R;
   Vec            b, x;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, (char*)0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char*)0, help));
 
   CHKERRQ(InitializeOptions(&user));
 
@@ -209,8 +208,8 @@ int main(int argc, char **argv)
   CHKERRQ(KSPDestroy(&ksp));
   CHKERRQ(DMDestroy(&dmref));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscReal ComputeDiffusionCoefficient(PetscReal coords[3], UserContext* user)

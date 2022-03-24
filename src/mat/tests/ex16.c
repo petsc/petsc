@@ -32,12 +32,11 @@ int main(int argc,char **args)
 {
   Mat            A;
   PetscInt       i,j,M = 4,N = 3,rstart,rend;
-  PetscErrorCode ierr;
   PetscScalar    *array;
   char           mattype[256];
   PetscViewer    view;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,NULL,help));
   CHKERRQ(PetscStrcpy(mattype,MATMPIDENSE));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-mat_type",mattype,sizeof(mattype),NULL));
   /*
@@ -143,8 +142,8 @@ int main(int argc,char **args)
     CHKERRQ(PetscFree(array));
   }
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

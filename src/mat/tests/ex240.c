@@ -6,7 +6,6 @@ static char help[] ="Tests MatFDColoringSetValues()\n\n";
 int main(int argc,char **argv)
 {
   DM                     da;
-  PetscErrorCode         ierr;
   PetscInt               N, mx = 5,my = 4,i,j,nc,nrow,n,ncols,rstart,*colors,*map;
   const PetscInt         *cols;
   const PetscScalar      *vals;
@@ -20,7 +19,7 @@ int main(int argc,char **argv)
   ISLocalToGlobalMapping ltog;
   PetscBool              single,two;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,mx,my,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
   CHKERRQ(DMSetUp(da));
@@ -101,8 +100,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

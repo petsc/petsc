@@ -7,7 +7,6 @@ int main(int argc,char **args)
 {
   Mat            A,B,*submatA,*submatB;
   PetscInt       bs=1,m=11,ov=1,i,j,k,*rows,*cols,nd=5,*idx,rstart,rend,sz,mm,nn,M,N,Mbs;
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscScalar    *vals,rval;
   IS             *is1,*is2;
@@ -16,7 +15,7 @@ int main(int argc,char **args)
   PetscReal      s1norm,s2norm,rnorm,tol = 100*PETSC_SMALL;
   PetscBool      flg,test_nd0=PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
@@ -181,8 +180,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(PetscRandomDestroy(&rdm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

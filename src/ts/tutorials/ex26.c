@@ -127,7 +127,7 @@ int main(int argc,char **argv)
   PetscReal         ftime;
   TSConvergedReason reason;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(TSCreate(PETSC_COMM_WORLD,&ts));
   CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_STAR,4,4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da));
   CHKERRQ(DMSetFromOptions(da));
@@ -198,8 +198,8 @@ int main(int argc,char **argv)
   CHKERRQ(DMDestroy(&da));
   CHKERRQ(TSDestroy(&ts));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* ------------------------------------------------------------------- */

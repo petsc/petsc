@@ -96,14 +96,13 @@ int main(int argc,char **argv)
   Vec               X;          /* solution, residual vectors */
   Mat               J;          /* Jacobian matrix */
   PetscInt          steps,mx;
-  PetscErrorCode    ierr;
   PetscReal         hx,dt,ftime;
   UserCtx           user;       /* user-defined work context */
   TSConvergedReason reason;
   DM                dm;
   const char        *fields[2] = {"U","V"};
 
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char *)0,help));
 
   /* Initialize the user context struct */
   CHKERRQ(Initialize_AppContext(&user));
@@ -187,8 +186,8 @@ int main(int argc,char **argv)
 
   /* Free all MOAB related resources: */
   CHKERRQ(Destroy_AppContext(&user));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*

@@ -87,7 +87,6 @@ int main(int argc,char **argv)
   PetscReal      time_total_max = 100.0; /* default max total time */
   PetscInt       time_steps_max = 100;   /* default max timesteps */
   PetscDraw      draw;                   /* drawing context */
-  PetscErrorCode ierr;
   PetscInt       steps,m;
   PetscMPIInt    size;
   PetscBool      flg;
@@ -97,7 +96,7 @@ int main(int argc,char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
@@ -240,8 +239,8 @@ int main(int argc,char **argv)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* --------------------------------------------------------------------- */
 /*

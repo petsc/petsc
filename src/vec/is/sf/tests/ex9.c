@@ -6,7 +6,6 @@ static char help[]= "This example shows 1) how to transfer vectors from a parent
 #include <petscvec.h>
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    nproc,grank,mycolor;
   PetscInt       i,n,N = 20,low,high;
   MPI_Comm       subcomm;
@@ -21,7 +20,7 @@ int main(int argc,char **argv)
   PetscBool      sub2sub    = PETSC_FALSE;  /* Copy a vector from a subcomm to another subcomm? */
   PetscBool      world2subs = PETSC_FALSE;  /* Copy a vector from WORLD to multiple subcomms? */
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&nproc));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&grank));
 
@@ -446,8 +445,8 @@ int main(int argc,char **argv)
   } /* world2subs */
 
   CHKERRMPI(MPI_Comm_free(&subcomm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

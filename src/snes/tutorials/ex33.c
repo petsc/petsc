@@ -116,10 +116,9 @@ int main(int argc, char **argv)
   Vec            u;      /* solution vector */
   AppCtx         user;   /* user-defined work context */
   PetscReal      t = 0.0;/* time */
-  PetscErrorCode ierr;
   PetscInt       n;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   /* Create solver */
   CHKERRQ(SNESCreate(PETSC_COMM_WORLD, &snes));
   /* Create mesh */
@@ -168,8 +167,8 @@ int main(int argc, char **argv)
   CHKERRQ(DMDestroy(&user.cda));
   CHKERRQ(DMDestroy(&da));
   CHKERRQ(SNESDestroy(&snes));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

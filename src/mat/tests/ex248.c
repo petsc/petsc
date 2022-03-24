@@ -9,9 +9,8 @@ int main(int argc,char **argv)
   const PetscScalar *Bv;
   PetscInt          n = 10, m = 20, p = 7, q = 17;
   PetscBool         flg;
-  PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(MatCreateDense(PETSC_COMM_SELF,m,n,m,n,NULL,&Ad));
   CHKERRQ(MatCreateDense(PETSC_COMM_SELF,p,q,p,q,NULL,&Bd));
   CHKERRQ(MatSetRandom(Ad,NULL));
@@ -44,8 +43,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&Bd));
   CHKERRQ(MatDestroy(&Ad));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

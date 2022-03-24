@@ -234,7 +234,6 @@ int main(int argc,char **argv)
 {
   TS             ts;                  /* ODE integrator */
   Vec            x;                   /* solution */
-  PetscErrorCode ierr;
   DM             da;
   AppCtx         appctx;
   MCtx           mctx;
@@ -245,7 +244,7 @@ int main(int argc,char **argv)
   PetscLogStage  stage;
 #endif
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-forwardonly",&forwardonly,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-implicitform",&implicitform,NULL));
   appctx.aijpc = PETSC_FALSE;
@@ -362,7 +361,7 @@ int main(int argc,char **argv)
     CHKERRQ(VecDestroy(&lambda[0]));
   }
   CHKERRQ(PetscTime(&v2));
-  ierr = PetscPrintf(PETSC_COMM_WORLD," %.3lf ",v2-v1);
+  CHKERRQ(PetscPrintf(PETSC_COMM_WORLD," %.3lf ",v2-v1));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -376,8 +375,8 @@ int main(int argc,char **argv)
     /* CHKERRQ(VecDestroy(&mctx.Udot));*/
     CHKERRQ(MatDestroy(&appctx.A));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* ------------------------------------------------------------------- */

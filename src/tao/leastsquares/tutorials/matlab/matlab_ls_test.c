@@ -99,13 +99,12 @@ static PetscErrorCode TaoPounders(AppCtx *user)
 int main(int argc, char **argv)
 {
   AppCtx         user;
-  PetscErrorCode ierr;
   PetscScalar    tmp;
   PetscInt       prob_id = 0;
   PetscBool      flg, testall = PETSC_FALSE;
   int            i, i0, imax;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test_all",&testall,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-prob_id",&prob_id,&flg));
   if (!testall) {
@@ -153,8 +152,8 @@ int main(int argc, char **argv)
 
   CHKERRQ(PetscMatlabEngineEvaluate(user.mengine,"TestingFinalize"));
   CHKERRQ(PetscMatlabEngineDestroy(&user.mengine));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

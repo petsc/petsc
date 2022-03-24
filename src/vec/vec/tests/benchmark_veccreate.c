@@ -7,14 +7,13 @@ static char help[] = "Benchmark VecCreate() for GPU vectors.\n\
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,n = 5, iter = 10;
-  Vec            x;
-  PetscLogDouble v0,v1;
-  PetscMemType   memtype;
+  PetscInt        i,n = 5, iter = 10;
+  Vec             x;
+  PetscLogDouble  v0,v1;
+  PetscMemType    memtype;
   PetscScalar    *array;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-iter",&iter,NULL));
 
@@ -31,8 +30,8 @@ int main(int argc,char **argv)
     CHKERRQ(VecDestroy(&x));
     CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Iteration %" PetscInt_FMT ": Time= %g\n",i,(double)(v1-v0)));
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /*TEST
   build:

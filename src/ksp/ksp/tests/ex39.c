@@ -23,10 +23,9 @@ int main(int argc,char **args)
   PetscInt       n1, n2, n3;            /* parameters */
   PetscReal      h, gamma, beta;        /* parameters */
   PetscInt       i,j,k,Ii,J,Istart,Iend;
-  PetscErrorCode ierr;
   PetscScalar    v, co1, co2;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   n1 = 32;
   n2 = 32;
   n3 = 32;
@@ -114,8 +113,8 @@ int main(int argc,char **args)
   CHKERRQ(KSPDestroy(&ksp));
   CHKERRQ(VecDestroy(&u));  CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&b));  CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

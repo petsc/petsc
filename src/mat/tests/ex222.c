@@ -9,9 +9,8 @@ int main(int argc,char **argv)
   char           expltype[128],*etype = NULL;
   PetscInt       bs = 1;
   PetscBool      flg, check = PETSC_TRUE;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*) 0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*) 0,help));
 
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-expl_type",expltype,sizeof(expltype),&flg));
   if (flg) {
@@ -67,8 +66,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&Ae));
   CHKERRQ(MatDestroy(&Aet));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

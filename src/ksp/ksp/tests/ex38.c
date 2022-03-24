@@ -39,13 +39,12 @@ int main(int argc,char **args)
   PetscInt       n1, n2;                /* parameters */
   PetscReal      h, gamma, beta;        /* parameters */
   PetscInt       i,j,Ii,J,Istart,Iend;
-  PetscErrorCode ierr;
   PetscScalar    v, co1, co2;
 #if defined(PETSC_USE_LOG)
   PetscLogStage stage;
 #endif
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   n1 = 64;
   n2 = 64;
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n1",&n1,NULL));
@@ -211,8 +210,8 @@ int main(int argc,char **args)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

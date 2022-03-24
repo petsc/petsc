@@ -5,12 +5,11 @@ static char help[] = "Tests I/O of vector and string attribute for HDF5 format\n
 
 int main(int argc,char **args)
 {
-  PetscErrorCode    ierr;
   Vec               u;
   PetscViewer       viewer;
   char             *attrReadVal, attrWriteVal[20]={"Hello World!!"};
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
 
   /* PART 1:  Generate vector, then write it in the given data format */
   CHKERRQ(VecCreate(PETSC_COMM_WORLD,&u));
@@ -35,8 +34,8 @@ int main(int argc,char **args)
   CHKERRQ(PetscFree(attrReadVal));
 
   CHKERRQ(PetscViewerDestroy(&viewer));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

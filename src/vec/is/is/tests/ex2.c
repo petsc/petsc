@@ -14,9 +14,8 @@ int main(int argc,char **argv)
   const PetscInt *ii;
   IS             is;
   PetscBool      flg;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /*
      Test IS of size 0
@@ -45,8 +44,8 @@ int main(int argc,char **argv)
   CHKERRQ(ISRestoreIndices(is,&ii));
   CHKERRQ(ISDestroy(&is));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

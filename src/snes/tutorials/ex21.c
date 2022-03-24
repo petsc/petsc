@@ -49,13 +49,12 @@ extern PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void*);
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       its;
   Vec            U,FU;
   SNES           snes;
   UserCtx        user;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* Create a global vector that includes a single redundant array and two da arrays */
   CHKERRQ(DMCompositeCreate(PETSC_COMM_WORLD,&user.packer));
@@ -99,8 +98,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscViewerDestroy(&user.lambda_viewer));
   CHKERRQ(PetscViewerDestroy(&user.fu_viewer));
   CHKERRQ(PetscViewerDestroy(&user.flambda_viewer));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*

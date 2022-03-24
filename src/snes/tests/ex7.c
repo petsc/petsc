@@ -29,10 +29,9 @@ int main(int argc,char **argv)
   AppCtx         user;                 /* user-defined work context */
   PetscScalar    h,xp = 0.0,v;
   PetscInt       its,n = 5,i;
-  PetscErrorCode ierr;
   PetscBool      puremf = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(PetscOptionsHasName(NULL,NULL,"-variant",&user.variant));
   h    = 1.0/(n-1);
@@ -94,8 +93,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&U));  CHKERRQ(VecDestroy(&F));
   CHKERRQ(MatDestroy(&J));  CHKERRQ(MatDestroy(&B));
   CHKERRQ(SNESDestroy(&snes));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
 

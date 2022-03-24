@@ -31,11 +31,8 @@ void assemble_on_gpu(PetscSplitCSRDataStructure d_mat, PetscInt start, PetscInt 
 
 PetscErrorCode assemble_on_cpu(Mat A, PetscInt start, PetscInt end, PetscInt N, PetscMPIInt rank)
 {
-  PetscInt       i;
-  PetscErrorCode ierr;
-
   PetscFunctionBeginUser;
-  for (i=start; i<end+1; i++) {
+  for (PetscInt i=start; i<end+1; i++) {
     PetscInt    js[] = {i-1, i}, nn = (i==N) ? 1 : 2;
     PetscScalar values[] = {1,1,1,1};
     CHKERRQ(MatSetValues(A,nn,js,nn,js,values,ADD_VALUES));
@@ -45,7 +42,6 @@ PetscErrorCode assemble_on_cpu(Mat A, PetscInt start, PetscInt end, PetscInt N, 
 
 int main(int argc,char **args)
 {
-  PetscErrorCode             ierr;
   Mat                        A;
   PetscInt                   N=11, nz=3, Istart, Iend, num_threads = 128;
   PetscSplitCSRDataStructure d_mat;
@@ -54,7 +50,7 @@ int main(int argc,char **args)
   PetscBool                  testmpiseq = PETSC_FALSE;
   Vec                        x,y;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-n", &N, NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-num_threads", &num_threads, NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL, "-nz_row", &nz, NULL));
@@ -100,8 +96,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&y));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

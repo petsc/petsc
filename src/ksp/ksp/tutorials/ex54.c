@@ -8,7 +8,6 @@ static char help[] = "Creates a matrix from quadrilateral finite elements in 2D,
 int main(int argc,char **args)
 {
   Mat            Amat,Pmat;
-  PetscErrorCode ierr;
   PetscInt       i,m,M,its,Istart,Iend,j,Ii,ix,ne=4;
   PetscReal      x,y,h;
   Vec            xx,bb;
@@ -26,7 +25,7 @@ int main(int argc,char **args)
                             {-1.0, -2.0, 5.0+DIAG_S, -2.0},
                             {-2.0, -1.0, -2.0, 5.0+DIAG_S} };
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_rank(comm, &mype));
   CHKERRMPI(MPI_Comm_size(comm, &npe));
@@ -206,8 +205,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&Amat));
   CHKERRQ(MatDestroy(&Pmat));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

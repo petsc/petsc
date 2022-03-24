@@ -48,7 +48,6 @@ int main(int argc,char **argv)
 {
   TS             ts;                  /* ODE integrator */
   Vec            x,r;                 /* solution, residual */
-  PetscErrorCode ierr;
   DM             da;
   AppCtx         appctx;              /* Application context */
   AdolcMatCtx    matctx;              /* Matrix (free) context */
@@ -60,7 +59,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-forwardonly",&forwardonly,NULL));
   PetscFunctionBeginUser;
   appctx.D1    = 8.0e-5;
@@ -180,8 +179,8 @@ int main(int argc,char **argv)
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&da));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode InitialConditions(DM da,Vec U)

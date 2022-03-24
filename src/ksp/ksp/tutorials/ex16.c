@@ -31,13 +31,12 @@ int main(int argc,char **args)
   Mat            A;        /* linear system matrix */
   KSP            ksp;     /* linear solver context */
   PetscReal      norm;     /* norm of solution error */
-  PetscErrorCode ierr;
   PetscInt       ntimes,i,j,k,Ii,J,Istart,Iend;
   PetscInt       m   = 8,n = 7,its;
   PetscBool      flg = PETSC_FALSE;
   PetscScalar    v,one = 1.0,rhs;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
@@ -190,8 +189,8 @@ int main(int argc,char **args)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

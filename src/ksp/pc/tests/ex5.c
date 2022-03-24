@@ -31,7 +31,6 @@ int main(int Argc,char **Args)
 {
   PetscInt       x_mesh = 15,levels = 3,cycles = 1,use_jacobi = 0;
   PetscInt       i,smooths = 1,*N,its;
-  PetscErrorCode ierr;
   PCMGType       am = PC_MG_MULTIPLICATIVE;
   Mat            cmat,mat[20],fmat;
   KSP            cksp,ksp[20],kspmg;
@@ -41,7 +40,7 @@ int main(int Argc,char **Args)
   PC             pcmg,pc;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&Argc,&Args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&Argc,&Args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-x",&x_mesh,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-l",&levels,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-c",&cycles,NULL));
@@ -175,8 +174,8 @@ int main(int Argc,char **Args)
   CHKERRQ(MatDestroy(&cmat));
   CHKERRQ(MatDestroy(&fmat));
   CHKERRQ(KSPDestroy(&kspmg));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* --------------------------------------------------------------------- */

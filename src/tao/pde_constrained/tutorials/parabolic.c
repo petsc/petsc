@@ -124,7 +124,7 @@ int main(int argc, char **argv)
   PetscLogStage      stages[1];
 #endif
 
-  ierr = PetscInitialize(&argc, &argv, (char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char*)0,help));
   user.mx = 8;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"parabolic example",NULL);CHKERRQ(ierr);
   CHKERRQ(PetscOptionsInt("-mx","Number of grid points in each direction","",user.mx,&user.mx,NULL));
@@ -232,8 +232,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecDestroy(&x0));
   CHKERRQ(ParabolicDestroy(&user));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 /*

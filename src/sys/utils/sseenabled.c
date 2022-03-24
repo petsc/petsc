@@ -8,7 +8,6 @@
 
 PetscErrorCode  PetscSSEHardwareTest(PetscBool  *flag)
 {
-  PetscErrorCode ierr;
   char           vendor[13];
   char           Intel[13]="GenuineIntel";
   char           AMD[13]  ="AuthenticAMD";

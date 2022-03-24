@@ -12,10 +12,9 @@ int main(int argc,char **args)
   char           file[PETSC_MAX_PATH_LEN];
   PetscInt       m,n,M,N,p=1,q=1,i,j;
   PetscMPIInt    rank,size;
-  PetscErrorCode ierr;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
@@ -160,8 +159,8 @@ int main(int argc,char **args)
 
   CHKERRQ(PetscFree2(S,T));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

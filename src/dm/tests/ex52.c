@@ -5,12 +5,11 @@ static char help[] = "Tests periodic boundary conditions for DMDA1d with periodi
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode   ierr;
   DM               da;
   Mat              A;
   const PetscInt   dfill[4] = {0,1,0,1},ofill[4] = {0,1,1,0};
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,7,2,1,NULL,&da));
   CHKERRQ(DMSetFromOptions(da));
   CHKERRQ(DMDASetBlockFills(da,dfill,ofill));
@@ -21,8 +20,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

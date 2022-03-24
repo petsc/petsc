@@ -19,8 +19,7 @@ int main(int argc, char **argv) {
   PetscReal pos_inf  = pos_one/zero; /* +inf */
   PetscReal x_nan    = zero2/zero;   /*  NaN */ /* some compilers may optimize out zero/zero and set x_nan = 1! */
 
-  PetscErrorCode ierr;
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   CALL(PetscIsInfReal(neg_zero));
   CALL(PetscIsInfReal(pos_zero));
@@ -38,8 +37,8 @@ int main(int argc, char **argv) {
   CALL(PetscIsNanReal(pos_inf));
   CALL(PetscIsNanReal(x_nan));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -58,7 +58,6 @@ int main(int argc,char **argv)
   Vec            x,r;                  /* solution, residual vectors */
   Mat            J;                    /* Jacobian matrix */
   PetscInt       steps,Mx;
-  PetscErrorCode ierr;
   DM             da;
   PetscReal      dt;
   PetscBool      mymonitor;
@@ -67,7 +66,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   ctx.kappa       = 1.0;
   CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-kappa",&ctx.kappa,NULL));
   ctx.degenerate  = PETSC_FALSE;
@@ -169,8 +168,8 @@ int main(int argc,char **argv)
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&da));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 /*
@@ -442,7 +441,6 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
 {
   UserCtx        *ctx = (UserCtx*)ptr;
   PetscDrawLG    lg;
-  PetscErrorCode ierr;
   PetscScalar    *u,l,r,c;
   PetscInt       Mx,i,xs,xm,cnt;
   PetscReal      x,y,hx,pause,sx,len,max,xx[4],yy[4],xx_netforce,yy_netforce,yup,ydown,y2,len2;
@@ -463,8 +461,8 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   CHKERRQ(PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),800,600));
   CHKERRQ(TSGetDM(ts,&da));
   CHKERRQ(DMGetLocalVector(da,&localU));
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  CHKERRQ(DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE));
   CHKERRQ(DMDAGetCorners(da,&xs,NULL,NULL,&xm,NULL,NULL));
   hx   = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx);
   CHKERRQ(DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU));

@@ -67,9 +67,8 @@ int main(int argc,char **argv)
   DM             dm, sw, cellsw; /* Mesh and particle managers */
   MPI_Comm       comm;
   AppCtx         user;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(ProcessOptions(comm, &user));
   CHKERRQ(CreateMesh(comm, &dm, &user));
@@ -82,8 +81,8 @@ int main(int argc,char **argv)
   CHKERRQ(DMDestroy(&sw));
   CHKERRQ(DMDestroy(&dm));
   CHKERRQ(DMDestroy(&cellsw));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -32,14 +32,13 @@ int main(int argc,char **argv)
   PetscRandom    rctx;          /* random number generator context */
   PetscReal      norm;          /* norm of solution error */
   PetscInt       i,j,its;
-  PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
 #if defined(PETSC_USE_LOG)
   PetscLogStage  stage;
 #endif
   DMDALocalInfo  info;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   /*
      Create distributed array to handle parallel distribution.
      The problem size will default to 8 by 7, but this can be
@@ -193,8 +192,8 @@ int main(int argc,char **argv)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

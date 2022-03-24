@@ -6,7 +6,6 @@ static char help[] = "Tests MatTransposeMatMult() on MatLoad() matrix \n\n";
 int main(int argc,char **args)
 {
   Mat            A,C,Bdense,Cdense;
-  PetscErrorCode ierr;
   PetscViewer    fd;              /* viewer */
   char           file[PETSC_MAX_PATH_LEN]; /* input file name */
   PetscBool      flg,viewmats=PETSC_FALSE;
@@ -17,7 +16,7 @@ int main(int argc,char **args)
   Vec            x,y;
   PetscRandom    rand;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* Determine file from which we read the matrix A */
@@ -134,8 +133,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&Cdense));
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&y));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -50,7 +50,6 @@ int main(int argc,char **args)
   char           file_x0[PETSC_MAX_PATH_LEN]="";  /* name of input file with initial guess */
   char           A_name[128]="A",b_name[128]="b",x0_name[128]="x0";  /* name of the matrix, RHS and initial guess */
   KSPType        ksptype;
-  PetscErrorCode ierr;
   PetscBool      has;
   PetscInt       its,n,m;
   PetscReal      norm;
@@ -60,7 +59,7 @@ int main(int argc,char **args)
   PetscBool      test_custom_layout=PETSC_FALSE;
   PetscMPIInt    rank,size;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   /*
@@ -277,8 +276,8 @@ int main(int argc,char **args)
                       End of linear solver loop
      ----------------------------------------------------------- */
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

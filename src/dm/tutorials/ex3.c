@@ -104,13 +104,12 @@ PetscErrorCode SetCoordinates3d(DM da)
 int main(int argc,char **argv)
 {
   PetscInt         M = 5,N = 4,P = 3, m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,dim = 1;
-  PetscErrorCode   ierr;
   DM               dac,daf;
   DMBoundaryType   bx    = DM_BOUNDARY_NONE,by=DM_BOUNDARY_NONE,bz=DM_BOUNDARY_NONE;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
   Mat              A;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-P",&P,NULL));
@@ -146,8 +145,8 @@ int main(int argc,char **argv)
   CHKERRQ(DMDestroy(&dac));
   CHKERRQ(DMDestroy(&daf));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

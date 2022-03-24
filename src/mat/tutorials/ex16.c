@@ -12,7 +12,6 @@ int main(int argc,char **args)
   Mat               A,Asp;
   PetscViewer       fd;                        /* viewer */
   char              file[PETSC_MAX_PATH_LEN];  /* input file name */
-  PetscErrorCode    ierr;
   PetscInt          m,n,rstart,rend;
   PetscBool         flg;
   PetscInt          row,ncols,j,nrows,nnzA=0,nnzAsp=0;
@@ -23,7 +22,7 @@ int main(int argc,char **args)
   MatInfo           matinfo;
   PetscInt          Dnnz,Onnz;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* Determine files from which we read the linear systems. */
@@ -118,6 +117,6 @@ int main(int argc,char **args)
 
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&Asp));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

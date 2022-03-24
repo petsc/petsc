@@ -10,7 +10,6 @@ T*/
 #include <petscsys.h>
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscDataType  dtype;
   PetscBool      found;
 
@@ -23,7 +22,7 @@ int main(int argc,char **argv)
                  runtime.  The user can use the "help" variable place
                  additional help messages in this printout.
   */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   CHKERRQ(PetscDataTypeFromString("Scalar",&dtype,&found));
   PetscCheck(found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Did not find scalar datatype");
@@ -40,8 +39,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscDataTypeFromString("abogusdatatype",&dtype,&found));
   PetscCheck(!found,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Found a bogus datatype");
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   char           *tmp,typeName[256];
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-dm_vec_type",typeName,sizeof(typeName),&flg));
   if (flg) {
     CHKERRQ(PetscStrstr(typeName,"cuda",&tmp));
@@ -51,8 +51,8 @@ int main(int argc,char **argv)
   CHKERRQ(SNESDestroy(&snes));
   CHKERRQ(DMDestroy(&da));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 struct ApplyStencil

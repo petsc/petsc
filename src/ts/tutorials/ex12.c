@@ -34,7 +34,6 @@ int main(int argc,char **argv)
   TS                   ts;                         /* nonlinear solver */
   Vec                  x,r;                        /* solution, residual vectors */
   PetscInt             steps;                      /* iterations for convergence */
-  PetscErrorCode       ierr;
   DM                   da;
   PetscReal            ftime;
   SNES                 ts_snes;
@@ -44,7 +43,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-usemonitor",&usemonitor,NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -115,8 +114,8 @@ int main(int argc,char **argv)
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&da));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 /*

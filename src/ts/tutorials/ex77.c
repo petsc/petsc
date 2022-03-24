@@ -914,9 +914,8 @@ int main(int argc, char **argv)
   AdvCtx          adv;
   PetscReal       t;
   PetscInt        dim;
-  PetscErrorCode  ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
   CHKERRQ(PetscBagCreate(PETSC_COMM_WORLD, sizeof(Parameter), &user.bag));
   CHKERRQ(SetupParameters(&user));
@@ -994,8 +993,8 @@ int main(int argc, char **argv)
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(TSDestroy(&sts));
   CHKERRQ(PetscBagDestroy(&user.bag));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -5,14 +5,13 @@ static char help[] = "Test DMCreateFieldDecomposition_Stag()\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
-  DM             dm;
-  DM             *sub_dms;
-  PetscInt       dim,n_fields;
-  IS             *fields;
-  char           **field_names;
+  DM         dm;
+  DM        *sub_dms;
+  PetscInt   dim,n_fields;
+  IS        *fields;
+  char     **field_names;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   dim = 2;
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,NULL));
 
@@ -36,13 +35,13 @@ int main(int argc,char **argv)
 
   CHKERRQ(DMCreateFieldDecomposition(dm,&n_fields,&field_names,&fields,&sub_dms));
   for (PetscInt i=0; i<n_fields; ++i) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " %s\n", i, field_names[i]);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"%" PetscInt_FMT " %s\n", i, field_names[i]));
     CHKERRQ(ISView(fields[i],PETSC_VIEWER_STDOUT_WORLD));
     CHKERRQ(DMView(sub_dms[i],PETSC_VIEWER_STDOUT_WORLD));
   }
 
   for (PetscInt i=0; i<n_fields; ++i) {
-    ierr = PetscFree(field_names[i]);
+    CHKERRQ(PetscFree(field_names[i]));
     CHKERRQ(ISDestroy(&fields[i]));
     CHKERRQ(DMDestroy(&sub_dms[i]));
   }
@@ -50,8 +49,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscFree(field_names));
   CHKERRQ(PetscFree(sub_dms));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

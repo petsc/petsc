@@ -9,7 +9,7 @@ int main(int argc,char **argv)
   PetscScalar a,array[10];
   PetscReal   rarray[10];
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetScalar(NULL,NULL,"-a",&a,NULL));
   CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"Scalar a = %g + %gi\n",(double)PetscRealPart(a),(double)PetscImaginaryPart(a)));
 
@@ -36,8 +36,8 @@ int main(int argc,char **argv)
     }
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

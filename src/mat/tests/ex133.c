@@ -7,11 +7,10 @@ int main(int argc,char **args)
 {
   Mat            A;
   PetscInt       bs=3,m=4,i,j,val = 10,row[2],col[3],rstart;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscScalar    x[6][9];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size > 1,PETSC_COMM_WORLD,PETSC_ERR_SUP,"Test is only for sequential");
   CHKERRQ(MatCreateSeqSBAIJ(PETSC_COMM_SELF,bs,m*bs,m*bs,1,NULL,&A));
@@ -29,6 +28,6 @@ int main(int argc,char **args)
   CHKERRQ(MatView(A,PETSC_VIEWER_BINARY_WORLD));
 
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

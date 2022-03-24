@@ -40,9 +40,8 @@ int main(int argc, char *argv[])
    IS             f[2];
    PetscInt       i,j,rstart,rend;
    PetscBool      missA,missM;
-   PetscErrorCode ierr;
 
-   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+   CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
    CHKERRQ(MatCreateAIJ(PETSC_COMM_WORLD,10,10,PETSC_DECIDE,PETSC_DECIDE,1,NULL,0,NULL,&M));
    CHKERRQ(MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY));
    CHKERRQ(MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY));
@@ -92,8 +91,8 @@ int main(int argc, char *argv[])
        CHKERRQ(MatDestroy(&sP[i][j]));
      }
    }
-   ierr = PetscFinalize();
-   return ierr;
+   CHKERRQ(PetscFinalize());
+   return 0;
 }
 
 /*TEST

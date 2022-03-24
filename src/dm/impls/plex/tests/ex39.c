@@ -434,7 +434,6 @@ int main(int argc,char **argv)
   SNES            snes;
   Vec             computed,divErr;
   PetscReal       divErrNorm;
-  PetscErrorCode  ierr;
   IS              * fieldIS;
   PetscBool       exampleSuccess = PETSC_FALSE;
   const PetscReal errTol         = 10. * PETSC_SMALL;
@@ -442,7 +441,7 @@ int main(int argc,char **argv)
   char stdFormat[] = "L2 Norm of the Divergence Error is: %g\n H(div) elements working correctly: %s\n";
 
   /* Initialize PETSc */
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD,&user));
 
   /* Set up the system, we need to create a solver and a mesh and then assign
@@ -487,8 +486,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscFree(fieldIS));
   CHKERRQ(SNESDestroy(&snes));
   CHKERRQ(DMDestroy(&mesh));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

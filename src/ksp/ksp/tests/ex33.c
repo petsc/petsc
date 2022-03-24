@@ -10,7 +10,6 @@ static char help[] = "Test MatGetInertia().\n\n";
 int main(int argc,char **args)
 {
   Mat            A,B,F;
-  PetscErrorCode ierr;
   KSP            ksp;
   PC             pc;
   PetscInt       N, n=10, m, Istart, Iend, II, J, i,j;
@@ -21,7 +20,7 @@ int main(int argc,char **args)
   PetscViewer    viewer;
   PetscMPIInt    rank;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Compute the matrices that define the eigensystem, Ax=kBx
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -116,8 +115,8 @@ int main(int argc,char **args)
   CHKERRQ(KSPDestroy(&ksp));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&B));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -306,7 +306,6 @@ static PetscErrorCode TSInterpolate_Alpha(TS ts,PetscReal t,Vec X,Vec V)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
   PetscReal      dt  = t - ts->ptime;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   CHKERRQ(VecCopy(ts->vec_dot,V));

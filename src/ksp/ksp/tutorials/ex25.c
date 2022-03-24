@@ -33,7 +33,6 @@ typedef struct {
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   KSP            ksp;
   DM             da;
   AppCtx         user;
@@ -42,7 +41,7 @@ int main(int argc,char **argv)
   Vec            x;
   PetscReal      nrm;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   user.k = 1;
   user.e = .99;
   CHKERRQ(PetscOptionsGetInt(NULL,0,"-k",&user.k,0));
@@ -70,8 +69,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&b2));
   CHKERRQ(KSPDestroy(&ksp));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 static PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)

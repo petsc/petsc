@@ -873,7 +873,6 @@ PetscErrorCode MatSolve_SeqBAIJ_4_SSE_Demotion(Mat A,Vec bb,Vec xx)
   */
   Mat_SeqBAIJ    *a   = (Mat_SeqBAIJ*)A->data;
   IS             iscol=a->col,isrow=a->row;
-  PetscErrorCode ierr;
   PetscInt       i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,ai16;
   const PetscInt *r,*c,*diag = a->diag,*rout,*cout;
   MatScalar      *aa=a->a,*v;

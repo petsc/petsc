@@ -56,14 +56,13 @@ static PetscErrorCode TestLocation(DM dm)
 int main(int argc, char **argv)
 {
   DM             dm;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &dm));
   CHKERRQ(TestLocation(dm));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

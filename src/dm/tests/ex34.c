@@ -5,14 +5,13 @@ static const char help[] = "Test DMDAGetOwnershipRanges()\n";
 
 int main(int argc,char *argv[])
 {
-  PetscErrorCode ierr;
   DM             da;
   PetscViewer    vw;
   PetscInt       dim = 2,m,n,p;
   const PetscInt *lx,*ly,*lz;
   PetscMPIInt    rank;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,0,"-dim",&dim,0));
   switch (dim) {
   case 2:
@@ -38,8 +37,8 @@ int main(int argc,char *argv[])
   CHKERRQ(PetscViewerFlush(PETSC_VIEWER_STDOUT_WORLD));
 
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

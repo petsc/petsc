@@ -142,7 +142,7 @@ int main(int argc, char **argv)
   PetscInt       dim;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRQ(ProcessOptions(&user));
   if (user.numGroups < 1) {
     CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dm));
@@ -180,8 +180,8 @@ int main(int argc, char **argv)
   }
   CHKERRQ(DMDestroy(&dm));
   CHKERRQ(CleanupContext(&user));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -58,14 +58,13 @@ PetscErrorCode VecSetOwned(DM da, Vec v, PetscScalar value)
 int main(int argc, char **argv)
 {
   PetscInt         M = 4, N = 3;
-  PetscErrorCode   ierr;
   DM               da;
   Vec              local;
   PetscScalar      value = 0.0;
   DMBoundaryType   bx    = DM_BOUNDARY_PERIODIC, by = DM_BOUNDARY_PERIODIC;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
 
-  ierr = PetscInitialize(&argc, &argv, (char*)0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char*)0, help));
   CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
   CHKERRQ(DMSetFromOptions(da));
   CHKERRQ(DMSetUp(da));
@@ -97,8 +96,8 @@ int main(int argc, char **argv)
   /* Free memory */
   CHKERRQ(VecDestroy(&local));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

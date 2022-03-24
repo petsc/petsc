@@ -107,17 +107,16 @@ int main(int argc, char **argv)
 {
   DMLabel        label;
   AppCtx         user;                 /* user-defined work context */
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
   CHKERRQ(DMLabelCreate(PETSC_COMM_SELF, "Test Label", &label));
   CHKERRQ(TestSetup(label, &user));
   CHKERRQ(TestLookup(label, &user));
   CHKERRQ(TestClear(label,&user));
   CHKERRQ(DMLabelDestroy(&label));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

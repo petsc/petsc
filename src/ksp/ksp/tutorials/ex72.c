@@ -45,14 +45,13 @@ int main(int argc,char **args)
   char           file[4][PETSC_MAX_PATH_LEN];     /* input file name */
   PetscBool      table     =PETSC_FALSE,flg,trans=PETSC_FALSE,initialguess = PETSC_FALSE;
   PetscBool      outputSoln=PETSC_FALSE,constantnullspace = PETSC_FALSE;
-  PetscErrorCode ierr;
   PetscInt       its,num_numfac,m,n,M,p,nearnulldim = 0;
   PetscReal      norm;
   PetscBool      preload=PETSC_TRUE,isSymmetric,cknorm=PETSC_FALSE,initialguessfile = PETSC_FALSE;
   PetscMPIInt    rank;
   char           initialguessfilename[PETSC_MAX_PATH_LEN];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-table",&table,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-constantnullspace",&constantnullspace,NULL));
@@ -436,8 +435,8 @@ int main(int argc,char **args)
                       End of linear solver loop
      ----------------------------------------------------------- */
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

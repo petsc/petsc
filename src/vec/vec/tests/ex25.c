@@ -6,7 +6,6 @@ this case processor zero is as long as the entire parallel vector; rest are zero
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       n = 5,N,low,high,iglobal,i;
   PetscMPIInt    size,rank;
   PetscScalar    value,zero = 0.0;
@@ -14,7 +13,7 @@ int main(int argc,char **argv)
   IS             is1,is2;
   VecScatter     ctx;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
@@ -63,8 +62,8 @@ int main(int argc,char **argv)
   CHKERRQ(ISDestroy(&is1));
   CHKERRQ(ISDestroy(&is2));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

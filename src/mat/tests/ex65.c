@@ -6,12 +6,11 @@ static char help[] = "Saves a rectangular sparse matrix to disk.\n\n";
 int main(int argc,char **args)
 {
   Mat            A;
-  PetscErrorCode ierr;
   PetscInt       m = 100,n = 11,js[11],i,j,cnt;
   PetscScalar    values[11];
   PetscViewer    view;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_WORLD,m,n,20,0,&A));
 
   for (i=0; i<n; i++) values[i] = (PetscReal)i;
@@ -36,8 +35,8 @@ int main(int argc,char **args)
 
   CHKERRQ(MatDestroy(&A));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

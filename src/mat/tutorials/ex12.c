@@ -71,11 +71,10 @@ int main(int argc,char **args)
   Mat            A,B;
   PetscViewer    fd;                        /* viewer */
   char           file[PETSC_MAX_PATH_LEN];  /* input file name */
-  PetscErrorCode ierr;
   PetscBool      flg;
   Vec            v;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   /*
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).
@@ -98,8 +97,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&v));
   CHKERRQ(PetscViewerDestroy(&fd));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

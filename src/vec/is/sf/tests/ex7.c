@@ -3,7 +3,6 @@ static char help[]= "Test vecscatter of different block sizes across processes\n
 #include <petscvec.h>
 int main(int argc,char **argv)
 {
-  PetscErrorCode     ierr;
   PetscInt           i,bs,n,low,high;
   PetscMPIInt        nproc,rank;
   Vec                x,y,z;
@@ -11,7 +10,7 @@ int main(int argc,char **argv)
   VecScatter         vscat;
   const PetscScalar  *yv;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&nproc));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   PetscCheckFalse(nproc != 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This test can only run on two MPI ranks");
@@ -62,8 +61,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&z));
   CHKERRQ(VecScatterDestroy(&vscat));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -9,7 +9,6 @@ int main(int argc,char **args)
   Mat            A;           /* linear system matrix */
   Mat            sA,sC;       /* symmetric part of the matrices */
   PetscInt       n,mbs=16,bs=1,nz=3,prob=1,i,j,col[3],block, row,Ii,J,n1,lvl;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscReal      norm2;
   PetscScalar    neg_one = -1.0,four=4.0,value[3];
@@ -21,7 +20,7 @@ int main(int argc,char **args)
   PetscBool      TestAIJ = PETSC_FALSE,TestBAIJ = PETSC_TRUE;
   PetscInt       TestShift=0;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
@@ -293,8 +292,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(PetscRandomDestroy(&rdm));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

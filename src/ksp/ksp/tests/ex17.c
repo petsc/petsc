@@ -12,7 +12,6 @@ int main(int argc,char **args)
   Vec            x,b,u;      /* approx solution, RHS, exact solution */
   Mat            A;            /* linear system matrix */
   KSP            ksp;         /* KSP context */
-  PetscErrorCode ierr;
   PetscInt       n    = 10,its, dim,p = 1,use_random;
   PetscScalar    none = -1.0,pfive = 0.5;
   PetscReal      norm;
@@ -20,7 +19,7 @@ int main(int argc,char **args)
   TestType       type;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-p",&p,NULL));
   switch (p) {
@@ -88,8 +87,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&b)); CHKERRQ(MatDestroy(&A));
   if (use_random) CHKERRQ(PetscRandomDestroy(&rctx));
   CHKERRQ(KSPDestroy(&ksp));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)

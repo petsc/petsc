@@ -12,11 +12,10 @@ int main(int argc,char **args)
   Mat            A;
   PetscInt       i,j,m = 3,n,Ii,J,Imax;
   PetscMPIInt    rank,size;
-  PetscErrorCode ierr;
   PetscScalar    v,diag=-4.0;
   IS             is;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   n    = 2*size;
@@ -76,8 +75,8 @@ int main(int argc,char **args)
 
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(ISDestroy(&is));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode TestMatZeroRows_Basic(Mat A,IS is,PetscScalar diag)

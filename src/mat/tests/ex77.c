@@ -12,14 +12,13 @@ int main(int argc,char **args)
   const PetscInt *ip_ptr;
   PetscScalar    neg_one = -1.0,value[3],alpha=0.1;
   PetscMPIInt    size;
-  PetscErrorCode ierr;
   IS             ip, isrow, iscol;
   PetscRandom    rdm;
   PetscBool      reorder=PETSC_FALSE;
   MatInfo        minfo1,minfo2;
   PetscReal      norm1,norm2,tol=10*PETSC_SMALL;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
@@ -246,8 +245,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(PetscRandomDestroy(&rdm));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

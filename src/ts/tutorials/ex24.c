@@ -16,14 +16,13 @@ int main(int argc,char **argv)
   TS             ts;            /* time integration context */
   Vec            X;             /* solution, residual vectors */
   Mat            J;             /* Jacobian matrix */
-  PetscErrorCode ierr;
   PetscScalar    *x;
   PetscReal      ftime;
   PetscInt       i,steps,nits,lits;
   PetscBool      view_final;
   Ctx            ctx;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   ctx.n = 3;
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&ctx.n,NULL));
   PetscCheck(ctx.n >= 2,PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"The dimension specified with -n must be at least 2");
@@ -92,8 +91,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&X));
   CHKERRQ(MatDestroy(&J));
   CHKERRQ(TSDestroy(&ts));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 static PetscErrorCode MonitorObjective(TS ts,PetscInt step,PetscReal t,Vec X,void *ictx)

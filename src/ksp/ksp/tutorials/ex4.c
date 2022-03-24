@@ -18,12 +18,11 @@ int main(int argc,char **args)
   KSP            ksp;      /* linear solver context */
   PetscReal      norm;     /* norm of solution error */
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its,bs=1,II,JJ,jj;
-  PetscErrorCode ierr;
   PetscBool      flg,test=PETSC_FALSE,reuse=PETSC_FALSE,viewexpl=PETSC_FALSE;
   PetscScalar    v;
   PC             pc;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
@@ -155,8 +154,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(MatDestroy(&A));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

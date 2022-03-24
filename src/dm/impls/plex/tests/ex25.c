@@ -198,9 +198,8 @@ int main(int argc, char **argv)
   MPI_Comm       comm;
   DM             dm;
   AppCtx         options;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   comm = PETSC_COMM_WORLD;
   CHKERRQ(ProcessOptions(comm, &options));
   CHKERRQ(CreateMesh(comm, &options, &dm));
@@ -219,8 +218,8 @@ int main(int argc, char **argv)
   }
 
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

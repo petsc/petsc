@@ -91,7 +91,6 @@ extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat,Mat,void*);
 int main(int argc,char **argv)
 {
   AppCtx         appctx;                 /* user-defined application context */
-  PetscErrorCode ierr;
   PetscInt       i, xs, xm, ind, j, lenglob;
   PetscReal      x, *wrk_ptr1, *wrk_ptr2;
   MatNullSpace   nsp;
@@ -102,7 +101,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBegin;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /*initialize parameters */
   appctx.param.N    = 10;  /* order of the spectral element */
@@ -249,8 +248,8 @@ int main(int argc,char **argv)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_summary).
   */
-    ierr = PetscFinalize();
-    return ierr;
+    CHKERRQ(PetscFinalize());
+    return 0;
 }
 
 /*

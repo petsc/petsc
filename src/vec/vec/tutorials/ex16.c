@@ -19,10 +19,9 @@ int main(int argc,char **argv)
 {
   Vec            v,s,r,vecs[2];               /* vectors */
   PetscInt       i,start,end,n = 20;
-  PetscErrorCode ierr;
   PetscScalar    value;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /*
@@ -72,8 +71,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&v));
   CHKERRQ(VecDestroy(&s));
   CHKERRQ(VecDestroy(&r));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -8,13 +8,12 @@ PetscErrorCode TestPetscVSNPrintf(char*,size_t,size_t*,const char*,...);
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   size_t         sz,fullLength;
   char           *newformatstr,buffer[128],longstr[256],superlongstr[10000];
   const char     *formatstr = "Greetings %D %3.2f %g\n";
   PetscInt       i,twentytwo = 22;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* test that PetscFormatConvertGetSize() correctly counts needed amount of space */
   CHKERRQ(PetscFormatConvertGetSize(formatstr,&sz));
@@ -62,8 +61,8 @@ int main(int argc,char **argv)
 
   /* add new line to end of file so that diff does not warn about it being missing */
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"\n"));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode TestPetscVSNPrintf(char *str,size_t l_str,size_t *fullLength,const char* format,...)

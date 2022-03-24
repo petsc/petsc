@@ -85,16 +85,15 @@ PetscErrorCode InitialConditions(DM da,Vec U)
 
 int main(int argc,char **argv)
 {
-  TS             ts;                  /* ODE integrator */
-  Vec            x;                   /* solution */
-  PetscErrorCode ierr;
-  DM             da;
-  AppCtx         appctx;
+  TS     ts;                    /* ODE integrator */
+  Vec    x;                     /* solution */
+  DM     da;
+  AppCtx appctx;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   PetscFunctionBeginUser;
   appctx.D1    = 8.0e-5;
   appctx.D2    = 4.0e-5;
@@ -153,8 +152,8 @@ int main(int argc,char **argv)
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(DMDestroy(&da));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

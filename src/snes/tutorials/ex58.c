@@ -57,13 +57,12 @@ extern PetscErrorCode FormBounds(SNES,Vec,Vec);
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;              /* used to check for functions returning nonzeros */
   Vec            x,r;               /* solution and residual vectors */
   SNES           snes;              /* nonlinear solver context */
   Mat            J;                 /* Jacobian matrix */
   DM             da;
 
-  ierr = PetscInitialize(&argc, &argv, (char*)0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char*)0, help));
 
   /* Create distributed array to manage the 2d grid */
   CHKERRQ(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,4,4,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da));
@@ -105,8 +104,8 @@ int main(int argc, char **argv)
   /* Free user-created data structures */
   CHKERRQ(DMDestroy(&da));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* -------------------------------------------------------------------- */

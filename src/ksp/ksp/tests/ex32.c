@@ -19,7 +19,6 @@ extern PetscErrorCode ComputeRHS(DM,Vec);
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   KSP            ksp;
   PC             pc;
   Vec            x,b;
@@ -28,7 +27,7 @@ int main(int argc,char **argv)
   PetscInt       dof=1,M=8;
   PetscBool      flg,trans=PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-trans",&trans,NULL));
@@ -106,8 +105,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode ComputeRHS(DM da,Vec b)

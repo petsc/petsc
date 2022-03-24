@@ -6,12 +6,11 @@ static char help[]= "Tests ISLocalToGlobalMappingCreateIS() for bs > 1.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode         ierr;
   PetscInt               bs = 2,n = 3,ix[3] = {1,7,9},iy[2] = {0,2},mp[2];
   IS                     isx;
   ISLocalToGlobalMapping ltog;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   CHKERRQ(ISCreateBlock(PETSC_COMM_SELF,bs,n,ix,PETSC_COPY_VALUES,&isx));
   CHKERRQ(ISLocalToGlobalMappingCreateIS(isx,&ltog));
@@ -27,8 +26,8 @@ int main(int argc,char **argv)
   CHKERRQ(ISLocalToGlobalMappingDestroy(&ltog));
   CHKERRQ(ISDestroy(&isx));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

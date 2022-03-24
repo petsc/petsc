@@ -11,9 +11,8 @@ int main(int argc,char **args)
 #endif
   PetscInt       i;
   const char     *common[] = {KSPGMRES,KSPCG,KSPPREONLY};
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&args,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,NULL,help));
   CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
   for (i=0; i<3; i++) {
     CHKERRQ(KSPSetType(ksp,common[i]));
@@ -29,8 +28,8 @@ int main(int argc,char **args)
 #endif
   }
   CHKERRQ(KSPDestroy(&ksp));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

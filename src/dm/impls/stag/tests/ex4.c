@@ -5,13 +5,12 @@ static char help[] = "Test DMStag explicit coordinate routines";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       dim;
   PetscBool      flg;
   DM             dm;
   Vec            coord;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Supply -dim option with value 1, 2, or 3");
 
@@ -30,8 +29,8 @@ int main(int argc,char **argv)
   CHKERRQ(DMGetCoordinates(dm,&coord));
   CHKERRQ(VecView(coord,PETSC_VIEWER_STDOUT_WORLD));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

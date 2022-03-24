@@ -8,7 +8,6 @@
 
 int main(int argc,char ** argv)
 {
-  PetscErrorCode    ierr;
   DM                network;
   PetscMPIInt       size,rank;
   MPI_Comm          comm;
@@ -20,7 +19,7 @@ int main(int argc,char ** argv)
   PetscInt          Ne,Ni;
   PetscInt          nodeOffset,k = 2,nedge;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,NULL);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,NULL));
   CHKERRQ(PetscOptionsSetValue(NULL,"-petscpartitioner_use_vertex_weights","No"));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_rank(comm,&rank));
@@ -87,8 +86,8 @@ int main(int argc,char ** argv)
   CHKERRQ(PetscSectionView(section,PETSC_VIEWER_STDOUT_WORLD));
 
   CHKERRQ(DMDestroy(&network));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -27,9 +27,8 @@ int main(int argc, char **argv)
 {
   DM             dm;
   Vec            u;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dm));
   CHKERRQ(DMSetType(dm, DMPLEX));
   CHKERRQ(DMSetFromOptions(dm));
@@ -42,8 +41,8 @@ int main(int argc, char **argv)
   CHKERRQ(VecViewFromOptions(u, NULL, "-vec_view"));
   CHKERRQ(DMRestoreGlobalVector(dm, &u));
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -17,12 +17,11 @@ T*/
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   Vec            v,s;               /* vectors */
   PetscInt       n   = 20;
   PetscScalar    one = 1.0;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /*
@@ -65,8 +64,8 @@ int main(int argc,char **argv)
   */
   CHKERRQ(VecDestroy(&v));
   CHKERRQ(VecDestroy(&s));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -3,13 +3,12 @@ static char help[]= "Test VecScatterCreateToZero, VecScatterCreateToAll\n\n";
 #include <petscvec.h>
 int main(int argc,char **argv)
 {
-  PetscErrorCode     ierr;
   PetscInt           i,N=10,low,high;
   PetscMPIInt        size,rank;
   Vec                x,y;
   VecScatter         vscat;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
@@ -90,8 +89,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&y));
   CHKERRQ(VecScatterDestroy(&vscat));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -5,12 +5,11 @@ static char help[] = "Tests ISLocalToGlobalMappingGetInfo.()\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode         ierr;
   PetscMPIInt            size,rank;
   PetscInt               nlocal,local[5],nneigh,*neigh,**ineigh,*numneigh;
   ISLocalToGlobalMapping mapping;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 3,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Must run with three processors");
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
@@ -25,8 +24,8 @@ int main(int argc,char **argv)
   CHKERRQ(ISLocalToGlobalMappingGetInfo(mapping,&nneigh,&neigh,&numneigh,&ineigh));
   CHKERRQ(ISLocalToGlobalMappingRestoreInfo(mapping,&nneigh,&neigh,&numneigh,&ineigh));
   CHKERRQ(ISLocalToGlobalMappingDestroy(&mapping));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

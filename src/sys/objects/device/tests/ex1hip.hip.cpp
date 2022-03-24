@@ -13,12 +13,11 @@ __global__ void NullKernel(){}
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       i,n=100000;
   hipError_t     cerr;
   PetscLogDouble tstart,tend,time;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   /* Launch a sequence of kernels asynchronously. Previous launched kernels do not need to be completed before launching a new one */
@@ -39,8 +38,8 @@ int main(int argc,char **argv)
   time = (tend-tstart)*1e6/n;
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Average synchronous  HIP kernel launch time = %.2f microseconds\n",time));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

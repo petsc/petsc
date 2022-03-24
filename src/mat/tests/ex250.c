@@ -3,11 +3,10 @@ static char help[] = "Test Mat products \n\n";
 #include <petscmat.h>
 int main(int argc,char **args)
 {
-  Mat             A=NULL,B=NULL,C=NULL,D=NULL,E=NULL;
-  PetscErrorCode  ierr;
-  PetscInt        k;
-  const PetscInt  M = 18,N = 18;
-  PetscMPIInt     rank;
+  Mat            A = NULL,B=NULL,C=NULL,D=NULL,E=NULL;
+  PetscInt       k;
+  const PetscInt M = 18,N = 18;
+  PetscMPIInt    rank;
 
   /* A, B are 18 x 18 nonsymmetric matrices and have the same sparsity pattern but different values.
      Big enough to have complex communication patterns but still small enough for debugging.
@@ -20,13 +19,13 @@ int main(int argc,char **args)
   PetscInt Annz = sizeof(Ai)/sizeof(PetscInt);
   PetscInt Bnnz = sizeof(Bi)/sizeof(PetscInt);
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   CHKERRQ(MatCreate(PETSC_COMM_WORLD,&A));
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N);
+  CHKERRQ(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N));
   CHKERRQ(MatSetFromOptions(A));
-  ierr = MatSeqAIJSetPreallocation(A,2,NULL);
+  CHKERRQ(MatSeqAIJSetPreallocation(A,2,NULL));
   CHKERRQ(MatMPIAIJSetPreallocation(A,2,NULL,2,NULL));
   CHKERRQ(MatSetOption(A,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
 
@@ -38,9 +37,9 @@ int main(int argc,char **args)
   CHKERRQ(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY));
 
   CHKERRQ(MatCreate(PETSC_COMM_WORLD,&B));
-  ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,N);
+  CHKERRQ(MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,M,N));
   CHKERRQ(MatSetFromOptions(B));
-  ierr = MatSeqAIJSetPreallocation(B,2,NULL);
+  CHKERRQ(MatSeqAIJSetPreallocation(B,2,NULL));
   CHKERRQ(MatMPIAIJSetPreallocation(B,2,NULL,2,NULL));
   CHKERRQ(MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_FALSE));
 
@@ -69,8 +68,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&D));
   CHKERRQ(MatDestroy(&E));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

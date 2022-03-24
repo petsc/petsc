@@ -330,9 +330,8 @@ int main(int argc, char **argv)
   Vec            u;
   AppCtx         user;
   PetscInt       dim, size = 0, f;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
   CHKERRQ(DMCreate(PETSC_COMM_WORLD, &dm));
   CHKERRQ(DMSetType(dm, DMPLEX));
@@ -388,8 +387,8 @@ int main(int argc, char **argv)
   CHKERRQ(DMDestroy(&dm));
   CHKERRQ(PetscFree(user.Nc));
   CHKERRQ(PetscFree(user.k));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

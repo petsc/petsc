@@ -8,7 +8,6 @@ static char help[] = "Tests setup PCFIELDSPLIT with blocked IS.\n\n";
 int main(int argc, char *argv[])
 {
    Mat            A;
-   PetscErrorCode ierr;
    KSP            ksp;
    PC             pc;
    PetscInt       Istart,Iend,local_m,local_n,i;
@@ -16,7 +15,7 @@ int main(int argc, char *argv[])
    PetscInt       method=2,mat_size=40,block_size=2,*A_indices=NULL,*B_indices=NULL,A_size=0,B_size=0;
    IS             A_IS, B_IS;
 
-   ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+   CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
    CHKERRMPI(MPI_Comm_rank(MPI_COMM_WORLD,&rank));
 
    CHKERRQ(PetscOptionsGetInt(PETSC_NULL,PETSC_NULL,"-mat_size",&mat_size,PETSC_NULL));
@@ -98,8 +97,8 @@ int main(int argc, char *argv[])
    CHKERRQ(ISDestroy(&B_IS));
    CHKERRQ(KSPDestroy(&ksp));
    CHKERRQ(MatDestroy(&A));
-   ierr = PetscFinalize();
-   return ierr;
+   CHKERRQ(PetscFinalize());
+   return 0;
 }
 
 /*TEST

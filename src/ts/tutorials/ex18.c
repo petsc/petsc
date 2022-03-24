@@ -1055,11 +1055,10 @@ int main(int argc, char **argv)
   AppCtx         user;
   PetscReal      t0, t = 0.0;
   void          *ctxs[2];
-  PetscErrorCode ierr;
 
   ctxs[0] = &t;
   ctxs[1] = &t;
-  ierr = PetscInitialize(&argc, &argv, (char*) 0, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, (char*) 0, help));
   comm = PETSC_COMM_WORLD;
   user.functionalRegistry = NULL;
   globalUser = &user;
@@ -1120,8 +1119,8 @@ int main(int argc, char **argv)
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(PetscFree(user.monitorFuncs));
   CHKERRQ(FunctionalDestroy(&user.functionalRegistry));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

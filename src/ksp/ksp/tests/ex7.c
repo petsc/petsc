@@ -34,13 +34,12 @@ int main(int argc,char **args)
   KSP            ksp;          /* linear solver context */
   PC             pc;           /* preconditioner context */
   PetscReal      norm;         /* norm of solution error */
-  PetscErrorCode ierr;
   PetscInt       i,n = 100,col[3],its;
   PetscMPIInt    size;
   PetscScalar    one = 1.0,value[3];
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
@@ -127,8 +126,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&As));
   CHKERRQ(KSPDestroy(&ksp));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

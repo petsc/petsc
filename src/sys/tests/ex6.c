@@ -12,7 +12,7 @@ int main(int argc,char **argv)
 
   ierr = PetscOptionsSetValue(NULL,"-skip_petscrc", NULL);if (ierr) return ierr;
   ierr = PetscOptionsSetValue(NULL,"-use_gpu_aware_mpi", "0");if (ierr) return ierr;
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   CHKERRQ(PetscOptionsHasName(NULL,NULL,"-use_gpu_aware_mpi",&has));
   PetscTestCheck(has == PETSC_TRUE);
@@ -142,8 +142,8 @@ int main(int argc,char **argv)
   PetscTestCheck(has == PETSC_FALSE);
   CHKERRQ(PetscOptionsClearValue(NULL,"-abc_xyz"));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

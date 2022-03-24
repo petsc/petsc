@@ -85,15 +85,14 @@ int main(int argc, char **args)
   /* PetscInt        mA=6,nX=5,nz=2; //small test */
   PetscLogDouble    mem;
   Mat               A,X,Y;
-  PetscErrorCode    ierr;
   PetscBool         flg = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-test_mpiderivedtype",&flg,NULL));
   if (flg) {
     CHKERRQ(TestMPIDerivedDataType());
-    ierr = PetscFinalize();
-    return ierr;
+    CHKERRQ(PetscFinalize());
+    return 0;
   }
 
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-mem_view",&flg,NULL));
@@ -142,8 +141,8 @@ int main(int argc, char **args)
   CHKERRQ(MatDestroy(&X));
   CHKERRQ(MatDestroy(&Y));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

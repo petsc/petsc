@@ -6,13 +6,12 @@ int main(int argc,char **argv)
 {
   Mat            A,B,C;
   PetscInt       M=10,N=5;
-  PetscErrorCode ierr;
   PetscRandom    r;
   PetscBool      equal=PETSC_FALSE;
   PetscReal      fill = 1.0;
   PetscInt       nza,am,an;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-M",&M,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-N",&N,NULL));
   CHKERRQ(PetscOptionsGetReal(NULL,NULL,"-fill",&fill,NULL));
@@ -50,8 +49,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&C));
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

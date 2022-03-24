@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
   UserParams     user = {/*Omega=*/ 1, /*Xi=*/ 0, /*u0=*/ 1, /*,v0=*/ 0};
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Only for sequential runs");
 
@@ -194,8 +194,8 @@ int main(int argc, char *argv[])
   CHKERRQ(VecDestroy(&U));
   CHKERRQ(VecDestroy(&V));
   CHKERRQ(TSDestroy(&ts));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

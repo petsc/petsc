@@ -31,13 +31,12 @@ int main(int argc,char **args)
   PetscInt       i,m = 5,N,start,end,M,its;
   PetscScalar    val,Ke[16],r[4];
   PetscReal      x,y,h,norm;
-  PetscErrorCode ierr;
   PetscInt       idx[4],count,*rows;
   Vec            u,ustar,b;
   KSP            ksp;
   PetscBool      viewkspest = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-ksp_est_view",&viewkspest,NULL));
   N    = (m+1)*(m+1); /* dimension of matrix */
@@ -153,8 +152,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&u));
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(MatDestroy(&C));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

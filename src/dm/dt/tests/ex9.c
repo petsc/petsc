@@ -182,7 +182,7 @@ int main(int argc, char **argv)
   PetscInt       dim, deg, k;
   PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   dim = 3;
   deg = 4;
   k = 3;
@@ -193,8 +193,8 @@ int main(int argc, char **argv)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   CHKERRQ(testOrthogonality(dim, deg));
   CHKERRQ(testDerivativesLegendre(dim, deg, k));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

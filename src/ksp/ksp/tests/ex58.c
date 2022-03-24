@@ -19,13 +19,12 @@ int main(int argc,char **args)
   KSP            ksp;          /* linear solver context */
   PC             pc;           /* preconditioner context */
   PetscReal      norm;         /* norm of solution error */
-  PetscErrorCode ierr;
   PetscInt       i,n = 20,col[3],its;
   PetscMPIInt    size;
   PetscScalar    one = 1.0,value[3];
   PetscBool      nonzeroguess = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
@@ -177,8 +176,8 @@ int main(int argc,char **args)
        - provides summary and diagnostic information if certain runtime
          options are chosen (e.g., -log_view).
   */
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -224,10 +224,9 @@ PetscErrorCode TestDMDAVec(PetscBool usempiio)
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscBool      usempiio = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-usempiio",&usempiio,NULL));
   if (!usempiio) {
     CHKERRQ(TestDMDAVec(PETSC_FALSE));
@@ -238,8 +237,8 @@ int main(int argc,char **args)
     CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Warning: Executing TestDMDAVec(PETSC_TRUE) requires a working MPI-2 implementation\n"));
 #endif
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

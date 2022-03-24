@@ -15,14 +15,13 @@ Use the options
 int main(int argc,char **argv)
 {
   PetscInt         M = 10,N = 8;
-  PetscErrorCode   ierr;
   PetscBool        flg = PETSC_FALSE;
   DM               da;
   Vec              global1,global2,global3;
   DMBoundaryType   bx    = DM_BOUNDARY_NONE,by = DM_BOUNDARY_NONE;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetBool(NULL,NULL,"-star_stencil",&flg,NULL));
   if (flg) stype = DMDA_STENCIL_STAR;
 
@@ -47,8 +46,8 @@ int main(int argc,char **argv)
   CHKERRQ(DMRestoreGlobalVector(da,&global3));
   CHKERRQ(DMRestoreGlobalVector(da,&global2));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

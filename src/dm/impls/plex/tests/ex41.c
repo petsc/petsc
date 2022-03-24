@@ -53,9 +53,8 @@ int main(int argc, char **argv)
   DM             dm, dma;
   DMLabel        adaptLabel;
   AppCtx         ctx;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help); if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &ctx));
   CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &ctx, &dm));
   CHKERRQ(CreateAdaptLabel(dm, &ctx, &adaptLabel));
@@ -66,8 +65,8 @@ int main(int argc, char **argv)
   CHKERRQ(DMViewFromOptions(dma, NULL, "-adapt_dm_view"));
   CHKERRQ(DMDestroy(&dma));
   CHKERRQ(PetscFree(ctx.refcell));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

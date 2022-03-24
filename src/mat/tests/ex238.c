@@ -6,12 +6,11 @@ int main(int argc,char **args)
 {
   Mat            A;
   Vec            x,y;
-  PetscErrorCode ierr;
   PetscInt       m=50000,bs=12,i,j,k,l,row,col,M, its = 25;
   PetscScalar    rval,*vals;
   PetscRandom    rdm;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mat_block_size",&bs,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-its",&its,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-mat_size",&m,NULL));
@@ -57,8 +56,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&y));
   CHKERRQ(PetscRandomDestroy(&rdm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

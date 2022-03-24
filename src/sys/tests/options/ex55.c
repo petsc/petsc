@@ -21,11 +21,10 @@ PetscErrorCode PetscOptionsMonitorCustom(const char name[],const char value[],vo
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode    ierr;
   PetscViewer       viewer=NULL;
   PetscViewerFormat format;
 
-  ierr = PetscInitialize(&argc,&argv,"ex55options",help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,"ex55options",help));
   CHKERRQ(PetscOptionsInsertString(NULL,"-option1 1 -option2 -option3 value3"));
   CHKERRQ(PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-options_monitor_viewer",&viewer,&format,NULL));
   if (viewer) {
@@ -35,8 +34,8 @@ int main(int argc,char **argv)
     CHKERRQ(PetscViewerDestroy(&viewer));
   }
   CHKERRQ(PetscOptionsInsertString(NULL,"-option4 value4 -option5"));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

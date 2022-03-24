@@ -210,11 +210,10 @@ PetscErrorCode test_2d_compat(const char filename[],PetscInt dof,PetscBool namef
 
 int main(int argc, char *argv[])
 {
-  PetscErrorCode ierr;
   PetscInt       dof;
   PetscBool      namefields;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   dof = 2;
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dof",&dof,NULL));
   namefields = PETSC_FALSE;
@@ -227,8 +226,8 @@ int main(int argc, char *argv[])
   CHKERRQ(test_2d("2d.vts",dof,namefields));
   CHKERRQ(test_3d_compat("3d_compat.vts",dof,namefields));
   CHKERRQ(test_2d_compat("2d_compat.vts",dof,namefields));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

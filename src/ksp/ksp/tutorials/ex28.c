@@ -11,13 +11,12 @@ extern PetscErrorCode ComputeInitialSolution(DM,Vec);
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       i;
   KSP            ksp;
   DM             da;
   Vec            x;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
   CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC,3,2,1,0,&da));
   CHKERRQ(DMSetFromOptions(da));
@@ -39,8 +38,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(KSPDestroy(&ksp));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode ComputeInitialSolution(DM da,Vec x)

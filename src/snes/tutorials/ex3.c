@@ -89,12 +89,11 @@ int main(int argc,char **argv)
   SetSubKSPCtx   checkP1;
   PetscBool      pre_check,post_check,post_setsubksp; /* flag indicating whether we're checking candidate iterates */
   PetscScalar    xp,*FF,*UU,none = -1.0;
-  PetscErrorCode ierr;
   PetscInt       its,N = 5,i,maxit,maxf,xs,xm;
   PetscReal      abstol,rtol,stol,norm;
   PetscBool      flg,viewinitial = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&ctx.size));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&N,NULL));
@@ -313,8 +312,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&J));
   CHKERRQ(SNESDestroy(&snes));
   CHKERRQ(DMDestroy(&ctx.da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* ------------------------------------------------------------------- */

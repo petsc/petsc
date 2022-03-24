@@ -5,12 +5,11 @@ static char help[] = "Tests 1D Gauss-Lobatto-Legendre discretization on [-1, 1].
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
 
   PetscInt       n = 3,i;
   PetscReal      *la_nodes,*la_weights,*n_nodes,*n_weights;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
   CHKERRQ(PetscMalloc1(n,&la_nodes));
@@ -40,8 +39,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscFree(n_nodes));
   CHKERRQ(PetscFree(n_weights));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

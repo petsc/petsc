@@ -6,7 +6,6 @@ int main(int argc,char **args)
   Mat               A;
   PetscViewer       fd;                        /* viewer */
   char              file[PETSC_MAX_PATH_LEN];  /* input file name */
-  PetscErrorCode    ierr;
   PetscBool         flg;
 
   PetscInitialize(&argc,&args,(char*)0,help);
@@ -30,8 +29,8 @@ int main(int argc,char **args)
   CHKERRQ(MatView(A,PETSC_VIEWER_STDOUT_WORLD));
 
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

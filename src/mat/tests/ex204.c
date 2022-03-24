@@ -4,10 +4,9 @@ static char help[] = "Test ViennaCL Matrix Conversions";
 
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   PetscMPIInt rank,size;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
 
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
@@ -250,8 +249,8 @@ int main(int argc,char **args)
     CHKERRQ(MatDestroy(&A));
   }
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 
 }
 

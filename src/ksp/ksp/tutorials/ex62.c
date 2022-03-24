@@ -57,7 +57,7 @@ int main(int argc,char **args)
   PetscBool      user_set_subdomains=PETSC_FALSE;
   PetscReal      one,e;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"ex62","PCGASM");CHKERRQ(ierr);
   m = 15;
@@ -289,8 +289,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode AssembleMatrix(Mat A,PetscInt m,PetscInt n)

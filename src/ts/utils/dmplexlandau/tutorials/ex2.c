@@ -644,7 +644,6 @@ int main(int argc, char **argv)
 {
   DM             pack;
   Vec            X,*XsubArray;
-  PetscErrorCode ierr;
   PetscInt       dim = 2, nDMs;
   TS             ts;
   Mat            J;
@@ -658,7 +657,7 @@ int main(int argc, char **argv)
 #if defined(PETSC_HAVE_THREADSAFETY)
   double         starttime, endtime;
 #endif
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   if (rank) { /* turn off output stuff for duplicate runs */
     CHKERRQ(PetscOptionsClearValue(NULL,"-dm_view"));
@@ -752,8 +751,8 @@ int main(int argc, char **argv)
   CHKERRQ(TSDestroy(&ts));
   CHKERRQ(VecDestroy(&X));
   CHKERRQ(PetscFree(rectx));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

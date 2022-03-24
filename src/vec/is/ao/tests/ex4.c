@@ -6,12 +6,11 @@ static char help[] = "Test AO with on IS with 0 entries - contributed by Ethan C
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   AO             ao;
   PetscInt       *localvert=NULL, nlocal;
   PetscMPIInt    rank;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRQ(PetscMalloc1(4,&localvert));
 
@@ -34,8 +33,8 @@ int main(int argc,char **argv)
   CHKERRQ(AODestroy(&ao));
 
   CHKERRQ(PetscFree(localvert));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

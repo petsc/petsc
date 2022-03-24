@@ -10,7 +10,6 @@ int main(int argc,char **args)
   KSP            ksp;      /* linear solver context */
   PetscRandom    rctx;     /* random number generator context */
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7;
-  PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
   PetscScalar    v;
   PC             pc;
@@ -24,7 +23,7 @@ int main(int argc,char **args)
   PetscMPIInt    size;
 #endif
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -157,8 +156,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&u));  CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&b));  CHKERRQ(MatDestroy(&A));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

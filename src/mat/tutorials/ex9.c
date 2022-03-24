@@ -18,7 +18,6 @@ T*/
 int main(int argc,char **args)
 {
   Mat              *A,B;           /* matrix */
-  PetscErrorCode   ierr;
   Vec              x,y,v,v2,z,z2;
   PetscReal        rnorm;
   PetscInt         n = 20;         /* size of the matrix */
@@ -28,7 +27,7 @@ int main(int argc,char **args)
   MatCompositeType type;
   PetscScalar      scalings[5]={2,3,4,5,6};
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-nmat",&nmat,NULL));
 
@@ -179,8 +178,8 @@ int main(int argc,char **args)
   }
   CHKERRQ(PetscFree(A));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -30,12 +30,11 @@ int main(int argc,char **args)
   PetscRandom    r;
   PC             pc;
   PetscReal      norm,*coords,eta,scale = 0.5;
-  PetscErrorCode ierr;
   PetscInt       basisord,leafsize,sdim,n,its,i;
   PetscMPIInt    size;
   RBFCtx         fctx;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheckFalse(size != 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
   CHKERRQ(PetscRandomCreate(PETSC_COMM_WORLD,&r));
@@ -163,8 +162,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&Ad));
   CHKERRQ(KSPDestroy(&ksp));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

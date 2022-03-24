@@ -6,10 +6,9 @@ static char help[] = "Tests DMClone() with DMComposite\n\n";
 int main(int argc,char **argv)
 {
   DM             newdm, dm, dm1,dm2;
-  PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  ierr = PetscInitialize(&argc, &argv, 0, help); if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, 0, help));
   CHKERRQ(DMCompositeCreate(PETSC_COMM_WORLD, &dm));
   CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 100, 1, 1, NULL, &dm1));
   CHKERRQ(DMDACreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 100, 1, 1, NULL, &dm2));
@@ -24,8 +23,8 @@ int main(int argc,char **argv)
   CHKERRQ(DMClone(dm, &newdm));
   CHKERRQ(DMDestroy(&dm));
   CHKERRQ(DMDestroy(&newdm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -8,13 +8,12 @@ static char help[] = "Tests C=A^T*B via MatTranspose() and MatMatMult(). \n\
 #include <petscmat.h>
 int main(int argc,char **args)
 {
-  PetscErrorCode ierr;
   Mat            A,AT,B,C;
   PetscViewer    viewer;
   PetscBool      flg;
   char           file[PETSC_MAX_PATH_LEN];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-fA",file,sizeof(file),&flg));
   PetscCheck(flg,PETSC_COMM_WORLD,PETSC_ERR_USER,"Input fileA not specified");
   CHKERRQ(PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer));
@@ -46,6 +45,6 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(MatDestroy(&AT));
   CHKERRQ(MatDestroy(&C));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }

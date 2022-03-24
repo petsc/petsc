@@ -100,12 +100,11 @@ int main(int argc, char **argv)
 {
   AppCtx            user;                 /* user-defined work context */
   moab::ErrorCode   merr;
-  PetscErrorCode    ierr;
   Vec               vec;
   moab::Interface*  mbImpl=NULL;
   moab::Tag         datatag=NULL;
 
-  ierr = PetscInitialize(&argc, &argv, NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL,help));
   CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
 
   CHKERRQ(CreateMesh(PETSC_COMM_WORLD, &user, &user.dm)); /* create the MOAB dm and the mesh */
@@ -119,8 +118,8 @@ int main(int argc, char **argv)
   std::cout << "Destroyed VecMoab." << std::endl;
   CHKERRQ(DMDestroy(&user.dm));
   std::cout << "Destroyed DMMoab." << std::endl;
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

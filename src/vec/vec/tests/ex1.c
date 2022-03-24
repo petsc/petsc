@@ -4,12 +4,11 @@ static char help[] = "Tests repeated VecSetType().\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       n   = 5;
   PetscScalar    one = 1.0,two = 2.0;
   Vec            x,y;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   /* create vector */
   CHKERRQ(VecCreate(PETSC_COMM_SELF,&x));
@@ -25,8 +24,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&y));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

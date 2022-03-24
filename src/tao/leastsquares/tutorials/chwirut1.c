@@ -59,7 +59,6 @@ PetscErrorCode EvaluateJacobian(Tao, Vec, Mat, Mat, void *);
 /*--------------------------------------------------------------------*/
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;           /* used to check for functions returning nonzeros */
   Vec            x, f;               /* solution, function */
   Mat            J;                  /* Jacobian matrix */
   Tao            tao;                /* Tao solver context */
@@ -68,7 +67,7 @@ int main(int argc,char **argv)
   PetscInt       lits[100];
   AppCtx         user;               /* user-defined work context */
 
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char *)0,help));
   /* Allocate vectors */
   CHKERRQ(VecCreateSeq(MPI_COMM_SELF,NPARAMETERS,&x));
   CHKERRQ(VecCreateSeq(MPI_COMM_SELF,NOBSERVATIONS,&f));
@@ -109,8 +108,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&f));
   CHKERRQ(MatDestroy(&J));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*--------------------------------------------------------------------*/

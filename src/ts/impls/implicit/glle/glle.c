@@ -327,8 +327,7 @@ static PetscErrorCode TSGLLEViewTable_Private(PetscViewer viewer,PetscInt m,Pets
 
 static PetscErrorCode TSGLLESchemeView(TSGLLEScheme sc,PetscBool view_details,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
-  PetscBool      iascii;
+  PetscBool iascii;
 
   PetscFunctionBegin;
   CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
@@ -336,8 +335,8 @@ static PetscErrorCode TSGLLESchemeView(TSGLLEScheme sc,PetscBool view_details,Pe
     CHKERRQ(PetscViewerASCIIPrintf(viewer,"GL scheme p,q,r,s = %d,%d,%d,%d\n",sc->p,sc->q,sc->r,sc->s));
     CHKERRQ(PetscViewerASCIIPushTab(viewer));
     CHKERRQ(PetscViewerASCIIPrintf(viewer,"Stiffly accurate: %s,  FSAL: %s\n",sc->stiffly_accurate ? "yes" : "no",sc->fsal ? "yes" : "no"));
-    ierr = PetscViewerASCIIPrintf(viewer,"Leading error constants: %10.3e  %10.3e  %10.3e\n",
-                                  PetscRealPart(sc->alpha[0]),PetscRealPart(sc->beta[0]),PetscRealPart(sc->gamma[0]));CHKERRQ(ierr);
+    CHKERRQ(PetscViewerASCIIPrintf(viewer,"Leading error constants: %10.3e  %10.3e  %10.3e\n",
+                                   PetscRealPart(sc->alpha[0]),PetscRealPart(sc->beta[0]),PetscRealPart(sc->gamma[0])));
     CHKERRQ(TSGLLEViewTable_Private(viewer,1,sc->s,sc->c,"Abscissas c"));
     if (view_details) {
       CHKERRQ(TSGLLEViewTable_Private(viewer,sc->s,sc->s,sc->a,"A"));

@@ -7,11 +7,10 @@ int main(int argc,char **args)
 {
   Mat            C;
   PetscInt       i,j,m = 5,n = 5,Ii,J;
-  PetscErrorCode ierr;
   PetscScalar    v;
   IS             perm,iperm;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(MatCreate(PETSC_COMM_SELF,&C));
   CHKERRQ(MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n));
   CHKERRQ(MatSetFromOptions(C));
@@ -39,8 +38,8 @@ int main(int argc,char **args)
   CHKERRQ(ISDestroy(&perm));
   CHKERRQ(ISDestroy(&iperm));
   CHKERRQ(MatDestroy(&C));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

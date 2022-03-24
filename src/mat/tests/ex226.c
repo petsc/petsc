@@ -10,14 +10,13 @@ int main(int argc,char **argv)
   Mat            A,B,C,PtAP,PtAP_copy,PtAP_squared;
   PetscInt       i,M,N,Istart,Iend,n=7,j,J,Ii,m=8,k,o=1;
   PetscScalar    v;
-  PetscErrorCode ierr;
   PetscBool      equal=PETSC_FALSE,mat_view=PETSC_FALSE;
   char           stencil[PETSC_MAX_PATH_LEN];
 #if defined(PETSC_USE_LOG)
   PetscLogStage  fullMatMatMultStage;
 #endif
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-o",&o,NULL));
@@ -263,8 +262,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatDestroy(&C));
   CHKERRQ(MatDestroy(&B));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -6,7 +6,6 @@ Tests where the local part of the scatter is a copy.\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscInt       n = 5,i,*blks,bs = 1,m = 2;
   PetscScalar    value;
@@ -15,7 +14,7 @@ int main(int argc,char **argv)
   VecScatter     ctx = 0;
   PetscViewer    sviewer;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
 
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-bs",&bs,NULL));
@@ -70,8 +69,8 @@ int main(int argc,char **argv)
   CHKERRQ(ISDestroy(&is1));
   CHKERRQ(ISDestroy(&is2));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

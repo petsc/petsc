@@ -16,10 +16,9 @@ int main(int argc, char **args)
   PetscMPIInt     size;
   PetscInt        p;
   PetscBool       flg;
-  PetscErrorCode  ierr;
 
   /*load matrix*/
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_size(comm, &size));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-fin",filein,sizeof(filein),&flg));
@@ -56,7 +55,7 @@ int main(int argc, char **args)
   CHKERRQ(MatPartitioningDestroy(&part));
   CHKERRQ(ISDestroy(&partis));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 
 }

@@ -34,14 +34,13 @@ int main(int argc,char **argv)
   KSP            ksp;
   DM             da;
   PetscReal      norm;
-  PetscErrorCode ierr;
   PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,d,dof;
   PetscScalar    Hx,Hy,Hz;
   PetscScalar    ****array;
   Vec            x,b,r;
   Mat            J;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   dof  = 1;
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-da_dof",&dof,NULL));
   CHKERRQ(KSPCreate(PETSC_COMM_WORLD,&ksp));
@@ -103,8 +102,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&r));
   CHKERRQ(KSPDestroy(&ksp));
   CHKERRQ(DMDestroy(&da));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode ComputeRHS(KSP ksp,Vec b,void *ctx)

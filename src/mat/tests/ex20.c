@@ -7,12 +7,11 @@ int main(int argc,char **args)
 {
   Mat            C,A;
   PetscInt       i,j,m = 5,n = 4,Ii,J;
-  PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   PetscScalar    v;
   char           mtype[256];
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
 
   /* This example does not work correctly for np > 2 */
@@ -56,8 +55,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&C));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

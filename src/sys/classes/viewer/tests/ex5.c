@@ -6,11 +6,10 @@ static char help[] = "Tests PetscOptionsPushGetViewerOff() via checking output o
 int main(int argc,char **args)
 {
   PetscViewer       viewer;
-  PetscErrorCode    ierr;
   PetscViewerFormat format;
   PetscBool         iascii;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetViewer(PETSC_COMM_WORLD,NULL,NULL,"-myviewer",&viewer,&format,NULL));
   CHKERRQ(PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii));
   if (iascii) {
@@ -34,8 +33,8 @@ int main(int argc,char **args)
     CHKERRQ(PetscViewerPopFormat(viewer));
   }
   CHKERRQ(PetscViewerDestroy(&viewer));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

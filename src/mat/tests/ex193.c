@@ -25,7 +25,7 @@ int main(int argc,char **args)
   IS              is,isn,isrows;
   MPI_Comm        comm;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_size(comm,&size));
   ierr = PetscOptionsBegin(comm,NULL,"ex193","hierarchical partitioning");CHKERRQ(ierr);
@@ -85,8 +85,8 @@ int main(int argc,char **args)
   CHKERRQ(ISDestroy(&isn));
   CHKERRQ(MatPartitioningDestroy(&part));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

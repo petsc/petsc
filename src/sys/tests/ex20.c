@@ -4,11 +4,10 @@ static const char help[] = "Tests PetscOptionsPrefix{Push,Pop}\n\n";
 
 int main(int argc, char *argv[])
 {
-  PetscErrorCode ierr;
   PetscInt       opts[6] = {0};
   PetscBool      hascl   = PETSC_FALSE,hasstr = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc,&argv,0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,0,help));
   CHKERRQ(PetscOptionsSetValue(NULL,"-zero","0"));
   CHKERRQ(PetscOptionsPrefixPush(NULL,"a_"));
   CHKERRQ(PetscOptionsSetValue(NULL,"-one","1"));
@@ -57,8 +56,8 @@ int main(int argc, char *argv[])
     CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"str_opts = {%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "}\n",opts[0],opts[1],opts[2],opts[3],opts[4],opts[5]));
   }
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

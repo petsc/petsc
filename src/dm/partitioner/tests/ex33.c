@@ -4,7 +4,6 @@ static char help[] = "Tests PetscPartitioner.\n\n";
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode   ierr;
   PetscPartitioner p;
   PetscSection     partSection, vertexSection = NULL, targetSection = NULL;
   IS               partition,is;
@@ -17,7 +16,7 @@ int main(int argc, char **argv)
   PetscBool        vwgts = PETSC_FALSE;
   PetscBool        pwgts = PETSC_FALSE;
 
-  ierr = PetscInitialize(&argc, &argv, NULL, help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   nparts = size;
@@ -128,8 +127,8 @@ finally:
   CHKERRQ(PetscSectionDestroy(&vertexSection));
   CHKERRQ(PetscSectionDestroy(&targetSection));
   CHKERRQ(PetscPartitionerDestroy(&p));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

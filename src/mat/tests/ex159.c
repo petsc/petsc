@@ -4,14 +4,13 @@ static const char help[] = "Test MatGetLocalSubMatrix() with multiple levels of 
 
 int main(int argc, char *argv[])
 {
-  PetscErrorCode ierr;
   IS             is0a,is0b,is0,is1,isl0a,isl0b,isl0,isl1;
   Mat            A,Aexplicit;
   PetscBool      usenest;
   PetscMPIInt    rank,size;
   PetscInt       i,j;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD,&rank));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
 
@@ -127,8 +126,8 @@ int main(int argc, char *argv[])
   CHKERRQ(ISDestroy(&isl0b));
   CHKERRQ(ISDestroy(&isl0));
   CHKERRQ(ISDestroy(&isl1));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

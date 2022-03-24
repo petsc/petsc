@@ -116,7 +116,6 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
         Fortran and C not PetscScalar aligned,recover by copying values into
         memory that is aligned with the Fortran
     */
-    PetscErrorCode ierr;
     PetscScalar    *work;
     PetscContainer container;
 
@@ -157,8 +156,8 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
       (*PetscErrorPrintf)("Locations/sizeof(PetscScalar): C %g Fortran %g\n",(double)(((PetscReal)tmp3)/(PetscReal)sizeof(PetscScalar)),(double)(((PetscReal)tmp1)/(PetscReal)sizeof(PetscScalar)));
       PETSCABORT(PETSC_COMM_WORLD,PETSC_ERR_PLIB);
     }
-    ierr = PetscInfo(obj,"Efficiency warning, copying array in XXXGetArray() due\n\
-    to alignment differences between C and Fortran\n");CHKERRQ(ierr);
+    CHKERRQ(PetscInfo(obj,"Efficiency warning, copying array in XXXGetArray() due\n\
+    to alignment differences between C and Fortran\n"));
   }
   *res = itmp2;
   return 0;

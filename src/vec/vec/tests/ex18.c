@@ -7,12 +7,11 @@ arguments are\n\
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   PetscInt       n = 15,i;
   PetscScalar    v;
   Vec            x,y;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
   if (n < 5) n = 5;
 
@@ -35,8 +34,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(VecDestroy(&y));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

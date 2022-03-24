@@ -266,7 +266,6 @@ int main(int argc, char **argv)
     TS                   ts;                         /* time integrator */
     SNES                 snes;
     Vec                  x, r;                        /* solution, residual vectors */
-    PetscErrorCode       ierr;
     DM                   da;
     PetscMPIInt          rank;
     PetscViewerAndFormat *vf;
@@ -279,7 +278,7 @@ int main(int argc, char **argv)
     IS                   bcPointIS[1];
 
     /* Initialize program */
-    ierr = PetscInitialize(&argc, &argv, (char *) 0, help);if (ierr) return ierr;
+    CHKERRQ(PetscInitialize(&argc, &argv, (char *) 0, help));
     CHKERRMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
     /* Create distributed array (DMPLEX) to manage parallel grid and vectors */
     CHKERRQ(ProcessOptions(PETSC_COMM_WORLD, &user));
@@ -354,8 +353,8 @@ int main(int argc, char **argv)
     CHKERRQ(VecDestroy(&r));
     CHKERRQ(TSDestroy(&ts));
     CHKERRQ(DMDestroy(&da));
-    ierr = PetscFinalize();
-    return ierr;
+    CHKERRQ(PetscFinalize());
+    return 0;
 }
 
 /*TEST

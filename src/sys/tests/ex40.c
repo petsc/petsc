@@ -21,9 +21,8 @@ int main(int argc,char **argv)
   PetscInt       n, v, koff, keys[4], voff, vals[4],na,nb,i,size,*karray,off;
   PetscScalar    *varray,*vwork;
   PetscBool      has, flag;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   CHKERRQ(PetscHMapICreate(&ht));
   PetscTestCheck(ht != NULL);
@@ -155,8 +154,8 @@ int main(int argc,char **argv)
   CHKERRQ(PetscFree3(karray,varray,vwork));
   CHKERRQ(PetscHMapIVDestroy(&htv));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

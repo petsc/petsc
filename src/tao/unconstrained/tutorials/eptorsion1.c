@@ -76,7 +76,6 @@ PetscErrorCode FormFunctionGradient(Tao,Vec,PetscReal *,Vec,void *);
 
 PetscErrorCode main(int argc,char **argv)
 {
-  PetscErrorCode     ierr;                /* used to check for functions returning nonzeros */
   PetscInt           mx=10;               /* discretization in x-direction */
   PetscInt           my=10;               /* discretization in y-direction */
   Vec                x;                   /* solution, gradient vectors */
@@ -95,7 +94,7 @@ PetscErrorCode main(int argc,char **argv)
   PetscReal          mult_solve_dist;
 
   /* Initialize TAO,PETSc */
-  ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char *)0,help));
   CHKERRMPI(MPI_Comm_size(MPI_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"Incorrect number of processors");
 
@@ -178,8 +177,8 @@ PetscErrorCode main(int argc,char **argv)
   CHKERRQ(VecDestroy(&x));
   CHKERRQ(MatDestroy(&H));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /* ------------------------------------------------------------------- */

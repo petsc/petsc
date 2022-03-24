@@ -51,9 +51,8 @@ static PetscErrorCode TestPetscDeviceContextForkJoin(PetscDeviceContext dctx)
 int main(int argc, char *argv[])
 {
   PetscDeviceContext dctx;
-  PetscErrorCode     ierr;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
 
   CHKERRQ(PetscDeviceContextCreate(&dctx));
   CHKERRQ(PetscDeviceContextSetFromOptions(PETSC_COMM_WORLD,"local_",dctx));
@@ -65,8 +64,8 @@ int main(int argc, char *argv[])
   CHKERRQ(TestPetscDeviceContextForkJoin(dctx));
 
   CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"EXIT_SUCCESS\n"));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -50,14 +50,13 @@ PetscErrorCode PostStep(TS);
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;
   Vec            x;  /* Solution vector */
   TS             ts;   /* Time-stepping context */
   AppCtx         user; /* Application context */
   Mat            J;
   PetscViewer    viewer;
 
-  ierr = PetscInitialize(&argc,&argv,"petscopt_ex6", help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,"petscopt_ex6", help));
   /* Get physics and time parameters */
   CHKERRQ(Parameter_settings(&user));
   /* Create a 2D DA with dof = 1 */
@@ -100,8 +99,8 @@ int main(int argc, char **argv)
   CHKERRQ(MatDestroy(&J));
   CHKERRQ(DMDestroy(&user.da));
   CHKERRQ(TSDestroy(&ts));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 PetscErrorCode PostStep(TS ts)

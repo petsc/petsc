@@ -156,7 +156,6 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec U,Vec Udot,PetscReal a,Mat
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
 static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec U,void *ctx)
 {
-  PetscErrorCode    ierr;
   const PetscScalar *u;
   PetscReal         tfinal, dt;
   User              user = (User)ctx;
@@ -170,9 +169,9 @@ static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec U,void *ctx)
     CHKERRQ(VecDuplicate(U,&interpolatedU));
     CHKERRQ(TSInterpolate(ts,user->next_output,interpolatedU));
     CHKERRQ(VecGetArrayRead(interpolatedU,&u));
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%g] %D TS %g (dt = %g) X %g %g\n",
-                       (double)user->next_output,step,(double)t,(double)dt,(double)PetscRealPart(u[0]),
-                       (double)PetscRealPart(u[1]));CHKERRQ(ierr);
+    CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"[%g] %D TS %g (dt = %g) X %g %g\n",
+                        (double)user->next_output,step,(double)t,(double)dt,(double)PetscRealPart(u[0]),
+                        (double)PetscRealPart(u[1])));
     CHKERRQ(VecRestoreArrayRead(interpolatedU,&u));
     CHKERRQ(VecDestroy(&interpolatedU));
     user->next_output += 0.1;
@@ -412,10 +411,9 @@ int main(int argc,char **argv)
   Tao            tao;
   KSP            ksp;
   PC             pc;
-  PetscErrorCode ierr;
 
   /* Initialize program */
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   CHKERRMPI(MPI_Comm_size(PETSC_COMM_WORLD,&size));
   PetscCheck(size == 1,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,"This is a uniprocessor example only!");
 
@@ -559,8 +557,8 @@ int main(int argc,char **argv)
   CHKERRQ(VecDestroy(&user.Dir));
   CHKERRQ(TSDestroy(&user.ts));
   CHKERRQ(VecDestroy(&x));
-  ierr = PetscFinalize();
-  return(ierr);
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

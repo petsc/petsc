@@ -52,7 +52,6 @@ static PetscErrorCode GetReader(MPI_Comm comm, const char option[], PetscViewer 
 
 int main(int argc, char **argv)
 {
-  PetscErrorCode    ierr;
   PetscInt          i;
   PetscReal         norms0[NNORMS], norms1[NNORMS];
   PetscViewer       inp_viewer;
@@ -60,7 +59,7 @@ int main(int argc, char **argv)
   Mat               data_mat;
   char              mat_name[PETSC_MAX_PATH_LEN]="dmatrix";
 
-  ierr = PetscInitialize(&argc, &argv, NULL, NULL);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &argv, NULL, NULL));
   CHKERRQ(PetscOptionsGetString(NULL,NULL,"-mat_name",mat_name,sizeof(mat_name),NULL));
 
   /* load matrix sequentially */
@@ -91,8 +90,8 @@ int main(int argc, char **argv)
     PetscCheckFalse(PetscAbs(norms0[i] - norms1[i]) > PETSC_SMALL,PETSC_COMM_SELF, PETSC_ERR_PLIB, "norm0[%" PetscInt_FMT "] = %g != %g = norms1[%" PetscInt_FMT "]", i, (double)norms0[i], (double)norms1[i], i);
   }
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

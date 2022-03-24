@@ -6,9 +6,8 @@ int main(int argc, char **args)
   Mat            A, AHT;
   Vec            x, y;
   PetscRandom    rand;
-  PetscErrorCode ierr;
 
-  ierr = PetscInitialize(&argc, &args, (char*)0, help); if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc, &args, (char*)0, help));
 
   CHKERRQ(MatCreate(PETSC_COMM_WORLD, &A));
   CHKERRQ(MatSetType(A, MATAIJ));
@@ -34,8 +33,8 @@ int main(int argc, char **args)
   CHKERRQ(VecDestroy(&y));
   CHKERRQ(MatDestroy(&A));
   CHKERRQ(MatDestroy(&AHT));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

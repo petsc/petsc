@@ -145,7 +145,7 @@ int main(int argc,char **argv)
   PetscInt       minpoints, maxpoints;
   PetscBool      flg;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,NULL,"Discretization tools test options",NULL);CHKERRQ(ierr);
   {
     ndegrees   = 1000;
@@ -227,8 +227,8 @@ int main(int argc,char **argv)
       }
     }
   }
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

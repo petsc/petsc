@@ -95,11 +95,10 @@ PetscErrorCode Assemble(MPI_Comm comm,PetscInt bs,MatType mtype)
 
 int main(int argc,char *argv[])
 {
-  PetscErrorCode ierr;
   MPI_Comm       comm;
   PetscMPIInt    size;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_size(comm,&size));
   PetscCheckFalse(size != 2,comm,PETSC_ERR_USER,"This example must be run with exactly two processes");
@@ -107,8 +106,8 @@ int main(int argc,char *argv[])
   CHKERRQ(Assemble(comm,2,MATMPISBAIJ));
   CHKERRQ(Assemble(comm,1,MATMPIBAIJ));
   CHKERRQ(Assemble(comm,1,MATMPISBAIJ));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

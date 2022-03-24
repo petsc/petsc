@@ -7,11 +7,10 @@ int main(int argc,char **args)
 {
   Mat            C;
   PetscInt       i,j,m = 3,n = 3,Ii,J;
-  PetscErrorCode ierr;
   PetscScalar    v;
   MatInfo        info;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-n",&n,NULL));
 
@@ -38,8 +37,8 @@ int main(int argc,char **args)
   CHKERRQ(PetscPrintf(PETSC_COMM_SELF,"matrix nonzeros = %" PetscInt_FMT ", allocated nonzeros = %" PetscInt_FMT "\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated));
 
   CHKERRQ(MatDestroy(&C));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

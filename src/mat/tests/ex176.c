@@ -19,7 +19,6 @@ static char help[] ="Tests MatCreateMPIAIJWithArrays() abd MatUpdateMPIAIJWithAr
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode ierr;
   Mat            A;
   PetscInt       i[3][3] = {{0, 3, 6},{0, 3, 7},{0, 3, 5}};
   PetscInt       j[3][7] = {{0, 1, 3, 1, 2, 5, -1},{0, 2, 4, 1, 2, 3, 5},{1, 2, 5, 0, 5, -1, -1}};
@@ -28,7 +27,7 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   PetscMPIInt    rank,size;
 
-  ierr = PetscInitialize(&argc,&argv,NULL,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,NULL,help));
   comm = PETSC_COMM_WORLD;
   CHKERRMPI(MPI_Comm_rank(comm,&rank));
   CHKERRMPI(MPI_Comm_size(comm,&size));
@@ -40,8 +39,8 @@ int main(int argc,char **argv)
   CHKERRQ(MatUpdateMPIAIJWithArrays(A,2,2,PETSC_DETERMINE,PETSC_DETERMINE,i[rank],j[rank],a[rank]));
   CHKERRQ(MatView(A,NULL));
   CHKERRQ(MatDestroy(&A));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

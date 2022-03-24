@@ -52,9 +52,8 @@ int main(int argc,char **args)
   Mat               S1,S2;
   Vec               X,Y;
   User              user;
-  PetscErrorCode    ierr;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
 
   CHKERRQ(PetscNew(&user));
   CHKERRQ(MatCreateSeqAIJ(PETSC_COMM_WORLD,2,2,2,NULL,&user->A));
@@ -95,8 +94,8 @@ int main(int argc,char **args)
   CHKERRQ(MatDestroy(&S2));
   CHKERRQ(VecDestroy(&X));
   CHKERRQ(VecDestroy(&Y));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

@@ -5,13 +5,12 @@ static char help[] = "Test DMStag IS computation\n\n";
 
 int main(int argc,char **argv)
 {
-  PetscErrorCode  ierr;
   DM              dm;
   PetscInt        dim,dof0,dof1,dof2,dof3;
   PetscBool       flg;
 
   /* Create a DMStag object */
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&argv,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-dim",&dim,&flg));
   if (!flg) {
     CHKERRQ(PetscPrintf(PETSC_COMM_WORLD,"Supply -dim option\n"));
@@ -86,8 +85,8 @@ int main(int argc,char **argv)
   }
 
   CHKERRQ(DMDestroy(&dm));
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST

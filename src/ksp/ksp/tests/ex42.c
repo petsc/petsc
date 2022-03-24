@@ -9,10 +9,9 @@ int main(int argc,char **args)
   Mat            A;        /* linear system matrix */
   KSP            ksp;      /* linear solver context */
   PetscInt       Ii,Istart,Iend,m = 11;
-  PetscErrorCode ierr;
   PetscScalar    v;
 
-  ierr = PetscInitialize(&argc,&args,(char*)0,help);if (ierr) return ierr;
+  CHKERRQ(PetscInitialize(&argc,&args,(char*)0,help));
   CHKERRQ(PetscOptionsGetInt(NULL,NULL,"-m",&m,NULL));
 
   /* Create parallel diagonal matrix */
@@ -63,8 +62,8 @@ int main(int argc,char **args)
   CHKERRQ(VecDestroy(&b));
   CHKERRQ(MatDestroy(&A));
 
-  ierr = PetscFinalize();
-  return ierr;
+  CHKERRQ(PetscFinalize());
+  return 0;
 }
 
 /*TEST
