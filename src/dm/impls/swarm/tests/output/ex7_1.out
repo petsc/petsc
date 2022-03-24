@@ -1,15 +1,15 @@
 DM Object: box 1 MPI processes
   type: plex
 box in 2 dimensions:
-  Number of 0-cells per rank: 15
-  Number of 1-cells per rank: 22
-  Number of 2-cells per rank: 8
+  Number of 0-cells per rank: 45
+  Number of 1-cells per rank: 76
+  Number of 2-cells per rank: 32
 Labels:
-  marker: 1 strata with value/size (1 (24))
-  Face Sets: 4 strata with value/size (4 (2), 2 (2), 1 (4), 3 (4))
-  depth: 3 strata with value/size (0 (15), 1 (22), 2 (8))
-  celltype: 3 strata with value/size (4 (8), 0 (15), 1 (22))
+  marker: 1 strata with value/size (1 (48))
+  Face Sets: 4 strata with value/size (4 (4), 2 (4), 1 (8), 3 (8))
+  depth: 3 strata with value/size (0 (45), 1 (76), 2 (32))
+  celltype: 3 strata with value/size (4 (32), 0 (45), 1 (76))
 Field fe:
   adjacency FEM
-Linear ftop_ solve converged due to CONVERGED_RTOL iterations 11
-Total number density:   8.288080569410e-01 (  8.288080569410e-01); x-momentum = 8.80372e-17 (2.9924e-17); energy = 1.77936 error = -3.743670e-16, 100 particles. Use 1 threads, Solve time: 0.154563
+Linear ftop_ solve converged due to CONVERGED_RTOL iterations 27
+Total number density:   8.288080569410e-01 (  8.288080569410e-01); x-momentum = 4.04624e-16 (2.9924e-17); energy = 1.77936 error = 8.735230e-16, 100 particles. Use 1 threads
