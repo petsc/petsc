@@ -374,6 +374,7 @@ PetscErrorCode PetscError(MPI_Comm comm,int line,const char *func,const char *fi
   PetscBool      ismain;
   PetscErrorCode ierr;
 
+  if (!PetscErrorHandlingInitialized) return n;
   if (!func) func = "User provided function";
   if (!file) file = "User file";
   if (comm == MPI_COMM_NULL) comm = PETSC_COMM_SELF;

@@ -113,7 +113,6 @@ static PetscErrorCode PetscOptionsSetValue_Private(PetscOptions,const char[],con
 */
 static PetscErrorCode PetscOptionsMonitor(PetscOptions options,const char name[],const char value[])
 {
-  if (!PetscErrorHandlingInitialized) return 0;
   PetscFunctionBegin;
   if (!value) value = "";
   if (options->monitorFromOptions) CHKERRQ(PetscOptionsMonitorDefault(name,value,NULL));
@@ -137,10 +136,11 @@ static PetscErrorCode PetscOptionsMonitor(PetscOptions options,const char name[]
 @*/
 PetscErrorCode PetscOptionsCreate(PetscOptions *options)
 {
-  if (!options) return PETSC_ERR_ARG_NULL;
+  PetscFunctionBegin;
+  PetscValidPointer(options,1);
   *options = (PetscOptions)calloc(1,sizeof(**options));
-  if (!*options) return PETSC_ERR_MEM;
-  return 0;
+  PetscCheck(*options,PETSC_COMM_SELF,PETSC_ERR_MEM,"Failed to allocate the options database");
+  PetscFunctionReturn(0);
 }
 
 /*@
@@ -157,12 +157,10 @@ PetscErrorCode PetscOptionsCreate(PetscOptions *options)
 @*/
 PetscErrorCode PetscOptionsDestroy(PetscOptions *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  if (!*options) return 0;
+  if (!*options) PetscFunctionReturn(0);
   PetscCheck(!(*options)->previous,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"You are destroying an option that has been used with PetscOptionsPush() but does not have a corresponding PetscOptionsPop()");
-  ierr = PetscOptionsClear(*options);if (ierr) return ierr;
+  CHKERRQ(PetscOptionsClear(*options));
   /* XXX what about monitors ? */
   free(*options);
   *options = NULL;
@@ -174,10 +172,9 @@ PetscErrorCode PetscOptionsDestroy(PetscOptions *options)
 */
 PetscErrorCode PetscOptionsCreateDefault(void)
 {
-  PetscErrorCode ierr = 0;
-
-  if (!defaultoptions) {ierr = PetscOptionsCreate(&defaultoptions);}
-  return ierr;
+  PetscFunctionBegin;
+  if (PetscUnlikely(!defaultoptions)) CHKERRQ(PetscOptionsCreate(&defaultoptions));
+  PetscFunctionReturn(0);
 }
 
 /*@
@@ -242,18 +239,17 @@ PetscErrorCode PetscOptionsPop(void)
 */
 PetscErrorCode PetscOptionsDestroyDefault(void)
 {
-  PetscErrorCode ierr;
-  PetscOptions   tmp;
-
-  if (!defaultoptions) return 0;
+  PetscFunctionBegin;
+  if (!defaultoptions) PetscFunctionReturn(0);
   /* Destroy any options that the user forgot to pop */
   while (defaultoptions->previous) {
-    tmp = defaultoptions;
+    PetscOptions tmp = defaultoptions;
+
     CHKERRQ(PetscOptionsPop());
     CHKERRQ(PetscOptionsDestroy(&tmp));
   }
-  ierr = PetscOptionsDestroy(&defaultoptions);if (ierr) return ierr;
-  return 0;
+  CHKERRQ(PetscOptionsDestroy(&defaultoptions));
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -271,7 +267,7 @@ PetscErrorCode PetscOptionsDestroyDefault(void)
 @*/
 PetscErrorCode PetscOptionsValidKey(const char key[],PetscBool *valid)
 {
-  char           *ptr;
+  char *ptr;
 
   PetscFunctionBegin;
   if (key) PetscValidCharPointer(key,1);
@@ -765,20 +761,19 @@ static PetscErrorCode PetscOptionsProcessPrecedentFlags(PetscOptions options,int
 
 static inline PetscErrorCode PetscOptionsSkipPrecedent(PetscOptions options,const char name[],PetscBool *flg)
 {
-  int i;
-  PetscErrorCode ierr;
-
+  PetscFunctionBegin;
+  PetscValidBoolPointer(flg,3);
   *flg = PETSC_FALSE;
   if (options->precedentProcessed) {
-    for (i=0; i<PO_NUM; i++) {
+    for (int i = 0; i < PO_NUM; ++i) {
       if (!PetscOptNameCmp(precedentOptions[i],name)) {
         /* check if precedent option has been set already */
-        ierr = PetscOptionsFindPair(options,NULL,name,NULL,flg);if (ierr) return ierr;
+        CHKERRQ(PetscOptionsFindPair(options,NULL,name,NULL,flg));
         if (*flg) break;
       }
     }
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -1060,8 +1055,9 @@ PetscErrorCode PetscOptionsClear(PetscOptions options)
 {
   PetscInt i;
 
+  PetscFunctionBegin;
   options = options ? options : defaultoptions;
-  if (!options) return 0;
+  if (!options) PetscFunctionReturn(0);
 
   for (i=0; i<options->N; i++) {
     if (options->names[i])  free(options->names[i]);
@@ -1082,7 +1078,7 @@ PetscErrorCode PetscOptionsClear(PetscOptions options)
   options->prefixind = 0;
   options->prefix[0] = 0;
   options->help      = PETSC_FALSE;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -1165,27 +1161,28 @@ PetscErrorCode PetscOptionsSetAlias(PetscOptions options,const char newname[],co
 @*/
 PetscErrorCode PetscOptionsSetValue(PetscOptions options,const char name[],const char value[])
 {
-  return PetscOptionsSetValue_Private(options,name,value,NULL);
+  PetscFunctionBegin;
+  CHKERRQ(PetscOptionsSetValue_Private(options,name,value,NULL));
+  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PetscOptionsSetValue_Private(PetscOptions options,const char name[],const char value[],int *pos)
 {
-  size_t         len;
-  int            N,n,i;
-  char           **names;
-  char           fullname[MAXOPTNAME] = "";
-  PetscBool      flg;
-  PetscErrorCode ierr;
+  size_t      len;
+  int         N,n,i;
+  char      **names;
+  char        fullname[MAXOPTNAME] = "";
+  PetscBool   flg;
 
+  PetscFunctionBegin;
   if (!options) {
-    ierr = PetscOptionsCreateDefault();if (ierr) return ierr;
+    CHKERRQ(PetscOptionsCreateDefault());
     options = defaultoptions;
   }
+  PetscCheck(name[0] == '-',PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"name %s must start with '-'",name);
 
-  if (name[0] != '-') return PETSC_ERR_ARG_OUTOFRANGE;
-
-  ierr = PetscOptionsSkipPrecedent(options,name,&flg);if (ierr) return ierr;
-  if (flg) return 0;
+  CHKERRQ(PetscOptionsSkipPrecedent(options,name,&flg));
+  if (flg) PetscFunctionReturn(0);
 
   name++; /* skip starting dash */
 
@@ -1215,7 +1212,8 @@ static PetscErrorCode PetscOptionsSetValue_Private(PetscOptions options,const ch
       n = i; break;
     }
   }
-  if (N >= MAXOPTIONS) return PETSC_ERR_MEM;
+  PetscCheck(N < MAXOPTIONS,PETSC_COMM_SELF,PETSC_ERR_MEM,"Number of options %d < max number of options %d, can not allocate enough space",N,MAXOPTIONS);
+
   /* shift remaining values up 1 */
   for (i=N; i>n; i--) {
     options->names[i]  = options->names[i-1];
@@ -1234,7 +1232,7 @@ static PetscErrorCode PetscOptionsSetValue_Private(PetscOptions options,const ch
   /* set new name */
   len = strlen(name);
   options->names[n] = (char*)malloc((len+1)*sizeof(char));
-  if (!options->names[n]) return PETSC_ERR_MEM;
+  PetscCheck(options->names[n],PETSC_COMM_SELF,PETSC_ERR_MEM,"Failed to allocate option name");
   strcpy(options->names[n],name);
 
 setvalue:
@@ -1256,11 +1254,9 @@ setvalue:
     options->used[n] = PETSC_TRUE;
   }
 
-  if (PetscErrorHandlingInitialized) {
-    CHKERRQ(PetscOptionsMonitor(options,name,value));
-  }
+  CHKERRQ(PetscOptionsMonitor(options,name,value));
   if (pos) *pos = n;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -1994,8 +1990,8 @@ PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[
 */
 PetscErrorCode PetscOptionsStringToBool(const char value[],PetscBool *a)
 {
-  PetscBool      istrue,isfalse;
-  size_t         len;
+  PetscBool istrue,isfalse;
+  size_t    len;
 
   PetscFunctionBegin;
   /* PetscStrlen() returns 0 for NULL or "" */
@@ -2122,37 +2118,33 @@ static PetscErrorCode PetscStrtoz(const char name[],PetscScalar *a,char **endptr
 */
 PetscErrorCode PetscOptionsStringToReal(const char name[],PetscReal *a)
 {
-  size_t         len;
-  PetscBool      match;
-  char           *endptr;
+  size_t     len;
+  PetscBool  match;
+  char      *endptr;
 
   PetscFunctionBegin;
   CHKERRQ(PetscStrlen(name,&len));
   PetscCheck(len,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"String of length zero has no numerical value");
 
   CHKERRQ(PetscStrcasecmp(name,"PETSC_DEFAULT",&match));
-  if (!match) {
-    CHKERRQ(PetscStrcasecmp(name,"DEFAULT",&match));
-  }
+  if (!match) CHKERRQ(PetscStrcasecmp(name,"DEFAULT",&match));
   if (match) {*a = PETSC_DEFAULT; PetscFunctionReturn(0);}
 
   CHKERRQ(PetscStrcasecmp(name,"PETSC_DECIDE",&match));
-  if (!match) {
-    CHKERRQ(PetscStrcasecmp(name,"DECIDE",&match));
-  }
+  if (!match) CHKERRQ(PetscStrcasecmp(name,"DECIDE",&match));
   if (match) {*a = PETSC_DECIDE; PetscFunctionReturn(0);}
 
   CHKERRQ(PetscStrtod(name,a,&endptr));
-  PetscCheckFalse((size_t) (endptr - name) != len,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value",name);
+  PetscCheck((size_t) (endptr - name) == len,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value",name);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscOptionsStringToScalar(const char name[],PetscScalar *a)
 {
-  PetscBool      imag1;
-  size_t         len;
-  PetscScalar    val = 0.;
-  char           *ptr = NULL;
+  PetscBool    imag1;
+  size_t       len;
+  PetscScalar  val = 0.;
+  char        *ptr = NULL;
 
   PetscFunctionBegin;
   CHKERRQ(PetscStrlen(name,&len));
@@ -2164,11 +2156,11 @@ PetscErrorCode PetscOptionsStringToScalar(const char name[],PetscScalar *a)
     PetscScalar val2;
 
     CHKERRQ(PetscStrtoz(ptr,&val2,&ptr,&imag2));
-    PetscCheckFalse(imag1 || !imag2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s: must specify imaginary component second",name);
+    if (imag1) PetscCheck(imag2,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s: must specify imaginary component second",name);
     val = PetscCMPLX(PetscRealPart(val),PetscImaginaryPart(val2));
   }
 #endif
-  PetscCheckFalse((size_t) (ptr - name) != len,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
+  PetscCheck((size_t) (ptr - name) == len,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no numeric value ",name);
   *a = val;
   PetscFunctionReturn(0);
 }
@@ -2561,25 +2553,21 @@ PetscErrorCode PetscOptionsGetString(PetscOptions options,const char pre[],const
     if (set) *set = PETSC_FALSE;
   } else {
     if (set) *set = PETSC_TRUE;
-    if (value) {
-      CHKERRQ(PetscStrncpy(string,value,len));
-    } else {
-      CHKERRQ(PetscArrayzero(string,len));
-    }
+    if (value) CHKERRQ(PetscStrncpy(string,value,len));
+    else CHKERRQ(PetscArrayzero(string,len));
   }
   PetscFunctionReturn(0);
 }
 
 char *PetscOptionsGetStringMatlab(PetscOptions options,const char pre[],const char name[])
 {
-  const char     *value;
-  PetscBool      flag;
-  PetscErrorCode ierr;
+  const char *value;
+  PetscBool   flag;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsFindPair(options,pre,name,&value,&flag);if (ierr) PetscFunctionReturn(NULL);
+  if (PetscOptionsFindPair(options,pre,name,&value,&flag)) PetscFunctionReturn(NULL);
   if (flag) PetscFunctionReturn((char*)value);
-  else PetscFunctionReturn(NULL);
+  PetscFunctionReturn(NULL);
 }
 
 /*@C
