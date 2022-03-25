@@ -75,6 +75,8 @@ cdef extern from * nogil:
     int TaoGetMaximumIterations(PetscTAO,PetscInt*)
     int TaoSetMaximumFunctionEvaluations(PetscTAO,PetscInt)
     int TaoGetMaximumFunctionEvaluations(PetscTAO,PetscInt*)
+    int TaoSetIterationNumber(PetscTAO,PetscInt)
+    int TaoGetIterationNumber(PetscTAO,PetscInt*)
 
     int TaoSetTrustRegionTolerance(PetscTAO,PetscReal)
     int TaoGetInitialTrustRegionRadius(PetscTAO,PetscReal*)
