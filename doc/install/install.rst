@@ -623,90 +623,9 @@ Run ``configure`` with ``--download-viennacl``; check
 Installing On Large Scale DOE Systems
 =====================================
 
-NERSC - CORI machine
-^^^^^^^^^^^^^^^^^^^^
-
-- Project ID: m3353
-- PI: Richard Mills
-- Notes on usage:
-
-ALCF - Argonne National Laboratory - theta machine - Intel KNL based system
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- Project ID:
-- PI:
-- Notes on usage:
-
-  - Log into theta.alcf.anl.gov (Use crypto card or MobilePass app for the password)
-  - There are three compiler suites `Modules`_
-
-    - module load PrgEnv-intel intel
-    - module load PrgEnv-gnu gcc/7.1.0/
-    - module load PrgEnv-cray
-
-  - List currently loaded modules: module list
-  - List all available modules: module avail
-  - BLAS/LAPACK will automatically be found so you do not need to provide it
-
-    - It is best not to use built-in modules for external packages (except BLAS/LAPACK
-      because they are often buggy. Most external packages can be built using
-      the ``--download-packagename`` option with the intel or Gnu environment but not cray
-    - You can use ``config/examples/arch-cray-xc40-knl-opt.py`` as a template for running
-      configure but it is outdated
-    - When using the Intel module you may need to use ``--download-sowing-cc=icc``,
-      ``--download-sowing-cxx=icpc``, ``--download-sowing-cpp="icc E"``,
-      ``--download-sowing-cxxpp="icpc -E"`` since the GNU compilers may not work as they
-      access Intel files
-    - To get an interactive node use ``qsub -A CSC250STMS07 -n 1 -t 60 -q debug-flat-quad
-      -I``
-    - To run on interactive node using two MPI ranks use ``aprun -n 2 ./program options``
-
-ALCF - Argonne National Laboratory - thetagpu machine - AMD CPUs with NVIDIA GPUs
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Notes on usage:
-
-  - Log into theta.alcf.anl.gov
-  - The GPU front-end and compute nodes do not support git via ssh - so best to use ``git clone/fetch`` etc. (in PETSc clone) on theta.alcf.anl.gov
-  - ``ssh thetagpusn1`` (this is the GPU front end)
-  - ``export http_proxy=http://proxy.tmi.alcf.anl.gov:3128``
-  - ``export https_proxy=http://proxy.tmi.alcf.anl.gov:3128``
-  - ``module load nvhpc`` (Do not module load any MPI)
-  - ``module load libtool-2.4.6-gcc-7.5.0-jdxbjft cmake-3.20.2-gcc-10.2.0-wmku2nn``
-  - ``./configure --with-mpi-dir=$CUDA_DIR/../comm_libs/mpi/ -with-cuda-dir=$CUDA_DIR/11.0  --download-f2cblaslapack=1``
-  - to install Kokkos (with ``--download-kokkos --download-kokkos-kernels``, set CUDA_ROOT before running configure - i.e: ``export CUDA_ROOT=$CUDA_DIR/11.0``
-  - Log into interactive compute nodes with ``qsub -I -t TimeInMinutes -n 1 -A AProjectName`` (for example, ``gpu_hack``) (``-q single-gpu`` will give you access to one GPU, and is often much quicker; otherwise you get access to all eight GPUs on a node)
-  - Run executables with ``$CUDA_DIR/../comm_libs/mpi/bin/mpirun``
-  - It's also possible to build petsc on compute nodes. For this - one can use ``qsub --attrs=pubnet`` to obtain a compute node with network access enabled (for the build) as an alternative to setting up ``http_proxy/https_proxy``
-
-
-OLCF - Oak Ridge National Laboratory - Summit machine - NVIDIA GPUs and IBM Power PC processors
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-- Project ID: CSC314
-- PI: Barry Smith
-- Apply at: https://docs.olcf.ornl.gov/accounts/accounts_and_projects.html#applying-for-a-user-account
-- Notes on usage:
-
-  - `Getting Started <https://www.olcf.ornl.gov/for-users/documents-forms/olcf-account-application/>`__
-  - Log into summit.olcf.ornl.gov
-
-    .. code-block:: console
-
-       $ module load cmake hdf5 cuda
-       $ module load pgi
-       $ module load essl netlib-lapack xl
-       $ module load gcc
-
-  - Use ``config/examples/arch-olcf-opt.py`` as a template for running ``configure``
-  - You configure PETSc and build examples in your home directory, but launch them from
-    your "work" directory.
-  - Use the ``bsub`` command to submit jobs to the queue. See the "Batch Scripts" section
-    here `running jobs
-    <https://docs.olcf.ornl.gov/systems/summit_user_guide.html#running-jobs>`__
-  - Tools for profiling
-    - ``-log_view`` that adds GPU communication and computation to the summary table
-    - ``nvprof`` and ``nvvp`` from the CUDA toolkit
+There are some notes on our `GitLab Wiki <https://gitlab.com/petsc/petsc/-/wikis/Installing-and-Running-on-Large-Scale-Systems>`__
+which may be helpful in installing and running PETSc on large scale
+systems.  Also note the configuration examples in ``config/examples``.
 
 Installing PETSc on an iOS or Android platform
 ==============================================
