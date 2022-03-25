@@ -4576,6 +4576,48 @@ PetscErrorCode  MatSeqAIJRestoreArrayWrite(Mat A,PetscScalar **array)
 }
 
 /*@C
+   MatSeqAIJGetCSRAndMemType - Get the CSR arrays and the memory type of the SEQAIJ matrix
+
+   Not Collective
+
+   Input Parameter:
+.  mat - a matrix of type MATSEQAIJ or its subclasses
+
+   Output Parameters:
++  i - row map array of the matrix
+.  j - column index array of the matrix
+.  a - data array of the matrix
+-  memtype - memory type of the arrays
+
+  Notes:
+   Any of the output parameters can be NULL, in which case the corresponding value is not returned.
+   If mat is a device matrix, the arrays are on the device. Otherwise, they are on the host.
+
+   One can call this routine on a preallocated but not assembled matrix to just get the memory of the CSR underneath the matrix.
+   If the matrix is assembled, the data array 'a' is guaranteed to have the latest values of the matrix.
+
+   Level: Developer
+
+.seealso: MatSeqAIJGetArray(), MatSeqAIJGetArrayRead()
+@*/
+PetscErrorCode MatSeqAIJGetCSRAndMemType(Mat mat,const PetscInt **i,const PetscInt **j,PetscScalar **a,PetscMemType *mtype)
+{
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)mat->data;
+
+  PetscFunctionBegin;
+  PetscCheck(mat->preallocated,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"matrix is not preallocated");
+  if (aij->ops->getcsrandmemtype) {
+    PetscCall((*aij->ops->getcsrandmemtype)(mat,i,j,a,mtype));
+  } else {
+    if (i) *i = aij->i;
+    if (j) *j = aij->j;
+    if (a) *a = aij->a;
+    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
    MatSeqAIJGetMaxRowNonzeros - returns the maximum number of nonzeros in any row
 
    Not Collective

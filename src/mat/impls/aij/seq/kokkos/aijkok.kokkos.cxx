@@ -165,6 +165,23 @@ static PetscErrorCode MatSeqAIJRestoreArrayWrite_SeqAIJKokkos(Mat A,PetscScalar 
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatSeqAIJGetCSRAndMemType_SeqAIJKokkos(Mat A,const PetscInt **i,const PetscInt **j,PetscScalar **a,PetscMemType *mtype)
+{
+  Mat_SeqAIJKokkos  *aijkok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
+
+  PetscFunctionBegin;
+  PetscCheck(aijkok != NULL,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"aijkok is NULL");
+
+  if (i) *i = aijkok->i_device_data();
+  if (j) *j = aijkok->j_device_data();
+  if (a) {
+    aijkok->a_dual.sync_device();
+    *a = aijkok->a_device_data();
+  }
+  if (mtype) *mtype = PETSC_MEMTYPE_KOKKOS;
+  PetscFunctionReturn(0);
+}
+
 // MatSeqAIJKokkosSetDeviceMat takes a PetscSplitCSRDataStructure with device data and copies it to the device. Note, "deep_copy" here is really a shallow copy
 PetscErrorCode MatSeqAIJKokkosSetDeviceMat(Mat A, PetscSplitCSRDataStructure h_mat)
 {
@@ -1095,6 +1112,7 @@ static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat A)
   a->ops->restorearrayread          = MatSeqAIJRestoreArrayRead_SeqAIJKokkos;
   a->ops->getarraywrite             = MatSeqAIJGetArrayWrite_SeqAIJKokkos;
   a->ops->restorearraywrite         = MatSeqAIJRestoreArrayWrite_SeqAIJKokkos;
+  a->ops->getcsrandmemtype          = MatSeqAIJGetCSRAndMemType_SeqAIJKokkos;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOO_C",MatSetPreallocationCOO_SeqAIJKokkos));
   PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",MatSetValuesCOO_SeqAIJKokkos));

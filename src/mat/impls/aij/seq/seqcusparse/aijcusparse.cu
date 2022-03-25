@@ -1783,6 +1783,37 @@ static PetscErrorCode MatSeqAIJRestoreArrayWrite_SeqAIJCUSPARSE(Mat A,PetscScala
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode MatSeqAIJGetCSRAndMemType_SeqAIJCUSPARSE(Mat A,const PetscInt **i,const PetscInt **j,PetscScalar **a,PetscMemType *mtype)
+{
+  Mat_SeqAIJCUSPARSE           *cusp;
+  CsrMatrix                    *matrix;
+
+  PetscFunctionBegin;
+  PetscCall(MatSeqAIJCUSPARSECopyToGPU(A));
+  PetscCheck(A->factortype == MAT_FACTOR_NONE, PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  cusp = static_cast<Mat_SeqAIJCUSPARSE*>(A->spptr);
+  PetscCheck(cusp != NULL,PetscObjectComm((PetscObject)A),PETSC_ERR_ARG_WRONGSTATE,"cusp is NULL");
+  matrix = (CsrMatrix*)cusp->mat->mat;
+
+  if (i) {
+   #if !defined(PETSC_USE_64BIT_INDICES)
+    *i = matrix->row_offsets->data().get();
+   #else
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"cuSparse does not supported 64-bit indices");
+   #endif
+  }
+  if (j) {
+   #if !defined(PETSC_USE_64BIT_INDICES)
+    *j = matrix->column_indices->data().get();
+   #else
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"cuSparse does not supported 64-bit indices");
+   #endif
+  }
+  if (a) *a = matrix->values->data().get();
+  if (mtype) *mtype = PETSC_MEMTYPE_CUDA;
+  PetscFunctionReturn(0);
+}
+
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
 {
   Mat_SeqAIJCUSPARSE           *cusparsestruct = (Mat_SeqAIJCUSPARSE*)A->spptr;
@@ -3446,13 +3477,15 @@ static PetscErrorCode MatBindToCPU_SeqAIJCUSPARSE(Mat A,PetscBool flg)
     a->ops->restorearrayread          = MatSeqAIJRestoreArrayRead_SeqAIJCUSPARSE;
     a->ops->getarraywrite             = MatSeqAIJGetArrayWrite_SeqAIJCUSPARSE;
     a->ops->restorearraywrite         = MatSeqAIJRestoreArrayWrite_SeqAIJCUSPARSE;
+    a->ops->getcsrandmemtype          = MatSeqAIJGetCSRAndMemType_SeqAIJCUSPARSE;
+
     PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSeqAIJCopySubArray_C",MatSeqAIJCopySubArray_SeqAIJCUSPARSE));
     PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijcusparse_seqdensecuda_C",MatProductSetFromOptions_SeqAIJCUSPARSE));
     PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijcusparse_seqdense_C",MatProductSetFromOptions_SeqAIJCUSPARSE));
     PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSetPreallocationCOO_C",MatSetPreallocationCOO_SeqAIJCUSPARSE));
     PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatSetValuesCOO_C",MatSetValuesCOO_SeqAIJCUSPARSE));
     PetscCall(PetscObjectComposeFunction((PetscObject)A,"MatProductSetFromOptions_seqaijcusparse_seqaijcusparse_C",MatProductSetFromOptions_SeqAIJCUSPARSE));
-  }
+   }
   A->boundtocpu = flg;
   if (flg && a->inode.size) {
     a->inode.use = PETSC_TRUE;
