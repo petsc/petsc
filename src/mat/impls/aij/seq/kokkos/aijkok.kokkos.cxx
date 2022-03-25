@@ -1073,6 +1073,28 @@ static PetscErrorCode MatSetValuesCOO_SeqAIJKokkos(Mat A,const PetscScalar v[],I
   PetscFunctionReturn(0);
 }
 
+PETSC_INTERN PetscErrorCode MatSeqAIJMoveDiagonalValuesFront_SeqAIJKokkos(Mat A,const PetscInt *diag)
+{
+  Mat_SeqAIJKokkos            *akok = static_cast<Mat_SeqAIJKokkos*>(A->spptr);
+  MatScalarKokkosView         Aa;
+  const MatRowMapKokkosView&  Ai = akok->i_dual.view_device();
+  PetscInt                    m = A->rmap->n;
+  ConstMatRowMapKokkosView    Adiag(diag,m); /* diag is a device pointer */
+
+  PetscFunctionBegin;
+  PetscCall(MatSeqAIJGetKokkosViewWrite(A,&Aa));
+  Kokkos::parallel_for(m,KOKKOS_LAMBDA(const PetscInt i) {
+    PetscScalar tmp;
+    if (Adiag(i) >= Ai(i) && Adiag(i) < Ai(i+1)) { /* The diagonal element exists */
+      tmp          = Aa(Ai(i));
+      Aa(Ai(i))    = Aa(Adiag(i));
+      Aa(Adiag(i)) = tmp;
+    }
+  });
+  PetscCall(MatSeqAIJRestoreKokkosViewWrite(A,&Aa));
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode MatLUFactorNumeric_SeqAIJKokkos(Mat B,Mat A,const MatFactorInfo *info)
 {
   PetscFunctionBegin;
