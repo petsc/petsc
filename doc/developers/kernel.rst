@@ -67,7 +67,7 @@ The simplified macro-based interface consists of the following two
 calls:
 
 * ``SETERRQ(comm,error code,Error message);``
-* ``CHKERRQ(ierr);``
+* ``PetscCall(ierr);``
 
 The macro ``SETERRQ()`` is given by
 
@@ -83,12 +83,12 @@ one is absolutely sure the same error will be generated on all processes
 in the communicator. This feature is to prevent the same error message
 from being printed by many processes.
 
-The macro ``CHKERRQ()`` is defined by
+The macro ``PetscCall()`` is defined by
 
 .. literalinclude:: /../include/petscerror.h
    :language: c
-   :start-at: #define CHKERRQ
-   :end-at: #define CHKERRQ
+   :start-at: #define PetscCall
+   :end-at: #define PetscCall
 
 The message passed to ``SETERRQ()`` is treated as a ``printf()``-style
 format string, with all additional parameters passed after the string as

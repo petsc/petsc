@@ -611,12 +611,12 @@ following function:
    {
      PetscFunctionBegin;
      if (fd != stdout && fd != stderr) { /* handle regular files */
-       CHKERRQ(PetscVFPrintfDefault(fd, format, Argp));
+       PetscCall(PetscVFPrintfDefault(fd, format, Argp));
      } else {
        char buff[1024]; /* Make sure to assign a large enough buffer */
        int  length;
 
-       CHKERRQ(PetscVSNPrintf(buff, 1024, format, &length, Argp));
+       PetscCall(PetscVSNPrintf(buff, 1024, format, &length, Argp));
 
        /* now send buff to whatever stream or whatever you want */
      }
@@ -704,38 +704,38 @@ first :math:`n` (also assume :math:`n \leq m`) values from it's immediately supe
    PetscMPIInt    r, R;
 
    /* Create sequential local vector, big enough to hold local portion */
-   CHKERRQ(VecCreateSeq(PETSC_COMM_SELF, n, &vecLocal));
+   PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &vecLocal));
 
    /* Create IS to describe where we want to scatter to */
-   CHKERRQ(ISCreateStride(PETSC_COMM_SELF, n, 0, 1, &isLocal));
+   PetscCall(ISCreateStride(PETSC_COMM_SELF, n, 0, 1, &isLocal));
 
    /* Compute the global indices */
-   CHKERRQ(VecGetSize(vecGlobal, &N));
-   CHKERRQ(PetscObjectGetComm((PetscObject) vecGlobal, &comm));
+   PetscCall(VecGetSize(vecGlobal, &N));
+   PetscCall(PetscObjectGetComm((PetscObject) vecGlobal, &comm));
    CHKERRMPI(MPI_Comm_rank(comm, &r));
    CHKERRMPI(MPI_Comm_size(comm, &R));
    firstGlobalIndex = r == R-1 ? 0 : (N/R)*(r+1);
 
    /* Create IS that describes where we want to scatter from */
-   CHKERRQ(ISCreateStride(comm, n, firstGlobalIndex, 1, &isGlobal));
+   PetscCall(ISCreateStride(comm, n, firstGlobalIndex, 1, &isGlobal));
 
    /* Create the VecScatter context */
-   CHKERRQ(VecScatterCreate(vecGlobal, isGlobal, vecLocal, isLocal, &ctx));
+   PetscCall(VecScatterCreate(vecGlobal, isGlobal, vecLocal, isLocal, &ctx));
 
    /* Gather the values */
-   CHKERRQ(VecScatterBegin(ctx, vecGlobal, vecLocal, INSERT_VALUES, SCATTER_FORWARD));
-   CHKERRQ(VecScatterEnd(ctx, vecGlobal, vecLocal, INSERT_VALUES, SCATTER_FORWARD));
+   PetscCall(VecScatterBegin(ctx, vecGlobal, vecLocal, INSERT_VALUES, SCATTER_FORWARD));
+   PetscCall(VecScatterEnd(ctx, vecGlobal, vecLocal, INSERT_VALUES, SCATTER_FORWARD));
 
    /* Retrieve and do work */
-   CHKERRQ(VecGetArray(vecLocal, &arr));
+   PetscCall(VecGetArray(vecLocal, &arr));
    /* Work */
-   CHKERRQ(VecRestoreArray(vecLocal, &arr));
+   PetscCall(VecRestoreArray(vecLocal, &arr));
 
    /* Don't forget to clean up */
-   CHKERRQ(ISDestroy(&isLocal));
-   CHKERRQ(ISDestroy(&isGlobal));
-   CHKERRQ(VecScatterDestroy(&ctx));
-   CHKERRQ(VecDestroy(&vecLocal));
+   PetscCall(ISDestroy(&isLocal));
+   PetscCall(ISDestroy(&isGlobal));
+   PetscCall(VecScatterDestroy(&ctx));
+   PetscCall(VecDestroy(&vecLocal));
 
 .. _doc_faq_usage_alltoone:
 
@@ -749,16 +749,16 @@ How do I collect to a single processor all the values from a parallel PETSc Vec?
       Vec        in_par,out_seq;
       VecScatter ctx;
 
-      CHKERRQ(VecScatterCreateToAll(in_par, &ctx, &out_seq));
+      PetscCall(VecScatterCreateToAll(in_par, &ctx, &out_seq));
 
 #. Initiate the communication (this may be repeated if you wish):
 
    ::
 
-      CHKERRQ(VecScatterBegin(ctx, in_par, out_seq, INSERT_VALUES, SCATTER_FORWARD));
-      CHKERRQ(VecScatterEnd(ctx, in_par, out_seq, INSERT_VALUES, SCATTER_FORWARD));
+      PetscCall(VecScatterBegin(ctx, in_par, out_seq, INSERT_VALUES, SCATTER_FORWARD));
+      PetscCall(VecScatterEnd(ctx, in_par, out_seq, INSERT_VALUES, SCATTER_FORWARD));
       /* May destroy context now if no additional scatters are needed, otherwise reuse it */
-      CHKERRQ(VecScatterDestroy(&ctx));
+      PetscCall(VecScatterDestroy(&ctx));
 
 Note that this simply concatenates in the parallel ordering of the vector (computed by the
 ``MPI_Comm_rank`` of the owning process). If you are using a ``Vec`` from
@@ -775,13 +775,13 @@ replace
 
 .. code-block::
 
-   CHKERRQ(VecScatterCreateToAll(in_par, &ctx, &out_seq));
+   PetscCall(VecScatterCreateToAll(in_par, &ctx, &out_seq));
 
 with
 
 .. code-block::
 
-   CHKERRQ(VecScatterCreateToZero(in_par, &ctx, &out_seq));
+   PetscCall(VecScatterCreateToZero(in_par, &ctx, &out_seq));
 
 .. note::
 
@@ -835,8 +835,8 @@ with
 
    KSP ksp;
 
-   CHKERRQ(KSPCreate(PETSC_COMM_WORLD, &ksp));
-   CHKERRQ(KSPGMRESSetRestart(ksp, 10));
+   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
+   PetscCall(KSPGMRESSetRestart(ksp, 10));
 
 the restart will be ignored since the type has not yet been set to ``KSPGMRES``. To have
 those values take effect you should do one of the following:
@@ -1355,25 +1355,25 @@ Assuming you have an existing matrix :math:`A` whose nullspace :math:`V` you wan
    PetscInt N, rows;
 
    /* Determine factorability */
-   CHKERRQ(MatGetFactor(A, MATSOLVERMUMPS, MAT_FACTOR_LU, &F));
-   CHKERRQ(MatGetLocalSize(A, &rows, NULL));
+   PetscCall(MatGetFactor(A, MATSOLVERMUMPS, MAT_FACTOR_LU, &F));
+   PetscCall(MatGetLocalSize(A, &rows, NULL));
 
    /* Set MUMPS options, see MUMPS documentation for more information */
-   CHKERRQ(MatMumpsSetIcntl(F, 24, 1));
-   CHKERRQ(MatMumpsSetIcntl(F, 25, 1));
+   PetscCall(MatMumpsSetIcntl(F, 24, 1));
+   PetscCall(MatMumpsSetIcntl(F, 25, 1));
 
    /* Perform factorization */
-   CHKERRQ(MatLUFactorSymbolic(F, A, NULL, NULL, NULL));
-   CHKERRQ(MatLUFactorNumeric(F, A, NULL));
+   PetscCall(MatLUFactorSymbolic(F, A, NULL, NULL, NULL));
+   PetscCall(MatLUFactorNumeric(F, A, NULL));
 
    /* This is the dimension of the null space */
-   CHKERRQ(MatMumpsGetInfog(F, 28, &N));
+   PetscCall(MatMumpsGetInfog(F, 28, &N));
 
    /* This will contain the null space in the columns */
-   CHKERRQ(MatCreateDense(comm, rows, N, PETSC_DETERMINE, PETSC_DETERMINE, NULL, &V));
+   PetscCall(MatCreateDense(comm, rows, N, PETSC_DETERMINE, PETSC_DETERMINE, NULL, &V));
 
-   CHKERRQ(MatDuplicate(V, MAT_DO_NOT_COPY_VALUES, &work));
-   CHKERRQ(MatMatSolve(F, work, V));
+   PetscCall(MatDuplicate(V, MAT_DO_NOT_COPY_VALUES, &work));
+   PetscCall(MatMatSolve(F, work, V));
 
 --------------------------------------------------
 
@@ -1949,8 +1949,8 @@ Many operations on PETSc objects require that the specific type of the object be
 
    Mat A;
 
-   CHKERRQ(MatCreate(PETSC_COMM_WORLD, &A));
-   CHKERRQ(MatSetValues(A,....));
+   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+   PetscCall(MatSetValues(A,....));
 
 will not work. You must add ``MatSetType()`` or ``MatSetFromOptions()`` before the call to ``MatSetValues()``. I.e.
 
@@ -1958,13 +1958,13 @@ will not work. You must add ``MatSetType()`` or ``MatSetFromOptions()`` before t
 
    Mat A;
 
-   CHKERRQ(MatCreate(PETSC_COMM_WORLD, &A));
+   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
 
-   CHKERRQ(MatSetType(A, MATAIJ));
+   PetscCall(MatSetType(A, MATAIJ));
    /* Will override MatSetType() */
-   CHKERRQ(MatSetFromOptions());
+   PetscCall(MatSetFromOptions());
 
-   CHKERRQ(MatSetValues(A,....));
+   PetscCall(MatSetValues(A,....));
 
 .. _split-ownership:
 

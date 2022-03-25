@@ -590,7 +590,7 @@ with the command
 .. code-block::
 
    PetscLogDouble time;
-   CHKERRQ(PetscTime(&time));
+   PetscCall(PetscTime(&time));
 
 which returns the current time in seconds since the epoch, and is
 commonly implemented with ``MPI_Wtime``. A floating point number is

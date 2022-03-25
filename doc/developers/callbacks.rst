@@ -93,8 +93,8 @@ solver routine for setting a callback a similar routine exists at the
 
       PetscFunctionBegin;
       PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-      CHKERRQ(KSPGetDM(ksp,&dm));
-      CHKERRQ(DMKSPSetComputeOperators(dm,func,ctx));
+      PetscCall(KSPGetDM(ksp,&dm));
+      PetscCall(DMKSPSetComputeOperators(dm,func,ctx));
       if (ksp->setupstage == KSP_SETUP_NEWRHS) ksp->setupstage = KSP_SETUP_NEWMATRIX;
       PetscFunctionReturn(0);
     }
@@ -111,7 +111,7 @@ function callback and its context into the ``DMXXX`` object.
 
       PetscFunctionBegin;
       PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-      CHKERRQ(DMGetDMKSPWrite(dm,&kdm));
+      PetscCall(DMGetDMKSPWrite(dm,&kdm));
       if (func) kdm->ops->computeoperators = func;
       if (ctx) kdm->operatorsctx = ctx;
       PetscFunctionReturn(0);
@@ -130,14 +130,14 @@ seen in the following code.
 
       PetscFunctionBegin;
       PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-      CHKERRQ(DMGetDMKSP(dm,&kdm));
+      PetscCall(DMGetDMKSP(dm,&kdm));
       if (!kdm->originaldm) kdm->originaldm = dm;
       if (kdm->originaldm != dm) {  /* Copy on write */
         DMKSP oldkdm = kdm;
-        CHKERRQ(PetscInfo(dm,"Copying DMKSP due to write\n"));
-        CHKERRQ(DMKSPCreate(PetscObjectComm((PetscObject)dm),&kdm));
-        CHKERRQ(DMKSPCopy(oldkdm,kdm));
-        CHKERRQ(DMKSPDestroy((DMKSP*)&dm->dmksp));
+        PetscCall(PetscInfo(dm,"Copying DMKSP due to write\n"));
+        PetscCall(DMKSPCreate(PetscObjectComm((PetscObject)dm),&kdm));
+        PetscCall(DMKSPCopy(oldkdm,kdm));
+        PetscCall(DMKSPDestroy((DMKSP*)&dm->dmksp));
         dm->dmksp = (PetscObject)kdm;
         kdm->originaldm = dm;
       }
@@ -155,12 +155,12 @@ The routine ``DMGetDMXXX(DM,DMXXX*)`` has the following form.
       PetscValidHeaderSpecific(dm,DM_CLASSID,1);
       *kspdm = (DMKSP) dm->dmksp;
       if (!*kspdm) {
-        CHKERRQ(PetscInfo(dm,"Creating new DMKSP\n"));
-        CHKERRQ(DMKSPCreate(PetscObjectComm((PetscObject)dm),kspdm));
+        PetscCall(PetscInfo(dm,"Creating new DMKSP\n"));
+        PetscCall(DMKSPCreate(PetscObjectComm((PetscObject)dm),kspdm));
         dm->dmksp = (PetscObject) *kspdm;
         (*kspdm)->originaldm = dm;
-        CHKERRQ(DMCoarsenHookAdd(dm,DMCoarsenHook_DMKSP,NULL,NULL));
-        CHKERRQ(DMRefineHookAdd(dm,DMRefineHook_DMKSP,NULL,NULL));
+        PetscCall(DMCoarsenHookAdd(dm,DMCoarsenHook_DMKSP,NULL,NULL));
+        PetscCall(DMRefineHookAdd(dm,DMRefineHook_DMKSP,NULL,NULL));
       }
       PetscFunctionReturn(0);
     }
@@ -175,7 +175,7 @@ when the object is coarsened or refined. The hooks
     static PetscErrorCode DMCoarsenHook_DMKSP(DM dm,DM dmc,void *ctx)
     {
       PetscFunctionBegin;
-      CHKERRQ(DMCopyDMKSP(dm,dmc));
+      PetscCall(DMCopyDMKSP(dm,dmc));
       PetscFunctionReturn(0);
     }
 
@@ -188,11 +188,11 @@ where
       PetscFunctionBegin;
       PetscValidHeaderSpecific(dmsrc,DM_CLASSID,1);
       PetscValidHeaderSpecific(dmdest,DM_CLASSID,2);
-      CHKERRQ(DMKSPDestroy((DMKSP*)&dmdest->dmksp));
+      PetscCall(DMKSPDestroy((DMKSP*)&dmdest->dmksp));
       dmdest->dmksp = dmsrc->dmksp;
-      CHKERRQ(PetscObjectReference(dmdest->dmksp));
-      CHKERRQ(DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMKSP,NULL,NULL));
-      CHKERRQ(DMRefineHookAdd(dmdest,DMRefineHook_DMKSP,NULL,NULL));
+      PetscCall(PetscObjectReference(dmdest->dmksp));
+      PetscCall(DMCoarsenHookAdd(dmdest,DMCoarsenHook_DMKSP,NULL,NULL));
+      PetscCall(DMRefineHookAdd(dmdest,DMRefineHook_DMKSP,NULL,NULL));
       PetscFunctionReturn(0);
     }
 

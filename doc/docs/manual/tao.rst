@@ -3179,10 +3179,10 @@ gradient method.
 
      PetscFunctionBegin;
 
-     CHKERRQ(TaoComputeObjectiveAndGradient(tao,x,&f,g));
-     CHKERRQ(VecNorm(g,NORM_2,&gnorm));
+     PetscCall(TaoComputeObjectiveAndGradient(tao,x,&f,g));
+     PetscCall(VecNorm(g,NORM_2,&gnorm));
 
-     CHKERRQ(VecSet(s,0));
+     PetscCall(VecSet(s,0));
 
      cg->beta=0;
      gnormPrev = gnorm;
@@ -3191,26 +3191,26 @@ gradient method.
      while (1){
 
        /* Test for convergence */
-       CHKERRQ(TaoMonitor(tao,iter,f,gnorm,0.0,step,&reason));
+       PetscCall(TaoMonitor(tao,iter,f,gnorm,0.0,step,&reason));
        if (reason!=TAO_CONTINUE_ITERATING) break;
 
        cg->beta=(gnorm*gnorm)/(gnormPrev*gnormPrev);
-       CHKERRQ(VecScale(s,cg->beta));
-       CHKERRQ(VecAXPY(s,-1.0,g));
+       PetscCall(VecScale(s,cg->beta));
+       PetscCall(VecAXPY(s,-1.0,g));
 
-       CHKERRQ(VecDot(s,g,&gdx));
+       PetscCall(VecDot(s,g,&gdx));
        if (gdx>=0){     /* If not a descent direction, use gradient */
-         CHKERRQ(VecCopy(g,s));
-         CHKERRQ(VecScale(s,-1.0));
+         PetscCall(VecCopy(g,s));
+         PetscCall(VecScale(s,-1.0));
          gdx=-gnorm*gnorm;
        }
 
        /* Line Search */
        gnormPrev = gnorm;  step=1.0;
-       CHKERRQ(TaoLineSearchSetInitialStepLength(tao->linesearch,1.0));
-       CHKERRQ(TaoLineSearchApply(tao->linesearch,x,&f,g,s,&steplength,&lsflag));
-       CHKERRQ(TaoAddLineSearchCounts(tao));
-       CHKERRQ(VecNorm(g,NORM_2,&gnorm));
+       PetscCall(TaoLineSearchSetInitialStepLength(tao->linesearch,1.0));
+       PetscCall(TaoLineSearchApply(tao->linesearch,x,&f,g,s,&steplength,&lsflag));
+       PetscCall(TaoAddLineSearchCounts(tao));
+       PetscCall(VecNorm(g,NORM_2,&gnorm));
        iter++;
      }
 
@@ -3302,7 +3302,7 @@ conjugate gradient algorithm shown above can be implemented as follows.
 
      PetscFunctionBegin;
 
-     CHKERRQ(PetscNewLog(tao,&cg));
+     PetscCall(PetscNewLog(tao,&cg));
      tao->data = (void*)cg;
      cg->eta = 0.1;
      cg->delta_min = 1e-7;
@@ -3318,9 +3318,9 @@ conjugate gradient algorithm shown above can be implemented as follows.
      tao->ops->setfromoptions = TaoSetFromOptions_CG;
      tao->ops->destroy = TaoDestroy_CG;
 
-     CHKERRQ(TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch));
-     CHKERRQ(TaoLineSearchSetType(tao->linesearch, morethuente_type));
-     CHKERRQ(TaoLineSearchUseTaoRoutines(tao->linesearch, tao));
+     PetscCall(TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch));
+     PetscCall(TaoLineSearchSetType(tao->linesearch, morethuente_type));
+     PetscCall(TaoLineSearchUseTaoRoutines(tao->linesearch, tao));
 
      PetscFunctionReturn(0);
    }
@@ -3361,8 +3361,8 @@ and the ``TAO_CG`` structure.
 
      PetscFunctionBegin;
 
-     CHKERRQ(VecDestroy(&cg->X_old));
-     CHKERRQ(VecDestroy(&cg->G_old));
+     PetscCall(VecDestroy(&cg->X_old));
+     PetscCall(VecDestroy(&cg->G_old));
 
      PetscFree(tao->data);
      tao->data = NULL;
@@ -3392,10 +3392,10 @@ have the following form.
      TAO_CG *cg = (TAO_CG*)tao->data;
      PetscFunctionBegin;
 
-     CHKERRQ(VecDuplicate(tao->solution,&tao->gradient));
-     CHKERRQ(VecDuplicate(tao->solution,&tao->stepdirection));
-     CHKERRQ(VecDuplicate(tao->solution,&cg->X_old));
-     CHKERRQ(VecDuplicate(tao->solution,&cg->G_old));
+     PetscCall(VecDuplicate(tao->solution,&tao->gradient));
+     PetscCall(VecDuplicate(tao->solution,&tao->stepdirection));
+     PetscCall(VecDuplicate(tao->solution,&cg->X_old));
+     PetscCall(VecDuplicate(tao->solution,&cg->G_old));
 
      PetscFunctionReturn(0);
    }
@@ -3414,9 +3414,9 @@ following form.
    {
      TAO_CG *cg = (TAO_CG*)solver;
      PetscFunctionBegin;
-     CHKERRQ(PetscOptionsReal("-tao_cg_eta","restart tolerance","",cg->eta,&cg->eta,0));
-     CHKERRQ(PetscOptionsReal("-tao_cg_delta_min","minimum delta value","",cg->delta_min,&cg->delta_min,0));
-     CHKERRQ(PetscOptionsReal("-tao_cg_delta_max","maximum delta value","",cg->delta_max,&cg->delta_max,0));
+     PetscCall(PetscOptionsReal("-tao_cg_eta","restart tolerance","",cg->eta,&cg->eta,0));
+     PetscCall(PetscOptionsReal("-tao_cg_delta_min","minimum delta value","",cg->delta_min,&cg->delta_min,0));
+     PetscCall(PetscOptionsReal("-tao_cg_delta_max","maximum delta value","",cg->delta_max,&cg->delta_max,0));
      PetscFunctionReturn(0);
    }
 
@@ -3436,10 +3436,10 @@ form.
      TAO_CG *cg = (TAO_CG*)tao->data;
 
      PetscFunctionBegin;
-     CHKERRQ(PetscViewerASCIIPushTab(viewer));
-     CHKERRQ(PetscViewerASCIIPrintf(viewer,"Grad. steps: %d\n",cg->ngradsteps));
-     CHKERRQ(PetscViewerASCIIPrintf(viewer,"Reset steps: %d\n",cg->nresetsteps));
-     CHKERRQ(PetscViewerASCIIPopTab(viewer));
+     PetscCall(PetscViewerASCIIPushTab(viewer));
+     PetscCall(PetscViewerASCIIPrintf(viewer,"Grad. steps: %d\n",cg->ngradsteps));
+     PetscCall(PetscViewerASCIIPrintf(viewer,"Reset steps: %d\n",cg->nresetsteps));
+     PetscCall(PetscViewerASCIIPopTab(viewer));
      PetscFunctionReturn(0);
    }
 

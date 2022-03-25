@@ -165,27 +165,30 @@ C Formatting
       PetscFunctionBegin;
 
 #. All PETSc functions must have their return value checked for errors using the
-   ``CHKERRQ()`` macro. This should be wrapped around the function in question.
+   ``PetscCall()`` macro. This should be wrapped around the function in question.
 
    ::
 
-      CHKERRQ(MyFunction(...)); // Correct
-      PetscErrorCode ierr = MyFunction(...);CHKERRQ(ierr); // Incorrect
+      PetscCall(MyFunction(...)); // Correct
+      PetscErrorCode ierr = MyFunction(...);PetscCall(ierr); // Incorrect
 
    The only exceptions to this rule are begin-end style macros which embed local variables
    or loops as part of their expansion
    (e.g. ``PetscOptionsBegin()``/``PetscOptionsEnd()``).  These should assign to ``ierr``
-   and place the ``CHKERRQ()`` call immediately afterwards on the same line
+   and place the ``PetscCall()`` call immediately afterwards on the same line
 
    ::
 
       // Correct
-      ierr = PetscOptionsBegin(...);CHKERRQ(ierr);
-      ierr = PetscOptionsEnd();CHKERRQ(ierr);
+      ierr = PetscOptionsBegin(...);PetscCall(ierr);
+      ierr = PetscOptionsEnd();PetscCall(ierr);
 
       // Incorrect
-      CHKERRQ(PetscOptionsBegin(...));
-      CHKERRQ(PetscOptionsEnd());
+      PetscCall(PetscOptionsBegin(...));
+      PetscCall(PetscOptionsEnd());
+
+   As a rule, always try to wrap the function first, only if this fails to compile may you
+   consider the trailing style.
 
 #. Indentation for ``if`` statements *must* be done as follows.
 
@@ -231,10 +234,10 @@ C Formatting
    ::
 
        if ( ) {
-         CHKERRQ(XXX()); /* Incorrect */
+         PetscCall(XXX()); /* Incorrect */
        }
 
-       if ( ) CHKERRQ(XXX()); /* Correct */
+       if ( ) PetscCall(XXX()); /* Correct */
 
 #. Always have a space between ``if`` or ``for`` and the following
    ``()``.
@@ -286,9 +289,9 @@ C Formatting
      if (cond) {
        PetscScalar *tmp;
 
-       CHKERRQ(PetscMalloc1(10,&tmp));
+       PetscCall(PetscMalloc1(10,&tmp));
        // use tmp
-       CHKERRQ(PetscFree(tmp));
+       PetscCall(PetscFree(tmp));
      }
 
    The only exception to this variables used exclusively within a ``for`` loop, which must
@@ -318,13 +321,13 @@ C Formatting
 
    ::
 
-       CHKERRQ(PetscMalloc1( 10,&a )); /* Incorrect */
+       PetscCall(PetscMalloc1( 10,&a )); /* Incorrect */
 
    but instead write
 
    ::
 
-       CHKERRQ(PetscMalloc1(10,&a));
+       PetscCall(PetscMalloc1(10,&a));
 
 #. Do not use a space after the ``)`` in a cast or between the type and
    the ``*`` in a cast.
@@ -344,13 +347,13 @@ C Formatting
 
    ::
 
-       CHKERRQ(func(a, 22.0)); /* Incorrect */
+       PetscCall(func(a, 22.0)); /* Incorrect */
 
    but instead write
 
    ::
 
-       CHKERRQ(func(a,22.0));
+       PetscCall(func(a,22.0));
 
 C Usage
 ~~~~~~~
@@ -510,10 +513,8 @@ Usage of PETSc Functions and Macros
    ``assert()``, it doesn’t play well in the parallel MPI world.
    You may use ``PetscAssert()`` where appropriate.
 
-#. The macros ``SETERRQ()`` and ``CHKERRQ()`` should be on the same line
-   as the routine to be checked unless doing so violates the 150
-   character-width-rule. Try to make error messages short but
-   informative.
+#. Try to make error messages short but informative. The user should be able to reasonably
+   diagnose the greater problem from your error message.
 
 #. Except in code that may be called before PETSc is fully initialized,
    always use ``PetscMallocN()`` (for example, ``PetscMalloc1()``),
