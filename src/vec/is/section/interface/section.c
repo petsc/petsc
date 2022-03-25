@@ -46,7 +46,6 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   (*s)->perm                = NULL;
   (*s)->pointMajor          = PETSC_TRUE;
   (*s)->includesConstraints = PETSC_TRUE;
-  (*s)->maxDof              = 0;
   (*s)->atlasDof            = NULL;
   (*s)->atlasOff            = NULL;
   (*s)->bc                  = NULL;
@@ -61,6 +60,7 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   (*s)->clHash              = NULL;
   (*s)->clSection           = NULL;
   (*s)->clPoints            = NULL;
+  PetscCall(PetscSectionInvalidateMaxDof_Internal(*s));
   PetscFunctionReturn(0);
 }
 
@@ -800,6 +800,7 @@ PetscErrorCode PetscSectionSetDof(PetscSection s, PetscInt point, PetscInt numDo
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscAssert(point >= s->pStart && point < s->pEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
   s->atlasDof[point - s->pStart] = numDof;
+  PetscCall(PetscSectionInvalidateMaxDof_Internal(s));
   PetscFunctionReturn(0);
 }
 
@@ -823,6 +824,7 @@ PetscErrorCode PetscSectionAddDof(PetscSection s, PetscInt point, PetscInt numDo
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscAssert(point >= s->pStart && point < s->pEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %" PetscInt_FMT " should be in [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, s->pStart, s->pEnd);
   s->atlasDof[point - s->pStart] += numDof;
+  PetscCall(PetscSectionInvalidateMaxDof_Internal(s));
   PetscFunctionReturn(0);
 }
 
@@ -1110,7 +1112,6 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
       /* Set point offset */
       s->atlasOff[q] = offset;
       offset        += s->atlasDof[q];
-      s->maxDof      = PetscMax(s->maxDof, s->atlasDof[q]);
       /* Set field offset */
       for (f = 0, foff = s->atlasOff[q]; f < s->numFields; ++f) {
         PetscSection sf = s->field[f];
@@ -1134,7 +1135,6 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
     /* Disable point offsets since these are unused */
     for (p = 0; p < s->pEnd - s->pStart; ++p) {
       s->atlasOff[p] = -1;
-      s->maxDof      = PetscMax(s->maxDof, s->atlasDof[p]);
     }
   }
   if (s->perm) PetscCall(ISRestoreIndices(s->perm, &pind));
@@ -1157,13 +1157,30 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
 
   Level: intermediate
 
-.seealso: PetscSectionGetDof(), PetscSectionSetDof(), PetscSectionCreate()
+  Notes:
+  The returned number is up-to-date without need for PetscSectionSetUp().
+
+  Developer Notes:
+  The returned number is calculated lazily and stashed.
+  A call to PetscSectionInvalidateMaxDof_Internal() invalidates the stashed value.
+  PetscSectionInvalidateMaxDof_Internal() is called in PetscSectionSetDof(), PetscSectionAddDof() and PetscSectionReset().
+  It should also be called every time atlasDof is modified directly.
+
+.seealso: PetscSectionGetDof(), PetscSectionSetDof(), PetscSectionAddDof(), PetscSectionCreate()
 @*/
 PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof)
 {
+  PetscInt p;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidIntPointer(maxDof, 2);
+  if (s->maxDof == PETSC_MIN_INT) {
+    s->maxDof = 0;
+    for (p = 0; p < s->pEnd - s->pStart; ++p) {
+      s->maxDof = PetscMax(s->maxDof, s->atlasDof[p]);
+    }
+  }
   *maxDof = s->maxDof;
   PetscFunctionReturn(0);
 }
@@ -2213,7 +2230,7 @@ PetscErrorCode PetscSectionReset(PetscSection s)
   PetscCall(PetscSectionSymDestroy(&s->sym));
   PetscCall(PetscSectionDestroy(&s->clSection));
   PetscCall(ISDestroy(&s->clPoints));
-
+  PetscCall(PetscSectionInvalidateMaxDof_Internal(s));
   s->pStart    = -1;
   s->pEnd      = -1;
   s->maxDof    = 0;

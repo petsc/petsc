@@ -260,6 +260,7 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
     PetscCall(PetscSFBcastBegin(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart],MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(embedSF, MPIU_INT, &rootSection->atlasOff[-rpStart], &(*remoteOffsets)[-lpStart],MPI_REPLACE));
   }
+  PetscCall(PetscSectionInvalidateMaxDof_Internal(leafSection));
   PetscCall(PetscSectionSetUp(leafSection));
   if (hasc) { /* need to communicate bcIndices */
     PetscSF  bcSF;
